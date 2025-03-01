@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.android.systemui.media.remedia.ui.compose
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.interaction.DragInteraction
+import androidx.compose.foundation.interaction.Interaction
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,15 +50,29 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
+import androidx.compose.material3.SliderDefaults.colors
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -64,6 +92,210 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaCardGutsViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaOutputSwitcherChipViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
+import com.android.systemui.media.remedia.ui.viewmodel.MediaSeekBarViewModel
+
+/**
+ * Renders the navigation UI (seek bar and/or previous/next buttons).
+ *
+ * If [isSeekBarVisible] is `false`, the seek bar will not be included in the layout, even if it
+ * would otherwise be showing based on the view-model alone. This is meant for callers to decide
+ * whether they'd like to show the seek bar in addition to the prev/next buttons or just show the
+ * buttons.
+ */
+@Composable
+private fun ContentScope.Navigation(
+    viewModel: MediaSeekBarViewModel,
+    isSeekBarVisible: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    when (viewModel) {
+        is MediaSeekBarViewModel.Showing -> {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = modifier,
+            ) {
+                viewModel.previous?.let {
+                    SecondaryAction(viewModel = it, element = Media.Elements.PrevButton)
+                }
+
+                val interactionSource = remember { MutableInteractionSource() }
+                val colors =
+                    colors(
+                        activeTrackColor = Color.White,
+                        inactiveTrackColor = Color.White.copy(alpha = 0.3f),
+                        thumbColor = Color.White,
+                    )
+                if (isSeekBarVisible) {
+                    // To allow the seek bar slider to fade in and out, it's tagged as an element.
+                    Element(key = Media.Elements.SeekBarSlider, modifier = Modifier.weight(1f)) {
+                        Slider(
+                            interactionSource = interactionSource,
+                            value = viewModel.progress,
+                            onValueChange = { progress -> viewModel.onScrubChange(progress) },
+                            onValueChangeFinished = { viewModel.onScrubFinished() },
+                            colors = colors,
+                            thumb = {
+                                SeekBarThumb(interactionSource = interactionSource, colors = colors)
+                            },
+                            track = { sliderState ->
+                                SeekBarTrack(
+                                    sliderState = sliderState,
+                                    isSquiggly = viewModel.isSquiggly,
+                                    colors = colors,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
+
+                viewModel.next?.let {
+                    SecondaryAction(viewModel = it, element = Media.Elements.NextButton)
+                }
+            }
+        }
+
+        is MediaSeekBarViewModel.Hidden -> Unit
+    }
+}
+
+/** Renders the thumb of the seek bar. */
+@Composable
+private fun SeekBarThumb(
+    interactionSource: MutableInteractionSource,
+    colors: SliderColors,
+    modifier: Modifier = Modifier,
+) {
+    val interactions = remember { mutableStateListOf<Interaction>() }
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> interactions.add(interaction)
+                is PressInteraction.Release -> interactions.remove(interaction.press)
+                is PressInteraction.Cancel -> interactions.remove(interaction.press)
+                is DragInteraction.Start -> interactions.add(interaction)
+                is DragInteraction.Stop -> interactions.remove(interaction.start)
+                is DragInteraction.Cancel -> interactions.remove(interaction.start)
+            }
+        }
+    }
+
+    Spacer(
+        modifier
+            .size(width = 4.dp, height = 16.dp)
+            .hoverable(interactionSource = interactionSource)
+            .background(color = colors.thumbColor, shape = RoundedCornerShape(16.dp))
+    )
+}
+
+/**
+ * Renders the track of the seek bar.
+ *
+ * If [isSquiggly] is `true`, the part to the left of the thumb will animate a squiggly line that
+ * oscillates up and down. The [waveLength] and [amplitude] control the geometry of the squiggle and
+ * the [waveSpeedDpPerSec] controls the speed by which it seems to "move" horizontally.
+ */
+@Composable
+private fun SeekBarTrack(
+    sliderState: SliderState,
+    isSquiggly: Boolean,
+    colors: SliderColors,
+    modifier: Modifier = Modifier,
+    waveLength: Dp = 20.dp,
+    amplitude: Dp = 3.dp,
+    waveSpeedDpPerSec: Dp = 8.dp,
+) {
+    // Animating the amplitude allows the squiggle to gradually grow to its full height or shrink
+    // back to a flat line as needed.
+    val animatedAmplitude by
+        animateDpAsState(
+            targetValue = if (isSquiggly) amplitude else 0.dp,
+            label = "SeekBarTrack.amplitude",
+        )
+
+    // This animates the horizontal movement of the squiggle.
+    val animatedWaveOffset = remember { Animatable(0f) }
+
+    LaunchedEffect(isSquiggly) {
+        if (isSquiggly) {
+            animatedWaveOffset.snapTo(0f)
+            animatedWaveOffset.animateTo(
+                targetValue = 1f,
+                animationSpec =
+                    infiniteRepeatable(
+                        animation =
+                            tween(
+                                durationMillis = (1000 * (waveLength / waveSpeedDpPerSec)).toInt(),
+                                easing = LinearEasing,
+                            ),
+                        repeatMode = RepeatMode.Restart,
+                    ),
+            )
+        }
+    }
+
+    // Render the track.
+    Canvas(modifier = modifier) {
+        val thumbPositionPx = size.width * sliderState.value
+
+        // The squiggly part before the thumb.
+        if (thumbPositionPx > 0) {
+            val amplitudePx = amplitude.toPx()
+            val animatedAmplitudePx = animatedAmplitude.toPx()
+            val waveLengthPx = waveLength.toPx()
+
+            val path =
+                Path().apply {
+                    val halfWaveLengthPx = waveLengthPx / 2
+                    val halfWaveCount = (thumbPositionPx / halfWaveLengthPx).toInt()
+
+                    repeat(halfWaveCount + 3) { index ->
+                        // Draw a half wave (either a hill or a valley shape starting and ending on
+                        // the horizontal center).
+                        relativeQuadraticTo(
+                            // The control point for the bezier curve is on top of the peak of the
+                            // hill or the very center bottom of the valley shape.
+                            dx1 = halfWaveLengthPx / 2,
+                            dy1 = if (index % 2 == 0) -animatedAmplitudePx else animatedAmplitudePx,
+                            // Advance horizontally, half a wave length at a time.
+                            dx2 = halfWaveLengthPx,
+                            dy2 = 0f,
+                        )
+                    }
+                }
+
+            // Now that the squiggle is rendered a bit past the thumb, clip off the part that passed
+            // the thumb. It's easier to clip the extra squiggle than to figure out the bezier curve
+            // for part of a hill/valley.
+            clipRect(
+                left = 0f,
+                top = -amplitudePx,
+                right = thumbPositionPx,
+                bottom = amplitudePx * 2,
+            ) {
+                translate(left = -waveLengthPx * animatedWaveOffset.value, top = 0f) {
+                    // Actually render the squiggle.
+                    drawPath(
+                        path = path,
+                        color = colors.activeTrackColor,
+                        style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round),
+                    )
+                }
+            }
+        }
+
+        // The flat line after the thumb.
+        drawLine(
+            color = colors.inactiveTrackColor,
+            start = Offset(thumbPositionPx, 0f),
+            end = Offset(size.width, 0f),
+            strokeWidth = 2.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
+    }
+}
 
 /** Renders the internal "guts" of a card. */
 @Composable
@@ -292,5 +524,8 @@ private object Media {
     object Elements {
         val PlayPauseButton = ElementKey("play_pause")
         val Metadata = ElementKey("metadata")
+        val PrevButton = ElementKey("prev")
+        val NextButton = ElementKey("next")
+        val SeekBarSlider = ElementKey("seek_bar_slider")
     }
 }
