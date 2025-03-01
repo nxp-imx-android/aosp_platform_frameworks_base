@@ -120,7 +120,6 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactMessagingTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
@@ -427,7 +426,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 onExpansionChanged(true /* userAction */, wasExpanded);
             }
         } else if (mEnableNonGroupedNotificationExpand) {
-            if (v != null && v.isAccessibilityFocused()) {
+            if (v.isAccessibilityFocused()) {
                 mPrivateLayout.setFocusOnVisibilityChange();
             }
             boolean nowExpanded;
@@ -1815,22 +1814,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 /* headerViewLowPriority= */ headerView,
                 /* onClickListener= */ mExpandClickListener
         );
-    }
-
-    /**
-     * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
-     * This can only be init once and not in conjunction with any other header view.
-     */
-    public void initBundleHeader(@NonNull BundleHeaderViewModelImpl bundleHeaderViewModel) {
-        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
-        NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
-        bundleHeaderViewModel.setOnExpandClickListener(mExpandClickListener);
-
-        childrenContainer.initBundleHeader(bundleHeaderViewModel);
-
-        if (TransparentHeaderFix.isEnabled()) {
-            updateBackgroundForGroupState();
-        }
     }
 
     public void setHeadsUpAnimatingAway(boolean headsUpAnimatingAway) {
