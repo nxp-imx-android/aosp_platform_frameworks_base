@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"আপুনি হেণ্ডছ্‌-ফ্ৰী কলিঙৰ বাবে আপোনাৰ শ্ৰৱণ যন্ত্ৰৰ মাইক্ৰ’ফ’ন ব্যৱহাৰ কৰিব পাৰে। এইটোৱে কল চলি থাকোঁতে কেৱল আপোনাৰ মাইকটো সলনি কৰে।"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"সলনি কৰক"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ছেটিং"</string>
-    <string name="user_switched" msgid="7249833311585228097">"বৰ্তমানৰ ব্যৱহাৰকাৰী <xliff:g id="NAME">%1$s</xliff:g>।"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g>লৈ সলনি কৰি থকা হৈছে…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g>ৰ পৰা লগ আউট কৰি থকা হৈছে…"</string>
     <string name="owner_name" msgid="8713560351570795743">"গৰাকী"</string>

@@ -661,7 +661,7 @@
     <string name="permlab_hand_tracking" msgid="6478233866595566940">"spåra dina händer"</string>
     <string name="permdesc_hand_tracking" msgid="8639715900104966456">"Tillåter att appen får åtkomst till data om handspårning."</string>
     <string name="permlab_head_tracking" msgid="1309731456372087270">"spåra ditt huvud"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"Tillåter att appen får åtkomst till data om huvudföljning."</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"Tillåter att appen får åtkomst till data om huvudspårning."</string>
     <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"förstå din omgivning"</string>
     <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"Tillåter att appen får åtkomst till spårningsdata om omgivningen runtomkring dig."</string>
     <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"förstå din omgivning i detalj"</string>
@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Du kan använda hörapparatens mikrofon för handsfree-samtal. Detta byter bara mikrofon under samtalet."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Byt"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Inställningar"</string>
-    <string name="user_switched" msgid="7249833311585228097">"Nuvarande användare: <xliff:g id="NAME">%1$s</xliff:g>."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Byter till <xliff:g id="NAME">%1$s</xliff:g> …"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Loggar ut <xliff:g id="NAME">%1$s</xliff:g> …"</string>
     <string name="owner_name" msgid="8713560351570795743">"Ägare"</string>

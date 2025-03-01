@@ -653,18 +653,18 @@
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"lexo vendndodhjet nga koleksioni yt i medias"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Lejon aplikacionin të lexojë vendndodhjet nga koleksioni yt i medias."</string>
     <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"të gjurmojë vështrimin e përafërt të syve"</string>
-    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"Lejon që aplikacioni të gjurmojë vështrimin e përafërt të syve"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"Lejon që aplikacioni të gjurmojë vështrimin e përafërt të syve."</string>
     <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"të gjurmojë se ku po shikon ti"</string>
     <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"Lejon që aplikacioni të qaset në të dhënat e vështrimit të saktë të syve."</string>
     <string name="permlab_face_tracking" msgid="2272048395128283324">"të gjurmojë fytyrën tënde"</string>
-    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Lejo që aplikacioni të qaset në të dhënat e gjurmimit të fytyrës."</string>
+    <string name="permdesc_face_tracking" msgid="2622783922311211866">"Lejon që aplikacioni të qaset në të dhënat e gjurmimit të fytyrës."</string>
     <string name="permlab_hand_tracking" msgid="6478233866595566940">"të gjurmojë duart e tua"</string>
     <string name="permdesc_hand_tracking" msgid="8639715900104966456">"Lejon që aplikacioni të qaset në të dhënat e gjurmimit të duarve."</string>
     <string name="permlab_head_tracking" msgid="1309731456372087270">"të gjurmojë kokën tënde"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"Lejo që aplikacioni të qaset në të dhënat e gjurmimit të kokës."</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"Lejon që aplikacioni të qaset në të dhënat e gjurmimit të kokës."</string>
     <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"të kuptojë mjedisin tënd"</string>
     <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"Lejon që aplikacioni të qaset në të dhënat e gjurmimit për mjedisin drejtpërdrejt rreth teje."</string>
-    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"të kuptojë mjedisin tënd të drejtpërdrejtë me nivel të lartë të detajeve"</string>
+    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"të kuptojë mjedisin drejtpërdrejtë rreth teje me nivel të lartë të detajeve"</string>
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Lejon që aplikacioni të qaset në të dhënat e gjurmimit për mjedisin drejtpërdrejt rreth teje me nivel shumë të lartë të detajeve."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"të qaset në të dhënat për XR kur nuk është në plan të parë"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Lejon që aplikacioni të qaset në të dhënat për XR kur nuk është në plan të parë."</string>
@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Mund ta përdorësh mikrofonin e aparatit të dëgjimit për telefonata pa përdorur duart. Kjo vetëm ndërron mikrofonin gjatë telefonatës."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Ndërro"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Cilësimet"</string>
-    <string name="user_switched" msgid="7249833311585228097">"Emri i përdoruesit aktual: <xliff:g id="NAME">%1$s</xliff:g>"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Po kalon në \"<xliff:g id="NAME">%1$s</xliff:g>\"…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> po del…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Zotëruesi"</string>
