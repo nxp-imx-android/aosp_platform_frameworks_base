@@ -238,7 +238,10 @@ public class PipController implements ConfigurationChangeListener,
             @Override
             public void onActivityRestartAttempt(ActivityManager.RunningTaskInfo task,
                     boolean homeTaskVisible, boolean clearedTask, boolean wasVisible) {
-                if (task.getWindowingMode() != WINDOWING_MODE_PINNED) {
+                ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                        "onActivityRestartAttempt: topActivity=%s, wasVisible=%b",
+                        task.topActivity, wasVisible);
+                if (task.getWindowingMode() != WINDOWING_MODE_PINNED || !wasVisible) {
                     return;
                 }
                 mPipScheduler.scheduleExitPipViaExpand();
