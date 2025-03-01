@@ -23,7 +23,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
-import com.android.systemui.display.data.repository.PerDisplayStoreImpl
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.events.SystemEventChipAnimationController
 import com.android.systemui.statusbar.events.SystemEventChipAnimationControllerImpl
@@ -53,7 +52,7 @@ constructor(
     private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
 ) :
     SystemEventChipAnimationControllerStore,
-    PerDisplayStoreImpl<SystemEventChipAnimationController>(
+    StatusBarPerDisplayStoreImpl<SystemEventChipAnimationController>(
         backgroundApplicationScope,
         displayRepository,
     ) {
