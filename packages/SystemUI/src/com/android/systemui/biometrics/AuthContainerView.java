@@ -539,7 +539,8 @@ public class AuthContainerView extends LinearLayout
     }
 
     public void show(WindowManager wm) {
-        wm.addView(this, getLayoutParams(mWindowToken, mConfig.mPromptInfo.getTitle()));
+        wm.addView(this, getLayoutParams(mWindowToken, mConfig.mPromptInfo.getTitle(),
+                mPromptViewModel.getPromptKind().getValue().isCredential()));
     }
 
     private void forceExecuteAnimatedIn() {
@@ -738,7 +739,8 @@ public class AuthContainerView extends LinearLayout
     }
 
     @VisibleForTesting
-    static WindowManager.LayoutParams getLayoutParams(IBinder windowToken, CharSequence title) {
+    static WindowManager.LayoutParams getLayoutParams(IBinder windowToken, CharSequence title,
+            boolean isCredentialView) {
         final int windowFlags = WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
                 | WindowManager.LayoutParams.FLAG_SECURE
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
@@ -754,7 +756,7 @@ public class AuthContainerView extends LinearLayout
                 & ~WindowInsets.Type.systemBars());
         lp.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
         lp.setTitle("BiometricPrompt");
-        lp.accessibilityTitle = title;
+        lp.accessibilityTitle = isCredentialView ? " " : title;
         lp.dimAmount = BACKGROUND_DIM_AMOUNT;
         lp.token = windowToken;
         return lp;
