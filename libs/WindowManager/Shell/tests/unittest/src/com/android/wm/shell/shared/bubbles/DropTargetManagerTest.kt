@@ -65,7 +65,7 @@ class DropTargetManagerTest {
         container = FrameLayout(context)
         dragZoneChangedListener = FakeDragZoneChangedListener()
         dropTargetManager =
-            DropTargetManager(context, container, isLayoutRtl = false, dragZoneChangedListener)
+            DropTargetManager(context, container, dragZoneChangedListener)
     }
 
     @Test
@@ -228,6 +228,22 @@ class DropTargetManagerTest {
     }
 
     @Test
+    fun onDragEnded_dropTargetNotifies() {
+        dropTargetManager.onDragStarted(
+            DraggedObject.Bubble(BubbleBarLocation.LEFT),
+            listOf(bubbleLeftDragZone, bubbleRightDragZone, dismissDragZone)
+        )
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragUpdated(
+                bubbleRightDragZone.bounds.centerX(),
+                bubbleRightDragZone.bounds.centerY()
+            )
+            dropTargetManager.onDragEnded()
+        }
+        assertThat(dragZoneChangedListener.endedDragZone).isEqualTo(bubbleRightDragZone)
+    }
+
+    @Test
     fun startNewDrag_beforeDropTargetRemoved() {
         dropTargetManager.onDragStarted(
             DraggedObject.Bubble(BubbleBarLocation.LEFT),
@@ -330,6 +346,7 @@ class DropTargetManagerTest {
         var initialDragZone: DragZone? = null
         var fromDragZone: DragZone? = null
         var toDragZone: DragZone? = null
+        var endedDragZone: DragZone? = null
 
         override fun onInitialDragZoneSet(dragZone: DragZone) {
             initialDragZone = dragZone
@@ -338,6 +355,10 @@ class DropTargetManagerTest {
         override fun onDragZoneChanged(from: DragZone, to: DragZone) {
             fromDragZone = from
             toDragZone = to
+        }
+
+        override fun onDragEnded(zone: DragZone) {
+            endedDragZone = zone
         }
     }
 }

@@ -136,6 +136,11 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
         updateInternal(mRotation, deviceConfig.getInsets(), deviceConfig.getWindowBounds());
     }
 
+    /** Returns the device config being used. */
+    public DeviceConfig getCurrentConfig() {
+        return mDeviceConfig;
+    }
+
     @VisibleForTesting
     public void updateInternal(int rotation, Insets insets, Rect bounds) {
         BubbleStackView.RelativeStackPosition prevStackPosition = null;

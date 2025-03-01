@@ -27,6 +27,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.graphics.drawable.ColorDrawable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceControl;
 import android.view.TouchDelegate;
@@ -48,9 +49,13 @@ import com.android.wm.shell.bubbles.BubbleViewProvider;
 import com.android.wm.shell.bubbles.DismissViewUtils;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedViewDragController.DragListener;
 import com.android.wm.shell.shared.bubbles.BaseBubblePinController;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
+import com.android.wm.shell.shared.bubbles.DragZone;
+import com.android.wm.shell.shared.bubbles.DragZoneFactory;
+import com.android.wm.shell.shared.bubbles.DropTargetManager;
 
 import kotlin.Unit;
 
@@ -76,6 +81,10 @@ public class BubbleBarLayerView extends FrameLayout
     private final BubbleEducationViewController mEducationViewController;
     private final View mScrimView;
     private final BubbleExpandedViewPinController mBubbleExpandedViewPinController;
+    @Nullable
+    private DropTargetManager mDropTargetManager = null;
+    @Nullable
+    private DragZoneFactory mDragZoneFactory = null;
 
     @Nullable
     private BubbleViewProvider mExpandedBubble;
@@ -123,8 +132,72 @@ public class BubbleBarLayerView extends FrameLayout
 
         mBubbleExpandedViewPinController = new BubbleExpandedViewPinController(
                 context, this, mPositioner);
-        mBubbleExpandedViewPinController.setListener(new LocationChangeListener());
+        LocationChangeListener locationChangeListener = new LocationChangeListener();
+        mBubbleExpandedViewPinController.setListener(locationChangeListener);
 
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+            mDropTargetManager = new DropTargetManager(context, this,
+                    new DropTargetManager.DragZoneChangedListener() {
+                        private DragZone mLastBubbleLocationDragZone = null;
+                        private BubbleBarLocation mInitialLocation = null;
+                        @Override
+                        public void onDragEnded(@NonNull DragZone zone) {
+                            if (mExpandedBubble == null || !(mExpandedBubble instanceof Bubble)) {
+                                Log.w(TAG, "dropped invalid bubble: " + mExpandedBubble);
+                                return;
+                            }
+                            if (zone instanceof DragZone.FullScreen) {
+                                ((Bubble) mExpandedBubble).getTaskView().moveToFullscreen();
+                                // Make sure location change listener is updated with the initial
+                                // location -- even if we "switched sides" during the drag, since
+                                // we've ended up in fullscreen, the location shouldn't change.
+                                locationChangeListener.onRelease(mInitialLocation);
+                            } else if (zone instanceof DragZone.Bubble.Left) {
+                                locationChangeListener.onRelease(BubbleBarLocation.LEFT);
+                            } else if (zone instanceof DragZone.Bubble.Right) {
+                                locationChangeListener.onRelease(BubbleBarLocation.RIGHT);
+                            }
+                        }
+
+                        @Override
+                        public void onInitialDragZoneSet(@NonNull DragZone dragZone) {
+                            mInitialLocation = dragZone instanceof DragZone.Bubble.Left
+                                    ? BubbleBarLocation.LEFT
+                                    : BubbleBarLocation.RIGHT;
+                            locationChangeListener.onStart(mInitialLocation);
+                        }
+
+                        @Override
+                        public void onDragZoneChanged(@NonNull DragZone from,
+                                @NonNull DragZone to) {
+                            final boolean isBubbleLeft = to instanceof DragZone.Bubble.Left;
+                            final boolean isBubbleRight = to instanceof DragZone.Bubble.Right;
+                            if ((isBubbleLeft || isBubbleRight)
+                                    && to != mLastBubbleLocationDragZone) {
+                                mLastBubbleLocationDragZone = to;
+                                locationChangeListener.onChange(isBubbleLeft
+                                        ? BubbleBarLocation.LEFT
+                                        : BubbleBarLocation.RIGHT);
+
+                            }
+                        }
+                    });
+            // TODO - currently only fullscreen is supported, should enable for split & desktop
+            mDragZoneFactory = new DragZoneFactory(context, mPositioner.getCurrentConfig(),
+                    new DragZoneFactory.SplitScreenModeChecker() {
+                        @NonNull
+                        @Override
+                        public SplitScreenMode getSplitScreenMode() {
+                            return SplitScreenMode.NONE;
+                        }
+                    },
+                    new DragZoneFactory.DesktopWindowModeChecker() {
+                        @Override
+                        public boolean isSupported() {
+                            return false;
+                        }
+                    });
+        }
         setOnClickListener(view -> hideModalOrCollapse());
     }
 
@@ -272,6 +345,8 @@ public class BubbleBarLayerView extends FrameLayout
                     mAnimationHelper,
                     mPositioner,
                     mBubbleExpandedViewPinController,
+                    mDropTargetManager,
+                    mDragZoneFactory,
                     dragListener);
 
             addView(mExpandedView, new LayoutParams(width, height, Gravity.LEFT));
