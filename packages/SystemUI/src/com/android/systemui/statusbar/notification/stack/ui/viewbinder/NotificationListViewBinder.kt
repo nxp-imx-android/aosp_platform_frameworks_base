@@ -231,7 +231,7 @@ constructor(
         emptyShadeViewModel: EmptyShadeViewModel,
         parentView: NotificationStackScrollLayout,
     ) {
-        ModesEmptyShadeFix.assertInNewMode()
+        ModesEmptyShadeFix.unsafeAssertInNewMode()
         // The empty shade needs to be re-inflated every time the theme or the font size
         // changes.
         configuration
@@ -269,7 +269,7 @@ constructor(
         emptyShadeView: EmptyShadeView,
         emptyShadeViewModel: EmptyShadeViewModel,
     ): Unit = coroutineScope {
-        ModesEmptyShadeFix.assertInNewMode()
+        ModesEmptyShadeFix.unsafeAssertInNewMode()
         launch {
             emptyShadeView.repeatWhenAttachedToWindow {
                 EmptyShadeViewBinder.bind(

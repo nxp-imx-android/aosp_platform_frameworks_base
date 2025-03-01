@@ -146,7 +146,7 @@ constructor(
 
     /** Starts status bar orchestration. To be called when status bar is created. */
     fun start() {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         startJob =
             coroutineScope
                 // Perform animations on the main thread to prevent crashes.
@@ -280,7 +280,7 @@ constructor(
      * Called when the [StatusBarOrchestrator] should stop doing any work and clean up if needed.
      */
     fun stop() {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         dumpManager.unregisterDumpable(dumpableName)
         startJob?.cancel()
         startJob = null

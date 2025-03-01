@@ -99,7 +99,7 @@ constructor(
      */
     fun bindDetailsView(view: View) {
         // If `QsDetailedView` is not enabled, it should show the dialog.
-        QsDetailedView.assertInNewMode()
+        QsDetailedView.unsafeAssertInNewMode()
 
         cancelJob()
 

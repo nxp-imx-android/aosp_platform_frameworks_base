@@ -1096,7 +1096,7 @@ public class HeadsUpManagerImpl
     @Override
     public void setExpanded(@NonNull String entryKey, @NonNull ExpandableNotificationRow row,
             boolean expanded) {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         HeadsUpEntry headsUpEntry = getHeadsUpEntry(entryKey);
         if (headsUpEntry != null && row.getPinnedStatus().isPinned()) {
             headsUpEntry.setExpanded(expanded);

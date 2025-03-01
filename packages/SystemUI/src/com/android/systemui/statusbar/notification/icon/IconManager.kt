@@ -90,12 +90,12 @@ constructor(
         ConcurrentHashMap<String, Job>()
 
     fun addIconsUpdateListener(listener: OnIconUpdateRequiredListener) {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         onIconUpdateRequiredListeners += listener
     }
 
     fun removeIconsUpdateListener(listener: OnIconUpdateRequiredListener) {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         onIconUpdateRequiredListeners -= listener
     }
 
@@ -140,7 +140,7 @@ constructor(
      */
     fun createSbIconView(context: Context, entry: NotificationEntry): StatusBarIconView =
         traceSection("IconManager.createSbIconView") {
-            StatusBarConnectedDisplays.assertInNewMode()
+            StatusBarConnectedDisplays.unsafeAssertInNewMode()
 
             val sbIcon = iconBuilder.createIconView(entry, context)
             sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
@@ -200,7 +200,7 @@ constructor(
     /** Update the [StatusBarIconView] for the given [NotificationEntry]. */
     fun updateSbIcon(entry: NotificationEntry, iconView: StatusBarIconView) =
         traceSection("IconManager.updateSbIcon") {
-            StatusBarConnectedDisplays.assertInNewMode()
+            StatusBarConnectedDisplays.unsafeAssertInNewMode()
 
             val (normalIconDescriptor, _) = getIconDescriptors(entry)
             val notificationContentDescription =

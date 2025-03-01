@@ -48,7 +48,7 @@ constructor(
 ) : CoreStartable {
 
     init {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
     }
 
     override fun start() {

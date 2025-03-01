@@ -148,7 +148,7 @@ sealed class OngoingActivityChipModel {
                 shouldAnimate,
             ) {
             init {
-                StatusBarNotifChips.assertInNewMode()
+                StatusBarNotifChips.unsafeAssertInNewMode()
             }
 
             override val logName = "Active.ShortTimeDelta"
@@ -227,7 +227,7 @@ sealed class OngoingActivityChipModel {
             val contentDescription: ContentDescription,
         ) : ChipIcon {
             init {
-                StatusBarConnectedDisplays.assertInNewMode()
+                StatusBarConnectedDisplays.unsafeAssertInNewMode()
             }
         }
 

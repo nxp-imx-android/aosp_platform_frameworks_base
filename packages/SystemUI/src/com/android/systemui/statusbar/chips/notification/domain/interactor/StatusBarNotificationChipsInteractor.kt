@@ -73,7 +73,7 @@ constructor(
         _promotedNotificationChipTapEvent.asSharedFlow()
 
     suspend fun onPromotedNotificationChipTapped(key: String) {
-        StatusBarNotifChips.assertInNewMode()
+        StatusBarNotifChips.unsafeAssertInNewMode()
         _promotedNotificationChipTapEvent.emit(key)
     }
 

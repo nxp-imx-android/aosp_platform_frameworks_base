@@ -69,7 +69,7 @@ constructor(
     }
 
     fun addCallback(callback: IKeyguardStateCallback) {
-        SceneContainerFlag.assertInNewMode()
+        SceneContainerFlag.unsafeAssertInNewMode()
 
         callbacks.add(callback)
 

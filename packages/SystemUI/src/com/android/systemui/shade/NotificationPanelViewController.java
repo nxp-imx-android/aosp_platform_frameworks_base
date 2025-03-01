@@ -2253,7 +2253,7 @@ public final class NotificationPanelViewController implements
             Log.i(TAG, "Ignoring status Bar long press on virtualized test device.");
             return;
         }
-        ShadeExpandsOnStatusBarLongPress.assertInNewMode();
+        ShadeExpandsOnStatusBarLongPress.unsafeAssertInNewMode();
         mStatusBarLongPressDowntime = event.getDownTime();
         if (isTracking()) {
             onTrackingStopped(true);

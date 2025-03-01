@@ -37,7 +37,7 @@ constructor(
 ) : SystemEventChipAnimationController {
 
     init {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
     }
 
     override fun prepareChipAnimation(viewCreator: ViewCreator) {

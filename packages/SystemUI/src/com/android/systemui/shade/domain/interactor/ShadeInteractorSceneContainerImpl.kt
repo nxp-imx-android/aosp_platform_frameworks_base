@@ -56,7 +56,7 @@ constructor(
     private val shadeModeInteractor: ShadeModeInteractor,
 ) : BaseShadeInteractor {
     init {
-        SceneContainerFlag.assertInNewMode()
+        SceneContainerFlag.unsafeAssertInNewMode()
     }
 
     override val shadeExpansion: StateFlow<Float> =

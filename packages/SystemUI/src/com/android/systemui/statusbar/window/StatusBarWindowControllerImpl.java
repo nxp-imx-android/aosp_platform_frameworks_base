@@ -185,7 +185,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
 
     @Override
     public void stop() {
-        StatusBarConnectedDisplays.assertInNewMode();
+        StatusBarConnectedDisplays.unsafeAssertInNewMode();
 
         try {
             mWindowManager.removeView(mStatusBarWindowView);

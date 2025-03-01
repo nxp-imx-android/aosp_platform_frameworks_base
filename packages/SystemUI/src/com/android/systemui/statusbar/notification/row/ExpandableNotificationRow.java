@@ -947,7 +947,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     @Nullable
     public EntryAdapter getEntryAdapter() {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         return mEntryAdapter;
     }
 
@@ -2074,7 +2074,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     public ExpandableNotificationRow(Context context, AttributeSet attrs, UserHandle user) {
         this(context, attrs, userContextForEntry(context, user));
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
     }
 
     /**
