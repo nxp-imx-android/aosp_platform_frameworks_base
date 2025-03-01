@@ -794,9 +794,26 @@ public class PipTransition extends PipTransitionController implements
                 setEnterAnimationType(ANIM_TYPE_BOUNDS);
                 return true;
             }
-            // If the only change in the changes list is a opening type PiP task,
+
+            // Sometimes root PiP task can have TF children. These child containers can be collected
+            // even if they can promote to their parents: e.g. if they are marked as "organized".
+            // So we count the chain of containers under PiP task as one "real" changing target;
+            // iterate through changes bottom-to-top to properly identify parents.
+            int expectedTargetCount = 1;
+            WindowContainerToken lastPipChildToken = pipChange.getContainer();
+            for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+                TransitionInfo.Change change = info.getChanges().get(i);
+                if (change == pipChange || change.getContainer() == null) continue;
+                if (change.getParent() != null && change.getParent().equals(lastPipChildToken)) {
+                    // Allow an extra change since our pinned root task has a child.
+                    ++expectedTargetCount;
+                    lastPipChildToken = change.getContainer();
+                }
+            }
+
+            // If the only root task change in the changes list is a opening type PiP task,
             // then this is legacy-enter PiP.
-            return info.getChanges().size() == 1
+            return info.getChanges().size() == expectedTargetCount
                     && TransitionUtil.isOpeningMode(pipChange.getMode());
         }
         return false;
