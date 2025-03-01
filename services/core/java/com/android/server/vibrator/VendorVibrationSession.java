@@ -51,7 +51,9 @@ import java.util.NoSuchElementException;
 final class VendorVibrationSession extends IVibrationSession.Stub
         implements VibrationSession, CancellationSignal.OnCancelListener, IBinder.DeathRecipient {
     private static final String TAG = "VendorVibrationSession";
-    private static final boolean DEBUG = false;
+    // To enable these logs, run:
+    // 'adb shell setprop persist.log.tag.VendorVibrationSession DEBUG && adb reboot'
+    private static final boolean DEBUG = VibratorDebugUtils.isDebuggable(TAG);
 
     /** Calls into VibratorManager functionality needed for playing an {@link ExternalVibration}. */
     interface VibratorManagerHooks {
