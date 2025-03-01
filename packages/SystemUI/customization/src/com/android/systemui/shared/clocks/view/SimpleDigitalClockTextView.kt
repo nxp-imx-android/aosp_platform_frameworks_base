@@ -372,7 +372,9 @@ open class SimpleDigitalClockTextView(
         updateTextBoundsForTextAnimator()
     }
 
-    fun animateFidget(x: Float, y: Float) {
+    fun animateFidget(x: Float, y: Float) = animateFidget(0L)
+
+    fun animateFidget(delay: Long) {
         if (!this::textAnimator.isInitialized || textAnimator.isRunning) {
             // Skip fidget animation if other animation is already playing.
             return
@@ -381,13 +383,13 @@ open class SimpleDigitalClockTextView(
         logger.animateFidget(x, y)
         clockCtx.vibrator?.vibrate(FIDGET_HAPTICS)
 
-        // TODO(b/374306512): Delay each glyph's animation based on x/y position
         textAnimator.setTextStyle(
             TextAnimator.Style(fVar = fidgetFontVariation),
             TextAnimator.Animation(
                 animate = isAnimationEnabled,
                 duration = FIDGET_ANIMATION_DURATION,
                 interpolator = FIDGET_INTERPOLATOR,
+                startDelay = delay,
                 onAnimationEnd = {
                     textAnimator.setTextStyle(
                         TextAnimator.Style(fVar = lsFontVariation),
@@ -430,8 +432,10 @@ open class SimpleDigitalClockTextView(
 
     /** Returns the interpolated text bounding rect based on interpolation progress */
     private fun getInterpolatedTextBounds(progress: Float = getInterpolatedProgress()): RectF {
-        if (!textAnimator.isRunning || progress >= 1f) {
-            return RectF(targetTextBounds)
+        if (progress <= 0f) {
+            return prevTextBounds
+        } else if (!textAnimator.isRunning || progress >= 1f) {
+            return targetTextBounds
         }
 
         return RectF().apply {
