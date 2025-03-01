@@ -21,6 +21,7 @@ import com.android.systemui.dagger.qualifiers.Default
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.core.CommandQueueInitializer
 import com.android.systemui.statusbar.core.MultiDisplayStatusBarInitializerStore
+import com.android.systemui.statusbar.core.MultiDisplayStatusBarOrchestratorStore
 import com.android.systemui.statusbar.core.MultiDisplayStatusBarStarter
 import com.android.systemui.statusbar.core.SingleDisplayStatusBarInitializerStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -190,6 +191,20 @@ interface StatusBarPhoneModule {
         @ClassKey(AutoHideControllerStore::class)
         fun storeAsCoreStartable(
             multiDisplayLazy: Lazy<MultiDisplayAutoHideControllerStore>
+        ): CoreStartable {
+            return if (StatusBarConnectedDisplays.isEnabled) {
+                multiDisplayLazy.get()
+            } else {
+                CoreStartable.NOP
+            }
+        }
+
+        @Provides
+        @SysUISingleton
+        @IntoMap
+        @ClassKey(MultiDisplayStatusBarOrchestratorStore::class)
+        fun orchestratorStoreAsCoreStartable(
+            multiDisplayLazy: Lazy<MultiDisplayStatusBarOrchestratorStore>
         ): CoreStartable {
             return if (StatusBarConnectedDisplays.isEnabled) {
                 multiDisplayLazy.get()
