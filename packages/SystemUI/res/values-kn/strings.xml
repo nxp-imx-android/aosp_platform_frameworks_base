@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ಎಡ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ಬಲ"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ಪ್ರತ್ಯೇಕ ಎಡ ಮತ್ತು ಬಲ ಕಂಟ್ರೋಲ್‌ಗಳಿಗಾಗಿ ವಿಸ್ತರಿಸಿ"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ಯೂನಿಫೈಡ್ ಕಂಟ್ರೋಲ್‌ಗಾಗಿ ಕುಗ್ಗಿಸಿ"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್ ಅನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ"</string>
@@ -1568,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ಅಪರಿಚಿತ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"ಎಲ್ಲಾ ಟೈಲ್‌ಗಳನ್ನು ರೀಸೆಟ್ ಮಾಡಬೇಕೆ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ಎಲ್ಲಾ ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಟೈಲ್‌ಗಳನ್ನು ಸಾಧನದ ಮೂಲ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ರೀಸೆಟ್ ಮಾಡಲಾಗುತ್ತದೆ"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

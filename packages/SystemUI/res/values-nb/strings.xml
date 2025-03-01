@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Omgivelser"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Venstre"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Høyre"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Utvid til separate kontroller for venstre og høyre"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Skjul til samlet kontroll"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Kutt lyden for omgivelsene"</string>
@@ -991,8 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Vis ikoner for varsler med lav prioritet"</string>
     <string name="other" msgid="429768510980739978">"Annet"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"bytt størrelse på brikken"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"fjerne infobrikken"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"legge til en brikke på den siste posisjonen"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Flytt infobrikken"</string>
@@ -1545,10 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"For å se nylige apper, sveip opp og hold med tre fingre på styreflaten"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"For å se alle appene dine, trykk på handlingstasten på tastaturet"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Fjernet"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Lås opp for å se"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Lås opp for å se koden"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Kontekstuell opplæring"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Bruk styreflaten for å gå tilbake"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Sveip til venstre eller høyre med tre fingre. Trykk for å lære flere bevegelser."</string>
@@ -1571,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Ukjent"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vil du tilbakestille alle brikkene?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Alle brikker for hurtiginnstillinger tilbakestilles til enhetens opprinnelige innstillinger"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"जवळपासचे"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"डावे"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"उजवे"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"डाव्या आणि उजव्या स्वतंत्र नियंत्रणांचा विस्तार करा"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"युनिफाइड नियंत्रणासाठी कोलॅप्स करा"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"जवळपासचे आवाज म्यूट करा"</string>
@@ -696,7 +702,7 @@
     <string name="screen_pinning_start" msgid="7483998671383371313">"ॲप पिन केले"</string>
     <string name="screen_pinning_exit" msgid="4553787518387346893">"ॲप अनपिन केले"</string>
     <string name="stream_voice_call" msgid="7468348170702375660">"कॉल"</string>
-    <string name="stream_system" msgid="7663148785370565134">"सिस्टम"</string>
+    <string name="stream_system" msgid="7663148785370565134">"सिस्टीम"</string>
     <string name="stream_ring" msgid="7550670036738697526">"रिंग"</string>
     <string name="stream_music" msgid="2188224742361847580">"मीडिया"</string>
     <string name="stream_alarm" msgid="16058075093011694">"अलार्म"</string>
@@ -741,9 +747,9 @@
     <string name="media_output_label_title" msgid="872824698593182505">"<xliff:g id="LABEL">%s</xliff:g> वर प्ले करत आहे"</string>
     <string name="media_output_title_without_playing" msgid="3825663683169305013">"यावर ऑडिओ प्ले होईल"</string>
     <string name="media_output_title_ongoing_call" msgid="208426888064112006">"यावर कॉल करत आहे"</string>
-    <string name="system_ui_tuner" msgid="1471348823289954729">"सिस्टम UI ट्युनर"</string>
+    <string name="system_ui_tuner" msgid="1471348823289954729">"सिस्टीम UI ट्युनर"</string>
     <string name="status_bar" msgid="4357390266055077437">"स्टेटस बार"</string>
-    <string name="demo_mode" msgid="263484519766901593">"सिस्टम UI डेमो मोड"</string>
+    <string name="demo_mode" msgid="263484519766901593">"सिस्टीम UI डेमो मोड"</string>
     <string name="enable_demo_mode" msgid="3180345364745966431">"डेमो मोड सुरू करा"</string>
     <string name="show_demo_mode" msgid="3677956462273059726">"डेमो मोड दर्शवा"</string>
     <string name="status_bar_ethernet" msgid="5690979758988647484">"इथरनेट"</string>
@@ -781,12 +787,12 @@
     <string name="accessibility_signal_full" msgid="1519655809806462972">"पूर्ण सिग्नल"</string>
     <string name="accessibility_managed_profile" msgid="4703836746209377356">"कार्य प्रोफाईल"</string>
     <string name="tuner_warning_title" msgid="7721976098452135267">"सर्वांसाठी नाही तर काहींसाठी मजेदार असू शकते"</string>
-    <string name="tuner_warning" msgid="1861736288458481650">"सिस्टम UI ट्युनर आपल्‍याला Android यूझर इंटरफेस ट्विक आणि कस्टमाइझ करण्‍याचे अनेक प्रकार देते. ही प्रयोगात्मक वैशिष्‍ट्ये बदलू शकतात, खंडित होऊ शकतात किंवा भविष्‍यातील रिलीज मध्‍ये कदाचित दिसणार नाहीत. सावधगिरी बाळगून पुढे सुरू ठेवा."</string>
+    <string name="tuner_warning" msgid="1861736288458481650">"सिस्टीम UI ट्युनर आपल्याला Android यूझर इंटरफेस ट्विक आणि कस्टमाइझ करण्याचे अनेक प्रकार देते. ही प्रयोगात्मक वैशिष्ट्ये बदलू शकतात, खंडित होऊ शकतात किंवा भविष्यातील रिलीझ मध्ये कदाचित दिसणार नाहीत. सावधगिरी बाळगून पुढे सुरू ठेवा."</string>
     <string name="tuner_persistent_warning" msgid="230466285569307806">"ही प्रयोगात्मक वैशिष्‍ट्ये बदलू शकतात, खंडित होऊ शकतात किंवा भविष्‍यातील रिलीज मध्‍ये कदाचित दिसणार नाहीत."</string>
     <string name="got_it" msgid="477119182261892069">"समजले"</string>
-    <string name="tuner_toast" msgid="3812684836514766951">"अभिनंदन! सिस्टम UI ट्युनर सेटिंग्जमध्‍ये जोडले गेले आहे"</string>
+    <string name="tuner_toast" msgid="3812684836514766951">"अभिनंदन! सिस्टीम UI ट्युनर सेटिंग्जमध्ये जोडले गेले आहे"</string>
     <string name="remove_from_settings" msgid="633775561782209994">"सेटिंग्ज मधून काढा"</string>
-    <string name="remove_from_settings_prompt" msgid="551565437265615426">"सेटिंग्ज मधून सिस्टम UI ट्युनर काढून त्याची सर्व वैशिष्ट्‍ये वापरणे थांबवायचे?"</string>
+    <string name="remove_from_settings_prompt" msgid="551565437265615426">"सेटिंग्ज मधून सिस्टीम UI ट्युनर काढून त्याची सर्व वैशिष्ट्ये वापरणे थांबवायचे?"</string>
     <string name="enable_bluetooth_title" msgid="866883307336662596">"ब्लूटूथ सुरू करायचे?"</string>
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"तुमचा कीबोर्ड तुमच्या टॅबलेटसह कनेक्ट करण्यासाठी, तुम्ही प्रथम ब्लूटूथ सुरू करणे आवश्यक आहे."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सुरू करा"</string>
@@ -1568,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"अज्ञात"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"सर्व टाइल रीसेट करायच्या?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"सर्व क्विक सेटिंग्ज टाइल डिव्हाइसच्या मूळ सेटिंग्जवर रीसेट केल्या जातील"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

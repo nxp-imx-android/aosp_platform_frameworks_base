@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Connesso a <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Connesso a: <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Espandi il gruppo."</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Aggiungi il dispositivo al gruppo."</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Rimuovi il dispositivo dal gruppo."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Apri l\'applicazione."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Non connesso."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Ingresso"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Apparecchi acustici"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Attivazione…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"Impossibile regolare la luminosità perché è controllata dall\'app in primo piano."</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Rotazione automatica"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Rotazione automatica dello schermo"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Posizione"</string>
@@ -426,6 +423,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Audio ambientale"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Sinistra"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Destra"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Espandi controlli separati a sinistra e a destra"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Comprimi in controllo unificato"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Disattiva audio ambientale"</string>
@@ -1568,4 +1571,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Sconosciuti"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reimpostare tutti i riquadri?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Tutti i riquadri Impostazioni rapide verranno reimpostati sulle impostazioni originali del dispositivo"</string>
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
