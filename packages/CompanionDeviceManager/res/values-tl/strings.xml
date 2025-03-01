@@ -51,10 +51,8 @@
     <string name="consent_no" msgid="2640796915611404382">"Huwag payagan"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"Kanselahin"</string>
     <string name="consent_back" msgid="2560683030046918882">"Bumalik"</string>
-    <!-- no translation found for downward_arrow_action (2327165938832076333) -->
-    <skip />
-    <!-- no translation found for downward_arrow (2292427714411156088) -->
-    <skip />
+    <string name="downward_arrow_action" msgid="2327165938832076333">"Mag-scroll pababa sa listahan"</string>
+    <string name="downward_arrow" msgid="2292427714411156088">"Pababang arrow"</string>
     <string name="permission_expand" msgid="893185038020887411">"I-expand ang <xliff:g id="PERMISSION_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_collapse" msgid="3320833884220844084">"I-collapse ang <xliff:g id="PERMISSION_TYPE">%1$s</xliff:g>"</string>
     <string name="permission_sync_confirmation_title" msgid="4409622174437248702">"Bigyan ang mga app sa &lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ng mga pahintulot na mayroon din sa &lt;strong&gt;<xliff:g id="PRIMARY_DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
