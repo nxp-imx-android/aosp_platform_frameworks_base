@@ -86,8 +86,23 @@ interface PerDisplayRepository<T> {
     /** Gets the cached instance or create a new one for a given display. */
     operator fun get(displayId: Int): T?
 
+    /** List of display ids for which this repository has an instance. */
+    val displayIds: Set<Int>
+
     /** Debug name for this repository, mainly for tracing and logging. */
     val debugName: String
+
+    /**
+     * Invokes the specified action on each instance held by this repository.
+     *
+     * The action will receive the displayId and the instance associated with that display.
+     * If there is no instance for the display, the action is not called.
+     */
+    fun forEachInstance(action: (Int, T) -> Unit) {
+        displayIds.forEach { displayId ->
+            get(displayId)?.let { instance -> action(displayId, instance) }
+        }
+    }
 }
 
 /**
@@ -118,6 +133,9 @@ constructor(
     init {
         backgroundApplicationScope.launch("$debugName#start") { start() }
     }
+
+    override val displayIds: Set<Int>
+        get() = perDisplayInstances.keys
 
     private suspend fun start() {
         dumpManager.registerDumpable(this)
@@ -186,6 +204,7 @@ class DefaultDisplayOnlyInstanceRepositoryImpl<T>(
     private val lazyDefaultDisplayInstance by lazy {
         instanceProvider.createInstance(Display.DEFAULT_DISPLAY)
     }
+    override val displayIds: Set<Int> = setOf(Display.DEFAULT_DISPLAY)
 
     override fun get(displayId: Int): T? = lazyDefaultDisplayInstance
 }

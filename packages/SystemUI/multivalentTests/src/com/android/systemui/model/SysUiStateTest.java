@@ -28,6 +28,8 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import android.view.Display;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
@@ -53,9 +55,11 @@ public class SysUiStateTest extends SysuiTestCase {
     private SysUiState mFlagsContainer;
     private SceneContainerPlugin mSceneContainerPlugin;
     private DumpManager mDumpManager;
+    private SysUIStateDispatcher mSysUIStateDispatcher;
 
     private SysUiState createInstance(int displayId) {
-        var sysuiState = new SysUiStateImpl(displayId, mSceneContainerPlugin, mDumpManager);
+        var sysuiState = new SysUiStateImpl(displayId, mSceneContainerPlugin, mDumpManager,
+                mSysUIStateDispatcher);
         sysuiState.addCallback(mCallback);
         return sysuiState;
     }
@@ -67,6 +71,7 @@ public class SysUiStateTest extends SysuiTestCase {
         mSceneContainerPlugin = mKosmos.getSceneContainerPlugin();
         mCallback = mock(SysUiState.SysUiStateCallback.class);
         mDumpManager = mock(DumpManager.class);
+        mSysUIStateDispatcher = mKosmos.getSysUIStateDispatcher();
         mFlagsContainer = createInstance(DEFAULT_DISPLAY);
     }
 
@@ -74,7 +79,7 @@ public class SysUiStateTest extends SysuiTestCase {
     public void addSingle_setFlag() {
         setFlags(FLAG_1);
 
-        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1, DEFAULT_DISPLAY);
     }
 
     @Test
@@ -82,8 +87,8 @@ public class SysUiStateTest extends SysuiTestCase {
         setFlags(FLAG_1);
         setFlags(FLAG_2);
 
-        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1);
-        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1 | FLAG_2);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1, DEFAULT_DISPLAY);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1 | FLAG_2, DEFAULT_DISPLAY);
     }
 
     @Test
@@ -92,9 +97,9 @@ public class SysUiStateTest extends SysuiTestCase {
         setFlags(FLAG_2);
         mFlagsContainer.setFlag(FLAG_1, false).commitUpdate(DISPLAY_ID);
 
-        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1);
-        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1 | FLAG_2);
-        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_2);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1, DEFAULT_DISPLAY);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1 | FLAG_2, DEFAULT_DISPLAY);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_2, DEFAULT_DISPLAY);
     }
 
     @Test
@@ -102,7 +107,7 @@ public class SysUiStateTest extends SysuiTestCase {
         setFlags(FLAG_1, FLAG_2, FLAG_3, FLAG_4);
 
         int expected = FLAG_1 | FLAG_2 | FLAG_3 | FLAG_4;
-        verify(mCallback, times(1)).onSystemUiStateChanged(expected);
+        verify(mCallback, times(1)).onSystemUiStateChanged(expected, DEFAULT_DISPLAY);
     }
 
     @Test
@@ -111,9 +116,9 @@ public class SysUiStateTest extends SysuiTestCase {
         mFlagsContainer.setFlag(FLAG_2, false).commitUpdate(DISPLAY_ID);
 
         int expected1 = FLAG_1 | FLAG_2 | FLAG_3 | FLAG_4;
-        verify(mCallback, times(1)).onSystemUiStateChanged(expected1);
+        verify(mCallback, times(1)).onSystemUiStateChanged(expected1, DEFAULT_DISPLAY);
         int expected2 = FLAG_1 | FLAG_3 | FLAG_4;
-        verify(mCallback, times(1)).onSystemUiStateChanged(expected2);
+        verify(mCallback, times(1)).onSystemUiStateChanged(expected2, DEFAULT_DISPLAY);
     }
 
     @Test
@@ -122,25 +127,16 @@ public class SysUiStateTest extends SysuiTestCase {
         setFlags(FLAG_1, FLAG_2, FLAG_3, FLAG_4);
 
         int expected = FLAG_1 | FLAG_2 | FLAG_3 | FLAG_4;
-        verify(mCallback, times(0)).onSystemUiStateChanged(expected);
+        verify(mCallback, times(0)).onSystemUiStateChanged(expected, DEFAULT_DISPLAY);
     }
 
     @Test
     public void setFlag_receivedForDefaultDisplay() {
         setFlags(FLAG_1);
 
-        verify(mCallback, times(1)).onSystemUiStateChangedForDisplay(FLAG_1, DEFAULT_DISPLAY);
+        verify(mCallback, times(1)).onSystemUiStateChanged(FLAG_1, DEFAULT_DISPLAY);
     }
 
-    @Test
-    public void setFlag_externalDisplayInstance_defaultDisplayCallbackNotPropagated() {
-        var instance = createInstance(/* displayId = */ 2);
-        reset(mCallback);
-        setFlags(instance, FLAG_1);
-
-        verify(mCallback, times(1)).onSystemUiStateChangedForDisplay(FLAG_1, /* displayId= */ 2);
-        verify(mCallback, never()).onSystemUiStateChanged(FLAG_1);
-    }
 
     @Test
     public void init_registersWithDumpManager() {

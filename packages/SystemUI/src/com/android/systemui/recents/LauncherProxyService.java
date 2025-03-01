@@ -656,11 +656,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private final SysUiStateCallback mSysUiStateCallback =
             new SysUiStateCallback() {
                 @Override
-                public void onSystemUiStateChanged(long sysUiFlags) {
-                }
-
-                @Override
-                public void onSystemUiStateChangedForDisplay(long sysUiFlags, int displayId) {
+                public void onSystemUiStateChanged(long sysUiFlags, int displayId) {
                     notifySystemUiStateFlags(sysUiFlags, displayId);
                 }
             };

@@ -53,6 +53,7 @@ import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenToGlanceableHubTransitionViewModel
 import com.android.systemui.model.sceneContainerPlugin
+import com.android.systemui.model.sysUIStateDispatcher
 import com.android.systemui.model.sysUiState
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
@@ -202,4 +203,5 @@ class KosmosJavaAdapter() {
     val windowRootViewBlurInteractor by lazy { kosmos.windowRootViewBlurInteractor }
     val sysuiState by lazy { kosmos.sysUiState }
     val displayTracker by lazy { kosmos.displayTracker }
+    val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
 }
