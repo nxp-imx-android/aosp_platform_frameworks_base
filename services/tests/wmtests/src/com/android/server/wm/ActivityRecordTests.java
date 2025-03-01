@@ -724,6 +724,7 @@ public class ActivityRecordTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testOrientation_allowFixedOrientationForCameraCompatInFreeformWindowing() {
         final ActivityRecord activity = setupDisplayAndActivityForCameraCompat(
