@@ -30,6 +30,7 @@ import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
@@ -63,17 +64,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.center
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -93,6 +101,53 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaOutputSwitcherChipVi
 import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSeekBarViewModel
+import kotlin.math.max
+
+/** Renders the background of a card, loading the artwork and showing an overlay on top of it. */
+@Composable
+private fun CardBackground(imageLoader: suspend () -> ImageBitmap, modifier: Modifier = Modifier) {
+    var image: ImageBitmap? by remember { mutableStateOf(null) }
+    LaunchedEffect(imageLoader) {
+        image = null
+        image = imageLoader()
+    }
+
+    val gradientBaseColor = MaterialTheme.colorScheme.onSurface
+    Box(
+        modifier =
+            modifier.drawWithContent {
+                // Draw the content of the box (loaded art or placeholder).
+                drawContent()
+
+                if (image != null) {
+                    // Then draw the overlay.
+                    drawRect(
+                        brush =
+                            Brush.radialGradient(
+                                0f to gradientBaseColor.copy(alpha = 0.65f),
+                                1f to gradientBaseColor.copy(alpha = 0.75f),
+                                center = size.center,
+                                radius = max(size.width, size.height) / 2,
+                            )
+                    )
+                }
+            }
+    ) {
+        image?.let { loadedImage ->
+            // Loaded art.
+            Image(
+                bitmap = loadedImage,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize(),
+            )
+        }
+            ?: run {
+                // Placeholder.
+                Box(Modifier.background(MaterialTheme.colorScheme.onSurface).matchParentSize())
+            }
+    }
+}
 
 /**
  * Renders the navigation UI (seek bar and/or previous/next buttons).
