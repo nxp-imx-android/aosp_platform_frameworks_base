@@ -18,17 +18,26 @@ package com.android.systemui.media.remedia.ui.viewmodel
 
 import androidx.annotation.FloatRange
 
-/** Models UI state for the seek bar. */
-sealed interface MediaSeekBarViewModel {
+/**
+ * Models UI state for the navigation component of the UI (potentially containing the seek bar and
+ * the buttons to its left and right).
+ */
+sealed interface MediaNavigationViewModel {
 
     /** The seek bar should be showing. */
     data class Showing(
         /** The progress to show on the seek bar, between `0` and `1`. */
         @FloatRange(from = 0.0, to = 1.0) val progress: Float,
-        /** The previous button; or `null` if it should be absent in the UI. */
-        val previous: MediaSecondaryActionViewModel?,
-        /** The next button; or `null` if it should be absent in the UI. */
-        val next: MediaSecondaryActionViewModel?,
+        /**
+         * The action button to the left of the seek bar; or `null` if it should be absent in the
+         * UI.
+         */
+        val left: MediaSecondaryActionViewModel,
+        /**
+         * The action button to the right of the seek bar; or `null` if it should be absent in the
+         * UI.
+         */
+        val right: MediaSecondaryActionViewModel,
         /**
          * Whether the portion of the seek bar track before the thumb should show the squiggle
          * animation.
@@ -50,8 +59,8 @@ sealed interface MediaSeekBarViewModel {
          * the seek bar). The position/progress should be committed.
          */
         val onScrubFinished: () -> Unit,
-    ) : MediaSeekBarViewModel
+    ) : MediaNavigationViewModel
 
     /** The seek bar should be hidden. */
-    data object Hidden : MediaSeekBarViewModel
+    data object Hidden : MediaNavigationViewModel
 }

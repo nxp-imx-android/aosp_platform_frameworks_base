@@ -19,6 +19,7 @@ package com.android.systemui.media.remedia.ui.viewmodel
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
 
 /** Models UI state for a media card. */
 @Stable
@@ -42,9 +43,11 @@ interface MediaCardViewModel {
 
     val subtitle: String
 
-    val playPauseAction: MediaPlayPauseActionViewModel
+    val actionButtonLayout: MediaCardActionButtonLayout
 
-    val seekBar: MediaSeekBarViewModel
+    val playPauseAction: MediaPlayPauseActionViewModel?
+
+    val navigation: MediaNavigationViewModel
 
     val additionalActions: List<MediaSecondaryActionViewModel>
 
@@ -53,7 +56,7 @@ interface MediaCardViewModel {
     val outputSwitcherChips: List<MediaOutputSwitcherChipViewModel>
 
     /** Simple icon-only version of the output switcher for use in compact UIs. */
-    val outputSwitcherChipButton: MediaSecondaryActionViewModel
+    val outputSwitcherChipButton: MediaSecondaryActionViewModel.Action
 
     val onClick: () -> Unit
 
