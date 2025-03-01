@@ -339,7 +339,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     private void onDiscoveryStateChanged(DiscoveryState newState) {
         switch (newState) {
             case IN_PROGRESS: {
-                mTimeoutMessage.setText(null);
+                mTimeoutMessage.setVisibility(View.GONE);
                 mProgressBar.setIndeterminate(true);
                 break;
             }
@@ -351,6 +351,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
                         R.string.message_discovery_soft_timeout,
                         deviceType, discoveryType, profile);
                 mTimeoutMessage.setText(message);
+                mTimeoutMessage.setVisibility(View.VISIBLE);
                 break;
             }
             case FINISHED_STOPPED: {
@@ -363,6 +364,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
                         }
                     }
                     mTimeoutMessage.setText(getString(R.string.message_discovery_hard_timeout));
+                    mTimeoutMessage.setVisibility(View.VISIBLE);
                 }
                 mProgressBar.setIndeterminate(false);
                 break;
@@ -528,6 +530,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         mVendorHeader.setVisibility(View.VISIBLE);
         mProfileIcon.setVisibility(View.GONE);
         mDeviceListRecyclerView.setVisibility(View.GONE);
+        mTimeoutMessage.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
         mBorderBottom.setVisibility(View.GONE);
     }

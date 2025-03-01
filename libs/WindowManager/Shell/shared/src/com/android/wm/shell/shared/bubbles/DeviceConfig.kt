@@ -49,19 +49,29 @@ data class DeviceConfig(
                     or WindowInsets.Type.displayCutout())
             val windowBounds = windowMetrics.bounds
             val config: Configuration = context.resources.configuration
-            val isLargeScreen = config.smallestScreenWidthDp >= LARGE_SCREEN_MIN_EDGE_DP
-            val largestEdgeDp = max(config.screenWidthDp, config.screenHeightDp)
-            val isSmallTablet = isLargeScreen && largestEdgeDp < SMALL_TABLET_MAX_EDGE_DP
             val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
             val isRtl = context.resources.configuration.layoutDirection == LAYOUT_DIRECTION_RTL
             return DeviceConfig(
-                    isLargeScreen = isLargeScreen,
-                    isSmallTablet = isSmallTablet,
+                    isLargeScreen = isLargeScreen(config),
+                    isSmallTablet = isSmallTablet(context),
                     isLandscape = isLandscape,
                     isRtl = isRtl,
                     windowBounds = windowBounds,
                     insets = insets
             )
         }
+
+        @JvmStatic
+        fun isSmallTablet(context: Context): Boolean {
+            val config: Configuration = context.resources.configuration
+            if (!isLargeScreen(config)) {
+                return false
+            }
+            val largestEdgeDp = max(config.screenWidthDp, config.screenHeightDp)
+            return largestEdgeDp < SMALL_TABLET_MAX_EDGE_DP
+        }
+
+        private fun isLargeScreen(config: Configuration) =
+            config.smallestScreenWidthDp >= LARGE_SCREEN_MIN_EDGE_DP
     }
 }

@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Mazingira"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kushoto"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Kulia"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Panua iwe vidhibiti vilivyotenganishwa kushoto na kulia"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Kunja iwe kidhibiti cha pamoja"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Zima sauti ya mazingira"</string>
@@ -991,8 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Onyesha aikoni za arifa zisizo muhimu"</string>
     <string name="other" msgid="429768510980739978">"Nyingine"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ubadilishe ukubwa wa kigae"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ondoa kigae"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"weka kigae kwenye nafasi ya mwisho"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Hamisha kigae"</string>
@@ -1545,10 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Telezesha vidole vitatu juu na ushikilie kwenye padi ya kugusa ili uangalie programu za hivi majuzi"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Bonyeza kitufe cha vitendo kwenye kibodi yako ili uangalie programu zako zote"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Maandishi yameondolewa"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Fungua ili uone"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Fungua ili uone msimbo"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Elimu inayolingana na muktadha"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Kutumia padi yako ya kugusa ili kurudi nyuma"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Telezesha vidole vitatu kulia au kushoto. Gusa ili upate maelezo kuhusu miguso zaidi."</string>
@@ -1571,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Visivyojulikana"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Ungependa kubadilisha vigae vyote?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Vigae vyote vya Mipangilio ya Haraka vitabadilishwa kuwa katika mipangilio halisi ya kifaa"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

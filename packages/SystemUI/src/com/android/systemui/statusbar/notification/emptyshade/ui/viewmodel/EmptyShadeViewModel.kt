@@ -124,7 +124,7 @@ constructor(
     }
 
     val footer: FooterMessageViewModel by lazy {
-        ModesEmptyShadeFix.assertInNewMode()
+        ModesEmptyShadeFix.unsafeAssertInNewMode()
         FooterMessageViewModel(
             messageId = R.string.unlock_to_see_notif_text,
             iconId = R.drawable.ic_friction_lock_closed,
@@ -133,7 +133,7 @@ constructor(
     }
 
     val onClick: Flow<SettingsIntent> by lazy {
-        ModesEmptyShadeFix.assertInNewMode()
+        ModesEmptyShadeFix.unsafeAssertInNewMode()
         combine(
                 zenModeInteractor.modesHidingNotifications,
                 notificationSettingsInteractor.isNotificationHistoryEnabled,

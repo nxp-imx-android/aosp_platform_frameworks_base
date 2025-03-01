@@ -64,6 +64,18 @@ import java.util.List;
 public class SupervisionService extends ISupervisionManager.Stub {
     private static final String LOG_TAG = "SupervisionService";
 
+    /**
+     * Activity action: Requests user confirmation of supervision credentials.
+     *
+     * <p>Use {@link Activity#startActivityForResult} to launch this activity. The result will be
+     * {@link Activity#RESULT_OK} if credentials are valid.
+     *
+     * <p>If supervision credentials are not configured, this action initiates the setup flow.
+     */
+    @VisibleForTesting
+    static final String ACTION_CONFIRM_SUPERVISION_CREDENTIALS =
+            "android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS";
+
     // TODO(b/362756788): Does this need to be a LockGuard lock?
     private final Object mLockDoNoUseDirectly = new Object();
 
@@ -78,25 +90,6 @@ public class SupervisionService extends ISupervisionManager.Stub {
         mContext = context.createAttributionContext(LOG_TAG);
         mInjector = new Injector(context);
         mInjector.getUserManagerInternal().addUserLifecycleListener(new UserLifecycleListener());
-    }
-
-    /**
-     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
-     * launch the activity to verify supervision credentials.
-     *
-     * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this
-     * method is called, the launched activity still need to perform validity checks as the
-     * supervision state can change when it's launched. A null intent is returned if supervision is
-     * disabled at the time of this method call.
-     *
-     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful verification
-     * of the supervision credentials.
-     */
-    @Override
-    @Nullable
-    public Intent createConfirmSupervisionCredentialsIntent() {
-        // TODO(b/392961554): Implement createAuthenticationIntent API
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -137,6 +130,31 @@ public class SupervisionService extends ISupervisionManager.Stub {
         synchronized (getLockObject()) {
             return getUserDataLocked(userId).supervisionAppPackage;
         }
+    }
+
+    /**
+     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
+     * launch the activity to verify supervision credentials.
+     *
+     * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this
+     * method is called, the launched activity still need to perform validity checks as the
+     * supervision state can change when it's launched. A null intent is returned if supervision is
+     * disabled at the time of this method call.
+     *
+     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful verification
+     * of the supervision credentials.
+     */
+    @Override
+    @Nullable
+    public Intent createConfirmSupervisionCredentialsIntent() {
+        // TODO(b/392961554): (1) Return null if supervision is not enabled.
+        // (2) check if PIN exists before return a valid intent.
+        enforceAnyPermission(QUERY_USERS, MANAGE_USERS);
+        final Intent intent = new Intent(ACTION_CONFIRM_SUPERVISION_CREDENTIALS);
+        // explicitly set the package for security
+        intent.setPackage("com.android.settings");
+
+        return intent;
     }
 
     @Override

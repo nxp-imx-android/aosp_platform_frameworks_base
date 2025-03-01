@@ -137,7 +137,7 @@ constructor(
                 )
         else MutableStateFlow<ZenMode?>(null)
         get() {
-            ModesUi.assertInNewMode()
+            ModesUi.unsafeAssertInNewMode()
             return field
         }
 

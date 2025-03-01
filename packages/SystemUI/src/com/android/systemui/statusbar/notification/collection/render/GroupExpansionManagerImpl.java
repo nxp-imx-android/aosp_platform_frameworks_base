@@ -162,7 +162,7 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
 
     @Override
     public boolean isGroupExpanded(EntryAdapter entry) {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         ExpandableNotificationRow parent = entry.getRow().getNotificationParent();
         return mExpandedCollections.contains(entry)
                 || (parent != null && mExpandedCollections.contains(parent.getEntryAdapter()));
@@ -170,7 +170,7 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
 
     @Override
     public void setGroupExpanded(EntryAdapter groupRoot, boolean expanded) {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         if (!groupRoot.isAttached()) {
             if (expanded) {
                 Log.wtf(TAG, "Cannot expand group that is not attached");
@@ -192,7 +192,7 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
 
     @Override
     public boolean toggleGroupExpansion(EntryAdapter groupRoot) {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         setGroupExpanded(groupRoot, !isGroupExpanded(groupRoot));
         return isGroupExpanded(groupRoot);
     }
@@ -231,7 +231,7 @@ public class GroupExpansionManagerImpl implements GroupExpansionManager, Dumpabl
     }
 
     private void sendOnGroupExpandedChange(EntryAdapter entry, boolean expanded) {
-        NotificationBundleUi.assertInNewMode();
+        NotificationBundleUi.unsafeAssertInNewMode();
         for (OnGroupExpansionChangeListener listener : mOnGroupChangeListeners) {
             listener.onGroupExpansionChange(entry.getRow(), expanded);
         }

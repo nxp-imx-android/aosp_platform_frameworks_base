@@ -18,29 +18,34 @@ package com.android.wm.shell.shared.bubbles
 
 import android.content.Context
 import android.graphics.Rect
-import android.view.View
+import android.graphics.RectF
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import androidx.core.animation.Animator
 import androidx.core.animation.AnimatorListenerAdapter
 import androidx.core.animation.ValueAnimator
+import com.android.wm.shell.shared.R
 
 /**
  * Manages animating drop targets in response to dragging bubble icons or bubble expanded views
  * across different drag zones.
  */
 class DropTargetManager(
-    context: Context,
+    private val context: Context,
     private val container: FrameLayout,
-    private val isLayoutRtl: Boolean,
     private val dragZoneChangedListener: DragZoneChangedListener,
 ) {
 
     private var state: DragState? = null
-    private val dropTargetView = View(context)
+    private val dropTargetView = DropTargetView(context)
     private var animator: ValueAnimator? = null
+    private var morphRect: RectF = RectF(0f, 0f, 0f, 0f)
+    private val isLayoutRtl = container.isLayoutRtl
 
     private companion object {
-        const val ANIMATION_DURATION_MS = 250L
+        const val MORPH_ANIM_DURATION = 250L
+        const val DROP_TARGET_ALPHA_IN_DURATION = 150L
+        const val DROP_TARGET_ALPHA_OUT_DURATION = 100L
     }
 
     /** Must be called when a drag gesture is starting. */
@@ -55,15 +60,10 @@ class DropTargetManager(
     private fun setupDropTarget() {
         if (dropTargetView.parent != null) container.removeView(dropTargetView)
         container.addView(dropTargetView, 0)
-        // TODO b/393173014: set elevation and background
         dropTargetView.alpha = 0f
-        dropTargetView.scaleX = 1f
-        dropTargetView.scaleY = 1f
-        dropTargetView.translationX = 0f
-        dropTargetView.translationY = 0f
-        // the drop target is added with a width and height of 1 pixel. when it gets resized, we use
-        // set its scale to the width and height of the bounds it should have to avoid layout passes
-        dropTargetView.layoutParams = FrameLayout.LayoutParams(/* width= */ 1, /* height= */ 1)
+        dropTargetView.elevation = context.resources.getDimension(R.dimen.drop_target_elevation)
+        // Match parent and the target is drawn within the view
+        dropTargetView.layoutParams = FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
     }
 
     /** Called when the user drags to a new location. */
@@ -80,9 +80,11 @@ class DropTargetManager(
 
     /** Called when the drag ended. */
     fun onDragEnded() {
+        val dropState = state ?: return
         startFadeAnimation(from = dropTargetView.alpha, to = 0f) {
             container.removeView(dropTargetView)
         }
+        dragZoneChangedListener.onDragEnded(dropState.currentDragZone)
         state = null
     }
 
@@ -92,10 +94,7 @@ class DropTargetManager(
         when {
             dropTargetBounds == null -> startFadeAnimation(from = dropTargetView.alpha, to = 0f)
             dropTargetView.alpha == 0f -> {
-                dropTargetView.translationX = dropTargetBounds.exactCenterX()
-                dropTargetView.translationY = dropTargetBounds.exactCenterY()
-                dropTargetView.scaleX = dropTargetBounds.width().toFloat()
-                dropTargetView.scaleY = dropTargetBounds.height().toFloat()
+                dropTargetView.update(RectF(dropTargetBounds))
                 startFadeAnimation(from = 0f, to = 1f)
             }
             else -> startMorphAnimation(dropTargetBounds)
@@ -104,7 +103,9 @@ class DropTargetManager(
 
     private fun startFadeAnimation(from: Float, to: Float, onEnd: (() -> Unit)? = null) {
         animator?.cancel()
-        val animator = ValueAnimator.ofFloat(from, to).setDuration(ANIMATION_DURATION_MS)
+        val duration =
+            if (from < to) DROP_TARGET_ALPHA_IN_DURATION else DROP_TARGET_ALPHA_OUT_DURATION
+        val animator = ValueAnimator.ofFloat(from, to).setDuration(duration)
         animator.addUpdateListener { _ -> dropTargetView.alpha = animator.animatedValue as Float }
         if (onEnd != null) {
             animator.doOnEnd(onEnd)
@@ -113,23 +114,20 @@ class DropTargetManager(
         animator.start()
     }
 
-    private fun startMorphAnimation(bounds: Rect) {
+    private fun startMorphAnimation(endBounds: Rect) {
         animator?.cancel()
         val startAlpha = dropTargetView.alpha
-        val startTx = dropTargetView.translationX
-        val startTy = dropTargetView.translationY
-        val startScaleX = dropTargetView.scaleX
-        val startScaleY = dropTargetView.scaleY
-        val animator = ValueAnimator.ofFloat(0f, 1f).setDuration(ANIMATION_DURATION_MS)
+        val startRect = dropTargetView.getRect()
+        val animator = ValueAnimator.ofFloat(0f, 1f).setDuration(MORPH_ANIM_DURATION)
         animator.addUpdateListener { _ ->
             val fraction = animator.animatedValue as Float
             dropTargetView.alpha = startAlpha + (1 - startAlpha) * fraction
-            dropTargetView.translationX = startTx + (bounds.exactCenterX() - startTx) * fraction
-            dropTargetView.translationY = startTy + (bounds.exactCenterY() - startTy) * fraction
-            dropTargetView.scaleX =
-                startScaleX + (bounds.width().toFloat() - startScaleX) * fraction
-            dropTargetView.scaleY =
-                startScaleY + (bounds.height().toFloat() - startScaleY) * fraction
+
+            morphRect.left = (startRect.left + (endBounds.left - startRect.left) * fraction)
+            morphRect.top = (startRect.top + (endBounds.top - startRect.top) * fraction)
+            morphRect.right = (startRect.right + (endBounds.right - startRect.right) * fraction)
+            morphRect.bottom = (startRect.bottom + (endBounds.bottom - startRect.bottom) * fraction)
+            dropTargetView.update(morphRect)
         }
         this.animator = animator
         animator.start()
@@ -160,6 +158,9 @@ class DropTargetManager(
 
         /** Called when the object was dragged to a different drag zone. */
         fun onDragZoneChanged(from: DragZone, to: DragZone)
+
+        /** Called when the drag has ended with the zone it ended in. */
+        fun onDragEnded(zone: DragZone)
     }
 
     private fun Animator.doOnEnd(onEnd: () -> Unit) {

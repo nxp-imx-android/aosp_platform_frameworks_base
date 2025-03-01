@@ -1226,6 +1226,14 @@ public class NotificationStackScrollLayout
     }
 
     @Override
+    public void setOccluded(boolean isOccluded) {
+        if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
+            return;
+        }
+        this.setVisibility(isOccluded ? View.INVISIBLE : View.VISIBLE);
+    }
+
+    @Override
     public void setScrollState(@NonNull ShadeScrollState scrollState) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             return;

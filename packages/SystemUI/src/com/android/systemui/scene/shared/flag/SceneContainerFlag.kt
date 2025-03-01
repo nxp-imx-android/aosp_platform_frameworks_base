@@ -83,7 +83,7 @@ object SceneContainerFlag {
      * testing.
      */
     @JvmStatic
-    inline fun assertInNewMode() = RefactorFlagUtils.assertInNewMode(isEnabled, DESCRIPTION)
+    inline fun unsafeAssertInNewMode() = RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, DESCRIPTION)
 
     /** Returns a developer-readable string that describes the current requirement list. */
     @JvmStatic

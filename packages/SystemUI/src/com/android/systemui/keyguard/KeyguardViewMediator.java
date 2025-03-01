@@ -2489,6 +2489,7 @@ public class KeyguardViewMediator implements CoreStartable,
                 Log.e(TAG,
                         "doKeyguard: already showing, but re-showing because we're interactive or "
                                 + "were in the middle of hiding.");
+                notifyLockNowCallback();
             }
         }
 

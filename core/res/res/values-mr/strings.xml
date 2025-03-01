@@ -115,8 +115,8 @@
     <string name="roamingText2" msgid="2834048284153110598">"रोमिंग दर्शक फ्लॅशिंग"</string>
     <string name="roamingText3" msgid="831690234035748988">"अतिपरिचित क्षेत्राबाहेर"</string>
     <string name="roamingText4" msgid="2171252529065590728">"इमारती बाहेर"</string>
-    <string name="roamingText5" msgid="4294671587635796641">"रोमिंग - प्राधान्यीकृत सिस्टम"</string>
-    <string name="roamingText6" msgid="5536156746637992029">"रोमिंग - उपलब्ध सिस्टम"</string>
+    <string name="roamingText5" msgid="4294671587635796641">"रोमिंग - प्राधान्य दिलेली सिस्टीम"</string>
+    <string name="roamingText6" msgid="5536156746637992029">"रोमिंग - उपलब्ध सिस्टीम"</string>
     <string name="roamingText7" msgid="1783303085512907706">"रोमिंग - युती भागीदार"</string>
     <string name="roamingText8" msgid="7774800704373721973">"रोमिंग - प्रीमियम भागीदार"</string>
     <string name="roamingText9" msgid="1933460020190244004">"रोमिंग - पूर्ण सेवा कार्यक्षमता"</string>
@@ -242,7 +242,7 @@
     <string name="silent_mode_silent" msgid="5079789070221150912">"रिंगर बंद"</string>
     <string name="silent_mode_vibrate" msgid="8821830448369552678">"रिंगर व्हायब्रेट"</string>
     <string name="silent_mode_ring" msgid="6039011004781526678">"रिंगर सुरू"</string>
-    <string name="reboot_to_update_title" msgid="2125818841916373708">"Android सिस्टम अपडेट"</string>
+    <string name="reboot_to_update_title" msgid="2125818841916373708">"Android सिस्टीम अपडेट"</string>
     <string name="reboot_to_update_prepare" msgid="6978842143587422365">"अपडेट करण्याची तयारी करत आहे…"</string>
     <string name="reboot_to_update_package" msgid="4644104795527534811">"अपडेट पॅकेज प्रक्रिया करत आहे…"</string>
     <string name="reboot_to_update_reboot" msgid="4474726009984452312">"रीस्टार्ट करत आहे..."</string>
@@ -274,7 +274,7 @@
     <string name="bugreport_option_interactive_title" msgid="7968287837902871289">"परस्परसंवादी अहवाल"</string>
     <string name="bugreport_option_interactive_summary" msgid="8493795476325339542">"बहुतांश प्रसंगांमध्ये याचा वापर करा. ते तुम्हाला अहवालाच्या प्रगतीचा मागोवा घेण्याची, समस्येविषयी आणखी तपाशील एंटर करण्याची आणि स्क्रीनशॉट घेण्याची अनुमती देते. ते कदाचित अहवाल देण्यासाठी बराच वेळ घेणारे कमी-वापरलेले विभाग वगळू शकते."</string>
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"संपूर्ण अहवाल"</string>
-    <string name="bugreport_option_full_summary" msgid="1975130009258435885">"तुमचे डिव्हाइस प्रतिसाद देत नाही किंवा खूप धीमे असते अथवा तुम्हाला सर्व अहवाल विभागांची आवश्यकता असते तेव्हा कमीतकमी सिस्टम हस्तक्षेपासाठी या पर्यायाचा वापर करा. तुम्हाला आणखी तपशील एंटर करण्याची किंवा अतिरिक्त स्क्रीनशॉट घेण्याची अनुमती देत नाही."</string>
+    <string name="bugreport_option_full_summary" msgid="1975130009258435885">"तुमचे डिव्हाइस प्रतिसाद देत नाही किंवा खूप धीमे असते अथवा तुम्हाला सर्व अहवाल विभागांची आवश्यकता असते तेव्हा कमीतकमी सिस्टीम हस्तक्षेपासाठी या पर्यायाचा वापर करा. तुम्हाला आणखी तपशील एंटर करण्याची किंवा अतिरिक्त स्क्रीनशॉट घेण्याची अनुमती देत नाही."</string>
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{बग रिपोर्टसाठी # सेकंदामध्ये स्क्रीनशॉट घेत आहे.}other{बग रिपोर्टसाठी # सेकंदांमध्ये स्क्रीनशॉट घेत आहे.}}"</string>
     <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"बग रिपोर्टसह घेतलेला स्क्रीनशॉट"</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"बग रिपोर्टसह स्क्रीनशॉट घेता आला नाही"</string>
@@ -374,7 +374,7 @@
     <string name="dream_preview_title" msgid="5570751491996100804">"पूर्वावलोकन, <xliff:g id="DREAM_NAME">%1$s</xliff:g>"</string>
     <string name="dream_accessibility_action_click" msgid="7392398629967797805">"डिसमिस करा"</string>
     <string name="permlab_statusBar" msgid="8798267849526214017">"स्टेटस बार अक्षम करा किंवा सुधारित करा"</string>
-    <string name="permdesc_statusBar" msgid="5809162768651019642">"स्टेटस बार अक्षम करण्यासाठी किंवा सिस्टम चिन्हे जोडण्यासाठी आणि काढण्यासाठी अ‍ॅप ला अनुमती देते."</string>
+    <string name="permdesc_statusBar" msgid="5809162768651019642">"स्टेटस बार बंद करण्यासाठी किंवा सिस्टीम आयकन जोडण्यासाठी आणि काढण्यासाठी ॲपला परवानगी देते."</string>
     <string name="permlab_statusBarService" msgid="2523421018081437981">"स्टेटस बार होऊ द्या"</string>
     <string name="permdesc_statusBarService" msgid="6652917399085712557">"स्टेटस बार होण्यासाठी अ‍ॅप ला अनुमती देते."</string>
     <string name="permlab_expandStatusBar" msgid="1184232794782141698">"स्‍टेटस बार विस्तृत करा/संकुचित करा"</string>
@@ -472,9 +472,9 @@
     <string name="permlab_writeSettings" msgid="8057285063719277394">"सिस्टीम सेटिंग्ज सुधारित करा"</string>
     <string name="permdesc_writeSettings" msgid="8293047411196067188">"सिस्टीमचा सेटिंग्ज डेटा सुधारित करण्यासाठी अ‍ॅपला अनुमती देते. दुर्भावनापूर्ण अ‍ॅप्स तुमच्या सिस्टीमचे कॉन्फिगरेशन दूषित करू शकतात."</string>
     <string name="permlab_receiveBootCompleted" msgid="6643339400247325379">"सुरूवातीस चालवा"</string>
-    <string name="permdesc_receiveBootCompleted" product="tablet" msgid="5565659082718177484">"जसे सिस्टम बूट करणे समाप्त करते तसे अ‍ॅप ला स्वतः सुरू करण्यास अनुमती देते. यामुळे टॅबलेट सुरू करण्यास वेळ लागू शकतो आणि नेहमी सुरू राहून एकंदर टॅबलेटला धीमे करण्यास अ‍ॅप ला अनुमती देते."</string>
-    <string name="permdesc_receiveBootCompleted" product="tv" msgid="4900842256047614307">"सिस्टम बूट होणे संपल्यावर ॲपला स्वतः सुरू होण्याची अनुमती देते. यामुळे तुमच्या Android TV डिव्हाइसला सुरू होण्यास वेळ लागू शकतो आणि नेहमी सुरू राहून एकंदर डिव्हाइसलाच धीमे करण्याची अनुमती ॲपला देते."</string>
-    <string name="permdesc_receiveBootCompleted" product="default" msgid="7912677044558690092">"जसे सिस्टम बूट करणे समाप्त करते तसे अ‍ॅप ला स्वतः सुरू करण्यास अनुमती देते. यामुळे फोन सुरू करण्यास वेळ लागू शकतो आणि नेहमी सुरू राहून एकंदर फोनला धीमे करण्यास अ‍ॅप ला अनुमती देते."</string>
+    <string name="permdesc_receiveBootCompleted" product="tablet" msgid="5565659082718177484">"जसे सिस्टीम बूट करणे समाप्त करते तसे ॲपला स्वतः सुरू करण्यास अनुमती देते. यामुळे टॅबलेट सुरू करण्यास वेळ लागू शकतो आणि नेहमी सुरू राहून एकंदर टॅबलेटला धीमे करण्यास ॲपला अनुमती देते."</string>
+    <string name="permdesc_receiveBootCompleted" product="tv" msgid="4900842256047614307">"सिस्टीम बूट होणे संपल्यावर ॲपला स्वतः सुरू होण्याची अनुमती देते. यामुळे तुमच्या Android TV डिव्हाइसला सुरू होण्यास वेळ लागू शकतो आणि नेहमी सुरू राहून एकंदर डिव्हाइसलाच धीमे करण्याची अनुमती ॲपला देते."</string>
+    <string name="permdesc_receiveBootCompleted" product="default" msgid="7912677044558690092">"जसे सिस्टीम बूट करणे समाप्त करते तसे ॲपला स्वतः सुरू करण्यास अनुमती देते. यामुळे फोन सुरू करण्यास वेळ लागू शकतो आणि नेहमी सुरू राहून एकंदर फोनला धीमे करण्यास ॲपला अनुमती देते."</string>
     <string name="permlab_broadcastSticky" msgid="4552241916400572230">"रोचक प्रसारण पाठवा"</string>
     <string name="permdesc_broadcastSticky" product="tablet" msgid="5058486069846384013">"रोचक प्रसारणे पाठविण्यासाठी अ‍ॅप ला अनुमती देते, जे प्रसारण समाप्त झाल्यानंतर देखील तसेच राहते. अत्याधिक वापरामुळे बरीच मेमरी वापरली जाऊन तो टॅब्लेटला धीमा किंवा अस्थिर करू शकतो."</string>
     <string name="permdesc_broadcastSticky" product="tv" msgid="2338185920171000650">"रोचक प्रसारणे पाठविण्यासाठी अ‍ॅपला अनुमती देते, जे प्रसारण समाप्त झाल्यानंतर देखील तसेच राहते. अत्याधिक वापरामुळे बरीच मेमरी वापरली जाऊन तो तुमच्या Android TV डिव्हाइसला धिमा किंवा अस्थिर करू शकतो."</string>
@@ -529,8 +529,8 @@
     <string name="permdesc_camera" msgid="5240801376168647151">"ॲप वापरात असताना, हे ॲप कॅमेरा वापरून फोटो काढू शकते आणि व्हिडिओ रेकॉर्ड करू शकते."</string>
     <string name="permlab_backgroundCamera" msgid="7549917926079731681">"बॅकग्राउंडमध्ये फोटो काढा आणि व्हिडिओ रेकॉर्ड करा"</string>
     <string name="permdesc_backgroundCamera" msgid="1615291686191138250">"हे ॲप कॅमेरा वापरून कधीही फोटो काढू शकते आणि व्हिडिओ रेकॉर्ड करू शकते."</string>
-    <string name="permlab_systemCamera" msgid="3642917457796210580">"फोटो आणि व्हिडिओ काढण्यासाठी ॲप्लिकेशन किंवा सेवेला सिस्टम कॅमेरे ॲक्सेस करण्याची अनुमती द्या"</string>
-    <string name="permdesc_systemCamera" msgid="5938360914419175986">"हे विशेषाधिकृत किंवा सिस्टम ॲप कधीही सिस्टम कॅमेरा वापरून फोटो आणि व्हिडिओ रेकॉर्ड करू शकते. ॲपकडे android.permission.CAMERA परवानगी असण्याचीदेखील आवश्यकता आहे"</string>
+    <string name="permlab_systemCamera" msgid="3642917457796210580">"फोटो आणि व्हिडिओ काढण्यासाठी ॲप्लिकेशन किंवा सेवेला सिस्टीम कॅमेरे ॲक्सेस करण्याची अनुमती द्या"</string>
+    <string name="permdesc_systemCamera" msgid="5938360914419175986">"हे विशेष महत्त्वाचे किंवा सिस्टीम ॲप कधीही सिस्टीम कॅमेरा वापरून फोटो आणि व्हिडिओ रेकॉर्ड करू शकते. ॲपकडे android.permission.CAMERA परवानगी असण्याचीदेखील आवश्यकता आहे"</string>
     <string name="permlab_cameraOpenCloseListener" msgid="5548732769068109315">"एखाद्या अ‍ॅप्लिकेशन किंवा सेवेला कॅमेरा डिव्हाइस सुरू किंवा बंद केल्याची कॉलबॅक मिळवण्याची अनुमती द्या."</string>
     <string name="permdesc_cameraOpenCloseListener" msgid="2002636131008772908">"कोणतेही कॅमेरा डिव्हाइस (कोणत्या अ‍ॅप्लिकेशनने) सुरू किंवा बंद केले जाते तेव्हा हे ॲप कॉलबॅक मिळवू शकते."</string>
     <string name="permlab_cameraHeadlessSystemUser" msgid="680194666834500050">"अ‍ॅप्लिकेशन किंवा सेवेला हेडलेस सिस्टीम वापरकर्ता म्हणून कॅमेरा अ‍ॅक्सेस करण्याची अनुमती द्या."</string>
@@ -548,7 +548,7 @@
     <string name="permdesc_readBasicPhoneState" msgid="828185691675460520">"यामुळे ॲपला डिव्हाइसची मूलभूत टेलिफोनी वैशिष्ट्ये अ‍ॅक्सेस करण्याची अनुमती मिळते."</string>
     <string name="permlab_manageOwnCalls" msgid="9033349060307561370">"प्रणालीच्या माध्यमातून कॉल रूट करा"</string>
     <string name="permdesc_manageOwnCalls" msgid="4431178362202142574">"कॉल करण्याचा अनुभव सुधारण्यासाठी ॲपला त्याचे कॉल प्रणालीच्या माध्यमातून रूट करू देते."</string>
-    <string name="permlab_callCompanionApp" msgid="3654373653014126884">"सिस्टम वापरून कॉल पहा आणि नियंत्रण ठेवा."</string>
+    <string name="permlab_callCompanionApp" msgid="3654373653014126884">"सिस्टीम वापरून कॉल पहा आणि नियंत्रण ठेवा."</string>
     <string name="permdesc_callCompanionApp" msgid="8474168926184156261">"डिव्हाइसवर येणार कॉल पाहण्यासाठी आणि नियंत्रित करण्यासाठी ॲपला अनुमती देते. यामध्ये कॉल करण्यासाठी कॉलचा नंबर आणि कॉलची स्थिती यासारख्या माहितीचा समावेश असतो."</string>
     <string name="permlab_exemptFromAudioRecordRestrictions" msgid="1164725468350759486">"ऑडिओ रेकॉर्ड प्रतिबंधांपासून मुक्त"</string>
     <string name="permdesc_exemptFromAudioRecordRestrictions" msgid="2425117015896871976">"ऑडिओ रेकॉर्ड करण्यासाठी प्रतिबंधांपासून ॲपला मुक्त करा."</string>
@@ -569,11 +569,11 @@
     <string name="permdesc_transmitIr" product="tv" msgid="3278506969529173281">"ॲपला Android TV डिव्हाइसचा इन्‍फ्रारेड ट्रान्‍समीटर वापरण्‍याची अनुमती देते."</string>
     <string name="permdesc_transmitIr" product="default" msgid="8484193849295581808">"अ‍ॅप ला फोनच्‍या इन्‍फ्रारेड ट्रान्‍समीटरचा वापर करण्‍याची अनुमती देते."</string>
     <string name="permlab_setWallpaper" msgid="6959514622698794511">"वॉलपेपर सेट करा"</string>
-    <string name="permdesc_setWallpaper" msgid="2973996714129021397">"सिस्टम वॉलपेपर सेट करण्यासाठी अ‍ॅप ला अनुमती देते."</string>
+    <string name="permdesc_setWallpaper" msgid="2973996714129021397">"सिस्टीम वॉलपेपर सेट करण्यासाठी ॲपला परवानगी देते."</string>
     <string name="permlab_accessHiddenProfile" msgid="8607094418491556823">"लपवलेल्या प्रोफाइल अ‍ॅक्सेस करा"</string>
     <string name="permdesc_accessHiddenProfile" msgid="1543153202481009676">"अ‍ॅपला लपवलेल्या प्रोफाइल अ‍ॅक्सेस करण्याची अनुमती देते."</string>
     <string name="permlab_setWallpaperHints" msgid="1153485176642032714">"तुमचा वॉलपेपर आकार समायोजित करा"</string>
-    <string name="permdesc_setWallpaperHints" msgid="6257053376990044668">"सिस्टम वॉलपेपर आकार सूचना सेट करण्यासाठी अ‍ॅप ला अनुमती देते."</string>
+    <string name="permdesc_setWallpaperHints" msgid="6257053376990044668">"सिस्टीम वॉलपेपर आकार सूचना सेट करण्याची ॲपला परवानगी देते."</string>
     <string name="permlab_setTimeZone" msgid="7922618798611542432">"टाइम झोन सेट करा"</string>
     <string name="permdesc_setTimeZone" product="tablet" msgid="1788868809638682503">"टॅब्लेटचा टाइम झोन बदलण्यासाठी अ‍ॅप ला अनुमती देते."</string>
     <string name="permdesc_setTimeZone" product="tv" msgid="9069045914174455938">"तुमच्या Android TV डिव्हाइसचा टाइम झोन बदलण्यासाठी ॲपला अनुमती देते."</string>
@@ -1241,7 +1241,7 @@
     <string name="input_method_ime_switch_long_click_action_desc" msgid="3161942124116646998">"इनपुट पद्धत पिकर उघडा"</string>
     <string name="input_method_switcher_settings_button" msgid="5609835654697108485">"सेटिंग्ज"</string>
     <string name="low_internal_storage_view_title" msgid="9024241779284783414">"संचयन स्थान संपत आहे"</string>
-    <string name="low_internal_storage_view_text" msgid="8172166728369697835">"काही सिस्टम कार्ये कार्य करू शकत नाहीत"</string>
+    <string name="low_internal_storage_view_text" msgid="8172166728369697835">"काही सिस्टीम फंक्शन कार्य करू शकत नाहीत"</string>
     <string name="low_internal_storage_view_text_no_boot" msgid="7368968163411251788">"सिस्टीमसाठी पुरेसे संचयन नाही. आपल्याकडे 250MB मोकळे स्थान असल्याचे सुनिश्चित करा आणि रीस्टार्ट करा."</string>
     <string name="app_running_notification_title" msgid="8985999749231486569">"<xliff:g id="APP_NAME">%1$s</xliff:g> चालत आहे"</string>
     <string name="app_running_notification_text" msgid="5120815883400228566">"अधिक माहितीसाठी किंवा अ‍ॅप थांबविण्यासाठी टॅप करा."</string>
@@ -1287,7 +1287,7 @@
     <string name="whichImageCaptureApplicationLabel" msgid="6505433734824988277">"इमेज कॅप्चर करा"</string>
     <string name="alwaysUse" msgid="3153558199076112903">"या क्रियेसाठी डीफॉल्‍टनुसार वापरा."</string>
     <string name="use_a_different_app" msgid="4987790276170972776">"एक भिन्न अ‍ॅप वापरा"</string>
-    <string name="clearDefaultHintMsg" msgid="1325866337702524936">"डाउनलोड केलेल्या सिस्टम सेटिंग्ज &gt; Apps &gt; मधील डीफॉल्ट साफ करा."</string>
+    <string name="clearDefaultHintMsg" msgid="1325866337702524936">"डाउनलोड केलेल्या सिस्टीम सेटिंग्ज &gt; Apps &gt; मधील डीफॉल्ट साफ करा."</string>
     <string name="chooseActivity" msgid="8563390197659779956">"क्रिया निवडा"</string>
     <string name="chooseUsbActivity" msgid="2096269989990986612">"USB डिव्हाइससाठी अ‍ॅप निवडा"</string>
     <string name="noApplications" msgid="1186909265235544019">"कोणतेही अ‍ॅप्स ही क्रिया करू शकत नाहीत."</string>
@@ -1315,7 +1315,7 @@
     <string name="launch_warning_original" msgid="3332206576800169626">"<xliff:g id="APP_NAME">%1$s</xliff:g> मूळतः लाँच केले."</string>
     <string name="screen_compat_mode_scale" msgid="8627359598437527726">"स्केल"</string>
     <string name="screen_compat_mode_show" msgid="5080361367584709857">"नेहमी दर्शवा"</string>
-    <string name="screen_compat_mode_hint" msgid="4032272159093750908">"सिस्टम सेटिंग्ज &gt; Apps &gt; डाउनलोड केलेले मध्ये हे पुन्हा-सुरू करा."</string>
+    <string name="screen_compat_mode_hint" msgid="4032272159093750908">"सिस्टीम सेटिंग्ज &gt; Apps &gt; डाउनलोड केलेले मध्ये हे पुन्हा-सुरू करा."</string>
     <string name="unsupported_display_size_message" msgid="7265211375269394699">"<xliff:g id="APP_NAME">%1$s</xliff:g> वर्तमान डिस्प्ले आकार सेटिंगला समर्थन देत नाही आणि अनपेक्षित वर्तन करू शकते."</string>
     <string name="unsupported_display_size_show" msgid="980129850974919375">"नेहमी दर्शवा"</string>
     <string name="unsupported_compile_sdk_message" msgid="7326293500707890537">"<xliff:g id="APP_NAME">%1$s</xliff:g> हे Android OS च्या विसंगत आवृत्तीसाठी तयार केले होते आणि ते अनपेक्षित पद्धतीने काम करू शकते. ॲपची अपडेट केलेली आवृत्ती उपलब्ध असू शकते."</string>
@@ -1330,7 +1330,7 @@
     <string name="android_start_title" product="automotive" msgid="7917984412828168079">"Android सुरू करत आहे…"</string>
     <string name="android_start_title" product="tablet" msgid="4429767260263190344">"टॅबलेट सुरू होत आहे…"</string>
     <string name="android_start_title" product="device" msgid="6967413819673299309">"डिव्‍हाइस सुरू होत आहे…"</string>
-    <string name="android_upgrading_notification_title" product="default" msgid="3509927005342279257">"सिस्‍टम अपडेट संपत आहे…"</string>
+    <string name="android_upgrading_notification_title" product="default" msgid="3509927005342279257">"सिस्टीम अपडेट संपत आहे…"</string>
     <string name="app_upgrading_toast" msgid="1016267296049455585">"<xliff:g id="APPLICATION">%1$s</xliff:g> श्रेणीसुधारित करत आहे…"</string>
     <string name="android_preparing_apk" msgid="589736917792300956">"<xliff:g id="APPNAME">%1$s</xliff:g> तयार करत आहे."</string>
     <string name="android_upgrading_starting_apps" msgid="6206161195076057075">"अ‍ॅप्स सुरू करत आहे."</string>
@@ -1708,7 +1708,7 @@
     <string name="default_audio_route_name_external_device" msgid="8124229858618975">"बाह्य डिव्हाइस"</string>
     <string name="default_audio_route_name_headphones" msgid="6954070994792640762">"हेडफोन"</string>
     <string name="default_audio_route_name_usb" msgid="895668743163316932">"USB"</string>
-    <string name="default_audio_route_category_name" msgid="5241740395748134483">"सिस्टम"</string>
+    <string name="default_audio_route_category_name" msgid="5241740395748134483">"सिस्टीम"</string>
     <string name="bluetooth_a2dp_audio_route_name" msgid="4214648773120426288">"ब्लूटूथ ऑडिओ"</string>
     <string name="wireless_display_route_description" msgid="8297563323032966831">"वायरलेस डिस्प्ले"</string>
     <string name="media_route_button_content_description" msgid="2299223698196869956">"कास्‍ट करा"</string>
@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"हँड्स-फ्री कॉलिंगसाठी तुम्ही तुमच्या श्रवणयंत्राचा मायक्रोफोन वापरू शकता. यामुळे कॉलदरम्यान फक्त तुमचा माइक स्विच केला जातो."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"स्विच करा"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"सेटिंग्ज"</string>
-    <string name="user_switched" msgid="7249833311585228097">"वर्तमान वापरकर्ता <xliff:g id="NAME">%1$s</xliff:g>."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> वर स्विच करत आहे…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"<xliff:g id="NAME">%1$s</xliff:g> लॉग आउट करत आहे…"</string>
     <string name="owner_name" msgid="8713560351570795743">"मालक"</string>
@@ -2192,12 +2191,12 @@
     <string name="screenshot_edit" msgid="7408934887203689207">"संपादित करा"</string>
     <string name="volume_dialog_ringer_guidance_vibrate" msgid="2055927873175228519">"कॉल आणि सूचनांवर व्हायब्रेट होईल"</string>
     <string name="volume_dialog_ringer_guidance_silent" msgid="1011246774949993783">"कॉल आणि सूचना म्यूट केल्या जातील"</string>
-    <string name="notification_channel_system_changes" msgid="2462010596920209678">"सिस्टम बदल"</string>
+    <string name="notification_channel_system_changes" msgid="2462010596920209678">"सिस्टीम बदल"</string>
     <string name="review_notification_settings_title" msgid="5102557424459810820">"सूचना सेटिंग्जचे पुनरावलोकन करा"</string>
     <string name="review_notification_settings_text" msgid="5916244866751849279">"Android 13 पासून, तुम्ही त्यामध्ये इंस्टॉल केलेल्या अ‍ॅप्सना सूचना पाठवण्यासाठी तुमच्या परवानगीची आवश्यकता आहे. सध्याच्या अ‍ॅप्ससाठी ही परवानगी बदलण्याकरिता टॅप करा."</string>
     <string name="review_notification_settings_remind_me_action" msgid="1081081018678480907">"मला आठवण करून द्या"</string>
     <string name="review_notification_settings_dismiss" msgid="4160916504616428294">"डिसमिस करा"</string>
-    <string name="notification_app_name_system" msgid="3045196791746735601">"सिस्टम"</string>
+    <string name="notification_app_name_system" msgid="3045196791746735601">"सिस्टीम"</string>
     <string name="notification_app_name_settings" msgid="9088548800899952531">"सेटिंग्ज"</string>
     <string name="notification_appops_camera_active" msgid="8177643089272352083">"कॅमेरा"</string>
     <string name="notification_appops_microphone_active" msgid="581333393214739332">"मायक्रोफोन"</string>

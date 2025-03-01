@@ -218,7 +218,7 @@ constructor(
                     scrollViewContent.layoutParams.height = WRAP_CONTENT
                     lastUiUpdateMs = systemClock.elapsedRealtime()
                     lastItemRow = itemRow
-                    logger.logDeviceUiUpdate(lastUiUpdateMs - start)
+                    logger.logDeviceUiUpdate(lastUiUpdateMs - start, deviceItem)
                 }
             }
         }

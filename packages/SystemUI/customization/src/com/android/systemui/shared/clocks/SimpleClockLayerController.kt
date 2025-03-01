@@ -16,6 +16,7 @@
 
 package com.android.systemui.shared.clocks
 
+import android.graphics.RectF
 import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.plugins.clocks.ClockAnimations
@@ -31,4 +32,5 @@ interface SimpleClockLayerController {
     val config: ClockFaceConfig
 
     @VisibleForTesting var fakeTimeMills: Long?
+    var onViewBoundsChanged: ((RectF) -> Unit)?
 }

@@ -81,7 +81,7 @@ object QsDetailedView {
      * Caution!! Using this check incorrectly will cause crashes in nextfood builds!
      */
     @JvmStatic
-    inline fun assertInNewMode() = RefactorFlagUtils.assertInNewMode(isEnabled, FLAG_NAME)
+    inline fun unsafeAssertInNewMode() = RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, FLAG_NAME)
 
     /** Returns a developer-readable string that describes the current requirement list. */
     @JvmStatic

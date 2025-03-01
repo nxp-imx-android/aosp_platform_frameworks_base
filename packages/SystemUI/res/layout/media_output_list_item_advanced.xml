@@ -151,6 +151,8 @@
         <ImageButton
             android:id="@+id/end_area_image_button"
             android:background="@android:color/transparent"
+            android:padding="20dp"
+            android:scaleType="fitCenter"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="@null"

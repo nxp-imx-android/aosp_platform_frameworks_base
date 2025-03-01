@@ -245,12 +245,9 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"تم توصيل البلوتوث."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"رمز الجهاز الذي يتضمّن بلوتوث"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"انقر هنا لضبط إعدادات الجهاز."</string>
-    <!-- no translation found for accessibility_bluetooth_device_settings_gear_with_name (114373701123165491) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_see_all (5260390270128256620) -->
-    <skip />
-    <!-- no translation found for accessibility_bluetooth_device_settings_pair_new_device (7988547106800504256) -->
-    <skip />
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"‫<xliff:g id="DEVICE_NAME">%s</xliff:g>. ضبط تفاصيل الجهاز"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"عرض جميع الأجهزة"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"إقران جهاز جديد"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"نسبة شحن البطارية غير معروفة."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"متصل بـ <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"تم الاتصال بـ <xliff:g id="CAST">%s</xliff:g>."</string>
@@ -427,8 +424,14 @@
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"الإعدادات المسبقة"</string>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"تمّ اختياره"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"الأصوات المحيطة"</string>
-    <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"الجهاز الأيسر"</string>
-    <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"الجهاز الأيمن"</string>
+    <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"اليسرى"</string>
+    <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"اليمنى"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"توسيع لوحة التحكّم الموحّدة إلى عناصر تحكُّم منفصلة على اليسار واليمين"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"تصغير عناصر التحكّم في الصوت إلى لوحة تحكُّم موحّدة"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"كتم الأصوات المحيطة"</string>
@@ -906,10 +909,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"تعدُّد المهام"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"استخدام \"وضع تقسيم الشاشة\" مع تثبيت التطبيق على اليمين"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"استخدام \"وضع تقسيم الشاشة\" مع تثبيت التطبيق على اليسار"</string>
-    <!-- no translation found for system_multitasking_full_screen (4221409316059910349) -->
-    <skip />
-    <!-- no translation found for system_multitasking_desktop_view (8829838918507805921) -->
-    <skip />
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"استخدام وضع ملء الشاشة"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"استخدام وضع العرض المخصّص للكمبيوتر المكتبي"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"التبديل إلى التطبيق على اليسار أو الأسفل أثناء استخدام \"تقسيم الشاشة\""</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"التبديل إلى التطبيق على اليمين أو الأعلى أثناء استخدام \"تقسيم الشاشة\""</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"استبدال تطبيق بآخر في وضع \"تقسيم الشاشة\""</string>
@@ -1511,8 +1512,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"عرض التطبيقات المستخدَمة مؤخرًا"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"التبديل بين التطبيقات"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"تم"</string>
-    <!-- no translation found for touchpad_tutorial_next_button (9169718126626806688) -->
-    <skip />
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"التالي"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"يُرجى إعادة المحاولة"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"رجوع"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"مرِّر سريعًا لليمين أو لليسار باستخدام 3 أصابع على لوحة اللمس"</string>
@@ -1574,4 +1574,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"غير معروفة"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"هل تريد إعادة ضبط كل المربّعات؟"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ستتم إعادة ضبط جميع مربّعات \"الإعدادات السريعة\" إلى الإعدادات الأصلية للجهاز"</string>
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"\"<xliff:g id="STREAM_NAME">%1$s</xliff:g>\"، <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

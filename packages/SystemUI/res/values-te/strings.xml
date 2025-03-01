@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"పరిసరాలు"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ఎడమ వైపునకు"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"కుడి వైపునకు"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ఎడమ, కుడి అని వేరు చేయబడిన కంట్రోల్స్‌కు విస్తరించండి"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"యూనిఫైడ్ కంట్రోల్‌కు కుదించండి"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"పరిసరాలను మ్యూట్ చేయండి"</string>
@@ -1571,4 +1577,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"తెలియదు"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"టైల్స్ అన్ని రీసెట్ చేయాలా?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"అన్ని క్విక్ సెట్టింగ్‌ల టైల్స్, పరికరం తాలూకు ఒరిజినల్ సెట్టింగ్‌లకు రీసెట్ చేయబడతాయి"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

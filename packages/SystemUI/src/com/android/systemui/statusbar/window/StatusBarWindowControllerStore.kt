@@ -51,7 +51,7 @@ constructor(
     PerDisplayStoreImpl<StatusBarWindowController>(backgroundApplicationScope, displayRepository) {
 
     init {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
     }
 
     override fun createInstanceForDisplay(displayId: Int): StatusBarWindowController? {

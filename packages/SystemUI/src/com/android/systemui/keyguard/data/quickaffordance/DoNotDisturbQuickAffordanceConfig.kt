@@ -98,7 +98,7 @@ class DoNotDisturbQuickAffordanceConfig(
     private var settingsValue: Int = 0
 
     private val isAvailable: StateFlow<Boolean> by lazy {
-        ModesUi.assertInNewMode()
+        ModesUi.unsafeAssertInNewMode()
         interactor.isZenAvailable.stateIn(
             scope = backgroundScope,
             started = SharingStarted.Eagerly,

@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.withContext
 
@@ -73,6 +74,7 @@ constructor(
     private val context: Context,
     private val localBluetoothManager: LocalBluetoothManager?,
     private val audioSharingRepository: AudioSharingRepository,
+    private val logger: BluetoothTileDialogLogger,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) : AudioSharingInteractor {
 
@@ -92,9 +94,12 @@ constructor(
 
     override val audioSourceStateUpdate =
         isAudioSharingOn
+            .onEach { logger.logAudioSharingStateChanged(it) }
             .flatMapLatest {
                 if (it) {
-                    audioSharingRepository.audioSourceStateUpdate
+                    audioSharingRepository.audioSourceStateUpdate.onEach {
+                        logger.logAudioSourceStateUpdate()
+                    }
                 } else {
                     emptyFlow()
                 }

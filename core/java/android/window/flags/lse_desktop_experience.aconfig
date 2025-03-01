@@ -816,7 +816,7 @@ flag {
     name: "enable_taskbar_overflow"
     namespace: "lse_desktop_experience"
     description: "Show recent apps in the taskbar overflow."
-    bug: "368119679"
+    bug: "375627272"
 }
 
 flag {
@@ -861,6 +861,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enabling a minimize animation when a new window is opened via deeplink and the Desktop Windowing open windows limit is reached."
     bug: "360329773"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_visual_indicator_in_transition_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to move visual drop-zone indicator to transition root, so it can't be shown after the transition."
+    bug: "392826275"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

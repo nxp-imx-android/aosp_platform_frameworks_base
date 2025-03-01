@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Povezani ste sa <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Povezani smo sa uređajem <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Proširite grupu."</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Dodajte uređaj u grupu."</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Uklonite uređaj iz grupe."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Otvorite aplikaciju."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Nije povezano."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roming"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Unos"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Slušni aparati"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Uključuje se..."</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"Ne možete da prilagodite osvetljenost jer je kontroliše aplikacija u prvom planu"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Automatska rotacija"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Automatsko rotiranje ekrana"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Lokacija"</string>
@@ -426,6 +423,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Okruženje"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Levo"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Desno"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Proširi na kontrole razdvojene na levu i desnu stranu"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Skupi u jedinstvenu kontrolu"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Isključi zvuk okruženja"</string>
@@ -1568,4 +1571,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite da resetujete sve pločice?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve pločice Brzih podešavanja će se resetovati na prvobitna podešavanja uređaja"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

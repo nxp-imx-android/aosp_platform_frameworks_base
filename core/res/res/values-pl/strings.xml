@@ -1715,7 +1715,7 @@
     <string name="wireless_display_route_description" msgid="8297563323032966831">"Wyświetlacz bezprzewodowy"</string>
     <string name="media_route_button_content_description" msgid="2299223698196869956">"Przesyłaj"</string>
     <string name="media_route_chooser_title" msgid="6646594924991269208">"Połącz z urządzeniem"</string>
-    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"Prześlij ekran na urządzenie"</string>
+    <string name="media_route_chooser_title_for_remote_display" msgid="3105906508794326446">"Prześlij treści z ekranu na urządzenie"</string>
     <string name="media_route_chooser_searching" msgid="6119673534251329535">"Szukam urządzeń…"</string>
     <string name="media_route_chooser_extended_settings" msgid="2506352159381327741">"Ustawienia"</string>
     <string name="media_route_controller_disconnect" msgid="7362617572732576959">"Rozłącz"</string>
@@ -1827,7 +1827,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Możesz używać mikrofonu w aparacie słuchowym, aby dzwonić bez użycia rąk. Mikrofon zostanie przełączony tylko na czas połączenia."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Przełącz"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Ustawienia"</string>
-    <string name="user_switched" msgid="7249833311585228097">"Bieżący użytkownik: <xliff:g id="NAME">%1$s</xliff:g>."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Przełączam na użytkownika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Wylogowuję użytkownika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Właściciel"</string>

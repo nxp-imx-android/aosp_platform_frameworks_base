@@ -47,6 +47,7 @@ import android.database.ExecutorContentObserver;
 import android.net.Uri;
 import android.os.Looper;
 import android.os.Process;
+import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
@@ -817,6 +818,7 @@ public class NotificationLockscreenUserManagerImpl implements
             return false;
         }
 
+        long notificationTime = getEarliestNotificationTime(ent);
         if (!mRedactOtpOnWifi.get()) {
             if (mConnectedToWifi.get()) {
                 return false;
@@ -824,7 +826,7 @@ public class NotificationLockscreenUserManagerImpl implements
 
             long lastWifiConnectTime = mLastWifiConnectionTime.get();
             // If the device has connected to wifi since receiving the notification, do not redact
-            if (ent.getSbn().getPostTime() < lastWifiConnectTime) {
+            if (notificationTime < lastWifiConnectTime) {
                 return false;
             }
         }
@@ -837,11 +839,20 @@ public class NotificationLockscreenUserManagerImpl implements
         // when this notification arrived, do not redact
         long latestTimeForRedaction = mLastLockTime.get() + mOtpRedactionRequiredLockTimeMs.get();
 
-        if (ent.getSbn().getPostTime() < latestTimeForRedaction) {
+        if (notificationTime < latestTimeForRedaction) {
             return false;
         }
 
         return true;
+    }
+
+    // Get the earliest time the user might have seen this notification. This is either the
+    // notification's "when" time, or the notification entry creation time
+    private long getEarliestNotificationTime(NotificationEntry notif) {
+        long notifWhenWallClock = notif.getSbn().getNotification().getWhen();
+        long creationTimeDelta = SystemClock.elapsedRealtime() - notif.getCreationTime();
+        long creationTimeWallClock = System.currentTimeMillis() - creationTimeDelta;
+        return Math.min(notifWhenWallClock, creationTimeWallClock);
     }
 
     private boolean packageHasVisibilityOverride(String key) {

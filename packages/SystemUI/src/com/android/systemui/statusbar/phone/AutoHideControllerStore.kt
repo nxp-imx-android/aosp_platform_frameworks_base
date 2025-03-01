@@ -44,7 +44,7 @@ constructor(
     PerDisplayStoreImpl<AutoHideController>(backgroundApplicationScope, displayRepository) {
 
     init {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
     }
 
     override fun createInstanceForDisplay(displayId: Int): AutoHideController? {

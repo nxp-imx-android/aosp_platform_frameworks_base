@@ -26,7 +26,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.airbnb.lottie.LottieAnimationView
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.biometrics.data.repository.biometricStatusRepository
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.biometrics.shared.model.AuthenticationReason
+import com.android.systemui.biometrics.shared.model.AuthenticationReason.SettingsOperations
 import com.android.systemui.biometrics.shared.model.DisplayRotation
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.shared.model.SensorStrength
@@ -50,7 +53,6 @@ import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito.any
 import org.mockito.Mockito.inOrder
-import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -67,6 +69,7 @@ class SideFpsOverlayViewBinderTest : SysuiTestCase() {
     @JvmField @Rule var mockitoRule: MockitoRule = MockitoJUnit.rule()
     @Mock private lateinit var layoutInflater: LayoutInflater
     @Mock private lateinit var sideFpsView: View
+    @Mock private lateinit var lottieAnimationView: LottieAnimationView
     @Captor private lateinit var viewCaptor: ArgumentCaptor<View>
 
     @Before
@@ -76,7 +79,7 @@ class SideFpsOverlayViewBinderTest : SysuiTestCase() {
         context.addMockSystemService(WindowManager::class.java, kosmos.windowManager)
         `when`(layoutInflater.inflate(R.layout.sidefps_view, null, false)).thenReturn(sideFpsView)
         `when`(sideFpsView.requireViewById<LottieAnimationView>(eq(R.id.sidefps_animation)))
-            .thenReturn(mock(LottieAnimationView::class.java))
+            .thenReturn(lottieAnimationView)
     }
 
     @Test
@@ -181,6 +184,20 @@ class SideFpsOverlayViewBinderTest : SysuiTestCase() {
 
             // Verify indicator shown
             inOrder.verify(kosmos.windowManager).addView(any(), any())
+        }
+    }
+
+    @Test
+    fun verifyToggleAnimation_onSideFpsIndicatorViewClickedWhileEnrolling() {
+        kosmos.testScope.runTest {
+            kosmos.biometricStatusRepository.setFingerprintAuthenticationReason(
+                AuthenticationReason.SettingsAuthentication(SettingsOperations.ENROLL_ENROLLING)
+            )
+            setupTestConfiguration(isInRearDisplayMode = false)
+            val clickListenerCaptor = ArgumentCaptor.forClass(View.OnClickListener::class.java)
+            verify(sideFpsView).setOnClickListener(clickListenerCaptor.capture())
+            clickListenerCaptor.value.onClick(sideFpsView)
+            verify(lottieAnimationView).toggleAnimation()
         }
     }
 

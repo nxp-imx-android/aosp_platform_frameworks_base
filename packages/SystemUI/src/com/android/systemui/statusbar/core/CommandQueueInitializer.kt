@@ -47,7 +47,7 @@ constructor(
 ) : CoreStartable {
 
     override fun start() {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         val resultPerDisplay: Map<String, RegisterStatusBarResult> =
             try {
                 barService.registerStatusBarForAllDisplays(commandQueue)

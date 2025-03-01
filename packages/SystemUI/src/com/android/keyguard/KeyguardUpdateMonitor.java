@@ -2923,13 +2923,13 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreSt
     private boolean isPrimaryBouncerShowingOrWillBeShowing(
             ObservableTransitionState transitionState
     ) {
-        SceneContainerFlag.assertInNewMode();
+        SceneContainerFlag.unsafeAssertInNewMode();
         return isPrimaryBouncerFullyShown(transitionState)
                 || transitionState.isTransitioning(null, Overlays.Bouncer);
     }
 
     private boolean isPrimaryBouncerFullyShown(ObservableTransitionState transitionState) {
-        SceneContainerFlag.assertInNewMode();
+        SceneContainerFlag.unsafeAssertInNewMode();
         return transitionState.isIdle(Overlays.Bouncer);
     }
 

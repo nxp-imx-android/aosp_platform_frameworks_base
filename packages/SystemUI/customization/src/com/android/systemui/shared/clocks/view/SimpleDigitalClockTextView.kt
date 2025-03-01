@@ -31,6 +31,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.MathUtils.lerp
 import android.util.TypedValue
+import android.view.View
 import android.view.View.MeasureSpec.EXACTLY
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
@@ -74,14 +75,38 @@ private fun Paint.getTextBounds(text: CharSequence, result: RectF = RectF()): Re
 enum class VerticalAlignment {
     TOP,
     BOTTOM,
-    BASELINE, // default
+    BASELINE,
     CENTER,
 }
 
 enum class HorizontalAlignment {
+    LEFT {
+        override fun resolveXAlignment(view: View) = XAlignment.LEFT
+    },
+    RIGHT {
+        override fun resolveXAlignment(view: View) = XAlignment.RIGHT
+    },
+    START {
+        override fun resolveXAlignment(view: View): XAlignment {
+            return if (view.isLayoutRtl()) XAlignment.RIGHT else XAlignment.LEFT
+        }
+    },
+    END {
+        override fun resolveXAlignment(view: View): XAlignment {
+            return if (view.isLayoutRtl()) XAlignment.LEFT else XAlignment.RIGHT
+        }
+    },
+    CENTER {
+        override fun resolveXAlignment(view: View) = XAlignment.CENTER
+    };
+
+    abstract fun resolveXAlignment(view: View): XAlignment
+}
+
+enum class XAlignment {
     LEFT,
     RIGHT,
-    CENTER, // default
+    CENTER,
 }
 
 @SuppressLint("AppCompatCustomView")
@@ -117,6 +142,7 @@ open class SimpleDigitalClockTextView(
         fidgetFontVariation = buildFidgetVariation(lsFontAxes).toFVar()
     }
 
+    var onViewBoundsChanged: ((RectF) -> Unit)? = null
     private val parser = DimensionParser(clockCtx.context)
     var maxSingleDigitHeight = -1f
     var maxSingleDigitWidth = -1f
@@ -154,7 +180,11 @@ open class SimpleDigitalClockTextView(
     }
 
     var verticalAlignment: VerticalAlignment = VerticalAlignment.BASELINE
-    var horizontalAlignment: HorizontalAlignment = HorizontalAlignment.LEFT
+    var horizontalAlignment: HorizontalAlignment = HorizontalAlignment.CENTER
+
+    val xAlignment: XAlignment
+        get() = horizontalAlignment.resolveXAlignment(this)
+
     var isAnimationEnabled = true
     var dozeFraction: Float = 0f
         set(value) {
@@ -256,6 +286,7 @@ open class SimpleDigitalClockTextView(
         canvas.use {
             digitTranslateAnimator?.apply { canvas.translate(currentTranslation) }
             canvas.translate(getDrawTranslation(interpBounds))
+            if (isLayoutRtl()) canvas.translate(interpBounds.width() - textBounds.width(), 0f)
             textAnimator.draw(canvas)
         }
     }
@@ -341,7 +372,9 @@ open class SimpleDigitalClockTextView(
         updateTextBoundsForTextAnimator()
     }
 
-    fun animateFidget(x: Float, y: Float) {
+    fun animateFidget(x: Float, y: Float) = animateFidget(0L)
+
+    fun animateFidget(delay: Long) {
         if (!this::textAnimator.isInitialized || textAnimator.isRunning) {
             // Skip fidget animation if other animation is already playing.
             return
@@ -350,13 +383,13 @@ open class SimpleDigitalClockTextView(
         logger.animateFidget(x, y)
         clockCtx.vibrator?.vibrate(FIDGET_HAPTICS)
 
-        // TODO(b/374306512): Delay each glyph's animation based on x/y position
         textAnimator.setTextStyle(
             TextAnimator.Style(fVar = fidgetFontVariation),
             TextAnimator.Animation(
                 animate = isAnimationEnabled,
                 duration = FIDGET_ANIMATION_DURATION,
                 interpolator = FIDGET_INTERPOLATOR,
+                startDelay = delay,
                 onAnimationEnd = {
                     textAnimator.setTextStyle(
                         TextAnimator.Style(fVar = lsFontVariation),
@@ -399,8 +432,10 @@ open class SimpleDigitalClockTextView(
 
     /** Returns the interpolated text bounding rect based on interpolation progress */
     private fun getInterpolatedTextBounds(progress: Float = getInterpolatedProgress()): RectF {
-        if (!textAnimator.isRunning || progress >= 1f) {
-            return RectF(targetTextBounds)
+        if (progress <= 0f) {
+            return prevTextBounds
+        } else if (!textAnimator.isRunning || progress >= 1f) {
+            return targetTextBounds
         }
 
         return RectF().apply {
@@ -456,16 +491,16 @@ open class SimpleDigitalClockTextView(
     private fun setInterpolatedLocation(measureSize: VPointF): RectF {
         val targetRect = RectF()
         targetRect.apply {
-            when (horizontalAlignment) {
-                HorizontalAlignment.LEFT -> {
+            when (xAlignment) {
+                XAlignment.LEFT -> {
                     left = layoutBounds.left
                     right = layoutBounds.left + measureSize.x
                 }
-                HorizontalAlignment.CENTER -> {
+                XAlignment.CENTER -> {
                     left = layoutBounds.centerX() - measureSize.x / 2f
                     right = layoutBounds.centerX() + measureSize.x / 2f
                 }
-                HorizontalAlignment.RIGHT -> {
+                XAlignment.RIGHT -> {
                     left = layoutBounds.right - measureSize.x
                     right = layoutBounds.right
                 }
@@ -497,6 +532,7 @@ open class SimpleDigitalClockTextView(
             targetRect.right.roundToInt(),
             targetRect.bottom.roundToInt(),
         )
+        onViewBoundsChanged?.let { it(targetRect) }
         return targetRect
     }
 
@@ -504,10 +540,10 @@ open class SimpleDigitalClockTextView(
         val sizeDiff = this.measuredSize - interpBounds.size
         val alignment =
             VPointF(
-                when (horizontalAlignment) {
-                    HorizontalAlignment.LEFT -> 0f
-                    HorizontalAlignment.CENTER -> 0.5f
-                    HorizontalAlignment.RIGHT -> 1f
+                when (xAlignment) {
+                    XAlignment.LEFT -> 0f
+                    XAlignment.CENTER -> 0.5f
+                    XAlignment.RIGHT -> 1f
                 },
                 when (verticalAlignment) {
                     VerticalAlignment.TOP -> 0f

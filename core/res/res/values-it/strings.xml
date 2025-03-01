@@ -277,7 +277,7 @@
     <string name="bugreport_option_full_title" msgid="7681035745950045690">"Report completo"</string>
     <string name="bugreport_option_full_summary" msgid="1975130009258435885">"Utilizza questa opzione per ridurre al minimo l\'interferenza di sistema quando il dispositivo non risponde, è troppo lento oppure quando ti servono tutte le sezioni della segnalazione. Non puoi inserire altri dettagli o acquisire altri screenshot."</string>
     <string name="bugreport_countdown" msgid="6418620521782120755">"{count,plural, =1{Lo screenshot per la segnalazione di bug verrà acquisito tra # secondo.}many{Lo screenshot per la segnalazione di bug verrà acquisito tra # secondi.}other{Lo screenshot per la segnalazione di bug verrà acquisito tra # secondi.}}"</string>
-    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Screenshot con segnalazione di bug effettuato correttamente"</string>
+    <string name="bugreport_screenshot_success_toast" msgid="7986095104151473745">"Screenshot con segnalazione di bug effettuato"</string>
     <string name="bugreport_screenshot_failure_toast" msgid="6736320861311294294">"Impossibile acquisire screenshot con segnalazione di bug"</string>
     <string name="global_action_toggle_silent_mode" msgid="8464352592860372188">"Modalità silenziosa"</string>
     <string name="global_action_silent_mode_on_status" msgid="2371892537738632013">"Audio non attivo"</string>
@@ -1804,8 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modalità a una mano"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Attenuazione extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Protesi uditive"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"Clic automatico"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Disconnesso"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Connesso"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Attivo"</string>
@@ -1826,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Puoi usare il microfono dell\'apparecchio acustico per le chiamate in vivavoce. In questo modo, il microfono viene attivato solo durante la chiamata."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Cambia"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Impostazioni"</string>
-    <string name="user_switched" msgid="7249833311585228097">"Utente corrente <xliff:g id="NAME">%1$s</xliff:g>."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Passaggio a <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Disconnessione di <xliff:g id="NAME">%1$s</xliff:g> in corso…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Proprietario"</string>
@@ -2282,7 +2280,7 @@
     <string name="conversation_title_fallback_one_to_one" msgid="1980753619726908614">"Conversazione"</string>
     <string name="conversation_title_fallback_group_chat" msgid="456073374993104303">"Conversazione di gruppo"</string>
     <string name="unread_convo_overflow" msgid="920517615597353833">"<xliff:g id="MAX_UNREAD_COUNT">%1$d</xliff:g>+"</string>
-    <string name="resolver_personal_tab" msgid="2051260504014442073">"Personale"</string>
+    <string name="resolver_personal_tab" msgid="2051260504014442073">"Personali"</string>
     <string name="resolver_work_tab" msgid="2690019516263167035">"Lavoro"</string>
     <string name="resolver_personal_tab_accessibility" msgid="5739524949153091224">"Visualizzazione personale"</string>
     <string name="resolver_work_tab_accessibility" msgid="4753168230363802734">"Visualizzazione di lavoro"</string>

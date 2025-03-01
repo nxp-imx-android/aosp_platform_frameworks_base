@@ -53,7 +53,7 @@ constructor(
     }
 
     override fun start() {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         backgroundApplicationScope.launch {
             displayRepository.displayRemovalEvent.collect { displayId ->
                 val scope = perDisplayScopes.remove(displayId)

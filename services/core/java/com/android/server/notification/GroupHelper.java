@@ -35,6 +35,7 @@ import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -130,8 +131,10 @@ public class GroupHelper {
             mUngroupedAbuseNotifications = new ArrayMap<>();
 
     // Contains the list of group summaries that were canceled when "singleton groups" were
-    // force grouped. Used to remove the original group's children when an app cancels the
-    // already removed summary. Key is userId|packageName|g:OriginalGroupName
+    // force grouped. Key is userId|packageName|g:OriginalGroupName. Used to:
+    // 1) remove the original group's children when an app cancels the already removed summary.
+    // 2) perform the same side effects that would happen if the group is removed because
+    //    all its force-regrouped children are removed (e.g. firing its deleteIntent).
     @GuardedBy("mAggregatedNotifications")
     private final ArrayMap<FullyQualifiedGroupKey, CachedSummary>
             mCanceledSummaries = new ArrayMap<>();
@@ -278,7 +281,11 @@ public class GroupHelper {
     public void onNotificationRemoved(NotificationRecord record) {
         try {
             if (notificationForceGrouping()) {
-                onNotificationRemoved(record, new ArrayList<>());
+                Slog.wtf(TAG,
+                        "This overload of onNotificationRemoved() should not be called if "
+                                + "notification_force_grouping is enabled!",
+                        new Exception("call stack"));
+                onNotificationRemoved(record, new ArrayList<>(), false);
             } else {
                 final StatusBarNotification sbn = record.getSbn();
                 maybeUngroup(sbn, true, sbn.getUserId());
@@ -926,10 +933,12 @@ public class GroupHelper {
      *
      * @param record the removed notification
      * @param notificationList the full notification list from NotificationManagerService
+     * @param sendingDelete whether the removed notification is being removed in a way that sends
+     *                     its {@code deleteIntent}
      */
     @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
     protected void onNotificationRemoved(final NotificationRecord record,
-                final List<NotificationRecord> notificationList) {
+            final List<NotificationRecord> notificationList, boolean sendingDelete) {
         final StatusBarNotification sbn = record.getSbn();
         final String pkgName = sbn.getPackageName();
         final int userId = record.getUserId();
@@ -973,9 +982,11 @@ public class GroupHelper {
                 }
 
                 // Try to cleanup cached summaries if notification was canceled (not snoozed)
+                // If the notification was cancelled by an action that fires its delete intent,
+                // also fire it for the cached summary.
                 if (record.isCanceled) {
                     maybeClearCanceledSummariesCache(pkgName, userId,
-                            record.getNotification().getGroup(), notificationList);
+                            record.getNotification().getGroup(), notificationList, sendingDelete);
                 }
             }
         }
@@ -1759,13 +1770,18 @@ public class GroupHelper {
     private void cacheCanceledSummary(NotificationRecord record) {
         final FullyQualifiedGroupKey groupKey = new FullyQualifiedGroupKey(record.getUserId(),
                 record.getSbn().getPackageName(), record.getNotification().getGroup());
-        mCanceledSummaries.put(groupKey, new CachedSummary(record.getSbn().getId(),
-                record.getSbn().getTag(), record.getNotification().getGroup(), record.getKey()));
+        mCanceledSummaries.put(groupKey, new CachedSummary(
+                record.getSbn().getId(),
+                record.getSbn().getTag(),
+                record.getNotification().getGroup(),
+                record.getKey(),
+                record.getNotification().deleteIntent));
     }
 
     @GuardedBy("mAggregatedNotifications")
     private void maybeClearCanceledSummariesCache(String pkgName, int userId,
-            String groupName, List<NotificationRecord> notificationList) {
+            String groupName, List<NotificationRecord> notificationList,
+            boolean sendSummaryDelete) {
         final FullyQualifiedGroupKey findKey = new FullyQualifiedGroupKey(userId, pkgName,
                 groupName);
         CachedSummary summary = mCanceledSummaries.get(findKey);
@@ -1786,6 +1802,9 @@ public class GroupHelper {
             }
             if (!stillHasChildren) {
                 removeCachedSummary(pkgName, userId, summary);
+                if (sendSummaryDelete && summary.deleteIntent != null) {
+                    mCallback.sendAppProvidedSummaryDeleteIntent(pkgName, summary.deleteIntent);
+                }
             }
         }
     }
@@ -1965,7 +1984,8 @@ public class GroupHelper {
         }
     }
 
-    record CachedSummary(int id, String tag, String originalGroupKey, String key) {}
+    record CachedSummary(int id, String tag, String originalGroupKey, String key,
+                         @Nullable PendingIntent deleteIntent) { }
 
     protected static class NotificationAttributes {
         public final int flags;
@@ -2034,6 +2054,15 @@ public class GroupHelper {
 
         // New callbacks for API abuse grouping
         void removeAppProvidedSummary(String key);
+
+        /**
+         * Send a cached summary's deleteIntent, when the last of its original children is removed.
+         *
+         * <p>While technically the group summary was "canceled" much earlier (because it was the
+         * summary of a sparse group and its children got reparented), the posting package expected
+         * the summary's deleteIntent to fire when the summary is auto-dismissed.
+         */
+        void sendAppProvidedSummaryDeleteIntent(String pkg, PendingIntent deleteIntent);
 
         void removeNotificationFromCanceledGroup(int userId, String pkg, String groupKey,
                 int cancelReason);

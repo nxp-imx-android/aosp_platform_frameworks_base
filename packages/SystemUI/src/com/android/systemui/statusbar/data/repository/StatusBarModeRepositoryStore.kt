@@ -54,7 +54,7 @@ constructor(
     ) {
 
     init {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
     }
 
     override fun createInstanceForDisplay(displayId: Int): StatusBarModePerDisplayRepository {

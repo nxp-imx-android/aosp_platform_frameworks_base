@@ -163,6 +163,9 @@ public final class AccessibilityManager {
     /** @hide */
     public static final boolean AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT = false;
 
+    /** @hide */
+    public static final boolean AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT = true;
+
     /**
      * Activity action: Launch UI to manage which accessibility service or feature is assigned
      * to the navigation bar Accessibility button.

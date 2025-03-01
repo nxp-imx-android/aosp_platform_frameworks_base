@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"អ្នកអាចប្រើមីក្រូហ្វូនឧបករណ៍​ជំនួយការ​ស្ដាប់របស់អ្នកសម្រាប់ការហៅទូរសព្ទដោយមិន​ប្រើ​ដៃ។ ការធ្វើបែបនេះប្ដូរមីក្រូហ្វូនរបស់អ្នក ក្នុងអំឡុងការហៅទូរសព្ទតែប៉ុណ្ណោះ។"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ប្ដូរ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ការកំណត់"</string>
-    <string name="user_switched" msgid="7249833311585228097">"អ្នក​ប្រើ​បច្ចុប្បន្ន <xliff:g id="NAME">%1$s</xliff:g> ។"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"កំពុង​ប្ដូរ​ទៅ <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"កំពុងចេញ <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"ម្ចាស់"</string>

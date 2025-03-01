@@ -875,7 +875,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
     }
 
     private void showSecondaryOngoingActivityChip(boolean animate) {
-        StatusBarNotifChips.assertInNewMode();
+        StatusBarNotifChips.unsafeAssertInNewMode();
         StatusBarRootModernization.assertInLegacyMode();
         animateShow(mSecondaryOngoingActivityChip, animate);
     }

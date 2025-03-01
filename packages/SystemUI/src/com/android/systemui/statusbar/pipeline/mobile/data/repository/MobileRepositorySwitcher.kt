@@ -48,9 +48,9 @@ import kotlinx.coroutines.flow.stateIn
  * something like this:
  * ```
  * RealRepository
- *                 │
- *                 ├──►RepositorySwitcher──►RealInteractor──►RealViewModel
- *                 │
+ *       │
+ *       ├──►RepositorySwitcher──►RealInteractor──►RealViewModel
+ *       │
  * DemoRepository
  * ```
  *

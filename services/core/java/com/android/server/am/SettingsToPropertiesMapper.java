@@ -228,6 +228,7 @@ public class SettingsToPropertiesMapper {
         "media_reliability",
         "media_solutions",
         "media_tv",
+        "microxr",
         "nearby",
         "nfc",
         "pdf_viewer",

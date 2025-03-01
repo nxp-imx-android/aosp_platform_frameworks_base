@@ -426,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"সারাউন্ডিং"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"বাঁদিক"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ডানদিক"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"বাঁদিক ও ডানদিকের আলাদা করা কন্ট্রোল বড় করুন"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ইউনিফায়েড কন্ট্রোল আড়াল করুন"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"সারাউন্ডিং মিউট করুন"</string>
@@ -582,7 +588,7 @@
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"স্ক্রিন শেয়ার করুন"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> এই বিকল্পটি বন্ধ করে দিয়েছে"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"শেয়ার করার জন্য অ্যাপ বেছে নিন"</string>
-    <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"আপনার স্ক্রিন কাস্ট করুন?"</string>
+    <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"আপনার স্ক্রিন কাস্ট করতে চান?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"একটি অ্যাপ কাস্ট করুন"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_entire_screen" msgid="8389508187954155307">"সম্পূর্ণ স্ক্রিন কাস্ট করুন"</string>
     <string name="media_projection_entry_cast_permission_dialog_warning_entire_screen" msgid="4040447861037324017">"আপনি সম্পূর্ণ স্ক্রিন কাস্ট করলে, আপনার স্ক্রিনে থাকা সব কিছুই দেখা যাবে। তাই পাসওয়ার্ড, পেমেন্টের বিবরণ, মেসেজ, ফটো এবং অডিও ও ভিডিওর মতো বিষয়ে সতর্ক থাকুন।"</string>
@@ -991,8 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"কম-গুরুত্বপূর্ণ বিজ্ঞপ্তির আইকন দেখুন"</string>
     <string name="other" msgid="429768510980739978">"অন্যান্য"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"টাইলের সাইজ টগল করুন"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"টাইল সরান"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"শেষ জায়গাতে টাইল যোগ করুন"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"টাইল সরান"</string>
@@ -1545,10 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"সম্প্রতি ব্যবহার করা অ্যাপ দেখতে, টাচপ্যাডে তিনটি আঙুল ব্যবহার করে উপরের দিকে সোয়াইপ করে ধরে রাখুন"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"আপনার সব অ্যাপ দেখতে, কীবোর্ডে অ্যাকশন কী প্রেস করুন"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"রিড্যাক্ট করা হয়েছে"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"দেখার জন্য আনলক করুন"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"কোড দেখার জন্য আনলক করুন"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"প্রাসঙ্গিক শিক্ষা"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ফিরে যেতে টাচপ্যাড ব্যবহার করুন"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"তিনটি আঙুলের ব্যবহার করে ডান বা বাঁদিকে সোয়াইপ করুন। আরও জেসচার সম্পর্কে জানতে ট্যাপ করুন।"</string>
@@ -1571,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"অজানা"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"সব টাইল রিসেট করবেন?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"সব কুইক সেটিংস টাইল, ডিভাইসের আসল সেটিংসে রিসেট হয়ে যাবে"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

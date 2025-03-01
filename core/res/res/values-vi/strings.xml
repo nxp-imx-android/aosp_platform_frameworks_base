@@ -1825,7 +1825,6 @@
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Bạn có thể sử dụng micrô của thiết bị trợ thính để gọi điện mà không cần dùng tay. Thao tác này chỉ chuyển micrô của bạn trong cuộc gọi."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Chuyển"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Cài đặt"</string>
-    <string name="user_switched" msgid="7249833311585228097">"Người dùng hiện tại <xliff:g id="NAME">%1$s</xliff:g>."</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Đang chuyển sang <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="user_logging_out_message" msgid="7216437629179710359">"Đang đăng xuất <xliff:g id="NAME">%1$s</xliff:g>…"</string>
     <string name="owner_name" msgid="8713560351570795743">"Chủ sở hữu"</string>

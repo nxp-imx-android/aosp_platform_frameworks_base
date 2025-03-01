@@ -29,6 +29,15 @@ filegroup {
         "android/os/*MessageQueue/**/*.java",
         "android/ranging/**/*.java",
         ":dynamic_instrumentation_manager_aidl_sources",
+        "**/*_ravenwood.java",
+    ],
+    visibility: ["//frameworks/base"],
+}
+
+filegroup {
+    name: "framework-ravenwood-sources",
+    srcs: [
+        "**/*_ravenwood.java",
     ],
     visibility: ["//frameworks/base"],
 }

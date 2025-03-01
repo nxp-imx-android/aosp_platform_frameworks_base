@@ -25,7 +25,7 @@ import com.android.systemui.res.R
  */
 class HeadsUpAnimator(context: Context) {
     init {
-        NotificationsHunSharedAnimationValues.assertInNewMode()
+        NotificationsHunSharedAnimationValues.unsafeAssertInNewMode()
     }
 
     var headsUpAppearHeightBottom: Int = 0
@@ -41,7 +41,7 @@ class HeadsUpAnimator(context: Context) {
      * of the animation.
      */
     fun getHeadsUpYTranslation(isHeadsUpFromBottom: Boolean): Int {
-        NotificationsHunSharedAnimationValues.assertInNewMode()
+        NotificationsHunSharedAnimationValues.unsafeAssertInNewMode()
 
         if (isHeadsUpFromBottom) {
             // start from or end at the bottom of the screen

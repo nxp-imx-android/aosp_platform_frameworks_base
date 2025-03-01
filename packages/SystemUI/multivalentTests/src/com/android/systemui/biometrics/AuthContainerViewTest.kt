@@ -531,20 +531,23 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_hasSecureWindowFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0).isTrue()
     }
 
     @Test
     fun testLayoutParams_hasShowWhenLockedFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.flags and WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED) != 0)
             .isTrue()
     }
 
     @Test
     fun testLayoutParams_hasDimbehindWindowFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         val lpFlags = layoutParams.flags
         val lpDimAmount = layoutParams.dimAmount
 
@@ -554,7 +557,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_excludesImeInsets() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.fitInsetsTypes and WindowInsets.Type.ime()) == 0).isTrue()
     }
 
@@ -706,7 +710,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_hasCutoutModeAlwaysFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         val lpFlags = layoutParams.flags
 
         assertThat(
@@ -717,7 +722,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_excludesSystemBarInsets() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.fitInsetsTypes and WindowInsets.Type.systemBars()) == 0).isTrue()
     }
 }

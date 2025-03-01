@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> എന്നതിലേക്ക് കണക്‌റ്റുചെയ്‌തു."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> എന്നതിലേക്ക് കണക്റ്റുചെയ്തു."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ഗ്രൂപ്പ് വികസിപ്പിക്കുക."</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ഉപകരണം ഗ്രൂപ്പിലേക്ക് ചേർക്കുക."</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ഉപകരണം ഗ്രൂപ്പിൽ നിന്ന് നീക്കം ചെയ്യുക."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ആപ്പ് തുറക്കുക."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"കണക്റ്റുചെയ്‌തിട്ടില്ല."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"റോമിംഗ്"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ഇൻപുട്ട്"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ശ്രവണ സഹായികൾ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ഓണാക്കുന്നു…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"തെളിച്ചം അഡ്‌ജസ്റ്റ് ചെയ്യാനാകില്ല, അത് നിയന്ത്രിക്കുന്നത് ടോപ്പ് ആപ്പാണ്"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"സ്‌ക്രീൻ സ്വയമേവ തിരിയൽ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"സ്‌ക്രീൻ സ്വയമേവ തിരിക്കുക"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ലൊക്കേഷൻ"</string>
@@ -426,6 +423,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"സറൗണ്ടിംഗ്‌സ്"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ഇടത്"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"വലത്"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"വേർതിരിച്ച ഇടത്, വലത് നിയന്ത്രണങ്ങളിലേക്ക് വികസിപ്പിക്കുക"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ഏകീകൃത നിയന്ത്രണത്തിലേക്ക് ചുരുക്കുക"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"സറൗണ്ടിംഗ്‌സ് മ്യൂട്ട് ചെയ്യുക"</string>
@@ -1568,4 +1571,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"അജ്ഞാതം"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"എല്ലാ ടൈലുകളും റീസെറ്റ് ചെയ്യണോ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"എല്ലാ ദ്രുത ക്രമീകരണ ടൈലുകളും ഉപകരണത്തിന്റെ ഒറിജിനൽ ക്രമീകരണത്തിലേക്ക് റീസെറ്റ് ചെയ്യും"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

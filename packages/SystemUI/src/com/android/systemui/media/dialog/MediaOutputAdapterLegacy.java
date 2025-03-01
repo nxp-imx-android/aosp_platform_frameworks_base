@@ -186,8 +186,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mVolumeValueText.setTextColor(mController.getColorItemContent());
             mIconAreaLayout.setBackground(null);
             updateIconAreaClickListener(null);
-            mSeekBar.setProgressTintList(
-                    ColorStateList.valueOf(mController.getColorSeekbarProgress()));
+            updateSeekBarProgressColor();
             updateContainerContentA11yImportance(true  /* isImportant */);
             renderItem(mediaItem, position);
         }
@@ -330,6 +329,16 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
                 mCheckBox.setVisibility(isCheckbox ? View.VISIBLE : View.GONE);
                 mEndClickIcon.setVisibility(!isCheckbox ? View.VISIBLE : View.GONE);
             }
+        }
+
+        private void updateSeekBarProgressColor() {
+            mSeekBar.setProgressTintList(
+                    ColorStateList.valueOf(mController.getColorSeekbarProgress()));
+            final Drawable contrastDotDrawable =
+                    ((LayerDrawable) mSeekBar.getProgressDrawable()).findDrawableByLayerId(
+                            R.id.contrast_dot);
+            contrastDotDrawable.setTintList(
+                    ColorStateList.valueOf(mController.getColorItemContent()));
         }
 
         void updateSeekbarProgressBackground() {

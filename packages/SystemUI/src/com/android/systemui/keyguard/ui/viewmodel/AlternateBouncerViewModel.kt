@@ -47,7 +47,7 @@ constructor(
 
     /** Reports the alternate bouncer visible state if the scene container flag is enabled. */
     val isVisible: Flow<Boolean> =
-        alternateBouncerInteractor.get().isVisible.onEach { SceneContainerFlag.assertInNewMode() }
+        alternateBouncerInteractor.get().isVisible.onEach { SceneContainerFlag.unsafeAssertInNewMode() }
 
     /** Progress to a fully transitioned alternate bouncer. 1f represents fully transitioned. */
     val transitionToAlternateBouncerProgress: Flow<Float> =

@@ -634,7 +634,6 @@ public class LockPatternView extends View {
     }
 
     private void notifyPatternStarted() {
-        sendAccessEvent(R.string.lockscreen_access_pattern_start);
         if (mOnPatternListener != null) {
             mOnPatternListener.onPatternStart();
         }
@@ -642,14 +641,12 @@ public class LockPatternView extends View {
 
     @UnsupportedAppUsage
     private void notifyPatternDetected() {
-        sendAccessEvent(R.string.lockscreen_access_pattern_detected);
         if (mOnPatternListener != null) {
             mOnPatternListener.onPatternDetected(mPattern);
         }
     }
 
     private void notifyPatternCleared() {
-        sendAccessEvent(R.string.lockscreen_access_pattern_cleared);
         if (mOnPatternListener != null) {
             mOnPatternListener.onPatternCleared();
         }
@@ -1238,10 +1235,6 @@ public class LockPatternView extends View {
             invalidate(mInvalidate);
             mInvalidate.set(mTmpInvalidateRect);
         }
-    }
-
-    private void sendAccessEvent(int resId) {
-        announceForAccessibility(mContext.getString(resId));
     }
 
     private void handleActionUp() {
