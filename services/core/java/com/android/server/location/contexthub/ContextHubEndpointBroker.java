@@ -100,7 +100,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
     private final Object mOpenSessionLock = new Object();
 
-    static class SessionInfo {
+    static class Session {
         enum SessionState {
             /* The session is pending acceptance from the remote endpoint. */
             PENDING,
@@ -119,7 +119,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
          */
         private final Set<Integer> mPendingSequenceNumbers = new HashSet<>();
 
-        SessionInfo(HubEndpointInfo remoteEndpointInfo, boolean remoteInitiated) {
+        Session(HubEndpointInfo remoteEndpointInfo, boolean remoteInitiated) {
             mRemoteEndpointInfo = remoteEndpointInfo;
             mRemoteInitiated = remoteInitiated;
         }
@@ -161,7 +161,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
     /** A map between a session ID which maps to its current state. */
     @GuardedBy("mOpenSessionLock")
-    private final SparseArray<SessionInfo> mSessionInfoMap = new SparseArray<>();
+    private final SparseArray<Session> mSessionMap = new SparseArray<>();
 
     /** The package name of the app that created the endpoint */
     private final String mPackageName;
@@ -232,7 +232,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
         synchronized (mOpenSessionLock) {
             try {
-                mSessionInfoMap.put(sessionId, new SessionInfo(destination, false));
+                mSessionMap.put(sessionId, new Session(destination, false));
                 mHubInterface.openEndpointSession(
                         sessionId, halEndpointInfo.id, mHalEndpointInfo.id, serviceDescriptor);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
@@ -263,8 +263,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         super.unregister_enforcePermission();
         synchronized (mOpenSessionLock) {
             // Iterate in reverse since cleanupSessionResources will remove the entry
-            for (int i = mSessionInfoMap.size() - 1; i >= 0; i--) {
-                int id = mSessionInfoMap.keyAt(i);
+            for (int i = mSessionMap.size() - 1; i >= 0; i--) {
+                int id = mSessionMap.keyAt(i);
                 halCloseEndpointSessionNoThrow(id, Reason.ENDPOINT_GONE);
                 cleanupSessionResources(id);
             }
@@ -290,14 +290,14 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     public void openSessionRequestComplete(int sessionId) {
         super.openSessionRequestComplete_enforcePermission();
         synchronized (mOpenSessionLock) {
-            SessionInfo info = mSessionInfoMap.get(sessionId);
+            Session info = mSessionMap.get(sessionId);
             if (info == null) {
                 throw new IllegalArgumentException(
                         "openSessionRequestComplete for invalid session id=" + sessionId);
             }
             try {
                 mHubInterface.endpointSessionOpenComplete(sessionId);
-                info.setSessionState(SessionInfo.SessionState.ACTIVE);
+                info.setSessionState(Session.SessionState.ACTIVE);
             } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
                 Log.e(TAG, "Exception while calling endpointSessionOpenComplete", e);
             }
@@ -310,7 +310,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             int sessionId, HubMessage message, IContextHubTransactionCallback callback) {
         super.sendMessage_enforcePermission();
         synchronized (mOpenSessionLock) {
-            SessionInfo info = mSessionInfoMap.get(sessionId);
+            Session info = mSessionMap.get(sessionId);
             if (info == null) {
                 throw new IllegalArgumentException(
                         "sendMessage for invalid session id=" + sessionId);
@@ -393,9 +393,9 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         } else {
             synchronized (mOpenSessionLock) {
                 // Iterate in reverse since cleanupSessionResources will remove the entry
-                for (int i = mSessionInfoMap.size() - 1; i >= 0; i--) {
-                    int id = mSessionInfoMap.keyAt(i);
-                    HubEndpointInfo target = mSessionInfoMap.get(id).getRemoteEndpointInfo();
+                for (int i = mSessionMap.size() - 1; i >= 0; i--) {
+                    int id = mSessionMap.keyAt(i);
+                    HubEndpointInfo target = mSessionMap.get(id).getRemoteEndpointInfo();
                     if (!hasEndpointPermissions(target)) {
                         halCloseEndpointSessionNoThrow(id, Reason.PERMISSION_DENIED);
                         onCloseEndpointSession(id, Reason.PERMISSION_DENIED);
@@ -415,13 +415,13 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             sb.append("wakelock: ").append(mWakeLock);
         }
         synchronized (mOpenSessionLock) {
-            if (mSessionInfoMap.size() != 0) {
+            if (mSessionMap.size() != 0) {
                 sb.append(System.lineSeparator());
                 sb.append(" sessions: ");
                 sb.append(System.lineSeparator());
             }
-            for (int i = 0; i < mSessionInfoMap.size(); i++) {
-                int id = mSessionInfoMap.keyAt(i);
+            for (int i = 0; i < mSessionMap.size(); i++) {
+                int id = mSessionMap.keyAt(i);
                 int count = i + 1;
                 sb.append(
                         "  "
@@ -429,7 +429,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                                 + ". id="
                                 + id
                                 + ", remote:"
-                                + mSessionInfoMap.get(id).getRemoteEndpointInfo());
+                                + mSessionMap.get(id).getRemoteEndpointInfo());
                 sb.append(System.lineSeparator());
             }
         }
@@ -485,7 +485,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 Log.w(TAG, "Unknown session ID in onEndpointSessionOpenComplete: id=" + sessionId);
                 return;
             }
-            mSessionInfoMap.get(sessionId).setSessionState(SessionInfo.SessionState.ACTIVE);
+            mSessionMap.get(sessionId).setSessionState(Session.SessionState.ACTIVE);
         }
 
         invokeCallback((consumer) -> consumer.onSessionOpenComplete(sessionId));
@@ -501,7 +501,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     /* package */ void onMessageDeliveryStatusReceived(
             int sessionId, int sequenceNumber, byte errorCode) {
         synchronized (mOpenSessionLock) {
-            SessionInfo info = mSessionInfoMap.get(sessionId);
+            Session info = mSessionMap.get(sessionId);
             if (info == null || !info.isActive()) {
                 Log.w(TAG, "Received delivery status for invalid session: id=" + sessionId);
                 return;
@@ -517,7 +517,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
 
     /* package */ boolean hasSessionId(int sessionId) {
         synchronized (mOpenSessionLock) {
-            return mSessionInfoMap.contains(sessionId);
+            return mSessionMap.contains(sessionId);
         }
     }
 
@@ -531,8 +531,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             }
         }
         synchronized (mOpenSessionLock) {
-            for (int i = mSessionInfoMap.size() - 1; i >= 0; i--) {
-                int id = mSessionInfoMap.keyAt(i);
+            for (int i = mSessionMap.size() - 1; i >= 0; i--) {
+                int id = mSessionMap.keyAt(i);
                 onCloseEndpointSession(id, Reason.HUB_RESET);
             }
         }
@@ -555,7 +555,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 Log.e(TAG, "Existing session in onEndpointSessionOpenRequest: id=" + sessionId);
                 return Optional.of(Reason.UNSPECIFIED);
             }
-            mSessionInfoMap.put(sessionId, new SessionInfo(initiator, true));
+            mSessionMap.put(sessionId, new Session(initiator, true));
         }
 
         boolean success =
@@ -578,7 +578,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                                 + message);
                 return ErrorCode.PERMANENT_ERROR;
             }
-            remote = mSessionInfoMap.get(sessionId).getRemoteEndpointInfo();
+            remote = mSessionMap.get(sessionId).getRemoteEndpointInfo();
         }
 
         try {
@@ -634,7 +634,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
      */
     private boolean cleanupSessionResources(int sessionId) {
         synchronized (mOpenSessionLock) {
-            SessionInfo info = mSessionInfoMap.get(sessionId);
+            Session info = mSessionMap.get(sessionId);
             if (info != null) {
                 if (!info.isRemoteInitiated()) {
                     mEndpointManager.returnSessionId(sessionId);
@@ -644,7 +644,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                             mTransactionManager.onMessageDeliveryResponse(
                                     sequenceNumber, /* success= */ false);
                         });
-                mSessionInfoMap.remove(sessionId);
+                mSessionMap.remove(sessionId);
             }
             return info != null;
         }
@@ -656,7 +656,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
      */
     private boolean isSessionActive(int sessionId) {
         synchronized (mOpenSessionLock) {
-            return hasSessionId(sessionId) && mSessionInfoMap.get(sessionId).isActive();
+            return hasSessionId(sessionId) && mSessionMap.get(sessionId).isActive();
         }
     }
 
