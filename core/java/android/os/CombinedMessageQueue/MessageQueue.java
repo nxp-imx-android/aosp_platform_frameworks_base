@@ -149,6 +149,11 @@ public final class MessageQueue {
             return;
         }
 
+        if (Flags.forceConcurrentMessageQueue()) {
+            sIsProcessAllowedToUseConcurrent = true;
+            return;
+        }
+
         final String processName = Process.myProcessName();
         if (processName == null) {
             // Assume that this is a host-side test and avoid concurrent mode for now.
