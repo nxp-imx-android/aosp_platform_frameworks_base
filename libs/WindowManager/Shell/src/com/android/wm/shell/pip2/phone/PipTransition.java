@@ -770,7 +770,7 @@ public class PipTransition extends PipTransitionController implements
         // Since opening a new task while in Desktop Mode always first open in Fullscreen
         // until DesktopMode Shell code resolves it to Freeform, PipTransition will get a
         // possibility to handle it also. In this case return false to not have it enter PiP.
-        if (mPipDesktopState.isPipEnteringInDesktopMode(pipTask)) {
+        if (mPipDesktopState.isPipInDesktopMode()) {
             return false;
         }
 
@@ -947,14 +947,6 @@ public class PipTransition extends PipTransitionController implements
                         "Unexpected bundle for " + mPipTransitionState);
                 break;
             case PipTransitionState.EXITED_PIP:
-                if (mPipDesktopState.shouldExitPipExitDesktopMode()) {
-                    mTransitions.startTransition(
-                            TRANSIT_TO_BACK,
-                            mPipDesktopState.getWallpaperActivityTokenWct(
-                                    mPipTransitionState.getPipTaskInfo().getDisplayId()),
-                            null /* firstHandler */
-                    );
-                }
                 mPipTransitionState.setPinnedTaskLeash(null);
                 mPipTransitionState.setPipTaskInfo(null);
                 mPendingRemoveWithFadeout = false;
