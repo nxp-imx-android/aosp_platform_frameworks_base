@@ -53,6 +53,8 @@ import com.android.systemui.keyguard.domain.interactor.pulseExpansionInteractor
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenToGlanceableHubTransitionViewModel
 import com.android.systemui.model.sceneContainerPlugin
+import com.android.systemui.model.sysUIStateDispatcher
+import com.android.systemui.model.sysUiState
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.power.domain.interactor.powerInteractor
@@ -64,6 +66,7 @@ import com.android.systemui.scene.sceneContainerConfig
 import com.android.systemui.scene.shared.model.sceneDataSource
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
 import com.android.systemui.settings.brightness.data.repository.brightnessMirrorShowingRepository
+import com.android.systemui.settings.displayTracker
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLayoutParams
@@ -198,4 +201,7 @@ class KosmosJavaAdapter() {
     val fakeDisableFlagsRepository by lazy { kosmos.fakeDisableFlagsRepository }
     val mockWindowRootViewProvider by lazy { kosmos.mockWindowRootViewProvider }
     val windowRootViewBlurInteractor by lazy { kosmos.windowRootViewBlurInteractor }
+    val sysuiState by lazy { kosmos.sysUiState }
+    val displayTracker by lazy { kosmos.displayTracker }
+    val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
 }

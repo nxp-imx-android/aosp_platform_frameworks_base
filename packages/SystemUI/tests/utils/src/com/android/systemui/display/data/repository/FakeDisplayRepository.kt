@@ -53,6 +53,7 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
         MutableSharedFlow<DisplayRepository.PendingDisplay?>(replay = 1)
     private val displayAdditionEventFlow = MutableSharedFlow<Display?>(replay = 0)
     private val displayRemovalEventFlow = MutableSharedFlow<Int>(replay = 0)
+    private val displayIdsWithSystemDecorationsFlow = MutableStateFlow<Set<Int>>(emptySet())
 
     suspend fun addDisplay(displayId: Int, type: Int = Display.TYPE_EXTERNAL) {
         addDisplay(display(type, id = displayId))
@@ -62,16 +63,35 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
         displays.forEach { addDisplay(it) }
     }
 
+    suspend operator fun plusAssign(display: Display) {
+        addDisplay(display)
+    }
+
+    suspend operator fun minusAssign(displayId: Int) {
+        removeDisplay(displayId)
+    }
+
     suspend fun addDisplay(display: Display) {
         flow.value += display
         displayIdFlow.value += display.displayId
         displayAdditionEventFlow.emit(display)
+        displayIdsWithSystemDecorationsFlow.value += display.displayId
     }
 
     suspend fun removeDisplay(displayId: Int) {
         flow.value = flow.value.filter { it.displayId != displayId }.toSet()
         displayIdFlow.value = displayIdFlow.value.filter { it != displayId }.toSet()
         displayRemovalEventFlow.emit(displayId)
+    }
+
+    suspend fun triggerAddDisplaySystemDecorationEvent(displayId: Int) {
+        displayIdsWithSystemDecorationsFlow.value += displayId
+        displayIdsWithSystemDecorationsFlow.emit(displayIdsWithSystemDecorationsFlow.value)
+    }
+
+    suspend fun triggerRemoveSystemDecorationEvent(displayId: Int) {
+        displayIdsWithSystemDecorationsFlow.value -= displayId
+        displayIdsWithSystemDecorationsFlow.emit(displayIdsWithSystemDecorationsFlow.value)
     }
 
     /** Emits [value] as [displayAdditionEvent] flow value. */
@@ -104,7 +124,8 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     private val _displayChangeEvent = MutableSharedFlow<Int>(replay = 1)
     override val displayChangeEvent: Flow<Int> = _displayChangeEvent
 
-    override val displayIdsWithSystemDecorations: StateFlow<Set<Int>> = MutableStateFlow(emptySet())
+    override val displayIdsWithSystemDecorations: StateFlow<Set<Int>> =
+        displayIdsWithSystemDecorationsFlow
 
     suspend fun emitDisplayChangeEvent(displayId: Int) = _displayChangeEvent.emit(displayId)
 

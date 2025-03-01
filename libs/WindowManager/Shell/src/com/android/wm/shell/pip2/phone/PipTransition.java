@@ -113,6 +113,7 @@ public class PipTransition extends PipTransitionController implements
     private final DisplayController mDisplayController;
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
     private final PipDesktopState mPipDesktopState;
+    private final PipInteractionHandler mPipInteractionHandler;
 
     //
     // Transition caches
@@ -154,7 +155,8 @@ public class PipTransition extends PipTransitionController implements
             PipUiStateChangeController pipUiStateChangeController,
             DisplayController displayController,
             Optional<SplitScreenController> splitScreenControllerOptional,
-            PipDesktopState pipDesktopState) {
+            PipDesktopState pipDesktopState,
+            PipInteractionHandler pipInteractionHandler) {
         super(shellInit, shellTaskOrganizer, transitions, pipBoundsState, pipMenuController,
                 pipBoundsAlgorithm);
 
@@ -168,9 +170,11 @@ public class PipTransition extends PipTransitionController implements
         mDisplayController = displayController;
         mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(mContext);
         mPipDesktopState = pipDesktopState;
+        mPipInteractionHandler = pipInteractionHandler;
 
         mExpandHandler = new PipExpandHandler(mContext, pipBoundsState, pipBoundsAlgorithm,
-                pipTransitionState, pipDisplayLayoutState, splitScreenControllerOptional);
+                pipTransitionState, pipDisplayLayoutState, pipInteractionHandler,
+                splitScreenControllerOptional);
     }
 
     @Override
@@ -770,7 +774,7 @@ public class PipTransition extends PipTransitionController implements
         // Since opening a new task while in Desktop Mode always first open in Fullscreen
         // until DesktopMode Shell code resolves it to Freeform, PipTransition will get a
         // possibility to handle it also. In this case return false to not have it enter PiP.
-        if (mPipDesktopState.isPipEnteringInDesktopMode(pipTask)) {
+        if (mPipDesktopState.isPipInDesktopMode()) {
             return false;
         }
 
@@ -794,9 +798,26 @@ public class PipTransition extends PipTransitionController implements
                 setEnterAnimationType(ANIM_TYPE_BOUNDS);
                 return true;
             }
-            // If the only change in the changes list is a opening type PiP task,
+
+            // Sometimes root PiP task can have TF children. These child containers can be collected
+            // even if they can promote to their parents: e.g. if they are marked as "organized".
+            // So we count the chain of containers under PiP task as one "real" changing target;
+            // iterate through changes bottom-to-top to properly identify parents.
+            int expectedTargetCount = 1;
+            WindowContainerToken lastPipChildToken = pipChange.getContainer();
+            for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+                TransitionInfo.Change change = info.getChanges().get(i);
+                if (change == pipChange || change.getContainer() == null) continue;
+                if (change.getParent() != null && change.getParent().equals(lastPipChildToken)) {
+                    // Allow an extra change since our pinned root task has a child.
+                    ++expectedTargetCount;
+                    lastPipChildToken = change.getContainer();
+                }
+            }
+
+            // If the only root task change in the changes list is a opening type PiP task,
             // then this is legacy-enter PiP.
-            return info.getChanges().size() == 1
+            return info.getChanges().size() == expectedTargetCount
                     && TransitionUtil.isOpeningMode(pipChange.getMode());
         }
         return false;
@@ -930,14 +951,6 @@ public class PipTransition extends PipTransitionController implements
                         "Unexpected bundle for " + mPipTransitionState);
                 break;
             case PipTransitionState.EXITED_PIP:
-                if (mPipDesktopState.shouldExitPipExitDesktopMode()) {
-                    mTransitions.startTransition(
-                            TRANSIT_TO_BACK,
-                            mPipDesktopState.getWallpaperActivityTokenWct(
-                                    mPipTransitionState.getPipTaskInfo().getDisplayId()),
-                            null /* firstHandler */
-                    );
-                }
                 mPipTransitionState.setPinnedTaskLeash(null);
                 mPipTransitionState.setPipTaskInfo(null);
                 mPendingRemoveWithFadeout = false;

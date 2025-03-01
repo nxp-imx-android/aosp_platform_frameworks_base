@@ -23,6 +23,7 @@ import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP_TO_SPLIT;
 
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,11 +49,13 @@ import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.animation.PipExpandAnimator;
+import com.android.wm.shell.pip2.phone.PipInteractionHandler;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.transition.TransitionInfoBuilder;
@@ -61,6 +64,8 @@ import com.android.wm.shell.util.StubTransaction;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -79,6 +84,7 @@ public class PipExpandHandlerTest {
     @Mock private PipBoundsAlgorithm mMockPipBoundsAlgorithm;
     @Mock private PipTransitionState mMockPipTransitionState;
     @Mock private PipDisplayLayoutState mMockPipDisplayLayoutState;
+    @Mock private PipInteractionHandler mMockPipInteractionHandler;
     @Mock private SplitScreenController mMockSplitScreenController;
 
     @Mock private IBinder mMockTransitionToken;
@@ -88,6 +94,8 @@ public class PipExpandHandlerTest {
     @Mock private SurfaceControl mPipLeash;
 
     @Mock private PipExpandAnimator mMockPipExpandAnimator;
+
+    @Captor private ArgumentCaptor<Runnable> mAnimatorCallbackArgumentCaptor;
 
     @Surface.Rotation
     private static final int DISPLAY_ROTATION = Surface.ROTATION_0;
@@ -108,7 +116,7 @@ public class PipExpandHandlerTest {
 
         mPipExpandHandler = new PipExpandHandler(mMockContext, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockPipTransitionState, mMockPipDisplayLayoutState,
-                Optional.of(mMockSplitScreenController));
+                mMockPipInteractionHandler, Optional.of(mMockSplitScreenController));
         mPipExpandHandler.setPipExpandAnimatorSupplier((context, leash, startTransaction,
                 finishTransaction, baseBounds, startBounds, endBounds,
                 sourceRectHint, rotation) -> mMockPipExpandAnimator);
@@ -138,6 +146,13 @@ public class PipExpandHandlerTest {
 
         verify(mMockPipExpandAnimator, times(1)).start();
         verify(mMockPipBoundsState, times(1)).saveReentryState(SNAP_FRACTION);
+
+        verify(mMockPipExpandAnimator, times(1))
+                .setAnimationStartCallback(mAnimatorCallbackArgumentCaptor.capture());
+        InstrumentationRegistry.getInstrumentation()
+                .runOnMainSync(mAnimatorCallbackArgumentCaptor.getValue());
+        verify(mMockPipInteractionHandler, times(1)).begin(any(),
+                eq(PipInteractionHandler.INTERACTION_EXIT_PIP));
     }
 
     @Test
@@ -158,6 +173,13 @@ public class PipExpandHandlerTest {
         verify(mMockSplitScreenController, times(1)).finishEnterSplitScreen(eq(mFinishT));
         verify(mMockPipExpandAnimator, times(1)).start();
         verify(mMockPipBoundsState, times(1)).saveReentryState(SNAP_FRACTION);
+
+        verify(mMockPipExpandAnimator, times(1))
+                .setAnimationStartCallback(mAnimatorCallbackArgumentCaptor.capture());
+        InstrumentationRegistry.getInstrumentation()
+                .runOnMainSync(mAnimatorCallbackArgumentCaptor.getValue());
+        verify(mMockPipInteractionHandler, times(1)).begin(any(),
+                eq(PipInteractionHandler.INTERACTION_EXIT_PIP_TO_SPLIT));
     }
 
     private TransitionInfo getExpandFromPipTransitionInfo(@WindowManager.TransitionType int type,

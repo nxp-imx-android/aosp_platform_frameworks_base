@@ -17,7 +17,9 @@
 package com.android.systemui.shade;
 
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
+import static android.view.Display.TYPE_INTERNAL;
 
+import static com.android.systemui.display.data.repository.FakeDisplayRepositoryKt.display;
 import static com.android.systemui.log.LogBufferHelperKt.logcatLogBuffer;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -47,6 +49,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.os.UserManager;
 import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -70,6 +73,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.classifier.FalsingCollectorFake;
 import com.android.systemui.classifier.FalsingManagerFake;
+import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor;
 import com.android.systemui.common.ui.view.TouchHandlingView;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor;
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor;
@@ -291,6 +295,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock private NaturalScrollingSettingObserver mNaturalScrollingSettingObserver;
     @Mock private LargeScreenHeaderHelper mLargeScreenHeaderHelper;
     @Mock private StatusBarLongPressGestureDetector mStatusBarLongPressGestureDetector;
+    @Mock protected SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
     protected final int mMaxUdfpsBurnInOffsetY = 5;
     protected FakeFeatureFlagsClassic mFeatureFlags = new FakeFeatureFlagsClassic();
     protected KeyguardClockInteractor mKeyguardClockInteractor;
@@ -435,6 +440,9 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
             return null;
         }).when(mView).setOnTouchListener(any(NotificationPanelViewController.TouchHandler.class));
 
+        var displayMock = display(TYPE_INTERNAL, /* flags= */ 0, /* id= */Display.DEFAULT_DISPLAY,
+                /* state= */ null);
+        when(mView.getDisplay()).thenReturn(displayMock);
         // Any edge transition
         when(mKeyguardTransitionInteractor.transition(any()))
                 .thenReturn(emptyFlow());
@@ -565,6 +573,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mShadeRepository,
                 mSysUIUnfoldComponent,
                 mSysUiState,
+                mSysUIStateDisplaysInteractor,
                 mKeyguardUnlockAnimationController,
                 mKeyguardIndicationController,
                 mNotificationListContainer,

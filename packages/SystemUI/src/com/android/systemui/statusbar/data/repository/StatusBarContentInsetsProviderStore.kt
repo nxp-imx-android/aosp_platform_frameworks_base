@@ -25,7 +25,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
-import com.android.systemui.display.data.repository.PerDisplayStoreImpl
 import com.android.systemui.display.data.repository.SingleDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.layout.StatusBarContentInsetsProvider
@@ -54,7 +53,7 @@ constructor(
     private val cameraProtectionLoaderFactory: CameraProtectionLoaderImpl.Factory,
 ) :
     StatusBarContentInsetsProviderStore,
-    PerDisplayStoreImpl<StatusBarContentInsetsProvider>(
+    StatusBarPerDisplayStoreImpl<StatusBarContentInsetsProvider>(
         backgroundApplicationScope,
         displayRepository,
     ) {

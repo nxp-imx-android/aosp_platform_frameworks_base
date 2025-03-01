@@ -23,7 +23,6 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Choreographer
-import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -54,6 +53,7 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
+import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
 import com.android.systemui.shade.NotificationShadeWindowView.InteractionEventHandler
@@ -96,7 +96,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -245,7 +244,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
                 notificationLaunchAnimationInteractor,
                 featureFlagsClassic,
                 fakeClock,
-                sysUIKeyEventHandler,
+                WindowRootViewKeyEventHandler({ sysUIKeyEventHandler }, falsingCollector),
                 quickSettingsController,
                 primaryBouncerInteractor,
                 alternateBouncerInteractor,
@@ -588,34 +587,6 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
 
         // No adding of views occurs.
         verify(view, times(0)).addView(any(), eq(fakeViewIndex))
-    }
-
-    @Test
-    fun forwardsDispatchKeyEvent() {
-        val keyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B)
-        interactionEventHandler.dispatchKeyEvent(keyEvent)
-        verify(sysUIKeyEventHandler).dispatchKeyEvent(keyEvent)
-    }
-
-    @Test
-    fun forwardsDispatchKeyEventPreIme() {
-        val keyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_B)
-        interactionEventHandler.dispatchKeyEventPreIme(keyEvent)
-        verify(sysUIKeyEventHandler).dispatchKeyEventPreIme(keyEvent)
-    }
-
-    @Test
-    fun forwardsInterceptMediaKey() {
-        val keyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_VOLUME_UP)
-        interactionEventHandler.interceptMediaKey(keyEvent)
-        verify(sysUIKeyEventHandler).interceptMediaKey(keyEvent)
-    }
-
-    @Test
-    fun forwardsCollectKeyEvent() {
-        val keyEvent = KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_A)
-        interactionEventHandler.collectKeyEvent(keyEvent)
-        assertEquals(keyEvent, falsingCollector.lastKeyEvent)
     }
 
     @Test

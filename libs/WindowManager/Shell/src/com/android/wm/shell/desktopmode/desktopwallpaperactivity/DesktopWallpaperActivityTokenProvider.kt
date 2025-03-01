@@ -17,7 +17,6 @@
 package com.android.wm.shell.desktopmode.desktopwallpaperactivity
 
 import android.util.SparseArray
-import android.util.SparseBooleanArray
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.WindowContainerToken
 import androidx.core.util.keyIterator
@@ -28,7 +27,6 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 class DesktopWallpaperActivityTokenProvider {
 
     private val wallpaperActivityTokenByDisplayId = SparseArray<WindowContainerToken>()
-    private val wallpaperActivityVisByDisplayId = SparseBooleanArray()
 
     fun setToken(token: WindowContainerToken, displayId: Int = DEFAULT_DISPLAY) {
         logV("Setting desktop wallpaper activity token for display %s", displayId)
@@ -53,18 +51,6 @@ class DesktopWallpaperActivityTokenProvider {
             logV("Remove desktop wallpaper activity token for display %s", displayId)
             wallpaperActivityTokenByDisplayId.delete(displayId)
         }
-    }
-
-    fun setWallpaperActivityIsVisible(
-        isVisible: Boolean = false,
-        displayId: Int = DEFAULT_DISPLAY,
-    ) {
-        wallpaperActivityVisByDisplayId.put(displayId, isVisible)
-    }
-
-    fun isWallpaperActivityVisible(displayId: Int = DEFAULT_DISPLAY): Boolean {
-        return wallpaperActivityTokenByDisplayId[displayId] != null &&
-            wallpaperActivityVisByDisplayId.get(displayId, false)
     }
 
     private fun logV(msg: String, vararg arguments: Any?) {

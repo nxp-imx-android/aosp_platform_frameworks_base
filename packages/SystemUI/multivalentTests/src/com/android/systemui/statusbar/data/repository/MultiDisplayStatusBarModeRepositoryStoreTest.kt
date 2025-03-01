@@ -59,11 +59,11 @@ class MultiDisplayStatusBarModeRepositoryStoreTest : SysuiTestCase() {
         }
 
     @Test
-    fun displayRemoved_stopsInstance() =
+    fun systemDecorationRemovedEvent_stopsInstance() =
         testScope.runTest {
             val instance = underTest.forDisplay(DEFAULT_DISPLAY)!!
 
-            fakeDisplayRepository.removeDisplay(DEFAULT_DISPLAY)
+            fakeDisplayRepository.triggerRemoveSystemDecorationEvent(DEFAULT_DISPLAY)
 
             verify(instance).stop()
         }

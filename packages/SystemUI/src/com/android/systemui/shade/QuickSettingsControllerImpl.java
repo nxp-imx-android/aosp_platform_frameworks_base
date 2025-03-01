@@ -959,6 +959,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     void setShadeExpansion(float expandedHeight, float expandedFraction) {
         mShadeExpandedHeight = expandedHeight;
         mShadeExpandedFraction = expandedFraction;
+        mMediaHierarchyManager.setShadeExpandedFraction(expandedFraction);
     }
 
     @VisibleForTesting

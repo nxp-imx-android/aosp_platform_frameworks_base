@@ -33,8 +33,6 @@ import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -56,6 +54,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+
+import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 
 import android.app.ActivityManager;
 import android.app.IActivityManager;
@@ -464,8 +464,8 @@ public class BubblesTest extends SysuiTestCase {
         mZenModeConfig.suppressedVisualEffects = 0;
         when(mZenModeController.getConfig()).thenReturn(mZenModeConfig);
 
-        mSysUiState = new SysUiState(mDisplayTracker, mKosmos.getSceneContainerPlugin());
-        mSysUiState.addCallback(sysUiFlags -> {
+        mSysUiState = mKosmos.getSysuiState();
+        mSysUiState.addCallback((sysUiFlags, displayId) -> {
             mSysUiStateBubblesManageMenuExpanded =
                     (sysUiFlags
                             & QuickStepContract.SYSUI_STATE_BUBBLES_MANAGE_MENU_EXPANDED) != 0;
@@ -624,7 +624,8 @@ public class BubblesTest extends SysuiTestCase {
                     TAG,
                     String.format("waiting for animations to complete. attempt %d", retryCount));
             // post a message to the looper and wait for it to be processed
-            mTestableLooper.runWithLooper(() -> {});
+            mTestableLooper.runWithLooper(() -> {
+            });
             retryCount++;
         }
         mTestableLooper.processAllMessages();
@@ -2996,9 +2997,11 @@ public class BubblesTest extends SysuiTestCase {
         }
 
         @Override
-        public void onDragItemOverBubbleBarDragZone(@NonNull BubbleBarLocation location) {}
+        public void onDragItemOverBubbleBarDragZone(@NonNull BubbleBarLocation location) {
+        }
 
         @Override
-        public void onItemDraggedOutsideBubbleBarDropZone() {}
+        public void onItemDraggedOutsideBubbleBarDropZone() {
+        }
     }
 }

@@ -21,6 +21,7 @@ import android.app.Service;
 import android.app.backup.BackupManager;
 import android.content.Context;
 import android.service.dreams.IDreamManager;
+import android.view.Display;
 
 import androidx.annotation.Nullable;
 
@@ -64,9 +65,9 @@ import com.android.systemui.dagger.qualifiers.UiBackground;
 import com.android.systemui.demomode.dagger.DemoModeModule;
 import com.android.systemui.deviceentry.DeviceEntryModule;
 import com.android.systemui.display.DisplayModule;
+import com.android.systemui.display.data.repository.PerDisplayRepository;
 import com.android.systemui.doze.dagger.DozeComponent;
 import com.android.systemui.dreams.dagger.DreamModule;
-import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.FlagDependenciesModule;
 import com.android.systemui.flags.FlagsModule;
@@ -86,7 +87,6 @@ import com.android.systemui.mediaprojection.MediaProjectionModule;
 import com.android.systemui.mediaprojection.appselector.MediaProjectionActivitiesModule;
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherModule;
 import com.android.systemui.mediarouter.MediaRouterModule;
-import com.android.systemui.model.SceneContainerPlugin;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.motiontool.MotionToolModule;
 import com.android.systemui.navigationbar.NavigationBarComponent;
@@ -113,7 +113,6 @@ import com.android.systemui.scene.ui.view.WindowRootViewComponent;
 import com.android.systemui.screenrecord.ScreenRecordModule;
 import com.android.systemui.screenshot.dagger.ScreenshotModule;
 import com.android.systemui.security.data.repository.SecurityRepositoryModule;
-import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAwareModule;
@@ -289,7 +288,8 @@ import javax.inject.Named;
         UtilModule.class,
         NoteTaskModule.class,
         WalletModule.class,
-        LowLightModule.class
+        LowLightModule.class,
+        PerDisplayRepositoriesModule.class
 },
         subcomponents = {
                 ComplicationComponent.class,
@@ -326,12 +326,8 @@ public abstract class SystemUIModule {
     @SysUISingleton
     @Provides
     static SysUiState provideSysUiState(
-            DisplayTracker displayTracker,
-            DumpManager dumpManager,
-            SceneContainerPlugin sceneContainerPlugin) {
-        final SysUiState state = new SysUiState(displayTracker, sceneContainerPlugin);
-        dumpManager.registerDumpable(state);
-        return state;
+            PerDisplayRepository<SysUiState> repository) {
+        return repository.get(Display.DEFAULT_DISPLAY);
     }
 
     /**

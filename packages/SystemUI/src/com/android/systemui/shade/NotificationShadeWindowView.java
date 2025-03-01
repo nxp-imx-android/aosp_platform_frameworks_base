@@ -105,26 +105,6 @@ public class NotificationShadeWindowView extends WindowRootView {
         }
     }
 
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        mInteractionEventHandler.collectKeyEvent(event);
-
-        if (mInteractionEventHandler.interceptMediaKey(event)) {
-            return true;
-        }
-
-        if (super.dispatchKeyEvent(event)) {
-            return true;
-        }
-
-        return mInteractionEventHandler.dispatchKeyEvent(event);
-    }
-
-    @Override
-    public boolean dispatchKeyEventPreIme(KeyEvent event) {
-        return mInteractionEventHandler.dispatchKeyEventPreIme(event);
-    }
-
     protected void setInteractionEventHandler(InteractionEventHandler listener) {
         mInteractionEventHandler = listener;
     }
@@ -363,17 +343,6 @@ public class NotificationShadeWindowView extends WindowRootView {
         boolean handleTouchEvent(MotionEvent ev);
 
         void didNotHandleTouchEvent(MotionEvent ev);
-
-        boolean interceptMediaKey(KeyEvent event);
-
-        boolean dispatchKeyEvent(KeyEvent event);
-
-        boolean dispatchKeyEventPreIme(KeyEvent event);
-
-        /**
-         * Collects the KeyEvent without intercepting it
-         */
-        void collectKeyEvent(KeyEvent event);
     }
 
     /**

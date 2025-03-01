@@ -340,51 +340,6 @@ class DesktopTasksTransitionObserverTest {
     }
 
     @Test
-    fun transitOpenWallpaper_wallpaperActivityVisibilitySaved() {
-        val wallpaperTask = createWallpaperTaskInfo()
-
-        transitionObserver.onTransitionReady(
-            transition = mock(),
-            info = createOpenChangeTransition(wallpaperTask),
-            startTransaction = mock(),
-            finishTransaction = mock(),
-        )
-
-        verify(desktopWallpaperActivityTokenProvider)
-            .setWallpaperActivityIsVisible(isVisible = true, wallpaperTask.displayId)
-    }
-
-    @Test
-    fun transitToFrontWallpaper_wallpaperActivityVisibilitySaved() {
-        val wallpaperTask = createWallpaperTaskInfo()
-
-        transitionObserver.onTransitionReady(
-            transition = mock(),
-            info = createToFrontTransition(wallpaperTask),
-            startTransaction = mock(),
-            finishTransaction = mock(),
-        )
-
-        verify(desktopWallpaperActivityTokenProvider)
-            .setWallpaperActivityIsVisible(isVisible = true, wallpaperTask.displayId)
-    }
-
-    @Test
-    fun transitToBackWallpaper_wallpaperActivityVisibilitySaved() {
-        val wallpaperTask = createWallpaperTaskInfo()
-
-        transitionObserver.onTransitionReady(
-            transition = mock(),
-            info = createToBackTransition(wallpaperTask),
-            startTransaction = mock(),
-            finishTransaction = mock(),
-        )
-
-        verify(desktopWallpaperActivityTokenProvider)
-            .setWallpaperActivityIsVisible(isVisible = false, wallpaperTask.displayId)
-    }
-
-    @Test
     fun transitCloseWallpaper_wallpaperActivityVisibilitySaved() {
         val wallpaperTask = createWallpaperTaskInfo()
 
@@ -407,7 +362,7 @@ class DesktopTasksTransitionObserverTest {
 
         transitionObserver.onTransitionReady(
             transition = pipTransition,
-            info = createOpenChangeTransition(task, TRANSIT_PIP),
+            info = createOpenChangeTransition(task, type = TRANSIT_PIP),
             startTransaction = mock(),
             finishTransaction = mock(),
         )

@@ -27,7 +27,6 @@ import android.app.StatusBarManager;
 import android.util.Log;
 import android.view.Choreographer;
 import android.view.GestureDetector;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +49,6 @@ import com.android.systemui.dock.DockManager;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlagsClassic;
 import com.android.systemui.flags.Flags;
-import com.android.systemui.keyevent.domain.interactor.SysUIKeyEventHandler;
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
 import com.android.systemui.keyguard.shared.model.Edge;
@@ -60,6 +58,7 @@ import com.android.systemui.keyguard.shared.model.TransitionStep;
 import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler;
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor;
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor;
@@ -89,7 +88,6 @@ import com.android.systemui.window.ui.WindowRootViewBinder;
 import com.android.systemui.window.ui.viewmodel.WindowRootViewModel;
 
 import kotlinx.coroutines.CoroutineDispatcher;
-import kotlinx.coroutines.ExperimentalCoroutinesApi;
 import kotlinx.coroutines.flow.Flow;
 
 import java.io.PrintWriter;
@@ -117,8 +115,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
     private final AmbientState mAmbientState;
     private final PulsingGestureListener mPulsingGestureListener;
     private final NotificationInsetsController mNotificationInsetsController;
-    private final FeatureFlagsClassic mFeatureFlagsClassic;
-    private final SysUIKeyEventHandler mSysUIKeyEventHandler;
+    private final WindowRootViewKeyEventHandler mWindowRootViewKeyEventHandler;
     private final PrimaryBouncerInteractor mPrimaryBouncerInteractor;
     private final AlternateBouncerInteractor mAlternateBouncerInteractor;
     private final QuickSettingsController mQuickSettingsController;
@@ -202,7 +199,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
             NotificationLaunchAnimationInteractor notificationLaunchAnimationInteractor,
             FeatureFlagsClassic featureFlagsClassic,
             SystemClock clock,
-            SysUIKeyEventHandler sysUIKeyEventHandler,
+            WindowRootViewKeyEventHandler windowRootViewKeyEventHandler,
             QuickSettingsController quickSettingsController,
             PrimaryBouncerInteractor primaryBouncerInteractor,
             AlternateBouncerInteractor alternateBouncerInteractor,
@@ -232,8 +229,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
         mNotificationInsetsController = notificationInsetsController;
         mKeyguardTransitionInteractor = keyguardTransitionInteractor;
         mGlanceableHubContainerController = glanceableHubContainerController;
-        mFeatureFlagsClassic = featureFlagsClassic;
-        mSysUIKeyEventHandler = sysUIKeyEventHandler;
+        mWindowRootViewKeyEventHandler = windowRootViewKeyEventHandler;
         mPrimaryBouncerInteractor = primaryBouncerInteractor;
         mAlternateBouncerInteractor = alternateBouncerInteractor;
         mQuickSettingsController = quickSettingsController;
@@ -370,6 +366,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
         mPulsingWakeupGestureHandler = new GestureDetector(mView.getContext(),
                 mPulsingGestureListener);
         mView.setLayoutInsetsController(mNotificationInsetsController);
+        mView.setWindowRootViewKeyEventHandler(mWindowRootViewKeyEventHandler);
         mView.setInteractionEventHandler(new NotificationShadeWindowView.InteractionEventHandler() {
             boolean mUseDragDownHelperForTouch = false;
             boolean mLastInterceptWasDragDownHelper = false;
@@ -604,26 +601,6 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
                     mService.setInteracting(StatusBarManager.WINDOW_STATUS_BAR, false);
                 }
-            }
-
-            @Override
-            public boolean interceptMediaKey(KeyEvent event) {
-                return mSysUIKeyEventHandler.interceptMediaKey(event);
-            }
-
-            @Override
-            public boolean dispatchKeyEventPreIme(KeyEvent event) {
-                return mSysUIKeyEventHandler.dispatchKeyEventPreIme(event);
-            }
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent event) {
-                return mSysUIKeyEventHandler.dispatchKeyEvent(event);
-            }
-
-            @Override
-            public void collectKeyEvent(KeyEvent event) {
-                mFalsingCollector.onKeyEvent(event);
             }
         });
 

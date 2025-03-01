@@ -343,45 +343,28 @@ class DesktopTasksController(
     fun isAnyDeskActive(displayId: Int): Boolean = taskRepository.isAnyDeskActive(displayId)
 
     /**
-     * Returns true if any of the following is true:
-     * - Any freeform tasks are visible
-     * - A transparent fullscreen task exists on top in Desktop Mode
-     * - PiP on Desktop Windowing is enabled, there is an active PiP window and the desktop
-     *   wallpaper is visible.
+     * Returns true if any freeform tasks are visible or if a transparent fullscreen task exists on
+     * top in Desktop Mode.
      *
      * TODO: b/362720497 - consolidate with [isAnyDeskActive].
      *     - top-transparent-fullscreen case: should not be needed if we allow it to launch inside
      *       the desk in fullscreen instead of force-exiting desktop and having to trick this method
      *       into thinking it is in desktop mode when a task in this state exists.
-     *     - PIP case: a PIP presence should influence desk activation, so
-     *       [DesktopRepository#isAnyDeskActive] should be sufficient.
      */
     fun isDesktopModeShowing(displayId: Int): Boolean {
         val hasVisibleTasks = taskRepository.isAnyDeskActive(displayId)
         val hasTopTransparentFullscreenTask =
             taskRepository.getTopTransparentFullscreenTaskId(displayId) != null
-        val hasMinimizedPip =
-            Flags.enableDesktopWindowingPip() &&
-                taskRepository.isMinimizedPipPresentInDisplay(displayId) &&
-                desktopWallpaperActivityTokenProvider.isWallpaperActivityVisible(displayId)
         if (
             DesktopModeFlags.INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC
                 .isTrue() && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue()
         ) {
             logV(
-                "isDesktopModeShowing: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s hasMinimizedPip=%s",
+                "isDesktopModeShowing: hasVisibleTasks=%s hasTopTransparentFullscreenTask=%s",
                 hasVisibleTasks,
                 hasTopTransparentFullscreenTask,
-                hasMinimizedPip,
             )
-            return hasVisibleTasks || hasTopTransparentFullscreenTask || hasMinimizedPip
-        } else if (Flags.enableDesktopWindowingPip()) {
-            logV(
-                "isDesktopModeShowing: hasVisibleTasks=%s hasMinimizedPip=%s",
-                hasVisibleTasks,
-                hasMinimizedPip,
-            )
-            return hasVisibleTasks || hasMinimizedPip
+            return hasVisibleTasks || hasTopTransparentFullscreenTask
         }
         logV("isDesktopModeShowing: hasVisibleTasks=%s", hasVisibleTasks)
         return hasVisibleTasks
@@ -767,7 +750,6 @@ class DesktopTasksController(
                 displayId = displayId,
                 forceExitDesktop = false,
             )
-        taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = true)
         val desktopExitRunnable =
             performDesktopExitCleanUp(
                 wct = wct,
@@ -837,7 +819,6 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
 
         snapEventHandler.removeTaskIfTiled(displayId, taskId)
-        taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = true)
         val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
         val desktopExitRunnable =
             performDesktopExitCleanUp(
@@ -952,11 +933,9 @@ class DesktopTasksController(
         // handles case where we are moving to full screen without closing all DW tasks.
         if (
             !taskRepository.isOnlyVisibleNonClosingTask(task.taskId)
-            // This callback is already invoked by |addMoveToFullscreenChanges| when one of these
-            // flags is enabled.
-            &&
-                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
-                !Flags.enableDesktopWindowingPip()
+            // This callback is already invoked by |addMoveToFullscreenChanges| when this flag is
+            // enabled.
+            && !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
         ) {
             desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
                 FULLSCREEN_ANIMATION_DURATION
@@ -1854,11 +1833,7 @@ class DesktopTasksController(
         displayId: Int,
         forceExitDesktop: Boolean,
     ): Boolean {
-        if (
-            forceExitDesktop &&
-                (Flags.enableDesktopWindowingPip() ||
-                    DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue)
-        ) {
+        if (forceExitDesktop && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             // |forceExitDesktop| is true when the callers knows we'll exit desktop, such as when
             // explicitly going fullscreen, so there's no point in checking the desktop state.
             return true
@@ -1867,11 +1842,6 @@ class DesktopTasksController(
             if (!taskRepository.isOnlyVisibleNonClosingTask(triggerTaskId, displayId)) {
                 return false
             }
-        } else if (
-            Flags.enableDesktopWindowingPip() &&
-                taskRepository.isMinimizedPipPresentInDisplay(displayId)
-        ) {
-            return false
         } else {
             if (!taskRepository.isOnlyVisibleNonClosingTask(triggerTaskId)) {
                 return false
@@ -1888,7 +1858,6 @@ class DesktopTasksController(
         forceToFullscreen: Boolean,
         shouldEndUpAtHome: Boolean = true,
     ): RunOnTransitStart? {
-        taskRepository.setPipShouldKeepDesktopActive(displayId, keepActive = !forceToFullscreen)
         if (!willExitDesktop(taskId, displayId, forceToFullscreen)) {
             return null
         }
@@ -2654,7 +2623,6 @@ class DesktopTasksController(
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             wct.reparent(taskInfo.token, tdaInfo.token, /* onTop= */ true)
         }
-        taskRepository.setPipShouldKeepDesktopActive(taskInfo.displayId, keepActive = false)
         val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
         return performDesktopExitCleanUp(
             wct = wct,

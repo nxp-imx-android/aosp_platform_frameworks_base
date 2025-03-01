@@ -302,7 +302,7 @@ public final class WMShell implements
                         .commitUpdate(mDisplayTracker.getDefaultDisplayId());
             }
         });
-        mSysUiState.addCallback(sysUiStateFlag -> {
+        mSysUiState.addCallback((sysUiStateFlag, displayId) -> {
             mIsSysUiStateValid = (sysUiStateFlag & INVALID_SYSUI_STATE_MASK) == 0;
             pip.onSystemUiStateChanged(mIsSysUiStateValid, sysUiStateFlag);
         });

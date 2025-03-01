@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.approachLayout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
@@ -154,11 +155,12 @@ internal sealed class Content(
 
     @SuppressLint("NotConstructor")
     @Composable
-    fun Content(modifier: Modifier = Modifier) {
+    fun Content(modifier: Modifier = Modifier, isInvisible: Boolean = false) {
         // If this content has a custom factory, provide it to the content so that the factory is
         // automatically used when calling rememberOverscrollEffect().
         Box(
             modifier
+                .thenIf(isInvisible) { InvisibleModifier }
                 .zIndex(zIndex)
                 .approachLayout(
                     isMeasurementApproachInProgress = { layoutImpl.state.isTransitioning() }
@@ -305,3 +307,8 @@ internal class ContentScopeImpl(
         )
     }
 }
+
+private val InvisibleModifier =
+    Modifier.layout { measurable, constraints ->
+        measurable.measure(constraints).run { layout(width, height) {} }
+    }

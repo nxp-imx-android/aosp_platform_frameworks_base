@@ -25,7 +25,6 @@ import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
 import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_BACK
-import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.DesktopModeFlags.ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER
@@ -332,10 +331,6 @@ class DesktopTasksTransitionObserver(
                                 taskInfo.token,
                                 taskInfo.displayId,
                             )
-                            desktopWallpaperActivityTokenProvider.setWallpaperActivityIsVisible(
-                                isVisible = true,
-                                taskInfo.displayId,
-                            )
                             // After the task for the wallpaper is created, set it non-trimmable.
                             // This is important to prevent recents from trimming and removing the
                             // task.
@@ -346,16 +341,6 @@ class DesktopTasksTransitionObserver(
                         }
                         TRANSIT_CLOSE ->
                             desktopWallpaperActivityTokenProvider.removeToken(taskInfo.displayId)
-                        TRANSIT_TO_FRONT ->
-                            desktopWallpaperActivityTokenProvider.setWallpaperActivityIsVisible(
-                                isVisible = true,
-                                taskInfo.displayId,
-                            )
-                        TRANSIT_TO_BACK ->
-                            desktopWallpaperActivityTokenProvider.setWallpaperActivityIsVisible(
-                                isVisible = false,
-                                taskInfo.displayId,
-                            )
                         else -> {}
                     }
                 }

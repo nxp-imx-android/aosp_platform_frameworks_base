@@ -23,6 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.testKosmos
 import kotlinx.coroutines.runBlocking
@@ -36,7 +37,7 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
 class PrivacyDotWindowControllerStoreImplTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
     private val underTest by lazy { kosmos.privacyDotWindowControllerStoreImpl }
 
@@ -58,11 +59,11 @@ class PrivacyDotWindowControllerStoreImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun displayRemoved_stopsInstance() =
+    fun systemDecorationRemovedEvent_stopsInstance() =
         testScope.runTest {
             val instance = underTest.forDisplay(DISPLAY_2)!!
 
-            kosmos.displayRepository.removeDisplay(DISPLAY_2)
+            kosmos.displayRepository.triggerRemoveSystemDecorationEvent(DISPLAY_2)
 
             verify(instance).stop()
         }

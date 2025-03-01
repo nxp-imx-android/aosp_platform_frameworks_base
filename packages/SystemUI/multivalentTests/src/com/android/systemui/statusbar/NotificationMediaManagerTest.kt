@@ -125,8 +125,7 @@ class NotificationMediaManagerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_MEDIA_MANAGER_BACKGROUND_EXECUTION)
-    fun clearMediaNotification_flagOn_resetMediaMetadata() {
+    fun clearMediaNotification_resetMediaMetadata() {
         // set up media metadata.
         notificationMediaManager.mMediaListener.onMetadataChanged(MediaMetadata.Builder().build())
         backgroundExecutor.runAllReady()
@@ -134,19 +133,6 @@ class NotificationMediaManagerTest : SysuiTestCase() {
         // clear media notification.
         notificationMediaManager.clearCurrentMediaNotification()
         backgroundExecutor.runAllReady()
-
-        assertThat(notificationMediaManager.mediaMetadata).isNull()
-        assertThat(notificationMediaManager.mMediaController).isNull()
-    }
-
-    @Test
-    @DisableFlags(Flags.FLAG_NOTIFICATION_MEDIA_MANAGER_BACKGROUND_EXECUTION)
-    fun clearMediaNotification_flagOff_resetMediaMetadata() {
-        // set up media metadata.
-        notificationMediaManager.mMediaListener.onMetadataChanged(MediaMetadata.Builder().build())
-
-        // clear media notification.
-        notificationMediaManager.clearCurrentMediaNotification()
 
         assertThat(notificationMediaManager.mediaMetadata).isNull()
         assertThat(notificationMediaManager.mMediaController).isNull()

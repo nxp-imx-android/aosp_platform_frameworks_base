@@ -358,7 +358,16 @@ flag {
     is_fixed_read_only: true
     is_exported: true
     namespace: "permissions"
-    description: "Enables SQlite for recording discrete and historical AppOp accesses"
+    description: "Enables SQlite for recording individual/discrete AppOp accesses"
+    bug: "377584611"
+}
+
+flag {
+    name: "enable_all_sqlite_appops_accesses"
+    is_fixed_read_only: true
+    is_exported: true
+    namespace: "permissions"
+    description: "Enables SQlite for storing aggregated & individual/discrete AppOp accesses"
     bug: "377584611"
 }
 

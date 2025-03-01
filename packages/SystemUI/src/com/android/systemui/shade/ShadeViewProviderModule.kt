@@ -42,6 +42,7 @@ import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.scene.ui.view.SceneJankMonitor
 import com.android.systemui.scene.ui.view.SceneWindowRootView
 import com.android.systemui.scene.ui.view.WindowRootView
+import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.LightRevealScrim
@@ -88,6 +89,7 @@ abstract class ShadeViewProviderModule {
             sceneDataSourceDelegator: Provider<SceneDataSourceDelegator>,
             qsSceneAdapter: Provider<QSSceneAdapter>,
             sceneJankMonitorFactory: SceneJankMonitor.Factory,
+            windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
         ): WindowRootView {
             return if (SceneContainerFlag.isEnabled) {
                 checkNoSceneDuplicates(scenesProvider.get())
@@ -104,6 +106,7 @@ abstract class ShadeViewProviderModule {
                     sceneDataSourceDelegator = sceneDataSourceDelegator.get(),
                     qsSceneAdapter = qsSceneAdapter,
                     sceneJankMonitorFactory = sceneJankMonitorFactory,
+                    windowRootViewKeyEventHandler = windowRootViewKeyEventHandler,
                 )
                 sceneWindowRootView
             } else {

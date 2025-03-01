@@ -938,6 +938,12 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    static DesktopWallpaperActivityTokenProvider provideDesktopWallpaperActivityTokenProvider() {
+        return new DesktopWallpaperActivityTokenProvider();
+    }
+
+    @WMSingleton
+    @Provides
     static DragToDisplayTransitionHandler provideDragToDisplayTransitionHandler() {
         return new DragToDisplayTransitionHandler();
     }

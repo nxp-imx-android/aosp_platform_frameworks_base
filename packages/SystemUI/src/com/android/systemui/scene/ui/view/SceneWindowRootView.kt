@@ -33,6 +33,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
         sceneDataSourceDelegator: SceneDataSourceDelegator,
         qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
+        windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
     ) {
         setLayoutInsetsController(layoutInsetController)
         SceneWindowRootViewBinder.bind(
@@ -53,6 +54,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
             qsSceneAdapter = qsSceneAdapter,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
         )
+        setWindowRootViewKeyEventHandler(windowRootViewKeyEventHandler)
     }
 
     override fun setVisibility(visibility: Int) {

@@ -26,9 +26,11 @@ import android.window.WindowContainerToken;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.Preconditions;
+import com.android.wm.shell.common.pip.PipDesktopState;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 
@@ -123,6 +125,8 @@ public class PipTransitionState {
     @ShellMainThread
     private final Handler mMainHandler;
 
+    private final PipDesktopState mPipDesktopState;
+
     //
     // Swipe up to enter PiP related state
     //
@@ -172,8 +176,9 @@ public class PipTransitionState {
 
     private final List<PipTransitionStateChangedListener> mCallbacks = new ArrayList<>();
 
-    public PipTransitionState(@ShellMainThread Handler handler) {
+    public PipTransitionState(@ShellMainThread Handler handler, PipDesktopState pipDesktopState) {
         mMainHandler = handler;
+        mPipDesktopState = pipDesktopState;
     }
 
     /**
@@ -384,12 +389,16 @@ public class PipTransitionState {
         return ++mPrevCustomState;
     }
 
-    private boolean shouldTransitionToState(@TransitionState int newState) {
+    @VisibleForTesting
+    boolean shouldTransitionToState(@TransitionState int newState) {
         switch (newState) {
             case SCHEDULED_BOUNDS_CHANGE:
-                // Allow scheduling bounds change only while in PiP, except for if another bounds
-                // change was scheduled but hasn't started playing yet.
-                return isInPip();
+                // Allow scheduling bounds change only when both of these are true:
+                // - while in PiP, except for if another bounds change was scheduled but hasn't
+                //   started playing yet
+                // - there is no drag-to-desktop gesture in progress; otherwise the PiP resize
+                //   transition will block the drag-to-desktop transitions from finishing
+                return isInPip() && !mPipDesktopState.isDragToDesktopInProgress();
             default:
                 return true;
         }

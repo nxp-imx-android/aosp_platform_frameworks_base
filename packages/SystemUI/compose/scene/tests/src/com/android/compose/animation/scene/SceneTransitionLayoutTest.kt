@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertPositionInRootIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -64,10 +65,13 @@ import com.android.compose.animation.scene.TestScenes.SceneB
 import com.android.compose.animation.scene.TestScenes.SceneC
 import com.android.compose.animation.scene.subjects.assertThat
 import com.android.compose.test.assertSizeIsEqualTo
+import com.android.compose.test.setContentAndCreateMainScope
 import com.android.compose.test.subjects.DpOffsetSubject
 import com.android.compose.test.subjects.assertThat
+import com.android.compose.test.transition
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
@@ -581,5 +585,35 @@ class SceneTransitionLayoutTest {
         rule.waitForIdle()
         assertThat((state2 as MutableSceneTransitionLayoutStateImpl).motionScheme)
             .isEqualTo(motionScheme2)
+    }
+
+    @Test
+    fun alwaysCompose() {
+        val state = rule.runOnUiThread { MutableSceneTransitionLayoutStateForTests(SceneA) }
+        val scope =
+            rule.setContentAndCreateMainScope {
+                SceneTransitionLayoutForTesting(state) {
+                    scene(SceneA) { Box(Modifier.element(TestElements.Foo).size(20.dp)) }
+                    scene(SceneB, alwaysCompose = true) {
+                        Box(Modifier.element(TestElements.Bar).size(40.dp))
+                    }
+                }
+            }
+
+        // Idle(A): Foo is displayed and Bar exists given that SceneB is always composed but it is
+        // not displayed.
+        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(isElement(TestElements.Bar)).assertExists().assertIsNotDisplayed()
+
+        // Transition(A => B): Foo and Bar are both displayed
+        val aToB = transition(SceneA, SceneB)
+        scope.launch { state.startTransition(aToB) }
+        rule.onNode(isElement(TestElements.Foo)).assertIsDisplayed().assertSizeIsEqualTo(20.dp)
+        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
+
+        // Idle(B): Foo does not exist and Bar is displayed.
+        aToB.finish()
+        rule.onNode(isElement(TestElements.Foo)).assertDoesNotExist()
+        rule.onNode(isElement(TestElements.Bar)).assertIsDisplayed().assertSizeIsEqualTo(40.dp)
     }
 }
