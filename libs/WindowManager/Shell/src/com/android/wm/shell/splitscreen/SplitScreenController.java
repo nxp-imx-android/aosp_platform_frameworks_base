@@ -44,6 +44,7 @@ import static com.android.wm.shell.splitscreen.SplitScreen.STAGE_TYPE_UNDEFINED;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.ActivityTaskManager;
+import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
 import android.app.TaskInfo;
 import android.content.ComponentName;
@@ -207,6 +208,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final MultiInstanceHelper mMultiInstanceHelpher;
     private final SplitState mSplitState;
     private final RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
+    private final IActivityTaskManager mActivityTaskManager;
     private final SplitScreenShellCommandHandler mSplitScreenShellCommandHandler;
     private final DesktopState mDesktopState;
 
@@ -241,7 +243,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             ShellExecutor mainExecutor,
             Handler mainHandler,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            IActivityTaskManager activityTaskManager) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -266,6 +269,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mMultiInstanceHelpher = multiInstanceHelper;
         mSplitState = splitState;
         mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
+        mActivityTaskManager = activityTaskManager;
         mSplitScreenShellCommandHandler = new SplitScreenShellCommandHandler(this);
         mDesktopState = desktopState;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
@@ -312,7 +316,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 mDisplayInsetsController, mTransitions, mTransactionPool, mIconProvider,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
                 mWindowDecorViewModel, mSplitState, mDesktopTasksController, mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState);
+                mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager);
     }
 
     @Override

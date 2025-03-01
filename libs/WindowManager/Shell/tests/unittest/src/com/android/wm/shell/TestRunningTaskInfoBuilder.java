@@ -53,6 +53,7 @@ public final class TestRunningTaskInfoBuilder {
     private ActivityManager.TaskDescription.Builder mTaskDescriptionBuilder = null;
     private final Point mPositionInParent = new Point();
     private boolean mIsVisible = false;
+    private boolean mIsVisibleRequested = false;
     private boolean mIsTopActivityTransparent = false;
     private boolean mIsActivityStackTransparent = false;
     private int mNumActivities = 1;
@@ -154,6 +155,11 @@ public final class TestRunningTaskInfoBuilder {
         return this;
     }
 
+    public TestRunningTaskInfoBuilder setVisibleRequested(boolean isVisible) {
+        mIsVisibleRequested = isVisible;
+        return this;
+    }
+
     public TestRunningTaskInfoBuilder setTopActivityTransparent(boolean isTopActivityTransparent) {
         mIsTopActivityTransparent = isTopActivityTransparent;
         return this;
@@ -193,6 +199,7 @@ public final class TestRunningTaskInfoBuilder {
                 mTaskDescriptionBuilder != null ? mTaskDescriptionBuilder.build() : null;
         info.positionInParent = mPositionInParent;
         info.isVisible = mIsVisible;
+        info.isVisibleRequested = mIsVisibleRequested;
         info.isTopActivityTransparent = mIsTopActivityTransparent;
         info.isActivityStackTransparent = mIsActivityStackTransparent;
         info.numActivities = mNumActivities;

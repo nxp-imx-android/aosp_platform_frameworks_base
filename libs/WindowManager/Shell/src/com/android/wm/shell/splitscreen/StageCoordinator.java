@@ -213,6 +213,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
     private final int mDisplayId;
     private SplitLayout mSplitLayout;
+    private final IActivityTaskManager mActivityTaskManager;
     private ValueAnimator mDividerFadeInAnimator;
     private boolean mDividerVisible;
     private boolean mKeyguardActive;
@@ -388,7 +389,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             Optional<DesktopTasksController> desktopTasksController,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            IActivityTaskManager activityTaskManager) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -459,6 +461,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mStatusBarHider = new SplitStatusBarHider(taskOrganizer, splitState,
                 rootDisplayAreaOrganizer);
         mSplitTransitionModifier = new SplitTransitionModifier();
+        mActivityTaskManager = activityTaskManager;
     }
 
     @VisibleForTesting
@@ -474,7 +477,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             Optional<DesktopTasksController> desktopTasksController,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            IActivityTaskManager activityTaskManager) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -487,6 +491,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mDisplayInsetsController = displayInsetsController;
         mTransactionPool = transactionPool;
         mSplitLayout = splitLayout;
+        mActivityTaskManager = activityTaskManager;
         mSplitTransitions = new SplitScreenTransitions(transactionPool, transitions,
                 this::onTransitionAnimationComplete, this);
         mLogger = new SplitscreenEventLogger();
@@ -1638,10 +1643,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      * Grants focus to the main or the side stages.
      */
     protected void grantFocusToStage(@SplitPosition int stageToFocus) {
-        IActivityTaskManager activityTaskManagerService = IActivityTaskManager.Stub.asInterface(
-                ServiceManager.getService(Context.ACTIVITY_TASK_SERVICE));
         try {
-            activityTaskManagerService.setFocusedTask(getTaskId(stageToFocus));
+            mActivityTaskManager.setFocusedTask(getTaskId(stageToFocus));
         } catch (RemoteException | NullPointerException e) {
             ProtoLog.e(WM_SHELL_SPLIT_SCREEN,
                     "Unable to update focus on the chosen stage: %s", e.getMessage());

@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.dagger;
 
+import android.app.IActivityTaskManager;
 import android.content.Context;
 import android.os.Handler;
 
@@ -97,12 +98,13 @@ public class TvWMShellModule {
             @ShellMainThread Handler mainHandler,
             SystemWindows systemWindows,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
-            DesktopState desktopState) {
+            DesktopState desktopState,
+            IActivityTaskManager activityTaskManager) {
         return new TvSplitScreenController(context, shellInit, shellCommandHandler, shellController,
                 shellTaskOrganizer, syncQueue, rootTDAOrganizer, displayController,
                 displayImeController, displayInsetsController, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, multiInstanceHelper,
                 splitState, mainExecutor, mainHandler, systemWindows, rootDisplayAreaOrganizer,
-                desktopState);
+                desktopState, activityTaskManager);
     }
 }
