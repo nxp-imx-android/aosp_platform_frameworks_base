@@ -40,7 +40,16 @@ public class DiscreteOpsMigrationHelper {
     static void migrateDiscreteOpsToXml(DiscreteOpsSqlRegistry sqlRegistry,
             DiscreteOpsXmlRegistry xmlRegistry) {
         List<DiscreteOpsSqlRegistry.DiscreteOp> sqlOps = sqlRegistry.getAllDiscreteOps();
-        DiscreteOpsXmlRegistry.DiscreteOps xmlOps = getXmlDiscreteOps(sqlOps);
+
+        // Only migrate configured discrete ops. Sqlite may contain all runtime ops, and more.
+        List<DiscreteOpsSqlRegistry.DiscreteOp> filteredList = new ArrayList<>();
+        for (DiscreteOpsSqlRegistry.DiscreteOp opEvent: sqlOps) {
+            if (DiscreteOpsRegistry.isDiscreteOp(opEvent.getOpCode(), opEvent.getOpFlags())) {
+                filteredList.add(opEvent);
+            }
+        }
+
+        DiscreteOpsXmlRegistry.DiscreteOps xmlOps = getXmlDiscreteOps(filteredList);
         xmlRegistry.migrateSqliteData(xmlOps);
         sqlRegistry.deleteDatabase();
     }
