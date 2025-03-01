@@ -92,6 +92,11 @@ public class AmbientVolumeSlider extends LinearLayout {
         mSlider = requireViewById(R.id.ambient_volume_slider);
         mSlider.addOnSliderTouchListener(mSliderTouchListener);
         mSlider.addOnChangeListener(mSliderChangeListener);
+
+        setFocusable(false);
+        setClickable(false);
+        mSlider.setFocusable(false);
+        mSlider.setClickable(false);
     }
 
     /**
@@ -176,6 +181,13 @@ public class AmbientVolumeSlider extends LinearLayout {
         final double levelGap = (max - min) / 4.0;
         final double value = mSlider.getValue();
         return (int) Math.ceil((value - min) / levelGap);
+    }
+
+    /** Sets the content description to the ambient volume slider. */
+    public void setSliderContentDescription(CharSequence contentDescription) {
+        if (mSlider != null) {
+            mSlider.setContentDescription(contentDescription);
+        }
     }
 
     /** Interface definition for a callback invoked when a slider's value is changed. */

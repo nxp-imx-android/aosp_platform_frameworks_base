@@ -28,6 +28,7 @@ import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.util.List;
 
@@ -184,5 +185,17 @@ public class DrawBitmap extends PaintOperation implements VariableSupport {
     @Override
     public void paint(@NonNull PaintContext context) {
         context.drawBitmap(mId, mOutputLeft, mOutputTop, mOutputRight, mOutputBottom);
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .addType(CLASS_NAME)
+                .add("imageId", mId)
+                .add("contentDescriptionId", mDescriptionId)
+                .add("left", mLeft, mOutputLeft)
+                .add("top", mTop, mOutputTop)
+                .add("right", mRight, mOutputRight)
+                .add("bottom", mBottom, mOutputBottom);
     }
 }

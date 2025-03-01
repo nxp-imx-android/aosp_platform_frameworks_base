@@ -32,6 +32,7 @@ import com.android.systemui.statusbar.notification.domain.interactor.SeenNotific
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
 import com.android.systemui.statusbar.policy.SplitShadeStateController
 import com.android.systemui.util.Compile
@@ -407,8 +408,14 @@ constructor(
                 }
 
             if (counter != null) {
-                val entry = (currentNotification as? ExpandableNotificationRow)?.entry
-                counter.incrementForBucket(entry?.bucket)
+                if (NotificationBundleUi.isEnabled) {
+                    val entry = (currentNotification as? ExpandableNotificationRow)?.entry
+                    counter.incrementForBucket(entry?.bucket)
+                } else {
+                    val entryAdapter =
+                        (currentNotification as? ExpandableNotificationRow)?.entryAdapter
+                    counter.incrementForBucket(entryAdapter?.sectionBucket)
+                }
             }
 
             log {
@@ -461,12 +468,15 @@ constructor(
         val height = view.heightWithoutLockscreenConstraints.toFloat()
         val gapAndDividerHeight =
             calculateGapAndDividerHeight(stack, previousView, current = view, visibleIndex)
+        val canPeek = view is ExpandableNotificationRow &&
+                if (NotificationBundleUi.isEnabled) view.entryAdapter?.canPeek() == true
+                else view.entry.isStickyAndNotDemoted
 
         var size =
             if (onLockscreen) {
                 if (
                     view is ExpandableNotificationRow &&
-                        (view.entry.isStickyAndNotDemoted ||
+                        (canPeek ||
                             (PromotedNotificationUiForceExpanded.isEnabled &&
                                 view.isPromotedOngoing))
                 ) {

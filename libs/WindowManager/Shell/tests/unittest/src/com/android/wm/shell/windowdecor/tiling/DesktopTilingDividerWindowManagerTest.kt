@@ -81,6 +81,7 @@ class DesktopTilingDividerWindowManagerTest : ShellTestCase() {
                 transactionSupplierMock,
                 BOUNDS,
                 context,
+                /* isDarkMode= */ true
             )
     }
 

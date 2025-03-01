@@ -41,7 +41,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameMode
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfigTest
+import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.getTelephonyCallbackForType
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.signalStrength
 import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
@@ -105,11 +105,7 @@ class MobileConnectionTelephonySmokeTests : SysuiTestCase() {
     @Mock private lateinit var subscriptionModel: StateFlow<SubscriptionModel?>
 
     private val mobileMappings = FakeMobileMappingsProxy()
-    private val systemUiCarrierConfig =
-        SystemUiCarrierConfig(
-            SUB_1_ID,
-            SystemUiCarrierConfigTest.createTestConfig(),
-        )
+    private val systemUiCarrierConfig = SystemUiCarrierConfig(SUB_1_ID, testCarrierConfig())
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
@@ -185,12 +181,7 @@ class MobileConnectionTelephonySmokeTests : SysuiTestCase() {
             val job = underTest.dataActivityDirection.onEach { latest = it }.launchIn(this)
 
             assertThat(latest)
-                .isEqualTo(
-                    DataActivityModel(
-                        hasActivityIn = true,
-                        hasActivityOut = true,
-                    )
-                )
+                .isEqualTo(DataActivityModel(hasActivityIn = true, hasActivityOut = true))
 
             displayInfoJob.cancel()
             job.cancel()
@@ -209,7 +200,7 @@ class MobileConnectionTelephonySmokeTests : SysuiTestCase() {
 
             connectionCallback.onDataConnectionStateChanged(
                 TelephonyManager.DATA_CONNECTED,
-                200 /* unused */
+                200, /* unused */
             )
 
             flipActivity(100, activityCallback)
@@ -320,10 +311,7 @@ class MobileConnectionTelephonySmokeTests : SysuiTestCase() {
             job.cancel()
         }
 
-    private fun flipActivity(
-        times: Int,
-        callback: DataActivityListener,
-    ) {
+    private fun flipActivity(times: Int, callback: DataActivityListener) {
         repeat(times) { index -> callback.onDataActivity(index % 4) }
     }
 

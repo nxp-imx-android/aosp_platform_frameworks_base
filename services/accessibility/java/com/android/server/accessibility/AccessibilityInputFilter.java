@@ -53,7 +53,6 @@ import com.android.server.accessibility.magnification.FullScreenMagnificationGes
 import com.android.server.accessibility.magnification.FullScreenMagnificationVibrationHelper;
 import com.android.server.accessibility.magnification.MagnificationGestureHandler;
 import com.android.server.accessibility.magnification.MagnificationKeyHandler;
-import com.android.server.accessibility.magnification.MouseEventHandler;
 import com.android.server.accessibility.magnification.WindowMagnificationGestureHandler;
 import com.android.server.accessibility.magnification.WindowMagnificationPromptController;
 import com.android.server.policy.WindowManagerPolicy;
@@ -134,7 +133,7 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
      */
     static final int FLAG_SERVICE_HANDLES_DOUBLE_TAP = 0x00000080;
 
-/**
+    /**
      * Flag for enabling multi-finger gestures.
      *
      * @see #setUserAndEnabledFeatures(int, int)
@@ -189,8 +188,6 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
     private final PowerManager mPm;
 
     private final AccessibilityManagerService mAms;
-
-    private final InputManager mInputManager;
 
     private final SparseArray<EventStreamTransformation> mEventHandler;
 
@@ -294,7 +291,6 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
         mContext = context;
         mAms = service;
         mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        mInputManager = context.getSystemService(InputManager.class);
         mEventHandler = eventHandler;
     }
 
@@ -902,8 +898,7 @@ class AccessibilityInputFilter extends InputFilter implements EventStreamTransfo
                             triggerable,
                             new WindowMagnificationPromptController(displayContext, mUserId),
                             displayId,
-                            fullScreenMagnificationVibrationHelper,
-                            new MouseEventHandler(controller));
+                            fullScreenMagnificationVibrationHelper);
         }
         return magnificationGestureHandler;
     }

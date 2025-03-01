@@ -143,7 +143,7 @@ public class AnimateMeasure {
      */
     public void paint(@NonNull PaintContext context) {
         if (mOriginal.getVisibility() != mTarget.getVisibility()) {
-            if (mTarget.getVisibility() == Component.Visibility.GONE) {
+            if (mTarget.isGone()) {
                 switch (mExitAnimation) {
                     case PARTICLE:
                         // particleAnimation(context, component, original, target, vp)
@@ -229,8 +229,7 @@ public class AnimateMeasure {
                         mParticleAnimation.animate(context, mComponent, mOriginal, mTarget, mVp);
                         break;
                 }
-            } else if (mOriginal.getVisibility() == Component.Visibility.GONE
-                    && mTarget.getVisibility() == Component.Visibility.VISIBLE) {
+            } else if (mOriginal.isGone() && mTarget.isVisible()) {
                 switch (mEnterAnimation) {
                     case ROTATE:
                         float px = mTarget.getX() + mTarget.getW() / 2f;
@@ -323,7 +322,7 @@ public class AnimateMeasure {
             } else {
                 mComponent.paintingComponent(context);
             }
-        } else if (mTarget.getVisibility() == Component.Visibility.VISIBLE) {
+        } else if (mTarget.isVisible()) {
             mComponent.paintingComponent(context);
         }
 
@@ -360,7 +359,7 @@ public class AnimateMeasure {
     public float getVisibility() {
         if (mOriginal.getVisibility() == mTarget.getVisibility()) {
             return 1f;
-        } else if (mTarget.getVisibility() == Component.Visibility.VISIBLE) {
+        } else if (mTarget.isVisible()) {
             return mVp;
         } else {
             return 1 - mVp;
@@ -382,7 +381,7 @@ public class AnimateMeasure {
         float targetY = mTarget.getY();
         float targetW = mTarget.getW();
         float targetH = mTarget.getH();
-        Component.Visibility targetVisibility = mTarget.getVisibility();
+        int targetVisibility = mTarget.getVisibility();
         if (targetX != measure.getX()
                 || targetY != measure.getY()
                 || targetW != measure.getW()
@@ -393,7 +392,13 @@ public class AnimateMeasure {
             mTarget.setW(measure.getW());
             mTarget.setH(measure.getH());
             mTarget.setVisibility(measure.getVisibility());
-            mStartTime = currentTime;
+            // We shouldn't reset the leftover animation time here
+            // 1/ if we are eg fading out a component, and an updateTarget comes on, we don't want
+            //    to restart the full animation time
+            // 2/ if no visibility change but quick updates come in (eg live resize) it seems
+            //    better as well to not restart the animation time and only allows the original
+            //    time to wrap up
+            // mStartTime = currentTime;
         }
     }
 }

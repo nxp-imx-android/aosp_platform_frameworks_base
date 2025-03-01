@@ -41,6 +41,7 @@ import com.android.systemui.media.controls.util.MediaFeatureFlag
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.settings.UserTracker
 import com.android.systemui.shared.system.ActivityManagerWrapper
 import com.android.systemui.shared.system.DevicePolicyManagerWrapper
 import com.android.systemui.shared.system.PackageManagerWrapper
@@ -90,16 +91,17 @@ import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent
 import com.android.systemui.util.Assert.runWithCurrentThreadAsMainThread
 import com.android.systemui.util.DeviceConfigProxyFake
 import com.android.systemui.util.concurrency.FakeExecutor
-import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
 import org.junit.Assert.assertTrue
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
+import org.mockito.kotlin.whenever
 
 class ExpandableNotificationRowBuilder(
     private val context: Context,
@@ -148,7 +150,10 @@ class ExpandableNotificationRowBuilder(
 
         mGroupExpansionManager = GroupExpansionManagerImpl(mDumpManager, mGroupMembershipManager)
         mUserManager = Mockito.mock(UserManager::class.java, STUB_ONLY)
-        mHeadsUpManager = Mockito.mock(HeadsUpManager::class.java, STUB_ONLY)
+        mHeadsUpManager =
+            Mockito.mock(HeadsUpManager::class.java, STUB_ONLY).apply {
+                whenever(isTrackingHeadsUp()).thenReturn(MutableStateFlow(false))
+            }
         mIconManager =
             IconManager(
                 Mockito.mock(CommonNotifCollection::class.java, STUB_ONLY),
@@ -227,6 +232,7 @@ class ExpandableNotificationRowBuilder(
             PromotedNotificationContentExtractorImpl(
                 context,
                 SkeletonImageTransform(context),
+                mFakeSystemClock,
                 PromotedNotificationLogger(logcatLogBuffer("PromotedNotifLog")),
             )
 
@@ -346,10 +352,15 @@ class ExpandableNotificationRowBuilder(
         // NOTE: This flag is read when the ExpandableNotificationRow is inflated, so it needs to be
         //  set, but we do not want to override an existing value that is needed by a specific test.
 
+        val userTracker = Mockito.mock(UserTracker::class.java, STUB_ONLY)
+        whenever(userTracker.userHandle).thenReturn(context.user)
+
         val rowInflaterTask =
             RowInflaterTask(
                 mFakeSystemClock,
                 Mockito.mock(RowInflaterTaskLogger::class.java, STUB_ONLY),
+                userTracker,
+                Mockito.mock(AsyncRowInflater::class.java, STUB_ONLY),
             )
         val row = rowInflaterTask.inflateSynchronously(context, null, entry)
 

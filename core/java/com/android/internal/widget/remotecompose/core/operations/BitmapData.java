@@ -72,6 +72,9 @@ public class BitmapData extends Operation implements SerializableToString, Seria
     /** The data is encoded as RAW 8888 bit */
     public static final short TYPE_RAW8888 = 3;
 
+    /** The data is encoded as PNG_8888 but decoded as ALPHA_8 */
+    public static final short TYPE_PNG_ALPHA_8 = 4;
+
     /**
      * create a bitmap structure
      *
@@ -136,6 +139,15 @@ public class BitmapData extends Operation implements SerializableToString, Seria
     }
 
     /**
+     * The type of the image
+     *
+     * @return the type of the image
+     */
+    public int getType() {
+        return mType;
+    }
+
+    /**
      * Add the image to the document
      *
      * @param buffer document to write to
@@ -195,6 +207,21 @@ public class BitmapData extends Operation implements SerializableToString, Seria
         int imageId = buffer.readInt();
         int width = buffer.readInt();
         int height = buffer.readInt();
+        int type;
+        if (width > 0xffff) {
+            type = width >> 16;
+            width = width & 0xffff;
+        } else {
+            type = TYPE_PNG_8888;
+        }
+
+        int encoding;
+        if (height > 0xffff) {
+            encoding = height >> 16;
+            height = height & 0xffff;
+        } else {
+            encoding = ENCODING_INLINE;
+        }
         if (width < 1
                 || height < 1
                 || height > MAX_IMAGE_DIMENSION
@@ -202,7 +229,10 @@ public class BitmapData extends Operation implements SerializableToString, Seria
             throw new RuntimeException("Dimension of image is invalid " + width + "x" + height);
         }
         byte[] bitmap = buffer.readBuffer();
-        operations.add(new BitmapData(imageId, width, height, bitmap));
+        BitmapData bitmapData = new BitmapData(imageId, width, height, bitmap);
+        bitmapData.mType = (short) type;
+        bitmapData.mEncoding = (short) encoding;
+        operations.add(bitmapData);
     }
 
     /**
@@ -244,7 +274,7 @@ public class BitmapData extends Operation implements SerializableToString, Seria
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("imageId", mImageId)
                 .add("imageWidth", mImageWidth)
                 .add("imageHeight", mImageHeight)
@@ -275,6 +305,8 @@ public class BitmapData extends Operation implements SerializableToString, Seria
                 return "TYPE_RAW8";
             case TYPE_RAW8888:
                 return "TYPE_RAW8888";
+            case TYPE_PNG_ALPHA_8:
+                return "TYPE_PNG_ALPHA_8";
             default:
                 return "TYPE_INVALID";
         }

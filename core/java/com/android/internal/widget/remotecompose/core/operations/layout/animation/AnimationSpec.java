@@ -129,7 +129,7 @@ public class AnimationSpec extends Operation implements ModifierOperation {
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", "AnimationSpec")
+                .addType("AnimationSpec")
                 .add("motionDuration", getMotionDuration())
                 .add("motionEasingType", Easing.getString(getMotionEasingType()))
                 .add("visibilityDuration", getVisibilityDuration())

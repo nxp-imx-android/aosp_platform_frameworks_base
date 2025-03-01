@@ -57,7 +57,7 @@ public class DisplayDensityUtils {
      * Summaries for scales smaller than "default" in order of smallest to
      * largest.
      */
-    private static final int[] SUMMARIES_SMALLER = new int[] {
+    private static final int[] SUMMARIES_SMALLER = new int[]{
             R.string.screen_zoom_summary_small
     };
 
@@ -65,7 +65,7 @@ public class DisplayDensityUtils {
      * Summaries for scales larger than "default" in order of smallest to
      * largest.
      */
-    private static final int[] SUMMARIES_LARGER = new int[] {
+    private static final int[] SUMMARIES_LARGER = new int[]{
             R.string.screen_zoom_summary_large,
             R.string.screen_zoom_summary_very_large,
             R.string.screen_zoom_summary_extremely_large,
@@ -108,7 +108,8 @@ public class DisplayDensityUtils {
      * Creates an instance that stores the density values for the smallest display that satisfies
      * the predicate. It is enough to store the values for one display because the same density
      * should be set to all the displays that satisfy the predicate.
-     * @param context The context
+     *
+     * @param context   The context
      * @param predicate Determines what displays the density should be set for. The default display
      *                  must satisfy this predicate.
      */
@@ -127,14 +128,10 @@ public class DisplayDensityUtils {
             mCurrentIndex = -1;
             return;
         }
-        if (!mPredicate.test(defaultDisplayInfo)) {
-            throw new IllegalArgumentException(
-                    "Predicate must not filter out the default display.");
-        }
 
-        int idOfSmallestDisplay = Display.DEFAULT_DISPLAY;
-        int minDimensionPx = Math.min(defaultDisplayInfo.logicalWidth,
-                defaultDisplayInfo.logicalHeight);
+        int idOfSmallestDisplay = Display.INVALID_DISPLAY;
+        int minDimensionPx = Integer.MAX_VALUE;
+        DisplayInfo smallestDisplayInfo = null;
         for (Display display : mDisplayManager.getDisplays(
                 DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)) {
             DisplayInfo info = new DisplayInfo();
@@ -149,7 +146,17 @@ public class DisplayDensityUtils {
             if (minDimension < minDimensionPx) {
                 minDimensionPx = minDimension;
                 idOfSmallestDisplay = display.getDisplayId();
+                smallestDisplayInfo = info;
             }
+        }
+
+        if (smallestDisplayInfo == null) {
+            Log.w(LOG_TAG, "No display satisfies the predicate");
+            mEntries = null;
+            mValues = null;
+            mDefaultDensity = 0;
+            mCurrentIndex = -1;
+            return;
         }
 
         final int defaultDensity =
@@ -165,7 +172,12 @@ public class DisplayDensityUtils {
 
         final Resources res = context.getResources();
 
-        final int currentDensity = defaultDisplayInfo.logicalDensityDpi;
+        int currentDensity;
+        if (mPredicate.test(defaultDisplayInfo)) {
+            currentDensity = defaultDisplayInfo.logicalDensityDpi;
+        } else {
+            currentDensity = smallestDisplayInfo.logicalDensityDpi;
+        }
         int currentDensityIndex = -1;
 
         // Compute number of "larger" and "smaller" scales for this display.
@@ -266,16 +278,16 @@ public class DisplayDensityUtils {
      * Returns the default density for the specified display.
      *
      * @param displayId the identifier of the display
-     * @return the default density of the specified display, or {@code -1} if
-     *         the display does not exist or the density could not be obtained
+     * @return the default density of the specified display, or {@code -1} if the display does not
+     * exist or the density could not be obtained
      */
     private static int getDefaultDensityForDisplay(int displayId) {
-       try {
-           final IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
-           return wm.getInitialDisplayDensity(displayId);
-       } catch (RemoteException exc) {
-           return -1;
-       }
+        try {
+            final IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
+            return wm.getInitialDisplayDensity(displayId);
+        } catch (RemoteException exc) {
+            return -1;
+        }
     }
 
     /**

@@ -26,6 +26,8 @@ import android.view.HapticFeedbackConstants
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.GONE
+import android.view.View.INVISIBLE
 import android.view.View.OnLayoutChangeListener
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -67,6 +69,7 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shared.R as sharedR
 import com.android.systemui.statusbar.CrossFadeHelper
 import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.statusbar.phone.ScreenOffAnimationController
@@ -86,7 +89,6 @@ import kotlin.math.min
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
@@ -186,6 +188,10 @@ object KeyguardRootViewBinder {
                         viewModel.translationY.collect { y ->
                             childViews[burnInLayerId]?.translationY = y
                             childViews[largeClockId]?.translationY = y
+                            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                                childViews[largeClockDateId]?.translationY = y
+                                childViews[largeClockWeatherId]?.translationY = y
+                            }
                             childViews[aodPromotedNotificationId]?.translationY = y
                             childViews[aodNotificationIconContainerId]?.translationY = y
                         }
@@ -201,6 +207,7 @@ object KeyguardRootViewBinder {
                                     childViews[aodPromotedNotificationId]?.translationX = px
                                     childViews[aodNotificationIconContainerId]?.translationX = px
                                 }
+
                                 state.isToOrFrom(KeyguardState.GLANCEABLE_HUB) -> {
                                     for ((key, childView) in childViews.entries) {
                                         when (key) {
@@ -210,6 +217,7 @@ object KeyguardRootViewBinder {
                                             deviceEntryIcon -> {
                                                 // Do not move these views
                                             }
+
                                             else -> childView.translationX = px
                                         }
                                     }
@@ -304,8 +312,9 @@ object KeyguardRootViewBinder {
                             if (isVisible.value) {
                                 blueprintViewModel.refreshBlueprint()
                             }
-                            childViews[aodPromotedNotificationId]
-                                ?.setAodNotifIconContainerIsVisible(isVisible)
+                            childViews[aodPromotedNotificationId]?.setAodPromotedNotifIsVisible(
+                                isVisible
+                            )
                         }
                     }
 
@@ -313,7 +322,7 @@ object KeyguardRootViewBinder {
                         shadeInteractor.isAnyFullyExpanded.collect { isFullyAnyExpanded ->
                             view.visibility =
                                 if (isFullyAnyExpanded) {
-                                    View.INVISIBLE
+                                    INVISIBLE
                                 } else {
                                     View.VISIBLE
                                 }
@@ -370,9 +379,9 @@ object KeyguardRootViewBinder {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     if (wallpaperFocalAreaViewModel.hasFocalArea.value) {
                         launch {
-                            wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds
-                                .filterNotNull()
-                                .collect { wallpaperFocalAreaViewModel.setFocalAreaBounds(it) }
+                            wallpaperFocalAreaViewModel.wallpaperFocalAreaBounds.collect {
+                                wallpaperFocalAreaViewModel.setFocalAreaBounds(it)
+                            }
                         }
                     }
                 }
@@ -516,10 +525,10 @@ object KeyguardRootViewBinder {
                 visibility =
                     if (isVisible.value) {
                         alpha = 1f
-                        View.VISIBLE
+                        VISIBLE
                     } else {
                         alpha = 0f
-                        View.INVISIBLE
+                        INVISIBLE
                     }
             }
 
@@ -533,6 +542,36 @@ object KeyguardRootViewBinder {
         }
     }
 
+    private fun View.setAodPromotedNotifIsVisible(isVisible: AnimatedValue<Boolean>) {
+        animate().cancel()
+        val animatorListener =
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    isVisible.stopAnimating()
+                }
+            }
+
+        if (isVisible.isAnimating) {
+            if (isVisible.value) {
+                alpha = 0f
+                visibility = VISIBLE
+                CrossFadeHelper.fadeIn(this, animatorListener)
+            } else {
+                CrossFadeHelper.fadeOut(this, animatorListener)
+            }
+        } else {
+            if (isVisible.value) {
+                alpha = 1f
+                visibility = VISIBLE
+            } else {
+                // Hide with GONE, not INVISIBLE, so there won't be a redundant bottom
+                // margin between the smart space and the shelf.
+                alpha = 0f
+                visibility = GONE
+            }
+        }
+    }
+
     private fun MotionEvent.isTouchscreenSource(): Boolean {
         return device?.supportsSource(InputDevice.SOURCE_TOUCHSCREEN) == true
     }
@@ -541,6 +580,8 @@ object KeyguardRootViewBinder {
     private val aodPromotedNotificationId = AodPromotedNotificationSection.viewId
     private val aodNotificationIconContainerId = R.id.aod_notification_icon_container
     private val largeClockId = customR.id.lockscreen_clock_view_large
+    private val largeClockDateId = sharedR.id.date_smartspace_view_large
+    private val largeClockWeatherId = sharedR.id.weather_smartspace_view_large
     private val smallClockId = customR.id.lockscreen_clock_view
     private val indicationArea = R.id.keyguard_indication_area
     private val startButton = R.id.start_button

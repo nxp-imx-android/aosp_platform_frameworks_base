@@ -78,6 +78,7 @@ struct LinkOptions {
   bool use_sparse_encoding = false;
   std::unordered_set<std::string> extensions_to_not_compress;
   std::optional<std::regex> regex_to_not_compress;
+  bool no_compress_fonts = false;
   FeatureFlagValues feature_flag_values;
 
   // Static lib options.
@@ -300,6 +301,14 @@ class LinkCommand : public Command {
             "use the '$' symbol for end of line. Uses a case-sensitive ECMAScript"
             "regular expression grammar.",
         &no_compress_regex);
+    AddOptionalSwitch("--no-compress-fonts",
+        "Do not compress files with common extensions for fonts.\n"
+            "This allows loading fonts directly from the APK, without needing to\n"
+            "decompress them first. Loading fonts will be faster and use less memory.\n"
+            "The downside is that the APK will be larger.\n"
+            "Passing this flag is functionally equivalent to passing the following flags:\n"
+            "-0 .ttf -0 .otf -0 .ttc",
+        &options_.no_compress_fonts);
     AddOptionalSwitch("--warn-manifest-validation",
         "Treat manifest validation errors as warnings.",
         &options_.manifest_fixer_options.warn_validation);

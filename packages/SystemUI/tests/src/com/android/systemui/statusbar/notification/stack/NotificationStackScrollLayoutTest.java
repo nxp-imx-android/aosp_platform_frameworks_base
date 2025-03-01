@@ -82,13 +82,16 @@ import com.android.systemui.shade.transition.LargeScreenShadeInterpolator;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
+import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
 import com.android.systemui.statusbar.notification.headsup.AvalancheController;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
@@ -157,6 +160,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Mock private StatusBarKeyguardViewManager mStatusBarKeyguardViewManager;
     @Mock private LargeScreenShadeInterpolator mLargeScreenShadeInterpolator;
     @Mock private AvalancheController mAvalancheController;
+    @Mock private HeadsUpRepository mHeadsUpRepository;
 
     public NotificationStackScrollLayoutTest(FlagsParameterization flags) {
         super();
@@ -176,6 +180,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 mBypassController,
                 mStatusBarKeyguardViewManager,
                 mLargeScreenShadeInterpolator,
+                mHeadsUpRepository,
                 mAvalancheController
         ));
 
@@ -675,7 +680,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     public void testClearNotifications_clearAllInProgress() {
         ExpandableNotificationRow row = createClearableRow();
-        when(row.getEntry().hasFinishedInitialization()).thenReturn(true);
+        when(row.hasFinishedInitialization()).thenReturn(true);
         doReturn(true).when(mStackScroller).isVisible(row);
         mStackScroller.addContainerView(row);
 
@@ -728,6 +733,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         NotificationEntry entry = mock(NotificationEntry.class);
         when(row.getEntry()).thenReturn(entry);
         when(entry.isAmbient()).thenReturn(false);
+        EntryAdapter entryAdapter = mock(EntryAdapter.class);
+        when(entryAdapter.isAmbient()).thenReturn(false);
+        when(row.getEntryAdapter()).thenReturn(entryAdapter);
         mStackScroller.addContainerView(row);
 
         // speed bump = 1
@@ -744,6 +752,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         NotificationEntry entry = mock(NotificationEntry.class);
         when(row.getEntry()).thenReturn(entry);
         when(entry.isAmbient()).thenReturn(true);
+        EntryAdapter entryAdapter = mock(EntryAdapter.class);
+        when(entryAdapter.isAmbient()).thenReturn(true);
+        when(row.getEntryAdapter()).thenReturn(entryAdapter);
         mStackScroller.addContainerView(row);
 
         // speed bump is set to 0
@@ -760,6 +771,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         NotificationEntry entry = mock(NotificationEntry.class);
         when(row.getEntry()).thenReturn(entry);
         when(entry.isAmbient()).thenReturn(false);
+        EntryAdapter entryAdapter = mock(EntryAdapter.class);
+        when(entryAdapter.isAmbient()).thenReturn(false);
+        when(row.getEntryAdapter()).thenReturn(entryAdapter);
         mStackScroller.addContainerView(row);
 
         // speed bump is 1
@@ -1373,6 +1387,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         when(row.canViewBeCleared()).thenReturn(true);
         when(row.getEntry()).thenReturn(entry);
         when(entry.isClearable()).thenReturn(true);
+        EntryAdapter entryAdapter = mock(EntryAdapter.class);
+        when(entryAdapter.isClearable()).thenReturn(true);
+        when(row.getEntryAdapter()).thenReturn(entryAdapter);
 
         return row;
     }

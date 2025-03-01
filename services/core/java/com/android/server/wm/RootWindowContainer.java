@@ -2103,10 +2103,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 removeRootTasksInWindowingModes(WINDOWING_MODE_PINNED);
             }
 
-            // Set a transition to ensure that we don't immediately try and update the visibility
-            // of the activity entering PIP
-            r.getDisplayContent().prepareAppTransition(TRANSIT_NONE);
-
             transitionController.collect(task);
 
             // Defer the windowing mode change until after the transition to prevent the activity
@@ -2775,6 +2771,12 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 return;
             }
 
+            if (enableDisplayContentModeManagement() && display.allowContentModeSwitch()) {
+                mWindowManager.mDisplayWindowSettings
+                        .setShouldShowSystemDecorsInternalLocked(display,
+                                display.mDisplay.canHostTasks());
+            }
+
             startSystemDecorations(display, "displayAdded");
 
             // Drop any cached DisplayInfos associated with this display id - the values are now
@@ -2792,13 +2794,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         }
 
         startHomeOnDisplay(mCurrentUser, reason, displayContent.getDisplayId());
-        if (enableDisplayContentModeManagement()) {
-            if (displayContent.isSystemDecorationsSupported()) {
-                displayContent.getDisplayPolicy().notifyDisplayAddSystemDecorations();
-            }
-        } else {
-            displayContent.getDisplayPolicy().notifyDisplayAddSystemDecorations();
-        }
+        displayContent.getDisplayPolicy().notifyDisplayAddSystemDecorations();
     }
 
     @Override

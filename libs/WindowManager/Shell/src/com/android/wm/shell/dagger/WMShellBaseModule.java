@@ -1052,23 +1052,8 @@ public abstract class WMShellBaseModule {
         });
     }
 
-    @WMSingleton
-    @Provides
-    static DesktopWallpaperActivityTokenProvider provideDesktopWallpaperActivityTokenProvider() {
-        return new DesktopWallpaperActivityTokenProvider();
-    }
-
-    @WMSingleton
-    @Provides
-    static Optional<DesktopWallpaperActivityTokenProvider>
-            provideOptionalDesktopWallpaperActivityTokenProvider(
-            Context context,
-            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider) {
-        if (DesktopModeStatus.canEnterDesktopMode(context)) {
-            return Optional.of(desktopWallpaperActivityTokenProvider);
-        }
-        return Optional.empty();
-    }
+    @BindsOptionalOf
+    abstract DesktopWallpaperActivityTokenProvider optionalDesktopWallpaperActivityTokenProvider();
 
     //
     // App zoom out (optional feature)

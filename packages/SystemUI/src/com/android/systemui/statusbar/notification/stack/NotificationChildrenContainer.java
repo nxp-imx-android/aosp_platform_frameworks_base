@@ -60,6 +60,7 @@ import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderVi
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -421,7 +422,12 @@ public class NotificationChildrenContainer extends ViewGroup
         Trace.beginSection("NotifChildCont#recreateHeader");
         mHeaderClickListener = listener;
         mIsConversation = isConversation;
-        StatusBarNotification notification = mContainingNotification.getEntry().getSbn();
+        StatusBarNotification notification = NotificationBundleUi.isEnabled()
+                ? mContainingNotification.getEntryAdapter().getSbn()
+                : mContainingNotification.getEntry().getSbn();
+        if (notification == null) {
+            return;
+        }
         final Notification.Builder builder = Notification.Builder.recoverBuilder(getContext(),
                 notification.getNotification());
         Trace.beginSection("recreateHeader#makeNotificationGroupHeader");
@@ -565,7 +571,12 @@ public class NotificationChildrenContainer extends ViewGroup
     void recreateLowPriorityHeader(Notification.Builder builder) {
         AsyncGroupHeaderViewInflation.assertInLegacyMode();
         RemoteViews header;
-        StatusBarNotification notification = mContainingNotification.getEntry().getSbn();
+        StatusBarNotification notification = NotificationBundleUi.isEnabled()
+                ? mContainingNotification.getEntryAdapter().getSbn()
+                : mContainingNotification.getEntry().getSbn();
+        if (notification == null) {
+            return;
+        }
         if (mIsMinimized) {
             if (builder == null) {
                 builder = Notification.Builder.recoverBuilder(getContext(),
@@ -1352,10 +1363,11 @@ public class NotificationChildrenContainer extends ViewGroup
             if (i < maxAllowedVisibleChildren) {
                 float singleLineHeight = child.getShowingLayout().getMinHeight(
                         false /* likeGroupExpanded */);
-                child.setActualHeight((int) NotificationUtils.interpolate(singleLineHeight,
-                        childHeight, fraction), false);
+                childHeight = NotificationUtils.interpolate(singleLineHeight,
+                        childHeight, fraction);
+                child.setFinalActualHeight((int) childHeight);
             } else {
-                child.setActualHeight((int) childHeight, false);
+                child.setFinalActualHeight((int) childHeight);
             }
         }
     }
@@ -1457,7 +1469,7 @@ public class NotificationChildrenContainer extends ViewGroup
                 if (AsyncHybridViewInflation.isEnabled()) {
                     minExpandHeight += mMinSingleLineHeight;
                 } else {
-                    Log.e(TAG, "getMinHeight: child " + child.getEntry().getKey()
+                    Log.e(TAG, "getMinHeight: child " + child.getKey()
                             + " single line view is null", new Exception());
                 }
             }
@@ -1687,8 +1699,8 @@ public class NotificationChildrenContainer extends ViewGroup
     public void addTransientView(View view, int index) {
         if (mLogger != null && view instanceof ExpandableNotificationRow) {
             mLogger.addTransientRow(
-                    ((ExpandableNotificationRow) view).getEntry(),
-                    getContainingNotification().getEntry(),
+                    ((ExpandableNotificationRow) view).getLoggingKey(),
+                    getContainingNotification().getLoggingKey(),
                     index
             );
         }
@@ -1699,8 +1711,8 @@ public class NotificationChildrenContainer extends ViewGroup
     public void removeTransientView(View view) {
         if (mLogger != null && view instanceof ExpandableNotificationRow) {
             mLogger.removeTransientRow(
-                    ((ExpandableNotificationRow) view).getEntry(),
-                    getContainingNotification().getEntry()
+                    ((ExpandableNotificationRow) view).getLoggingKey(),
+                    getContainingNotification().getLoggingKey()
             );
         }
         super.removeTransientView(view);

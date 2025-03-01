@@ -1875,9 +1875,7 @@ public class ChooserActivity extends ResolverActivity implements
                 Bundle b = new Bundle();
                 // Add userHandle based badge to the stackedAppDialogBox.
                 b.putParcelable(ChooserTargetActionsDialogFragment.USER_HANDLE_KEY,
-                        getResolveInfoUserHandle(
-                                targetInfo.getResolveInfo(),
-                                mChooserMultiProfilePagerAdapter.getCurrentUserHandle()));
+                        targetInfo.getResolveInfo().userHandle);
                 b.putObject(ChooserStackedAppDialogFragment.MULTI_DRI_KEY,
                         mti);
                 b.putInt(ChooserStackedAppDialogFragment.WHICH_KEY, which);
@@ -2457,10 +2455,7 @@ public class ChooserActivity extends ResolverActivity implements
             //  compares using resolveInfo.userHandle
             mComparator = Comparator.comparing(DisplayResolveInfo::getDisplayLabel, collator)
                     .thenComparingInt(displayResolveInfo ->
-                            getResolveInfoUserHandle(
-                                    displayResolveInfo.getResolveInfo(),
-                                    // TODO: User resolveInfo.userHandle, once its available.
-                                    UserHandle.SYSTEM).getIdentifier());
+                            displayResolveInfo.getResolveInfo().userHandle.getIdentifier());
         }
 
         @Override

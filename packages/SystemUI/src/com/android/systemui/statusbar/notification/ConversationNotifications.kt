@@ -74,7 +74,7 @@ constructor(
             else
                 Notification.MessagingStyle.CONVERSATION_TYPE_LEGACY
         entry.ranking.conversationShortcutInfo?.let { shortcutInfo ->
-            logger.logAsyncTaskProgress(entry, "getting shortcut icon")
+            logger.logAsyncTaskProgress(entry.logKey, "getting shortcut icon")
             messagingStyle.shortcutIcon = launcherApps.getShortcutIcon(shortcutInfo)
             shortcutInfo.label?.let { label -> messagingStyle.conversationTitle = label }
         }
@@ -91,7 +91,7 @@ constructor(
                     ImageSpan(it, ImageSpan.ALIGN_CENTER)
                 }
             val decoratedSummary =
-                SpannableString("x" + entry.ranking.summarization).apply {
+                SpannableString("x " + entry.ranking.summarization).apply {
                     setSpan(
                         /* what = */ imageSpan,
                         /* start = */ 0,
@@ -100,9 +100,9 @@ constructor(
                     )
                     entry.ranking.summarization?.let {
                         setSpan(
-                            /* what = */ StyleSpan(Typeface.BOLD),
-                            /* start = */ 1,
-                            /* end = */ it.length,
+                            /* what = */ StyleSpan(Typeface.ITALIC),
+                            /* start = */ 2,
+                            /* end = */ it.length + 2,
                             /* flags = */ Spanned.SPAN_EXCLUSIVE_INCLUSIVE,
                         )
                     }

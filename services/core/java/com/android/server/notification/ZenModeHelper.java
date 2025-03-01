@@ -48,6 +48,7 @@ import static android.service.notification.ZenModeConfig.isImplicitRuleId;
 import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
 import static com.android.internal.util.Preconditions.checkArgument;
 import static com.android.server.notification.Flags.preventZenDeviceEffectsWhileDriving;
+import static com.android.server.notification.Flags.limitZenConfigSize;
 
 import static java.util.Objects.requireNonNull;
 
@@ -157,6 +158,12 @@ public class ZenModeHelper {
     static final int RULE_LIMIT_PER_PACKAGE = 100;
     private static final Duration DELETED_RULE_KEPT_FOR = Duration.ofDays(30);
 
+    /**
+     * Amount of time since last activation after which implicit rules that have never been
+     * customized by the user are automatically cleaned up.
+     */
+    private static final Duration IMPLICIT_RULE_KEPT_FOR = Duration.ofDays(30);
+
     private static final int MAX_ICON_RESOURCE_NAME_LENGTH = 1000;
 
     /**
@@ -186,6 +193,7 @@ public class ZenModeHelper {
     private final ConditionProviders.Config mServiceConfig;
     private final SystemUiSystemPropertiesFlags.FlagResolver mFlagResolver;
     private final ZenModeEventLogger mZenModeEventLogger;
+    private final ZenConfigTrimmer mConfigTrimmer;
 
     @VisibleForTesting protected int mZenMode;
     @VisibleForTesting protected NotificationManager.Policy mConsolidatedPolicy;
@@ -220,6 +228,7 @@ public class ZenModeHelper {
         mClock = clock;
         addCallback(mMetrics);
         mAppOps = context.getSystemService(AppOpsManager.class);
+        mConfigTrimmer = new ZenConfigTrimmer(mContext);
 
         mDefaultConfig = Flags.modesUi()
                 ? ZenModeConfig.getDefaultConfig()
@@ -534,7 +543,7 @@ public class ZenModeHelper {
                     ZenModeConfig.EVERY_NIGHT_DEFAULT_RULE_ID);
             if (sleepingRule != null
                     && !sleepingRule.enabled
-                    && sleepingRule.canBeUpdatedByApp() /* meaning it's not user-customized */) {
+                    && !sleepingRule.isUserModified()) {
                 config.automaticRules.remove(ZenModeConfig.EVERY_NIGHT_DEFAULT_RULE_ID);
             }
         }
@@ -864,7 +873,7 @@ public class ZenModeHelper {
         // We don't try to preserve system-owned rules because their conditionIds (used as
         // deletedRuleKey) are not stable. This is almost moot anyway because an app cannot
         // delete a system-owned rule.
-        if (origin == ORIGIN_APP && !ruleToRemove.canBeUpdatedByApp()
+        if (origin == ORIGIN_APP && ruleToRemove.isUserModified()
                 && !PACKAGE_ANDROID.equals(ruleToRemove.pkg)) {
             String deletedKey = ZenModeConfig.deletedRuleKey(ruleToRemove);
             if (deletedKey != null) {
@@ -1282,7 +1291,7 @@ public class ZenModeHelper {
         // * the request comes from an origin that can always update values, like the user, or
         // * the rule has not yet been user modified, and thus can be updated by the app.
         boolean updateValues = isNew || doesOriginAlwaysUpdateValues(origin)
-                || rule.canBeUpdatedByApp();
+                || !rule.isUserModified();
 
         // For all other values, if updates are not allowed, we discard the update.
         if (!updateValues) {
@@ -1914,6 +1923,7 @@ public class ZenModeHelper {
      * <ul>
      *     <li>Rule instances whose owner is not installed.
      *     <li>Deleted rules that were deleted more than 30 days ago.
+     *     <li>Implicit rules that haven't been used in 30 days (and have not been customized).
      * </ul>
      */
     private void cleanUpZenRules() {
@@ -1930,6 +1940,10 @@ public class ZenModeHelper {
                         || deletedRule.deletionInstant.isBefore(keptRuleThreshold)) {
                     newConfig.deletedRules.removeAt(i);
                 }
+            }
+
+            if (Flags.modesUi() && Flags.modesCleanupImplicit()) {
+                deleteUnusedImplicitRules(newConfig.automaticRules);
             }
 
             if (!newConfig.equals(mConfig)) {
@@ -1952,6 +1966,29 @@ public class ZenModeHelper {
                     } catch (PackageManager.NameNotFoundException e) {
                         ruleList.removeAt(i);
                     }
+                }
+            }
+        }
+    }
+
+    private void deleteUnusedImplicitRules(ArrayMap<String, ZenRule> ruleList) {
+        if (ruleList == null) {
+            return;
+        }
+        Instant deleteIfUnusedSince = mClock.instant().minus(IMPLICIT_RULE_KEPT_FOR);
+
+        for (int i = ruleList.size() - 1; i >= 0; i--) {
+            ZenRule rule = ruleList.valueAt(i);
+            if (isImplicitRuleId(rule.id) && !rule.isUserModified()) {
+                if (rule.lastActivation == null) {
+                    // This rule existed before we started tracking activation time. It *might* be
+                    // in use. Set lastActivation=now so it has some time (IMPLICIT_RULE_KEPT_FOR)
+                    // before being removed if truly unused.
+                    rule.lastActivation = mClock.instant();
+                }
+
+                if (rule.lastActivation.isBefore(deleteIfUnusedSince)) {
+                    ruleList.removeAt(i);
                 }
             }
         }
@@ -2027,20 +2064,20 @@ public class ZenModeHelper {
                 Log.w(TAG, "Invalid config in setConfigLocked; " + config);
                 return false;
             }
+            if (limitZenConfigSize() && (origin == ORIGIN_APP || origin == ORIGIN_USER_IN_APP)) {
+                mConfigTrimmer.trimToMaximumSize(config);
+            }
+
             if (config.user != mUser) {
                 // simply store away for background users
-                synchronized (mConfigLock) {
-                    mConfigs.put(config.user, config);
-                }
+                mConfigs.put(config.user, config);
                 if (DEBUG) Log.d(TAG, "setConfigLocked: store config for user " + config.user);
                 return true;
             }
             // handle CPS backed conditions - danger! may modify config
             mConditions.evaluateConfig(config, null, false /*processSubscriptions*/);
 
-            synchronized (mConfigLock) {
-                mConfigs.put(config.user, config);
-            }
+            mConfigs.put(config.user, config);
             if (DEBUG) Log.d(TAG, "setConfigLocked reason=" + reason, new Throwable());
             ZenLog.traceConfig(origin, reason, triggeringComponent, mConfig, config, callingUid);
 
@@ -2087,6 +2124,20 @@ public class ZenModeHelper {
                             scheduleActivationBroadcast(
                                     rule.getPkg(), config.user, rule.id, rule.isActive());
                         }
+                    }
+                }
+            }
+
+            // Update last activation for rules that are being activated.
+            if (Flags.modesUi() && Flags.modesCleanupImplicit()) {
+                Instant now = mClock.instant();
+                if (!mConfig.isManualActive() && config.isManualActive()) {
+                    config.manualRule.lastActivation = now;
+                }
+                for (ZenRule rule : config.automaticRules.values()) {
+                    ZenRule previousRule = mConfig.automaticRules.get(rule.id);
+                    if (rule.isActive() && (previousRule == null || !previousRule.isActive())) {
+                        rule.lastActivation = now;
                     }
                 }
             }

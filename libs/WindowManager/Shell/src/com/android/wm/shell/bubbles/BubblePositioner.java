@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles;
 
+import static com.android.launcher3.icons.IconNormalizer.ICON_VISIBLE_AREA_FACTOR;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
 
 import android.content.Context;
@@ -31,7 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.protolog.ProtoLog;
-import com.android.launcher3.icons.IconNormalizer;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
@@ -133,6 +134,11 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
                 deviceConfig.isSmallTablet(), mShowingInBubbleBar,
                 deviceConfig.getWindowBounds());
         updateInternal(mRotation, deviceConfig.getInsets(), deviceConfig.getWindowBounds());
+    }
+
+    /** Returns the device config being used. */
+    public DeviceConfig getCurrentConfig() {
+        return mDeviceConfig;
     }
 
     @VisibleForTesting
@@ -556,8 +562,7 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
     public float getPointerPosition(float bubblePosition) {
         // TODO: I don't understand why it works but it does - why normalized in portrait
         //  & not in landscape? Am I missing ~2dp in the portrait expandedViewY calculation?
-        final float normalizedSize = IconNormalizer.getNormalizedCircleSize(
-                getBubbleSize());
+        final float normalizedSize = Math.round(ICON_VISIBLE_AREA_FACTOR * getBubbleSize());
         return showBubblesVertically()
                 ? bubblePosition + (getBubbleSize() / 2f)
                 : bubblePosition + (normalizedSize / 2f) - mPointerWidth;
@@ -906,7 +911,7 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
         if (isOverflow) {
             return mOverflowHeight;
         } else {
-            return getBubbleBarExpandedViewHeightForLandscape();
+            return getBubbleBarExpandedViewHeight();
         }
     }
 
@@ -927,17 +932,22 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
      * |      bottom inset ↕  |   ↓
      * |----------------------| --- mScreenRect.bottom
      */
-    private int getBubbleBarExpandedViewHeightForLandscape() {
+    private int getBubbleBarExpandedViewHeight() {
         int heightOfBubbleBarContainer =
                 mScreenRect.height() - getExpandedViewBottomForBubbleBar();
-        // getting landscape height from screen rect
-        int expandedViewHeight = Math.min(mScreenRect.width(), mScreenRect.height());
+        int expandedViewHeight;
+        if (Flags.enableBubbleBarOnPhones() && !mDeviceConfig.isLargeScreen()) {
+            // we're on a phone, use the max / height
+            expandedViewHeight = Math.max(mScreenRect.width(), mScreenRect.height());
+        } else {
+            // getting landscape height from screen rect
+            expandedViewHeight = Math.min(mScreenRect.width(), mScreenRect.height());
+        }
         expandedViewHeight -= heightOfBubbleBarContainer; /* removing bubble container height */
         expandedViewHeight -= mInsets.top; /* removing top inset */
         expandedViewHeight -= mExpandedViewPadding; /* removing spacing */
         return expandedViewHeight;
     }
-
 
     /** The bottom position of the expanded view when showing above the bubble bar. */
     public int getExpandedViewBottomForBubbleBar() {

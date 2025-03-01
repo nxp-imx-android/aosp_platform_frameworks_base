@@ -52,6 +52,7 @@ import com.android.wm.shell.common.DisplayChangeController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler
@@ -138,6 +139,8 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockFreeformTaskTransitionStarter = mock<FreeformTaskTransitionStarter>()
     protected val mockActivityOrientationChangeHandler =
         mock<DesktopActivityOrientationChangeHandler>()
+    protected val mockMultiDisplayDragMoveIndicatorController =
+        mock<MultiDisplayDragMoveIndicatorController>()
     protected val mockInputManager = mock<InputManager>()
     private val mockTaskPositionerFactory =
         mock<DesktopModeWindowDecorViewModel.TaskPositionerFactory>()
@@ -229,6 +232,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockRecentsTransitionHandler,
             desktopModeCompatPolicy,
             mockTilingWindowDecoration,
+            mockMultiDisplayDragMoveIndicatorController,
         )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)
@@ -236,6 +240,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockInputMonitorFactory.create(any(), any())).thenReturn(mockInputMonitor)
         whenever(
             mockTaskPositionerFactory.create(
+                any(),
                 any(),
                 any(),
                 any(),

@@ -95,6 +95,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_VOLUME_OVERLAY;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.LayoutParams.isSystemAlertWindowType;
+import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_OFFSET;
@@ -182,6 +183,7 @@ import static com.android.server.wm.WindowStateProto.UNRESTRICTED_KEEP_CLEAR_ARE
 import static com.android.server.wm.WindowStateProto.VIEW_VISIBILITY;
 import static com.android.server.wm.WindowStateProto.WINDOW_CONTAINER;
 import static com.android.server.wm.WindowStateProto.WINDOW_FRAMES;
+import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 import static com.android.window.flags.Flags.surfaceTrustedOverlay;
 
 import android.annotation.CallSuper;
@@ -734,6 +736,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     private @InsetsType int mRequestedVisibleTypes = WindowInsets.Type.defaultVisible();
 
+    private @InsetsType int mAnimatingTypes = 0;
+
     /**
      * Freeze the insets state in some cases that not necessarily keeps up-to-date to the client.
      * (e.g app exiting transition)
@@ -838,6 +842,27 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             @InsetsType int requestedVisibleTypes, @InsetsType int mask) {
         return setRequestedVisibleTypes(
                 mRequestedVisibleTypes & ~mask | requestedVisibleTypes & mask);
+    }
+
+    @Override
+    public @InsetsType int getAnimatingTypes() {
+        return mAnimatingTypes;
+    }
+
+    @Override
+    public void setAnimatingTypes(@InsetsType int animatingTypes) {
+        if (mAnimatingTypes != animatingTypes) {
+            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.instant(TRACE_TAG_WINDOW_MANAGER,
+                        TextUtils.formatSimple("%s: setAnimatingTypes(%s)",
+                                getName(),
+                                animatingTypes));
+            }
+            mInsetsAnimationRunning = animatingTypes != 0;
+            mWmService.scheduleAnimationLocked();
+
+            mAnimatingTypes = animatingTypes;
+        }
     }
 
     /**
@@ -1410,10 +1435,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return mWindowFrames.mParentFrame;
     }
 
-    WindowManager.LayoutParams getAttrs() {
-        return mAttrs;
-    }
-
     /** Retrieves the flags used to disable system UI functions. */
     int getDisableFlags() {
         return mDisableFlags;
@@ -1694,17 +1715,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     boolean hasAppShownWindows() {
         return mActivityRecord != null && (mActivityRecord.firstWindowDrawn
                 || mActivityRecord.isStartingWindowDisplayed());
-    }
-
-    @Override
-    boolean hasContentToDisplay() {
-        if (!isDrawn() && (mViewVisibility == View.VISIBLE
-                || (isAnimating(TRANSITION | PARENTS)
-                && !getDisplayContent().mAppTransition.isTransitionSet()))) {
-            return true;
-        }
-
-        return super.hasContentToDisplay();
     }
 
     private boolean isVisibleByPolicyOrInsets() {
@@ -2297,11 +2307,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             dc.updateImeInputAndControlTarget(null);
         }
 
-        final int type = mAttrs.type;
-
-        if (isPresentation()) {
-            mWmService.mPresentationController.onPresentationRemoved(this);
-        }
         // Check if window provides non decor insets before clearing its provided insets.
         final boolean windowProvidesDisplayDecorInsets = providesDisplayDecorInsets();
 
@@ -2442,11 +2447,32 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 }
             }
 
-            removeImmediately();
-            mWmService.updateFocusedWindowLocked(isFocused()
-                            ? UPDATE_FOCUS_REMOVING_FOCUS
-                            : UPDATE_FOCUS_NORMAL,
-                    true /*updateInputWindows*/);
+            // Only a presentation window needs a transition because its visibility affets the
+            // lifecycle of apps below (b/390481865).
+            if (enablePresentationForConnectedDisplays() && isPresentation()) {
+                Transition transition = null;
+                if (!mTransitionController.isCollecting()) {
+                    transition = mTransitionController.createAndStartCollecting(TRANSIT_CLOSE);
+                }
+                mTransitionController.collect(mToken);
+                mAnimatingExit = true;
+                mRemoveOnExit = true;
+                mToken.setVisibleRequested(false);
+                // A presentation hides all activities behind on the same display.
+                mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
+                        /*notifyClients=*/ true);
+                mTransitionController.getCollectingTransition().setReady(mToken, true);
+                if (transition != null) {
+                    mTransitionController.requestStartTransition(transition, null,
+                            null /* remoteTransition */, null /* displayChange */);
+                }
+            } else {
+                removeImmediately();
+                mWmService.updateFocusedWindowLocked(isFocused()
+                                ? UPDATE_FOCUS_REMOVING_FOCUS
+                                : UPDATE_FOCUS_NORMAL,
+                        true /*updateInputWindows*/);
+            }
         } finally {
             Binder.restoreCallingIdentity(origId);
         }
@@ -2652,7 +2678,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // The client gave us a touchable region and so first
             // we calculate the untouchable region, then punch that out of our
             // expanded modal region.
-            mTmpRegion.set(0, 0, frame.right, frame.bottom);
+            mTmpRegion.set(0, 0, frame.width(), frame.height());
             mTmpRegion.op(mGivenTouchableRegion, Region.Op.DIFFERENCE);
             region.op(mTmpRegion, Region.Op.DIFFERENCE);
         }
@@ -3271,13 +3297,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             if (!mHasSurface) {
                 mDestroying = false;
                 destroyedSomething = true;
-            }
-
-            // Since mDestroying will affect ActivityRecord#allDrawn, we need to perform another
-            // traversal in case we are waiting on this window to start the transition.
-            if (getDisplayContent().mAppTransition.isTransitionSet()
-                    && getDisplayContent().mOpeningApps.contains(mActivityRecord)) {
-                mWmService.mWindowPlacerLocked.requestTraversal();
             }
         }
 
@@ -5635,13 +5654,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     KeyInterceptionInfo getKeyInterceptionInfo() {
         if (mKeyInterceptionInfo == null
-                || mKeyInterceptionInfo.layoutParamsPrivateFlags != getAttrs().privateFlags
-                || mKeyInterceptionInfo.layoutParamsType != getAttrs().type
+                || mKeyInterceptionInfo.layoutParamsPrivateFlags != mAttrs.privateFlags
+                || mKeyInterceptionInfo.layoutParamsType != mAttrs.type
                 || mKeyInterceptionInfo.windowTitle != getWindowTag()
                 || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()
-                || mKeyInterceptionInfo.inputFeaturesFlags != getAttrs().inputFeatures) {
-            mKeyInterceptionInfo = new KeyInterceptionInfo(getAttrs().type, getAttrs().privateFlags,
-                    getWindowTag().toString(), getOwningUid(), getAttrs().inputFeatures);
+                || mKeyInterceptionInfo.inputFeaturesFlags != mAttrs.inputFeatures) {
+            mKeyInterceptionInfo = new KeyInterceptionInfo(mAttrs.type, mAttrs.privateFlags,
+                    getWindowTag().toString(), getOwningUid(), mAttrs.inputFeatures);
         }
         return mKeyInterceptionInfo;
     }
@@ -5665,7 +5684,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         } else {
             outFrame.set(getParentFrame());
         }
-        outSurfaceInsets.set(getAttrs().surfaceInsets);
+        outSurfaceInsets.set(mAttrs.surfaceInsets);
         final InsetsState state = getInsetsStateWithVisibilityOverride();
         outInsets.set(state.calculateInsets(outFrame, systemBars(),
                 false /* ignoreVisibility */).toRect());
@@ -6079,17 +6098,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mDisplayContent != null) {
             mDisplayContent.refreshImeSecureFlag(getSyncTransaction());
         }
-        mWmService.scheduleAnimationLocked();
-    }
-
-    void notifyInsetsAnimationRunningStateChanged(boolean running) {
-        if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
-            Trace.instant(TRACE_TAG_WINDOW_MANAGER,
-                    TextUtils.formatSimple("%s: notifyInsetsAnimationRunningStateChanged(%s)",
-                    getName(),
-                    Boolean.toString(running)));
-        }
-        mInsetsAnimationRunning = running;
         mWmService.scheduleAnimationLocked();
     }
 

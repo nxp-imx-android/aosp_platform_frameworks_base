@@ -294,6 +294,8 @@ public class PipTaskListenerTest {
         mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
                 mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
+        clearInvocations(mMockPipScheduler);
+
         Bundle extras = new Bundle();
         extras.putBoolean(ANIMATING_ASPECT_RATIO_CHANGE, false);
 

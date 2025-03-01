@@ -143,7 +143,7 @@ public class WidthModifierOperation extends DimensionModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "WidthModifierOperation")
+                .addType("WidthModifierOperation")
                 .add("width", mValue, mOutValue)
                 .add("dimensionModifierType", mType);
     }

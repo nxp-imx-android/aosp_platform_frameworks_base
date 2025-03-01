@@ -19,7 +19,6 @@ package com.android.systemui.wallpapers.data.repository
 import android.content.applicationContext
 import com.android.app.wallpaperManager
 import com.android.systemui.broadcast.broadcastDispatcher
-import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
@@ -34,8 +33,6 @@ val Kosmos.wallpaperRepository by Fixture {
         bgDispatcher = testDispatcher,
         broadcastDispatcher = broadcastDispatcher,
         userRepository = userRepository,
-        keyguardTransitionInteractor = keyguardTransitionInteractor,
-        wallpaperFocalAreaRepository = wallpaperFocalAreaRepository,
         wallpaperManager = wallpaperManager,
         secureSettings = fakeSettings,
     )

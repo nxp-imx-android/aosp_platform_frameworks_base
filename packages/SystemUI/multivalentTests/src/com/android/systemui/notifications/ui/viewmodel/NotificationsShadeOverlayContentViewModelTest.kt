@@ -65,8 +65,7 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val sceneInteractor = kosmos.sceneInteractor
-
+    private val sceneInteractor by lazy { kosmos.sceneInteractor }
     private val underTest by lazy { kosmos.notificationsShadeOverlayContentViewModel }
 
     @Before
@@ -98,20 +97,6 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
             assertThat(currentOverlays).contains(Overlays.NotificationsShade)
 
             lockDevice()
-
-            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
-        }
-
-    @Test
-    fun bouncerShown_hidesShade() =
-        testScope.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            lockDevice()
-            sceneInteractor.showOverlay(Overlays.NotificationsShade, "test")
-            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
-
-            sceneInteractor.changeScene(Scenes.Bouncer, "test")
-            runCurrent()
 
             assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
         }

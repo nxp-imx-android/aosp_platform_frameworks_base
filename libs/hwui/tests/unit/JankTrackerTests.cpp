@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-#include <gmock/gmock.h>
-
 #include <JankTracker.h>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <utils/TimeUtils.h>
+
+#include "FrameInfo.h"
 
 using namespace android;
 using namespace android::uirenderer;
 
 class TestFrameMetricsObserver : public FrameMetricsObserver {
 public:
-    void notify(const int64_t*) {}
+    void notify(const FrameInfoBuffer&) override {}
 };
 
 TEST(JankTracker, noJank) {

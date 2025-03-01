@@ -245,13 +245,18 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth terhubung."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikon perangkat Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Klik untuk mengonfigurasi detail perangkat"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Klik untuk melihat semua perangkat"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Klik untuk menyambungkan perangkat baru"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurasi detail perangkat"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Lihat semua perangkat"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Sambungkan perangkat baru"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Persentase baterai tidak diketahui."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Terhubung ke <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Terhubung ke <xliff:g id="CAST">%s</xliff:g>."</string>
-    <string name="accessibility_expand_group" msgid="521237935987978624">"Meluaskan grup."</string>
-    <string name="accessibility_open_application" msgid="1749126077501259712">"Membuka aplikasi."</string>
+    <string name="accessibility_expand_group" msgid="521237935987978624">"Luaskan grup."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
+    <string name="accessibility_open_application" msgid="1749126077501259712">"Buka aplikasi."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Tidak terhubung."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
     <string name="cell_data_off" msgid="4886198950247099526">"Nonaktif"</string>
@@ -328,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Input"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Alat bantu dengar"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Mengaktifkan…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Tidak dapat menyesuaikan kecerahan karena sedang\n dikontrol oleh aplikasi atas"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Putar Otomatis"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Putar layar otomatis"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Lokasi"</string>
@@ -345,7 +351,7 @@
     <string name="quick_settings_networks_unavailable" msgid="1167847013337940082">"Jaringan tidak tersedia"</string>
     <string name="quick_settings_wifi_detail_empty_text" msgid="483130889414601732">"Tidak ada jaringan Wi-Fi yang tersedia"</string>
     <string name="quick_settings_wifi_secondary_label_transient" msgid="7501659015509357887">"Mengaktifkan…"</string>
-    <string name="quick_settings_cast_title" msgid="3033553249449938182">"Cast"</string>
+    <string name="quick_settings_cast_title" msgid="3033553249449938182">"Transmisikan"</string>
     <string name="quick_settings_casting" msgid="1435880708719268055">"Melakukan transmisi"</string>
     <string name="quick_settings_cast_device_default_name" msgid="6988469571141331700">"Perangkat tanpa nama"</string>
     <string name="quick_settings_cast_detail_empty_text" msgid="2846282280014617785">"Perangkat tak tersedia"</string>
@@ -420,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Suara sekitar"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kiri"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Kanan"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Luaskan ke kontrol terpisah kiri dan kanan"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Ciutkan ke kontrol terpadu"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Bisukan suara sekitar"</string>
@@ -534,6 +546,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"batalkan pilihan widget"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Kurangi tinggi"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Tambah tinggi"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Tampilkan berikutnya"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Tampilkan sebelumnya"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Widget layar kunci"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Untuk membuka aplikasi menggunakan widget, Anda perlu memverifikasi diri Anda. Selain itu, harap ingat bahwa siapa saja dapat melihatnya, bahkan saat tablet Anda terkunci. Beberapa widget mungkin tidak dirancang untuk layar kunci Anda dan mungkin tidak aman untuk ditambahkan di sini."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Oke"</string>
@@ -542,7 +556,7 @@
     <string name="hub_onboarding_bottom_sheet_text" msgid="8589816797970240544">"Akses widget dan screensaver favorit Anda saat mengisi daya."</string>
     <string name="hub_onboarding_bottom_sheet_action_button" msgid="6161983690157872829">"Mulai"</string>
     <string name="glanceable_hub_to_dream_button_tooltip" msgid="9018287673822335829">"Tampilkan screensaver favorit saat mengisi daya"</string>
-    <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Beralih pengguna"</string>
+    <string name="accessibility_multi_user_switch_switcher" msgid="5330448341251092660">"Ganti pengguna"</string>
     <string name="accessibility_multi_user_list_switcher" msgid="8574105376229857407">"menu pulldown"</string>
     <string name="guest_exit_guest_dialog_message" msgid="8183450985628495709">"Semua aplikasi dan data dalam sesi ini akan dihapus."</string>
     <string name="guest_wipe_session_title" msgid="7147965814683990944">"Selamat datang kembali, tamu!"</string>
@@ -806,7 +820,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> tidak mendukung fitur percakapan"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Masukan"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Tutup"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Jangan tampilkan lagi"</string>
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Jangan tampilkan sebagai tersemat"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Menampilkan Info Terbaru Langsung"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Notifikasi yang disematkan menampilkan info terbaru dari aplikasi, serta selalu muncul di status bar dan layar kunci"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Notifikasi ini tidak dapat diubah."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Notifikasi panggilan tidak dapat diubah."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Grup notifikasi ini tidak dapat dikonfigurasi di sini"</string>
@@ -893,7 +909,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitasking"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gunakan layar terpisah dengan aplikasi di sebelah kanan"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gunakan layar terpisah dengan aplikasi di sebelah kiri"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Beralih ke layar penuh"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Gunakan layar penuh"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Gunakan tampilan desktop"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Beralih ke aplikasi di bagian kanan atau bawah saat menggunakan layar terpisah"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Beralih ke aplikasi di bagian kiri atau atas saat menggunakan layar terpisah"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Dalam layar terpisah: ganti salah satu aplikasi dengan yang lain"</string>
@@ -980,6 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Tampilkan ikon notifikasi prioritas rendah"</string>
     <string name="other" msgid="429768510980739978">"Lainnya"</string>
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"mengubah ukuran kartu"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"menghapus kartu"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"menambahkan kartu ke posisi terakhir"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Pindahkan kartu"</string>
@@ -1394,8 +1412,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Perangkat foldable sedang dibentangkan"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Perangkat foldable sedang dibalik"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Layar depan diaktifkan"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Geser untuk menggunakan layar dalam"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"ditutup"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"dibuka"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>
@@ -1495,6 +1512,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Lihat aplikasi terbaru"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Beralih aplikasi"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Selesai"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Berikutnya"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Coba lagi"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Kembali"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Geser ke kiri atau kanan menggunakan tiga jari di touchpad"</string>
@@ -1532,7 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Untuk melihat aplikasi terkini, geser ke atas dan tahan menggunakan tiga jari di touchpad"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Untuk melihat semua aplikasi, tekan tombol tindakan di keyboard"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Disamarkan"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Buka kunci untuk melihat"</string>
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Buka kunci untuk melihat"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Buka kunci untuk melihat kode"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Pendidikan kontekstual"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Gunakan touchpad untuk kembali"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Geser ke kiri atau kanan menggunakan tiga jari. Ketuk untuk mempelajari gestur lainnya."</string>
@@ -1555,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tidak diketahui"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reset semua kartu?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Semua kartu Setelan Cepat akan direset ke setelan asli perangkat"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

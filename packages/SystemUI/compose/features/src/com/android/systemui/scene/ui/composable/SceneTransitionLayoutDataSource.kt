@@ -103,4 +103,8 @@ class SceneTransitionLayoutDataSource(
     override fun instantlyHideOverlay(overlay: OverlayKey) {
         state.snapTo(overlays = state.currentOverlays - overlay)
     }
+
+    override fun freezeAndAnimateToCurrentState() {
+        state.currentTransition?.freezeAndAnimateToCurrentState()
+    }
 }

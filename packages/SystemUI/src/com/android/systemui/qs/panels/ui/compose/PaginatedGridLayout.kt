@@ -144,12 +144,17 @@ private fun FooterBar(
     pagerState: PagerState,
     editButtonViewModelFactory: EditModeButtonViewModel.Factory,
 ) {
+    val editButtonViewModel =
+        rememberViewModel(traceName = "PaginatedGridLayout-editButtonViewModel") {
+            editButtonViewModelFactory.create()
+        }
+
     // Use requiredHeight so it won't be squished if the view doesn't quite fit. As this is
     // expected to be inside a scrollable container, this should not be an issue.
     // Also, we construct the layout this way to do the following:
     // * PagerDots is centered in the row, taking as much space as it needs.
     // * On the start side, we place the BuildNumber, taking as much space as it needs, but
-    //   constrained by the available space left over after PagerDots
+    //   constrained by the available space left over after PagerDots.
     // * On the end side, we place the edit mode button, with the same constraints as for
     //   BuildNumber (but it will usually fit, as it's just a square button).
     Row(
@@ -178,7 +183,7 @@ private fun FooterBar(
         )
         Row(Modifier.weight(1f)) {
             Spacer(modifier = Modifier.weight(1f))
-            EditModeButton(viewModelFactory = editButtonViewModelFactory)
+            EditModeButton(viewModel = editButtonViewModel)
         }
     }
 }

@@ -28,7 +28,7 @@ oneway interface IDesktopTaskListener {
      * Called once when the listener first gets connected to initialize it with the current state of
      * desks in Shell.
      */
-    void onListenerConnected(in DisplayDeskState[] displayDeskStates);
+    void onListenerConnected(in DisplayDeskState[] displayDeskStates, boolean canCreateDesks);
 
     /** Desktop tasks visibility has changed. Visible if at least 1 task is visible. */
     void onTasksVisibilityChanged(int displayId, int visibleTasksCount);
@@ -49,10 +49,10 @@ oneway interface IDesktopTaskListener {
     void onExitDesktopModeTransitionStarted(int transitionDuration);
 
     /**
-     * Called when the conditions that allow the creation of a new desk on the display whose ID is
-     * `displayId` changes to `canCreateDesks`. It's also called when a new display is added.
+     * Called when the conditions that allow the creation of a new desk changes. This is a global
+     * state for the entire device.
      */
-    void onCanCreateDesksChanged(int displayId, boolean canCreateDesks);
+    void onCanCreateDesksChanged(boolean canCreateDesks);
 
     /** Called when a desk whose ID is `deskId` is added to the display whose ID is `displayId`. */
     void onDeskAdded(int displayId, int deskId);

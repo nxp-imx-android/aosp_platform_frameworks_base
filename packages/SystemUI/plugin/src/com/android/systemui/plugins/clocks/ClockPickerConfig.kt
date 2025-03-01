@@ -34,6 +34,9 @@ constructor(
 
     /** Font axes that can be modified on this clock */
     val axes: List<ClockFontAxis> = listOf(),
+
+    /** List of font presets for this clock. Can be assigned directly. */
+    val axisPresets: List<List<ClockFontAxisSetting>> = listOf(),
 )
 
 /** Represents an Axis that can be modified */

@@ -130,7 +130,7 @@ public class HostActionOperation extends Operation
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "HostActionOperation")
+                .addType("HostActionOperation")
                 .add("id", mActionId);
     }
 }

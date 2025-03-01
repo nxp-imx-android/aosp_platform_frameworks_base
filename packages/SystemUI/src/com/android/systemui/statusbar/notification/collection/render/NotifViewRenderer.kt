@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.notification.collection.render
 
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.ListEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 
 /**
@@ -34,7 +34,7 @@ interface NotifViewRenderer {
      * also ensure that future calls to [getStackController], [getGroupController], and
      * [getRowController] will provide valid results.
      */
-    fun onRenderList(notifList: List<ListEntry>)
+    fun onRenderList(notifList: List<PipelineEntry>)
 
     /**
      * Provides an interface for the pipeline to update individual groups. This will be called at

@@ -16,11 +16,34 @@ flag {
 }
 
 flag {
+    name: "enable_modals_fullscreen_with_permission"
+    namespace: "lse_desktop_experience"
+    description: "Uses permissions to understand if modal fullscreen is allowed for /n"
+                 "transparent activities."
+    bug: "394714626"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"
                  "mode in the heuristic for if desktop windowing is showing or not."
     bug: "379543275"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_shell_initial_bounds_regression_bug_fix"
+    namespace: "lse_desktop_experience"
+    description: "Enables fix for Shell initial bounds regression, forcing core to calculate /n"
+                 "initial bounds in desktop launch params while respecting cascading position /n"
+                 "passed by Shell."
+    bug: "396075922"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -73,6 +96,27 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables a SurfaceControlViewHost cache for window decorations"
     bug: "360452034"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_drag_resize_set_up_in_bg_thread"
+    namespace: "lse_desktop_experience"
+    description: "Enables setting up the drag-resize input listener in a bg thread"
+    bug: "396445663"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "disable_desktop_launch_params_outside_desktop_bug_fix"
+    namespace: "lse_desktop_experience"
+    description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for non /n"
+                 "desktop launches."
+    bug: "396108436"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -172,6 +216,23 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "enable_camera_compat_for_desktop_windowing_opt_out"
+    namespace: "lse_desktop_experience"
+    description: "Whether to allow developers to opt-out of Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
+    bug: "328616176"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_camera_compat_for_desktop_windowing_opt_out_api"
+    namespace: "lse_desktop_experience"
+    description: "Introduces a developer API to opt-out of Camera Compat treatment for fixed-orientation apps in desktop windowing mode"
+    bug: "397165621"
 }
 
 flag {
@@ -650,6 +711,16 @@ flag {
 }
 
 flag {
+  name: "enable_opaque_background_for_transparent_windows"
+  namespace: "lse_desktop_experience"
+  description: "Whether an opaque background should be forcefully set for windows with only transparent background."
+  bug: "397219542"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
     name: "enable_desktop_mode_through_dev_option"
     namespace: "lse_desktop_experience"
     description: "Enables support for desktop mode through developer options for devices eligible for desktop mode."
@@ -671,6 +742,13 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables full support of presentation API for connected displays."
     bug: "378503083"
+}
+
+flag {
+    name: "enable_activity_embedding_support_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enables activity embedding support for connected displays, including enabling AE optimization for Settings."
+    bug: "369438353"
 }
 
 flag {
@@ -729,6 +807,70 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables running visual indicator view operations in ShellDesktopThread."
     bug: "366413536"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_taskbar_overflow"
+    namespace: "lse_desktop_experience"
+    description: "Show recent apps in the taskbar overflow."
+    bug: "375627272"
+}
+
+flag {
+    name: "enable_projected_display_desktop_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enable Desktop Mode on Projected Mode devices but constrained to the external display."
+    bug: "384568161"
+}
+
+flag {
+    name: "enable_persisting_density_scale_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enables persisting density scale on resolution change for connected displays."
+    bug: "392855657"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_drag_to_desktop_incoming_transitions_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix handling incoming transitions during the DragToDesktop transition."
+    bug: "397135730"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_taskbar_recents_layout_transition"
+    namespace: "lse_desktop_experience"
+    description: "Enable Taskbar LayoutTransition for Recent Apps"
+    bug: "343521765"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_opening_deeplink_minimize_animation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enabling a minimize animation when a new window is opened via deeplink and the Desktop Windowing open windows limit is reached."
+    bug: "360329773"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_visual_indicator_in_transition_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to move visual drop-zone indicator to transition root, so it can't be shown after the transition."
+    bug: "392826275"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

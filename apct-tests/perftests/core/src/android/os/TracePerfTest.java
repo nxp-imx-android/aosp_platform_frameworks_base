@@ -127,14 +127,38 @@ public class TracePerfTest {
     public void testInstantPerfettoWithArgs() {
         PerfettoTrace.instant(FOO_CATEGORY, "testInstantP")
                 .addArg("foo", "bar")
-                .addFlow(1)
+                .setFlow(1)
                 .emit();
 
         BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
         while (state.keepRunning()) {
             PerfettoTrace.instant(FOO_CATEGORY, "testInstantP")
                     .addArg("foo", "bar")
-                    .addFlow(1)
+                    .setFlow(1)
+                    .emit();
+        }
+    }
+
+    @Test
+    public void testInstantPerfettoWithProto() {
+        PerfettoTrace.begin(FOO_CATEGORY, "message_queue_receive")
+                .beginProto()
+                .beginNested(2004 /* message_queue */)
+                .addField(1 /* sending_thread_name */, "foo")
+                .endNested()
+                .endProto()
+                .setTerminatingFlow(5)
+                .emit();
+
+        BenchmarkState state = mPerfStatusReporter.getBenchmarkState();
+        while (state.keepRunning()) {
+            PerfettoTrace.begin(FOO_CATEGORY, "message_queue_receive")
+                    .beginProto()
+                    .beginNested(2004 /* message_queue */)
+                    .addField(1 /* sending_thread_name */, "foo")
+                    .endNested()
+                    .endProto()
+                    .setTerminatingFlow(5)
                     .emit();
         }
     }

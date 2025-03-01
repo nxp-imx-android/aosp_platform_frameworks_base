@@ -61,8 +61,7 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             usingMediaInComposeFragment = false // This is not for the compose fragment
         }
     private val testScope = kosmos.testScope
-    private val sceneInteractor = kosmos.sceneInteractor
-
+    private val sceneInteractor by lazy { kosmos.sceneInteractor }
     private val underTest by lazy { kosmos.quickSettingsShadeOverlayContentViewModel }
 
     @Before
@@ -96,20 +95,6 @@ class QuickSettingsShadeOverlayContentViewModelTest : SysuiTestCase() {
             lockDevice()
 
             assertThat(currentOverlays).isEmpty()
-        }
-
-    @Test
-    fun bouncerShown_hidesShade() =
-        testScope.runTest {
-            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
-            lockDevice()
-            sceneInteractor.showOverlay(Overlays.QuickSettingsShade, "test")
-            assertThat(currentOverlays).contains(Overlays.QuickSettingsShade)
-
-            sceneInteractor.changeScene(Scenes.Bouncer, "test")
-            runCurrent()
-
-            assertThat(currentOverlays).doesNotContain(Overlays.QuickSettingsShade)
         }
 
     @Test

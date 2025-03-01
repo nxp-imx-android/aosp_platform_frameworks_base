@@ -156,7 +156,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.domain.interactor.SceneInteractor;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.scene.shared.model.Scenes;
+import com.android.systemui.scene.shared.model.Overlays;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shared.system.TaskStackChangeListener;
@@ -199,7 +199,7 @@ import javax.inject.Provider;
  * to be updated.
  */
 @SysUISingleton
-public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpable, CoreStartable {
+public class KeyguardUpdateMonitor implements TrustManager.TrustListener, CoreStartable {
 
     private static final String TAG = "KeyguardUpdateMonitor";
     private static final int BIOMETRIC_LOCKOUT_RESET_DELAY_MS = 600;
@@ -2923,14 +2923,14 @@ public class KeyguardUpdateMonitor implements TrustManager.TrustListener, Dumpab
     private boolean isPrimaryBouncerShowingOrWillBeShowing(
             ObservableTransitionState transitionState
     ) {
-        SceneContainerFlag.assertInNewMode();
+        SceneContainerFlag.unsafeAssertInNewMode();
         return isPrimaryBouncerFullyShown(transitionState)
-                || transitionState.isTransitioning(null, Scenes.Bouncer);
+                || transitionState.isTransitioning(null, Overlays.Bouncer);
     }
 
     private boolean isPrimaryBouncerFullyShown(ObservableTransitionState transitionState) {
-        SceneContainerFlag.assertInNewMode();
-        return transitionState.isIdle(Scenes.Bouncer);
+        SceneContainerFlag.unsafeAssertInNewMode();
+        return transitionState.isIdle(Overlays.Bouncer);
     }
 
     /**

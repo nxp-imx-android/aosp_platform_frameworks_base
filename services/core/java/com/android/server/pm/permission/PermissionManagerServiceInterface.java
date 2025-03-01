@@ -19,6 +19,7 @@ package com.android.server.pm.permission;
 import android.annotation.AppIdInt;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -662,5 +663,5 @@ public interface PermissionManagerServiceInterface extends PermissionManagerInte
      */
     void onPackageUninstalled(@NonNull String packageName, int appId,
             @NonNull PackageState packageState, @Nullable AndroidPackage pkg,
-            @NonNull List<AndroidPackage> sharedUserPkgs, @UserIdInt int userId);
+            @NonNull List<AndroidPackage> sharedUserPkgs, @CanBeALL @UserIdInt int userId);
 }

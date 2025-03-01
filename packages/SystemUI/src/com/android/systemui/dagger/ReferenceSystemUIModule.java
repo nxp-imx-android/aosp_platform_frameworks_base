@@ -56,6 +56,7 @@ import com.android.systemui.reardisplay.RearDisplayModule;
 import com.android.systemui.recents.Recents;
 import com.android.systemui.recents.RecentsImplementation;
 import com.android.systemui.recents.RecentsModule;
+import com.android.systemui.rotationlock.DeviceStateAutoRotateModule;
 import com.android.systemui.rotationlock.RotationLockModule;
 import com.android.systemui.rotationlock.RotationLockNewModule;
 import com.android.systemui.scene.SceneContainerFrameworkModule;
@@ -132,6 +133,7 @@ import javax.inject.Named;
         CollapsedStatusBarFragmentStartableModule.class,
         ConnectingDisplayViewModel.StartableModule.class,
         DefaultBlueprintModule.class,
+        DeviceStateAutoRotateModule.class,
         EmergencyGestureModule.class,
         GestureModule.class,
         HeadsUpModule.class,

@@ -38,11 +38,7 @@ import com.android.systemui.media.controls.shared.model.MediaDataLoadingModel
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaLoadingModel
 import com.android.systemui.media.controls.ui.controller.MediaPlayerData
-import com.android.systemui.media.controls.util.MediaFlags
-import com.android.systemui.media.controls.util.MediaSmartspaceLogger
 import com.android.systemui.media.controls.util.MediaUiEventLogger
-import com.android.systemui.media.controls.util.mediaSmartspaceLogger
-import com.android.systemui.media.controls.util.mockMediaSmartspaceLogger
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.testKosmos
@@ -95,7 +91,6 @@ class MediaDataFilterImplTest : SysuiTestCase() {
     @Mock private lateinit var smartspaceData: SmartspaceMediaData
     @Mock private lateinit var smartspaceMediaRecommendationItem: SmartspaceAction
     @Mock private lateinit var logger: MediaUiEventLogger
-    @Mock private lateinit var mediaFlags: MediaFlags
     @Mock private lateinit var cardAction: SmartspaceAction
 
     private lateinit var mediaDataFilter: MediaDataFilterImpl
@@ -104,12 +99,7 @@ class MediaDataFilterImplTest : SysuiTestCase() {
     private lateinit var dataGuest: MediaData
     private lateinit var dataPrivateProfile: MediaData
     private val clock = FakeSystemClock()
-    private val smartspaceLogger = kosmos.mockMediaSmartspaceLogger
-    private val repository: MediaFilterRepository =
-        with(kosmos) {
-            mediaSmartspaceLogger = mockMediaSmartspaceLogger
-            mediaFilterRepository
-        }
+    private val repository: MediaFilterRepository = with(kosmos) { mediaFilterRepository }
     private val mediaLogger = kosmos.mockMediaLogger
 
     @Before
@@ -126,7 +116,6 @@ class MediaDataFilterImplTest : SysuiTestCase() {
                 executor,
                 clock,
                 logger,
-                mediaFlags,
                 repository,
                 mediaLogger,
             )
@@ -541,22 +530,8 @@ class MediaDataFilterImplTest : SysuiTestCase() {
     @Test
     fun onSwipeToDismiss_setsTimedOut() {
         mediaDataFilter.onMediaDataLoaded(KEY, null, dataMain)
-        mediaDataFilter.onSwipeToDismiss(1)
+        mediaDataFilter.onSwipeToDismiss()
 
-        verify(smartspaceLogger, never())
-            .logSmartspaceCardUIEvent(
-                eq(MediaSmartspaceLogger.SMARTSPACE_CARD_DISMISS_EVENT),
-                anyInt(),
-                anyInt(),
-                anyInt(),
-                anyInt(),
-                anyBoolean(),
-                anyBoolean(),
-                anyInt(),
-                anyInt(),
-                anyInt(),
-                eq(true),
-            )
         verify(mediaDataProcessor).setInactive(eq(KEY), eq(true), eq(true))
     }
 

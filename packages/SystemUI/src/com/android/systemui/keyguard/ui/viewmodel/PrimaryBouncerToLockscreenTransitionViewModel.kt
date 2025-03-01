@@ -28,11 +28,10 @@ import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Overlays
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 /**
  * Breaks down PRIMARY BOUNCER->LOCKSCREEN transition into discrete steps for corresponding views to
@@ -50,7 +49,7 @@ constructor(
         animationFlow
             .setup(
                 duration = FromPrimaryBouncerTransitionInteractor.TO_LOCKSCREEN_DURATION,
-                edge = Edge.create(from = Scenes.Bouncer, to = LOCKSCREEN),
+                edge = Edge.create(from = Overlays.Bouncer, to = LOCKSCREEN),
             )
             .setupWithoutSceneContainer(edge = Edge.create(from = PRIMARY_BOUNCER, to = LOCKSCREEN))
 
@@ -81,7 +80,7 @@ constructor(
                 if (Flags.notificationShadeBlur()) {
                     transitionAnimation.immediatelyTransitionTo(blurConfig.maxBlurRadiusPx)
                 } else {
-                    emptyFlow()
+                    transitionAnimation.immediatelyTransitionTo(blurConfig.minBlurRadiusPx)
                 },
             flowWhenShadeIsNotExpanded =
                 transitionAnimation.sharedFlow(

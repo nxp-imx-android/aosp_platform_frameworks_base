@@ -16,19 +16,19 @@
 
 package com.android.wm.shell.shared.desktopmode
 
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
 import android.content.res.Resources
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
-import android.provider.Settings
-import android.provider.Settings.Global.DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES
 import android.window.DesktopModeFlags
 import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.util.createTaskInfo
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
 import org.junit.Before
@@ -63,14 +63,12 @@ class DesktopModeStatusTest : ShellTestCase() {
         doReturn(context.contentResolver).whenever(mockContext).contentResolver
         resetDesktopModeFlagsCache()
         resetEnforceDeviceRestriction()
-        resetFlagOverride()
     }
 
     @After
     fun tearDown() {
         resetDesktopModeFlagsCache()
         resetEnforceDeviceRestriction()
-        resetFlagOverride()
     }
 
     @DisableFlags(
@@ -154,6 +152,70 @@ class DesktopModeStatusTest : ShellTestCase() {
         setFlagOverride(DesktopModeFlags.ToggleOverride.OVERRIDE_ON)
 
         assertThat(DesktopModeStatus.canEnterDesktopMode(mockContext)).isTrue()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_freeformTask_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_notFreeformTask_returnsFalse() {
+        val notFreeFormTaskInfo = createTaskInfo()
+        assertThat(DesktopModeStatus.shouldSetBackground(notFreeFormTaskInfo)).isFalse()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS)
+    @Test
+    fun shouldSetBackground_BTWFlagDisabled_freeformTaskAndFluid_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(false)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    @DisableFlags(Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS)
+    @Test
+    fun shouldSetBackground_BTWFlagDisabled_freeformTaskAndVeiled_returnsFalse() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(true)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isFalse()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_freeformTaskAndFluid_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(false)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
+    }
+
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+        Flags.FLAG_ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS,
+    )
+    @Test
+    fun shouldSetBackground_BTWFlagEnabled_windowModesTask_freeformTaskAndVeiled_returnsTrue() {
+        val freeFormTaskInfo = createTaskInfo(deviceWindowingMode = WINDOWING_MODE_FREEFORM)
+
+        setIsVeiledResizeEnabled(true)
+        assertThat(DesktopModeStatus.shouldSetBackground(freeFormTaskInfo)).isTrue()
     }
 
     @Test
@@ -246,23 +308,23 @@ class DesktopModeStatusTest : ShellTestCase() {
         cachedToggleOverride.set(null, null)
     }
 
-    private fun resetFlagOverride() {
-        Settings.Global.putString(
-            context.contentResolver,
-            DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES, null
-        )
-    }
-
     private fun setFlagOverride(override: DesktopModeFlags.ToggleOverride) {
-        Settings.Global.putInt(
-            context.contentResolver,
-            DEVELOPMENT_OVERRIDE_DESKTOP_MODE_FEATURES, override.setting
-        )
+        val cachedToggleOverride =
+            DesktopModeFlags::class.java.getDeclaredField("sCachedToggleOverride")
+        cachedToggleOverride.isAccessible = true
+        cachedToggleOverride.set(null, override)
     }
 
     private fun setDeviceEligibleForDesktopMode(eligible: Boolean) {
         val deviceRestrictions = DesktopModeStatus::class.java.getDeclaredField("ENFORCE_DEVICE_RESTRICTIONS")
         deviceRestrictions.isAccessible = true
         deviceRestrictions.setBoolean(/* obj= */ null, /* z= */ !eligible)
+    }
+
+    private fun setIsVeiledResizeEnabled(enabled: Boolean) {
+        val deviceRestrictions =
+            DesktopModeStatus::class.java.getDeclaredField("IS_VEILED_RESIZE_ENABLED")
+        deviceRestrictions.isAccessible = true
+        deviceRestrictions.setBoolean(/* obj= */ null, /* z= */ enabled)
     }
 }

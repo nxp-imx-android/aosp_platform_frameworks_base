@@ -44,6 +44,7 @@ import androidx.annotation.OptIn;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.internal.util.LatencyTracker;
 import com.android.launcher3.icons.IconProvider;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -68,6 +69,8 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.LaunchAdjacentController;
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
+import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorSurface;
 import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -82,6 +85,7 @@ import com.android.wm.shell.desktopmode.CloseDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.DefaultDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
+import com.android.wm.shell.desktopmode.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
@@ -96,6 +100,7 @@ import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopTasksTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
+import com.android.wm.shell.desktopmode.DragToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.EnterDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler;
 import com.android.wm.shell.desktopmode.OverviewToDesktopTransitionObserver;
@@ -428,9 +433,10 @@ public abstract class WMShellModule {
             Transitions transitions,
             DisplayController displayController,
             @ShellMainThread ShellExecutor mainExecutor,
-            @ShellAnimationThread ShellExecutor animExecutor) {
+            @ShellAnimationThread ShellExecutor animExecutor,
+            @ShellAnimationThread Handler animHandler) {
         return new FreeformTaskTransitionHandler(
-                transitions, displayController, mainExecutor, animExecutor);
+                transitions, displayController, mainExecutor, animExecutor, animHandler);
     }
 
     @WMSingleton
@@ -765,7 +771,8 @@ public abstract class WMShellModule {
             DesksOrganizer desksOrganizer,
             DesksTransitionObserver desksTransitionObserver,
             UserProfileContexts userProfileContexts,
-            DesktopModeCompatPolicy desktopModeCompatPolicy) {
+            DesktopModeCompatPolicy desktopModeCompatPolicy,
+            DragToDisplayTransitionHandler dragToDisplayTransitionHandler) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -795,6 +802,7 @@ public abstract class WMShellModule {
                 recentTasksController.orElse(null),
                 interactionJankMonitor,
                 mainHandler,
+                focusTransitionObserver,
                 desktopModeEventLogger,
                 desktopModeUiEventLogger,
                 desktopWallpaperActivityTokenProvider,
@@ -803,7 +811,8 @@ public abstract class WMShellModule {
                 desksOrganizer,
                 desksTransitionObserver,
                 userProfileContexts,
-                desktopModeCompatPolicy);
+                desktopModeCompatPolicy,
+                dragToDisplayTransitionHandler);
     }
 
     @WMSingleton
@@ -929,6 +938,18 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    static DesktopWallpaperActivityTokenProvider provideDesktopWallpaperActivityTokenProvider() {
+        return new DesktopWallpaperActivityTokenProvider();
+    }
+
+    @WMSingleton
+    @Provides
+    static DragToDisplayTransitionHandler provideDragToDisplayTransitionHandler() {
+        return new DragToDisplayTransitionHandler();
+    }
+
+    @WMSingleton
+    @Provides
     static Optional<DesktopModeKeyGestureHandler> provideDesktopModeKeyGestureHandler(
             Context context,
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
@@ -989,7 +1010,8 @@ public abstract class WMShellModule {
             WindowDecorTaskResourceLoader taskResourceLoader,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
-            DesktopTilingDecorViewModel desktopTilingDecorViewModel
+            DesktopTilingDecorViewModel desktopTilingDecorViewModel,
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -1006,7 +1028,30 @@ public abstract class WMShellModule {
                 windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
                 focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
                 taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy,
-                desktopTilingDecorViewModel));
+                desktopTilingDecorViewModel,
+                multiDisplayDragMoveIndicatorController));
+    }
+
+    @WMSingleton
+    @Provides
+    static MultiDisplayDragMoveIndicatorController
+            providesMultiDisplayDragMoveIndicatorController(
+            DisplayController displayController,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            MultiDisplayDragMoveIndicatorSurface.Factory
+                multiDisplayDragMoveIndicatorSurfaceFactory,
+            @ShellDesktopThread ShellExecutor desktopExecutor
+    ) {
+        return new MultiDisplayDragMoveIndicatorController(
+                displayController, rootTaskDisplayAreaOrganizer,
+                multiDisplayDragMoveIndicatorSurfaceFactory, desktopExecutor);
+    }
+
+    @WMSingleton
+    @Provides
+    static MultiDisplayDragMoveIndicatorSurface.Factory
+            providesMultiDisplayDragMoveIndicatorSurfaceFactory(Context context) {
+        return new MultiDisplayDragMoveIndicatorSurface.Factory(context);
     }
 
     @WMSingleton
@@ -1046,8 +1091,10 @@ public abstract class WMShellModule {
     static EnterDesktopTaskTransitionHandler provideEnterDesktopModeTaskTransitionHandler(
             Transitions transitions,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
-            InteractionJankMonitor interactionJankMonitor) {
-        return new EnterDesktopTaskTransitionHandler(transitions, interactionJankMonitor);
+            InteractionJankMonitor interactionJankMonitor,
+            LatencyTracker latencyTracker) {
+        return new EnterDesktopTaskTransitionHandler(
+                transitions, interactionJankMonitor, latencyTracker);
     }
 
     @WMSingleton
@@ -1074,8 +1121,9 @@ public abstract class WMShellModule {
             Context context,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellAnimationThread ShellExecutor animExecutor,
-            @ShellMainThread Handler handler) {
-        return new CloseDesktopTaskTransitionHandler(context, mainExecutor, animExecutor, handler);
+            @ShellAnimationThread Handler animHandler) {
+        return new CloseDesktopTaskTransitionHandler(context, mainExecutor, animExecutor,
+                animHandler);
     }
 
     @WMSingleton
@@ -1083,9 +1131,10 @@ public abstract class WMShellModule {
     static DesktopMinimizationTransitionHandler provideDesktopMinimizationTransitionHandler(
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellAnimationThread ShellExecutor animExecutor,
-            DisplayController displayController) {
+            DisplayController displayController,
+            @ShellAnimationThread Handler mainHandler) {
         return new DesktopMinimizationTransitionHandler(mainExecutor, animExecutor,
-                displayController);
+                displayController, mainHandler);
     }
 
     @WMSingleton
@@ -1230,13 +1279,10 @@ public abstract class WMShellModule {
     static Optional<DesktopDisplayEventHandler> provideDesktopDisplayEventHandler(
             Context context,
             ShellInit shellInit,
-            Transitions transitions,
             DisplayController displayController,
-            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-            IWindowManager windowManager,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopTasksController> desktopTasksController,
-            ShellTaskOrganizer shellTaskOrganizer
+            Optional<DesktopDisplayModeController> desktopDisplayModeController
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
@@ -1245,13 +1291,10 @@ public abstract class WMShellModule {
                 new DesktopDisplayEventHandler(
                         context,
                         shellInit,
-                        transitions,
                         displayController,
-                        rootTaskDisplayAreaOrganizer,
-                        windowManager,
                         desktopUserRepositories.get(),
                         desktopTasksController.get(),
-                        shellTaskOrganizer));
+                        desktopDisplayModeController.get()));
     }
 
     @WMSingleton
@@ -1379,6 +1422,29 @@ public abstract class WMShellModule {
             PackageManager packageManager
     ) {
         return new DesktopModeUiEventLogger(uiEventLogger, packageManager);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<DesktopDisplayModeController> provideDesktopDisplayModeController(
+            Context context,
+            Transitions transitions,
+            RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
+            IWindowManager windowManager,
+            ShellTaskOrganizer shellTaskOrganizer,
+            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider
+    ) {
+        if (!DesktopModeStatus.canEnterDesktopMode(context)) {
+            return Optional.empty();
+        }
+        return Optional.of(
+                new DesktopDisplayModeController(
+                        context,
+                        transitions,
+                        rootTaskDisplayAreaOrganizer,
+                        windowManager,
+                        shellTaskOrganizer,
+                        desktopWallpaperActivityTokenProvider));
     }
 
     //

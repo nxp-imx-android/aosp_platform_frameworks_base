@@ -154,7 +154,8 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
         testScope.runTest {
             val latest by collectLastValue(underTest.isVisible)
 
-            kosmos.sceneContainerRepository.snapToScene(Scenes.Bouncer)
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
 
             assertThat(latest).isFalse()
         }

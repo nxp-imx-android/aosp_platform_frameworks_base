@@ -67,7 +67,6 @@ import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITI
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_NONE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_OPEN;
 import static com.android.wm.shell.transition.DefaultSurfaceAnimator.buildSurfaceAnimation;
-import static com.android.wm.shell.transition.TransitionAnimationHelper.edgeExtendWindow;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionBackgroundColorIfSet;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.getTransitionTypeFromInfo;
 import static com.android.wm.shell.transition.TransitionAnimationHelper.isCoveredByOpaqueFullscreenChange;
@@ -96,7 +95,6 @@ import android.os.UserHandle;
 import android.util.ArrayMap;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.window.TransitionInfo;
 import android.window.TransitionMetrics;
@@ -539,25 +537,13 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                     cornerRadius = 0;
                 }
 
-                backgroundColorForTransition = getTransitionBackgroundColorIfSet(info, change, a,
+                backgroundColorForTransition = getTransitionBackgroundColorIfSet(change, a,
                         backgroundColorForTransition);
 
                 if (!isTask && a.getExtensionEdges() != 0x0) {
-                    if (com.android.graphics.libgui.flags.Flags.edgeExtensionShader()) {
-                        startTransaction.setEdgeExtensionEffect(
-                                change.getLeash(), a.getExtensionEdges());
-                        finishTransaction.setEdgeExtensionEffect(change.getLeash(), /* edge */ 0);
-                    } else {
-                        if (!TransitionUtil.isOpeningType(mode)) {
-                            // Can screenshot now (before startTransaction is applied)
-                            edgeExtendWindow(change, a, startTransaction, finishTransaction);
-                        } else {
-                            // Need to screenshot after startTransaction is applied otherwise
-                            // activity may not be visible or ready yet.
-                            postStartTransactionCallbacks
-                                    .add(t -> edgeExtendWindow(change, a, t, finishTransaction));
-                        }
-                    }
+                    startTransaction.setEdgeExtensionEffect(
+                            change.getLeash(), a.getExtensionEdges());
+                    finishTransaction.setEdgeExtensionEffect(change.getLeash(), /* edge */ 0);
                 }
 
                 final Rect clipRect = TransitionUtil.isClosingType(mode)
@@ -606,12 +592,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                         mTransactionPool, mMainExecutor, animRelOffset, cornerRadius,
                         clipRect);
 
-                final TransitionInfo.AnimationOptions options;
-                if (Flags.moveAnimationOptionsToChange()) {
-                    options = change.getAnimationOptions();
-                } else {
-                    options = info.getAnimationOptions();
-                }
+                final TransitionInfo.AnimationOptions options = change.getAnimationOptions();
                 if (options != null) {
                     attachThumbnail(animations, onAnimFinish, change, options, cornerRadius);
                 }
@@ -834,12 +815,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         final boolean isOpeningType = TransitionUtil.isOpeningType(type);
         final boolean enter = TransitionUtil.isOpeningType(changeMode);
         final boolean isTask = change.getTaskInfo() != null;
-        final TransitionInfo.AnimationOptions options;
-        if (Flags.moveAnimationOptionsToChange()) {
-            options = change.getAnimationOptions();
-        } else {
-            options = info.getAnimationOptions();
-        }
+        final TransitionInfo.AnimationOptions options = change.getAnimationOptions();
         final int overrideType = options != null ? options.getType() : ANIM_NONE;
         final int userId = options != null ? options.getUserId() : UserHandle.USER_CURRENT;
         final Rect endBounds = TransitionUtil.isClosingType(changeMode)
@@ -858,9 +834,8 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
                 a = mTransitionAnimation.loadVoiceActivityExitAnimation(enter, userId);
             }
         } else if (changeMode == TRANSIT_CHANGE) {
-            // In the absence of a specific adapter, we just want to keep everything stationary.
-            a = new AlphaAnimation(1.f, 1.f);
-            a.setDuration(TransitionAnimation.DEFAULT_APP_TRANSITION_DURATION);
+            // Apply end state directly by default.
+            return null;
         } else if (type == TRANSIT_RELAUNCH) {
             a = mTransitionAnimation.createRelaunchAnimation(endBounds, mInsets, endBounds);
         } else if (overrideType == ANIM_CUSTOM

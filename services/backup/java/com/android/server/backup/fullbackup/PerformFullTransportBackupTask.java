@@ -149,7 +149,6 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
 
     OperationStorage mOperationStorage;
     List<PackageInfo> mPackages;
-    PackageInfo mCurrentPackage;
     boolean mUpdateSchedule;
     CountDownLatch mLatch;
     FullBackupJob mJob;             // if a scheduled job needs to be finished afterwards
@@ -207,10 +206,9 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
         for (String pkg : whichPackages) {
             try {
                 PackageManager pm = backupManagerService.getPackageManager();
-                PackageInfo info = pm.getPackageInfoAsUser(pkg,
+                PackageInfo packageInfo = pm.getPackageInfoAsUser(pkg,
                         PackageManager.GET_SIGNING_CERTIFICATES, mUserId);
-                mCurrentPackage = info;
-                if (!mBackupEligibilityRules.appIsEligibleForBackup(info.applicationInfo)) {
+                if (!mBackupEligibilityRules.appIsEligibleForBackup(packageInfo.applicationInfo)) {
                     // Cull any packages that have indicated that backups are not permitted,
                     // that run as system-domain uids but do not define their own backup agents,
                     // as well as any explicit mention of the 'special' shared-storage agent
@@ -220,13 +218,13 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                     }
                     mBackupManagerMonitorEventSender.monitorEvent(
                             BackupManagerMonitor.LOG_EVENT_ID_PACKAGE_INELIGIBLE,
-                            mCurrentPackage,
+                            packageInfo,
                             BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                            null);
+                            /* extras= */ null);
                     BackupObserverUtils.sendBackupOnPackageResult(mBackupObserver, pkg,
                             BackupManager.ERROR_BACKUP_NOT_ALLOWED);
                     continue;
-                } else if (!mBackupEligibilityRules.appGetsFullBackup(info)) {
+                } else if (!mBackupEligibilityRules.appGetsFullBackup(packageInfo)) {
                     // Cull any packages that are found in the queue but now aren't supposed
                     // to get full-data backup operations.
                     if (DEBUG) {
@@ -235,13 +233,13 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                     }
                     mBackupManagerMonitorEventSender.monitorEvent(
                             BackupManagerMonitor.LOG_EVENT_ID_PACKAGE_KEY_VALUE_PARTICIPANT,
-                            mCurrentPackage,
+                            packageInfo,
                             BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                            null);
+                            /* extras= */ null);
                     BackupObserverUtils.sendBackupOnPackageResult(mBackupObserver, pkg,
                             BackupManager.ERROR_BACKUP_NOT_ALLOWED);
                     continue;
-                } else if (mBackupEligibilityRules.appIsStopped(info.applicationInfo)) {
+                } else if (mBackupEligibilityRules.appIsStopped(packageInfo.applicationInfo)) {
                     // Cull any packages in the 'stopped' state: they've either just been
                     // installed or have explicitly been force-stopped by the user.  In both
                     // cases we do not want to launch them for backup.
@@ -250,21 +248,21 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                     }
                     mBackupManagerMonitorEventSender.monitorEvent(
                             BackupManagerMonitor.LOG_EVENT_ID_PACKAGE_STOPPED,
-                            mCurrentPackage,
+                            packageInfo,
                             BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                            null);
+                            /* extras= */ null);
                     BackupObserverUtils.sendBackupOnPackageResult(mBackupObserver, pkg,
                             BackupManager.ERROR_BACKUP_NOT_ALLOWED);
                     continue;
                 }
-                mPackages.add(info);
+                mPackages.add(packageInfo);
             } catch (NameNotFoundException e) {
                 Slog.i(TAG, "Requested package " + pkg + " not found; ignoring");
                 mBackupManagerMonitorEventSender.monitorEvent(
                         BackupManagerMonitor.LOG_EVENT_ID_PACKAGE_NOT_FOUND,
-                        mCurrentPackage,
+                        /* pkg= */ null,
                         BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                        null);
+                        /* extras= */ null);
             }
         }
 
@@ -352,10 +350,11 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                 } else {
                     monitoringEvent = BackupManagerMonitor.LOG_EVENT_ID_DEVICE_NOT_PROVISIONED;
                 }
-                mBackupManagerMonitorEventSender
-                        .monitorEvent(monitoringEvent, null,
-                                BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                                null);
+                mBackupManagerMonitorEventSender.monitorEvent(
+                        monitoringEvent,
+                        /* pkg= */ null,
+                        BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
+                        /* extras= */ null);
                 mUpdateSchedule = false;
                 backupRunStatus = BackupManager.ERROR_BACKUP_NOT_ALLOWED;
                 return;
@@ -367,8 +366,9 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                 backupRunStatus = BackupManager.ERROR_TRANSPORT_ABORTED;
                 mBackupManagerMonitorEventSender.monitorEvent(
                         BackupManagerMonitor.LOG_EVENT_ID_PACKAGE_TRANSPORT_NOT_PRESENT,
-                        mCurrentPackage, BackupManagerMonitor.LOG_EVENT_CATEGORY_TRANSPORT,
-                        null);
+                        /* pkg= */ null,
+                        BackupManagerMonitor.LOG_EVENT_CATEGORY_TRANSPORT,
+                        /* extras= */ null);
                 return;
             }
 
@@ -461,9 +461,10 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                         }
                         mBackupManagerMonitorEventSender.monitorEvent(
                                 BackupManagerMonitor.LOG_EVENT_ID_ERROR_PREFLIGHT,
-                                mCurrentPackage,
+                                currentPackage,
                                 BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                                mBackupManagerMonitorEventSender.putMonitoringExtra(null,
+                                BackupManagerMonitorEventSender.putMonitoringExtra(
+                                        /* extras= */ null,
                                         BackupManagerMonitor.EXTRA_LOG_PREFLIGHT_ERROR,
                                         preflightResult));
                         backupPackageStatus = (int) preflightResult;
@@ -496,9 +497,9 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                                     + ": " + totalRead + " of " + quota);
                             mBackupManagerMonitorEventSender.monitorEvent(
                                     BackupManagerMonitor.LOG_EVENT_ID_QUOTA_HIT_PREFLIGHT,
-                                    mCurrentPackage,
+                                    currentPackage,
                                     BackupManagerMonitor.LOG_EVENT_CATEGORY_TRANSPORT,
-                                    null);
+                                    /* extras= */ null);
                             mBackupRunner.sendQuotaExceeded(totalRead, quota);
                         }
                     }
@@ -645,9 +646,9 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
             Slog.w(TAG, "Exception trying full transport backup", e);
             mBackupManagerMonitorEventSender.monitorEvent(
                     BackupManagerMonitor.LOG_EVENT_ID_EXCEPTION_FULL_BACKUP,
-                    mCurrentPackage,
+                    /* pkg= */ null,
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_BACKUP_MANAGER_POLICY,
-                    mBackupManagerMonitorEventSender.putMonitoringExtra(null,
+                    BackupManagerMonitorEventSender.putMonitoringExtra(/* extras= */ null,
                             BackupManagerMonitor.EXTRA_LOG_EXCEPTION_FULL_BACKUP,
                             Log.getStackTraceString(e)));
 
@@ -966,9 +967,6 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
             }
         }
 
-
-        // BackupRestoreTask interface: specifically, timeout detection
-
         @Override
         public void execute() { /* intentionally empty */ }
 
@@ -981,7 +979,9 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
 
             mBackupManagerMonitorEventSender.monitorEvent(
                     BackupManagerMonitor.LOG_EVENT_ID_FULL_BACKUP_CANCEL,
-                    mCurrentPackage, BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT, null);
+                    mTarget,
+                    BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT,
+                    /* extras= */ null);
             mIsCancelled = true;
             // Cancel tasks spun off by this task.
             mUserBackupManagerService.handleCancel(mEphemeralToken, cancelAll);

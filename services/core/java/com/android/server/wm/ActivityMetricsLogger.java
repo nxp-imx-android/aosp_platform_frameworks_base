@@ -857,8 +857,7 @@ class ActivityMetricsLogger {
         info.mWindowsDrawnDelayMs = info.calculateDelay(timestampNs);
         info.mIsDrawn = true;
         final TransitionInfoSnapshot infoSnapshot = new TransitionInfoSnapshot(info);
-        if (info.mLoggedTransitionStarting || (!r.mDisplayContent.mOpeningApps.contains(r)
-                && !r.mTransitionController.isCollecting(r))) {
+        if (info.mLoggedTransitionStarting || !r.mTransitionController.isCollecting(r)) {
             done(false /* abort */, info, "notifyWindowsDrawn", timestampNs);
         }
 

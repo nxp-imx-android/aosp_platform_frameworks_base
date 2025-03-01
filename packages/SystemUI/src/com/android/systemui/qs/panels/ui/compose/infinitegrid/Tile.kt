@@ -245,6 +245,7 @@ private fun TileExpandable(
         color = color(),
         shape = shape,
         modifier = modifier.clip(shape).verticalSquish(squishiness),
+        useModifierBasedImplementation = true,
     ) {
         content(hapticsViewModel?.createStateAwareExpandable(it) ?: it)
     }

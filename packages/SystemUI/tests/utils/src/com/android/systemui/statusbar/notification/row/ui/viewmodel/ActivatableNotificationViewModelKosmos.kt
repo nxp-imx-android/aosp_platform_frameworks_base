@@ -19,9 +19,11 @@ package com.android.systemui.statusbar.notification.row.ui.viewmodel
 import com.android.systemui.accessibility.domain.interactor.accessibilityInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 
 val Kosmos.activatableNotificationViewModel by Fixture {
     ActivatableNotificationViewModel.invoke(
         a11yInteractor = accessibilityInteractor,
+        windowRootViewBlurInteractor = windowRootViewBlurInteractor,
     )
 }

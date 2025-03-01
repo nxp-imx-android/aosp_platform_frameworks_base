@@ -218,7 +218,7 @@ constructor(
                     scrollViewContent.layoutParams.height = WRAP_CONTENT
                     lastUiUpdateMs = systemClock.elapsedRealtime()
                     lastItemRow = itemRow
-                    logger.logDeviceUiUpdate(lastUiUpdateMs - start)
+                    logger.logDeviceUiUpdate(lastUiUpdateMs - start, deviceItem)
                 }
             }
         }
@@ -383,6 +383,11 @@ constructor(
 
                     actionIcon.setImageResource(item.actionIconRes)
                     actionIcon.drawable?.setTint(tintColor)
+                    actionIconView.contentDescription =
+                        resources.getString(
+                            R.string.accessibility_bluetooth_device_settings_gear_with_name,
+                            item.deviceName,
+                        )
 
                     divider.setBackgroundColor(tintColor)
 

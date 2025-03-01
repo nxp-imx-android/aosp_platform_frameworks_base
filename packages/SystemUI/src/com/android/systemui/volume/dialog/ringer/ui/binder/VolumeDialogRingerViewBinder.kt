@@ -17,6 +17,7 @@
 package com.android.systemui.volume.dialog.ringer.ui.binder
 
 import android.animation.ArgbEvaluator
+import android.content.res.Configuration
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
@@ -24,9 +25,12 @@ import android.widget.ImageButton
 import androidx.annotation.LayoutRes
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.constraintlayout.motion.widget.MotionLayout
+import androidx.constraintlayout.motion.widget.MotionScene
 import androidx.dynamicanimation.animation.FloatValueHolder
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import com.android.app.tracing.coroutines.launchInTraced
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.internal.R as internalR
 import com.android.systemui.res.R
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
@@ -45,16 +49,16 @@ import com.android.systemui.volume.dialog.ui.viewmodel.VolumeDialogViewModel
 import javax.inject.Inject
 import kotlin.properties.Delegates
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.launch
 
 private const val CLOSE_DRAWER_DELAY = 300L
 // Ensure roundness and color of button is updated when progress is changed by a minimum fraction.
 private const val BUTTON_MIN_VISIBLE_CHANGE = 0.05F
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @VolumeDialogScope
 class VolumeDialogRingerViewBinder
 @Inject
@@ -107,13 +111,6 @@ constructor(
                     fullRadius = volumeDialogBgFullRadius,
                     diff = volumeDialogBgFullRadius - volumeDialogBgSmallRadius,
                     progress,
-                    isBottom = false,
-                )
-                volumeDialogBackgroundView.applyCorners(
-                    fullRadius = volumeDialogBgFullRadius,
-                    diff = volumeDialogBgFullRadius - volumeDialogBgSmallRadius,
-                    progress,
-                    isBottom = true,
                 )
             }
         val ringerDrawerTransitionListener = VolumeDialogRingerDrawerTransitionListener {
@@ -122,20 +119,32 @@ constructor(
         drawerContainer.setTransitionListener(ringerDrawerTransitionListener)
         volumeDialogBackgroundView.background = volumeDialogBackgroundView.background.mutate()
         ringerBackgroundView.background = ringerBackgroundView.background.mutate()
-        launch { dialogViewModel.addTouchableBounds(ringerBackgroundView) }
+        launchTraced("VDRVB#addTouchableBounds") {
+            dialogViewModel.addTouchableBounds(ringerBackgroundView)
+        }
 
         viewModel.ringerViewModel
             .mapLatest { ringerState ->
                 when (ringerState) {
                     is RingerViewModelState.Available -> {
                         val uiModel = ringerState.uiModel
+                        val orientation =
+                            if (
+                                view.context.resources.getBoolean(
+                                    R.bool.volume_dialog_ringer_drawer_should_open_to_the_side
+                                )
+                            ) {
+                                ringerState.orientation
+                            } else {
+                                Configuration.ORIENTATION_PORTRAIT
+                            }
 
                         // Set up view background and visibility
                         drawerContainer.visibility = View.VISIBLE
+                        (volumeDialogBackgroundView.background as GradientDrawable).cornerRadii =
+                            bottomCornerRadii
                         when (uiModel.drawerState) {
                             is RingerDrawerState.Initial -> {
-                                (volumeDialogBackgroundView.background as GradientDrawable)
-                                    .cornerRadii = bottomCornerRadii
                                 drawerContainer.animateAndBindDrawerButtons(
                                     viewModel,
                                     uiModel,
@@ -146,7 +155,7 @@ constructor(
                                 drawerContainer.closeDrawer(
                                     ringerBackgroundView,
                                     uiModel.currentButtonIndex,
-                                    ringerState.orientation,
+                                    orientation,
                                 )
                             }
                             is RingerDrawerState.Closed -> {
@@ -188,7 +197,7 @@ constructor(
                                         drawerContainer.closeDrawer(
                                             ringerBackgroundView,
                                             uiModel.currentButtonIndex,
-                                            ringerState.orientation,
+                                            orientation,
                                         )
                                     }
                                 }
@@ -208,16 +217,17 @@ constructor(
                                 } else {
                                     ringerDrawerTransitionListener.setProgressChangeEnabled(true)
                                 }
-                                updateOpenState(
-                                    drawerContainer,
-                                    ringerState.orientation,
-                                    ringerBackgroundView,
-                                )
+                                updateOpenState(drawerContainer, orientation, ringerBackgroundView)
+                                drawerContainer
+                                    .getTransition(R.id.close_to_open_transition)
+                                    .setInterpolatorInfo(
+                                        MotionScene.Transition.INTERPOLATE_REFERENCE_ID,
+                                        null,
+                                        R.anim.volume_dialog_ringer_open,
+                                    )
                                 drawerContainer.transitionToState(
                                     R.id.volume_dialog_ringer_drawer_open
                                 )
-                                volumeDialogBackgroundView.background =
-                                    volumeDialogBackgroundView.background.mutate()
                                 ringerBackgroundView.background =
                                     ringerBackgroundView.background.mutate()
                             }
@@ -231,7 +241,7 @@ constructor(
                     }
                 }
             }
-            .launchIn(this)
+            .launchInTraced("VDRVB#ringerViewModel", this)
     }
 
     private suspend fun MotionLayout.animateAndBindDrawerButtons(
@@ -261,7 +271,7 @@ constructor(
                 val selectedCornerRadius =
                     (selectedButton.background as GradientDrawable).cornerRadius
                 if (selectedCornerRadius.toInt() != selectedButtonUiModel.cornerRadius) {
-                    launch {
+                    launchTraced("VDRVB#selectedButtonAnimation") {
                         selectedButton.animateTo(
                             selectedButtonUiModel,
                             if (uiModel.currentButtonIndex == count - 1) {
@@ -275,7 +285,7 @@ constructor(
                 val unselectedCornerRadius =
                     (unselectedButton.background as GradientDrawable).cornerRadius
                 if (unselectedCornerRadius.toInt() != unselectedButtonUiModel.cornerRadius) {
-                    launch {
+                    launchTraced("VDRVB#unselectedButtonAnimation") {
                         unselectedButton.animateTo(
                             unselectedButtonUiModel,
                             if (previousIndex == count - 1) {
@@ -286,7 +296,7 @@ constructor(
                         )
                     }
                 }
-                launch {
+                launchTraced("VDRVB#bindButtons") {
                     delay(CLOSE_DRAWER_DELAY)
                     bindButtons(viewModel, uiModel, onAnimationEnd, isAnimated = true)
                 }
@@ -377,6 +387,12 @@ constructor(
         orientation: Int,
     ) {
         setTransition(R.id.close_to_open_transition)
+        getTransition(R.id.close_to_open_transition)
+            .setInterpolatorInfo(
+                MotionScene.Transition.INTERPOLATE_REFERENCE_ID,
+                null,
+                R.anim.volume_dialog_ringer_close,
+            )
         updateCloseState(this, selectedIndex, orientation, ringerBackground)
         transitionToState(R.id.volume_dialog_ringer_drawer_close)
     }
@@ -395,7 +411,7 @@ constructor(
         roundnessAnimation.minimumVisibleChange = BUTTON_MIN_VISIBLE_CHANGE
         colorAnimation.minimumVisibleChange = BUTTON_MIN_VISIBLE_CHANGE
         coroutineScope {
-            launch {
+            launchTraced("VDRVB#colorAnimation") {
                 colorAnimation.suspendAnimate { value ->
                     val currentIconColor =
                         rgbEvaluator.evaluate(
@@ -423,14 +439,9 @@ constructor(
         }
     }
 
-    private fun View.applyCorners(fullRadius: Int, diff: Int, progress: Float, isBottom: Boolean) {
+    private fun View.applyCorners(fullRadius: Int, diff: Int, progress: Float) {
         val radius = fullRadius - progress * diff
-        (background as GradientDrawable).cornerRadii =
-            if (isBottom) {
-                floatArrayOf(0F, 0F, 0F, 0F, radius, radius, radius, radius)
-            } else {
-                FloatArray(8) { radius }
-            }
+        (background as GradientDrawable).cornerRadius = radius
         background.invalidateSelf()
     }
 }

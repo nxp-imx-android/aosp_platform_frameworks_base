@@ -22,12 +22,19 @@ import android.content.ComponentName
 import android.content.ContentProvider
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.UserHandle
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.res.R
 import com.android.systemui.screenshot.scroll.LongScreenshotActivity
+import com.android.systemui.shared.Flags.usePreferredImageEditor
+import javax.inject.Inject
 
-object ActionIntentCreator {
+@SysUISingleton
+class ActionIntentCreator
+@Inject
+constructor(private val context: Context, private val packageManager: PackageManager) {
     /** @return a chooser intent to share the given URI. */
     fun createShare(uri: Uri): Intent = createShare(uri, subject = null, text = null)
 
@@ -54,7 +61,7 @@ object ActionIntentCreator {
                 clipData =
                     ClipData(
                         ClipDescription("content", arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN)),
-                        ClipData.Item(uri)
+                        ClipData.Item(uri),
                     )
 
                 subject?.let { putExtra(Intent.EXTRA_SUBJECT, subject) }
@@ -70,16 +77,21 @@ object ActionIntentCreator {
     }
 
     /**
-     * @return an ACTION_EDIT intent for the given URI, directed to config_screenshotEditor if
-     *   available.
+     * @return an ACTION_EDIT intent for the given URI, directed to config_preferredScreenshotEditor
+     *   if enabled, falling back to config_screenshotEditor if that's non-empty.
      */
-    fun createEdit(rawUri: Uri, context: Context): Intent {
+    fun createEdit(rawUri: Uri): Intent {
         val uri = uriWithoutUserId(rawUri)
         val editIntent = Intent(Intent.ACTION_EDIT)
 
-        val editor = context.getString(R.string.config_screenshotEditor)
-        if (editor.isNotEmpty()) {
-            editIntent.component = ComponentName.unflattenFromString(editor)
+        if (usePreferredImageEditor()) {
+            // Use the preferred editor if it's available, otherwise fall back to the default editor
+            editIntent.component = preferredEditor() ?: defaultEditor()
+        } else {
+            val editor = context.getString(R.string.config_screenshotEditor)
+            if (editor.isNotEmpty()) {
+                editIntent.component = ComponentName.unflattenFromString(editor)
+            }
         }
 
         return editIntent
@@ -92,7 +104,7 @@ object ActionIntentCreator {
     }
 
     /** @return an Intent to start the LongScreenshotActivity */
-    fun createLongScreenshotIntent(owner: UserHandle, context: Context): Intent {
+    fun createLongScreenshotIntent(owner: UserHandle): Intent {
         return Intent(context, LongScreenshotActivity::class.java)
             .putExtra(LongScreenshotActivity.EXTRA_SCREENSHOT_USER_HANDLE, owner)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -100,8 +112,35 @@ object ActionIntentCreator {
             .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
     }
 
-    private const val EXTRA_EDIT_SOURCE = "edit_source"
-    private const val EDIT_SOURCE_SCREENSHOT = "screenshot"
+    private fun preferredEditor(): ComponentName? =
+        runCatching {
+                val preferredEditor = context.getString(R.string.config_preferredScreenshotEditor)
+                val component = ComponentName.unflattenFromString(preferredEditor) ?: return null
+
+                val info =
+                    packageManager.getPackageInfo(
+                        component.packageName,
+                        PackageManager.GET_ACTIVITIES,
+                    )
+
+                return info.activities
+                    ?.firstOrNull { it.componentName.className.equals(component.className) }
+                    ?.componentName
+            }
+            .getOrNull()
+
+    private fun defaultEditor(): ComponentName? =
+        runCatching {
+                context.getString(R.string.config_screenshotEditor).let {
+                    ComponentName.unflattenFromString(it)
+                }
+            }
+            .getOrNull()
+
+    companion object {
+        private const val EXTRA_EDIT_SOURCE = "edit_source"
+        private const val EDIT_SOURCE_SCREENSHOT = "screenshot"
+    }
 }
 
 /**

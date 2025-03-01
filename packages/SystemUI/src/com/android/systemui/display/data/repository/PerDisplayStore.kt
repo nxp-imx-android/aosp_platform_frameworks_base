@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 
 /** Provides per display instances of [T]. */
+@Deprecated("Use PerDisplayInstanceProvider<T> instead")
 interface PerDisplayStore<T> {
 
     /**
@@ -43,12 +44,13 @@ interface PerDisplayStore<T> {
     fun forDisplay(displayId: Int): T?
 }
 
+@Deprecated("Use PerDisplayRepository<T> instead")
 abstract class PerDisplayStoreImpl<T>(
     @Background private val backgroundApplicationScope: CoroutineScope,
     private val displayRepository: DisplayRepository,
 ) : PerDisplayStore<T>, CoreStartable {
 
-    private val perDisplayInstances = ConcurrentHashMap<Int, T>()
+    protected val perDisplayInstances = ConcurrentHashMap<Int, T>()
 
     /**
      * The instance for the default/main display of the device. For example, on a phone or a tablet,
@@ -106,6 +108,11 @@ abstract class PerDisplayStoreImpl<T>(
      * Will be called when the display associated with [instance] was removed. It allows to perform
      * any clean up if needed.
      */
+    @Deprecated(
+        "Use PerDisplayInstanceProviderWithTeardown instead, and let " +
+            "PerDisplayInstanceRepositoryImpl decide when to destroy the instance (e.g. on " +
+            "display removal or other conditions."
+    )
     open suspend fun onDisplayRemovalAction(instance: T) {}
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {

@@ -451,6 +451,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             } else {
                 mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
             }
+        } else if (state.glanceableHubOrientationAware) {
+            mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_USER;
         } else {
             mLpChanged.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         }
@@ -627,6 +629,7 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.shadeOrQsExpanded,
                 state.notificationShadeFocusable,
                 state.glanceableHubShowing,
+                state.glanceableHubOrientationAware,
                 state.bouncerShowing,
                 state.keyguardFadingAway,
                 state.keyguardGoingAway,
@@ -759,6 +762,12 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     @Override
     public void setGlanceableHubShowing(boolean showing) {
         mCurrentState.glanceableHubShowing = showing;
+        apply(mCurrentState);
+    }
+
+    @Override
+    public void setGlanceableHubOrientationAware(boolean isOrientationAware) {
+        mCurrentState.glanceableHubOrientationAware = isOrientationAware;
         apply(mCurrentState);
     }
 

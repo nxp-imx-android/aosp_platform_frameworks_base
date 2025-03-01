@@ -29,10 +29,10 @@ object NewStatusBarIcons {
     val token: FlagToken
         get() = FlagToken(FLAG_NAME, isEnabled)
 
-    /** Is the refactor enabled */
+    /** Is the refactor enabled. Dependency on [StatusBarRootModernization] */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.newStatusBarIcons()
+        get() = Flags.newStatusBarIcons() && StatusBarRootModernization.isEnabled
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
@@ -49,7 +49,7 @@ object NewStatusBarIcons {
      * Caution!! Using this check incorrectly will cause crashes in nextfood builds!
      */
     @JvmStatic
-    inline fun assertInNewMode() = RefactorFlagUtils.assertInNewMode(isEnabled, FLAG_NAME)
+    inline fun unsafeAssertInNewMode() = RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, FLAG_NAME)
 
     /**
      * Called to ensure code is only run when the flag is disabled. This will throw an exception if

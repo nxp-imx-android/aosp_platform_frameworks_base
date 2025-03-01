@@ -47,14 +47,16 @@ class ShadeDialogContextInteractorImpl
 constructor(
     @Main private val defaultContext: Context,
     private val displayWindowPropertyRepository: Provider<DisplayWindowPropertiesRepository>,
-    private val shadeDisplaysRepository: ShadeDisplaysRepository,
+    private val shadeDisplaysRepository: Provider<ShadeDisplaysRepository>,
     @Background private val bgScope: CoroutineScope,
 ) : CoreStartable, ShadeDialogContextInteractor {
 
     override fun start() {
         if (ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()) return
         bgScope.launchTraced(TAG) {
-            shadeDisplaysRepository.displayId
+            shadeDisplaysRepository
+                .get()
+                .displayId
                 // No need for default display pre-warming.
                 .filter { it != Display.DEFAULT_DISPLAY }
                 .collectLatest { displayId ->
@@ -70,7 +72,7 @@ constructor(
             if (!ShadeWindowGoesAround.isEnabled) {
                 return defaultContext
             }
-            val displayId = shadeDisplaysRepository.displayId.value
+            val displayId = shadeDisplaysRepository.get().displayId.value
             return getContextOrDefault(displayId)
         }
 

@@ -181,6 +181,11 @@ public class BatteryStatsHistory {
      */
     public interface BatteryHistoryStore {
         /**
+         * Returns the maximum amount of storage that can be occupied by the battery history story.
+         */
+        int getMaxHistorySize();
+
+        /**
          * Returns the table of contents, in the chronological order.
          */
         List<BatteryHistoryFragment> getFragments();
@@ -516,6 +521,22 @@ public class BatteryStatsHistory {
     }
 
     /**
+     * Returns a high estimate of how many items are currently included in the battery history.
+     */
+    public int getEstimatedItemCount() {
+        int estimatedBytes = mHistoryBuffer.dataSize();
+        if (mStore != null) {
+            estimatedBytes += mStore.getMaxHistorySize() * 10;  // account for the compression ratio
+        }
+        if (mHistoryParcels != null) {
+            for (int i = mHistoryParcels.size() - 1; i >= 0; i--) {
+                estimatedBytes += mHistoryParcels.get(i).dataSize();
+            }
+        }
+        return estimatedBytes / 4;    // Minimum size of a history item is 4 bytes
+    }
+
+    /**
      * Creates a read-only copy of the battery history.  Does not copy the files stored
      * in the system directory, so it is not safe while actively writing history.
      */
@@ -768,7 +789,7 @@ public class BatteryStatsHistory {
      */
     public boolean readFragmentToParcel(Parcel out, BatteryHistoryFragment fragment) {
         byte[] data = mStore.readFragment(fragment);
-        if (data == null) {
+        if (data == null || data.length == 0) {
             return false;
         }
         out.unmarshall(data, 0, data.length);
@@ -913,6 +934,10 @@ public class BatteryStatsHistory {
                     continue;
                 }
 
+                if (data.length == 0) {
+                    continue;
+                }
+
                 out.writeBoolean(true);
                 if (useBlobs) {
                     out.writeBlob(data, 0, data.length);
@@ -955,9 +980,11 @@ public class BatteryStatsHistory {
                 return false;
             }
 
-            parcel.unmarshall(data, 0, data.length);
-            parcel.setDataPosition(0);
-            readHistoryBuffer(parcel);
+            if (data.length > 0) {
+                parcel.unmarshall(data, 0, data.length);
+                parcel.setDataPosition(0);
+                readHistoryBuffer(parcel);
+            }
         } catch (Exception e) {
             Slog.e(TAG, "Error reading battery history", e);
             reset();

@@ -127,6 +127,6 @@ public class DrawRoundRect extends DrawBase6 {
     @Override
     public void serialize(MapSerializer serializer) {
         serialize(serializer, "left", "top", "right", "bottom", "rx", "sweepAngle")
-                .add("type", CLASS_NAME);
+                .addType(CLASS_NAME);
     }
 }

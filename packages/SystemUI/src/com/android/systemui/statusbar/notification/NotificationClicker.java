@@ -25,6 +25,7 @@ import com.android.systemui.DejankUtils;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.wm.shell.bubbles.Bubbles;
 
 import java.util.Optional;
@@ -73,25 +74,25 @@ public final class NotificationClicker implements View.OnClickListener {
 
         final ExpandableNotificationRow row = (ExpandableNotificationRow) v;
         final NotificationEntry entry = row.getEntry();
-        mLogger.logOnClick(entry);
+        mLogger.logOnClick(row.getLoggingKey());
 
         // Check if the notification is displaying the menu, if so slide notification back
         if (isMenuVisible(row)) {
-            mLogger.logMenuVisible(entry);
+            mLogger.logMenuVisible(row.getLoggingKey());
             row.animateResetTranslation();
             return;
         } else if (row.isChildInGroup() && isMenuVisible(row.getNotificationParent())) {
-            mLogger.logParentMenuVisible(entry);
+            mLogger.logParentMenuVisible(row.getLoggingKey());
             row.getNotificationParent().animateResetTranslation();
             return;
         } else if (row.isSummaryWithChildren() && row.areChildrenExpanded()) {
             // We never want to open the app directly if the user clicks in between
             // the notifications.
-            mLogger.logChildrenExpanded(entry);
+            mLogger.logChildrenExpanded(row.getLoggingKey());
             return;
         } else if (row.areGutsExposed()) {
             // ignore click if guts are exposed
-            mLogger.logGutsExposed(entry);
+            mLogger.logGutsExposed(row.getLoggingKey());
             return;
         }
 
@@ -99,8 +100,14 @@ public final class NotificationClicker implements View.OnClickListener {
         row.setJustClicked(true);
         DejankUtils.postAfterTraversal(() -> row.setJustClicked(false));
 
-        if (!row.getEntry().isBubble() && mBubblesOptional.isPresent()) {
-            mBubblesOptional.get().collapseStack();
+        if (NotificationBundleUi.isEnabled()) {
+            if (!row.getEntryAdapter().isBubbleCapable() && mBubblesOptional.isPresent()) {
+                mBubblesOptional.get().collapseStack();
+            }
+        } else {
+            if (!row.getEntry().isBubble() && mBubblesOptional.isPresent()) {
+                mBubblesOptional.get().collapseStack();
+            }
         }
 
         mNotificationActivityStarter.onNotificationClicked(entry, row);

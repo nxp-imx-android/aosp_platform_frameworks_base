@@ -194,7 +194,7 @@ class ClockEventControllerTest : SysuiTestCase() {
 
     @Test
     fun clockSet_validateInitialization() {
-        verify(clock).initialize(any(), anyFloat(), anyFloat())
+        verify(clock).initialize(any(), anyFloat(), anyFloat(), any())
     }
 
     @Test

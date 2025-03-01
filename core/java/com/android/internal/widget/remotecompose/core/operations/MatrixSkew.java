@@ -103,6 +103,6 @@ public class MatrixSkew extends DrawBase2 {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "skewX", "skewY").add("type", CLASS_NAME);
+        serialize(serializer, "skewX", "skewY").addType(CLASS_NAME);
     }
 }

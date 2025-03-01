@@ -31,29 +31,41 @@ sealed interface DragZone {
 
     /** The bounds of this drag zone. */
     val bounds: Rect
+    /** The bounds of the drop target associated with this drag zone. */
+    val dropTarget: Rect?
 
     fun contains(x: Int, y: Int) = bounds.contains(x, y)
 
     /** Represents the bubble drag area on the screen. */
-    sealed class Bubble(override val bounds: Rect) : DragZone {
-        data class Left(override val bounds: Rect, val dropTarget: Rect) : Bubble(bounds)
-        data class Right(override val bounds: Rect, val dropTarget: Rect) : Bubble(bounds)
+    sealed class Bubble(override val bounds: Rect, override val dropTarget: Rect) : DragZone {
+        data class Left(override val bounds: Rect, override val dropTarget: Rect) :
+            Bubble(bounds, dropTarget)
+
+        data class Right(override val bounds: Rect, override val dropTarget: Rect) :
+            Bubble(bounds, dropTarget)
     }
 
     /** Represents dragging to Desktop Window. */
-    data class DesktopWindow(override val bounds: Rect, val dropTarget: Rect) : DragZone
+    data class DesktopWindow(override val bounds: Rect, override val dropTarget: Rect) : DragZone
 
     /** Represents dragging to Full Screen. */
-    data class FullScreen(override val bounds: Rect, val dropTarget: Rect) : DragZone
+    data class FullScreen(override val bounds: Rect, override val dropTarget: Rect) : DragZone
 
     /** Represents dragging to dismiss. */
-    data class Dismiss(override val bounds: Rect) : DragZone
+    data class Dismiss(override val bounds: Rect) : DragZone {
+        override val dropTarget: Rect? = null
+    }
 
     /** Represents dragging to enter Split or replace a Split app. */
     sealed class Split(override val bounds: Rect) : DragZone {
+        override val dropTarget: Rect? = null
+
         data class Left(override val bounds: Rect) : Split(bounds)
+
         data class Right(override val bounds: Rect) : Split(bounds)
+
         data class Top(override val bounds: Rect) : Split(bounds)
+
         data class Bottom(override val bounds: Rect) : Split(bounds)
     }
 }

@@ -196,4 +196,9 @@
     <item msgid="6419996398343291862">"Désactivée"</item>
     <item msgid="5908720590832378783">"Activée"</item>
   </string-array>
+  <string-array name="tile_states_desktopeffects">
+    <item msgid="6253480000354287321">"Non accessible"</item>
+    <item msgid="6641673879029894995">"Désactivé"</item>
+    <item msgid="5806682401126108403">"Activé"</item>
+  </string-array>
 </resources>

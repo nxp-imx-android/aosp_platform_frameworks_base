@@ -15,7 +15,7 @@
  */
 #include "ScopedParcel.h"
 
-#ifdef __ANDROID__  // Layoutlib does not support parcel
+#ifdef __linux__  // Only Linux support parcel
 
 using namespace android;
 
@@ -92,4 +92,4 @@ void ScopedParcel::writeData(const std::optional<sk_sp<SkData>>& optData) {
         AParcel_writeByteArray(mParcel, nullptr, -1);
     }
 }
-#endif  // __ANDROID__ // Layoutlib does not support parcel
+#endif  // __linux__  // Only Linux support parcel

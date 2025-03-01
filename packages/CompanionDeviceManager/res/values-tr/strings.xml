@@ -23,7 +23,7 @@
     <string name="discovery_bluetooth" msgid="5693557668470016164">"Bluetooth"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"Kablosuz"</string>
     <string name="discovery_mixed" msgid="7071466134150760127">"Bluetooth ve Kablosuz"</string>
-    <string name="profile_name_watch" msgid="576290739483672360">"saat"</string>
+    <string name="profile_name_watch" msgid="576290739483672360">"Saat"</string>
     <string name="chooser_title_non_profile" msgid="6035023914517087400">"&lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; tarafından yönetilecek bir cihaz seçin"</string>
     <string name="chooser_title" msgid="2235819929238267637">"Ayarlamak için bir <xliff:g id="PROFILE_NAME">%1$s</xliff:g> seçin"</string>
     <string name="single_device_title" msgid="4199861437545438606">"<xliff:g id="PROFILE_NAME">%1$s</xliff:g> aranıyor"</string>
@@ -51,6 +51,10 @@
     <string name="consent_no" msgid="2640796915611404382">"İzin verme"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"İptal"</string>
     <string name="consent_back" msgid="2560683030046918882">"Geri"</string>
+    <!-- no translation found for downward_arrow_action (2327165938832076333) -->
+    <skip />
+    <!-- no translation found for downward_arrow (2292427714411156088) -->
+    <skip />
     <string name="permission_expand" msgid="893185038020887411">"<xliff:g id="PERMISSION_TYPE">%1$s</xliff:g> panelini genişlet"</string>
     <string name="permission_collapse" msgid="3320833884220844084">"<xliff:g id="PERMISSION_TYPE">%1$s</xliff:g> panelini daralt"</string>
     <string name="permission_sync_confirmation_title" msgid="4409622174437248702">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; cihazındaki uygulamalara, &lt;strong&gt;<xliff:g id="PRIMARY_DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; cihazındakiyle aynı izinler verilsin mi?"</string>

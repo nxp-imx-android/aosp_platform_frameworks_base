@@ -388,7 +388,7 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
 
         // Pulsing: Enabled
         row.isHeadsUp = true
-        underTest.updateHeadsUpAndPulsingRoundness(entry)
+        underTest.updateHeadsUpAndPulsingRoundness(row)
 
         val debugString: String = row.roundableState.debugString()
         // If Pulsing is enabled, roundness should be set to 1
@@ -397,7 +397,7 @@ class HeadsUpAppearanceControllerTest : SysuiTestCase() {
 
         // Pulsing: Disabled
         row.isHeadsUp = false
-        underTest.updateHeadsUpAndPulsingRoundness(entry)
+        underTest.updateHeadsUpAndPulsingRoundness(row)
 
         // If Pulsing is disabled, roundness should be set to 0
         assertThat(row.topRoundness.toDouble()).isWithin(0.001).of(0.0)

@@ -35,6 +35,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.ContentObserver;
+import android.hardware.display.DisplayManager;
 import android.hardware.input.AidlInputGestureData;
 import android.hardware.input.AidlKeyGestureEvent;
 import android.hardware.input.AppLaunchData;
@@ -57,6 +58,7 @@ import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.view.Display;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -121,11 +123,13 @@ final class KeyGestureController {
 
     private final Context mContext;
     private final Handler mHandler;
+    private final Handler mIoHandler;
     private final int mSystemPid;
     private final KeyCombinationManager mKeyCombinationManager;
     private final SettingsObserver mSettingsObserver;
     private final AppLaunchShortcutManager mAppLaunchShortcutManager;
     private final InputGestureManager mInputGestureManager;
+    private final DisplayManager mDisplayManager;
     @GuardedBy("mInputDataStore")
     private final InputDataStore mInputDataStore;
     private static final Object mUserLock = new Object();
@@ -171,9 +175,11 @@ final class KeyGestureController {
 
     private final boolean mVisibleBackgroundUsersEnabled = isVisibleBackgroundUsersEnabled();
 
-    KeyGestureController(Context context, Looper looper, InputDataStore inputDataStore) {
+    KeyGestureController(Context context, Looper looper, Looper ioLooper,
+            InputDataStore inputDataStore) {
         mContext = context;
         mHandler = new Handler(looper, this::handleMessage);
+        mIoHandler = new Handler(ioLooper, this::handleIoMessage);
         mSystemPid = Process.myPid();
         mKeyGestureHandlerRecords = new TreeMap<>((p1, p2) -> {
             if (Objects.equals(p1, p2)) {
@@ -191,6 +197,7 @@ final class KeyGestureController {
         mSettingsObserver = new SettingsObserver(mHandler);
         mAppLaunchShortcutManager = new AppLaunchShortcutManager(mContext);
         mInputGestureManager = new InputGestureManager(mContext);
+        mDisplayManager = Objects.requireNonNull(mContext.getSystemService(DisplayManager.class));
         mInputDataStore = inputDataStore;
         mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
         initBehaviors();
@@ -243,12 +250,6 @@ final class KeyGestureController {
                     new KeyCombinationManager.TwoKeysCombinationRule(KeyEvent.KEYCODE_VOLUME_DOWN,
                             KeyEvent.KEYCODE_POWER) {
                         @Override
-                        public boolean preCondition() {
-                            return isKeyGestureSupported(
-                                    KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-                        }
-
-                        @Override
                         public void execute() {
                             handleMultiKeyGesture(
                                     new int[]{KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_POWER},
@@ -270,12 +271,6 @@ final class KeyGestureController {
                 mKeyCombinationManager.addRule(
                         new KeyCombinationManager.TwoKeysCombinationRule(KeyEvent.KEYCODE_POWER,
                                 KeyEvent.KEYCODE_STEM_PRIMARY) {
-                            @Override
-                            public boolean preCondition() {
-                                return isKeyGestureSupported(
-                                        KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD);
-                            }
-
                             @Override
                             public void execute() {
                                 handleMultiKeyGesture(new int[]{KeyEvent.KEYCODE_POWER,
@@ -330,9 +325,6 @@ final class KeyGestureController {
                         KeyEvent.KEYCODE_POWER) {
                     @Override
                     public boolean preCondition() {
-                        if (!isKeyGestureSupported(getGestureType())) {
-                            return false;
-                        }
                         switch (mPowerVolUpBehavior) {
                             case POWER_VOLUME_UP_BEHAVIOR_MUTE:
                                 return mRingerToggleChord != Settings.Secure.VOLUME_HUSH_OFF;
@@ -420,12 +412,6 @@ final class KeyGestureController {
                     new KeyCombinationManager.TwoKeysCombinationRule(KeyEvent.KEYCODE_BACK,
                             KeyEvent.KEYCODE_DPAD_CENTER) {
                         @Override
-                        public boolean preCondition() {
-                            return isKeyGestureSupported(
-                                    KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT);
-                        }
-
-                        @Override
                         public void execute() {
                             handleMultiKeyGesture(
                                     new int[]{KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_CENTER},
@@ -458,17 +444,18 @@ final class KeyGestureController {
             userId = mCurrentUserId;
         }
         // Load the system user's input gestures.
-        mHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
     public boolean interceptKeyBeforeQueueing(KeyEvent event, int policyFlags) {
         if (mVisibleBackgroundUsersEnabled && shouldIgnoreKeyEventForVisibleBackgroundUser(event)) {
             return false;
         }
-        final boolean interactive = (policyFlags & FLAG_INTERACTIVE) != 0;
         if (InputSettings.doesKeyGestureEventHandlerSupportMultiKeyGestures()
                 && (event.getFlags() & KeyEvent.FLAG_FALLBACK) == 0) {
-            return mKeyCombinationManager.interceptKey(event, interactive);
+            final boolean interactive = (policyFlags & FLAG_INTERACTIVE) != 0;
+            final boolean isDefaultDisplayOn = isDefaultDisplayOn();
+            return mKeyCombinationManager.interceptKey(event, interactive && isDefaultDisplayOn);
         }
         return false;
     }
@@ -1032,7 +1019,15 @@ final class KeyGestureController {
         synchronized (mUserLock) {
             mCurrentUserId = userId;
         }
-        mHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.obtainMessage(MSG_LOAD_CUSTOM_GESTURES, userId).sendToTarget();
+    }
+
+    private boolean isDefaultDisplayOn() {
+        Display defaultDisplay = mDisplayManager.getDisplay(Display.DEFAULT_DISPLAY);
+        if (defaultDisplay == null) {
+            return false;
+        }
+        return Display.isOnState(defaultDisplay.getState());
     }
 
     @MainThread
@@ -1073,6 +1068,12 @@ final class KeyGestureController {
                 AidlKeyGestureEvent event = (AidlKeyGestureEvent) msg.obj;
                 notifyKeyGestureEvent(event);
                 break;
+        }
+        return true;
+    }
+
+    private boolean handleIoMessage(Message msg) {
+        switch (msg.what) {
             case MSG_PERSIST_CUSTOM_GESTURES: {
                 final int userId = (Integer) msg.obj;
                 persistInputGestures(userId);
@@ -1083,7 +1084,6 @@ final class KeyGestureController {
                 loadInputGestures(userId);
                 break;
             }
-
         }
         return true;
     }
@@ -1144,7 +1144,7 @@ final class KeyGestureController {
         final int result = mInputGestureManager.addCustomInputGesture(userId,
                 new InputGestureData(inputGestureData));
         if (result == InputManager.CUSTOM_INPUT_GESTURE_RESULT_SUCCESS) {
-            mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
+            mIoHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
         }
         return result;
     }
@@ -1156,7 +1156,7 @@ final class KeyGestureController {
         final int result = mInputGestureManager.removeCustomInputGesture(userId,
                 new InputGestureData(inputGestureData));
         if (result == InputManager.CUSTOM_INPUT_GESTURE_RESULT_SUCCESS) {
-            mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
+            mIoHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
         }
         return result;
     }
@@ -1165,7 +1165,7 @@ final class KeyGestureController {
     public void removeAllCustomInputGestures(@UserIdInt int userId,
             @Nullable InputGestureData.Filter filter) {
         mInputGestureManager.removeAllCustomInputGestures(userId, filter);
-        mHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
+        mIoHandler.obtainMessage(MSG_PERSIST_CUSTOM_GESTURES, userId).sendToTarget();
     }
 
     @BinderThread

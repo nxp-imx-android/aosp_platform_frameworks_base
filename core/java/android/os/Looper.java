@@ -200,8 +200,12 @@ public final class Looper {
         }
 
         PerfettoTrace.begin(PerfettoTrace.MQ_CATEGORY, "message_queue_receive")
-                .addArg("sending_thread", msg.mSendingThreadName)
-                .addTerminatingFlow(msg.mEventId.get())
+                .beginProto()
+                .beginNested(2004 /* message_queue */)
+                .addField(1 /* sending_thread_name */, msg.mSendingThreadName)
+                .endNested()
+                .endProto()
+                .setTerminatingFlow(msg.mEventId.get())
                 .emit();
 
         // This must be in a local variabe, in case a UI event sets the logger

@@ -59,8 +59,6 @@ class PreferenceScreenBindingHelper(
     private val preferenceHierarchy: PreferenceHierarchy,
 ) : KeyedDataObservable<String>() {
 
-    private val mainExecutor = HandlerExecutor.main
-
     private val preferenceLifecycleContext =
         object : PreferenceLifecycleContext(context) {
             override val lifecycleScope: LifecycleCoroutineScope
@@ -88,11 +86,11 @@ class PreferenceScreenBindingHelper(
     private val preferences: ImmutableMap<String, PreferenceHierarchyNode>
     private val dependencies: ImmutableMultimap<String, String>
     private val lifecycleAwarePreferences: Array<PreferenceLifecycleProvider>
-    private val storages = mutableMapOf<String, KeyedObservable<String>>()
+    private val observables = mutableMapOf<String, KeyedObservable<String>>()
 
     private val preferenceObserver: KeyedObserver<String?>
 
-    private val storageObserver =
+    private val observer =
         KeyedObserver<String> { key, reason ->
             if (DataChangeReason.isDataChange(reason)) {
                 notifyChange(key, PreferenceChangeReason.VALUE)
@@ -133,15 +131,19 @@ class PreferenceScreenBindingHelper(
         this.dependencies = dependenciesBuilder.build()
         this.lifecycleAwarePreferences = lifecycleAwarePreferences.toTypedArray()
 
+        val executor = HandlerExecutor.main
         preferenceObserver = KeyedObserver { key, reason -> onPreferenceChange(key, reason) }
-        addObserver(preferenceObserver, mainExecutor)
+        addObserver(preferenceObserver, executor)
 
         preferenceScreen.forEachRecursively {
-            it.preferenceDataStore?.findKeyValueStore()?.let { keyValueStore ->
-                val key = it.key
-                storages[key] = keyValueStore
-                keyValueStore.addObserver(key, storageObserver, mainExecutor)
-            }
+            val key = it.key ?: return@forEachRecursively
+            @Suppress("UNCHECKED_CAST")
+            val observable =
+                it.preferenceDataStore?.findKeyValueStore()
+                    ?: (preferences[key]?.metadata as? KeyedObservable<String>)
+                    ?: return@forEachRecursively
+            observables[key] = observable
+            observable.addObserver(key, observer, executor)
         }
     }
 
@@ -212,7 +214,7 @@ class PreferenceScreenBindingHelper(
 
     fun onDestroy() {
         removeObserver(preferenceObserver)
-        for ((key, storage) in storages) storage.removeObserver(key, storageObserver)
+        for ((key, observable) in observables) observable.removeObserver(key, observer)
         for (preference in lifecycleAwarePreferences) {
             preference.onDestroy(preferenceLifecycleContext)
         }

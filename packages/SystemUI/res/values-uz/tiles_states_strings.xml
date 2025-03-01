@@ -196,4 +196,9 @@
     <item msgid="6419996398343291862">"Yoqilmagan"</item>
     <item msgid="5908720590832378783">"Yoniq"</item>
   </string-array>
+  <string-array name="tile_states_desktopeffects">
+    <item msgid="6253480000354287321">"Mavjud emas"</item>
+    <item msgid="6641673879029894995">"Yoqilmagan"</item>
+    <item msgid="5806682401126108403">"Yoniq"</item>
+  </string-array>
 </resources>

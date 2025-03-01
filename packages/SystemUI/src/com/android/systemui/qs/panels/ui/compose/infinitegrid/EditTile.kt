@@ -22,7 +22,6 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,7 +33,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.clipScrollableContainer
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -47,28 +45,27 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -91,12 +88,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -113,24 +107,17 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.util.fastMap
-import androidx.compose.ui.zIndex
-import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.compose.animation.bounceable
 import com.android.compose.modifiers.height
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.qs.panels.shared.model.SizedTile
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
-import com.android.systemui.qs.panels.ui.compose.BounceableInfo
 import com.android.systemui.qs.panels.ui.compose.DragAndDropState
 import com.android.systemui.qs.panels.ui.compose.DragType
 import com.android.systemui.qs.panels.ui.compose.EditTileListState
-import com.android.systemui.qs.panels.ui.compose.bounceableInfo
 import com.android.systemui.qs.panels.ui.compose.dragAndDropRemoveZone
 import com.android.systemui.qs.panels.ui.compose.dragAndDropTileList
 import com.android.systemui.qs.panels.ui.compose.dragAndDropTileSource
@@ -142,13 +129,14 @@ import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaul
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.AUTO_SCROLL_SPEED
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.AvailableTilesGridMinHeight
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.CurrentTilesGridPadding
-import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditModeTileDefaults.TileBadgeSize
+import com.android.systemui.qs.panels.ui.compose.selection.InteractiveTileContainer
 import com.android.systemui.qs.panels.ui.compose.selection.MutableSelectionState
-import com.android.systemui.qs.panels.ui.compose.selection.ResizableTileContainer
 import com.android.systemui.qs.panels.ui.compose.selection.ResizingState
 import com.android.systemui.qs.panels.ui.compose.selection.ResizingState.ResizeOperation
 import com.android.systemui.qs.panels.ui.compose.selection.ResizingState.ResizeOperation.FinalResizeOperation
 import com.android.systemui.qs.panels.ui.compose.selection.ResizingState.ResizeOperation.TemporaryResizeOperation
+import com.android.systemui.qs.panels.ui.compose.selection.StaticTileBadge
+import com.android.systemui.qs.panels.ui.compose.selection.TileState
 import com.android.systemui.qs.panels.ui.compose.selection.rememberResizingState
 import com.android.systemui.qs.panels.ui.compose.selection.rememberSelectionState
 import com.android.systemui.qs.panels.ui.compose.selection.selectableTile
@@ -252,13 +240,15 @@ fun DefaultEditTileGrid(
                 AnimatedContent(
                     targetState = listState.dragInProgress || selectionState.selected,
                     label = "QSEditHeader",
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp),
                 ) { showRemoveTarget ->
-                    EditGridHeader(Modifier.padding(bottom = 26.dp)) {
+                    EditGridHeader {
                         if (showRemoveTarget) {
                             RemoveTileTarget {
                                 selectionState.selection?.let {
                                     selectionState.unSelect()
-                                    onRemoveTile(it.tileSpec)
+                                    onRemoveTile(it)
                                 }
                             }
                         } else {
@@ -380,7 +370,7 @@ private fun RemoveTileTarget(onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = tileHorizontalArrangement(),
         modifier =
-            Modifier.fillMaxHeight()
+            Modifier.wrapContentSize()
                 .clickable(onClick = onClick)
                 .border(1.dp, LocalContentColor.current, shape = CircleShape)
                 .padding(10.dp),
@@ -430,22 +420,15 @@ private fun CurrentTilesGrid(
                 )
                 .dragAndDropTileList(gridState, { gridContentOffset }, listState) { spec ->
                     onSetTiles(currentListState.tileSpecs())
-                    selectionState.select(spec, manual = false)
+                    selectionState.select(spec)
                 }
                 .onGloballyPositioned { coordinates ->
                     gridContentOffset = coordinates.positionInRoot()
                 }
                 .testTag(CURRENT_TILES_GRID_TEST_TAG),
     ) {
-        EditTiles(
-            cells,
-            columns,
-            listState,
-            selectionState,
-            coroutineScope,
-            largeTilesSpan,
-            onRemoveTile,
-        ) { resizingOperation ->
+        EditTiles(cells, listState, selectionState, coroutineScope, largeTilesSpan, onRemoveTile) {
+            resizingOperation ->
             when (resizingOperation) {
                 is TemporaryResizeOperation -> {
                     currentListState.resizeTile(resizingOperation.spec, resizingOperation.toIcon)
@@ -453,10 +436,6 @@ private fun CurrentTilesGrid(
                 is FinalResizeOperation -> {
                     // Commit the new size of the tile
                     onResize(resizingOperation.spec, resizingOperation.toIcon)
-
-                    // Mark the selection as automatic in case the tile ends up moving to a
-                    // different row with its new size.
-                    selectionState.select(resizingOperation.spec, manual = false)
                 }
             }
         }
@@ -536,7 +515,6 @@ private fun GridCell.key(index: Int): Any {
  * Adds a list of [GridCell] to the lazy grid
  *
  * @param cells the pairs of [GridCell] to [BounceableTileViewModel]
- * @param columns the number of columns of this tile grid
  * @param dragAndDropState the [DragAndDropState] for this grid
  * @param selectionState the [MutableSelectionState] for this grid
  * @param coroutineScope the [CoroutineScope] to be used for the tiles
@@ -545,7 +523,6 @@ private fun GridCell.key(index: Int): Any {
  */
 fun LazyGridScope.EditTiles(
     cells: List<Pair<GridCell, BounceableTileViewModel>>,
-    columns: Int,
     dragAndDropState: DragAndDropState,
     selectionState: MutableSelectionState,
     coroutineScope: CoroutineScope,
@@ -581,7 +558,6 @@ fun LazyGridScope.EditTiles(
                         onResize = onResize,
                         onRemoveTile = onRemoveTile,
                         coroutineScope = coroutineScope,
-                        bounceableInfo = cells.bounceableInfo(index, columns),
                         largeTilesSpan = largeTilesSpan,
                         modifier = Modifier.animateItem(),
                     )
@@ -601,83 +577,84 @@ private fun TileGridCell(
     onRemoveTile: (TileSpec) -> Unit,
     coroutineScope: CoroutineScope,
     largeTilesSpan: Int,
-    bounceableInfo: BounceableInfo,
     modifier: Modifier = Modifier,
 ) {
     val stateDescription = stringResource(id = R.string.accessibility_qs_edit_position, index + 1)
-    var selected by remember { mutableStateOf(false) }
-    val showRemovalBadge =
-        !selected && cell.tile.availableEditActions.contains(AvailableEditActions.REMOVE)
-    val selectionAlpha by
-        animateFloatAsState(
-            targetValue = if (selected) 1f else 0f,
-            label = "QSEditTileSelectionAlpha",
-        )
-    val selectionColor = MaterialTheme.colorScheme.primary
-    val colors = EditModeTileDefaults.editTileColors()
-    val currentBounceableInfo by rememberUpdatedState(bounceableInfo)
+    val canShowRemovalBadge = cell.tile.availableEditActions.contains(AvailableEditActions.REMOVE)
+    var tileState by remember { mutableStateOf(TileState.None) }
 
-    LaunchedEffect(selectionState.selection?.tileSpec) {
-        selectionState.selection?.let {
-            // A delay is introduced on automatic selections such as dragged tiles or reflow caused
-            // by resizing. This avoids clipping issues on the border and resizing handle, as well
-            // as letting the selection animation play correctly.
-            if (!it.manual) {
-                delay(250)
+    LaunchedEffect(selectionState.selection, canShowRemovalBadge) {
+        tileState =
+            when {
+                selectionState.selection == cell.tile.tileSpec -> {
+                    if (tileState == TileState.None && canShowRemovalBadge) {
+                        // The tile decoration is None if a tile is newly composed OR the removal
+                        // badge can't be shown.
+                        // For newly composed and selected tiles, such as dragged tiles or moved
+                        // tiles from resizing, introduce a short delay. This avoids clipping issues
+                        // on the border and resizing handle, as well as letting the selection
+                        // animation play correctly.
+                        delay(250)
+                    }
+                    TileState.Selected
+                }
+                canShowRemovalBadge -> TileState.Removable
+                else -> TileState.None
             }
-        }
-        selected = selectionState.selection?.tileSpec == cell.tile.tileSpec
     }
 
-    val state = rememberResizingState(cell.tile.tileSpec, cell.isIcon)
-
+    val resizingState = rememberResizingState(cell.tile.tileSpec, cell.isIcon)
     val progress: () -> Float = {
-        if (selected) {
-            // If selected, return the manual progress from the drag
-            state.progress()
+        if (tileState == TileState.Selected) {
+            resizingState.progress()
         } else {
-            // Else, return the target progress for the tile format
             if (cell.isIcon) 0f else 1f
         }
     }
 
-    if (!selected) {
+    if (tileState != TileState.Selected) {
         // Update the draggable anchor state when the tile's size is not manually toggled
-        LaunchedEffect(cell.isIcon) { state.updateCurrentValue(cell.isIcon) }
+        LaunchedEffect(cell.isIcon) { resizingState.updateCurrentValue(cell.isIcon) }
     } else {
         // If the tile is selected, listen to new target values from the draggable anchor to toggle
         // the tile's size
-        LaunchedEffect(state.temporaryResizeOperation) { onResize(state.temporaryResizeOperation) }
-        LaunchedEffect(state.finalResizeOperation) { onResize(state.finalResizeOperation) }
+        LaunchedEffect(resizingState.temporaryResizeOperation) {
+            onResize(resizingState.temporaryResizeOperation)
+        }
+        LaunchedEffect(resizingState.finalResizeOperation) {
+            onResize(resizingState.finalResizeOperation)
+        }
     }
 
     val totalPadding =
         with(LocalDensity.current) { (largeTilesSpan - 1) * TileArrangementPadding.roundToPx() }
-
-    ResizableTileContainer(
-        selected = selected,
-        state = state,
-        selectionAlpha = { selectionAlpha },
-        selectionColor = selectionColor,
+    val colors = EditModeTileDefaults.editTileColors()
+    val toggleSizeLabel = stringResource(R.string.accessibility_qs_edit_toggle_tile_size_action)
+    val clickLabel =
+        when (tileState) {
+            TileState.None -> null
+            TileState.Removable ->
+                stringResource(id = R.string.accessibility_qs_edit_remove_tile_action)
+            TileState.Selected -> toggleSizeLabel
+        }
+    InteractiveTileContainer(
+        tileState = tileState,
+        resizingState = resizingState,
         modifier =
-            modifier
-                .height(TileHeight)
-                .fillMaxWidth()
-                .onSizeChanged {
-                    // Grab the size before the bounceable to get the idle width
-                    val min =
-                        if (cell.isIcon) it.width else (it.width - totalPadding) / largeTilesSpan
-                    val max =
-                        if (cell.isIcon) (it.width * largeTilesSpan) + totalPadding else it.width
-                    state.updateAnchors(min.toFloat(), max.toFloat())
-                }
-                .bounceable(
-                    bounceable = currentBounceableInfo.bounceable,
-                    previousBounceable = currentBounceableInfo.previousTile,
-                    nextBounceable = currentBounceableInfo.nextTile,
-                    orientation = Orientation.Horizontal,
-                    bounceEnd = currentBounceableInfo.bounceEnd,
-                ),
+            modifier.height(TileHeight).fillMaxWidth().onSizeChanged {
+                // Calculate the min/max width from the idle size
+                val min = if (cell.isIcon) it.width else (it.width - totalPadding) / largeTilesSpan
+                val max = if (cell.isIcon) (it.width * largeTilesSpan) + totalPadding else it.width
+                resizingState.updateAnchors(min.toFloat(), max.toFloat())
+            },
+        onClick = {
+            if (tileState == TileState.Removable) {
+                onRemoveTile(cell.tile.tileSpec)
+            } else if (tileState == TileState.Selected) {
+                coroutineScope.launch { resizingState.toggleCurrentValue() }
+            }
+        },
+        onClickLabel = clickLabel,
     ) {
         Box(
             modifier
@@ -688,15 +665,13 @@ private fun TileGridCell(
                     customActions =
                         listOf(
                             // TODO(b/367748260): Add final accessibility actions
-                            CustomAccessibilityAction("Toggle size") {
+                            CustomAccessibilityAction(toggleSizeLabel) {
                                 onResize(FinalResizeOperation(cell.tile.tileSpec, !cell.isIcon))
                                 true
                             }
                         )
                 }
-                .selectableTile(cell.tile.tileSpec, selectionState) {
-                    coroutineScope.launch { currentBounceableInfo.bounceable.animateBounce() }
-                }
+                .selectableTile(cell.tile.tileSpec, selectionState)
                 .dragAndDropTileSource(
                     SizedTileImpl(cell.tile, cell.width),
                     dragAndDropState,
@@ -705,16 +680,7 @@ private fun TileGridCell(
                 )
                 .tileBackground(colors.background)
         ) {
-            EditTile(tile = cell.tile, state = state, progress = progress)
-        }
-
-        if (showRemovalBadge) {
-            TileBadge(
-                icon = Icons.Default.Remove,
-                contentDescription = stringResource(R.string.qs_customize_remove),
-            ) {
-                onRemoveTile(cell.tile.tileSpec)
-            }
+            EditTile(tile = cell.tile, state = resizingState, progress = progress)
         }
     }
 }
@@ -733,7 +699,7 @@ private fun AvailableTileGridCell(
     val colors = EditModeTileDefaults.editTileColors()
     val onClick = {
         onAddTile(cell.tile.tileSpec)
-        selectionState.select(cell.tile.tileSpec, manual = false)
+        selectionState.select(cell.tile.tileSpec)
     }
 
     // Displays the tile as an icon tile with the label underneath
@@ -742,10 +708,9 @@ private fun AvailableTileGridCell(
         verticalArrangement = spacedBy(CommonTileDefaults.TilePadding, Alignment.Top),
         modifier = modifier,
     ) {
-        Box {
+        Box(Modifier.fillMaxWidth().height(TileHeight)) {
             Box(
-                Modifier.fillMaxWidth()
-                    .height(TileHeight)
+                Modifier.fillMaxSize()
                     .clickable(onClick = onClick, onClickLabel = onClickActionName)
                     .semantics(mergeDescendants = true) { this.stateDescription = stateDescription }
                     .dragAndDropTileSource(
@@ -756,7 +721,6 @@ private fun AvailableTileGridCell(
                         selectionState.unSelect()
                     }
                     .tileBackground(colors.background)
-                    .tilePadding()
             ) {
                 // Icon
                 SmallTileContent(
@@ -767,7 +731,7 @@ private fun AvailableTileGridCell(
                 )
             }
 
-            TileBadge(
+            StaticTileBadge(
                 icon = Icons.Default.Add,
                 contentDescription = onClickActionName,
                 onClick = onClick,
@@ -783,39 +747,6 @@ private fun AvailableTileGridCell(
                 modifier = Modifier.align(Alignment.Center),
             )
         }
-    }
-}
-
-@Composable
-private fun TileBadge(icon: ImageVector, contentDescription: String?, onClick: () -> Unit) {
-    // Use a higher zIndex than the tile to draw over it, and manually create the touch target as
-    // we're drawing over neighbor tiles as well.
-    val minTouchTargetSize = LocalMinimumInteractiveComponentSize.current
-
-    Box(
-        Modifier.zIndex(2f)
-            .layout { measurable, constraints ->
-                val size = minTouchTargetSize.roundToPx()
-                val placeable = measurable.measure(Constraints(size))
-                layout(placeable.width, placeable.height) {
-                    val iconRadius = TileBadgeSize.roundToPx() / 2
-                    val x = constraints.maxWidth - placeable.width / 2 - iconRadius
-                    val y = 0 - placeable.height / 2 + iconRadius
-                    placeable.place(x, y)
-                }
-            }
-            .systemGestureExclusion { Rect(Offset.Zero, it.size.toSize()) }
-            .pointerInput(Unit) { detectTapGestures { onClick() } }
-    ) {
-        val secondaryColor = MaterialTheme.colorScheme.secondary
-        Icon(
-            icon,
-            contentDescription = contentDescription,
-            modifier =
-                Modifier.size(TileBadgeSize).align(Alignment.Center).drawBehind {
-                    drawCircle(secondaryColor)
-                },
-        )
     }
 }
 
@@ -902,9 +833,8 @@ private object EditModeTileDefaults {
     const val PLACEHOLDER_ALPHA = .3f
     const val AUTO_SCROLL_DISTANCE = 100
     const val AUTO_SCROLL_SPEED = 2 // 2ms per pixel
-    val CurrentTilesGridPadding = 8.dp
+    val CurrentTilesGridPadding = 10.dp
     val AvailableTilesGridMinHeight = 200.dp
-    val TileBadgeSize = 20.dp
 
     @Composable
     fun editTileColors(): TileColors =

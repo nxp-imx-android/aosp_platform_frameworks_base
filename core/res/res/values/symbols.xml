@@ -368,7 +368,6 @@
   <java-symbol type="bool" name="config_enableMultipleAdmins"/>
   <java-symbol type="bool" name="config_allowAlarmsOnStoppedUsers"/>
   <java-symbol type="bool" name="config_showNotificationForBackgroundUserAlarms"/>
-  <java-symbol type="bool" name="config_bootToHeadlessSystemUser"/>
   <java-symbol type="bool" name="config_omnipresentCommunalUser"/>
   <java-symbol type="bool" name="config_enableNewAutoSelectNetworkUI"/>
   <java-symbol type="bool" name="config_disableUsbPermissionDialogs"/>
@@ -535,6 +534,8 @@
 
   <java-symbol type="color" name="surface_effect_0" />
   <java-symbol type="color" name="surface_effect_1" />
+  <java-symbol type="color" name="surface_effect_2" />
+  <java-symbol type="color" name="surface_effect_3" />
   <java-symbol type="color" name="tab_indicator_text_v4" />
 
   <java-symbol type="dimen" name="accessibility_touch_slop" />
@@ -575,7 +576,6 @@
   <java-symbol type="dimen" name="notification_text_size" />
   <java-symbol type="dimen" name="notification_title_text_size" />
   <java-symbol type="dimen" name="notification_subtext_size" />
-  <java-symbol type="dimen" name="notification_2025_title_text_size" />
   <java-symbol type="dimen" name="notification_top_pad" />
   <java-symbol type="dimen" name="notification_top_pad_narrow" />
   <java-symbol type="dimen" name="notification_top_pad_large_text" />
@@ -1727,10 +1727,12 @@
   <java-symbol type="style" name="PointerIconVectorStyleFillBlue" />
   <java-symbol type="style" name="PointerIconVectorStyleFillPurple" />
   <java-symbol type="attr" name="pointerIconVectorFill" />
+  <java-symbol type="attr" name="pointerIconVectorFillInverse" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeWhite" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeBlack" />
   <java-symbol type="style" name="PointerIconVectorStyleStrokeNone" />
   <java-symbol type="attr" name="pointerIconVectorStroke" />
+  <java-symbol type="attr" name="pointerIconVectorStrokeInverse" />
   <java-symbol type="style" name="TextAppearance.DeviceDefault.Notification.Title" />
   <java-symbol type="style" name="TextAppearance.DeviceDefault.Notification.Info" />
 
@@ -1742,7 +1744,6 @@
   <java-symbol type="id" name="media_route_list" />
   <java-symbol type="id" name="media_route_volume_layout" />
   <java-symbol type="id" name="media_route_volume_slider" />
-  <java-symbol type="id" name="media_route_control_frame" />
   <java-symbol type="id" name="media_route_extended_settings_button" />
   <java-symbol type="id" name="media_route_progress_bar" />
   <java-symbol type="string" name="media_route_chooser_title" />
@@ -3235,8 +3236,6 @@
   <java-symbol type="id" name="header_text" />
   <java-symbol type="id" name="header_text_secondary" />
   <java-symbol type="id" name="expand_button" />
-  <java-symbol type="id" name="expand_button_spacer" />
-  <java-symbol type="id" name="expand_button_container" />
   <java-symbol type="id" name="expand_button_pill" />
   <java-symbol type="id" name="expand_button_pill_colorized_layer" />
   <java-symbol type="id" name="expand_button_number" />
@@ -3264,6 +3263,7 @@
   <java-symbol type="dimen" name="notification_content_margin" />
   <java-symbol type="dimen" name="notification_2025_margin" />
   <java-symbol type="dimen" name="notification_2025_content_margin_top" />
+  <java-symbol type="dimen" name="notification_2025_content_margin_start" />
   <java-symbol type="dimen" name="notification_2025_expand_button_horizontal_icon_padding" />
   <java-symbol type="dimen" name="notification_2025_expand_button_reduced_end_padding" />
   <java-symbol type="dimen" name="notification_progress_margin_horizontal" />
@@ -3790,6 +3790,7 @@
   <java-symbol type="string" name="accessibility_shortcut_disabling_service" />
   <java-symbol type="string" name="color_inversion_feature_name" />
   <java-symbol type="string" name="color_correction_feature_name" />
+  <java-symbol type="string" name="autoclick_feature_name"/>
   <java-symbol type="string" name="reduce_bright_colors_feature_name" />
   <java-symbol type="string" name="config_defaultAccessibilityService" />
   <java-symbol type="string" name="config_defaultSelectToSpeakService" />
@@ -4157,6 +4158,17 @@
   <java-symbol type="integer" name="config_storageManagerDaystoRetainDefault" />
   <java-symbol type="string" name="config_headlineFontFamily" />
   <java-symbol type="string" name="config_headlineFontFamilyMedium" />
+
+  <java-symbol type="integer" name="config_pressedStateDurationMillis" />
+  <java-symbol type="integer" name="config_tapTimeoutMillis" />
+  <java-symbol type="integer" name="config_jumpTapTimeoutMillis" />
+  <java-symbol type="integer" name="config_doubleTapTimeoutMillis" />
+  <java-symbol type="integer" name="config_doubleTapMinTimeMillis" />
+  <java-symbol type="integer" name="config_hoverTapTimeoutMillis" />
+  <java-symbol type="integer" name="config_zoomControlsTimeoutMillis" />
+  <java-symbol type="integer" name="config_defaultActionModeHideDurationMillis" />
+  <java-symbol type="dimen" name="config_hoverTapSlop" />
+  <java-symbol type="dimen" name="config_scrollFriction" />
 
   <java-symbol type="drawable" name="stat_sys_vitals" />
 
@@ -4705,7 +4717,8 @@
   <java-symbol type="dimen" name="conversation_icon_container_top_padding" />
   <java-symbol type="dimen" name="conversation_icon_container_top_padding_small_avatar" />
   <java-symbol type="layout" name="notification_template_material_conversation" />
-  <java-symbol type="layout" name="notification_2025_template_conversation" />
+  <java-symbol type="layout" name="notification_2025_template_collapsed_conversation" />
+  <java-symbol type="layout" name="notification_2025_template_expanded_conversation" />
   <java-symbol type="dimen" name="button_padding_horizontal_material" />
   <java-symbol type="dimen" name="button_inset_horizontal_material" />
   <java-symbol type="layout" name="conversation_face_pile_layout" />
@@ -5648,6 +5661,9 @@
   <java-symbol type="id" name="accessibility_autoclick_pause_button" />
   <java-symbol type="id" name="accessibility_autoclick_position_layout" />
   <java-symbol type="id" name="accessibility_autoclick_position_button" />
+  <java-symbol type="drawable" name="accessibility_autoclick_pause" />
+  <java-symbol type="drawable" name="accessibility_autoclick_resume" />
+  <java-symbol type="drawable" name="ic_accessibility_autoclick" />
 
   <!-- For HapticFeedbackConstants configurability defined at HapticFeedbackCustomization -->
   <java-symbol type="string" name="config_hapticFeedbackCustomizationFile" />
@@ -5903,6 +5919,9 @@
   <java-symbol type="array" name="config_notificationDefaultUnsupportedAdjustments" />
   <java-symbol type="drawable" name="ic_notification_summarization" />
   <java-symbol type="dimen" name="notification_collapsed_height_with_summarization" />
+
+  <!-- Device CMF Theming Settings -->
+  <java-symbol type="array" name="theming_defaults" />
 
   <!-- Advanced Protection Service USB feature -->
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_title" />

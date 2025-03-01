@@ -574,11 +574,12 @@
 
     <!-- Content description of the bluetooth device settings gear icon. [CHAR LIMIT=NONE] -->
     <string name="accessibility_bluetooth_device_settings_gear">Click to configure device detail</string>
+    <!-- Content description of the bluetooth device settings gear icon. [CHAR LIMIT=NONE] [BACKUP_MESSAGE_ID=3314916468105272540] -->
+    <string name="accessibility_bluetooth_device_settings_gear_with_name"><xliff:g id="device_name">%s</xliff:g>. Configure device detail</string>
     <!-- Content description of the bluetooth device settings see all. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_bluetooth_device_settings_see_all">Click to see all devices</string>
+    <string name="accessibility_bluetooth_device_settings_see_all">See all devices</string>
     <!-- Content description of the bluetooth device settings pair new device. [CHAR LIMIT=NONE] -->
-    <string name="accessibility_bluetooth_device_settings_pair_new_device">Click to pair new device</string>
-
+    <string name="accessibility_bluetooth_device_settings_pair_new_device">Pair new device</string>
     <!-- Content description of the battery when battery state is unknown for accessibility (not shown on the screen). [CHAR LIMIT=NONE] -->
     <string name="accessibility_battery_unknown">Battery percentage unknown.</string>
 
@@ -590,6 +591,12 @@
 
     <!-- Content description of the button to expand the group of devices. [CHAR LIMIT=NONE] -->
     <string name="accessibility_expand_group">Expand group.</string>
+
+    <!-- Content description of the button to add a device to a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_add_device_to_group">Add device to group.</string>
+
+    <!-- Content description of the button to remove a device from a group. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_remove_device_from_group">Remove device from group.</string>
 
     <!-- Content description of the button to open the application . [CHAR LIMIT=NONE] -->
     <string name="accessibility_open_application">Open application.</string>
@@ -801,7 +808,7 @@
     <!-- QuickSettings: Bluetooth secondary label shown when bluetooth is being enabled [CHAR LIMIT=NONE] -->
     <string name="quick_settings_bluetooth_secondary_label_transient">Turning on&#8230;</string>
     <!-- QuickSettings: Brightness [CHAR LIMIT=NONE] -->
-    <string name="quick_settings_brightness_unable_adjust_msg">Can\'t adjust brightness because it\'s being\n controlled by the top app</string>
+    <string name="quick_settings_brightness_unable_adjust_msg">Can\'t adjust brightness because it\'s being controlled by the top app</string>
     <!-- QuickSettings: Rotation Unlocked [CHAR LIMIT=NONE] -->
     <string name="quick_settings_rotation_unlocked_label">Auto-rotate</string>
     <!-- Accessibility label for Auto-ratate QuickSettings tile [CHAR LIMIT=NONE] -->
@@ -1017,6 +1024,12 @@
     <string name="hearing_devices_ambient_control_left">Left</string>
     <!-- QuickSettings: The text to show the control is for right side device. [CHAR LIMIT=30] -->
     <string name="hearing_devices_ambient_control_right">Right</string>
+    <!-- QuickSettings: Content description for unified ambient control slider. [CHAR LIMIT=NONE] -->
+    <string name="hearing_devices_ambient_control_description">Surroundings</string>
+    <!-- QuickSettings: Content description for left ambient control slider. [CHAR LIMIT=NONE] -->
+    <string name="hearing_devices_ambient_control_left_description">Left surroundings</string>
+    <!-- QuickSettings: Content description for left ambient control slider. [CHAR LIMIT=NONE] -->
+    <string name="hearing_devices_ambient_control_right_description">Right surroundings</string>
     <!-- QuickSettings: Content description for a button, that expands ambient volume sliders [CHAR_LIMIT=NONE] -->
     <string name="hearing_devices_ambient_expand_controls">Expand to left and right separated controls</string>
     <!-- QuickSettings: Content description for a button, that collapses ambient volume sliders [CHAR LIMIT=NONE] -->
@@ -2341,7 +2354,9 @@
     <!-- User visible title for the keyboard shortcut that enters split screen with current app on the left [CHAR LIMIT=70] -->
     <string name="system_multitasking_lhs">Use split screen with app on the left</string>
     <!-- User visible title for the keyboard shortcut that switches from split screen to full screen [CHAR LIMIT=70] -->
-    <string name="system_multitasking_full_screen">Switch to full screen</string>
+    <string name="system_multitasking_full_screen">Use full screen</string>
+    <!-- User visible title for the keyboard shortcut that switches to desktop view [CHAR LIMIT=70] -->
+    <string name="system_multitasking_desktop_view">Use desktop view</string>
     <!-- User visible title for the keyboard shortcut that switches to app on right or below while using split screen [CHAR LIMIT=70] -->
     <string name="system_multitasking_splitscreen_focus_rhs">Switch to app on right or below while using split screen</string>
     <!-- User visible title for the keyboard shortcut that switches to app on left or above while using split screen [CHAR LIMIT=70] -->
@@ -2556,6 +2571,9 @@
 
     <!-- SysUI Tuner: Other section -->
     <string name="other">Other</string>
+
+    <!-- Accessibility description of action to toggle QS tile size on click. It will read as "Double-tap to toggle the tile's size" in screen readers [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_edit_toggle_tile_size_action">toggle the tile\'s size</string>
 
     <!-- Accessibility description of action to remove QS tile on click. It will read as "Double-tap to remove tile" in screen readers [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_remove_tile_action">remove tile</string>
@@ -4007,6 +4025,8 @@
     <string name="touchpad_tutorial_switch_apps_gesture_button">Switch apps</string>
     <!-- Label for button finishing touchpad tutorial [CHAR LIMIT=NONE] -->
     <string name="touchpad_tutorial_done_button">Done</string>
+    <!-- Label for button proceeding touchpad tutorial [CHAR LIMIT=NONE] -->
+    <string name="touchpad_tutorial_next_button">Next</string>
     <!-- Screen title after gesture was not done correctly [CHAR LIMIT=NONE] -->
     <string name="gesture_error_title">Try again!</string>
     <!-- BACK GESTURE -->
@@ -4092,8 +4112,10 @@
 
     <!-- Title of the one line view of a redacted notification -->
     <string name="redacted_notification_single_line_title">Redacted</string>
-    <!-- Main text of the one line view of a redacted notification -->
-    <string name="redacted_notification_single_line_text">Unlock to view</string>
+    <!-- Main text of the one line view of a public notification -->
+    <string name="public_notification_single_line_text">Unlock to view</string>
+    <!-- Main text of the one line view of a redacted OTP notification -->
+    <string name="redacted_otp_notification_single_line_text">Unlock to view code</string>
 
     <!-- Content description for contextual education dialog [CHAR LIMIT=NONE] -->
     <string name="contextual_education_dialog_title">Contextual education</string>
@@ -4162,4 +4184,7 @@
     <string name="qs_edit_mode_reset_dialog_content">
         All Quick Settings tiles will reset to the device’s original settings
     </string>
+
+    <!-- Template that joins disabled message with the label for the voice over. [CHAR LIMIT=NONE] -->
+    <string name="volume_slider_disabled_message_template"><xliff:g example="Notification" id="stream_name">%1$s</xliff:g>, <xliff:g example="Disabled because ring is muted" id="disabled_message">%2$s</xliff:g></string>
 </resources>

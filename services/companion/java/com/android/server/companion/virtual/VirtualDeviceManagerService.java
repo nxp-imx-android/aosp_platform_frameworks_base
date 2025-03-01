@@ -117,7 +117,18 @@ public class VirtualDeviceManagerService extends SystemService {
      */
     static final int CDM_ASSOCIATION_ID_NONE = 0;
 
+    /**
+     * Global VDM lock.
+     *
+     * Never call outside this class while holding this lock. A number of other system services like
+     * WindowManager, DisplayManager, etc. call into VDM to get device-specific information, while
+     * holding their own global locks.
+     *
+     * Making a call to another service while holding this lock creates lock order inversion and
+     * will potentially cause a deadlock.
+     */
     private final Object mVirtualDeviceManagerLock = new Object();
+
     private final VirtualDeviceManagerImpl mImpl;
     private final VirtualDeviceManagerNativeImpl mNativeImpl;
     private final VirtualDeviceManagerInternal mLocalService;
@@ -235,10 +246,9 @@ public class VirtualDeviceManagerService extends SystemService {
     // Called when the global lockdown state changes, i.e. lockdown is considered active if any user
     // is in lockdown mode, and inactive if no users are in lockdown mode.
     void onLockdownChanged(boolean lockdownActive) {
-        synchronized (mVirtualDeviceManagerLock) {
-            for (int i = 0; i < mVirtualDevices.size(); i++) {
-                mVirtualDevices.valueAt(i).onLockdownChanged(lockdownActive);
-            }
+        ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+        for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+            virtualDevicesSnapshot.get(i).onLockdownChanged(lockdownActive);
         }
     }
 
@@ -264,16 +274,14 @@ public class VirtualDeviceManagerService extends SystemService {
             return null;
         }
         int userId = userHandle.getIdentifier();
-        synchronized (mVirtualDeviceManagerLock) {
-            for (int i = 0; i < mVirtualDevices.size(); i++) {
-                final CameraAccessController cameraAccessController =
-                        mVirtualDevices.valueAt(i).getCameraAccessController();
-                if (cameraAccessController.getUserId() == userId) {
-                    return cameraAccessController;
-                }
+        ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+        for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+            final CameraAccessController cameraAccessController =
+                    virtualDevicesSnapshot.get(i).getCameraAccessController();
+            if (cameraAccessController.getUserId() == userId) {
+                return cameraAccessController;
             }
-        }
-        Context userContext = getContext().createContextAsUser(userHandle, 0);
+        }        Context userContext = getContext().createContextAsUser(userHandle, 0);
         return new CameraAccessController(userContext, mLocalService, this::onCameraAccessBlocked);
     }
 
@@ -520,11 +528,10 @@ public class VirtualDeviceManagerService extends SystemService {
         @Override // Binder call
         public List<VirtualDevice> getVirtualDevices() {
             List<VirtualDevice> virtualDevices = new ArrayList<>();
-            synchronized (mVirtualDeviceManagerLock) {
-                for (int i = 0; i < mVirtualDevices.size(); i++) {
-                    final VirtualDeviceImpl device = mVirtualDevices.valueAt(i);
-                    virtualDevices.add(device.getPublicVirtualDeviceObject());
-                }
+            ArrayList<VirtualDeviceImpl> virtualDevicesSnapshot = getVirtualDevicesSnapshot();
+            for (int i = 0; i < virtualDevicesSnapshot.size(); i++) {
+                VirtualDeviceImpl device = virtualDevicesSnapshot.get(i);
+                virtualDevices.add(device.getPublicVirtualDeviceObject());
             }
             return virtualDevices;
         }
@@ -834,15 +841,17 @@ public class VirtualDeviceManagerService extends SystemService {
         @Nullable
         public LocaleList getPreferredLocaleListForUid(int uid) {
             // TODO: b/263188984 support the case where an app is running on multiple VDs
+            VirtualDeviceImpl virtualDevice = null;
             synchronized (mVirtualDeviceManagerLock) {
                 for (int i = 0; i < mAppsOnVirtualDevices.size(); i++) {
                     if (mAppsOnVirtualDevices.valueAt(i).contains(uid)) {
                         int deviceId = mAppsOnVirtualDevices.keyAt(i);
-                        return mVirtualDevices.get(deviceId).getDeviceLocaleList();
+                        virtualDevice = mVirtualDevices.get(deviceId);
+                        break;
                     }
                 }
             }
-            return null;
+            return virtualDevice == null ? null : virtualDevice.getDeviceLocaleList();
         }
 
         @Override
@@ -879,6 +888,11 @@ public class VirtualDeviceManagerService extends SystemService {
         @Override
         public int getDeviceIdForDisplayId(int displayId) {
             return mImpl.getDeviceIdForDisplayId(displayId);
+        }
+
+        @Override
+        public VirtualDevice getVirtualDevice(int deviceId) {
+            return mImpl.getVirtualDevice(deviceId);
         }
 
         @Override

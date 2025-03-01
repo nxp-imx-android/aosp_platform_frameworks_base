@@ -15,6 +15,7 @@
  */
 package com.android.systemui.util.settings
 
+import android.annotation.SuppressLint
 import android.annotation.UserIdInt
 import android.annotation.WorkerThread
 import android.content.ContentResolver
@@ -28,6 +29,7 @@ import com.android.systemui.util.settings.SettingsProxy.Companion.parseFloat
 import com.android.systemui.util.settings.SettingsProxy.Companion.parseFloatOrThrow
 import com.android.systemui.util.settings.SettingsProxy.Companion.parseLongOrThrow
 import com.android.systemui.util.settings.SettingsProxy.Companion.parseLongOrUseDefault
+import kotlinx.coroutines.Job
 
 /**
  * Used to interact with per-user Settings.Secure and Settings.System settings (but not
@@ -42,11 +44,12 @@ import com.android.systemui.util.settings.SettingsProxy.Companion.parseLongOrUse
  * This class also provides [.registerContentObserver] methods, normally found on [ContentResolver]
  * instances, unifying setting related actions in one place.
  */
-interface UserSettingsProxy : SettingsProxy {
-    val currentUserProvider: SettingsProxy.CurrentUserIdProvider
+@SuppressLint("RegisterContentObserverSyncWarning")
+public interface UserSettingsProxy : SettingsProxy {
+    public val currentUserProvider: SettingsProxy.CurrentUserIdProvider
 
     /** Returns the user id for the associated [ContentResolver]. */
-    var userId: Int
+    public var userId: Int
         get() = getContentResolver().userId
         set(_) {
             throw UnsupportedOperationException(
@@ -58,7 +61,7 @@ interface UserSettingsProxy : SettingsProxy {
      * Returns the actual current user handle when querying with the current user. Otherwise,
      * returns the passed in user id.
      */
-    fun getRealUserHandle(userHandle: Int): Int {
+    public fun getRealUserHandle(userHandle: Int): Int {
         return if (userHandle != UserHandle.USER_CURRENT) {
             userHandle
         } else currentUserProvider.getUserId()
@@ -75,7 +78,7 @@ interface UserSettingsProxy : SettingsProxy {
         }
     }
 
-    override fun registerContentObserverAsync(uri: Uri, settingsObserver: ContentObserver) =
+    override fun registerContentObserverAsync(uri: Uri, settingsObserver: ContentObserver): Job =
         settingsScope.launch("registerContentObserverAsync-A") {
             registerContentObserverForUserSync(uri, settingsObserver, userId)
         }
@@ -109,7 +112,7 @@ interface UserSettingsProxy : SettingsProxy {
         uri: Uri,
         notifyForDescendants: Boolean,
         settingsObserver: ContentObserver,
-    ) =
+    ): Job =
         settingsScope.launch("registerContentObserverAsync-B") {
             registerContentObserverForUserSync(uri, notifyForDescendants, settingsObserver, userId)
         }
@@ -120,7 +123,7 @@ interface UserSettingsProxy : SettingsProxy {
      * Implicitly calls [getUriFor] on the passed in name.
      */
     @WorkerThread
-    fun registerContentObserverForUserSync(
+    public fun registerContentObserverForUserSync(
         name: String,
         settingsObserver: ContentObserver,
         userHandle: Int,
@@ -135,7 +138,7 @@ interface UserSettingsProxy : SettingsProxy {
      * [ContentObserver] registration happens on a worker thread. Caller may wrap the API in an
      * async block if they wish to synchronize execution.
      */
-    suspend fun registerContentObserverForUser(
+    public suspend fun registerContentObserverForUser(
         name: String,
         settingsObserver: ContentObserver,
         userHandle: Int,
@@ -150,11 +153,11 @@ interface UserSettingsProxy : SettingsProxy {
      *
      * API corresponding to [registerContentObserverForUser] for Java usage.
      */
-    fun registerContentObserverForUserAsync(
+    public fun registerContentObserverForUserAsync(
         name: String,
         settingsObserver: ContentObserver,
         userHandle: Int,
-    ) =
+    ): Job =
         settingsScope.launch("registerContentObserverForUserAsync-A") {
             try {
                 registerContentObserverForUserSync(getUriFor(name), settingsObserver, userHandle)
@@ -165,7 +168,7 @@ interface UserSettingsProxy : SettingsProxy {
 
     /** Convenience wrapper around [ContentResolver.registerContentObserver] */
     @WorkerThread
-    fun registerContentObserverForUserSync(
+    public fun registerContentObserverForUserSync(
         uri: Uri,
         settingsObserver: ContentObserver,
         userHandle: Int,
@@ -180,7 +183,7 @@ interface UserSettingsProxy : SettingsProxy {
      * [ContentObserver] registration happens on a worker thread. Caller may wrap the API in an
      * async block if they wish to synchronize execution.
      */
-    suspend fun registerContentObserverForUser(
+    public suspend fun registerContentObserverForUser(
         uri: Uri,
         settingsObserver: ContentObserver,
         userHandle: Int,
@@ -195,11 +198,11 @@ interface UserSettingsProxy : SettingsProxy {
      *
      * API corresponding to [registerContentObserverForUser] for Java usage.
      */
-    fun registerContentObserverForUserAsync(
+    public fun registerContentObserverForUserAsync(
         uri: Uri,
         settingsObserver: ContentObserver,
         userHandle: Int,
-    ) =
+    ): Job =
         settingsScope.launch("registerContentObserverForUserAsync-B") {
             try {
                 registerContentObserverForUserSync(uri, settingsObserver, userHandle)
@@ -215,12 +218,12 @@ interface UserSettingsProxy : SettingsProxy {
      * complete, the callback block is called on the <b>background thread</b> to allow for update of
      * value.
      */
-    fun registerContentObserverForUserAsync(
+    public fun registerContentObserverForUserAsync(
         uri: Uri,
         settingsObserver: ContentObserver,
         userHandle: Int,
         @WorkerThread registered: Runnable,
-    ) =
+    ): Job =
         settingsScope.launch("registerContentObserverForUserAsync-C") {
             try {
                 registerContentObserverForUserSync(uri, settingsObserver, userHandle)
@@ -236,7 +239,7 @@ interface UserSettingsProxy : SettingsProxy {
      * Implicitly calls [getUriFor] on the passed in name.
      */
     @WorkerThread
-    fun registerContentObserverForUserSync(
+    public fun registerContentObserverForUserSync(
         name: String,
         notifyForDescendants: Boolean,
         settingsObserver: ContentObserver,
@@ -257,7 +260,7 @@ interface UserSettingsProxy : SettingsProxy {
      * [ContentObserver] registration happens on a worker thread. Caller may wrap the API in an
      * async block if they wish to synchronize execution.
      */
-    suspend fun registerContentObserverForUser(
+    public suspend fun registerContentObserverForUser(
         name: String,
         notifyForDescendants: Boolean,
         settingsObserver: ContentObserver,
@@ -278,7 +281,7 @@ interface UserSettingsProxy : SettingsProxy {
      *
      * API corresponding to [registerContentObserverForUser] for Java usage.
      */
-    fun registerContentObserverForUserAsync(
+    public fun registerContentObserverForUserAsync(
         name: String,
         notifyForDescendants: Boolean,
         settingsObserver: ContentObserver,
@@ -300,7 +303,7 @@ interface UserSettingsProxy : SettingsProxy {
 
     /** Convenience wrapper around [ContentResolver.registerContentObserver] */
     @WorkerThread
-    fun registerContentObserverForUserSync(
+    public fun registerContentObserverForUserSync(
         uri: Uri,
         notifyForDescendants: Boolean,
         settingsObserver: ContentObserver,
@@ -314,7 +317,6 @@ interface UserSettingsProxy : SettingsProxy {
                     settingsObserver,
                     getRealUserHandle(userHandle),
                 )
-            Unit
         }
     }
 
@@ -325,7 +327,7 @@ interface UserSettingsProxy : SettingsProxy {
      * [ContentObserver] registration happens on a worker thread. Caller may wrap the API in an
      * async block if they wish to synchronize execution.
      */
-    suspend fun registerContentObserverForUser(
+    public suspend fun registerContentObserverForUser(
         uri: Uri,
         notifyForDescendants: Boolean,
         settingsObserver: ContentObserver,
@@ -346,12 +348,12 @@ interface UserSettingsProxy : SettingsProxy {
      *
      * API corresponding to [registerContentObserverForUser] for Java usage.
      */
-    fun registerContentObserverForUserAsync(
+    public fun registerContentObserverForUserAsync(
         uri: Uri,
         notifyForDescendants: Boolean,
         settingsObserver: ContentObserver,
         userHandle: Int,
-    ) =
+    ): Job =
         settingsScope.launch("registerContentObserverForUserAsync-E") {
             try {
                 registerContentObserverForUserSync(
@@ -376,7 +378,7 @@ interface UserSettingsProxy : SettingsProxy {
     }
 
     /** See [getString]. */
-    fun getStringForUser(name: String, userHandle: Int): String?
+    public fun getStringForUser(name: String, userHandle: Int): String?
 
     /**
      * Store a name/value pair into the database. Values written by this method will be overridden
@@ -386,17 +388,17 @@ interface UserSettingsProxy : SettingsProxy {
      * @param value to associate with the name
      * @return true if the value was set, false on database errors
      */
-    fun putString(name: String, value: String?, overrideableByRestore: Boolean): Boolean
+    public fun putString(name: String, value: String?, overrideableByRestore: Boolean): Boolean
 
     override fun putString(name: String, value: String?): Boolean {
         return putStringForUser(name, value, userId)
     }
 
     /** Similar implementation to [putString] for the specified [userHandle]. */
-    fun putStringForUser(name: String, value: String?, userHandle: Int): Boolean
+    public fun putStringForUser(name: String, value: String?, userHandle: Int): Boolean
 
     /** Similar implementation to [putString] for the specified [userHandle]. */
-    fun putStringForUser(
+    public fun putStringForUser(
         name: String,
         value: String?,
         tag: String?,
@@ -410,7 +412,7 @@ interface UserSettingsProxy : SettingsProxy {
     }
 
     /** Similar implementation to [getInt] for the specified [userHandle]. */
-    fun getIntForUser(name: String, default: Int, userHandle: Int): Int {
+    public fun getIntForUser(name: String, default: Int, userHandle: Int): Int {
         val v = getStringForUser(name, userHandle)
         return try {
             v?.toInt() ?: default
@@ -420,11 +422,11 @@ interface UserSettingsProxy : SettingsProxy {
     }
 
     @Throws(SettingNotFoundException::class)
-    override fun getInt(name: String) = getIntForUser(name, userId)
+    override fun getInt(name: String): Int = getIntForUser(name, userId)
 
     /** Similar implementation to [getInt] for the specified [userHandle]. */
     @Throws(SettingNotFoundException::class)
-    fun getIntForUser(name: String, userHandle: Int): Int {
+    public fun getIntForUser(name: String, userHandle: Int): Int {
         val v = getStringForUser(name, userHandle) ?: throw SettingNotFoundException(name)
         return try {
             v.toInt()
@@ -433,24 +435,24 @@ interface UserSettingsProxy : SettingsProxy {
         }
     }
 
-    override fun putInt(name: String, value: Int) = putIntForUser(name, value, userId)
+    override fun putInt(name: String, value: Int): Boolean = putIntForUser(name, value, userId)
 
     /** Similar implementation to [getInt] for the specified [userHandle]. */
-    fun putIntForUser(name: String, value: Int, userHandle: Int) =
+    public fun putIntForUser(name: String, value: Int, userHandle: Int): Boolean =
         putStringForUser(name, value.toString(), userHandle)
 
-    override fun getBool(name: String, def: Boolean) = getBoolForUser(name, def, userId)
+    override fun getBool(name: String, def: Boolean): Boolean = getBoolForUser(name, def, userId)
 
     /** Similar implementation to [getBool] for the specified [userHandle]. */
-    fun getBoolForUser(name: String, def: Boolean, userHandle: Int) =
+    public fun getBoolForUser(name: String, def: Boolean, userHandle: Int): Boolean =
         getIntForUser(name, if (def) 1 else 0, userHandle) != 0
 
     @Throws(SettingNotFoundException::class)
-    override fun getBool(name: String) = getBoolForUser(name, userId)
+    override fun getBool(name: String): Boolean = getBoolForUser(name, userId)
 
     /** Similar implementation to [getBool] for the specified [userHandle]. */
     @Throws(SettingNotFoundException::class)
-    fun getBoolForUser(name: String, userHandle: Int): Boolean {
+    public fun getBoolForUser(name: String, userHandle: Int): Boolean {
         return getIntForUser(name, userHandle) != 0
     }
 
@@ -459,40 +461,40 @@ interface UserSettingsProxy : SettingsProxy {
     }
 
     /** Similar implementation to [putBool] for the specified [userHandle]. */
-    fun putBoolForUser(name: String, value: Boolean, userHandle: Int) =
+    public fun putBoolForUser(name: String, value: Boolean, userHandle: Int): Boolean =
         putIntForUser(name, if (value) 1 else 0, userHandle)
 
     /** Similar implementation to [getLong] for the specified [userHandle]. */
-    fun getLongForUser(name: String, def: Long, userHandle: Int): Long {
+    public fun getLongForUser(name: String, def: Long, userHandle: Int): Long {
         val valString = getStringForUser(name, userHandle)
         return parseLongOrUseDefault(valString, def)
     }
 
     /** Similar implementation to [getLong] for the specified [userHandle]. */
     @Throws(SettingNotFoundException::class)
-    fun getLongForUser(name: String, userHandle: Int): Long {
+    public fun getLongForUser(name: String, userHandle: Int): Long {
         val valString = getStringForUser(name, userHandle)
         return parseLongOrThrow(name, valString)
     }
 
     /** Similar implementation to [putLong] for the specified [userHandle]. */
-    fun putLongForUser(name: String, value: Long, userHandle: Int) =
+    public fun putLongForUser(name: String, value: Long, userHandle: Int): Boolean =
         putStringForUser(name, value.toString(), userHandle)
 
     /** Similar implementation to [getFloat] for the specified [userHandle]. */
-    fun getFloatForUser(name: String, def: Float, userHandle: Int): Float {
+    public fun getFloatForUser(name: String, def: Float, userHandle: Int): Float {
         val v = getStringForUser(name, userHandle)
         return parseFloat(v, def)
     }
 
     /** Similar implementation to [getFloat] for the specified [userHandle]. */
     @Throws(SettingNotFoundException::class)
-    fun getFloatForUser(name: String, userHandle: Int): Float {
+    public fun getFloatForUser(name: String, userHandle: Int): Float {
         val v = getStringForUser(name, userHandle)
         return parseFloatOrThrow(name, v)
     }
 
     /** Similar implementation to [putFloat] for the specified [userHandle]. */
-    fun putFloatForUser(name: String, value: Float, userHandle: Int) =
+    public fun putFloatForUser(name: String, value: Float, userHandle: Int): Boolean =
         putStringForUser(name, value.toString(), userHandle)
 }

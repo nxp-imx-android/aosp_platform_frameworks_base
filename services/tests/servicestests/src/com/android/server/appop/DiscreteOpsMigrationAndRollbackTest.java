@@ -106,7 +106,8 @@ public class DiscreteOpsMigrationAndRollbackTest {
                     opEvent.getDuration(), opEvent.getAttributionFlags(),
                     (int) opEvent.getChainId(), DiscreteOpsRegistry.ACCESS_TYPE_NOTE_OP);
         }
-        sqlRegistry.writeAndClearOldAccessHistory();
+        // flush records from cache to the database.
+        sqlRegistry.shutdown();
         assertThat(sqlRegistry.getAllDiscreteOps().size()).isEqualTo(RECORD_COUNT);
         assertThat(sqlRegistry.getLargestAttributionChainId()).isEqualTo(RECORD_COUNT);
 

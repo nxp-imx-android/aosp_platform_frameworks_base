@@ -276,6 +276,7 @@ public class JobServiceContextTest {
         final int jobId = 123;
         mJobServiceContext.setRunningJobLockedForTest(mMockJobStatus);
         mJobServiceContext.setRunningCallbackLockedForTest(mMockJobCallback);
+        mJobServiceContext.mVerb = JobServiceContext.VERB_EXECUTING;
         doReturn(jobId).when(mMockJobStatus).getJobId();
 
         mJobServiceContext.doHandleAbandonedJob(mMockJobCallback, jobId);
@@ -296,7 +297,25 @@ public class JobServiceContextTest {
         mJobServiceContext.setRunningCallbackLockedForTest(mMockJobCallback);
 
         mJobServiceContext.doHandleAbandonedJob(mMockJobCallback, jobId);
+        verify(mMockJobStatus, never()).setAbandoned(true);
 
+        mJobServiceContext.setRunningJobLockedForTest(mMockJobStatus);
+        doReturn(jobId).when(mMockJobStatus).getJobId();
+
+        mJobServiceContext.mVerb = JobServiceContext.VERB_BINDING;
+        mJobServiceContext.doHandleAbandonedJob(mMockJobCallback, jobId);
+        verify(mMockJobStatus, never()).setAbandoned(true);
+
+        mJobServiceContext.mVerb = JobServiceContext.VERB_STARTING;
+        mJobServiceContext.doHandleAbandonedJob(mMockJobCallback, jobId);
+        verify(mMockJobStatus, never()).setAbandoned(true);
+
+        mJobServiceContext.mVerb = JobServiceContext.VERB_STOPPING;
+        mJobServiceContext.doHandleAbandonedJob(mMockJobCallback, jobId);
+        verify(mMockJobStatus, never()).setAbandoned(true);
+
+        mJobServiceContext.mVerb = JobServiceContext.VERB_FINISHED;
+        mJobServiceContext.doHandleAbandonedJob(mMockJobCallback, jobId);
         verify(mMockJobStatus, never()).setAbandoned(true);
     }
 

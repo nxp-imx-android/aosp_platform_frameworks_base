@@ -16993,7 +16993,7 @@ package android.graphics {
     method public void setFilterBitmap(boolean);
     method public void setFlags(int);
     method public void setFontFeatureSettings(String);
-    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") public boolean setFontVariationOverride(@Nullable String);
+    method @FlaggedApi("com.android.text.flags.typeface_redesign_readonly") public void setFontVariationOverride(@Nullable String);
     method public boolean setFontVariationSettings(String);
     method public void setHinting(int);
     method public void setLetterSpacing(float);
@@ -17621,6 +17621,7 @@ package android.graphics {
     method public void setIntUniform(@NonNull String, int, int, int);
     method public void setIntUniform(@NonNull String, int, int, int, int);
     method public void setIntUniform(@NonNull String, @NonNull int[]);
+    method @FlaggedApi("com.android.graphics.hwui.flags.shader_color_space") public void setWorkingColorSpace(@Nullable android.graphics.ColorSpace);
   }
 
   @FlaggedApi("com.android.graphics.hwui.flags.runtime_color_filters_blenders") public class RuntimeXfermode extends android.graphics.Xfermode {
@@ -18111,6 +18112,7 @@ package android.graphics.drawable {
     method public void setThickness(@Px int);
     method public void setThicknessRatio(@FloatRange(from=0.0f, fromInclusive=false) float);
     method public void setUseLevel(boolean);
+    field @FlaggedApi("com.android.graphics.flags.gradient_drawable_shape_arc_for_rounded_cap") public static final int ARC = 4; // 0x4
     field public static final int LINE = 2; // 0x2
     field public static final int LINEAR_GRADIENT = 0; // 0x0
     field public static final int OVAL = 1; // 0x1
@@ -23330,12 +23332,12 @@ package android.media {
   public static final class MediaCodecInfo.CodecCapabilities {
     ctor public MediaCodecInfo.CodecCapabilities();
     method public static android.media.MediaCodecInfo.CodecCapabilities createFromProfileLevel(String, int, int);
-    method public android.media.MediaCodecInfo.AudioCapabilities getAudioCapabilities();
+    method @Nullable public android.media.MediaCodecInfo.AudioCapabilities getAudioCapabilities();
     method public android.media.MediaFormat getDefaultFormat();
-    method public android.media.MediaCodecInfo.EncoderCapabilities getEncoderCapabilities();
+    method @Nullable public android.media.MediaCodecInfo.EncoderCapabilities getEncoderCapabilities();
     method public int getMaxSupportedInstances();
     method public String getMimeType();
-    method public android.media.MediaCodecInfo.VideoCapabilities getVideoCapabilities();
+    method @Nullable public android.media.MediaCodecInfo.VideoCapabilities getVideoCapabilities();
     method public boolean isFeatureRequired(String);
     method public boolean isFeatureSupported(String);
     method public boolean isFormatSupported(android.media.MediaFormat);
@@ -38341,7 +38343,7 @@ package android.provider {
     field @FlaggedApi("com.android.media.flags.enable_privileged_routing_for_media_routing_control") public static final String ACTION_REQUEST_MEDIA_ROUTING_CONTROL = "android.settings.REQUEST_MEDIA_ROUTING_CONTROL";
     field public static final String ACTION_REQUEST_SCHEDULE_EXACT_ALARM = "android.settings.REQUEST_SCHEDULE_EXACT_ALARM";
     field public static final String ACTION_REQUEST_SET_AUTOFILL_SERVICE = "android.settings.REQUEST_SET_AUTOFILL_SERVICE";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String ACTION_SATELLITE_SETTING = "android.settings.SATELLITE_SETTING";
+    field public static final String ACTION_SATELLITE_SETTING = "android.settings.SATELLITE_SETTING";
     field public static final String ACTION_SEARCH_SETTINGS = "android.search.action.SEARCH_SETTINGS";
     field public static final String ACTION_SECURITY_SETTINGS = "android.settings.SECURITY_SETTINGS";
     field public static final String ACTION_SETTINGS = "android.settings.SETTINGS";
@@ -44989,7 +44991,7 @@ package android.telephony {
     field public static final String KEY_CARRIER_SETTINGS_ACTIVITY_COMPONENT_NAME_STRING = "carrier_settings_activity_component_name_string";
     field public static final String KEY_CARRIER_SETTINGS_ENABLE_BOOL = "carrier_settings_enable_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_SUPPORTED_SATELLITE_NOTIFICATION_HYSTERESIS_SEC_INT = "carrier_supported_satellite_notification_hysteresis_sec_int";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE = "carrier_supported_satellite_services_per_provider_bundle";
+    field public static final String KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE = "carrier_supported_satellite_services_per_provider_bundle";
     field public static final String KEY_CARRIER_SUPPORTS_OPP_DATA_AUTO_PROVISIONING_BOOL = "carrier_supports_opp_data_auto_provisioning_bool";
     field public static final String KEY_CARRIER_SUPPORTS_SS_OVER_UT_BOOL = "carrier_supports_ss_over_ut_bool";
     field public static final String KEY_CARRIER_SUPPORTS_TETHERING_BOOL = "carrier_supports_tethering_bool";
@@ -45122,9 +45124,9 @@ package android.telephony {
     field public static final String KEY_MMS_UA_PROF_URL_STRING = "uaProfUrl";
     field public static final String KEY_MMS_USER_AGENT_STRING = "userAgent";
     field public static final String KEY_MONTHLY_DATA_CYCLE_DAY_INT = "monthly_data_cycle_day_int";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_NTN_LTE_RSRP_THRESHOLDS_INT_ARRAY = "ntn_lte_rsrp_thresholds_int_array";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_NTN_LTE_RSRQ_THRESHOLDS_INT_ARRAY = "ntn_lte_rsrq_thresholds_int_array";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_NTN_LTE_RSSNR_THRESHOLDS_INT_ARRAY = "ntn_lte_rssnr_thresholds_int_array";
+    field public static final String KEY_NTN_LTE_RSRP_THRESHOLDS_INT_ARRAY = "ntn_lte_rsrp_thresholds_int_array";
+    field public static final String KEY_NTN_LTE_RSRQ_THRESHOLDS_INT_ARRAY = "ntn_lte_rsrq_thresholds_int_array";
+    field public static final String KEY_NTN_LTE_RSSNR_THRESHOLDS_INT_ARRAY = "ntn_lte_rssnr_thresholds_int_array";
     field public static final String KEY_ONLY_AUTO_SELECT_IN_HOME_NETWORK_BOOL = "only_auto_select_in_home_network";
     field public static final String KEY_ONLY_SINGLE_DC_ALLOWED_INT_ARRAY = "only_single_dc_allowed_int_array";
     field public static final String KEY_OPERATOR_SELECTION_EXPAND_BOOL = "operator_selection_expand_bool";
@@ -45140,7 +45142,7 @@ package android.telephony {
     field public static final String KEY_OPPORTUNISTIC_NETWORK_MAX_BACKOFF_TIME_LONG = "opportunistic_network_max_backoff_time_long";
     field public static final String KEY_OPPORTUNISTIC_NETWORK_PING_PONG_TIME_LONG = "opportunistic_network_ping_pong_time_long";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_OVERRIDE_WFC_ROAMING_MODE_WHILE_USING_NTN_BOOL = "override_wfc_roaming_mode_while_using_ntn_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_PARAMETERS_USED_FOR_NTN_LTE_SIGNAL_BAR_INT = "parameters_used_for_ntn_lte_signal_bar_int";
+    field public static final String KEY_PARAMETERS_USED_FOR_NTN_LTE_SIGNAL_BAR_INT = "parameters_used_for_ntn_lte_signal_bar_int";
     field public static final String KEY_PING_TEST_BEFORE_DATA_SWITCH_BOOL = "ping_test_before_data_switch_bool";
     field public static final String KEY_PREFER_2G_BOOL = "prefer_2g_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.hide_prefer_3g_item") public static final String KEY_PREFER_3G_VISIBILITY_BOOL = "prefer_3g_visibility_bool";
@@ -45169,14 +45171,14 @@ package android.telephony {
     field public static final String KEY_RTT_SUPPORTED_WHILE_ROAMING_BOOL = "rtt_supported_while_roaming_bool";
     field public static final String KEY_RTT_UPGRADE_SUPPORTED_BOOL = "rtt_upgrade_supported_bool";
     field public static final String KEY_RTT_UPGRADE_SUPPORTED_FOR_DOWNGRADED_VT_CALL_BOOL = "rtt_upgrade_supported_for_downgraded_vt_call";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ATTACH_SUPPORTED_BOOL = "satellite_attach_supported_bool";
+    field public static final String KEY_SATELLITE_ATTACH_SUPPORTED_BOOL = "satellite_attach_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final String KEY_SATELLITE_CONNECTED_NOTIFICATION_THROTTLE_MILLIS_INT = "satellite_connected_notification_throttle_millis_int";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT = "satellite_connection_hysteresis_sec_int";
+    field public static final String KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT = "satellite_connection_hysteresis_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DATA_SUPPORT_MODE_INT = "satellite_data_support_mode_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_DISPLAY_NAME_STRING = "satellite_display_name_string";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ENTITLEMENT_APP_NAME_STRING = "satellite_entitlement_app_name_string";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT = "satellite_entitlement_status_refresh_days_int";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final String KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL = "satellite_entitlement_supported_bool";
+    field public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT = "satellite_entitlement_status_refresh_days_int";
+    field public static final String KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL = "satellite_entitlement_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ESOS_SUPPORTED_BOOL = "satellite_esos_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final String KEY_SATELLITE_IGNORE_DATA_ROAMING_SETTING_BOOL = "satellite_ignore_data_roaming_setting_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_INFORMATION_REDIRECT_URL_STRING = "satellite_information_redirect_url_string";
@@ -46373,7 +46375,7 @@ package android.telephony {
     field public static final int OUT_OF_NETWORK = 11; // 0xb
     field public static final int OUT_OF_SERVICE = 18; // 0x12
     field public static final int POWER_OFF = 17; // 0x11
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final int SATELLITE_ENABLED = 82; // 0x52
+    field public static final int SATELLITE_ENABLED = 82; // 0x52
     field public static final int SERVER_ERROR = 12; // 0xc
     field public static final int SERVER_UNREACHABLE = 9; // 0x9
     field public static final int TIMED_OUT = 13; // 0xd
@@ -46483,7 +46485,7 @@ package android.telephony {
     method public boolean isNetworkRegistered();
     method public boolean isNetworkRoaming();
     method public boolean isNetworkSearching();
-    method @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public boolean isNonTerrestrialNetwork();
+    method public boolean isNonTerrestrialNetwork();
     method @Deprecated public boolean isRegistered();
     method @Deprecated public boolean isRoaming();
     method @Deprecated public boolean isSearching();
@@ -46499,7 +46501,7 @@ package android.telephony {
     field public static final int NR_STATE_RESTRICTED = 1; // 0x1
     field public static final int SERVICE_TYPE_DATA = 2; // 0x2
     field public static final int SERVICE_TYPE_EMERGENCY = 5; // 0x5
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final int SERVICE_TYPE_MMS = 6; // 0x6
+    field public static final int SERVICE_TYPE_MMS = 6; // 0x6
     field public static final int SERVICE_TYPE_SMS = 3; // 0x3
     field public static final int SERVICE_TYPE_UNKNOWN = 0; // 0x0
     field public static final int SERVICE_TYPE_VIDEO = 4; // 0x4
@@ -46720,7 +46722,7 @@ package android.telephony {
     method public boolean getRoaming();
     method public int getState();
     method public boolean isSearching();
-    method @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public boolean isUsingNonTerrestrialNetwork();
+    method public boolean isUsingNonTerrestrialNetwork();
     method public void setIsManualSelection(boolean);
     method public void setOperatorName(String, String, String);
     method public void setRoaming(boolean);
@@ -47075,7 +47077,7 @@ package android.telephony {
     method public int getSubscriptionType();
     method public int getUsageSetting();
     method public boolean isEmbedded();
-    method @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public boolean isOnlyNonTerrestrialNetwork();
+    method public boolean isOnlyNonTerrestrialNetwork();
     method public boolean isOpportunistic();
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.SubscriptionInfo> CREATOR;
@@ -47526,7 +47528,7 @@ package android.telephony {
     field @Deprecated @FlaggedApi("com.android.internal.telephony.flags.deprecate_cdma") public static final int ERI_FLASH = 2; // 0x2
     field @Deprecated @FlaggedApi("com.android.internal.telephony.flags.deprecate_cdma") public static final int ERI_OFF = 1; // 0x1
     field @Deprecated @FlaggedApi("com.android.internal.telephony.flags.deprecate_cdma") public static final int ERI_ON = 0; // 0x0
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final String EVENT_DISPLAY_EMERGENCY_MESSAGE = "android.telephony.event.DISPLAY_EMERGENCY_MESSAGE";
+    field public static final String EVENT_DISPLAY_EMERGENCY_MESSAGE = "android.telephony.event.DISPLAY_EMERGENCY_MESSAGE";
     field public static final String EXTRA_ACTIVE_SIM_SUPPORTED_COUNT = "android.telephony.extra.ACTIVE_SIM_SUPPORTED_COUNT";
     field public static final String EXTRA_APN_PROTOCOL = "android.telephony.extra.APN_PROTOCOL";
     field public static final String EXTRA_APN_TYPE = "android.telephony.extra.APN_TYPE";
@@ -47535,8 +47537,8 @@ package android.telephony {
     field public static final String EXTRA_CARRIER_NAME = "android.telephony.extra.CARRIER_NAME";
     field public static final String EXTRA_DATA_FAIL_CAUSE = "android.telephony.extra.DATA_FAIL_CAUSE";
     field public static final String EXTRA_DEFAULT_NETWORK_AVAILABLE = "android.telephony.extra.DEFAULT_NETWORK_AVAILABLE";
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE";
-    field @FlaggedApi("com.android.internal.telephony.flags.oem_enabled_satellite_flag") public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT";
+    field public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE";
+    field public static final String EXTRA_EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT = "android.telephony.extra.EMERGENCY_CALL_TO_SATELLITE_LAUNCH_INTENT";
     field public static final String EXTRA_HIDE_PUBLIC_SETTINGS = "android.telephony.extra.HIDE_PUBLIC_SETTINGS";
     field @Deprecated public static final String EXTRA_INCOMING_NUMBER = "incoming_number";
     field public static final String EXTRA_IS_REFRESH = "android.telephony.extra.IS_REFRESH";
@@ -47859,7 +47861,7 @@ package android.telephony.data {
     field public static final int TYPE_MMS = 2; // 0x2
     field @FlaggedApi("com.android.internal.telephony.flags.oem_paid_private") public static final int TYPE_OEM_PAID = 65536; // 0x10000
     field @FlaggedApi("com.android.internal.telephony.flags.oem_paid_private") public static final int TYPE_OEM_PRIVATE = 131072; // 0x20000
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_enabled_satellite_flag") public static final int TYPE_RCS = 32768; // 0x8000
+    field public static final int TYPE_RCS = 32768; // 0x8000
     field public static final int TYPE_SUPL = 4; // 0x4
     field public static final int TYPE_VSIM = 4096; // 0x1000
     field public static final int TYPE_XCAP = 2048; // 0x800
@@ -53800,8 +53802,8 @@ package android.view {
     method @FlaggedApi("com.android.graphics.hwui.flags.limited_hdr") public void setDesiredHdrHeadroom(@FloatRange(from=0.0f, to=10000.0) float);
     method public void setSecure(boolean);
     method public void setSurfaceLifecycle(int);
-    method public void setZOrderMediaOverlay(boolean);
-    method public void setZOrderOnTop(boolean);
+    method @Deprecated @FlaggedApi("android.view.flags.deprecate_surface_view_z_order_apis") public void setZOrderMediaOverlay(boolean);
+    method @Deprecated @FlaggedApi("android.view.flags.deprecate_surface_view_z_order_apis") public void setZOrderOnTop(boolean);
     field public static final int SURFACE_LIFECYCLE_DEFAULT = 0; // 0x0
     field public static final int SURFACE_LIFECYCLE_FOLLOWS_ATTACHMENT = 2; // 0x2
     field public static final int SURFACE_LIFECYCLE_FOLLOWS_VISIBILITY = 1; // 0x1

@@ -44,6 +44,7 @@ import android.view.animation.PathInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
+import android.widget.flags.Flags;
 
 import com.android.internal.R;
 
@@ -62,6 +63,7 @@ public class MessagingLayout extends FrameLayout
     public static final Interpolator LINEAR_OUT_SLOW_IN = new PathInterpolator(0f, 0f, 0.2f, 1f);
     public static final Interpolator FAST_OUT_LINEAR_IN = new PathInterpolator(0.4f, 0f, 1f, 1f);
     public static final Interpolator FAST_OUT_SLOW_IN = new PathInterpolator(0.4f, 0f, 0.2f, 1f);
+    private static final int MAX_SUMMARIZATION_LINES = 3;
     public static final OnLayoutChangeListener MESSAGING_PROPERTY_ANIMATOR
             = new MessagingPropertyAnimator();
     private final PeopleHelper mPeopleHelper = new PeopleHelper();
@@ -121,14 +123,30 @@ public class MessagingLayout extends FrameLayout
         setMessagingClippingDisabled(false);
     }
 
-    @RemotableViewMethod
+    @RemotableViewMethod(asyncImpl = "setAvatarReplacementAsync")
     public void setAvatarReplacement(Icon icon) {
         mAvatarReplacement = icon;
     }
 
-    @RemotableViewMethod
+    /**
+     * @hide
+     */
+    public Runnable setAvatarReplacementAsync(Icon icon) {
+        mAvatarReplacement = icon;
+        return () -> {};
+    }
+
+    @RemotableViewMethod(asyncImpl = "setNameReplacementAsync")
     public void setNameReplacement(CharSequence nameReplacement) {
         mNameReplacement = nameReplacement;
+    }
+
+    /**
+     * @hide
+     */
+    public Runnable setNameReplacementAsync(CharSequence nameReplacement) {
+        mNameReplacement = nameReplacement;
+        return () -> {};
     }
 
     /**
@@ -136,7 +154,7 @@ public class MessagingLayout extends FrameLayout
      *
      * @param isCollapsed is it collapsed
      */
-    @RemotableViewMethod
+    @RemotableViewMethod(asyncImpl = "setIsCollapsedAsync")
     public void setIsCollapsed(boolean isCollapsed) {
         mIsCollapsed = isCollapsed;
     }
@@ -145,7 +163,6 @@ public class MessagingLayout extends FrameLayout
      * setDataAsync needs to do different stuff for the collapsed vs expanded view, so store the
      * collapsed state early.
      */
-    @RemotableViewMethod(asyncImpl = "setIsCollapsedAsync")
     public Runnable setIsCollapsedAsync(boolean isCollapsed) {
         mIsCollapsed = isCollapsed;
         return () -> {};
@@ -161,9 +178,17 @@ public class MessagingLayout extends FrameLayout
      *
      * @param conversationTitle the conversation title
      */
-    @RemotableViewMethod
+    @RemotableViewMethod(asyncImpl = "setConversationTitleAsync")
     public void setConversationTitle(CharSequence conversationTitle) {
         mConversationTitle = conversationTitle;
+    }
+
+    /**
+     * @hide
+     */
+    public Runnable setConversationTitleAsync(CharSequence conversationTitle) {
+        mConversationTitle = conversationTitle;
+        return ()->{};
     }
 
     /**
@@ -199,7 +224,7 @@ public class MessagingLayout extends FrameLayout
         List<MessagingMessage> newMessagingMessages;
         mSummarizedContent = extras.getCharSequence(Notification.EXTRA_SUMMARIZED_CONTENT);
         if (!TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed) {
-            mMessagingLinearLayout.setMaxDisplayedLines(2);
+            mMessagingLinearLayout.setMaxDisplayedLines(MAX_SUMMARIZATION_LINES);
             Notification.MessagingStyle.Message summary =
                     new Notification.MessagingStyle.Message(mSummarizedContent,  0, "");
             newMessagingMessages = createMessages(List.of(summary), false, usePrecomputedText);
@@ -314,19 +339,10 @@ public class MessagingLayout extends FrameLayout
     }
 
     private void updateImageMessages() {
-        View newMessage = null;
         if (mImageMessageContainer == null) {
             return;
         }
-        if (mIsCollapsed && !mGroups.isEmpty()) {
-            // When collapsed, we're displaying the image message in a dedicated container
-            // on the right of the layout instead of inline. Let's add the isolated image there
-            MessagingGroup messagingGroup = mGroups.getLast();
-            MessagingImageMessage isolatedMessage = messagingGroup.getIsolatedMessage();
-            if (isolatedMessage != null) {
-                newMessage = isolatedMessage.getView();
-            }
-        }
+        View newMessage = getNewImageMessage();
         // Remove all messages that don't belong into the image layout
         View previousMessage = mImageMessageContainer.getChildAt(0);
         if (previousMessage != newMessage) {
@@ -343,6 +359,20 @@ public class MessagingLayout extends FrameLayout
             mRightIconView.setImageDrawable(null);
             mRightIconView.setVisibility(GONE);
         }
+    }
+
+    @Nullable
+    private View getNewImageMessage() {
+        if (mIsCollapsed && !mGroups.isEmpty()) {
+            // When collapsed, we're displaying the image message in a dedicated container
+            // on the right of the layout instead of inline. Let's add the isolated image there
+            MessagingGroup messagingGroup = mGroups.getLast();
+            MessagingImageMessage isolatedMessage = messagingGroup.getIsolatedMessage();
+            if (isolatedMessage != null) {
+                return isolatedMessage.getView();
+            }
+        }
+        return null;
     }
 
     private void removeGroups(ArrayList<MessagingGroup> oldGroups) {
@@ -417,22 +447,44 @@ public class MessagingLayout extends FrameLayout
         return mPeopleHelper.createAvatarSymbol(senderName, symbol, layoutColor);
     }
 
-    @RemotableViewMethod
+    @RemotableViewMethod(asyncImpl = "setLayoutColorAsync")
     public void setLayoutColor(int color) {
         mLayoutColor = color;
     }
 
-    @RemotableViewMethod
+    /**
+     * @hide
+     */
+    public Runnable setLayoutColorAsync(int color) {
+        mLayoutColor = color;
+        return () -> {};
+    }
+
+    @RemotableViewMethod(asyncImpl = "setIsOneToOneAsync")
     public void setIsOneToOne(boolean oneToOne) {
         mIsOneToOne = oneToOne;
     }
 
-    @RemotableViewMethod
+    /**
+     * @hide
+     */
+    public Runnable setIsOneToOneAsync(boolean oneToOne) {
+        mIsOneToOne = oneToOne;
+        return () -> {};
+    }
+
+    @RemotableViewMethod(asyncImpl = "setSenderTextColorAsync")
     public void setSenderTextColor(int color) {
         mSenderTextColor = color;
     }
 
-
+    /**
+     * @hide
+     */
+    public Runnable setSenderTextColorAsync(int color) {
+        mSenderTextColor = color;
+        return () -> {};
+    }
     /**
      * @param color the color of the notification background
      */
@@ -441,9 +493,17 @@ public class MessagingLayout extends FrameLayout
         // Nothing to do with this
     }
 
-    @RemotableViewMethod
+    @RemotableViewMethod(asyncImpl = "setMessageTextColorAsync")
     public void setMessageTextColor(int color) {
         mMessageTextColor = color;
+    }
+
+    /**
+     * @hide
+     */
+    public Runnable setMessageTextColorAsync(int color) {
+        mMessageTextColor = color;
+        return () -> {};
     }
 
     public void setUser(Person user) {
@@ -500,6 +560,12 @@ public class MessagingLayout extends FrameLayout
                 mMessagingLinearLayout.addView(newGroup, groupIndex);
             }
             newGroup.setMessages(group);
+        }
+
+        if (Flags.dropNonExistingMessages()) {
+            // remove groups from mAddedGroups when they are no longer in mGroups.
+            mAddedGroups.removeIf(
+                    messagingGroup -> !mGroups.contains(messagingGroup));
         }
     }
 

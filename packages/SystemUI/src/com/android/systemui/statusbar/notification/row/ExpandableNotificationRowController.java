@@ -56,6 +56,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.row.dagger.AppName;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationKey;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationRowScope;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationRowStatsLogger;
@@ -126,7 +127,14 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 @Override
                 public void onSettingChanged(Uri setting, int userId, String value) {
                     if (BUBBLES_SETTING_URI.equals(setting)) {
-                        final int viewUserId = mView.getEntry().getSbn().getUserId();
+                        if (NotificationBundleUi.isEnabled()
+                                && mView.getEntryAdapter().getSbn() == null) {
+                            // only valid for notification rows
+                            return;
+                        }
+                        final int viewUserId = NotificationBundleUi.isEnabled()
+                            ? mView.getEntryAdapter().getSbn().getUserId()
+                            : mView.getEntry().getSbn().getUserId();
                         if (viewUserId == UserHandle.USER_ALL || viewUserId == userId) {
                             mView.getPrivateLayout().setBubblesEnabledForUser(
                                     BUBBLES_SETTING_ENABLED_VALUE.equals(value));
@@ -145,38 +153,38 @@ public class ExpandableNotificationRowController implements NotifViewController 
 
                 @Override
                 public void logKeepInParentChildDetached(
-                        NotificationEntry child,
-                        NotificationEntry oldParent
+                        String child,
+                        String oldParent
                 ) {
                     mLogBufferLogger.logKeepInParentChildDetached(child, oldParent);
                 }
 
                 @Override
                 public void logSkipAttachingKeepInParentChild(
-                        NotificationEntry child,
-                        NotificationEntry newParent
+                        String child,
+                        String newParent
                 ) {
                     mLogBufferLogger.logSkipAttachingKeepInParentChild(child, newParent);
                 }
 
                 @Override
                 public void logRemoveTransientFromContainer(
-                        NotificationEntry childEntry,
-                        NotificationEntry containerEntry
+                        String childEntry,
+                        String containerEntry
                 ) {
                     mLogBufferLogger.logRemoveTransientFromContainer(childEntry, containerEntry);
                 }
 
                 @Override
                 public void logRemoveTransientFromNssl(
-                        NotificationEntry childEntry
+                        String childEntry
                 ) {
                     mLogBufferLogger.logRemoveTransientFromNssl(childEntry);
                 }
 
                 @Override
                 public void logRemoveTransientFromViewGroup(
-                        NotificationEntry childEntry,
+                        String childEntry,
                         ViewGroup containerView
                 ) {
                     mLogBufferLogger.logRemoveTransientFromViewGroup(childEntry, containerView);
@@ -184,8 +192,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
 
                 @Override
                 public void logAddTransientRow(
-                        NotificationEntry childEntry,
-                        NotificationEntry containerEntry,
+                        String childEntry,
+                        String containerEntry,
                         int index
                 ) {
                     mLogBufferLogger.logAddTransientRow(childEntry, containerEntry, index);
@@ -193,48 +201,48 @@ public class ExpandableNotificationRowController implements NotifViewController 
 
                 @Override
                 public void logRemoveTransientRow(
-                        NotificationEntry childEntry,
-                        NotificationEntry containerEntry
+                        String childEntry,
+                        String containerEntry
                 ) {
                     mLogBufferLogger.logRemoveTransientRow(childEntry, containerEntry);
                 }
 
                 @Override
                 public void logResetAllContentAlphas(
-                        NotificationEntry entry
+                        String entry
                 ) {
                     mLogBufferLogger.logResetAllContentAlphas(entry);
                 }
 
                 @Override
                 public void logSkipResetAllContentAlphas(
-                        NotificationEntry entry
+                        String entry
                 ) {
                     mLogBufferLogger.logSkipResetAllContentAlphas(entry);
                 }
 
                 @Override
-                public void logStartAppearAnimation(NotificationEntry entry, boolean isAppear) {
+                public void logStartAppearAnimation(String entry, boolean isAppear) {
                     mLogBufferLogger.logStartAppearAnimation(entry, isAppear);
                 }
 
                 @Override
-                public void logCancelAppearDrawing(NotificationEntry entry, boolean wasDrawing) {
+                public void logCancelAppearDrawing(String entry, boolean wasDrawing) {
                     mLogBufferLogger.logCancelAppearDrawing(entry, wasDrawing);
                 }
 
                 @Override
-                public void logAppearAnimationStarted(NotificationEntry entry, boolean isAppear) {
+                public void logAppearAnimationStarted(String entry, boolean isAppear) {
                     mLogBufferLogger.logAppearAnimationStarted(entry, isAppear);
                 }
 
                 @Override
-                public void logAppearAnimationSkipped(NotificationEntry entry, boolean isAppear) {
+                public void logAppearAnimationSkipped(String entry, boolean isAppear) {
                     mLogBufferLogger.logAppearAnimationSkipped(entry, isAppear);
                 }
 
                 @Override
-                public void logAppearAnimationFinished(NotificationEntry entry, boolean isAppear,
+                public void logAppearAnimationFinished(String entry, boolean isAppear,
                         boolean cancelled) {
                     mLogBufferLogger.logAppearAnimationFinished(entry, isAppear, cancelled);
                 }
@@ -373,14 +381,22 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
-                mView.getEntry().setInitializationTime(mClock.elapsedRealtime());
+                if (NotificationBundleUi.isEnabled()) {
+                    mView.setInitializationTime(mClock.elapsedRealtime());
+                    if (mView.getEntryAdapter().getSbn() != null) {
+                        mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
+                    }
+                } else {
+                    mView.getEntry().setInitializationTime(mClock.elapsedRealtime());
+                    mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
+                }
                 mPluginManager.addPluginListener(mView,
                         NotificationMenuRowPlugin.class, false /* Allow multiple */);
                 if (!SceneContainerFlag.isEnabled()) {
                     mView.setOnKeyguard(mStatusBarStateController.getState() == KEYGUARD);
                     mStatusBarStateController.addCallback(mStatusBarStateListener);
                 }
-                mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
+
             }
 
             @Override
@@ -405,7 +421,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
     @Override
     @NonNull
     public String getNodeLabel() {
-        return logKey(mView.getEntry());
+        return NotificationBundleUi.isEnabled() ? mView.getLoggingKey() : logKey(mView.getEntry());
     }
 
     @Override

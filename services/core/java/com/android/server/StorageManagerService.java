@@ -49,7 +49,6 @@ import static com.android.internal.util.XmlUtils.writeStringAttribute;
 import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
 import static org.xmlpull.v1.XmlPullParser.START_TAG;
 
-import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
@@ -161,6 +160,7 @@ import com.android.server.memory.ZramMaintenance;
 import com.android.server.pm.Installer;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.storage.AppFuseBridge;
+import com.android.server.storage.ImmutableVolumeInfo;
 import com.android.server.storage.StorageSessionController;
 import com.android.server.storage.StorageSessionController.ExternalStorageServiceException;
 import com.android.server.storage.WatchedVolumeInfo;
@@ -778,7 +778,7 @@ class StorageManagerService extends IStorageManager.Stub
                     break;
                 }
                 case H_VOLUME_UNMOUNT: {
-                    final WatchedVolumeInfo vol = (WatchedVolumeInfo) msg.obj;
+                    final ImmutableVolumeInfo vol = (ImmutableVolumeInfo) msg.obj;
                     unmount(vol);
                     break;
                 }
@@ -899,8 +899,14 @@ class StorageManagerService extends IStorageManager.Stub
                         for (int i = 0; i < size; i++) {
                             final WatchedVolumeInfo vol = mVolumes.valueAt(i);
                             if (vol.getMountUserId() == userId) {
+                                // Capture the volume before we set mount user id to null,
+                                // so that StorageSessionController remove the session from
+                                // the correct user (old mount user id)
+                                final ImmutableVolumeInfo volToUnmount
+                                        = vol.getClonedImmutableVolumeInfo();
                                 vol.setMountUserId(UserHandle.USER_NULL);
-                                mHandler.obtainMessage(H_VOLUME_UNMOUNT, vol).sendToTarget();
+                                mHandler.obtainMessage(H_VOLUME_UNMOUNT, volToUnmount)
+                                        .sendToTarget();
                             }
                         }
                     }
@@ -1296,7 +1302,12 @@ class StorageManagerService extends IStorageManager.Stub
     }
 
     private void maybeRemountVolumes(int userId) {
-        List<WatchedVolumeInfo> volumesToRemount = new ArrayList<>();
+        // We need to keep 2 lists
+        // 1. List of volumes before we set the mount user Id so that
+        // StorageSessionController is able to remove the session from the correct user (old one)
+        // 2. List of volumes to mount which should have the up to date info
+        List<ImmutableVolumeInfo> volumesToUnmount = new ArrayList<>();
+        List<WatchedVolumeInfo> volumesToMount = new ArrayList<>();
         synchronized (mLock) {
             for (int i = 0; i < mVolumes.size(); i++) {
                 final WatchedVolumeInfo vol = mVolumes.valueAt(i);
@@ -1304,16 +1315,19 @@ class StorageManagerService extends IStorageManager.Stub
                         && vol.getMountUserId() != mCurrentUserId) {
                     // If there's a visible secondary volume mounted,
                     // we need to update the currentUserId and remount
+                    // But capture the volume with the old user id first to use it in unmounting
+                    volumesToUnmount.add(vol.getClonedImmutableVolumeInfo());
                     vol.setMountUserId(mCurrentUserId);
-                    volumesToRemount.add(vol);
+                    volumesToMount.add(vol);
                 }
             }
         }
 
-        for (WatchedVolumeInfo vol : volumesToRemount) {
-            Slog.i(TAG, "Remounting volume for user: " + userId + ". Volume: " + vol);
-            mHandler.obtainMessage(H_VOLUME_UNMOUNT, vol).sendToTarget();
-            mHandler.obtainMessage(H_VOLUME_MOUNT, vol).sendToTarget();
+        for (int i = 0; i < volumesToMount.size(); i++) {
+            Slog.i(TAG, "Remounting volume for user: " + userId + ". Volume: "
+                    + volumesToUnmount.get(i));
+            mHandler.obtainMessage(H_VOLUME_UNMOUNT, volumesToUnmount.get(i)).sendToTarget();
+            mHandler.obtainMessage(H_VOLUME_MOUNT, volumesToMount.get(i)).sendToTarget();
         }
     }
 
@@ -2431,10 +2445,10 @@ class StorageManagerService extends IStorageManager.Stub
         super.unmount_enforcePermission();
 
         final WatchedVolumeInfo vol = findVolumeByIdOrThrow(volId);
-        unmount(vol);
+        unmount(vol.getClonedImmutableVolumeInfo());
     }
 
-    private void unmount(WatchedVolumeInfo vol) {
+    private void unmount(ImmutableVolumeInfo vol) {
         try {
             try {
                 if (vol.getType() == VolumeInfo.TYPE_PRIVATE) {
@@ -2443,8 +2457,9 @@ class StorageManagerService extends IStorageManager.Stub
             } catch (Installer.InstallerException e) {
                 Slog.e(TAG, "Failed unmount mirror data", e);
             }
+            extendWatchdogTimeout("#unmount might be slow");
             mVold.unmount(vol.getId());
-            mStorageSessionController.onVolumeUnmount(vol.getImmutableVolumeInfo());
+            mStorageSessionController.onVolumeUnmount(vol);
         } catch (Exception e) {
             Slog.wtf(TAG, e);
         }

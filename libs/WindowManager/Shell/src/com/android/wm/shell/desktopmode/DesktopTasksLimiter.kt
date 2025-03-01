@@ -26,7 +26,6 @@ import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import androidx.annotation.VisibleForTesting
-import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_MINIMIZE_WINDOW
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
@@ -176,28 +175,13 @@ class DesktopTasksLimiter(
             return taskChange.mode == TRANSIT_TO_BACK
         }
 
-        override fun onTransitionStarting(transition: IBinder) {
-            val mActiveTaskDetails = activeTransitionTokensAndTasks[transition]
-            val info = mActiveTaskDetails?.transitionInfo ?: return
-            val minimizeChange = getMinimizeChange(info, mActiveTaskDetails.taskId) ?: return
-            // Begin minimize window CUJ instrumentation.
-            interactionJankMonitor.begin(
-                minimizeChange.leash,
-                context,
-                handler,
-                CUJ_DESKTOP_MODE_MINIMIZE_WINDOW,
-            )
-        }
-
         private fun getMinimizeChange(info: TransitionInfo, taskId: Int): TransitionInfo.Change? =
             info.changes.find { change ->
                 change.taskInfo?.taskId == taskId && change.mode == TRANSIT_TO_BACK
             }
 
         override fun onTransitionMerged(merged: IBinder, playing: IBinder) {
-            if (activeTransitionTokensAndTasks.remove(merged) != null) {
-                interactionJankMonitor.end(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW)
-            }
+            activeTransitionTokensAndTasks.remove(merged)
             pendingTransitionTokensAndTasks.remove(merged)?.let { taskToTransfer ->
                 pendingTransitionTokensAndTasks[playing] = taskToTransfer
             }
@@ -209,13 +193,6 @@ class DesktopTasksLimiter(
         }
 
         override fun onTransitionFinished(transition: IBinder, aborted: Boolean) {
-            if (activeTransitionTokensAndTasks.remove(transition) != null) {
-                if (aborted) {
-                    interactionJankMonitor.cancel(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW)
-                } else {
-                    interactionJankMonitor.end(CUJ_DESKTOP_MODE_MINIMIZE_WINDOW)
-                }
-            }
             pendingTransitionTokensAndTasks.remove(transition)
             activeUnminimizeTransitionTokensAndTasks.remove(transition)
             pendingUnminimizeTransitionTokensAndTasks.remove(transition)

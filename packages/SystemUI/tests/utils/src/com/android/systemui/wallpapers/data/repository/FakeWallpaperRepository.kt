@@ -17,6 +17,8 @@
 package com.android.systemui.wallpapers.data.repository
 
 import android.app.WallpaperInfo
+import android.graphics.PointF
+import android.graphics.RectF
 import android.view.View
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,9 +36,9 @@ class FakeWallpaperRepository : WallpaperRepository {
     private val _shouldSendFocalArea = MutableStateFlow(false)
     override val shouldSendFocalArea: StateFlow<Boolean> = _shouldSendFocalArea.asStateFlow()
 
-    fun setShouldSendFocalArea(shouldSendFocalArea: Boolean) {
-        _shouldSendFocalArea.value = shouldSendFocalArea
-    }
+    override fun sendLockScreenLayoutChangeCommand(wallpaperFocalAreaBounds: RectF) {}
+
+    override fun sendTapCommand(tapPosition: PointF) {}
 
     fun setWallpaperInfo(wallpaperInfo: WallpaperInfo?) {
         _wallpaperInfo.value = wallpaperInfo

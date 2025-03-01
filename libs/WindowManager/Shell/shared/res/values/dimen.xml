@@ -38,6 +38,9 @@
     <dimen name="drag_zone_v_split_from_expanded_view_height_fold_short">100dp</dimen>
 
     <!-- Bubble drop target dimensions -->
+    <dimen name="drop_target_elevation">1dp</dimen>
+    <dimen name="drop_target_radius">28dp</dimen>
+    <dimen name="drop_target_stroke">1dp</dimen>
     <dimen name="drop_target_full_screen_padding">20dp</dimen>
     <dimen name="drop_target_desktop_window_padding_small">100dp</dimen>
     <dimen name="drop_target_desktop_window_padding_large">130dp</dimen>
@@ -45,4 +48,7 @@
     <dimen name="drop_target_expanded_view_height">578</dimen>
     <dimen name="drop_target_expanded_view_padding_bottom">108</dimen>
     <dimen name="drop_target_expanded_view_padding_horizontal">24</dimen>
+
+    <!-- The corner radius of freeform tasks in desktop windowing. -->
+    <dimen name="desktop_windowing_freeform_rounded_corner_radius">16dp</dimen>
 </resources>

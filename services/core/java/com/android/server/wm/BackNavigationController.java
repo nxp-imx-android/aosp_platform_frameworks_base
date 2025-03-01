@@ -222,7 +222,7 @@ class BackNavigationController {
                     }
                 }
             }
-            final boolean canInterruptInView = (window.getAttrs().privateFlags
+            final boolean canInterruptInView = (window.mAttrs.privateFlags
                     & PRIVATE_FLAG_APP_PROGRESS_GENERATION_ALLOWED) != 0;
             infoBuilder.setAppProgressAllowed(canInterruptInView && !transferGestureToEmbedded
                     && callbackInfo.isAnimationCallback());
@@ -280,6 +280,10 @@ class BackNavigationController {
                 removedWindowContainer = window;
             } else if (hasTranslucentActivity(currentActivity, prevActivities)) {
                 // skip if one of participant activity is translucent
+                backType = BackNavigationInfo.TYPE_CALLBACK;
+            } else if (!allActivitiesHaveProcesses(prevActivities)) {
+                // Skip if one of previous activity has no process. Restart process can be slow, and
+                // the final hierarchy could be different.
                 backType = BackNavigationInfo.TYPE_CALLBACK;
             } else if (prevActivities.size() > 0
                     && requestOverride == SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED) {
@@ -601,6 +605,17 @@ class BackNavigationController {
             }
         }
         return false;
+    }
+
+    private static boolean allActivitiesHaveProcesses(
+            @NonNull ArrayList<ActivityRecord> prevActivities) {
+        for (int i = prevActivities.size() - 1; i >= 0; --i) {
+            final ActivityRecord test = prevActivities.get(i);
+            if (!test.hasProcess()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isAllActivitiesCanShowWhenLocked(
@@ -1537,7 +1552,7 @@ class BackNavigationController {
             }
 
             void createStartingSurface(@Nullable TaskSnapshot snapshot) {
-                if (Flags.deferPredictiveAnimationIfNoSnapshot() && snapshot == null) {
+                if (snapshot == null) {
                     return;
                 }
                 if (mAdaptors[0].mSwitchType == DIALOG_CLOSE) {

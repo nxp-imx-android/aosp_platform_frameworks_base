@@ -1696,6 +1696,7 @@ class SettingsProtoDumpUtil {
             proto.write(SettingProto.DEFAULT_VALUE, setting.getDefaultValue());
             proto.write(SettingProto.DEFAULT_FROM_SYSTEM, setting.isDefaultFromSystem());
         }
+        proto.write(SettingProto.PRESERVED_IN_RESTORE, setting.isValuePreservedInRestore());
         proto.end(settingsToken);
     }
 
@@ -1721,11 +1722,16 @@ class SettingsProtoDumpUtil {
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT,
                 SecureSettingsProto.Accessibility.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT);
         dumpSetting(s, p,
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                SecureSettingsProto.Accessibility.AUTOCLICK_REVERT_TO_LEFT_CLICK);
+        dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_ENABLED,
                 SecureSettingsProto.Accessibility.AUTOCLICK_ENABLED);
         dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_AUTOCLICK_DELAY,
                 SecureSettingsProto.Accessibility.AUTOCLICK_DELAY);
+        dumpSetting(s, p, Settings.Secure.ACCESSIBILITY_AUTOCLICK_PANEL_POSITION,
+                SecureSettingsProto.Accessibility.AUTOCLICK_PANEL_POSITION);
         dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_BUTTON_TARGET_COMPONENT,
                 SecureSettingsProto.Accessibility.BUTTON_TARGET_COMPONENT);

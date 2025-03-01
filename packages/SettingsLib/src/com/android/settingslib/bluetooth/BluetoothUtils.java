@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.input.InputManager;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -34,6 +35,7 @@ import android.sysprop.BluetoothProperties;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
+import android.view.InputDevice;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -555,22 +557,17 @@ public class BluetoothUtils {
      * connected 2) is Hearing Aid or LE Audio OR 3) connected profile matches currentAudioProfile
      *
      * @param cachedDevice the CachedBluetoothDevice
-     * @param audioManager audio manager to get the current audio profile
+     * @param isOngoingCall get the current audio profile based on if in phone call
      * @return if the device is AvailableMediaBluetoothDevice
      */
     @WorkerThread
     public static boolean isAvailableMediaBluetoothDevice(
-            CachedBluetoothDevice cachedDevice, AudioManager audioManager) {
-        int audioMode = audioManager.getMode();
+            CachedBluetoothDevice cachedDevice, boolean isOngoingCall) {
         int currentAudioProfile;
 
-        if (audioMode == AudioManager.MODE_RINGTONE
-                || audioMode == AudioManager.MODE_IN_CALL
-                || audioMode == AudioManager.MODE_IN_COMMUNICATION) {
-            // in phone call
+        if (isOngoingCall) {
             currentAudioProfile = BluetoothProfile.HEADSET;
         } else {
-            // without phone call
             currentAudioProfile = BluetoothProfile.A2DP;
         }
 
@@ -722,6 +719,30 @@ public class BluetoothUtils {
         }
     }
 
+    /** Check if the {@link CachedBluetoothDevice} is a media device */
+    @WorkerThread
+    public static boolean isMediaDevice(@Nullable CachedBluetoothDevice cachedDevice) {
+        if (cachedDevice == null) return false;
+        return cachedDevice.getProfiles().stream()
+                .anyMatch(
+                        profile ->
+                                profile instanceof A2dpProfile
+                                        || profile instanceof HearingAidProfile
+                                        || profile instanceof LeAudioProfile
+                                        || profile instanceof HeadsetProfile);
+    }
+
+    /** Check if the {@link CachedBluetoothDevice} supports LE Audio profile */
+    @WorkerThread
+    public static boolean isLeAudioSupported(@Nullable CachedBluetoothDevice cachedDevice) {
+        if (cachedDevice == null) return false;
+        return cachedDevice.getProfiles().stream()
+                .anyMatch(
+                        profile ->
+                                profile instanceof LeAudioProfile
+                                        && profile.isEnabled(cachedDevice.getDevice()));
+    }
+
     /** Returns if the broadcast is on-going. */
     @WorkerThread
     public static boolean isBroadcasting(@Nullable LocalBluetoothManager manager) {
@@ -859,22 +880,17 @@ public class BluetoothUtils {
      * currentAudioProfile
      *
      * @param cachedDevice the CachedBluetoothDevice
-     * @param audioManager audio manager to get the current audio profile
+     * @param isOngoingCall get the current audio profile based on if in phone call
      * @return if the device is AvailableMediaBluetoothDevice
      */
     @WorkerThread
     public static boolean isConnectedBluetoothDevice(
-            CachedBluetoothDevice cachedDevice, AudioManager audioManager) {
-        int audioMode = audioManager.getMode();
+            CachedBluetoothDevice cachedDevice, boolean isOngoingCall) {
         int currentAudioProfile;
 
-        if (audioMode == AudioManager.MODE_RINGTONE
-                || audioMode == AudioManager.MODE_IN_CALL
-                || audioMode == AudioManager.MODE_IN_COMMUNICATION) {
-            // in phone call
+        if (isOngoingCall) {
             currentAudioProfile = BluetoothProfile.HEADSET;
         } else {
-            // without phone call
             currentAudioProfile = BluetoothProfile.A2DP;
         }
 
@@ -1064,7 +1080,7 @@ public class BluetoothUtils {
 
     /** Get develop option value for audio sharing preview. */
     @WorkerThread
-    private static boolean getAudioSharingPreviewValue(@Nullable ContentResolver contentResolver) {
+    public static boolean getAudioSharingPreviewValue(@Nullable ContentResolver contentResolver) {
         if (contentResolver == null) return false;
         return Settings.Global.getInt(
                 contentResolver,
@@ -1202,5 +1218,54 @@ public class BluetoothUtils {
             }
         }
         device.setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS, fastPairCustomizedMeta.getBytes());
+    }
+
+    /**
+     * Returns the {@link InputDevice} of the given bluetooth address if the device is a input
+     * device.
+     *
+     * @param address The address of the bluetooth device
+     * @return The {@link InputDevice} of the given address if applicable
+     */
+    @Nullable
+    public static InputDevice getInputDevice(Context context, String address) {
+        InputManager im = context.getSystemService(InputManager.class);
+
+        if (im != null) {
+            for (int deviceId : im.getInputDeviceIds()) {
+                String btAddress = im.getInputDeviceBluetoothAddress(deviceId);
+
+                if (btAddress != null && btAddress.equals(address)) {
+                    return im.getInputDevice(deviceId);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Identifies whether a device is a stylus using the associated {@link InputDevice} or
+     * {@link CachedBluetoothDevice}.
+     * InputDevices are only available when the device is USI or Bluetooth-connected, whereas
+     * CachedBluetoothDevices are available for Bluetooth devices when connected or paired,
+     * so to handle all cases, both are needed.
+     *
+     * @param inputDevice           The associated input device of the stylus
+     * @param cachedBluetoothDevice The associated bluetooth device of the stylus
+     */
+    public static boolean isDeviceStylus(@Nullable InputDevice inputDevice,
+            @Nullable CachedBluetoothDevice cachedBluetoothDevice) {
+        if (inputDevice != null && inputDevice.supportsSource(InputDevice.SOURCE_STYLUS)) {
+            return true;
+        }
+
+        if (cachedBluetoothDevice != null) {
+            BluetoothDevice bluetoothDevice = cachedBluetoothDevice.getDevice();
+            String deviceType = BluetoothUtils.getStringMetaData(bluetoothDevice,
+                    BluetoothDevice.METADATA_DEVICE_TYPE);
+            return TextUtils.equals(deviceType, BluetoothDevice.DEVICE_TYPE_STYLUS);
+        }
+
+        return false;
     }
 }

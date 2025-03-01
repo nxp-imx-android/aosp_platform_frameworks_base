@@ -196,4 +196,9 @@
     <item msgid="6419996398343291862">"ປິດ"</item>
     <item msgid="5908720590832378783">"ເປີດ"</item>
   </string-array>
+  <string-array name="tile_states_desktopeffects">
+    <item msgid="6253480000354287321">"ບໍ່ພ້ອມໃຫ້ນຳໃຊ້"</item>
+    <item msgid="6641673879029894995">"ປິດ"</item>
+    <item msgid="5806682401126108403">"ເປີດ"</item>
+  </string-array>
 </resources>

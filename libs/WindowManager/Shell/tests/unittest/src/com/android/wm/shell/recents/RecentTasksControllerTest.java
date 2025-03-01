@@ -24,7 +24,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE;
-import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_FREEFORM;
+import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_DESK;
 import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_FULLSCREEN;
 import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_SPLIT;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
@@ -107,6 +107,7 @@ import java.util.function.Consumer;
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public class RecentTasksControllerTest extends ShellTestCase {
+    private static final String SYSTEM_UI_PACKAGE_NAME = "com.android.systemui";
 
     @Mock
     private Context mContext;
@@ -348,7 +349,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
         GroupedTaskInfo freeformGroup = recentTasks.get(2);
 
         // Check that groups have expected types
-        assertTrue(freeformGroup.isBaseType(TYPE_FREEFORM));
+        assertTrue(freeformGroup.isBaseType(TYPE_DESK));
         assertTrue(singleGroup1.isBaseType(TYPE_FULLSCREEN));
         assertTrue(singleGroup2.isBaseType(TYPE_FULLSCREEN));
 
@@ -388,7 +389,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
 
         // Check that groups have expected types
         assertTrue(splitGroup.isBaseType(TYPE_SPLIT));
-        assertTrue(freeformGroup.isBaseType(TYPE_FREEFORM));
+        assertTrue(freeformGroup.isBaseType(TYPE_DESK));
         assertTrue(singleGroup.isBaseType(TYPE_FULLSCREEN));
 
         // Check freeform group entries
@@ -459,7 +460,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
         GroupedTaskInfo freeformGroup = recentTasks.get(2);
 
         // Check that groups have expected types
-        assertTrue(freeformGroup.isBaseType(TYPE_FREEFORM));
+        assertTrue(freeformGroup.isBaseType(TYPE_DESK));
         assertTrue(singleGroup1.isBaseType(TYPE_FULLSCREEN));
         assertTrue(singleGroup2.isBaseType(TYPE_FULLSCREEN));
 
@@ -582,6 +583,19 @@ public class RecentTasksControllerTest extends ShellTestCase {
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
             Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    public void onTaskAdded_orDesktopWallpaperActivity_doesNotTriggerOnRunningTaskAppeared()
+            throws Exception {
+        RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
+        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
+
+        mRecentTasksControllerReal.onTaskAdded(taskInfo);
+
+        verify(mRecentTasksListener, never()).onRunningTaskAppeared(any());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
     public void taskWindowingModeChanged_desktopRunningAppsEnabled_triggersOnRunningTaskChanged()
             throws Exception {
         mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
@@ -590,6 +604,19 @@ public class RecentTasksControllerTest extends ShellTestCase {
         mRecentTasksControllerReal.onTaskRunningInfoChanged(taskInfo);
 
         verify(mRecentTasksListener).onRunningTaskChanged(taskInfo);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    public void taskInfoChanged_forDesktopWallpaperActivity_doesNotTriggerOnRunningTaskChanged()
+            throws Exception {
+        RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
+        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
+
+        mRecentTasksControllerReal.onTaskRunningInfoChanged(taskInfo);
+
+        verify(mRecentTasksListener, never()).onRunningTaskChanged(any());
     }
 
     @Test
@@ -617,6 +644,20 @@ public class RecentTasksControllerTest extends ShellTestCase {
         mRecentTasksControllerReal.onTaskRemoved(taskInfo);
 
         verify(mRecentTasksListener).onRunningTaskVanished(taskInfo);
+    }
+
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_DESKTOP_WINDOWING_TASKBAR_RUNNING_APPS})
+    public void onTaskRemoved_forDesktopWallpaperActivity_doesNotTriggerOnRunningTaskVanished()
+            throws Exception {
+        RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
+        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
+
+        mRecentTasksControllerReal.onTaskRemoved(taskInfo);
+
+        verify(mRecentTasksListener, never()).onRunningTaskVanished(any());
     }
 
     @Test
@@ -654,6 +695,18 @@ public class RecentTasksControllerTest extends ShellTestCase {
         RunningTaskInfo taskInfo = makeRunningTaskInfo(/* taskId= */10);
 
         mRecentTasksControllerReal.onTaskMovedToFront(taskInfo);
+
+        verify(mRecentTasksListener, never()).onTaskMovedToFront(any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_TASK_STACK_OBSERVER_IN_SHELL)
+    public void onDesktopWallpaperActivityMovedToFront_doesNotTriggerOnTaskMovedToFront()
+            throws Exception {
+        RunningTaskInfo taskInfo = makeDesktopWallpaperActivityTaskInfo(/* taskId= */10);
+        mRecentTasksControllerReal.registerRecentTasksListener(mRecentTasksListener);
+
+        mRecentTasksControllerReal.onTaskMovedToFrontThroughTransition(taskInfo);
 
         verify(mRecentTasksListener, never()).onTaskMovedToFront(any());
     }
@@ -829,14 +882,23 @@ public class RecentTasksControllerTest extends ShellTestCase {
      * Helper to create a running task with a given task id.
      */
     private RunningTaskInfo makeRunningTaskInfo(int taskId) {
+        return makeRunningTaskInfo(taskId, new ComponentName("com." + taskId, "Activity" + taskId));
+    }
+
+    private RunningTaskInfo makeRunningTaskInfo(int taskId, ComponentName intentComponent) {
         RunningTaskInfo info = new RunningTaskInfo();
         info.taskId = taskId;
         info.realActivity = new ComponentName("testPackage", "testClass");
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com." + taskId, "Activity" + taskId));
+        intent.setComponent(intentComponent);
         info.baseIntent = intent;
         info.lastNonFullscreenBounds = new Rect();
         return info;
+    }
+
+    private RunningTaskInfo makeDesktopWallpaperActivityTaskInfo(int taskId) {
+        return makeRunningTaskInfo(taskId, new ComponentName(SYSTEM_UI_PACKAGE_NAME,
+                DesktopWallpaperActivity.class.getName()));
     }
 
     /**

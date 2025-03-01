@@ -19,12 +19,16 @@ package com.android.systemui.statusbar.notification.headsup
 import android.graphics.Region
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import dagger.Binds
 import dagger.Module
 import java.io.PrintWriter
 import java.util.stream.Stream
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * A manager which handles heads up notifications which is a special mode where they simply peek
@@ -110,7 +114,7 @@ interface HeadsUpManager : Dumpable {
      * Returns the value of the tracking-heads-up flag. See the doc of {@code setTrackingHeadsUp} as
      * well.
      */
-    fun isTrackingHeadsUp(): Boolean
+    fun isTrackingHeadsUp(): StateFlow<Boolean>
 
     fun onExpandingFinished()
 
@@ -149,6 +153,12 @@ interface HeadsUpManager : Dumpable {
     fun releaseAllImmediately()
 
     fun setAnimationStateHandler(handler: AnimationStateHandler)
+
+    /**
+    * Set an entry to be expanded and therefore stick in the heads up area if it's pinned until
+    * it's collapsed again.
+    */
+    fun setExpanded(key: String, row: ExpandableNotificationRow, expanded: Boolean)
 
     /**
      * Set an entry to be expanded and therefore stick in the heads up area if it's pinned until
@@ -284,11 +294,11 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
 
     override fun isHeadsUpAnimatingAwayValue() = false
 
+    override fun isTrackingHeadsUp(): StateFlow<Boolean> = MutableStateFlow(false)
+
     override fun isSnoozed(packageName: String) = false
 
     override fun isSticky(key: String?) = false
-
-    override fun isTrackingHeadsUp() = false
 
     override fun onExpandingFinished() {}
 
@@ -307,6 +317,8 @@ class HeadsUpManagerEmptyImpl @Inject constructor() : HeadsUpManager {
     ) = false
 
     override fun setAnimationStateHandler(handler: AnimationStateHandler) {}
+
+    override fun setExpanded(key: String, row: ExpandableNotificationRow, expanded: Boolean) {}
 
     override fun setExpanded(entry: NotificationEntry, expanded: Boolean) {}
 

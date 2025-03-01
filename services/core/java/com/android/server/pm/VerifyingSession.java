@@ -179,8 +179,7 @@ final class VerifyingSession {
         // Perform package verification and enable rollback (unless we are simply moving the
         // package).
         if (!mOriginInfo.mExisting) {
-            final boolean verifyForRollback = Flags.recoverabilityDetection()
-                    ? !isARollback() : true;
+            final boolean verifyForRollback = !isARollback();
             if (!isApex() && !isArchivedInstallation() && verifyForRollback) {
                 // TODO(b/182426975): treat APEX as APK when APK verification is concerned
                 sendApkVerificationRequest(pkgLite);

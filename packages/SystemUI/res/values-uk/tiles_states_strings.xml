@@ -196,4 +196,9 @@
     <item msgid="6419996398343291862">"Вимкнено"</item>
     <item msgid="5908720590832378783">"Увімкнено"</item>
   </string-array>
+  <string-array name="tile_states_desktopeffects">
+    <item msgid="6253480000354287321">"Недоступно"</item>
+    <item msgid="6641673879029894995">"Вимкнено"</item>
+    <item msgid="5806682401126108403">"Увімкнено"</item>
+  </string-array>
 </resources>

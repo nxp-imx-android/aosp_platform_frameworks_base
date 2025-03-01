@@ -19,7 +19,6 @@ package com.android.systemui.qs.tiles.viewmodel
 import android.content.Context
 import android.os.UserHandle
 import android.util.Log
-import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.InstanceId
 import com.android.systemui.Dumpable
 import com.android.systemui.animation.Expandable
@@ -156,8 +155,12 @@ constructor(
         qsTileViewModel.onUserChanged(UserHandle.of(currentUser))
     }
 
+    override fun getCurrentTileUser(): Int {
+        return qsTileViewModel.currentTileUser
+    }
+
     override fun getDetailsViewModel(): TileDetailsViewModel? {
-        return qsTileViewModel.detailsViewModel
+        return qsTileViewModel.tileDetailsViewModel
     }
 
     @Deprecated(
@@ -211,6 +214,10 @@ constructor(
         stateJob?.cancel()
         tileAdapterJob?.cancel()
         qsTileViewModel.destroy()
+    }
+
+    override fun isDestroyed(): Boolean {
+        return !(tileAdapterJob?.isActive ?: false)
     }
 
     override fun getState(): QSTile.AdapterState =

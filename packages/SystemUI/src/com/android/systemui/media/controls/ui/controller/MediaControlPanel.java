@@ -23,6 +23,10 @@ import static com.android.systemui.Flags.communalHub;
 import static com.android.systemui.Flags.mediaLockscreenLaunchAnimation;
 import static com.android.systemui.media.controls.domain.pipeline.MediaActionsKt.getNotificationActions;
 import static com.android.systemui.media.controls.shared.model.SmartspaceMediaDataKt.NUM_REQUIRED_RECOMMENDATIONS;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA;
+import static com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel.MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY;
 
 import android.animation.Animator;
 import android.animation.AnimatorInflater;
@@ -113,7 +117,6 @@ import com.android.systemui.media.controls.ui.view.RecommendationViewHolder;
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel;
 import com.android.systemui.media.controls.util.MediaDataUtils;
 import com.android.systemui.media.controls.util.MediaUiEventLogger;
-import com.android.systemui.media.controls.util.SmallHash;
 import com.android.systemui.media.dialog.MediaOutputDialogManager;
 import com.android.systemui.monet.ColorScheme;
 import com.android.systemui.monet.Style;
@@ -121,7 +124,6 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
-import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.surfaceeffects.PaintDrawCallback;
@@ -170,14 +172,8 @@ public class MediaControlPanel {
     private static final String KEY_SMARTSPACE_ARTIST_NAME = "artist_name";
     private static final String KEY_SMARTSPACE_OPEN_IN_FOREGROUND = "KEY_OPEN_IN_FOREGROUND";
 
-    // Event types logged by smartspace
-    private static final int SMARTSPACE_CARD_CLICK_EVENT = 760;
-    protected static final int SMARTSPACE_CARD_DISMISS_EVENT = 761;
-
     private static final float REC_MEDIA_COVER_SCALE_FACTOR = 1.25f;
-    private static final float MEDIA_SCRIM_START_ALPHA = 0.25f;
     private static final float MEDIA_REC_SCRIM_START_ALPHA = 0.15f;
-    private static final float MEDIA_PLAYER_SCRIM_END_ALPHA = 1.0f;
     private static final float MEDIA_REC_SCRIM_END_ALPHA = 1.0f;
 
     private static final Intent SETTINGS_INTENT = new Intent(ACTION_MEDIA_CONTROLS_SETTINGS);
@@ -245,11 +241,9 @@ public class MediaControlPanel {
     private final NotificationLockscreenUserManager mLockscreenUserManager;
 
     // Used for logging.
-    protected boolean mIsImpressed = false;
     private SystemClock mSystemClock;
     private MediaUiEventLogger mLogger;
     private InstanceId mInstanceId;
-    protected int mSmartspaceId = -1;
     private String mPackageName;
 
     private boolean mIsScrubbing = false;
@@ -305,7 +299,7 @@ public class MediaControlPanel {
      */
     @Inject
     public MediaControlPanel(
-            Context context,
+            @Main Context context,
             @Background Executor backgroundExecutor,
             @Main DelayableExecutor mainExecutor,
             ActivityStarter activityStarter,
@@ -348,7 +342,6 @@ public class MediaControlPanel {
             if (mPackageName != null && mInstanceId != null) {
                 mLogger.logSeek(mUid, mPackageName, mInstanceId);
             }
-            logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT);
             return Unit.INSTANCE;
         });
 
@@ -563,10 +556,6 @@ public class MediaControlPanel {
         MediaSession.Token token = data.getToken();
         mPackageName = data.getPackageName();
         mUid = data.getAppUid();
-        // Only assigns instance id if it's unassigned.
-        if (mSmartspaceId == -1) {
-            mSmartspaceId = SmallHash.hash(mUid + (int) mSystemClock.currentTimeMillis());
-        }
         mInstanceId = data.getInstanceId();
 
         if (mToken == null || !mToken.equals(token)) {
@@ -586,7 +575,6 @@ public class MediaControlPanel {
                 if (mFalsingManager.isFalseTap(FalsingManager.LOW_PENALTY)) return;
                 if (mMediaViewController.isGutsVisible()) return;
                 mLogger.logTapContentView(mUid, mPackageName, mInstanceId);
-                logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT);
 
                 boolean showOverLockscreen = mKeyguardStateController.isShowing()
                         && mActivityIntentHelper.wouldPendingShowOverLockscreen(clickIntent,
@@ -730,7 +718,7 @@ public class MediaControlPanel {
             Drawable icon = device.getIcon();
             if (icon instanceof AdaptiveIcon) {
                 AdaptiveIcon aIcon = (AdaptiveIcon) icon;
-                aIcon.setBackgroundColor(mColorSchemeTransition.getBgColor());
+                aIcon.setBackgroundColor(mColorSchemeTransition.getDeviceIconColor());
                 iconView.setImageDrawable(aIcon);
             } else {
                 iconView.setImageDrawable(icon);
@@ -921,8 +909,9 @@ public class MediaControlPanel {
             boolean isArtworkBound;
             Icon artworkIcon = data.getArtwork();
             WallpaperColors wallpaperColors = getWallpaperColor(artworkIcon);
+            boolean darkTheme = !Flags.mediaControlsA11yColors();
             if (wallpaperColors != null) {
-                mutableColorScheme = new ColorScheme(wallpaperColors, true, Style.CONTENT);
+                mutableColorScheme = new ColorScheme(wallpaperColors, darkTheme, Style.CONTENT);
                 artwork = addGradientToPlayerAlbum(artworkIcon, mutableColorScheme, finalWidth,
                         finalHeight);
                 isArtworkBound = true;
@@ -933,8 +922,8 @@ public class MediaControlPanel {
                 try {
                     Drawable icon = mContext.getPackageManager()
                             .getApplicationIcon(data.getPackageName());
-                    mutableColorScheme = new ColorScheme(WallpaperColors.fromDrawable(icon), true,
-                            Style.CONTENT);
+                    mutableColorScheme = new ColorScheme(WallpaperColors.fromDrawable(icon),
+                            darkTheme, Style.CONTENT);
                 } catch (PackageManager.NameNotFoundException e) {
                     Log.w(TAG, "Cannot find icon for package " + data.getPackageName(), e);
                 }
@@ -950,7 +939,8 @@ public class MediaControlPanel {
                 mArtworkBoundId = reqId;
 
                 // Transition Colors to current color scheme
-                boolean colorSchemeChanged = mColorSchemeTransition.updateColorScheme(colorScheme);
+                boolean colorSchemeChanged;
+                colorSchemeChanged = mColorSchemeTransition.updateColorScheme(colorScheme);
 
                 // Bind the album view to the artwork or a transition drawable
                 ImageView albumView = mMediaViewHolder.getAlbumView();
@@ -973,7 +963,6 @@ public class MediaControlPanel {
                         transitionDrawable.setLayerGravity(0, Gravity.CENTER);
                         transitionDrawable.setLayerGravity(1, Gravity.CENTER);
                         transitionDrawable.setCrossFadeEnabled(true);
-
                         albumView.setImageDrawable(transitionDrawable);
                         transitionDrawable.startTransition(isArtworkBound ? 333 : 80);
                     }
@@ -986,8 +975,7 @@ public class MediaControlPanel {
                 appIconView.clearColorFilter();
                 if (data.getAppIcon() != null && !data.getResumption()) {
                     appIconView.setImageIcon(data.getAppIcon());
-                    appIconView.setColorFilter(
-                            mColorSchemeTransition.getAccentPrimary().getTargetColor());
+                    appIconView.setColorFilter(mColorSchemeTransition.getAppIconColor());
                 } else {
                     // Resume players use launcher icon
                     appIconView.setColorFilter(getGrayscaleFilter());
@@ -1092,8 +1080,12 @@ public class MediaControlPanel {
         Drawable albumArt = getScaledBackground(artworkIcon, width, height);
         GradientDrawable gradient = (GradientDrawable) mContext.getDrawable(
                 R.drawable.qs_media_scrim).mutate();
+        if (Flags.mediaControlsA11yColors()) {
+            return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
+                    MEDIA_PLAYER_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
+        }
         return setupGradientColorOnDrawable(albumArt, gradient, mutableColorScheme,
-                MEDIA_SCRIM_START_ALPHA, MEDIA_PLAYER_SCRIM_END_ALPHA);
+                MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY, MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY);
     }
 
     @VisibleForTesting
@@ -1113,12 +1105,21 @@ public class MediaControlPanel {
 
     private LayerDrawable setupGradientColorOnDrawable(Drawable albumArt, GradientDrawable gradient,
             ColorScheme mutableColorScheme, float startAlpha, float endAlpha) {
+        int startColor;
+        int endColor;
+        if (Flags.mediaControlsA11yColors()) {
+            startColor = MediaColorSchemesKt.backgroundFromScheme(mutableColorScheme);
+            endColor = startColor;
+        } else {
+            startColor = MediaColorSchemesKt.backgroundStartFromScheme(mutableColorScheme);
+            endColor = MediaColorSchemesKt.backgroundEndFromScheme(mutableColorScheme);
+        }
         gradient.setColors(new int[]{
                 ColorUtilKt.getColorWithAlpha(
-                        MediaColorSchemesKt.backgroundStartFromScheme(mutableColorScheme),
+                        startColor,
                         startAlpha),
                 ColorUtilKt.getColorWithAlpha(
-                        MediaColorSchemesKt.backgroundEndFromScheme(mutableColorScheme),
+                        endColor,
                         endAlpha),
         });
         return new LayerDrawable(new Drawable[]{albumArt, gradient});
@@ -1274,7 +1275,6 @@ public class MediaControlPanel {
                 button.setOnClickListener(v -> {
                     if (!mFalsingManager.isFalseTap(FalsingManager.MODERATE_PENALTY)) {
                         mLogger.logTapAction(button.getId(), mUid, mPackageName, mInstanceId);
-                        logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT);
                         // Used to determine whether to play turbulence noise.
                         mWasPlaying = isPlaying();
                         mButtonClicked = true;
@@ -1308,7 +1308,7 @@ public class MediaControlPanel {
                         /* maxWidth= */ maxSize,
                         /* maxHeight= */ maxSize,
                         /* pixelDensity= */ getContext().getResources().getDisplayMetrics().density,
-                        mColorSchemeTransition.getAccentPrimary().getCurrentColor(),
+                        /* color= */ mColorSchemeTransition.getSurfaceEffectColor(),
                         /* opacity= */ 100,
                         /* sparkleStrength= */ 0f,
                         /* baseRingFadeParams= */ null,
@@ -1330,10 +1330,13 @@ public class MediaControlPanel {
         int width = targetView.getWidth();
         int height = targetView.getHeight();
         Random random = new Random();
+        float luminosity = (Flags.mediaControlsA11yColors())
+                ? 0.6f
+                : TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER;
 
         return new TurbulenceNoiseAnimationConfig(
                 /* gridCount= */ 2.14f,
-                TurbulenceNoiseAnimationConfig.DEFAULT_LUMINOSITY_MULTIPLIER,
+                /* luminosityMultiplier= */ luminosity,
                 /* noiseOffsetX= */ random.nextFloat(),
                 /* noiseOffsetY= */ random.nextFloat(),
                 /* noiseOffsetZ= */ random.nextFloat(),
@@ -1341,7 +1344,7 @@ public class MediaControlPanel {
                 /* noiseMoveSpeedY= */ 0f,
                 TurbulenceNoiseAnimationConfig.DEFAULT_NOISE_SPEED_Z,
                 // Color will be correctly updated in ColorSchemeTransition.
-                /* color= */ mColorSchemeTransition.getAccentPrimary().getCurrentColor(),
+                /* color= */ mColorSchemeTransition.getSurfaceEffectColor(),
                 /* screenColor= */ Color.BLACK,
                 width,
                 height,
@@ -1479,7 +1482,6 @@ public class MediaControlPanel {
         }
 
         mRecommendationData = data;
-        mSmartspaceId = SmallHash.hash(data.getTargetId());
         mPackageName = data.getPackageName();
         mInstanceId = data.getInstanceId();
 
@@ -1734,7 +1736,6 @@ public class MediaControlPanel {
         gutsViewHolder.getDismiss().setEnabled(isDismissible);
         gutsViewHolder.getDismiss().setOnClickListener(v -> {
             if (mFalsingManager.isFalseTap(FalsingManager.LOW_PENALTY)) return;
-            logSmartspaceCardReported(SMARTSPACE_CARD_DISMISS_EVENT);
             mLogger.logLongPressDismiss(mUid, mPackageName, mInstanceId);
 
             onDismissClickedRunnable.run();
@@ -1914,9 +1915,6 @@ public class MediaControlPanel {
             } else {
                 mLogger.logRecommendationItemTap(mPackageName, mInstanceId, interactedSubcardRank);
             }
-            logSmartspaceCardReported(SMARTSPACE_CARD_CLICK_EVENT,
-                    interactedSubcardRank,
-                    mSmartspaceMediaItemsCount);
 
             if (shouldSmartspaceRecItemOpenInForeground(action)) {
                 // Request to unlock the device if the activity needs to be opened in foreground.
@@ -1956,40 +1954,6 @@ public class MediaControlPanel {
         }
 
         return false;
-    }
-
-    /**
-     * Get the surface given the current end location for MediaViewController
-     *
-     * @return surface used for Smartspace logging
-     */
-    protected int getSurfaceForSmartspaceLogging() {
-        int currentEndLocation = mMediaViewController.getCurrentEndLocation();
-        if (currentEndLocation == MediaHierarchyManager.LOCATION_QQS
-                || currentEndLocation == MediaHierarchyManager.LOCATION_QS) {
-            return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__SHADE;
-        } else if (currentEndLocation == MediaHierarchyManager.LOCATION_LOCKSCREEN) {
-            return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__LOCKSCREEN;
-        } else if (currentEndLocation == MediaHierarchyManager.LOCATION_DREAM_OVERLAY) {
-            return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__DREAM_OVERLAY;
-        }
-        return SysUiStatsLog.SMART_SPACE_CARD_REPORTED__DISPLAY_SURFACE__DEFAULT_SURFACE;
-    }
-
-    private void logSmartspaceCardReported(int eventId) {
-        logSmartspaceCardReported(eventId,
-                /* interactedSubcardRank */ 0,
-                /* interactedSubcardCardinality */ 0);
-    }
-
-    private void logSmartspaceCardReported(int eventId,
-            int interactedSubcardRank, int interactedSubcardCardinality) {
-        mMediaCarouselController.logSmartspaceCardReported(eventId,
-                mSmartspaceId,
-                mUid,
-                new int[]{getSurfaceForSmartspaceLogging()},
-                interactedSubcardRank,
-                interactedSubcardCardinality);
     }
 }
 

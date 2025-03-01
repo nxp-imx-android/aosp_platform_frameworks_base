@@ -56,7 +56,6 @@ import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.C
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.controls.ui.view.MediaScrollView
 import com.android.systemui.media.controls.ui.viewmodel.mediaCarouselViewModel
-import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.plugins.FalsingManager
@@ -136,7 +135,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
     @Mock lateinit var mediaViewController: MediaViewController
     @Mock lateinit var mediaCarousel: MediaScrollView
     @Mock lateinit var pageIndicator: PageIndicator
-    @Mock lateinit var mediaFlags: MediaFlags
     @Mock lateinit var keyguardUpdateMonitor: KeyguardUpdateMonitor
     @Mock lateinit var globalSettings: GlobalSettings
     private val transitionRepository = kosmos.fakeKeyguardTransitionRepository
@@ -196,7 +194,6 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
                 dumpManager = dumpManager,
                 logger = logger,
                 debugLogger = debugLogger,
-                mediaFlags = mediaFlags,
                 keyguardUpdateMonitor = keyguardUpdateMonitor,
                 keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor,
                 globalSettings = globalSettings,
@@ -881,8 +878,15 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
             var updatedVisibility = false
             mediaCarouselController.updateHostVisibility = { updatedVisibility = true }
             mediaCarouselController.mediaCarousel = mediaCarousel
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            runCurrent()
 
             val job = mediaCarouselController.listenForAnyStateToGoneKeyguardTransition(this)
+
+            kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
             kosmos.setSceneTransition(Idle(Scenes.Gone))
 
             verify(mediaCarousel).visibility = View.VISIBLE

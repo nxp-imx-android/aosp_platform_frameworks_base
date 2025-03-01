@@ -456,6 +456,8 @@ public class BatteryStatsHistoryTest {
     }
 
     private void fillActiveFile(BatteryStatsHistory history) {
+        awaitCompletion();      // Wait for BatteryHistoryDirectory.trim if necessary.
+
         // Create roughly 1K of history
         int initialSize = history.getHistoryUsedSize();
         while (history.getHistoryUsedSize() < initialSize + 1000) {

@@ -39,18 +39,24 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntryB
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.row.RowImageInflater
 import com.android.systemui.testKosmos
+import com.android.systemui.util.time.fakeSystemClock
+import com.android.systemui.util.time.systemClock
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos = testKosmos().apply { systemClock = fakeSystemClock }
 
     private val underTest = kosmos.promotedNotificationContentExtractor
+    private val systemClock = kosmos.fakeSystemClock
     private val rowImageInflater = RowImageInflater.newInstance(previousIndex = null)
     private val imageModelProvider by lazy { rowImageInflater.useForContentModel() }
 
@@ -177,7 +183,176 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractsContent_fromBaseStyle() {
+    fun extractTime_none() {
+        assertExtractedTime(hasTime = false, hasChronometer = false, expected = ExpectedTime.Null)
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_basicTimeNow() {
+        assertExtractedTime(
+            hasTime = true,
+            hasChronometer = false,
+            whenOffset = Duration.ZERO,
+            expected = ExpectedTime.Time,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_basicTimePast() {
+        assertExtractedTime(
+            hasTime = true,
+            hasChronometer = false,
+            whenOffset = (-5).minutes,
+            expected = ExpectedTime.Time,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_basicTimeFuture() {
+        assertExtractedTime(
+            hasTime = true,
+            hasChronometer = false,
+            whenOffset = 5.minutes,
+            expected = ExpectedTime.Time,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countUpNow() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = false,
+            whenOffset = Duration.ZERO,
+            expected = ExpectedTime.CountUp,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countUpPast() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = false,
+            whenOffset = (-5).minutes,
+            expected = ExpectedTime.CountUp,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countUpFuture() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = false,
+            whenOffset = 5.minutes,
+            expected = ExpectedTime.CountUp,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countDownNow() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = true,
+            whenOffset = Duration.ZERO,
+            expected = ExpectedTime.CountDown,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countDownPast() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = true,
+            whenOffset = (-5).minutes,
+            expected = ExpectedTime.CountDown,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countDownFuture() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = true,
+            whenOffset = 5.minutes,
+            expected = ExpectedTime.CountDown,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_prefersChronometerToWhen() {
+        assertExtractedTime(hasTime = true, hasChronometer = true, expected = ExpectedTime.CountUp)
+    }
+
+    private enum class ExpectedTime {
+        Null,
+        Time,
+        CountUp,
+        CountDown,
+    }
+
+    private fun assertExtractedTime(
+        hasTime: Boolean = false,
+        hasChronometer: Boolean = false,
+        isCountDown: Boolean = false,
+        whenOffset: Duration = Duration.ZERO,
+        expected: ExpectedTime,
+    ) {
+        // Set the two timebases to different (arbitrary) numbers, so we can verify whether the
+        // extractor is doing the timebase adjustment correctly.
+        systemClock.setCurrentTimeMillis(1_739_570_992_579L)
+        systemClock.setElapsedRealtime(1_380_967_080L)
+
+        val whenCurrentTime = systemClock.currentTimeMillis() + whenOffset.inWholeMilliseconds
+        val whenElapsedRealtime = systemClock.elapsedRealtime() + whenOffset.inWholeMilliseconds
+
+        val entry = createEntry {
+            setShowWhen(hasTime)
+            setUsesChronometer(hasChronometer)
+            setChronometerCountDown(isCountDown)
+            setWhen(whenCurrentTime)
+        }
+
+        val content = extractContent(entry)
+
+        assertThat(content).isNotNull()
+
+        when (expected) {
+            ExpectedTime.Null -> assertThat(content?.time).isNull()
+
+            ExpectedTime.Time -> {
+                val actual = content?.time as? When.Time
+                assertThat(actual).isNotNull()
+                assertThat(actual?.currentTimeMillis).isEqualTo(whenCurrentTime)
+            }
+
+            ExpectedTime.CountDown,
+            ExpectedTime.CountUp -> {
+                val actual = content?.time as? When.Chronometer
+                assertThat(actual).isNotNull()
+                assertThat(actual?.elapsedRealtimeMillis).isEqualTo(whenElapsedRealtime)
+                assertThat(actual?.isCountDown).isEqualTo(expected == ExpectedTime.CountDown)
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractContent_fromBaseStyle() {
         val entry = createEntry { setStyle(null) }
 
         val content = extractContent(entry)
@@ -188,7 +363,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractsContent_fromBigPictureStyle() {
+    fun extractContent_fromBigPictureStyle() {
         val entry = createEntry { setStyle(BigPictureStyle()) }
 
         val content = extractContent(entry)
@@ -261,7 +436,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractsContent_fromOldProgressDeterminate() {
+    fun extractContent_fromOldProgressDeterminate() {
         val entry = createEntry {
             setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ false)
         }
@@ -282,7 +457,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractsContent_fromOldProgressIndeterminate() {
+    fun extractContent_fromOldProgressIndeterminate() {
         val entry = createEntry {
             setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ true)
         }

@@ -23,6 +23,7 @@ import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper
 import android.testing.ViewUtils
 import android.view.NotificationHeaderView
+import android.view.NotificationTopLineView
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -35,8 +36,10 @@ import com.android.internal.widget.NotificationActionListLayout
 import com.android.internal.widget.NotificationExpandButton
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.FeedbackIcon
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
@@ -80,10 +83,25 @@ class NotificationContentViewTest : SysuiTestCase() {
         fakeParent =
             spy(FrameLayout(mContext, /* attrs= */ null).also { it.visibility = View.GONE })
         val mockEntry = createMockNotificationEntry()
+        val mockEntryAdapter = createMockNotificationEntryAdapter()
         row =
             spy(
-                ExpandableNotificationRow(mContext, /* attrs= */ null, mockEntry).apply {
-                    entry = mockEntry
+                when (NotificationBundleUi.isEnabled) {
+                    true -> {
+                        ExpandableNotificationRow(
+                            mContext,
+                            /* attrs= */ null,
+                            UserHandle.CURRENT
+                        ).apply {
+                            entry = mockEntry
+                            entryAdapter = mockEntryAdapter
+                        }
+                    }
+                    false -> {
+                        ExpandableNotificationRow(mContext, /* attrs= */ null, mockEntry).apply {
+                            entry = mockEntry
+                        }
+                    }
                 }
             )
         ViewUtils.attachView(fakeParent)
@@ -270,7 +288,7 @@ class NotificationContentViewTest : SysuiTestCase() {
         val icon =
             FeedbackIcon(
                 R.drawable.ic_feedback_alerted,
-                R.string.notification_feedback_indicator_alerted
+                R.string.notification_feedback_indicator_alerted,
             )
         view.setFeedbackIcon(icon)
 
@@ -291,10 +309,7 @@ class NotificationContentViewTest : SysuiTestCase() {
         val mockHeadsUpEB = mock<NotificationExpandButton>()
         val mockHeadsUp = createMockNotificationHeaderView(contractedHeight, mockHeadsUpEB)
 
-        val view =
-            createContentView(
-                isSystemExpanded = false,
-            )
+        val view = createContentView(isSystemExpanded = false)
 
         // Update all 3 child forms
         view.apply {
@@ -319,12 +334,14 @@ class NotificationContentViewTest : SysuiTestCase() {
 
     private fun createMockNotificationHeaderView(
         height: Int,
-        mockExpandedEB: NotificationExpandButton
+        mockExpandedEB: NotificationExpandButton,
     ) =
         spy(NotificationHeaderView(mContext, /* attrs= */ null).apply { minimumHeight = height })
             .apply {
                 whenever(this.animate()).thenReturn(mock())
                 whenever(this.findViewById<View>(R.id.expand_button)).thenReturn(mockExpandedEB)
+                whenever(this.findViewById<View>(R.id.notification_top_line))
+                    .thenReturn(mock<NotificationTopLineView>())
             }
 
     @Test
@@ -344,7 +361,7 @@ class NotificationContentViewTest : SysuiTestCase() {
                 isSystemExpanded = false,
                 contractedView = mockContracted,
                 expandedView = mockExpanded,
-                headsUpView = mockHeadsUp
+                headsUpView = mockHeadsUp,
             )
 
         view.setRemoteInputVisible(true)
@@ -373,7 +390,7 @@ class NotificationContentViewTest : SysuiTestCase() {
                 isSystemExpanded = false,
                 contractedView = mockContracted,
                 expandedView = mockExpanded,
-                headsUpView = mockHeadsUp
+                headsUpView = mockHeadsUp,
             )
 
         view.setRemoteInputVisible(false)
@@ -597,6 +614,7 @@ class NotificationContentViewTest : SysuiTestCase() {
             whenever(this.entry).thenReturn(notificationEntry)
             whenever(this.context).thenReturn(mContext)
             whenever(this.bubbleClickListener).thenReturn(View.OnClickListener {})
+            whenever(this.entryAdapter).thenReturn(createMockNotificationEntryAdapter())
         }
 
     private fun createMockNotificationEntry() =
@@ -609,6 +627,9 @@ class NotificationContentViewTest : SysuiTestCase() {
             whenever(this.sbn).thenReturn(sbnMock)
             whenever(sbnMock.user).thenReturn(userMock)
         }
+
+    private fun createMockNotificationEntryAdapter() =
+        mock<EntryAdapter>()
 
     private fun createLinearLayoutWithBottomMargin(bottomMargin: Int): LinearLayout {
         val outerLayout = LinearLayout(mContext)
@@ -635,7 +656,7 @@ class NotificationContentViewTest : SysuiTestCase() {
         contractedView: View = createViewWithHeight(contractedHeight),
         expandedView: View = createViewWithHeight(expandedHeight),
         headsUpView: View = createViewWithHeight(contractedHeight),
-        row: ExpandableNotificationRow = this.row
+        row: ExpandableNotificationRow = this.row,
     ): NotificationContentView {
         val height = if (isSystemExpanded) expandedHeight else contractedHeight
         doReturn(height).whenever(row).intrinsicHeight
@@ -647,7 +668,7 @@ class NotificationContentViewTest : SysuiTestCase() {
                 setHeights(
                     /* smallHeight= */ contractedHeight,
                     /* headsUpMaxHeight= */ contractedHeight,
-                    /* maxHeight= */ expandedHeight
+                    /* maxHeight= */ expandedHeight,
                 )
                 contractedChild = contractedView
                 expandedChild = expandedView

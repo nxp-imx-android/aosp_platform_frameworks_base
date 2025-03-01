@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Flags
 import android.app.NotificationChannel
+import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
 import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.NotificationManager.IMPORTANCE_LOW
@@ -124,6 +125,14 @@ class ConversationCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
+    fun testPrioritySectioner_doesNotClaim_classifiedConversation() {
+        val sectioner = coordinator.priorityPeopleSectioner
+        for (id in SYSTEM_RESERVED_IDS) {
+            assertFalse(sectioner.isInSection(makeClassifiedConversation(id)))
+        }
+    }
+
+    @Test
     fun testPromotesImportantConversations() {
         assertTrue(promoter.shouldPromoteToTopLevel(makeEntryOfPeopleType(TYPE_IMPORTANT_PERSON)))
         assertFalse(promoter.shouldPromoteToTopLevel(makeEntryOfPeopleType(TYPE_FULL_PERSON)))
@@ -166,6 +175,14 @@ class ConversationCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
+    fun testAlertingSectioner_doesNotClaim_classifiedConversation() {
+        val sectioner = coordinator.peopleAlertingSectioner
+        for (id in SYSTEM_RESERVED_IDS) {
+            assertFalse(sectioner.isInSection(makeClassifiedConversation(id)))
+        }
+    }
+
+    @Test
     fun testInAlertingPeopleSectionWhenTheImportanceIsAtLeastDefault() {
         // GIVEN
         val alertingEntry = makeEntryOfPeopleType(TYPE_PERSON) { setImportance(IMPORTANCE_DEFAULT) }
@@ -182,6 +199,15 @@ class ConversationCoordinatorTest : SysuiTestCase() {
 
         // THEN put silent people notifications in alerting section
         assertThat(peopleAlertingSectioner.isInSection(silentEntry)).isTrue()
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SORT_SECTION_BY_TIME)
+    fun testSilentSectioner_doesNotClaim_classifiedConversation() {
+        val sectioner = coordinator.peopleSilentSectioner
+        for (id in SYSTEM_RESERVED_IDS) {
+            assertFalse(sectioner.isInSection(makeClassifiedConversation(id)))
+        }
     }
 
     @Test
@@ -278,6 +304,19 @@ class ConversationCoordinatorTest : SysuiTestCase() {
                 .also(buildBlock)
                 .build()
         assertEquals(type, peopleNotificationIdentifier.getPeopleNotificationType(entry))
+        return entry
+    }
+
+    private fun makeClassifiedConversation(channelId: String): NotificationEntry {
+        val channel = NotificationChannel(channelId, channelId, IMPORTANCE_LOW)
+        val entry =
+            NotificationEntryBuilder()
+                .updateRanking {
+                    it.setIsConversation(true)
+                    it.setShortcutInfo(mock())
+                    it.setChannel(channel)
+                }
+                .build()
         return entry
     }
 }

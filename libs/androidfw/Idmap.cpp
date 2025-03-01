@@ -56,13 +56,6 @@ struct Idmap_header {
   // without having to read/store each header entry separately.
 };
 
-struct Idmap_constraint {
-  // Constraint type can be TYPE_DISPLAY_ID or TYP_DEVICE_ID, please refer
-  // to ConstraintType in OverlayConstraint.java
-  uint32_t constraint_type;
-  uint32_t constraint_value;
-};
-
 struct Idmap_data_header {
   uint32_t target_entry_count;
   uint32_t target_inline_entry_count;
@@ -148,12 +141,13 @@ status_t OverlayDynamicRefTable::lookupResourceIdNoRewrite(uint32_t* resId) cons
   return DynamicRefTable::lookupResourceId(resId);
 }
 
-IdmapResMap::IdmapResMap(const Idmap_data_header* data_header, Idmap_target_entries entries,
-                         Idmap_target_inline_entries inline_entries,
+IdmapResMap::IdmapResMap(const Idmap_data_header* data_header, const Idmap_constraints& constraints,
+                         Idmap_target_entries entries, Idmap_target_inline_entries inline_entries,
                          const Idmap_target_entry_inline_value* inline_entry_values,
                          const ConfigDescription* configs, uint8_t target_assigned_package_id,
                          const OverlayDynamicRefTable* overlay_ref_table)
     : data_header_(data_header),
+      constraints_(constraints),
       entries_(entries),
       inline_entries_(inline_entries),
       inline_entry_values_(inline_entry_values),
@@ -254,7 +248,7 @@ std::optional<std::string_view> ReadString(const uint8_t** in_out_data_ptr, size
   }
   return std::string_view(data, *len);
 }
-} // namespace
+}  // namespace
 
 // O_PATH is a lightweight way of creating an FD, only exists on Linux
 #ifndef O_PATH
@@ -262,9 +256,7 @@ std::optional<std::string_view> ReadString(const uint8_t** in_out_data_ptr, size
 #endif
 
 LoadedIdmap::LoadedIdmap(const std::string& idmap_path, const Idmap_header* header,
-                         const Idmap_constraint* constraints,
-                         uint32_t constraints_count,
-                         const Idmap_data_header* data_header,
+                         const Idmap_data_header* data_header, const Idmap_constraints& constraints,
                          Idmap_target_entries target_entries,
                          Idmap_target_inline_entries target_inline_entries,
                          const Idmap_target_entry_inline_value* inline_entry_values,
@@ -272,9 +264,8 @@ LoadedIdmap::LoadedIdmap(const std::string& idmap_path, const Idmap_header* head
                          std::unique_ptr<ResStringPool>&& string_pool,
                          std::string_view overlay_apk_path, std::string_view target_apk_path)
     : header_(header),
-      constraints_(constraints),
-      constraints_count_(constraints_count),
       data_header_(data_header),
+      constraints_(constraints),
       target_entries_(target_entries),
       target_inline_entries_(target_inline_entries),
       inline_entry_values_(inline_entry_values),
@@ -328,16 +319,20 @@ std::unique_ptr<LoadedIdmap> LoadedIdmap::Load(StringPiece idmap_path, StringPie
     return {};
   }
 
-  auto constraints_count = ReadType<uint32_t>(&data_ptr, &data_size, "constraints count");
-  if (!constraints_count) {
+  auto constraint_count = ReadType<uint32_t>(&data_ptr, &data_size, "constraint count");
+  if (!constraint_count) {
+    LOG(ERROR) << "idmap doesn't have constraint count";
     return {};
   }
-  auto constraints = *constraints_count > 0 ?
-      ReadType<Idmap_constraint>(&data_ptr, &data_size, "constraints", *constraints_count)
+  auto constraint_entries = *constraint_count > 0 ?
+      ReadType<Idmap_constraint>(&data_ptr, &data_size, "constraints", dtohl(*constraint_count))
       : nullptr;
-  if (*constraints_count > 0 && !constraints) {
+  if (*constraint_count > 0 && !constraint_entries) {
+    LOG(ERROR) << "no constraint entries in idmap with non-zero constraints";
     return {};
   }
+  Idmap_constraints constraints{.constraint_count = *constraint_count,
+                                .constraint_entries = constraint_entries};
 
   // Parse the idmap data blocks. Currently idmap2 can only generate one data block.
   auto data_header = ReadType<Idmap_data_header>(&data_ptr, &data_size, "data header");
@@ -405,10 +400,9 @@ std::unique_ptr<LoadedIdmap> LoadedIdmap::Load(StringPiece idmap_path, StringPie
 
   // Can't use make_unique because LoadedIdmap constructor is private.
   return std::unique_ptr<LoadedIdmap>(
-      new LoadedIdmap(std::string(idmap_path), header, constraints, *constraints_count,
-                      data_header, target_entries, target_inline_entries,
-                      target_inline_entry_values,configurations, overlay_entries,
-                      std::move(idmap_string_pool),*overlay_path, *target_path));
+      new LoadedIdmap(std::string(idmap_path), header, data_header, constraints, target_entries,
+                      target_inline_entries, target_inline_entry_values, configurations,
+                      overlay_entries, std::move(idmap_string_pool), *overlay_path, *target_path));
 }
 
 UpToDate LoadedIdmap::IsUpToDate() const {

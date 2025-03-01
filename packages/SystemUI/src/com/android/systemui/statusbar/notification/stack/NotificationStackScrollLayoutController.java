@@ -122,6 +122,7 @@ import com.android.systemui.statusbar.notification.row.NotificationGuts;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
 import com.android.systemui.statusbar.notification.row.NotificationSnooze;
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.ui.viewbinder.NotificationListViewBinder;
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -545,6 +546,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
 
                 public void handleChildViewDismissed(View view) {
                     // The View needs to clean up the Swipe states, e.g. roundness.
+                    mMagneticNotificationRowManager.resetRoundness();
                     mView.onSwipeEnd();
                     if (mView.getClearAllInProgress()) {
                         return;
@@ -552,7 +554,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     if (view instanceof ExpandableNotificationRow row) {
                         if (row.isHeadsUp()) {
                             mHeadsUpManager.addSwipedOutNotification(
-                                    row.getEntry().getSbn().getKey());
+                                    row.getKey());
                         }
                         row.performDismiss(false /* fromAccessibility */);
                     }
@@ -597,7 +599,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                                 && (parent.areGutsExposed()
                                 || mSwipeHelper.getExposedMenuView() == parent
                                 || (parent.getAttachedChildren().size() == 1
-                                && mDismissibilityProvider.isDismissable(parent.getEntry())))) {
+                                && mDismissibilityProvider.isDismissable(parent.getKey())))) {
                             // In this case the group is expanded and showing the menu for the
                             // group, further interaction should apply to the group, not any
                             // child notifications so we use the parent of the child. We also do the
@@ -629,7 +631,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 @Override
                 public void onChildSnapBackOvershoots() {
                     if (Flags.magneticNotificationSwipes()) {
-                        mNotificationRoundnessManager.setViewsAffectedBySwipe(null, null, null);
+                        mMagneticNotificationRowManager.resetRoundness();
                     }
                 }
 
@@ -638,10 +640,12 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     mView.onSwipeEnd();
                     if (animView instanceof ExpandableNotificationRow row) {
                         if (row.isPinned() && !canChildBeDismissed(row)
-                                && row.getEntry().getSbn().getNotification().fullScreenIntent
-                                == null) {
+                                && NotificationBundleUi.isEnabled()
+                                ? !row.getEntryAdapter().isFullScreenCapable()
+                                : (row.getEntry().getSbn().getNotification().fullScreenIntent
+                                        == null)) {
                             mHeadsUpManager.removeNotification(
-                                    row.getEntry().getSbn().getKey(),
+                                    row.getKey(),
                                     /* removeImmediately= */ true,
                                     /* reason= */ "onChildSnappedBack"
                             );
@@ -1907,8 +1911,8 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         }
 
         @Override
-        public ViewGroup getViewParentForNotification(NotificationEntry entry) {
-            return mView.getViewParentForNotification(entry);
+        public ViewGroup getViewParentForNotification() {
+            return mView.getViewParentForNotification();
         }
 
         @Override
@@ -1954,12 +1958,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         @Override
         public void bindRow(ExpandableNotificationRow row) {
             row.setHeadsUpAnimatingAwayListener(animatingAway -> {
-                NotificationEntry entry = row.getEntry();
-                mHeadsUpAppearanceController.updateHeader(entry);
-                mHeadsUpAppearanceController.updateHeadsUpAndPulsingRoundness(entry);
+                mHeadsUpAppearanceController.updateHeader(row);
+                mHeadsUpAppearanceController.updateHeadsUpAndPulsingRoundness(row);
                 if (GroupHunAnimationFix.isEnabled() && !animatingAway) {
                     // invalidate list to make sure the row is sorted to the correct section
-                    mHeadsUpManager.onEntryAnimatingAwayEnded(entry);
+                    mHeadsUpManager.onEntryAnimatingAwayEnded(row.getEntry());
                 }
             });
         }

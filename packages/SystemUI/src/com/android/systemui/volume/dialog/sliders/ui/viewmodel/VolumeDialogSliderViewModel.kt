@@ -16,9 +16,11 @@
 
 package com.android.systemui.volume.dialog.sliders.ui.viewmodel
 
+import android.content.Context
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventType
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.volume.Events
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
@@ -30,6 +32,7 @@ import com.android.systemui.volume.dialog.sliders.domain.interactor.VolumeDialog
 import com.android.systemui.volume.dialog.sliders.domain.interactor.VolumeDialogSliderInteractor
 import com.android.systemui.volume.dialog.sliders.domain.model.VolumeDialogSliderType
 import com.android.systemui.volume.dialog.sliders.shared.model.SliderInputEvent
+import com.android.systemui.volume.dialog.ui.VolumeDialogUiEvent
 import javax.inject.Inject
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
@@ -61,6 +64,7 @@ private const val VOLUME_UPDATE_GRACE_PERIOD = 1000
 class VolumeDialogSliderViewModel
 @Inject
 constructor(
+    private val context: Context,
     private val sliderType: VolumeDialogSliderType,
     private val interactor: VolumeDialogSliderInteractor,
     private val visibilityInteractor: VolumeDialogVisibilityInteractor,
@@ -69,6 +73,7 @@ constructor(
     private val inputEventsInteractor: VolumeDialogSliderInputEventsInteractor,
     private val systemClock: SystemClock,
     private val logger: VolumeDialogLogger,
+    private val uiEventLogger: UiEventLogger,
 ) {
 
     private val userVolumeUpdates = MutableStateFlow<VolumeUpdate?>(null)
@@ -99,9 +104,11 @@ constructor(
                                     isMuted = isMuted,
                                     isRoutedToBluetooth = routedToBluetooth,
                                 )
+
                             is VolumeDialogSliderType.RemoteMediaStream -> {
                                 volumeDialogSliderIconProvider.getCastIcon(isMuted)
                             }
+
                             is VolumeDialogSliderType.AudioSharingStream -> {
                                 volumeDialogSliderIconProvider.getAudioSharingIcon(isMuted)
                             }
@@ -109,7 +116,7 @@ constructor(
                     }
                 },
             ) { isDisabledByZenMode, model, icon ->
-                model.toStateModel(icon = icon, isDisabled = isDisabledByZenMode)
+                model.toStateModel(context = context, icon = icon, isDisabled = isDisabledByZenMode)
             }
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
             .filterNotNull()
@@ -135,8 +142,19 @@ constructor(
         }
     }
 
-    fun onStreamChangeFinished(volume: Int) {
-        logger.onVolumeSliderAdjustmentFinished(volume = volume, stream = sliderType.audioStream)
+    fun onSliderDragStarted() {
+        uiEventLogger.log(VolumeDialogUiEvent.VOLUME_DIALOG_SLIDER_STARTED_TRACKING_TOUCH)
+    }
+
+    fun onSliderDragFinished() {
+        uiEventLogger.log(VolumeDialogUiEvent.VOLUME_DIALOG_SLIDER_STOPPED_TRACKING_TOUCH)
+    }
+
+    fun onSliderChangeFinished(volume: Float) {
+        logger.onVolumeSliderAdjustmentFinished(
+            volume = volume.roundToInt(),
+            stream = sliderType.audioStream,
+        )
     }
 
     fun onTouchEvent(pointerEvent: PointerEvent) {
@@ -146,14 +164,17 @@ constructor(
                 inputEventsInteractor.onTouchEvent(
                     SliderInputEvent.Touch.Start(position.x, position.y)
                 )
+
             PointerEventType.Move ->
                 inputEventsInteractor.onTouchEvent(
                     SliderInputEvent.Touch.Move(position.x, position.y)
                 )
+
             PointerEventType.Scroll ->
                 inputEventsInteractor.onTouchEvent(
                     SliderInputEvent.Touch.Move(position.x, position.y)
                 )
+
             PointerEventType.Release ->
                 inputEventsInteractor.onTouchEvent(
                     SliderInputEvent.Touch.End(position.x, position.y)

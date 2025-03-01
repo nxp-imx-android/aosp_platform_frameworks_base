@@ -96,7 +96,6 @@ import static com.android.server.am.ActivityManagerServiceDumpProcessesProto.Scr
 import static com.android.server.am.EventLogTags.writeBootProgressEnableScreen;
 import static com.android.server.am.EventLogTags.writeConfigurationChanged;
 import static com.android.server.am.StackTracesDumpHelper.ANR_TRACE_DIR;
-import static com.android.server.am.StackTracesDumpHelper.dumpStackTraces;
 import static com.android.server.wm.ActivityInterceptorCallback.MAINLINE_FIRST_ORDERED_ID;
 import static com.android.server.wm.ActivityInterceptorCallback.MAINLINE_LAST_ORDERED_ID;
 import static com.android.server.wm.ActivityInterceptorCallback.SYSTEM_FIRST_ORDERED_ID;
@@ -199,7 +198,6 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.FactoryTest;
-import android.os.FileUtils;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.IUserManager;
@@ -213,7 +211,6 @@ import android.os.Process;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
 import android.os.ServiceManager;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
@@ -227,7 +224,6 @@ import android.service.voice.IVoiceInteractionSession;
 import android.service.voice.VoiceInteractionManagerInternal;
 import android.sysprop.DisplayProperties;
 import android.telecom.TelecomManager;
-import android.text.format.TimeMigrationUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IntArray;
@@ -286,12 +282,12 @@ import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.uri.NeededUriGrants;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.wallpaper.WallpaperManagerInternal;
+import com.android.server.wm.utils.WindowStyleCache;
 import com.android.wm.shell.Flags;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileDescriptor;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -309,7 +305,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -500,6 +495,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     boolean mSuppressResizeConfigChanges;
 
+    private final WindowStyleCache<ActivityRecord.WindowStyle> mWindowStyleCache =
+            new WindowStyleCache<>(ActivityRecord.WindowStyle::new);
     final UpdateConfigurationResult mTmpUpdateConfigurationResult =
             new UpdateConfigurationResult();
 
@@ -2123,6 +2120,26 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         if (transition != null && !movedToTop) {
             // No order changes and focus-changes, alone, aren't captured in transitions.
             transition.abort();
+        }
+    }
+
+    @Override
+    public boolean setTaskIsPerceptible(int taskId, boolean isPerceptible) {
+        enforceTaskPermission("setTaskIsPerceptible()");
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            synchronized (mGlobalLock) {
+                final Task task = mRootWindowContainer.anyTaskForId(taskId,
+                        MATCH_ATTACHED_TASK_ONLY);
+                if (task == null) {
+                    Slog.w(TAG, "setTaskIsPerceptible: No task to set with id=" + taskId);
+                    return false;
+                }
+                task.mIsPerceptible = isPerceptible;
+            }
+            return true;
+        } finally {
+            Binder.restoreCallingIdentity(ident);
         }
     }
 
@@ -5570,6 +5587,16 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         return mUserManagerInternal;
     }
 
+    @Nullable
+    ActivityRecord.WindowStyle getWindowStyle(String packageName, int theme, int userId) {
+        if (!com.android.window.flags.Flags.cacheWindowStyle()) {
+            final AttributeCache.Entry ent = AttributeCache.instance().get(packageName,
+                    theme, com.android.internal.R.styleable.Window, userId);
+            return ent != null ? new ActivityRecord.WindowStyle(ent.array) : null;
+        }
+        return mWindowStyleCache.get(packageName, theme, userId);
+    }
+
     AppWarnings getAppWarningsLocked() {
         return mAppWarnings;
     }
@@ -5755,65 +5782,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         pw.close();
 
         mLastANRState = sw.toString();
-    }
-
-    void logAppTooSlow(WindowProcessController app, long startTime, String msg) {
-        if (true || Build.IS_USER) {
-            return;
-        }
-
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
-        try {
-            File tracesDir = new File("/data/anr");
-            File tracesFile = null;
-            try {
-                tracesFile = File.createTempFile("app_slow", null, tracesDir);
-
-                StringBuilder sb = new StringBuilder();
-                String timeString =
-                        TimeMigrationUtils.formatMillisWithFixedFormat(System.currentTimeMillis());
-                sb.append(timeString);
-                sb.append(": ");
-                TimeUtils.formatDuration(SystemClock.uptimeMillis() - startTime, sb);
-                sb.append(" since ");
-                sb.append(msg);
-                FileOutputStream fos = new FileOutputStream(tracesFile);
-                fos.write(sb.toString().getBytes());
-                if (app == null) {
-                    fos.write("\n*** No application process!".getBytes());
-                }
-                fos.close();
-                FileUtils.setPermissions(tracesFile.getPath(), 0666, -1, -1); // -rw-rw-rw-
-            } catch (IOException e) {
-                Slog.w(TAG, "Unable to prepare slow app traces file: " + tracesFile, e);
-                return;
-            }
-
-            if (app != null && app.getPid() > 0) {
-                ArrayList<Integer> firstPids = new ArrayList<Integer>();
-                firstPids.add(app.getPid());
-                dumpStackTraces(tracesFile.getAbsolutePath(), firstPids, null, null, null, null);
-            }
-
-            File lastTracesFile = null;
-            File curTracesFile = null;
-            for (int i = 9; i >= 0; i--) {
-                String name = String.format(Locale.US, "slow%02d.txt", i);
-                curTracesFile = new File(tracesDir, name);
-                if (curTracesFile.exists()) {
-                    if (lastTracesFile != null) {
-                        curTracesFile.renameTo(lastTracesFile);
-                    } else {
-                        curTracesFile.delete();
-                    }
-                }
-                lastTracesFile = curTracesFile;
-            }
-            tracesFile.renameTo(curTracesFile);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
     }
 
     boolean isAssociatedCompanionApp(int userId, int uid) {
@@ -6518,6 +6486,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 mCompatModePackages.handlePackageUninstalledLocked(name);
                 mPackageConfigPersister.onPackageUninstall(name, userId);
             }
+            mWindowStyleCache.invalidatePackage(name);
         }
 
         @Override
@@ -6534,6 +6503,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (mRootWindowContainer == null) return;
                 mRootWindowContainer.updateActivityApplicationInfo(aInfo);
             }
+            mWindowStyleCache.invalidatePackage(aInfo.packageName);
         }
 
         @Override
@@ -7430,6 +7400,18 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             synchronized (mGlobalLock) {
                 return getLockTaskController().isBaseOfLockedTask(packageName);
             }
+        }
+
+        @Override
+        public boolean isNoDisplay(String packageName, int theme, int userId) {
+            if (!com.android.window.flags.Flags.cacheWindowStyle()) {
+                final AttributeCache.Entry ent = AttributeCache.instance()
+                        .get(packageName, theme, R.styleable.Window, userId);
+                return ent != null
+                        && ent.array.getBoolean(R.styleable.Window_windowNoDisplay, false);
+            }
+            final ActivityRecord.WindowStyle style = getWindowStyle(packageName, theme, userId);
+            return style != null && style.noDisplay();
         }
 
         @Override

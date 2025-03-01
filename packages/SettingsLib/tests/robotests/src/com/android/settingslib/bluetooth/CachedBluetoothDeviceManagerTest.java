@@ -662,10 +662,10 @@ public class CachedBluetoothDeviceManagerTest {
     @Test
     @RequiresFlagsEnabled(
             com.android.settingslib.flags.Flags.FLAG_HEARING_DEVICE_SET_CONNECTION_STATUS_REPORT)
-    public void onDeviceUnpaired_hearingDevice_callReportConnectionStatus() {
+    public void onDeviceUnpaired_containsHearingAidInfo_callReportConnectionStatus() {
         when(mDevice1.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
-        when(mCachedDevice1.getProfiles()).thenReturn(
-                ImmutableList.of(mHapClientProfile, mHearingAidProfile));
+        mCachedDevice1.setHearingAidInfo(
+                new HearingAidInfo.Builder().setHiSyncId(HISYNCID1).build());
 
         mCachedDeviceManager.onDeviceUnpaired(mCachedDevice1);
 

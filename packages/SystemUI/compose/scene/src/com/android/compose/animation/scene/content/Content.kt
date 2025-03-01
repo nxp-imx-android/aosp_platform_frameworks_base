@@ -21,6 +21,7 @@ import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.OverscrollFactory
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Stable
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.layout.approachLayout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
@@ -45,6 +47,7 @@ import com.android.compose.animation.scene.ElementContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.ElementScope
 import com.android.compose.animation.scene.ElementStateScope
+import com.android.compose.animation.scene.ElementWithValues
 import com.android.compose.animation.scene.InternalContentScope
 import com.android.compose.animation.scene.MovableElement
 import com.android.compose.animation.scene.MovableElementContentScope
@@ -152,11 +155,12 @@ internal sealed class Content(
 
     @SuppressLint("NotConstructor")
     @Composable
-    fun Content(modifier: Modifier = Modifier) {
+    fun Content(modifier: Modifier = Modifier, isInvisible: Boolean = false) {
         // If this content has a custom factory, provide it to the content so that the factory is
         // automatically used when calling rememberOverscrollEffect().
         Box(
             modifier
+                .thenIf(isInvisible) { InvisibleModifier }
                 .zIndex(zIndex)
                 .approachLayout(
                     isMeasurementApproachInProgress = { layoutImpl.state.isTransitioning() }
@@ -222,9 +226,18 @@ internal class ContentScopeImpl(
     override fun Element(
         key: ElementKey,
         modifier: Modifier,
-        content: @Composable (ElementScope<ElementContentScope>.() -> Unit),
+        content: @Composable BoxScope.() -> Unit,
     ) {
         Element(layoutImpl, this@ContentScopeImpl.content, key, modifier, content)
+    }
+
+    @Composable
+    override fun ElementWithValues(
+        key: ElementKey,
+        modifier: Modifier,
+        content: @Composable (ElementScope<ElementContentScope>.() -> Unit),
+    ) {
+        ElementWithValues(layoutImpl, this@ContentScopeImpl.content, key, modifier, content)
     }
 
     @Composable
@@ -294,3 +307,8 @@ internal class ContentScopeImpl(
         )
     }
 }
+
+private val InvisibleModifier =
+    Modifier.layout { measurable, constraints ->
+        measurable.measure(constraints).run { layout(width, height) {} }
+    }

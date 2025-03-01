@@ -24,14 +24,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
-import com.android.systemui.bouncer.ui.viewmodel.BouncerSceneContentViewModel
+import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.lifecycle.rememberViewModel
 
 /** Container that includes the compose bouncer and is meant to be included in legacy keyguard. */
 @Composable
 fun BouncerContainer(
-    viewModelFactory: BouncerSceneContentViewModel.Factory,
+    viewModelFactory: BouncerOverlayContentViewModel.Factory,
     dialogFactory: BouncerDialogFactory,
 ) {
     PlatformTheme {

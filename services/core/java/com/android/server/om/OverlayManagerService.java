@@ -82,7 +82,6 @@ import android.util.Slog;
 import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.annotations.KeepForWeakReference;
 import com.android.internal.content.PackageMonitor;
 import com.android.internal.content.om.OverlayConfig;
 import com.android.internal.util.ArrayUtils;
@@ -267,7 +266,6 @@ public final class OverlayManagerService extends SystemService {
 
     private final OverlayActorEnforcer mActorEnforcer;
 
-    @KeepForWeakReference
     private final PackageMonitor mPackageMonitor = new OverlayManagerPackageMonitor();
 
     private int mPrevStartedUserId = -1;

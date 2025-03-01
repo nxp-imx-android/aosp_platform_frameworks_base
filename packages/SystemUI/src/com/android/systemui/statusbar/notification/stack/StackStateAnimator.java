@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
+import static com.android.systemui.Flags.physicalNotificationMovement;
+import static com.android.systemui.statusbar.notification.row.ExpandableView.HEIGHT_PROPERTY;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_CYCLING_IN;
 import static com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_HEADS_UP_CYCLING_OUT;
@@ -25,15 +27,20 @@ import static com.android.systemui.statusbar.notification.stack.NotificationStac
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.annotation.Nullable;
 import android.content.Context;
 import android.util.Property;
 import android.view.View;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 import com.android.systemui.res.R;
 import com.android.systemui.shared.clocks.AnimatableClockView;
 import com.android.systemui.statusbar.NotificationShelf;
+import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
+import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
@@ -41,6 +48,7 @@ import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Stack;
+import java.util.function.Consumer;
 
 /**
  * An stack state animator which handles animations to new StackScrollStates
@@ -68,20 +76,26 @@ public class StackStateAnimator {
     public static final int DELAY_EFFECT_MAX_INDEX_DIFFERENCE = 2;
     private static final int MAX_STAGGER_COUNT = 5;
 
-    @VisibleForTesting int mGoToFullShadeAppearingTranslation;
-    @VisibleForTesting float mHeadsUpAppearStartAboveScreen;
+    @VisibleForTesting
+    int mGoToFullShadeAppearingTranslation;
+    @VisibleForTesting
+    float mHeadsUpAppearStartAboveScreen;
     // Padding between the old and new heads up notifications for the hun cycling animation
     private float mHeadsUpCyclingPadding;
     private final ExpandableViewState mTmpState = new ExpandableViewState();
     private final AnimationProperties mAnimationProperties;
     public NotificationStackScrollLayout mHostLayout;
+    @Nullable
+    private final HeadsUpAnimator mHeadsUpAnimator;
+
     private ArrayList<NotificationStackScrollLayout.AnimationEvent> mNewEvents =
             new ArrayList<>();
     private ArrayList<View> mNewAddChildren = new ArrayList<>();
     private HashSet<View> mHeadsUpAppearChildren = new HashSet<>();
     private HashSet<View> mHeadsUpDisappearChildren = new HashSet<>();
-    private HashSet<Animator> mAnimatorSet = new HashSet<>();
+    private HashSet<Object> mAnimatorSet = new HashSet<>();
     private Stack<AnimatorListenerAdapter> mAnimationListenerPool = new Stack<>();
+    private Stack<DynamicAnimation.OnAnimationEndListener> mAnimationEndPool = new Stack<>();
     private AnimationFilter mAnimationFilter = new AnimationFilter();
     private long mCurrentLength;
     private long mCurrentAdditionalDelay;
@@ -95,10 +109,17 @@ public class StackStateAnimator {
     private NotificationShelf mShelf;
     private StackStateLogger mLogger;
 
-    public StackStateAnimator(Context context, NotificationStackScrollLayout hostLayout) {
+    public StackStateAnimator(
+            Context context,
+            NotificationStackScrollLayout hostLayout,
+            @Nullable HeadsUpAnimator headsUpAnimator) {
         mHostLayout = hostLayout;
+        mHeadsUpAnimator = headsUpAnimator;
         initView(context);
         mAnimationProperties = new AnimationProperties() {
+
+            private final Consumer<DynamicAnimation> mDynamicAnimationConsumer = mAnimatorSet::add;
+
             @Override
             public AnimationFilter getAnimationFilter() {
                 return mAnimationFilter;
@@ -107,6 +128,17 @@ public class StackStateAnimator {
             @Override
             public AnimatorListenerAdapter getAnimationFinishListener(Property property) {
                 return getGlobalAnimationFinishedListener();
+            }
+
+            @Override
+            public DynamicAnimation.OnAnimationEndListener getAnimationEndListener(
+                    Property property) {
+                return getGlobalAnimationEndListener();
+            }
+
+            @Override
+            public Consumer<DynamicAnimation> getAnimationStartListener(Property property) {
+                return mDynamicAnimationConsumer;
             }
 
             @Override
@@ -187,11 +219,11 @@ public class StackStateAnimator {
         adaptDurationWhenGoingToFullShade(child, viewState, wasAdded, animationStaggerCount);
         mAnimationProperties.delay = 0;
         if (wasAdded || mAnimationFilter.hasDelays
-                        && (viewState.getYTranslation() != child.getTranslationY()
-                        || viewState.getZTranslation() != child.getTranslationZ()
-                        || viewState.getAlpha() != child.getAlpha()
-                        || viewState.height != child.getActualHeight()
-                        || viewState.clipTopAmount != child.getClipTopAmount())) {
+                && (viewState.getYTranslation() != child.getTranslationY()
+                || viewState.getZTranslation() != child.getTranslationZ()
+                || viewState.getAlpha() != child.getAlpha()
+                || viewState.height != child.getActualHeight()
+                || viewState.clipTopAmount != child.getClipTopAmount())) {
             mAnimationProperties.delay = mCurrentAdditionalDelay
                     + calculateChildAnimationDelay(viewState, animationStaggerCount);
         }
@@ -209,7 +241,13 @@ public class StackStateAnimator {
                 mAnimationProperties.duration = ANIMATION_DURATION_APPEAR_DISAPPEAR + 50
                         + (long) (100 * longerDurationFactor);
             }
-            child.setTranslationY(viewState.getYTranslation() + startOffset);
+            float newTranslationY = viewState.getYTranslation() + startOffset;
+            if (physicalNotificationMovement()) {
+                PhysicsPropertyAnimator.setProperty(child, PhysicsPropertyAnimator.Y_TRANSLATION,
+                        newTranslationY);
+            } else {
+                child.setTranslationY(newTranslationY);
+            }
         }
     }
 
@@ -312,7 +350,7 @@ public class StackStateAnimator {
 
     /**
      * @return an adapter which ensures that onAnimationFinished is called once no animation is
-     *         running anymore
+     * running anymore
      */
     private AnimatorListenerAdapter getGlobalAnimationFinishedListener() {
         if (!mAnimationListenerPool.empty()) {
@@ -345,6 +383,27 @@ public class StackStateAnimator {
         };
     }
 
+    /**
+     * @return an adapter which ensures that onAnimationFinished is called once no animation is
+     * running anymore
+     */
+    private DynamicAnimation.OnAnimationEndListener getGlobalAnimationEndListener() {
+        if (!mAnimationEndPool.empty()) {
+            return mAnimationEndPool.pop();
+        }
+        return new DynamicAnimation.OnAnimationEndListener() {
+            @Override
+            public void onAnimationEnd(DynamicAnimation animation, boolean canceled, float value,
+                    float velocity) {
+                mAnimatorSet.remove(animation);
+                if (mAnimatorSet.isEmpty() && !canceled) {
+                    onAnimationFinished();
+                }
+                mAnimationEndPool.push(this);
+            }
+        };
+    }
+
     private void onAnimationFinished() {
         mHostLayout.onChildAnimationFinished();
 
@@ -358,7 +417,7 @@ public class StackStateAnimator {
      * Process the animationEvents for a new animation. Here is the place to do something custom,
      * like to modify the ViewState or to create a custom animation for an event.
      *
-     *  @param animationEvents the animation events for the animation to perform
+     * @param animationEvents the animation events for the animation to perform
      * @return true if any custom animation was created
      */
     private boolean processAnimationEvents(
@@ -372,7 +431,7 @@ public class StackStateAnimator {
             if (changingView instanceof ExpandableNotificationRow && mLogger != null) {
                 loggable = true;
                 isHeadsUp = ((ExpandableNotificationRow) changingView).isHeadsUp();
-                key = ((ExpandableNotificationRow) changingView).getEntry().getKey();
+                key = ((ExpandableNotificationRow) changingView).getKey();
             }
             if (event.animationType ==
                     NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_ADD) {
@@ -428,7 +487,7 @@ public class StackStateAnimator {
                     translationDirection = ((viewState.getYTranslation()
                             - (ownPosition + actualHeight / 2.0f)) * 2 /
                             actualHeight);
-                    translationDirection = Math.max(Math.min(translationDirection, 1.0f),-1.0f);
+                    translationDirection = Math.max(Math.min(translationDirection, 1.0f), -1.0f);
 
                 }
                 Runnable postAnimation;
@@ -446,7 +505,7 @@ public class StackStateAnimator {
                         changingView.removeFromTransientContainer();
                     };
                 } else {
-                    startAnimation = ()-> {
+                    startAnimation = () -> {
                         changingView.setInRemovalAnimation(true);
                     };
                     postAnimation = () -> {
@@ -456,11 +515,11 @@ public class StackStateAnimator {
                 }
                 changingView.performRemoveAnimation(ANIMATION_DURATION_APPEAR_DISAPPEAR,
                         0 /* delay */, translationDirection, false /* isHeadsUpAppear */,
-                        startAnimation, postAnimation, getGlobalAnimationFinishedListener(),
-                        ExpandableView.ClipSide.BOTTOM);
+                        false /* isHeadsUpCycling */, startAnimation, postAnimation,
+                        getGlobalAnimationFinishedListener(), ExpandableView.ClipSide.BOTTOM);
                 needsCustomAnimation = true;
             } else if (event.animationType ==
-                NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_REMOVE_SWIPED_OUT) {
+                    NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_REMOVE_SWIPED_OUT) {
                 boolean isFullySwipedOut = mHostLayout.isFullySwipedOut(changingView);
                 if (loggable) {
                     mLogger.processAnimationEventsRemoveSwipeOut(key, isFullySwipedOut, isHeadsUp);
@@ -488,12 +547,11 @@ public class StackStateAnimator {
                     };
                 }
                 changingView.performAddAnimation(0, ANIMATION_DURATION_HEADS_UP_CYCLING,
-                        /* isHeadsUpAppear= */ true, onAnimationEnd);
+                        /* isHeadsUpAppear= */ true, /* isHeadsUpCycling= */ true, onAnimationEnd);
             } else if (event.animationType == ANIMATION_TYPE_HEADS_UP_APPEAR) {
                 mHeadsUpAppearChildren.add(changingView);
 
                 mTmpState.copyFrom(changingView.getViewState());
-                // translate the HUN in from the top, or the bottom of the screen
                 mTmpState.setYTranslation(getHeadsUpYTranslationStart(event.headsUpFromBottom));
                 // set the height and the initial position
                 mTmpState.applyToView(changingView);
@@ -509,7 +567,7 @@ public class StackStateAnimator {
                     onAnimationEnd = () -> mLogger.appearAnimationEnded(finalKey);
                 }
                 changingView.performAddAnimation(0, ANIMATION_DURATION_HEADS_UP_APPEAR,
-                        /* isHeadsUpAppear= */ true, onAnimationEnd);
+                        /* isHeadsUpAppear= */ true, /* isHeadsUpCycling= */ false, onAnimationEnd);
             } else if (event.animationType == ANIMATION_TYPE_HEADS_UP_CYCLING_OUT) {
                 mHeadsUpDisappearChildren.add(changingView);
                 Runnable endRunnable = null;
@@ -579,6 +637,7 @@ public class StackStateAnimator {
                             // translation, the actual translation is in StackScrollAlgorithm.
                             /* translationDirection= */ 0.0f,
                             /* isHeadsUpAnimation= */ true,
+                            /* isHeadsUpCycling= */ true,
                             startAnimation, postAnimation,
                             getGlobalAnimationFinishedListener(), ExpandableView.ClipSide.TOP);
                     mAnimationProperties.delay += removeAnimationDelay;
@@ -656,6 +715,7 @@ public class StackStateAnimator {
                     long removeAnimationDelay = changingView.performRemoveAnimation(
                             ANIMATION_DURATION_HEADS_UP_DISAPPEAR,
                             0, 0.0f, true /* isHeadsUpAppear */,
+                            false /* isHeadsUpCycling */,
                             startAnimation, postAnimation,
                             getGlobalAnimationFinishedListener(), ExpandableView.ClipSide.BOTTOM);
                     mAnimationProperties.delay += removeAnimationDelay;
@@ -676,6 +736,10 @@ public class StackStateAnimator {
     }
 
     private float getHeadsUpYTranslationStart(boolean headsUpFromBottom) {
+        if (NotificationsHunSharedAnimationValues.isEnabled()) {
+            return mHeadsUpAnimator.getHeadsUpYTranslation(headsUpFromBottom);
+        }
+
         if (headsUpFromBottom) {
             // start from the bottom of the screen
             return mHeadsUpAppearHeightBottom + mHeadsUpAppearStartAboveScreen;
@@ -699,8 +763,8 @@ public class StackStateAnimator {
 
     /**
      * @param headsUpFromBottom Whether we are showing the HUNs at the bottom of the screen
-     * @param oldHunHeight Height of the old HUN
-     * @param newHunHeight Height of the new HUN
+     * @param oldHunHeight      Height of the old HUN
+     * @param newHunHeight      Height of the new HUN
      * @return The y translation target value of the HUN cycling out animation
      */
     private float getHeadsUpCyclingOutYTranslation(
@@ -762,10 +826,12 @@ public class StackStateAnimator {
     }
 
     public void setHeadsUpAppearHeightBottom(int headsUpAppearHeightBottom) {
+        NotificationsHunSharedAnimationValues.assertInLegacyMode();
         mHeadsUpAppearHeightBottom = headsUpAppearHeightBottom;
     }
 
     public void setStackTopMargin(int stackTopMargin) {
+        NotificationsHunSharedAnimationValues.assertInLegacyMode();
         mStackTopMargin = stackTopMargin;
     }
 

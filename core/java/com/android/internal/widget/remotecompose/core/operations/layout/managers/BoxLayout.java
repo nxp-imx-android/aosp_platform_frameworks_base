@@ -115,8 +115,10 @@ public class BoxLayout extends LayoutManager {
         for (Component c : mChildrenComponents) {
             c.measure(context, 0f, maxWidth, 0f, maxHeight, measure);
             ComponentMeasure m = measure.get(c);
-            size.setWidth(Math.max(size.getWidth(), m.getW()));
-            size.setHeight(Math.max(size.getHeight(), m.getH()));
+            if (!m.isGone()) {
+                size.setWidth(Math.max(size.getWidth(), m.getW()));
+                size.setHeight(Math.max(size.getHeight(), m.getH()));
+            }
         }
         // add padding
         size.setWidth(Math.max(size.getWidth(), computeModifierDefinedWidth(context.getContext())));

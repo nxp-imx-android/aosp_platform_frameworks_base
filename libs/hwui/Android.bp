@@ -141,6 +141,7 @@ cc_defaults {
                 "libsync",
                 "libui",
                 "aconfig_text_flags_c_lib",
+                "aconfig_view_accessibility_flags_c_lib",
                 "server_configurable_flags",
                 "libaconfig_storage_read_api_cc",
                 "libgraphicsenv",
@@ -230,6 +231,14 @@ java_sdk_library {
     },
     // TODO: remove this
     unsafe_ignore_missing_latest_api: true,
+}
+
+filegroup {
+    name: "framework-graphics-ravenwood-policies",
+    srcs: [
+        "framework-graphics-ravenwood-policies.txt",
+    ],
+    visibility: ["//frameworks/base/ravenwood"],
 }
 
 filegroup {
@@ -461,6 +470,10 @@ cc_defaults {
         },
         linux: {
             srcs: ["platform/linux/utils/SharedLib.cpp"],
+            shared_libs: [
+                "libbinder",
+                "libbinder_ndk",
+            ],
         },
         darwin: {
             srcs: ["platform/darwin/utils/SharedLib.cpp"],

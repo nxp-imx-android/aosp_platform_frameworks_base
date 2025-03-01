@@ -57,12 +57,14 @@ class FakeHomeStatusBarViewModel(
     override val ongoingActivityChipsLegacy =
         MutableStateFlow(MultipleOngoingActivityChipsModelLegacy())
 
-    override val statusBarPopupChips = MutableStateFlow(emptyList<PopupChipModel.Shown>())
+    override val popupChips = emptyList<PopupChipModel.Shown>()
 
     override val mediaProjectionStopDialogDueToCallEndedState =
         MutableStateFlow(MediaProjectionStopDialogModel.Hidden)
 
     override val isHomeStatusBarAllowedByScene = MutableStateFlow(false)
+
+    override val canShowOngoingActivityChips: Flow<Boolean> = MutableStateFlow(false)
 
     override val batteryViewModelFactory: BatteryViewModel.Factory =
         object : BatteryViewModel.Factory {

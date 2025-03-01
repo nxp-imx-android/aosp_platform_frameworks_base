@@ -176,8 +176,8 @@ public:
 
     void setContentDrawBounds(const Rect& bounds) { mContentDrawBounds = bounds; }
 
-    void addFrameMetricsObserver(FrameMetricsObserver* observer);
-    void removeFrameMetricsObserver(FrameMetricsObserver* observer);
+    void addFrameMetricsObserver(sp<FrameMetricsObserver>&& observer);
+    void removeFrameMetricsObserver(const sp<FrameMetricsObserver>& observer);
 
     // Used to queue up work that needs to be completed before this frame completes
     void enqueueFrameWork(std::function<void()>&& func);
@@ -312,7 +312,7 @@ private:
     };
 
     // Need at least 4 because we do quad buffer. Add a few more for good measure.
-    RingBuffer<SwapHistory, 7> mSwapHistory;
+    RingBuffer<SwapHistory, 8> mSwapHistory;
     // Frame numbers start at 1, 0 means uninitialized
     uint64_t mFrameNumber = 0;
     int64_t mDamageId = 0;

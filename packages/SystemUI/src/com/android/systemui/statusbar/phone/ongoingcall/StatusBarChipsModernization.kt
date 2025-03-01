@@ -23,6 +23,10 @@ import com.android.systemui.flags.RefactorFlagUtils
 @Suppress("NOTHING_TO_INLINE")
 object StatusBarChipsModernization {
     /** The aconfig flag name */
+    @Deprecated(
+        "For tests, use @EnableChipsModernization or @DisableChipsModernization " +
+            "annotations instead"
+    )
     const val FLAG_NAME = Flags.FLAG_STATUS_BAR_CHIPS_MODERNIZATION
 
     /** A token used for dependency declaration */
@@ -48,7 +52,7 @@ object StatusBarChipsModernization {
      * the flag is not enabled to ensure that the refactor author catches issues in testing.
      */
     @JvmStatic
-    inline fun assertInNewMode() = RefactorFlagUtils.assertInNewMode(isEnabled, FLAG_NAME)
+    inline fun unsafeAssertInNewMode() = RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, FLAG_NAME)
 
     /**
      * Called to ensure code is only run when the flag is disabled. This will throw an exception if

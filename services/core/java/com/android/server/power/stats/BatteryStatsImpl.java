@@ -2911,19 +2911,7 @@ public class BatteryStatsImpl extends BatteryStats {
                 return false;
             }
 
-            mCounter.getCounts(counts, procState);
-
-            // Return counts only if at least one of the elements is non-zero.
-            for (int i = counts.length - 1; i >= 0; --i) {
-                if (counts[i] != 0) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        public void logState(Printer pw, String prefix) {
-            pw.println(prefix + "mCounter=" + mCounter);
+            return mCounter.getCounts(counts, procState);
         }
 
         /**

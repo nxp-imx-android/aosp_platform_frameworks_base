@@ -57,13 +57,18 @@ import java.util.Set;
 public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
     private static final String TAG = "DiscreteOpsSqlRegistry";
 
+    private static final long DB_WRITE_INTERVAL = Duration.ofMinutes(10).toMillis();
+    private static final long EXPIRED_ENTRY_DELETION_INTERVAL = Duration.ofHours(6).toMillis();
+
+    // Event type handled by SqliteWriteHandler
+    private static final int WRITE_DATABASE_RECURRING = 1;
+    private static final int DELETE_EXPIRED_ENTRIES = 2;
+    private static final int WRITE_DATABASE_CACHE_FULL = 3;
+
     private final Context mContext;
     private final DiscreteOpsDbHelper mDiscreteOpsDbHelper;
     private final SqliteWriteHandler mSqliteWriteHandler;
     private final DiscreteOpCache mDiscreteOpCache = new DiscreteOpCache(512);
-    private static final long THREE_HOURS = Duration.ofHours(3).toMillis();
-    private static final int WRITE_CACHE_EVICTED_OP_EVENTS = 1;
-    private static final int DELETE_OLD_OP_EVENTS = 2;
     // Attribution chain id is used to identify an attribution source chain, This is
     // set for startOp only. PermissionManagerService resets this ID on device restart, so
     // we use previously persisted chain id as offset, and add it to chain id received from
@@ -83,6 +88,9 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
         mSqliteWriteHandler = new SqliteWriteHandler(thread.getLooper());
         mDiscreteOpsDbHelper = new DiscreteOpsDbHelper(context, databaseFile);
         mChainIdOffset = mDiscreteOpsDbHelper.getLargestAttributionChainId();
+        mSqliteWriteHandler.sendEmptyMessageDelayed(WRITE_DATABASE_RECURRING, DB_WRITE_INTERVAL);
+        mSqliteWriteHandler.sendEmptyMessageDelayed(DELETE_EXPIRED_ENTRIES,
+                EXPIRED_ENTRY_DELETION_INTERVAL);
     }
 
     @Override
@@ -117,15 +125,14 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
     }
 
     @Override
-    void writeAndClearOldAccessHistory() {
-        // Let the sql impl also follow the same disk write frequencies as xml,
-        // controlled by AppOpsService.
+    void shutdown() {
+        mSqliteWriteHandler.removeAllPendingMessages();
         mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.getAllEventsAndClear());
-        if (!mSqliteWriteHandler.hasMessages(DELETE_OLD_OP_EVENTS)) {
-            if (mSqliteWriteHandler.sendEmptyMessageDelayed(DELETE_OLD_OP_EVENTS, THREE_HOURS)) {
-                Slog.w(TAG, "DELETE_OLD_OP_EVENTS is not queued");
-            }
-        }
+    }
+
+    @Override
+    void writeAndClearOldAccessHistory() {
+        // no-op
     }
 
     @Override
@@ -175,7 +182,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
             @Nullable String attributionTagFilter, int opFlagsFilter,
             Set<String> attributionExemptPkgs) {
         // flush the cache into database before read.
-        writeAndClearOldAccessHistory();
+        mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.getAllEventsAndClear());
         boolean assembleChains = attributionExemptPkgs != null;
         IntArray opCodes = getAppOpCodes(filter, opNamesFilter);
         beginTimeMillis = Math.max(beginTimeMillis, Instant.now().minus(sDiscreteHistoryCutoff,
@@ -363,19 +370,58 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case WRITE_CACHE_EVICTED_OP_EVENTS:
-                    List<DiscreteOp> opEvents = (List<DiscreteOp>) msg.obj;
-                    mDiscreteOpsDbHelper.insertDiscreteOps(opEvents);
-                    break;
-                case DELETE_OLD_OP_EVENTS:
+                case WRITE_DATABASE_RECURRING -> {
+                    try {
+                        List<DiscreteOp> evictedEvents;
+                        synchronized (mDiscreteOpCache) {
+                            evictedEvents = mDiscreteOpCache.evict();
+                        }
+                        mDiscreteOpsDbHelper.insertDiscreteOps(evictedEvents);
+                    } finally {
+                        mSqliteWriteHandler.sendEmptyMessageDelayed(WRITE_DATABASE_RECURRING,
+                                DB_WRITE_INTERVAL);
+                        // Schedule a cleanup to truncate older (before cutoff time) entries.
+                        if (!mSqliteWriteHandler.hasMessages(DELETE_EXPIRED_ENTRIES)) {
+                            mSqliteWriteHandler.sendEmptyMessageDelayed(DELETE_EXPIRED_ENTRIES,
+                                    EXPIRED_ENTRY_DELETION_INTERVAL);
+                        }
+                    }
+                }
+                case DELETE_EXPIRED_ENTRIES -> {
                     long cutOffTimeStamp = System.currentTimeMillis() - sDiscreteHistoryCutoff;
                     mDiscreteOpsDbHelper.execSQL(
                             DiscreteOpsTable.DELETE_TABLE_DATA_BEFORE_ACCESS_TIME,
                             new Object[]{cutOffTimeStamp});
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected value: " + msg.what);
+                }
+                case WRITE_DATABASE_CACHE_FULL -> {
+                    try {
+                        List<DiscreteOp> evictedEvents;
+                        synchronized (mDiscreteOpCache) {
+                            evictedEvents = mDiscreteOpCache.evict();
+                            // if nothing to evict, just write the whole cache to database.
+                            if (evictedEvents.isEmpty()
+                                    && mDiscreteOpCache.size() >= mDiscreteOpCache.capacity()) {
+                                evictedEvents.addAll(mDiscreteOpCache.mCache);
+                                mDiscreteOpCache.clear();
+                            }
+                        }
+                        mDiscreteOpsDbHelper.insertDiscreteOps(evictedEvents);
+                    } finally {
+                        // Just in case initial message is not scheduled.
+                        if (!mSqliteWriteHandler.hasMessages(WRITE_DATABASE_RECURRING)) {
+                            mSqliteWriteHandler.sendEmptyMessageDelayed(WRITE_DATABASE_RECURRING,
+                                    DB_WRITE_INTERVAL);
+                        }
+                    }
+                }
+                default -> throw new IllegalStateException("Unexpected value: " + msg.what);
             }
+        }
+
+        void removeAllPendingMessages() {
+            removeMessages(WRITE_DATABASE_RECURRING);
+            removeMessages(DELETE_EXPIRED_ENTRIES);
+            removeMessages(WRITE_DATABASE_CACHE_FULL);
         }
     }
 
@@ -390,6 +436,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
      * 4) During shutdown.
      */
     class DiscreteOpCache {
+        private static final String TAG = "DiscreteOpCache";
         private final int mCapacity;
         private final ArraySet<DiscreteOp> mCache;
 
@@ -404,23 +451,9 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                     return;
                 }
                 mCache.add(opEvent);
+
                 if (mCache.size() >= mCapacity) {
-                    if (DEBUG_LOG) {
-                        Slog.i(TAG, "Current discrete ops cache size: " + mCache.size());
-                    }
-                    List<DiscreteOp> evictedEvents = evict();
-                    if (DEBUG_LOG) {
-                        Slog.i(TAG, "Evicted discrete ops size: " + evictedEvents.size());
-                    }
-                    // if nothing to evict, just write the whole cache to disk
-                    if (evictedEvents.isEmpty()) {
-                        Slog.w(TAG, "No discrete ops event is evicted, write cache to db.");
-                        evictedEvents.addAll(mCache);
-                        mCache.clear();
-                    }
-                    Message msg = mSqliteWriteHandler.obtainMessage(
-                            WRITE_CACHE_EVICTED_OP_EVENTS, evictedEvents);
-                    mSqliteWriteHandler.sendMessage(msg);
+                    mSqliteWriteHandler.sendEmptyMessage(WRITE_DATABASE_CACHE_FULL);
                 }
             }
         }
@@ -459,6 +492,14 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                 mCache.clear();
                 return cachedOps;
             }
+        }
+
+        int size() {
+            return mCache.size();
+        }
+
+        int capacity() {
+            return mCapacity;
         }
 
         /**

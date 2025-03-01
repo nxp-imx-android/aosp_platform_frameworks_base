@@ -31,6 +31,8 @@ import static android.os.UserHandle.getCallingUserId;
 
 import static com.android.internal.util.CollectionUtils.any;
 import static com.android.internal.util.Preconditions.checkState;
+import static com.android.server.companion.association.DisassociationProcessor.REASON_API;
+import static com.android.server.companion.association.DisassociationProcessor.REASON_PKG_DATA_CLEARED;
 import static com.android.server.companion.utils.PackageUtils.enforceUsesCompanionDeviceFeature;
 import static com.android.server.companion.utils.PackageUtils.isRestrictedSettingsAllowed;
 import static com.android.server.companion.utils.PermissionsUtils.enforceCallerCanManageAssociationsForPackage;
@@ -250,7 +252,7 @@ public class CompanionDeviceManagerService extends SystemService {
                     + packageName + "]. Cleaning up CDM data...");
 
             for (AssociationInfo association : associationsForPackage) {
-                mDisassociationProcessor.disassociate(association.getId());
+                mDisassociationProcessor.disassociate(association.getId(), REASON_PKG_DATA_CLEARED);
             }
 
             mCompanionAppBinder.onPackageChanged(userId);
@@ -426,7 +428,7 @@ public class CompanionDeviceManagerService extends SystemService {
 
         @Override
         public void disassociate(int associationId) {
-            mDisassociationProcessor.disassociate(associationId);
+            mDisassociationProcessor.disassociate(associationId, REASON_API);
         }
 
         @Override

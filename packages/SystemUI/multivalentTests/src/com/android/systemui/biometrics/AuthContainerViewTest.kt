@@ -21,6 +21,7 @@ import android.content.res.Configuration
 import android.hardware.biometrics.BiometricAuthenticator
 import android.hardware.biometrics.BiometricConstants
 import android.hardware.biometrics.BiometricManager
+import android.hardware.biometrics.BiometricPrompt
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
@@ -35,6 +36,7 @@ import android.testing.ViewUtils
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityManager
 import android.widget.ScrollView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -113,6 +115,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
     @Mock lateinit var selectedUserInteractor: SelectedUserInteractor
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var activityTaskManager: ActivityTaskManager
+    @Mock private lateinit var accessibilityManager: AccessibilityManager
     @Mock private lateinit var lazyViewCapture: Lazy<ViewCapture>
 
     private lateinit var displayRepository: FakeDisplayRepository
@@ -290,7 +293,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_BIOMETRIC_AUTHENTICATED),
+                eq(BiometricPrompt.DISMISSED_REASON_BIOMETRIC_CONFIRM_NOT_REQUIRED),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )
@@ -310,7 +313,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
             )
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_USER_CANCELED),
+                eq(BiometricPrompt.DISMISSED_REASON_USER_CANCEL),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )
@@ -325,7 +328,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_BUTTON_NEGATIVE),
+                eq(BiometricPrompt.DISMISSED_REASON_NEGATIVE),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )
@@ -352,7 +355,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
         verify(callback)
             .onDismissed(
-                eq(AuthDialogCallback.DISMISSED_ERROR),
+                eq(BiometricPrompt.DISMISSED_REASON_ERROR),
                 eq<ByteArray?>(null), /* credentialAttestation */
                 eq(authContainer?.requestId ?: 0L),
             )
@@ -528,20 +531,23 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_hasSecureWindowFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0).isTrue()
     }
 
     @Test
     fun testLayoutParams_hasShowWhenLockedFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.flags and WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED) != 0)
             .isTrue()
     }
 
     @Test
     fun testLayoutParams_hasDimbehindWindowFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         val lpFlags = layoutParams.flags
         val lpDimAmount = layoutParams.dimAmount
 
@@ -551,7 +557,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_excludesImeInsets() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.fitInsetsTypes and WindowInsets.Type.ime()) == 0).isTrue()
     }
 
@@ -677,6 +684,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
                 udfpsUtils,
                 iconProvider,
                 activityTaskManager,
+                accessibilityManager,
             ),
             { credentialViewModel },
             fakeExecutor,
@@ -702,7 +710,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_hasCutoutModeAlwaysFlag() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         val lpFlags = layoutParams.flags
 
         assertThat(
@@ -713,7 +722,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     @Test
     fun testLayoutParams_excludesSystemBarInsets() {
-        val layoutParams = AuthContainerView.getLayoutParams(windowToken, "")
+        val layoutParams =
+            AuthContainerView.getLayoutParams(windowToken, "", false /* isCredentialView */)
         assertThat((layoutParams.fitInsetsTypes and WindowInsets.Type.systemBars()) == 0).isTrue()
     }
 }

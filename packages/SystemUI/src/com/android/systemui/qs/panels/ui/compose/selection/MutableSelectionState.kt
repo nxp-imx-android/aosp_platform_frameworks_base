@@ -32,23 +32,17 @@ fun rememberSelectionState(): MutableSelectionState {
     return remember { MutableSelectionState() }
 }
 
-/**
- * Holds the selected [TileSpec] and whether the selection was manual, i.e. caused by a tap from the
- * user.
- */
-data class Selection(val tileSpec: TileSpec, val manual: Boolean)
-
 /** Holds the state of the current selection. */
 class MutableSelectionState {
-    /** The [Selection] if a tile is selected, null if not. */
-    var selection by mutableStateOf<Selection?>(null)
+    /** The [TileSpec] of a tile is selected, null if not. */
+    var selection by mutableStateOf<TileSpec?>(null)
         private set
 
     val selected: Boolean
         get() = selection != null
 
-    fun select(tileSpec: TileSpec, manual: Boolean) {
-        selection = Selection(tileSpec, manual)
+    fun select(tileSpec: TileSpec) {
+        selection = tileSpec
     }
 
     fun unSelect() {
@@ -68,10 +62,10 @@ fun Modifier.selectableTile(
     return pointerInput(Unit) {
         detectTapGestures(
             onTap = {
-                if (selectionState.selection?.tileSpec == tileSpec) {
+                if (selectionState.selection == tileSpec) {
                     selectionState.unSelect()
                 } else {
-                    selectionState.select(tileSpec, manual = true)
+                    selectionState.select(tileSpec)
                 }
                 onClick()
             }

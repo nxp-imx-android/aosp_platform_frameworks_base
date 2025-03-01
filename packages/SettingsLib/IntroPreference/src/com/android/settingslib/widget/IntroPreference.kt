@@ -17,20 +17,20 @@
 package com.android.settingslib.widget
 
 import android.content.Context
-import android.os.Build
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.View
-import androidx.annotation.RequiresApi
 import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.intro.R
 
-class IntroPreference @JvmOverloads constructor(
+class IntroPreference
+@JvmOverloads
+constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
-    defStyleRes: Int = 0
+    defStyleRes: Int = 0,
 ) : Preference(context, attrs, defStyleAttr, defStyleRes), GroupSectionDividerMixin {
 
     private var isCollapsable: Boolean = true
@@ -66,9 +66,9 @@ class IntroPreference @JvmOverloads constructor(
 
     /**
      * Sets whether the summary is collapsable.
+     *
      * @param collapsable True if the summary should be collapsable, false otherwise.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun setCollapsable(collapsable: Boolean) {
         isCollapsable = collapsable
         minLines = if (isCollapsable) DEFAULT_MIN_LINES else DEFAULT_MAX_LINES
@@ -77,9 +77,9 @@ class IntroPreference @JvmOverloads constructor(
 
     /**
      * Sets the minimum number of lines to display when collapsed.
+     *
      * @param lines The minimum number of lines.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun setMinLines(lines: Int) {
         minLines = lines.coerceIn(1, DEFAULT_MAX_LINES)
         notifyChanged()
@@ -87,9 +87,9 @@ class IntroPreference @JvmOverloads constructor(
 
     /**
      * Sets the action when clicking on the hyperlink in the text.
+     *
      * @param listener The click listener for hyperlink.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun setHyperlinkListener(listener: View.OnClickListener) {
         if (hyperlinkListener != listener) {
             hyperlinkListener = listener
@@ -99,9 +99,9 @@ class IntroPreference @JvmOverloads constructor(
 
     /**
      * Sets the action when clicking on the learn more view.
+     *
      * @param listener The click listener for learn more.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun setLearnMoreAction(listener: View.OnClickListener) {
         if (learnMoreListener != listener) {
             learnMoreListener = listener
@@ -111,9 +111,9 @@ class IntroPreference @JvmOverloads constructor(
 
     /**
      * Sets the text of learn more view.
+     *
      * @param text The text of learn more.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun setLearnMoreText(text: CharSequence) {
         if (!TextUtils.equals(learnMoreText, text)) {
             learnMoreText = text

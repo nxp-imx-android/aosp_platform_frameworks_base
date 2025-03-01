@@ -184,7 +184,9 @@ public abstract class KeyguardPinBasedInputView extends KeyguardAbsKeyInputView 
         }
         mDeleteButton = findViewById(R.id.delete_button);
         if (Flags.bouncerUiRevamp2()) {
-            mDeleteButton.setImageResource(R.drawable.pin_bouncer_delete);
+            mDeleteButton.setDrawableForTransparentMode(R.drawable.pin_bouncer_delete_filled);
+            mDeleteButton.setDefaultDrawable(R.drawable.pin_bouncer_delete_outline);
+            mDeleteButton.setImageResource(R.drawable.pin_bouncer_delete_outline);
         }
         mDeleteButton.setVisibility(View.VISIBLE);
 

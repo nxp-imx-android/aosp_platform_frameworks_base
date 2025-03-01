@@ -18,6 +18,9 @@
     <option name="test-suite-tag" value="apct" />
     <option name="test-suite-tag" value="apct-instrumentation" />
 
+    <!-- Needed for reading the app files for the test artifacts -->
+    <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer"/>
+
     <target_preparer class="com.android.tradefed.targetprep.suite.SuiteApkInstaller">
         <option name="cleanup-apks" value="true" />
         <option name="install-arg" value="-t" />
@@ -34,14 +37,15 @@
     <option name="test-tag" value="FrameworksImeTests" />
 
     <test class="com.android.tradefed.testtype.AndroidJUnitTest" >
-        <option name="package" value="com.android.inputmethod.imetests" />
+        <option name="package" value="com.android.inputmethodservice" />
         <option name="runner" value="androidx.test.runner.AndroidJUnitRunner" />
         <option name="hidden-api-checks" value="false"/>
     </test>
 
-    <!-- Collect the files in the dump directory for debugging -->
+    <!-- Collect output of DumpOnFailure -->
     <metrics_collector class="com.android.tradefed.device.metric.FilePullerLogCollector">
-        <option name="directory-keys" value="/sdcard/FrameworksImeTests/" />
+        <option name="directory-keys" value="/data/user/0/com.android.apps.inputmethod.simpleime/files" />
         <option name="collect-on-run-ended-only" value="true" />
+        <option name="clean-up" value="true" />
     </metrics_collector>
 </configuration>

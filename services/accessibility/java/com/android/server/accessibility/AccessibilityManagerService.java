@@ -173,6 +173,7 @@ import android.view.accessibility.IAccessibilityManagerClient;
 import android.view.accessibility.IMagnificationConnection;
 import android.view.accessibility.IUserInitializationCompleteCallback;
 import android.view.inputmethod.EditorInfo;
+import android.window.ScreenCapture;
 
 import com.android.internal.R;
 import com.android.internal.accessibility.AccessibilityShortcutController;
@@ -1401,11 +1402,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     @EnforcePermission(MANAGE_ACCESSIBILITY)
     public void registerSystemAction(RemoteAction action, int actionId) {
         registerSystemAction_enforcePermission();
-        int currentUserId;
-        synchronized (mLock) {
-            currentUserId = mCurrentUserId;
-        }
-        enforceCurrentUserIfVisibleBackgroundEnabled(currentUserId);
+        enforceCurrentUserIfVisibleBackgroundEnabled();
         if (mTraceManager.isA11yTracingEnabledForTypes(FLAGS_ACCESSIBILITY_MANAGER)) {
             mTraceManager.logTrace(LOG_TAG + ".registerSystemAction",
                     FLAGS_ACCESSIBILITY_MANAGER, "action=" + action + ";actionId=" + actionId);
@@ -1422,11 +1419,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     @EnforcePermission(MANAGE_ACCESSIBILITY)
     public void unregisterSystemAction(int actionId) {
         unregisterSystemAction_enforcePermission();
-        int currentUserId;
-        synchronized (mLock) {
-            currentUserId = mCurrentUserId;
-        }
-        enforceCurrentUserIfVisibleBackgroundEnabled(currentUserId);
+        enforceCurrentUserIfVisibleBackgroundEnabled();
         if (mTraceManager.isA11yTracingEnabledForTypes(FLAGS_ACCESSIBILITY_MANAGER)) {
             mTraceManager.logTrace(LOG_TAG + ".unregisterSystemAction",
                     FLAGS_ACCESSIBILITY_MANAGER, "actionId=" + actionId);
@@ -1758,7 +1751,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         synchronized (mLock) {
             currentUserId = mCurrentUserId;
         }
-        enforceCurrentUserIfVisibleBackgroundEnabled(currentUserId);
+        enforceCurrentUserIfVisibleBackgroundEnabled();
         if (mTraceManager.isA11yTracingEnabledForTypes(FLAGS_ACCESSIBILITY_MANAGER)) {
             mTraceManager.logTrace(LOG_TAG + ".notifyAccessibilityButtonClicked",
                     FLAGS_ACCESSIBILITY_MANAGER,
@@ -1806,11 +1799,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     @EnforcePermission(STATUS_BAR_SERVICE)
     public void notifyAccessibilityButtonVisibilityChanged(boolean shown) {
         notifyAccessibilityButtonVisibilityChanged_enforcePermission();
-        int currentUserId;
-        synchronized (mLock) {
-            currentUserId = mCurrentUserId;
-        }
-        enforceCurrentUserIfVisibleBackgroundEnabled(currentUserId);
+        enforceCurrentUserIfVisibleBackgroundEnabled();
         if (mTraceManager.isA11yTracingEnabledForTypes(FLAGS_ACCESSIBILITY_MANAGER)) {
             mTraceManager.logTrace(LOG_TAG + ".notifyAccessibilityButtonVisibilityChanged",
                     FLAGS_ACCESSIBILITY_MANAGER, "shown=" + shown);
@@ -2148,9 +2137,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         this, 0, oldUserState.mUserId));
             }
 
-            // Announce user changes only if more than one exist.
-            final boolean announceNewUser = mUserManager.getUsers().size() > 1;
-
             // The user changed.
             mCurrentUserId = userId;
             AccessibilityUserState userState = getCurrentUserStateLocked();
@@ -2177,13 +2163,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // As an initialization step, update the shortcuts for the current user.
             updateShortcutsForCurrentNavigationMode();
 
-            if (announceNewUser) {
-                // Schedule announcement of the current user if needed.
-                mMainHandler.sendMessageDelayed(
-                        obtainMessage(AccessibilityManagerService::announceNewUserIfNeeded, this),
-                        WAIT_FOR_USER_STATE_FULLY_INITIALIZED_MILLIS);
-            }
-
             for (IUserInitializationCompleteCallback callback
                     : mUserInitializationCompleteCallbacks) {
                 try {
@@ -2193,20 +2172,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             "Error while dispatching userInitializationComplete callback: ",
                             re);
                 }
-            }
-        }
-    }
-
-    private void announceNewUserIfNeeded() {
-        synchronized (mLock) {
-            AccessibilityUserState userState = getCurrentUserStateLocked();
-            if (userState.isHandlingAccessibilityEventsLocked()) {
-                String message = mContext.getString(R.string.user_switched,
-                        mUserManager.getUserInfo(mCurrentUserId).name);
-                AccessibilityEvent event = AccessibilityEvent.obtain(
-                        AccessibilityEvent.TYPE_ANNOUNCEMENT);
-                event.getText().add(message);
-                sendAccessibilityEventLocked(event, mCurrentUserId);
             }
         }
     }
@@ -5001,11 +4966,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             throws RemoteException {
         registerProxyForDisplay_enforcePermission();
         mSecurityPolicy.checkForAccessibilityPermissionOrRole();
-        int currentUserId;
-        synchronized (mLock) {
-            currentUserId = mCurrentUserId;
-        }
-        enforceCurrentUserIfVisibleBackgroundEnabled(currentUserId);
+        enforceCurrentUserIfVisibleBackgroundEnabled();
         if (client == null) {
             return false;
         }
@@ -6723,6 +6684,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         displayId,
                         sc,
                         callback));
+    }
+
+    @Override
+    public int performScreenCapture(ScreenCapture.LayerCaptureArgs captureArgs,
+            ScreenCapture.ScreenCaptureListener captureListener) {
+        return ScreenCapture.captureLayers(captureArgs, captureListener);
     }
 
     @VisibleForTesting

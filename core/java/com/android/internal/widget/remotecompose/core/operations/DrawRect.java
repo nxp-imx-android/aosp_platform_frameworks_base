@@ -106,6 +106,6 @@ public class DrawRect extends DrawBase4 {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "left", "top", "right", "bottom").add("type", CLASS_NAME);
+        serialize(serializer, "left", "top", "right", "bottom").addType(CLASS_NAME);
     }
 }

@@ -128,7 +128,10 @@ sealed class OngoingActivityChipModel {
             override val key: String,
             override val icon: ChipIcon,
             override val colors: ColorsModel,
-            /** The time of the event that this chip represents. */
+            /**
+             * The time of the event that this chip represents, relative to
+             * [com.android.systemui.util.time.SystemClock.currentTimeMillis].
+             */
             val time: Long,
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
@@ -145,7 +148,7 @@ sealed class OngoingActivityChipModel {
                 shouldAnimate,
             ) {
             init {
-                StatusBarNotifChips.assertInNewMode()
+                StatusBarNotifChips.unsafeAssertInNewMode()
             }
 
             override val logName = "Active.ShortTimeDelta"
@@ -224,7 +227,7 @@ sealed class OngoingActivityChipModel {
             val contentDescription: ContentDescription,
         ) : ChipIcon {
             init {
-                StatusBarConnectedDisplays.assertInNewMode()
+                StatusBarConnectedDisplays.unsafeAssertInNewMode()
             }
         }
 

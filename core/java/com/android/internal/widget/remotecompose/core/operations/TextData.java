@@ -136,6 +136,6 @@ public class TextData extends Operation implements SerializableToString, Seriali
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("textId", mTextId).add("text", mText);
+        serializer.addType(CLASS_NAME).add("textId", mTextId).add("text", mText);
     }
 }

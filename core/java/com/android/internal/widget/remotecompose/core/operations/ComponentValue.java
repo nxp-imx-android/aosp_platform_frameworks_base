@@ -171,7 +171,7 @@ public class ComponentValue extends Operation implements SerializableToString, S
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("valueId", mValueId)
                 .add("componentValueType", typeToString(mType))
                 .add("componentId", mComponentID);

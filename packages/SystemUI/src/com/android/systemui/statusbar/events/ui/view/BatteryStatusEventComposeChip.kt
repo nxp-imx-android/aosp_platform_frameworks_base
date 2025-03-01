@@ -54,7 +54,7 @@ constructor(level: Int, context: Context, attrs: AttributeSet? = null) :
         get() = composeInner
 
     init {
-        NewStatusBarIcons.assertInNewMode()
+        NewStatusBarIcons.unsafeAssertInNewMode()
 
         inflate(context, R.layout.status_bar_event_chip_compose, this)
         roundedContainer = requireViewById(R.id.rounded_container)

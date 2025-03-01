@@ -235,6 +235,14 @@ flag {
 }
 
 flag {
+    name: "request_rectangle_with_source"
+    namespace: "accessibility"
+    description: "Request rectangle on screen with source parameter"
+    bug: "391877896"
+    is_exported: true
+}
+
+flag {
     name: "restore_a11y_secure_settings_on_hsum_device"
     namespace: "accessibility"
     description: "Grab the a11y settings and send the settings restored broadcast for current visible foreground user"

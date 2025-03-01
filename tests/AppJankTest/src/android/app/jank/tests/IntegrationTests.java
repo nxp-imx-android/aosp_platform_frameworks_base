@@ -209,7 +209,8 @@ public class IntegrationTests {
                 JankTrackerActivity.class);
         resumeJankTracker.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         mEmptyActivity.startActivity(resumeJankTracker);
-        mDevice.wait(Until.findObject(By.text("Edit Text")), WAIT_FOR_TIMEOUT_MS);
+        mDevice.wait(Until.findObject(By.text(mEmptyActivity.getString(R.string.continue_test))),
+                WAIT_FOR_TIMEOUT_MS);
 
         assertTrue(jankTracker.shouldTrack());
     }

@@ -18,12 +18,11 @@ package com.android.systemui.statusbar.notification.promoted.domain.interactor
 
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 
 val Kosmos.aodPromotedNotificationInteractor by
     Kosmos.Fixture {
         AODPromotedNotificationInteractor(
-            activeNotificationsInteractor = activeNotificationsInteractor,
+            promotedNotificationsInteractor = promotedNotificationsInteractor,
             dumpManager = dumpManager,
         )
     }

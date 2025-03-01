@@ -792,6 +792,10 @@ public class ContextHubService extends IContextHubService.Stub {
             Log.e(TAG, "Endpoint manager failed to initialize");
             throw new UnsupportedOperationException("Endpoint registration is not supported");
         }
+        if (callback == null) {
+            Log.e(TAG, "Endpoint callback is invalid");
+            throw new IllegalArgumentException("registerEndpoint must have a non-null callback");
+        }
         return mEndpointManager.registerEndpoint(
                 pendingHubEndpointInfo, callback, packageName, attributionTag);
     }
@@ -1578,6 +1582,12 @@ public class ContextHubService extends IContextHubService.Stub {
         pw.println("");
         pw.println("=================== CLIENTS ====================");
         pw.println(mClientManager);
+
+        if (mEndpointManager != null) {
+            pw.println("");
+            pw.println("=================== ENDPOINTS ====================");
+            pw.println(mEndpointManager);
+        }
 
         pw.println("");
         pw.println("=================== TRANSACTIONS ====================");

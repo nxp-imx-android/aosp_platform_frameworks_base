@@ -89,6 +89,10 @@ public final class InputDataStore {
             final InputStream inputStream = mInputGestureFileInjector.openRead(userId);
             inputGestureDataList = readInputGesturesXml(inputStream, false);
             inputStream.close();
+        } catch (FileNotFoundException exception) {
+            // There are valid reasons for the file to be missing, such as shortcuts having not
+            // been registered by the user.
+            return List.of();
         } catch (IOException exception) {
             // In case we are unable to read from the file on disk or another IO operation error,
             // fail gracefully.

@@ -35,6 +35,21 @@ internal fun Element(
     sceneOrOverlay: Content,
     key: ElementKey,
     modifier: Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    Box(
+        modifier.element(layoutImpl, sceneOrOverlay, key),
+        propagateMinConstraints = true,
+        content = content,
+    )
+}
+
+@Composable
+internal fun ElementWithValues(
+    layoutImpl: SceneTransitionLayoutImpl,
+    sceneOrOverlay: Content,
+    key: ElementKey,
+    modifier: Modifier,
     content: @Composable ElementScope<ElementContentScope>.() -> Unit,
 ) {
     Box(modifier.element(layoutImpl, sceneOrOverlay, key), propagateMinConstraints = true) {

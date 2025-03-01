@@ -127,26 +127,6 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
-    fun startMinimizedModeTransition_callsFreeformTaskTransitionHandler() {
-        val wct = WindowContainerTransaction()
-        val taskId = 1
-        val isLastTask = false
-        whenever(
-                freeformTaskTransitionHandler.startMinimizedModeTransition(
-                    any(),
-                    anyInt(),
-                    anyBoolean(),
-                )
-            )
-            .thenReturn(mock())
-
-        mixedHandler.startMinimizedModeTransition(wct, taskId, isLastTask)
-
-        verify(freeformTaskTransitionHandler)
-            .startMinimizedModeTransition(eq(wct), eq(taskId), eq(isLastTask))
-    }
-
-    @Test
     @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX)
     fun startRemoveTransition_callsFreeformTaskTransitionHandler() {
         val wct = WindowContainerTransaction()

@@ -16,6 +16,8 @@
 
 package com.android.compose.animation.scene
 
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MotionScheme
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
@@ -59,4 +61,8 @@ internal class PropertyTransformationScopeImpl(private val layoutImpl: SceneTran
 
     override val layoutDirection: LayoutDirection
         get() = layoutImpl.layoutDirection
+
+    @ExperimentalMaterial3ExpressiveApi
+    override val motionScheme: MotionScheme
+        get() = layoutImpl.state.motionScheme
 }

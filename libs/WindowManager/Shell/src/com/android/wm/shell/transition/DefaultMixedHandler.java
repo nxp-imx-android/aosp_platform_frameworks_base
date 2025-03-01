@@ -40,7 +40,6 @@ import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
 import com.android.wm.shell.common.ComponentUtils;
@@ -378,7 +377,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 return this::setRecentsTransitionDuringKeyguard;
             } else if (mDesktopTasksController != null
                     // Check on the default display. Recents/gesture nav is only available there
-                    && mDesktopTasksController.visibleTaskCount(DEFAULT_DISPLAY) > 0) {
+                    && mDesktopTasksController.isAnyDeskActive(DEFAULT_DISPLAY)) {
                 return this::setRecentsTransitionDuringDesktop;
             }
         }
@@ -438,9 +437,6 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         }
         for (int i = 0; i < info.getRootCount(); ++i) {
             out.addRoot(info.getRoot(i));
-        }
-        if (!Flags.moveAnimationOptionsToChange()) {
-            out.setAnimationOptions(info.getAnimationOptions());
         }
         return out;
     }

@@ -66,6 +66,7 @@ import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -94,6 +95,7 @@ import com.android.systemui.keyguard.KeyguardWmStateRefactor;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.keyguard.ui.view.InWindowLauncherUnlockAnimationManager;
 import com.android.systemui.model.SysUiState;
+import com.android.systemui.model.SysUiState.SysUiStateCallback;
 import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.navigationbar.NavigationModeController;
 import com.android.systemui.navigationbar.views.NavigationBar;
@@ -584,7 +586,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
             // Force-update the systemui state flags
             updateSystemUiStateFlags();
-            notifySystemUiStateFlags(mSysUiState.getFlags());
+            // TODO b/398011576 - send the state for all displays.
+            notifySystemUiStateFlags(mSysUiState.getFlags(), Display.DEFAULT_DISPLAY);
 
             notifyConnectionChanged();
         }
@@ -650,6 +653,13 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 }
             };
 
+    private final SysUiStateCallback mSysUiStateCallback =
+            new SysUiStateCallback() {
+                @Override
+                public void onSystemUiStateChanged(long sysUiFlags, int displayId) {
+                    notifySystemUiStateFlags(sysUiFlags, displayId);
+                }
+            };
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     @Inject
     public LauncherProxyService(Context context,
@@ -708,8 +718,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 com.android.internal.R.string.config_recentsComponentName));
         mQuickStepIntent = new Intent(ACTION_QUICKSTEP)
                 .setPackage(mRecentsComponentName.getPackageName());
+        // TODO b/398011576 - Here we're still only handling the default display state. We should
+        //  have a callback for any sysuiState change.
         mSysUiState = sysUiState;
-        mSysUiState.addCallback(this::notifySystemUiStateFlags);
+        mSysUiState.addCallback(mSysUiStateCallback);
         mUiEventLogger = uiEventLogger;
         mDisplayTracker = displayTracker;
         mUnfoldTransitionProgressForwarder = unfoldTransitionProgressForwarder;
@@ -815,14 +827,14 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         }
     }
 
-    private void notifySystemUiStateFlags(@SystemUiStateFlags long flags) {
+    private void notifySystemUiStateFlags(@SystemUiStateFlags long flags, int displayId) {
         if (SysUiState.DEBUG) {
             Log.d(TAG_OPS, "Notifying sysui state change to launcher service: proxy="
-                    + mLauncherProxy + " flags=" + flags);
+                    + mLauncherProxy + " flags=" + flags + " displayId=" + displayId);
         }
         try {
             if (mLauncherProxy != null) {
-                mLauncherProxy.onSystemUiStateChanged(flags);
+                mLauncherProxy.onSystemUiStateChanged(flags, displayId);
             }
         } catch (RemoteException e) {
             Log.e(TAG_OPS, "Failed to notify sysui state change", e);

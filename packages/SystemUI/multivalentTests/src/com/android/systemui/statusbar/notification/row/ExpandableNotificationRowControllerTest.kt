@@ -21,6 +21,7 @@ import android.app.Notification
 import android.net.Uri
 import android.os.UserHandle
 import android.os.UserHandle.USER_ALL
+import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -36,6 +37,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.statusbar.SbnBuilder
 import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider
@@ -229,6 +231,10 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     @Test
     fun registerSettingsListener_forBubbles() {
         controller.init(mock(NotificationEntry::class.java))
+        val entryAdapter = mock(EntryAdapter::class.java)
+        whenever(entryAdapter.sbn).thenReturn(mock(StatusBarNotification::class.java))
+        whenever(view.entryAdapter).thenReturn(entryAdapter)
+
         val viewStateObserver = withArgCaptor {
             verify(view).addOnAttachStateChangeListener(capture())
         }
@@ -239,6 +245,9 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     @Test
     fun unregisterSettingsListener_forBubbles() {
         controller.init(mock(NotificationEntry::class.java))
+        val entryAdapter = mock(EntryAdapter::class.java)
+        whenever(entryAdapter.sbn).thenReturn(mock(StatusBarNotification::class.java))
+        whenever(view.entryAdapter).thenReturn(entryAdapter)
         val viewStateObserver = withArgCaptor {
             verify(view).addOnAttachStateChangeListener(capture())
         }
@@ -255,6 +264,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
 
     @Test
     fun settingsListener_invalidUserId() {
+        whenever(view.entryAdapter).thenReturn(mock(EntryAdapter::class.java))
         controller.mSettingsListener.onSettingChanged(BUBBLES_SETTING_URI, -1000, "1")
         controller.mSettingsListener.onSettingChanged(BUBBLES_SETTING_URI, -1000, null)
 
@@ -265,6 +275,12 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     fun settingsListener_validUserId() {
         val childView: NotificationContentView = mock()
         whenever(view.privateLayout).thenReturn(childView)
+        val entryAdapter = mock(EntryAdapter::class.java)
+        val sbn =
+            SbnBuilder().setNotification(Notification.Builder(mContext).build())
+                .setUser(UserHandle.of(view.entry.sbn.userId)).build()
+        whenever(entryAdapter.sbn).thenReturn(sbn)
+        whenever(view.entryAdapter).thenReturn(entryAdapter)
 
         controller.mSettingsListener.onSettingChanged(
             BUBBLES_SETTING_URI,
@@ -293,6 +309,9 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
             .thenReturn(
                 NotificationEntryBuilder().setSbn(sbn).setUser(UserHandle.of(USER_ALL)).build()
             )
+        val entryAdapter = mock(EntryAdapter::class.java)
+        whenever(entryAdapter.sbn).thenReturn(sbn)
+        whenever(view.entryAdapter).thenReturn(entryAdapter)
 
         controller.mSettingsListener.onSettingChanged(BUBBLES_SETTING_URI, 9, "1")
         verify(childView).setBubblesEnabledForUser(true)

@@ -42,13 +42,17 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.server.wm.DesktopModeBoundsCalculator.DESKTOP_MODE_INITIAL_BOUNDS_SCALE;
 import static com.android.server.wm.DesktopModeBoundsCalculator.DESKTOP_MODE_LANDSCAPE_APP_PADDING;
+import static com.android.server.wm.DesktopModeBoundsCalculator.centerInScreen;
 import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.PHASE_DISPLAY;
 import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.RESULT_CONTINUE;
+import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.RESULT_DONE;
 import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.RESULT_SKIP;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import android.app.ActivityOptions;
 import android.compat.testing.PlatformCompatChangeRule;
@@ -58,6 +62,7 @@ import android.graphics.Rect;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.util.Size;
 import android.view.Gravity;
 
 import androidx.test.filters.SmallTest;
@@ -98,7 +103,8 @@ public class DesktopModeLaunchParamsModifierTests extends
         mResult = new LaunchParamsController.LaunchParams();
         mResult.reset();
 
-        mTarget = new DesktopModeLaunchParamsModifier(mContext);
+        mTarget = spy(new DesktopModeLaunchParamsModifier(mContext));
+        doReturn(true).when(mTarget).isEnteringDesktopMode(any(), any(), any());
     }
 
     @Test
@@ -134,6 +140,81 @@ public class DesktopModeLaunchParamsModifierTests extends
         setupDesktopModeLaunchParamsModifier();
 
         assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(null).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsSkipIfIsEnteringDesktopModeFalse() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenReturn(false);
+
+        final Task task = new TaskBuilder(mSupervisor).build();
+
+        assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfVisibleFreeformTaskExists() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final DisplayContent dc = spy(createNewDisplay());
+        final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        doReturn(existingFreeformTask.getRootActivity()).when(dc)
+                .getTopMostVisibleFreeformActivity();
+        final Task launchingTask = new TaskBuilder(mSupervisor).build();
+        launchingTask.onDisplayChanged(dc);
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(launchingTask).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfTaskInFreeform() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final Task task = new TaskBuilder(mSupervisor).setWindowingMode(WINDOWING_MODE_FREEFORM)
+                .build();
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(task).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfFreeformRequestViaActivityOptions() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final Task task = new TaskBuilder(mSupervisor).build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testReturnsContinueIfFreeformRequestViaPreviousModifier() {
+        setupDesktopModeLaunchParamsModifier();
+        when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
+
+        final Task task = new TaskBuilder(mSupervisor).build();
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+
+        assertEquals(RESULT_CONTINUE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
     }
 
     @Test
@@ -1018,6 +1099,110 @@ public class DesktopModeLaunchParamsModifierTests extends
                 new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
         assertEquals(DISPLAY_BOUNDS.width(), mResult.mBounds.width());
         assertEquals(DISPLAY_BOUNDS.height(), mResult.mBounds.height());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX})
+    public void testOptionsBoundsSet_flexibleLaunchSize_windowingModeSet() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchBounds(new Rect(
+                        DISPLAY_STABLE_BOUNDS.left,
+                        DISPLAY_STABLE_BOUNDS.top,
+                        /* right = */ 500,
+                        /* bottom = */ 500))
+                .setFlexibleLaunchSize(true);
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX})
+    public void testOptionsBoundsSet_flexibleLaunchSize_boundsSizeModified() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchBounds(new Rect(
+                        DISPLAY_STABLE_BOUNDS.left,
+                        DISPLAY_STABLE_BOUNDS.top,
+                        /* right = */ 500,
+                        /* bottom = */ 500))
+                .setFlexibleLaunchSize(true);
+        final int modifiedWidth =
+                (int) (DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final int modifiedHeight =
+                (int) (DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertEquals(modifiedWidth, mResult.mBounds.width());
+        assertEquals(modifiedHeight, mResult.mBounds.height());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX})
+    public void testOptionsBoundsSet_flexibleLaunchSizeWithCascading_cornerCascadeRespected() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
+        // Set launch bounds with corner cascade.
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchBounds(new Rect(
+                        DISPLAY_STABLE_BOUNDS.left,
+                        DISPLAY_STABLE_BOUNDS.top,
+                        /* right = */ 500,
+                        /* bottom = */ 500))
+                .setFlexibleLaunchSize(true);
+
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertEquals(DISPLAY_STABLE_BOUNDS.left, mResult.mBounds.left);
+        assertEquals(DISPLAY_STABLE_BOUNDS.top, mResult.mBounds.top);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX})
+    public void testOptionsBoundsSet_flexibleLaunchSize_centerCascadeRespected() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
+        // Set launch bounds with center cascade.
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchBounds(new Rect(
+                        /* left = */ 320,
+                        /* top = */ 100,
+                        /* right = */ 640,
+                        /* bottom = */ 200))
+                .setFlexibleLaunchSize(true);
+        final int modifiedWidth =
+                (int) (DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final int modifiedHeight =
+                (int) (DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final Rect centerCascadedBounds = centerInScreen(
+            new Size(modifiedWidth, modifiedHeight), DISPLAY_STABLE_BOUNDS);
+
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertEquals(centerCascadedBounds, mResult.mBounds);
+        assertEquals(centerCascadedBounds.top, mResult.mBounds.top);
     }
 
     @Test

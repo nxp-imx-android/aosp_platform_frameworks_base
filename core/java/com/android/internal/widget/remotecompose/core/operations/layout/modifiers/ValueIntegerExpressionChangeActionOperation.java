@@ -133,7 +133,7 @@ public class ValueIntegerExpressionChangeActionOperation extends Operation
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER, SerializeTags.ACTION)
-                .add("type", "ValueIntegerExpressionChangeActionOperation")
+                .addType("ValueIntegerExpressionChangeActionOperation")
                 .add("targetValueId", mTargetValueId)
                 .add("valueExpressionId", mValueExpressionId);
     }

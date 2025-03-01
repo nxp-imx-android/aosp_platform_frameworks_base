@@ -245,12 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth-сувязь."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Значок прылады з Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Націсніце, каб задаць падрабязныя налады прылады"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Націсніце, каб пабачыць усе прылады"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Націсніце, каб спалучыць новую прыладу"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Наладзіць звесткі пра прыладу"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Паглядзець усе прылады"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Спалучыць новую прыладу"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Працэнт зараду акумулятара невядомы."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Падлучаны да <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Ёсць падключэнне да <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Разгарнуць групу."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Адкрыць праграму."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Няма падключэння."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Роўмінг"</string>
@@ -328,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Увод"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Слыхавыя апараты"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Уключэнне…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Не ўдаецца адрэгуляваць яркасць, бо яна\nкантралюецца асноўнай праграмай"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Аўтапаварот"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Аўтаматычны паварот экрана"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Месцазнаходжанне"</string>
@@ -420,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Навакольныя гукі"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Левы бок"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Правы бок"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Зрабіць левую і правую панэлі кіравання"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Зрабіць адну панэль кіравання"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Выключыць навакольныя гукі"</string>
@@ -471,7 +483,7 @@
     <string name="zen_silence_introduction" msgid="6117517737057344014">"Гэта заблакіруе ЎСЕ гукі і вібрацыі, у тым ліку ад будзільнікаў, музыкі, відэа і гульняў."</string>
     <string name="notification_tap_again" msgid="4477318164947497249">"Дакраніцеся яшчэ раз, каб адкрыць"</string>
     <string name="tap_again" msgid="1315420114387908655">"Націсніце яшчэ раз"</string>
-    <string name="keyguard_unlock" msgid="8031975796351361601">"Каб адкрыць, прагарніце ўверх"</string>
+    <string name="keyguard_unlock" msgid="8031975796351361601">"Каб адкрыць, правядзіце пальцам уверх"</string>
     <string name="keyguard_unlock_press" msgid="9140109453735019209">"Каб адкрыць, націсніце значок разблакіроўкі"</string>
     <string name="keyguard_face_successful_unlock_swipe" msgid="6180997591385846073">"Твар распазнаны. Каб адкрыць, прагарніце ўверх."</string>
     <string name="keyguard_face_successful_unlock_press" msgid="25520941264602588">"Твар распазнаны. Для адкрыцця націсніце значок разблакіроўкі"</string>
@@ -534,6 +546,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"скасаваць выбар віджэта"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Паменшыць вышыню"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Павялічыць вышыню"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Паказаць наступны"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Паказаць папярэдні"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Віджэты на экране блакіроўкі"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Каб адкрыць праграму з дапамогай віджэта, вам неабходна будзе пацвердзіць сваю асобу. Таксама памятайце, што такія віджэты могуць пабачыць іншыя людзі, нават калі экран планшэта заблакіраваны. Некаторыя віджэты могуць не падыходзіць для выкарыстання на экране блакіроўкі, і дадаваць іх сюды можа быць небяспечна."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Зразумела"</string>
@@ -806,7 +820,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> не падтрымлівае функцыі размовы"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Водгук"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Закрыць"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Больш не паказваць"</string>
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Не паказваць як замацаванае"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Паказ навін у рэальным часе"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Замацаваныя апавяшчэнні паказваюць актуальную інфармацыю з праграм і заўсёды з’яўляюцца на панэлі стану і экране блакіроўкі"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Гэтыя апавяшчэнні нельга змяніць."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Апавяшчэнні пра выклікі нельга змяніць."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Тут канфігурыраваць гэту групу апавяшчэнняў забаронена"</string>
@@ -893,7 +909,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Шматзадачнасць"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Падзяліць экран і памясціць праграму справа"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Падзяліць экран і памясціць праграму злева"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Уключыць поўнаэкранны рэжым"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Выкарыстоўваць поўнаэкранны рэжым"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Выкарыстоўваць версію для камп’ютараў"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Пераключыцца на праграму справа або ўнізе на падзеленым экране"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Пераключыцца на праграму злева або ўверсе на падзеленым экране"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"У рэжыме падзеленага экрана замяніць адну праграму на іншую"</string>
@@ -980,6 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Паказваць значкі апавяшчэнняў з нізкім прыярытэтам"</string>
     <string name="other" msgid="429768510980739978">"Іншае"</string>
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"змяніць памер пліткі"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"выдаліць плітку"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"дадаць плітку ў апошнюю пазіцыю"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Перамясціць плітку"</string>
@@ -1494,6 +1512,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Прагляд нядаўніх праграм"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Пераключэнне праграм"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Гатова"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Далей"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Паспрабуйце яшчэ раз!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Назад"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Правядзіце па сэнсарнай панэлі трыма пальцамі ўлева ці ўправа"</string>
@@ -1531,7 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Для прагляду нядаўніх праграм правядзіце па сэнсарнай панэлі трыма пальцамі ўверх і затрымайцеся"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Каб праглядзець усе праграмы, націсніце на клавішу дзеяння на клавіятуры"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Схавана"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Разблакіруйце экран, каб праглядзець"</string>
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Разблакіруйце экран, каб праглядзець"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Разблакіруйце экран, каб праглядзець код"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Кантэкстнае навучанне"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Выкарыстайце сэнсарную панэль для вяртання"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Правядзіце ўлева ці ўправа трыма пальцамі. Націсніце, каб азнаёміцца з іншымі жэстамі."</string>
@@ -1554,4 +1574,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Невядома"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Скінуць усе пліткі?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Усе пліткі хуткіх налад будуць скінуты да першапачатковых налад прылады"</string>
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

@@ -41,6 +41,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -79,6 +80,7 @@ import android.net.vcn.VcnManager;
 import android.net.vcn.VcnUnderlyingNetworkPolicy;
 import android.net.vcn.util.PersistableBundleUtils;
 import android.net.vcn.util.PersistableBundleUtils.PersistableBundleWrapper;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.ParcelUuid;
 import android.os.PersistableBundle;
@@ -93,7 +95,6 @@ import android.telephony.TelephonyManager;
 import android.util.ArraySet;
 
 import androidx.test.filters.SmallTest;
-import androidx.test.runner.AndroidJUnit4;
 
 import com.android.server.VcnManagementService.VcnCallback;
 import com.android.server.VcnManagementService.VcnStatusCallbackInfo;
@@ -101,6 +102,8 @@ import com.android.server.vcn.TelephonySubscriptionTracker;
 import com.android.server.vcn.Vcn;
 import com.android.server.vcn.VcnContext;
 import com.android.server.vcn.VcnNetworkProvider;
+import com.android.testutils.DevSdkIgnoreRule;
+import com.android.testutils.DevSdkIgnoreRunner;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -117,8 +120,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-/** Tests for {@link VcnManagementService}. */
-@RunWith(AndroidJUnit4.class)
+// TODO: b/374174952 After B finalization, use Sdk36ModuleController to ensure VCN tests only run on
+// Android B/B+
+@RunWith(DevSdkIgnoreRunner.class)
+@DevSdkIgnoreRule.IgnoreUpTo(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @SmallTest
 public class VcnManagementServiceTest {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -1084,6 +1089,10 @@ public class VcnManagementServiceTest {
 
     @Test
     public void testGetRestrictedTransportsFromCarrierConfig() {
+        assumeTrue(
+                "Configuring restricted transport types is only allowed on a debuggable build",
+                Build.isDebuggable());
+
         final Set<Integer> restrictedTransports = new ArraySet<>();
         restrictedTransports.add(TRANSPORT_CELLULAR);
         restrictedTransports.add(TRANSPORT_WIFI);
@@ -1105,6 +1114,10 @@ public class VcnManagementServiceTest {
 
     @Test
     public void testGetRestrictedTransportsFromCarrierConfig_noRestrictPolicyConfigured() {
+        assumeTrue(
+                "Configuring restricted transport types is only allowed on a debuggable build",
+                Build.isDebuggable());
+
         final Set<Integer> restrictedTransports = Collections.singleton(TRANSPORT_WIFI);
 
         final PersistableBundleWrapper carrierConfig =
@@ -1119,6 +1132,10 @@ public class VcnManagementServiceTest {
 
     @Test
     public void testGetRestrictedTransportsFromCarrierConfig_noCarrierConfig() {
+        assumeTrue(
+                "Configuring restricted transport types is only allowed on a debuggable build",
+                Build.isDebuggable());
+
         final Set<Integer> restrictedTransports = Collections.singleton(TRANSPORT_WIFI);
 
         final TelephonySubscriptionSnapshot lastSnapshot =
@@ -1130,6 +1147,10 @@ public class VcnManagementServiceTest {
 
     @Test
     public void testGetRestrictedTransportsFromCarrierConfigAndVcnConfig() {
+        assumeTrue(
+                "Configuring restricted transport types is only allowed on a debuggable build",
+                Build.isDebuggable());
+
         // Configure restricted transport in CarrierConfig
         final Set<Integer> restrictedTransportInCarrierConfig =
                 Collections.singleton(TRANSPORT_WIFI);

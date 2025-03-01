@@ -202,7 +202,7 @@ object OngoingActivityChipBinder {
                 )
             }
             is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon -> {
-                StatusBarConnectedDisplays.assertInNewMode()
+                StatusBarConnectedDisplays.unsafeAssertInNewMode()
                 val iconView = fetchStatusBarIconView(iconViewStore, icon)
                 if (iconView == null) {
                     // This means that the notification key doesn't exist anymore.
@@ -223,7 +223,7 @@ object OngoingActivityChipBinder {
         iconViewStore: IconViewStore?,
         icon: OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon,
     ): StatusBarIconView? {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         if (iconViewStore == null) {
             throw IllegalStateException("Store should always be non-null when flag is enabled.")
         }
@@ -408,10 +408,12 @@ object OngoingActivityChipBinder {
     private fun View.setBackgroundPaddingForEmbeddedPaddingIcon() {
         val sidePadding =
             if (StatusBarNotifChips.isEnabled) {
-                0
-            } else {
                 context.resources.getDimensionPixelSize(
                     R.dimen.ongoing_activity_chip_side_padding_for_embedded_padding_icon
+                )
+            } else {
+                context.resources.getDimensionPixelSize(
+                    R.dimen.ongoing_activity_chip_side_padding_for_embedded_padding_icon_legacy
                 )
             }
         setPaddingRelative(sidePadding, paddingTop, sidePadding, paddingBottom)

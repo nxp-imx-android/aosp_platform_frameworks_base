@@ -126,7 +126,6 @@ public class ApnSetting implements Parcelable {
     /** APN type for ENTERPRISE. */
     public static final int TYPE_ENTERPRISE = ApnTypes.ENTERPRISE;
     /** APN type for RCS (Rich Communication Services). */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final int TYPE_RCS = ApnTypes.RCS;
     /** APN type for OEM_PAID networks (Automotive PANS) */
     @FlaggedApi(Flags.FLAG_OEM_PAID_PRIVATE)
@@ -379,7 +378,6 @@ public class ApnSetting implements Parcelable {
      * modem components or carriers. Non-system apps should use the integer variants instead.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     @SystemApi
     public static final String TYPE_RCS_STRING = "rcs";
 

@@ -51,7 +51,7 @@ class AppCompatController {
                         @NonNull ActivityRecord activityRecord) {
         final PackageManager packageManager = wmService.mContext.getPackageManager();
         final OptPropFactory optPropBuilder = new OptPropFactory(packageManager,
-                activityRecord.packageName);
+                activityRecord.packageName, activityRecord.mUserId);
         mDeviceStateQuery = new AppCompatDeviceStateQuery(activityRecord);
         mTransparentPolicy = new TransparentPolicy(activityRecord,
                 wmService.mAppCompatConfiguration);

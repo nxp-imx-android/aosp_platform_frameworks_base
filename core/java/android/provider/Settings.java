@@ -153,7 +153,6 @@ public final class Settings {
      * Output: Nothing.
      */
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
-    @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String ACTION_SATELLITE_SETTING = "android.settings.SATELLITE_SETTING";
 
     /**
@@ -9346,6 +9345,28 @@ public final class Settings {
                 "accessibility_autoclick_ignore_minor_cursor_movement";
 
         /**
+         * String setting that stores the position of the autoclick panel when
+         * {@link #ACCESSIBILITY_AUTOCLICK_ENABLED} is set. The position is stored as a
+         * comma-separated string containing gravity, x-coordinate, y-coordinate, and corner index.
+         * For example, "8388659,15,30,0", where 8388659 means gravity Gravity.START | Gravity.TOP.
+         *
+         * @see #ACCESSIBILITY_AUTOCLICK_ENABLED
+         * @hide
+         */
+        public static final String ACCESSIBILITY_AUTOCLICK_PANEL_POSITION =
+                "accessibility_autoclick_panel_position";
+
+        /**
+         * Setting that specifies whether autoclick type reverts to left click after performing
+         * an action when {@link #ACCESSIBILITY_AUTOCLICK_ENABLED} is set.
+         *
+         * @see #ACCESSIBILITY_AUTOCLICK_ENABLED
+         * @hide
+         */
+        public static final String ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK =
+                "accessibility_autoclick_revert_to_left_click";
+
+        /**
          * Whether or not larger size icons are used for the pointer of mouse/trackpad for
          * accessibility.
          * (0 = false, 1 = true)
@@ -13018,18 +13039,16 @@ public final class Settings {
          * false/0.
          * @hide
          */
-        @Readable
         public static final String REDACT_OTP_NOTIFICATION_WHILE_CONNECTED_TO_WIFI =
                 "redact_otp_on_wifi";
 
         /**
-         * Toggle for whether to immediately redact OTP notifications, or require the device to be
-         * locked for 10 minutes. Defaults to false/0
+         * Time (in milliseconds) that the device should need to be locked, in order for an OTP
+         * notification to be redacted. Default is 10 minutes (600,000 ms)
          * @hide
          */
-        @Readable
-        public static final String REDACT_OTP_NOTIFICATION_IMMEDIATELY =
-                "remove_otp_redaction_delay";
+        public static final String OTP_NOTIFICATION_REDACTION_LOCK_TIME =
+                "otp_redaction_lock_time";
 
         /**
          * These entries are considered common between the personal and the managed profile,

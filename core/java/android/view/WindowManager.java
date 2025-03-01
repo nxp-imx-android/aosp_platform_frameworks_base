@@ -625,6 +625,18 @@ public interface WindowManager extends ViewManager {
     int TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH = (1 << 14); // 0x4000
 
     /**
+     * Transition flag: Indicates that aod is showing hidden by entering doze
+     * @hide
+     */
+    int TRANSIT_FLAG_AOD_APPEARING = (1 << 15); // 0x8000
+
+    /**
+     * Transition flag: Indicates that the task shouldn't move to front when launching the activity.
+     * @hide
+     */
+    int TRANSIT_FLAG_AVOID_MOVE_TO_FRONT = (1 << 16); // 0x10000
+
+    /**
      * @hide
      */
     @IntDef(flag = true, prefix = { "TRANSIT_FLAG_" }, value = {
@@ -643,6 +655,8 @@ public interface WindowManager extends ViewManager {
             TRANSIT_FLAG_KEYGUARD_OCCLUDING,
             TRANSIT_FLAG_KEYGUARD_UNOCCLUDING,
             TRANSIT_FLAG_PHYSICAL_DISPLAY_SWITCH,
+            TRANSIT_FLAG_AOD_APPEARING,
+            TRANSIT_FLAG_AVOID_MOVE_TO_FRONT,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface TransitionFlags {}
@@ -659,7 +673,8 @@ public interface WindowManager extends ViewManager {
             (TRANSIT_FLAG_KEYGUARD_GOING_AWAY
             | TRANSIT_FLAG_KEYGUARD_APPEARING
             | TRANSIT_FLAG_KEYGUARD_OCCLUDING
-            | TRANSIT_FLAG_KEYGUARD_UNOCCLUDING);
+            | TRANSIT_FLAG_KEYGUARD_UNOCCLUDING
+            | TRANSIT_FLAG_AOD_APPEARING);
 
     /**
      * Remove content mode: Indicates remove content mode is currently not defined.
@@ -1197,6 +1212,43 @@ public interface WindowManager extends ViewManager {
      */
     String PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE =
             "android.window.PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE";
+
+    /**
+     * Application-level [PackageManager][android.content.pm.PackageManager.Property] tag that (when
+     * set to false) informs the system the app has opted out of the camera compatibility treatment
+     * for fixed-orientation apps, which simulates running on a portrait device, in the orientation
+     * requested by the app.
+     *
+     * <p>This treatment aims to mitigate camera issues on large screens, like stretched or sideways
+     * previews. It simulates running on a portrait device by:
+     * <ul>
+     *   <li>Letterboxing the app window,
+     *   <li>Cropping the camera buffer to match the app's requested orientation,
+     *   <li>Setting the camera sensor orientation to portrait.
+     *   <li>Setting the display rotation to match the app's requested orientation, given portrait
+     *       natural orientation,
+     *   <li>Refreshes the activity to trigger new camera setup, with sandboxed values.
+     * </ul>
+     *
+     * <p>To opt out of the camera compatibility treatment, add this property to your app manifest
+     * and set the value to {@code false}.
+     *
+     * <p>Not setting this property at all, or setting this property to {@code true} has no effect.
+     *
+     * <p><b>Syntax:</b>
+     * <pre>
+     * &lt;application&gt;
+     *   &lt;property
+     *     android:name="android.window.PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION"
+     *     android:value="true|false"/&gt;
+     * &lt;/application&gt;
+     * </pre>
+     *
+     * @hide
+     */
+    //TODO(b/394590412): Make this property public.
+    String PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION =
+            "android.window.PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION";
 
     /**
      * Application level {@link android.content.pm.PackageManager.Property PackageManager.Property}

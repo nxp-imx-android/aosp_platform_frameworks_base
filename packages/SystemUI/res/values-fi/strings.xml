@@ -247,12 +247,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth yhdistetty."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Bluetooth-laitekuvake"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Määritä laitteen asetukset klikkaamalla"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Katso kaikki laitteet klikkaamalla"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Muodosta uusi laitepari klikkaamalla"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Määritä laitteen tiedot"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Katso kaikki laitteet"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Muodosta uusi laitepari"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Akun varaustaso ei tiedossa."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Yhteys: <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Yhdistetty kohteeseen <xliff:g id="CAST">%s</xliff:g>"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Laajenna ryhmä."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"Avaa sovellus."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Ei yhteyttä."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -330,7 +335,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Syöttölaite"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Kuulolaitteet"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Otetaan käyttöön…"</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Kirkkautta ei voi säätää, koska \n ensisijainen sovellus ohjaa sitä"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Automaattinen kääntö"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Käännä näyttöä automaattisesti."</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Sijainti"</string>
@@ -422,6 +428,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Ympäristö"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Vasen"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Oikea"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Laajenna vasemmalle ja oikealle erilliset ohjaimet"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Tiivistä yhtenäiseksi säätimeksi"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Mykistä ympäristö"</string>
@@ -536,6 +548,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"poista widgetin valinta"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Vähennä korkeutta"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Lisää korkeutta"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Näytä seuraava"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Näytä edellinen"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Lukitusnäytön widgetit"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Jos haluat avata sovelluksen käyttämällä widgetiä, sinun täytyy vahvistaa henkilöllisyytesi. Muista myös, että widgetit näkyvät kaikille, vaikka tabletti olisi lukittuna. Jotkin widgetit on ehkä tarkoitettu lukitusnäytölle, ja niiden lisääminen tänne ei välttämättä ole turvallista."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Selvä"</string>
@@ -808,7 +822,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ei tue keskusteluominaisuuksia"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Palaute"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Hylkää"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Älä näytä uudelleen"</string>
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Älä näytä kiinnitettynä"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Näytetään livepäivitykset"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Kiinnitetyissä ilmoituksissa näytetään livetietoja sovelluksista, ja ilmoitukset näkyvät aina tilapalkissa ja lukitusnäytöllä"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Näitä ilmoituksia ei voi muokata"</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Puheluilmoituksia ei voi muokata."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Tätä ilmoitusryhmää ei voi määrittää tässä"</string>
@@ -895,7 +911,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Multitaskaus"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Käytä jaettua näyttöä niin, että sovellus on oikealla"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Käytä jaettua näyttöä niin, että sovellus on vasemmalla"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Koko näytölle siirtyminen"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Käytä koko näytön tilaa"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Käytä tietokonenäkymää"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Vaihda sovellukseen oikealla tai alapuolella jaetussa näytössä"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Vaihda sovellukseen vasemmalla tai yläpuolella jaetussa näytössä"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Jaetun näytön aikana: korvaa sovellus toisella"</string>
@@ -982,6 +999,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Näytä vähemmän tärkeät ilmoituskuvakkeet"</string>
     <string name="other" msgid="429768510980739978">"Muu"</string>
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ruudun koko päälle/pois"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"poista kiekko"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"lisää laatta viimeiseen kohtaan"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Siirrä kiekkoa"</string>
@@ -1324,7 +1342,7 @@
     <string name="see_all_networks" msgid="3773666844913168122">"Näytä kaikki"</string>
     <string name="to_switch_networks_disconnect_ethernet" msgid="6698111101156951955">"Irrota Ethernet-johto, jos haluat vaihtaa verkkoa"</string>
     <string name="wifi_scan_notify_message" msgid="3753839537448621794">"Laitteen käyttökokemuksen parantamiseksi sovellukset ja palvelut voivat hakea Wi-Fi-verkkoja myös silloin, kun Wi-Fi on pois päältä. Voit muuttaa asetusta Wi-Fi-haun asetuksissa. "<annotation id="link">"Muuta"</annotation></string>
-    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Laita lentokonetila pois päältä"</string>
+    <string name="turn_off_airplane_mode" msgid="8425587763226548579">"Lentokonetila pois"</string>
     <string name="qs_tile_request_dialog_text" msgid="3501359944139877694">"<xliff:g id="APPNAME">%1$s</xliff:g> haluaa lisätä seuraavan laatan pika-asetuksiin"</string>
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"Lisää laatta"</string>
     <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"Älä lisää laattaa"</string>
@@ -1396,8 +1414,7 @@
     <string name="rear_display_accessibility_folded_animation" msgid="1538121649587978179">"Taitettava laite taitetaan"</string>
     <string name="rear_display_accessibility_unfolded_animation" msgid="1946153682258289040">"Taitettava laite käännetään ympäri"</string>
     <string name="rear_display_unfolded_front_screen_on" msgid="5946436677205643170">"Etunäyttö päällä"</string>
-    <!-- no translation found for rear_display_unfolded_front_screen_on_slide_to_cancel (1455192420423012859) -->
-    <skip />
+    <string name="rear_display_unfolded_front_screen_on_slide_to_cancel" msgid="1455192420423012859">"Liu\'uta käyttääksesi sisäistä näyttöä"</string>
     <string name="quick_settings_rotation_posture_folded" msgid="2430280856312528289">"taitettu"</string>
     <string name="quick_settings_rotation_posture_unfolded" msgid="6372316273574167114">"taittamaton"</string>
     <string name="rotation_tile_with_posture_secondary_label_template" msgid="7648496484163318886">"%1$s / %2$s"</string>
@@ -1497,6 +1514,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Katso viimeisimmät sovellukset"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Vaihda sovellusta"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Valmis"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Seuraava"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Yritä uudelleen."</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Takaisin"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Pyyhkäise kosketuslevyllä vasemmalle tai oikealle kolmella sormella"</string>
@@ -1534,7 +1552,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Näet äskeiset sovellukset, kun pyyhkäiset ylös ja pidät kosketuslevyä painettuna kolmella sormella."</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Jos haluat nähdä kaikki sovellukset, paina näppäimistön toimintonäppäintä"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Sensuroitu"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Avaa lukitus ja katso tiedot"</string>
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Avaa lukitus ja katso tiedot"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Avaa lukitus nähdäksesi koodin"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Kontekstuaalinen koulutus"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Takaisin siirtyminen kosketuslevyn avulla"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Pyyhkäise vasemmalle tai oikealle kolmella sormella. Lue lisää eleistä napauttamalla."</string>
@@ -1557,4 +1576,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tuntematon"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Nollataanko kaikki laatat?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Kaikki pika-asetuslaatat palautetaan laitteen alkuperäisiin asetuksiin"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

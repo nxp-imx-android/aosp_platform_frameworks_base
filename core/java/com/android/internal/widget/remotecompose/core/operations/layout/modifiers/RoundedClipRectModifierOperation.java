@@ -167,7 +167,7 @@ public class RoundedClipRectModifierOperation extends DrawBase4
     public void serialize(MapSerializer serializer) {
         serialize(serializer, "topStart", "topEnd", "bottomStart", "bottomEnd")
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("width", mWidth)
                 .add("height", mHeight);
     }

@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -31,9 +29,9 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickCallback
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickListener
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.phone.SystemUIDialog
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import kotlin.test.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyBoolean
@@ -64,7 +62,7 @@ class OngoingActivityChipViewModelTest : SysuiTestCase() {
         mock<Expandable>().apply { whenever(dialogTransitionController(any())).thenReturn(mock()) }
 
     @Test
-    @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
+    @DisableChipsModernization
     fun createDialogLaunchOnClickListener_showsDialogOnClick() {
         val cuj = DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Test")
         val clickListener =
@@ -82,7 +80,7 @@ class OngoingActivityChipViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun createDialogLaunchOnClickCallback_showsDialogOnClick() {
         val cuj = DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Test")
         val clickCallback =

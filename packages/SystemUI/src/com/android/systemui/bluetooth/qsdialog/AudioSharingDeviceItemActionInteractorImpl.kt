@@ -124,10 +124,18 @@ constructor(
             when (deviceItem.type) {
                 DeviceItemType.AUDIO_SHARING_MEDIA_BLUETOOTH_DEVICE -> {
                     uiEventLogger.log(BluetoothTileDialogUiEvent.CHECK_MARK_ACTION_BUTTON_CLICKED)
+                    logger.logAudioSharingButtonClick(
+                        AudioSharingButtonClick.CHECK_MARK,
+                        deviceItem,
+                    )
                     audioSharingInteractor.stopAudioSharing()
                 }
                 DeviceItemType.AVAILABLE_AUDIO_SHARING_MEDIA_BLUETOOTH_DEVICE -> {
                     uiEventLogger.log(BluetoothTileDialogUiEvent.PLUS_ACTION_BUTTON_CLICKED)
+                    logger.logAudioSharingButtonClick(
+                        AudioSharingButtonClick.PLUS_BUTTON,
+                        deviceItem,
+                    )
                     audioSharingInteractor.startAudioSharing()
                 }
                 else -> {

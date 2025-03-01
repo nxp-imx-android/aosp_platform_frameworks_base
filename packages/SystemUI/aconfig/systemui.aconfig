@@ -203,6 +203,16 @@ flag {
 }
 
 flag {
+    name: "notifications_hun_shared_animation_values"
+    namespace: "systemui"
+    description: "Adds a shared class for fetching HUN animation values."
+    bug: "393369891"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notification_undo_guts_on_config_changed"
     namespace: "systemui"
     description: "Fixes a bug where a theme or font change while notification guts were open"
@@ -974,6 +984,26 @@ flag {
 }
 
 flag {
+    name: "use_notif_inflation_thread_for_footer"
+    namespace: "systemui"
+    description: "use the @NotifInflation thread for FooterView and EmptyShadeView inflation"
+    bug: "375320642"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "use_notif_inflation_thread_for_row"
+    namespace: "systemui"
+    description: "use the @NotifInflation thread for ExpandableNotificationRow inflation"
+    bug: "375320642"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notify_power_manager_user_activity_background"
     namespace: "systemui"
     description: "Decide whether to notify the user activity to power manager in the background thread."
@@ -1350,6 +1380,16 @@ flag {
 }
 
 flag {
+    name: "media_controls_a11y_colors"
+    namespace: "systemui"
+    description: "Color scheme updates for improved a11y"
+    bug: "378848399"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "output_switcher_redesign"
   namespace: "systemui"
   description: "Enables visual update for Media Output Switcher"
@@ -1391,16 +1431,6 @@ flag {
    metadata {
      purpose: PURPOSE_BUGFIX
    }
-}
-
-flag {
-  name: "notification_media_manager_background_execution"
-  namespace: "systemui"
-  description: "Decide whether to execute binder calls in background thread"
-  bug: "336612071"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
@@ -1895,10 +1925,27 @@ flag {
 }
 
 flag {
+   name: "physical_notification_movement"
+   namespace: "systemui"
+   description: "Make notifications use physics based animations for movement"
+   bug: "393581344"
+}
+
+flag {
    name: "glanceable_hub_direct_edit_mode"
    namespace: "systemui"
    description: "Invokes edit mode directly from long press in glanceable hub"
    bug: "382531177"
+}
+
+flag {
+   name: "notification_appear_nonlinear"
+   namespace: "systemui"
+   description: "Fix linear usage of notification appear"
+   bug: "397658189"
+   metadata {
+     purpose: PURPOSE_BUGFIX
+   }
 }
 
 flag {
@@ -1977,6 +2024,16 @@ flag {
 }
 
 flag {
+    name: "hardware_color_styles"
+    namespace: "systemui"
+    description: "Enables loading initial colors based ion hardware color"
+    bug: "347286986"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "shade_launch_accessibility"
    namespace: "systemui"
    description: "Intercept accessibility focus events for the Shade during launch animations to avoid stray TalkBack events."
@@ -2035,4 +2092,14 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+    name: "always_compose_qs_ui_fragment"
+    namespace: "systemui"
+    description: "Have QQS and QS scenes in the Compose fragment always composed, not just when it should be visible."
+    bug: "389985793"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

@@ -959,6 +959,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     void setShadeExpansion(float expandedHeight, float expandedFraction) {
         mShadeExpandedHeight = expandedHeight;
         mShadeExpandedFraction = expandedFraction;
+        mMediaHierarchyManager.setShadeExpandedFraction(expandedFraction);
     }
 
     @VisibleForTesting
@@ -2158,6 +2159,8 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
 
     /** */
     public final class QsFragmentListener implements FragmentHostManager.FragmentListener {
+        private boolean mPreviouslyVisibleMedia = false;
+
         /** */
         @Override
         public void onFragmentViewCreated(String tag, Fragment fragment) {
@@ -2183,7 +2186,12 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                     setAnimateNextNotificationBounds(
                             StackStateAnimator.ANIMATION_DURATION_STANDARD, 0);
                     mNotificationStackScrollLayoutController.animateNextTopPaddingChange();
+                    if (QSComposeFragment.isEnabled() && mPreviouslyVisibleMedia && !visible) {
+                        updateHeightsOnShadeLayoutChange();
+                        mPanelViewControllerLazy.get().positionClockAndNotifications();
+                    }
                 }
+                mPreviouslyVisibleMedia = visible;
             });
             mLockscreenShadeTransitionController.setQS(mQs);
             if (QSComposeFragment.isEnabled()) {

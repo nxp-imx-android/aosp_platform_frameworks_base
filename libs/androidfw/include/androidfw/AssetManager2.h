@@ -21,6 +21,7 @@
 
 #include <array>
 #include <limits>
+#include <optional>
 #include <set>
 #include <span>
 #include <unordered_map>
@@ -167,9 +168,9 @@ class AssetManager2 {
     return configurations_;
   }
 
-  inline void SetDefaultLocale(uint32_t default_locale) {
-    default_locale_ = default_locale;
-  }
+  void SetDefaultLocale(const std::optional<ResTable_config> default_locale);
+
+  void SetOverlayConstraints(int32_t display_id, int32_t device_id);
 
   // Returns all configurations for which there are resources defined, or an I/O error if reading
   // resource data failed.
@@ -389,6 +390,9 @@ class AssetManager2 {
 
       // The cookie of the overlay assets.
       ApkAssetsCookie cookie;
+
+      // Enable/disable status of the overlay based on current constraints of AssetManager.
+      bool enabled;
   };
 
   // Represents a logical package, which can be made up of many individual packages. Each package
@@ -457,6 +461,8 @@ class AssetManager2 {
   // promoted apk assets when the last operation ends.
   void FinishOperation() const;
 
+  bool IsAnyOverlayConstraintSatisfied(const Idmap_constraints& constraints) const;
+
   // The ordered list of ApkAssets to search. These are not owned by the AssetManager, and must
   // have a longer lifetime.
   // The second pair element is the promoted version of the assets, that is held for the duration
@@ -474,11 +480,14 @@ class AssetManager2 {
   // without taking too much memory.
   std::array<uint8_t, std::numeric_limits<uint8_t>::max() + 1> package_ids_ = {};
 
-  uint32_t default_locale_ = 0;
+  std::optional<ResTable_config> default_locale_;
 
   // The current configurations set for this AssetManager. When this changes, cached resources
   // may need to be purged.
   ftl::SmallVector<ResTable_config, 1> configurations_;
+
+  int32_t display_id_;
+  int32_t device_id_;
 
   // Cached set of bags. These are cached because they can inherit keys from parent bags,
   // which involves some calculation.

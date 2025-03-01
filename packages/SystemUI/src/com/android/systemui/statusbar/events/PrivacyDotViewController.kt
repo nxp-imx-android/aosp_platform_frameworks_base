@@ -190,7 +190,7 @@ constructor(
     }
 
     override fun stop() {
-        StatusBarConnectedDisplays.assertInNewMode()
+        StatusBarConnectedDisplays.unsafeAssertInNewMode()
         contentInsetsProvider.removeCallback(insetsChangedListener)
         configurationController.removeCallback(configurationListener)
         stateController.removeCallback(statusBarStateListener)

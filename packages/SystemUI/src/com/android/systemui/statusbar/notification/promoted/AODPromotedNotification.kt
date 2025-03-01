@@ -17,8 +17,10 @@
 package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Flags
+import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.graphics.PorterDuff
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -79,9 +81,13 @@ fun AODPromotedNotification(
     val content = viewModel.content ?: return
     val audiblyAlertedIconVisible = viewModel.audiblyAlertedIconVisible
 
-    key(content.identity) {
-        val layoutResource = content.layoutResource ?: return
+    val layoutResource = content.layoutResource
+    if (layoutResource == null) {
+        Log.w(TAG, "not displaying promoted notif with ineligible style on AOD")
+        return
+    }
 
+    key(content.identity) {
         val sidePaddings = dimensionResource(systemuiR.dimen.notification_side_paddings)
         val sidePaddingValues = PaddingValues(horizontal = sidePaddings, vertical = 0.dp)
 
@@ -166,7 +172,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val closeButton: View? = root.findViewById(R.id.close_button)
     private val conversationIconBadge: View? = root.findViewById(R.id.conversation_icon_badge)
     private val conversationIcon: CachingIconView? = root.findViewById(R.id.conversation_icon)
-    private val conversationText: TextView? = root.findViewById(R.id.conversation_text)
+    private val conversationText: TextView? =
+        root.findViewById(
+            if (notificationsRedesignTemplates()) R.id.title else R.id.conversation_text
+        )
     private val expandButton: NotificationExpandButton? = root.findViewById(R.id.expand_button)
     private val headerText: TextView? = root.findViewById(R.id.header_text)
     private val headerTextDivider: View? = root.findViewById(R.id.header_text_divider)
@@ -386,24 +395,21 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         setTextViewColor(time, SecondaryText)
         setTextViewColor(chronometer, SecondaryText)
 
-        val timeValue = content.time
-
-        if (timeValue == null) {
-            time?.visibility = GONE
-            chronometer?.visibility = GONE
-        } else if (timeValue.mode == When.Mode.BasicTime) {
-            time?.visibility = VISIBLE
-            time?.setTime(timeValue.time)
-            chronometer?.visibility = GONE
-        } else {
-            inflateChronometer()
-
-            time?.visibility = GONE
-            chronometer?.visibility = VISIBLE
-            chronometer?.base = timeValue.time
-            chronometer?.isCountDown = (timeValue.mode == When.Mode.CountDown)
-            chronometer?.setStarted(true)
+        if (content.time is When.Time) {
+            time?.setTime(content.time.currentTimeMillis)
         }
+
+        if (content.time is When.Chronometer) {
+            inflateChronometer()
+            chronometer?.base = content.time.elapsedRealtimeMillis
+            chronometer?.isCountDown = content.time.isCountDown
+            chronometer?.setStarted(true)
+        } else {
+            chronometer?.stop()
+        }
+
+        time?.isVisible = (content.time is When.Time)
+        chronometer?.isVisible = (content.time is When.Chronometer)
     }
 
     private fun updateSmallIcon(

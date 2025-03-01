@@ -48,7 +48,6 @@ import com.android.systemui.animation.back.BackAnimationSpec;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.model.SysUiState;
-import com.android.systemui.settings.FakeDisplayTracker;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -84,8 +83,7 @@ public class SystemUIDialogTest extends SysuiTestCase {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         KosmosJavaAdapter kosmos = new KosmosJavaAdapter(this);
-        FakeDisplayTracker displayTracker = new FakeDisplayTracker(mContext);
-        mSysUiState = new SysUiState(displayTracker, kosmos.getSceneContainerPlugin());
+        mSysUiState = kosmos.getSysuiState();
         mDependency.injectTestDependency(BroadcastDispatcher.class, mBroadcastDispatcher);
         when(mDelegate.getBackAnimationSpec(ArgumentMatchers.any()))
                 .thenReturn(mock(BackAnimationSpec.class));

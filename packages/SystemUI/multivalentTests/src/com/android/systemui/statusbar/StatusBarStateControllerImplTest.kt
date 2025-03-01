@@ -253,6 +253,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             underTest.addCallback(listener)
 
             val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
             val deviceUnlockStatus by
                 collectLastValue(kosmos.deviceUnlockedInteractor.deviceUnlockStatus)
 
@@ -269,9 +270,9 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             // Call start to begin hydrating based on the scene framework:
             underTest.start()
 
-            sceneInteractor.changeScene(toScene = Scenes.Bouncer, loggingReason = "reason")
+            sceneInteractor.showOverlay(overlay = Overlays.Bouncer, loggingReason = "reason")
             runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Bouncer)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
             assertThat(statusBarState).isEqualTo(StatusBarState.KEYGUARD)
 
             sceneInteractor.changeScene(toScene = Scenes.Shade, loggingReason = "reason")
@@ -373,13 +374,12 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             // Call start to begin hydrating based on the scene framework:
             underTest.start()
 
-            sceneInteractor.changeScene(Scenes.Bouncer, loggingReason = "reason")
+            sceneInteractor.showOverlay(Overlays.Bouncer, loggingReason = "reason")
             runCurrent()
-            assertThat(currentScene).isEqualTo(Scenes.Bouncer)
-            assertThat(currentOverlays).isEmpty()
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
             assertThat(statusBarState).isEqualTo(StatusBarState.KEYGUARD)
 
-            sceneInteractor.changeScene(Scenes.Lockscreen, loggingReason = "reason")
+            sceneInteractor.hideOverlay(Overlays.Bouncer, loggingReason = "reason")
             runCurrent()
 
             sceneInteractor.showOverlay(Overlays.NotificationsShade, loggingReason = "reason")
@@ -507,6 +507,11 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
         testScope.runTest {
             underTest.start()
             underTest.setLeaveOpenOnKeyguardHide(true)
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "")
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            runCurrent()
 
             keyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.AOD,
@@ -515,6 +520,7 @@ class StatusBarStateControllerImplTest(flags: FlagsParameterization) : SysuiTest
             )
             assertThat(underTest.leaveOpenOnKeyguardHide()).isEqualTo(true)
 
+            kosmos.sceneInteractor.changeScene(Scenes.Gone, "")
             kosmos.setTransition(
                 sceneTransition = Idle(Scenes.Gone),
                 stateTransition =

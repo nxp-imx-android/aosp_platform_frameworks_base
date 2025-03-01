@@ -61,6 +61,8 @@ import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.policy.BluetoothController;
 
+import dagger.Lazy;
+
 import kotlinx.coroutines.Job;
 
 import java.util.List;
@@ -84,7 +86,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
 
     private final Executor mExecutor;
 
-    private final BluetoothDetailsContentViewModel mDetailsContentViewModel;
+    private final Lazy<BluetoothDetailsContentViewModel> mDetailsContentViewModel;
 
     private final FeatureFlags mFeatureFlags;
     @Nullable
@@ -104,7 +106,7 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
             QSLogger qsLogger,
             BluetoothController bluetoothController,
             FeatureFlags featureFlags,
-            BluetoothDetailsContentViewModel detailsContentViewModel
+            Lazy<BluetoothDetailsContentViewModel> detailsContentViewModel
     ) {
         super(host, uiEventLogger, backgroundLooper, mainHandler, falsingManager, metricsLogger,
                 statusBarStateController, activityStarter, qsLogger);
@@ -133,39 +135,33 @@ public class BluetoothTile extends QSTileImpl<BooleanState> {
                 callback.accept(new BluetoothDetailsViewModel(() -> {
                     longClick(null);
                     return null;
-                }, mDetailsContentViewModel))
+                }, mDetailsContentViewModel.get()))
         );
         return true;
     }
 
     private void handleClickWithSatelliteCheck(Runnable clickCallback) {
-        if (com.android.internal.telephony.flags.Flags.oemEnabledSatelliteFlag()) {
-            if (mClickJob != null && !mClickJob.isCompleted()) {
-                return;
-            }
-            mClickJob = SatelliteDialogUtils.mayStartSatelliteWarningDialog(
-                    mContext, this, TYPE_IS_BLUETOOTH, isAllowClick -> {
-                        if (!isAllowClick) {
-                            return null;
-                        }
-                        clickCallback.run();
-                        return null;
-                    });
+        if (mClickJob != null && !mClickJob.isCompleted()) {
             return;
         }
-        clickCallback.run();
+        mClickJob = SatelliteDialogUtils.mayStartSatelliteWarningDialog(
+                mContext, this, TYPE_IS_BLUETOOTH, isAllowClick -> {
+                    if (!isAllowClick) {
+                        return null;
+                    }
+                    clickCallback.run();
+                    return null;
+                });
     }
 
     private void handleClickEvent(@Nullable Expandable expandable) {
         if (mFeatureFlags.isEnabled(Flags.BLUETOOTH_QS_TILE_DIALOG)) {
-            mDetailsContentViewModel.showDetailsContent(expandable, /* view= */ null);
+            mDetailsContentViewModel.get().showDialog(expandable);
         } else {
             // Secondary clicks are header clicks, just toggle.
             toggleBluetooth();
         }
     }
-
-
 
     @Override
     public Intent getLongClickIntent() {

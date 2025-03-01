@@ -35,8 +35,6 @@ import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaControlModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.controller.MediaLocation
-import com.android.systemui.media.controls.util.MediaSmartspaceLogger.Companion.SMARTSPACE_CARD_CLICK_EVENT
-import com.android.systemui.media.controls.util.MediaSmartspaceLogger.Companion.SMARTSPACE_CARD_DISMISS_EVENT
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.res.R
 import java.util.concurrent.Executor
@@ -90,13 +88,7 @@ class MediaControlViewModel(
         instanceId: InstanceId,
     ) {
         logger.logLongPressDismiss(uid, packageName, instanceId)
-        interactor.removeMediaControl(
-            token,
-            instanceId,
-            MEDIA_PLAYER_ANIMATION_DELAY,
-            SMARTSPACE_CARD_DISMISS_EVENT,
-            location,
-        )
+        interactor.removeMediaControl(token, instanceId, MEDIA_PLAYER_ANIMATION_DELAY)
     }
 
     private fun toViewModel(model: MediaControlModel): MediaPlayerViewModel {
@@ -141,21 +133,13 @@ class MediaControlViewModel(
             onClicked = { expandable ->
                 model.clickIntent?.let { clickIntent ->
                     logger.logTapContentView(model.uid, model.packageName, model.instanceId)
-                    interactor.startClickIntent(
-                        expandable,
-                        clickIntent,
-                        SMARTSPACE_CARD_CLICK_EVENT,
-                        location,
-                    )
+                    interactor.startClickIntent(expandable, clickIntent)
                 }
             },
             onLongClicked = {
                 logger.logLongPressOpen(model.uid, model.packageName, model.instanceId)
             },
-            onSeek = {
-                logger.logSeek(model.uid, model.packageName, model.instanceId)
-                interactor.logSmartspaceUserEvent(SMARTSPACE_CARD_CLICK_EVENT, location)
-            },
+            onSeek = { logger.logSeek(model.uid, model.packageName, model.instanceId) },
             onBindSeekbar = { seekBarViewModel ->
                 if (model.isResume && model.resumeProgress != null) {
                     seekBarViewModel.updateStaticProgress(model.resumeProgress)
@@ -366,7 +350,6 @@ class MediaControlViewModel(
         action: Runnable,
     ) {
         logger.logTapAction(id, uid, packageName, instanceId)
-        interactor.logSmartspaceUserEvent(SMARTSPACE_CARD_CLICK_EVENT, location)
         isAnyButtonClicked = true
         action.run()
     }
@@ -418,7 +401,11 @@ class MediaControlViewModel(
             )
 
         const val TURBULENCE_NOISE_PLAY_MS_DURATION = 7500L
-        const val MEDIA_PLAYER_SCRIM_START_ALPHA = 0.25f
-        const val MEDIA_PLAYER_SCRIM_END_ALPHA = 1.0f
+        @Deprecated("Remove with media_controls_a11y_colors flag")
+        const val MEDIA_PLAYER_SCRIM_START_ALPHA_LEGACY = 0.25f
+        @Deprecated("Remove with media_controls_a11y_colors flag")
+        const val MEDIA_PLAYER_SCRIM_END_ALPHA_LEGACY = 1.0f
+        const val MEDIA_PLAYER_SCRIM_START_ALPHA = 0.65f
+        const val MEDIA_PLAYER_SCRIM_END_ALPHA = 0.75f
     }
 }

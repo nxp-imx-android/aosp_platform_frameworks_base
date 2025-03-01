@@ -215,7 +215,7 @@ public class TextFromFloat extends Operation implements VariableSupport, Seriali
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("textId", mTextId)
                 .add("value", mValue, mOutValue)
                 .add("digitsBefore", mDigitsBefore)

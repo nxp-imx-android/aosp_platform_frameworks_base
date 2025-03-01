@@ -113,7 +113,7 @@ constructor(
     val canShowEditMode =
         allOf(
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Gone,
+                    content = Scenes.Gone,
                     stateWithoutSceneContainer = KeyguardState.GONE,
                 ),
                 communalInteractor.editModeOpen,

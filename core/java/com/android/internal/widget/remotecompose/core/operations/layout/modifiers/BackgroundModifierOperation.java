@@ -228,7 +228,7 @@ public class BackgroundModifierOperation extends DecoratorModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
-                .add("type", "BackgroundModifierOperation")
+                .addType("BackgroundModifierOperation")
                 .add("x", mX)
                 .add("y", mY)
                 .add("width", mWidth)

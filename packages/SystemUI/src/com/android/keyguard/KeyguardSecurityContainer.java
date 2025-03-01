@@ -172,6 +172,7 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
     private boolean mIsDragging;
     private float mStartTouchY = -1;
     private boolean mDisappearAnimRunning;
+    private boolean mIsAppearAnimationDelayed;
     private SwipeListener mSwipeListener;
     private ViewMode mViewMode = new DefaultViewMode();
     private boolean mIsInteractable;
@@ -583,6 +584,10 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
         return false;
     }
 
+    boolean isAppearAnimationDelayed() {
+        return mIsAppearAnimationDelayed;
+    }
+
     void addMotionEventListener(Gefingerpoken listener) {
         mMotionEventListeners.add(listener);
     }
@@ -622,6 +627,19 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
         setTranslationY(0f);
         updateChildren(0 /* translationY */, 1f /* alpha */);
         mViewMode.startAppearAnimation(securityMode);
+    }
+
+    /**
+     * Set view translationY and alpha as we delay bouncer animation.
+     */
+    public void setupForDelayedAppear() {
+        setTranslationY(0f);
+        setAlpha(0f);
+        setIsAppearAnimationDelayed(true);
+    }
+
+    public void setIsAppearAnimationDelayed(boolean isDelayed) {
+        mIsAppearAnimationDelayed = isDelayed;
     }
 
     private void beginJankInstrument(int cuj) {
@@ -812,6 +830,7 @@ public class KeyguardSecurityContainer extends ConstraintLayout {
     public void reset() {
         mViewMode.reset();
         mDisappearAnimRunning = false;
+        mIsAppearAnimationDelayed = false;
     }
 
     /**

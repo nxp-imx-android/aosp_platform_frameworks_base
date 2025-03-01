@@ -16,6 +16,7 @@
 package com.android.wm.shell.windowdecor.tiling
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
@@ -85,11 +86,14 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
         dividerMoveCallback: DividerMoveCallback,
         dividerBounds: Rect,
         handleRegionSize: Size,
+        isDarkMode: Boolean,
     ) {
         callback = dividerMoveCallback
         this.dividerBounds.set(dividerBounds)
         handle.setIsLeftRightSplit(true)
+        handle.setup(/* isSplitScreen= */ false, isDarkMode)
         corners.setIsLeftRightSplit(true)
+        corners.setup(/* isSplitScreen= */ false, isDarkMode)
         handleRegionHeight = handleRegionSize.height
         handleRegionWidth = handleRegionSize.width
         cornersRadius =
@@ -103,6 +107,18 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
             )
     }
 
+    fun onUiModeChange(isDarkMode: Boolean) {
+        handle.onUiModeChange(isDarkMode)
+        corners.onUiModeChange(isDarkMode)
+        paint.color =
+            if (isDarkMode) {
+                resources.getColor(R.color.tiling_divider_background_dark, null /* theme */)
+            } else {
+                resources.getColor(R.color.tiling_divider_background_light, null /* theme */)
+            }
+        invalidate()
+    }
+
     override fun onFinishInflate() {
         super.onFinishInflate()
         dividerBar = requireViewById(R.id.divider_bar)
@@ -112,7 +128,15 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
             resources.getDimensionPixelSize(R.dimen.docked_stack_divider_lift_elevation)
         setOnTouchListener(this)
         setWillNotDraw(false)
-        paint.color = resources.getColor(R.color.split_divider_background, null)
+        paint.color =
+            if (
+                context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+                    Configuration.UI_MODE_NIGHT_YES
+            ) {
+                resources.getColor(R.color.tiling_divider_background_dark, /* theme= */null)
+            } else {
+                resources.getColor(R.color.tiling_divider_background_light, /* theme= */ null)
+            }
         paint.isAntiAlias = true
         paint.style = Paint.Style.FILL
     }

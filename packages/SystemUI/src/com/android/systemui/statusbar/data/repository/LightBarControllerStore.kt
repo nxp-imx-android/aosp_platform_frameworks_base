@@ -22,7 +22,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayScopeRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
-import com.android.systemui.display.data.repository.PerDisplayStoreImpl
 import com.android.systemui.statusbar.phone.LightBarController
 import com.android.systemui.statusbar.phone.LightBarControllerImpl
 import dagger.Binds
@@ -47,7 +46,10 @@ constructor(
     private val darkIconDispatcherStore: DarkIconDispatcherStore,
 ) :
     LightBarControllerStore,
-    PerDisplayStoreImpl<LightBarController>(backgroundApplicationScope, displayRepository) {
+    StatusBarPerDisplayStoreImpl<LightBarController>(
+        backgroundApplicationScope,
+        displayRepository,
+    ) {
 
     override fun createInstanceForDisplay(displayId: Int): LightBarController? {
         val darkIconDispatcher = darkIconDispatcherStore.forDisplay(displayId) ?: return null

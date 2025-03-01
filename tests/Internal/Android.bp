@@ -45,6 +45,7 @@ android_test {
         "junit",
         "androidx.test.rules",
         "platform-test-annotations",
+        "truth",
     ],
     manifest: "ApplicationSharedMemoryTest32/AndroidManifest.xml",
     test_config: "ApplicationSharedMemoryTest32/AndroidTest.xml",

@@ -145,11 +145,11 @@ public class ProtoLogCommandHandler extends ShellCommand {
 
         switch (cmd) {
             case "enable" -> {
-                mProtoLogConfigurationService.enableProtoLogToLogcat(processGroups());
+                mProtoLogConfigurationService.enableProtoLogToLogcat(pw, processGroups());
                 return 0;
             }
             case "disable" -> {
-                mProtoLogConfigurationService.disableProtoLogToLogcat(processGroups());
+                mProtoLogConfigurationService.disableProtoLogToLogcat(pw, processGroups());
                 return 0;
             }
             default -> {

@@ -40,6 +40,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
 import com.android.systemui.keyguard.ui.StateToValue
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.ui.viewmodel.NotificationShadeWindowModel
@@ -100,6 +101,7 @@ constructor(
     private val aodToLockscreenTransitionViewModel: AodToLockscreenTransitionViewModel,
     private val aodToOccludedTransitionViewModel: AodToOccludedTransitionViewModel,
     private val aodToPrimaryBouncerTransitionViewModel: AodToPrimaryBouncerTransitionViewModel,
+    private val aodToGlanceableHubTransitionViewModel: AodToGlanceableHubTransitionViewModel,
     private val dozingToDreamingTransitionViewModel: DozingToDreamingTransitionViewModel,
     private val dozingToGoneTransitionViewModel: DozingToGoneTransitionViewModel,
     private val dozingToLockscreenTransitionViewModel: DozingToLockscreenTransitionViewModel,
@@ -111,6 +113,7 @@ constructor(
     private val dreamingToLockscreenTransitionViewModel: DreamingToLockscreenTransitionViewModel,
     private val glanceableHubToLockscreenTransitionViewModel:
         GlanceableHubToLockscreenTransitionViewModel,
+    private val glanceableHubToAodTransitionViewModel: GlanceableHubToAodTransitionViewModel,
     private val goneToAodTransitionViewModel: GoneToAodTransitionViewModel,
     private val goneToDozingTransitionViewModel: GoneToDozingTransitionViewModel,
     private val goneToDreamingTransitionViewModel: GoneToDreamingTransitionViewModel,
@@ -180,7 +183,7 @@ constructor(
                         edgeWithoutSceneContainer = Edge.create(from = LOCKSCREEN, to = GONE),
                     ),
                     keyguardTransitionInteractor.isInTransition(
-                        edge = Edge.create(from = Scenes.Bouncer, to = LOCKSCREEN),
+                        edge = Edge.create(from = Overlays.Bouncer, to = LOCKSCREEN),
                         edgeWithoutSceneContainer =
                             Edge.create(from = PRIMARY_BOUNCER, to = LOCKSCREEN),
                     ),
@@ -224,7 +227,7 @@ constructor(
                 .map { it > 1f - offToLockscreenTransitionViewModel.alphaStartAt }
                 .onStart { emit(false) },
             keyguardTransitionInteractor
-                .transitionValue(scene = Scenes.Gone, stateWithoutSceneContainer = GONE)
+                .transitionValue(content = Scenes.Gone, stateWithoutSceneContainer = GONE)
                 .map { it == 1f }
                 .onStart { emit(false) },
         )
@@ -258,6 +261,7 @@ constructor(
                         aodToLockscreenTransitionViewModel.lockscreenAlpha(viewState),
                         aodToOccludedTransitionViewModel.lockscreenAlpha(viewState),
                         aodToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
+                        aodToGlanceableHubTransitionViewModel.lockscreenAlpha(viewState),
                         dozingToDreamingTransitionViewModel.lockscreenAlpha,
                         dozingToGoneTransitionViewModel.lockscreenAlpha(viewState),
                         dozingToLockscreenTransitionViewModel.lockscreenAlpha,
@@ -267,6 +271,7 @@ constructor(
                         dreamingToGoneTransitionViewModel.lockscreenAlpha,
                         dreamingToLockscreenTransitionViewModel.lockscreenAlpha,
                         glanceableHubToLockscreenTransitionViewModel.keyguardAlpha,
+                        glanceableHubToAodTransitionViewModel.lockscreenAlpha,
                         goneToAodTransitionViewModel.enterFromTopAnimationAlpha,
                         goneToDozingTransitionViewModel.lockscreenAlpha,
                         goneToDreamingTransitionViewModel.lockscreenAlpha,
@@ -357,7 +362,7 @@ constructor(
                     .map { it > 0f }
                     .onStart { emit(false) },
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Gone,
+                    content = Scenes.Gone,
                     stateWithoutSceneContainer = GONE,
                 ),
                 deviceEntryInteractor.isBypassEnabled,

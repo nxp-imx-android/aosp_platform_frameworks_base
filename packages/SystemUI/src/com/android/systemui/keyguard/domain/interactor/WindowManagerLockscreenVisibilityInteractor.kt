@@ -61,7 +61,7 @@ constructor(
     private val defaultSurfaceBehindVisibility =
         combine(
             transitionInteractor.isFinishedIn(
-                scene = Scenes.Gone,
+                content = Scenes.Gone,
                 stateWithoutSceneContainer = KeyguardState.GONE,
             ),
             wakeToGoneInteractor.canWakeDirectlyToGone,
@@ -121,7 +121,7 @@ constructor(
                     when {
                         state.isTransitioning(from = Scenes.Lockscreen, to = Scenes.Gone) ->
                             isDeviceEnteredDirectly
-                        state.isTransitioning(from = Scenes.Bouncer, to = Scenes.Gone) ->
+                        state.isTransitioning(from = Overlays.Bouncer, to = Scenes.Gone) ->
                             (state as Transition).progress.map { progress ->
                                 progress >
                                     FromPrimaryBouncerTransitionInteractor
@@ -179,7 +179,7 @@ constructor(
                         edgeWithoutSceneContainer = Edge.create(to = KeyguardState.GONE),
                     ),
                     transitionInteractor.isFinishedIn(
-                        scene = Scenes.Gone,
+                        content = Scenes.Gone,
                         stateWithoutSceneContainer = KeyguardState.GONE,
                     ),
                     surfaceBehindInteractor.isAnimatingSurface,
@@ -202,21 +202,23 @@ constructor(
                     when (it) {
                         is Idle -> {
                             when (it.currentScene) {
-                                in keyguardScenes -> flowOf(true)
-                                in nonKeyguardScenes -> flowOf(false)
-                                in keyguardAgnosticScenes -> isDeviceNotEnteredDirectly
+                                in keyguardContent -> flowOf(true)
+                                in nonKeyguardContent -> flowOf(false)
+                                in keyguardAgnosticContent -> isDeviceNotEnteredDirectly
                                 else ->
                                     throw IllegalStateException("Unknown scene: ${it.currentScene}")
                             }
                         }
                         is Transition -> {
                             when {
-                                it.isTransitioningSets(from = keyguardScenes) -> flowOf(true)
-                                it.isTransitioningSets(from = nonKeyguardScenes) -> flowOf(false)
-                                it.isTransitioningSets(from = keyguardAgnosticScenes) ->
+                                it.isTransitioningSets(from = keyguardContent) -> flowOf(true)
+                                it.isTransitioningSets(from = nonKeyguardContent) -> flowOf(false)
+                                it.isTransitioningSets(from = keyguardAgnosticContent) ->
                                     isDeviceNotEnteredDirectly
                                 else ->
-                                    throw IllegalStateException("Unknown scene: ${it.fromContent}")
+                                    throw IllegalStateException(
+                                        "Unknown content: ${it.fromContent}"
+                                    )
                             }
                         }
                     }
@@ -330,22 +332,23 @@ constructor(
 
     companion object {
         /**
-         * Scenes that are part of the keyguard and are shown when the device is locked or when the
+         * Content that is part of the keyguard and are shown when the device is locked or when the
          * keyguard still needs to be dismissed.
          */
-        val keyguardScenes = setOf(Scenes.Lockscreen, Scenes.Bouncer, Scenes.Communal, Scenes.Dream)
+        val keyguardContent =
+            setOf(Scenes.Lockscreen, Overlays.Bouncer, Scenes.Communal, Scenes.Dream)
 
         /**
-         * Scenes that don't belong in the keyguard family and cannot show when the device is locked
-         * or when the keyguard still needs to be dismissed.
+         * Content that doesn't belong in the keyguard family and cannot show when the device is
+         * locked or when the keyguard still needs to be dismissed.
          */
-        private val nonKeyguardScenes = setOf(Scenes.Gone)
+        private val nonKeyguardContent = setOf(Scenes.Gone)
 
         /**
-         * Scenes that can show regardless of device lock or keyguard dismissal states. Other
+         * Content that can show regardless of device lock or keyguard dismissal states. Other
          * sources of state need to be consulted to know whether the device has been entered or not.
          */
-        private val keyguardAgnosticScenes =
+        private val keyguardAgnosticContent =
             setOf(
                 Scenes.Shade,
                 Scenes.QuickSettings,

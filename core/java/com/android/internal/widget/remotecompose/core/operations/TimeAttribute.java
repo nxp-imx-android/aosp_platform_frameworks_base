@@ -27,12 +27,14 @@ import com.android.internal.widget.remotecompose.core.PaintOperation;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.types.LongConstant;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /** Operation to perform time related calculation */
@@ -290,6 +292,50 @@ public class TimeAttribute extends PaintOperation {
             case TIME_YEAR:
                 ctx.loadFloat(mId, time.getYear());
                 break;
+        }
+    }
+
+    @Override
+    public void serialize(MapSerializer serializer) {
+        serializer
+                .addType(CLASS_NAME)
+                .add("id", mId)
+                .add("timeId", mTimeId)
+                .addType(getTypeString())
+                .add("args", Collections.singletonList(mArgs));
+    }
+
+    private String getTypeString() {
+        int val = mType & 255;
+        switch (val) {
+            case TIME_FROM_NOW_SEC:
+                return "TIME_FROM_NOW_SEC";
+            case TIME_FROM_NOW_MIN:
+                return "TIME_FROM_NOW_MIN";
+            case TIME_FROM_NOW_HR:
+                return "TIME_FROM_NOW_HR";
+            case TIME_FROM_ARG_SEC:
+                return "TIME_FROM_ARG_SEC";
+            case TIME_FROM_ARG_MIN:
+                return "TIME_FROM_ARG_MIN";
+            case TIME_FROM_ARG_HR:
+                return "TIME_FROM_ARG_HR";
+            case TIME_IN_SEC:
+                return "TIME_IN_SEC";
+            case TIME_IN_MIN:
+                return "TIME_IN_MIN";
+            case TIME_IN_HR:
+                return "TIME_IN_HR";
+            case TIME_DAY_OF_MONTH:
+                return "TIME_DAY_OF_MONTH";
+            case TIME_MONTH_VALUE:
+                return "TIME_MONTH_VALUE";
+            case TIME_DAY_OF_WEEK:
+                return "TIME_DAY_OF_WEEK";
+            case TIME_YEAR:
+                return "TIME_YEAR";
+            default:
+                return "INVALID_TIME_TYPE";
         }
     }
 }

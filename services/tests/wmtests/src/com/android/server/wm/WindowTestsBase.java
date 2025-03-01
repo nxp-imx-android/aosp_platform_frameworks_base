@@ -136,6 +136,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -861,11 +862,9 @@ public class WindowTestsBase extends SystemServiceTestsBase {
     /** Creates a {@link DisplayContent} and adds it to the system. */
     private DisplayContent createNewDisplay(DisplayInfo info, @DisplayImePolicy int imePolicy,
             @Nullable SettingsEntry overrideSettings) {
-        final DisplayContent display =
-                new TestDisplayContent.Builder(mAtm, info)
-                        .setOverrideSettings(overrideSettings)
-                        .build();
-        final DisplayContent dc = display.mDisplayContent;
+        final DisplayContent dc = new TestDisplayContent.Builder(mAtm, info)
+                .setOverrideSettings(overrideSettings)
+                .build();
         // this display can show IME.
         dc.mWmService.mDisplayWindowSettings.setDisplayImePolicy(dc, imePolicy);
         return dc;
@@ -1024,6 +1023,16 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         final Configuration c = new Configuration();
         displayContent.computeScreenConfiguration(c);
         displayContent.performDisplayOverrideConfigUpdate(c);
+    }
+
+    static void setFieldValue(Object o, String fieldName, Object value) {
+        try {
+            final Field field = o.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(o, value);
+        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     static void makeDisplayLargeScreen(DisplayContent displayContent) {
@@ -2142,6 +2151,14 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             mLastRequest = null;
         }
 
+        void flush() {
+            if (mLastTransit != null) {
+                start();
+                finish();
+                clear();
+            }
+        }
+
         @Override
         public void onTransitionReady(IBinder transitToken, TransitionInfo transitionInfo,
                 SurfaceControl.Transaction transaction, SurfaceControl.Transaction finishT)
@@ -2161,13 +2178,14 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             mOrganizer.startTransition(mLastTransit.getToken(), null);
         }
 
-        void onTransactionReady(SurfaceControl.Transaction t) {
-            mLastTransit.onTransactionReady(mLastTransit.getSyncId(), t);
+        void onTransactionReady() {
+            // SyncGroup#finishNow -> Transition#onTransactionReady.
+            mController.mSyncEngine.abort(mLastTransit.getSyncId());
         }
 
         void start() {
             startTransition();
-            onTransactionReady(mock(SurfaceControl.Transaction.class));
+            onTransactionReady();
         }
 
         public void finish() {

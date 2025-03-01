@@ -199,6 +199,10 @@
         <service android:name="com.android.server.job.MockBiasJobService"
              android:permission="android.permission.BIND_JOB_SERVICE"/>
 
+        <activity
+            android:name="android.app.Activity"
+            android:exported="false" />
+
         <activity android:name="com.android.server.pm.BaseShortcutManagerTest$ShortcutActivity"/>
         <activity android:name="com.android.server.pm.BaseShortcutManagerTest$ShortcutActivity2"/>
         <activity android:name="com.android.server.pm.BaseShortcutManagerTest$ShortcutActivity3"/>

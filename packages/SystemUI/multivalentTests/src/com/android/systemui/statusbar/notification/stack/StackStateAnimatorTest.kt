@@ -16,12 +16,18 @@
 
 package com.android.systemui.statusbar.notification.stack
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.AnimatorTestRule
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator
+import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout.AnimationEvent
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator.ANIMATION_DURATION_HEADS_UP_APPEAR
@@ -40,6 +46,7 @@ import org.mockito.Mockito.clearInvocations
 import org.mockito.Mockito.description
 import org.mockito.Mockito.eq
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.doNothing
 
 private const val VIEW_HEIGHT = 100
 private const val FULL_SHADE_APPEAR_TRANSLATION = 300
@@ -50,17 +57,19 @@ private const val HEADS_UP_ABOVE_SCREEN = 80
 @RunWithLooper
 class StackStateAnimatorTest : SysuiTestCase() {
 
+    @get:Rule val setFlagsRule = SetFlagsRule()
     @get:Rule val animatorTestRule = AnimatorTestRule(this)
 
     private lateinit var stackStateAnimator: StackStateAnimator
+    private lateinit var headsUpAnimator: HeadsUpAnimator
     private val stackScroller: NotificationStackScrollLayout = mock()
     private val view: ExpandableView = mock()
-    private val viewState: ExpandableViewState =
-        ExpandableViewState().apply { height = VIEW_HEIGHT }
+    private lateinit var viewState: ExpandableViewState
     private val runnableCaptor: ArgumentCaptor<Runnable> = argumentCaptor()
 
     @Before
     fun setUp() {
+        viewState = ExpandableViewState().apply { height = VIEW_HEIGHT }
         overrideResource(
             R.dimen.go_to_full_shade_appearing_translation,
             FULL_SHADE_APPEAR_TRANSLATION,
@@ -69,11 +78,20 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         whenever(stackScroller.context).thenReturn(context)
         whenever(view.viewState).thenReturn(viewState)
-        stackStateAnimator = StackStateAnimator(mContext, stackScroller)
+
+        if (NotificationsHunSharedAnimationValues.isEnabled) {
+            headsUpAnimator = HeadsUpAnimator(context)
+        }
+        stackStateAnimator = StackStateAnimator(
+            mContext,
+            stackScroller,
+            if (::headsUpAnimator.isInitialized) headsUpAnimator else null,
+        )
     }
 
     @Test
-    fun startAnimationForEvents_headsUpFromTop_startsHeadsUpAppearAnim() {
+    @DisableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    fun startAnimationForEvents_headsUpFromTop_startsHeadsUpAppearAnim_flagOff() {
         val topMargin = 50f
         val expectedStartY = -topMargin - stackStateAnimator.mHeadsUpAppearStartAboveScreen
         val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR)
@@ -81,19 +99,43 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
 
-        verify(view).setActualHeight(VIEW_HEIGHT, false)
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
         verify(view, description("should animate from the top")).translationY = expectedStartY
         verify(view)
             .performAddAnimation(
                 /* delay= */ 0L,
                 /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
                 /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
                 /* onEndRunnable= */ null,
             )
     }
 
     @Test
-    fun startAnimationForEvents_headsUpFromBottom_startsHeadsUpAppearAnim() {
+    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    fun startAnimationForEvents_headsUpFromTop_startsHeadsUpAppearAnim_flagOn() {
+        val topMargin = 50f
+        val expectedStartY = -topMargin - HEADS_UP_ABOVE_SCREEN
+        val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR)
+        headsUpAnimator.stackTopMargin = topMargin.toInt()
+
+        stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
+
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
+        verify(view, description("should animate from the top")).translationY = expectedStartY
+        verify(view)
+            .performAddAnimation(
+                /* delay= */ 0L,
+                /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
+                /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
+                /* onEndRunnable= */ null,
+            )
+    }
+
+    @Test
+    @DisableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    fun startAnimationForEvents_headsUpFromBottom_startsHeadsUpAppearAnim_flagOff() {
         val screenHeight = 2000f
         val expectedStartY = screenHeight + stackStateAnimator.mHeadsUpAppearStartAboveScreen
         val event =
@@ -104,19 +146,47 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
 
-        verify(view).setActualHeight(VIEW_HEIGHT, false)
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
         verify(view, description("should animate from the bottom")).translationY = expectedStartY
         verify(view)
             .performAddAnimation(
                 /* delay= */ 0L,
                 /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
                 /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
+                /* onEndRunnable= */ null,
+            )
+    }
+
+    @DisableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
+    @Test
+    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    fun startAnimationForEvents_headsUpFromBottom_startsHeadsUpAppearAnim_flagOn() {
+        val screenHeight = 2000f
+        val expectedStartY = screenHeight + HEADS_UP_ABOVE_SCREEN
+        val event =
+            AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_APPEAR).apply {
+                headsUpFromBottom = true
+            }
+        headsUpAnimator.headsUpAppearHeightBottom = screenHeight.toInt()
+
+        stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
+
+        verify(view).setFinalActualHeight(VIEW_HEIGHT)
+        verify(view, description("should animate from the bottom")).translationY = expectedStartY
+        verify(view)
+            .performAddAnimation(
+                /* delay= */ 0L,
+                /* duration= */ ANIMATION_DURATION_HEADS_UP_APPEAR.toLong(),
+                /* isHeadsUpAppear= */ true,
+                /* isHeadsUpCycling= */ false,
                 /* onEndRunnable= */ null,
             )
     }
 
     @Test
-    fun startAnimationForEvents_startsHeadsUpDisappearAnim() {
+    @DisableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    fun startAnimationForEvents_startsHeadsUpDisappearAnim_flagOff() {
         val disappearDuration = ANIMATION_DURATION_HEADS_UP_DISAPPEAR.toLong()
         val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_DISAPPEAR)
         clearInvocations(view)
@@ -128,6 +198,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
                 /* delay= */ eq(0L),
                 /* translationDirection= */ eq(0f),
                 /* isHeadsUpAnimation= */ eq(true),
+                /* isHeadsUpCycling= */ eq(false),
                 /* onStartedRunnable= */ any(),
                 /* onFinishedRunnable= */ runnableCaptor.capture(),
                 /* animationListener= */ any(),
@@ -139,6 +210,62 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
         verify(view, description("should be translated to the heads up appear start"))
             .translationY = -stackStateAnimator.mHeadsUpAppearStartAboveScreen
+        verify(view, description("should be called at the end of the disappear animation"))
+            .removeFromTransientContainer()
+    }
+
+    @Test
+    @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    fun startAnimationForEvents_startsHeadsUpDisappearAnim_flagOn() {
+        val disappearDuration = ANIMATION_DURATION_HEADS_UP_DISAPPEAR.toLong()
+        val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_DISAPPEAR)
+        clearInvocations(view)
+        stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
+
+        verify(view)
+            .performRemoveAnimation(
+                /* duration= */ eq(disappearDuration),
+                /* delay= */ eq(0L),
+                /* translationDirection= */ eq(0f),
+                /* isHeadsUpAnimation= */ eq(true),
+                /* isHeadsUpCycling= */ eq(false),
+                /* onStartedRunnable= */ any(),
+                /* onFinishedRunnable= */ runnableCaptor.capture(),
+                /* animationListener= */ any(),
+                /* clipSide= */ eq(ExpandableView.ClipSide.BOTTOM),
+            )
+
+        animatorTestRule.advanceTimeBy(disappearDuration) // move to the end of SSA animations
+        runnableCaptor.value.run() // execute the end runnable
+
+        verify(view, description("should be translated to the heads up appear start"))
+            .translationY = -stackStateAnimator.mHeadsUpAppearStartAboveScreen
+        verify(view, description("should be called at the end of the disappear animation"))
+            .removeFromTransientContainer()
+    }
+
+    @EnableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
+    @Test
+    fun startAnimationForEvents_startsHeadsUpDisappearAnim_physical() {
+        val disappearDuration = ANIMATION_DURATION_HEADS_UP_DISAPPEAR.toLong()
+        val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_DISAPPEAR)
+        clearInvocations(view)
+        stackStateAnimator.startAnimationForEvents(arrayListOf(event), 0)
+
+        verify(view)
+            .performRemoveAnimation(
+                /* duration= */ eq(disappearDuration),
+                /* delay= */ eq(0L),
+                /* translationDirection= */ eq(0f),
+                /* isHeadsUpAnimation= */ eq(true),
+                /* isHeadsUpCycling= */ eq(false),
+                /* onStartedRunnable= */ any(),
+                /* onFinishedRunnable= */ runnableCaptor.capture(),
+                /* animationListener= */ any(),
+                /* clipSide= */ eq(ExpandableView.ClipSide.BOTTOM),
+            )
+
+        runnableCaptor.value.run() // execute the end runnable
         verify(view, description("should be called at the end of the disappear animation"))
             .removeFromTransientContainer()
     }

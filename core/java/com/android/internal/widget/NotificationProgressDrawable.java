@@ -21,6 +21,7 @@ import android.content.res.Resources;
 import android.content.res.Resources.Theme;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
@@ -74,6 +75,8 @@ public final class NotificationProgressDrawable extends Drawable {
         mFillPaint.setStyle(Paint.Style.FILL);
     }
 
+    private @ColorInt int mEndDotColor = Color.TRANSPARENT;
+
     private int mAlpha;
 
     public NotificationProgressDrawable() {
@@ -125,6 +128,16 @@ public final class NotificationProgressDrawable extends Drawable {
         setParts(Arrays.asList(parts));
     }
 
+    /**
+     * Update the color of the end dot. If TRANSPARENT, the dot is not drawn.
+     */
+    public void updateEndDotColor(@ColorInt int endDotColor) {
+        if (mEndDotColor != endDotColor) {
+            mEndDotColor = endDotColor;
+            invalidateSelf();
+        }
+    }
+
     @Override
     public void draw(@NonNull Canvas canvas) {
         final float pointRadius = mState.mPointRadius;
@@ -163,6 +176,18 @@ public final class NotificationProgressDrawable extends Drawable {
 
                 canvas.drawRoundRect(mPointRectF, cornerRadius, cornerRadius, mFillPaint);
             }
+        }
+
+        if (mEndDotColor != Color.TRANSPARENT) {
+            final float right = (float) getBounds().right;
+            final float dotRadius = mState.mFadedSegmentHeight / 2F;
+            mFillPaint.setColor(mEndDotColor);
+            // Use drawRoundRect instead of drawCircle to ensure alignment with the segment below.
+            mSegRectF.set(
+                    Math.round(right - mState.mFadedSegmentHeight), Math.round(centerY - dotRadius),
+                            Math.round(right), Math.round(centerY + dotRadius));
+            canvas.drawRoundRect(mSegRectF, mState.mSegmentCornerRadius,
+                    mState.mSegmentCornerRadius, mFillPaint);
         }
     }
 

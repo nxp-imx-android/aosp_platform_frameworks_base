@@ -900,7 +900,6 @@ public class SubscriptionInfo implements Parcelable {
      * @return {@code true} if it is a non-terrestrial network subscription, {@code false}
      * otherwise.
      */
-    @FlaggedApi(Flags.FLAG_OEM_ENABLED_SATELLITE_FLAG)
     public boolean isOnlyNonTerrestrialNetwork() {
         return mIsOnlyNonTerrestrialNetwork;
     }

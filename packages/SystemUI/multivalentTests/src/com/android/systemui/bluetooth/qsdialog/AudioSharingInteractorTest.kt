@@ -125,7 +125,9 @@ class AudioSharingInteractorTest : SysuiTestCase() {
                 bluetoothTileDialogAudioSharingRepository.emitAudioSourceStateUpdate()
                 runCurrent()
 
-                assertThat(value).isNull()
+                assertThat(value).isEqualTo(Unit)
+                verify(bluetoothTileDialogLogger).logAudioSharingStateChanged(true)
+                verify(bluetoothTileDialogLogger).logAudioSourceStateUpdate()
             }
         }
 

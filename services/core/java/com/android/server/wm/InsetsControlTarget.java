@@ -97,6 +97,20 @@ interface InsetsControlTarget extends InsetsTarget {
             @NonNull ImeTracker.Token statsToken) {
     }
 
+    /**
+     * @return {@link WindowInsets.Type.InsetsType}s which are currently animating (showing or
+     * hiding).
+     */
+    default @InsetsType int getAnimatingTypes() {
+        return 0;
+    }
+
+    /**
+     * @param animatingTypes the {@link InsetsType}s, that are currently animating
+     */
+    default void setAnimatingTypes(@InsetsType int animatingTypes) {
+    }
+
     /** Returns {@code target.getWindow()}, or null if {@code target} is {@code null}. */
     static WindowState asWindowOrNull(InsetsControlTarget target) {
         return target != null ? target.getWindow() : null;

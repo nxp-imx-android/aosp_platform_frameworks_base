@@ -22,28 +22,32 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.android.systemui.compose.modifiers.sysuiResTag
-import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.qs.footer.ui.compose.IconButton
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 
 @Composable
-fun Toolbar(toolbarViewModelFactory: ToolbarViewModel.Factory, modifier: Modifier = Modifier) {
-    val viewModel = rememberViewModel("Toolbar") { toolbarViewModelFactory.create() }
-
+fun Toolbar(viewModel: ToolbarViewModel, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         viewModel.userSwitcherViewModel?.let {
-            IconButton(it, Modifier.sysuiResTag("multi_user_switch"))
+            IconButton(
+                it,
+                useModifierBasedExpandable = true,
+                Modifier.sysuiResTag("multi_user_switch"),
+            )
         }
 
-        EditModeButton(viewModel.editModeButtonViewModelFactory)
+        EditModeButton(viewModel.editModeButtonViewModel)
 
         IconButton(
             viewModel.settingsButtonViewModel,
+            useModifierBasedExpandable = true,
             Modifier.sysuiResTag("settings_button_container"),
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
-        viewModel.powerButtonViewModel?.let { IconButton(it, Modifier.sysuiResTag("pm_lite")) }
+        viewModel.powerButtonViewModel?.let {
+            IconButton(it, useModifierBasedExpandable = true, Modifier.sysuiResTag("pm_lite"))
+        }
     }
 }

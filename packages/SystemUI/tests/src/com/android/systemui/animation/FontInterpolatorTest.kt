@@ -64,6 +64,12 @@ class FontInterpolatorTest : SysuiTestCase() {
             "'wght' 500, 'ital' 0.5, 'GRAD' 450",
             interp.lerp(startFont, endFont, 0.5f, 0.5f),
         )
+
+        // Ensure axes rounded correctly to nearest step
+        assertSameAxes(
+            "'wght' 490, 'ital' 0.5, 'GRAD' 446",
+            interp.lerp(startFont, endFont, 0.492f, 0.492f),
+        )
     }
 
     @Test

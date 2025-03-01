@@ -22,7 +22,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayScopeRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
-import com.android.systemui.display.data.repository.PerDisplayStoreImpl
 import com.android.systemui.display.data.repository.SingleDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.events.PrivacyDotViewController
@@ -50,7 +49,10 @@ constructor(
     private val contentInsetsProviderStore: StatusBarContentInsetsProviderStore,
 ) :
     PrivacyDotViewControllerStore,
-    PerDisplayStoreImpl<PrivacyDotViewController>(backgroundApplicationScope, displayRepository) {
+    StatusBarPerDisplayStoreImpl<PrivacyDotViewController>(
+        backgroundApplicationScope,
+        displayRepository,
+    ) {
 
     override fun createInstanceForDisplay(displayId: Int): PrivacyDotViewController? {
         val configurationController =

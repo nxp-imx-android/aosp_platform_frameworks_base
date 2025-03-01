@@ -32,6 +32,7 @@ fun HomeGestureTutorialScreen(
     easterEggGestureViewModel: EasterEggGestureViewModel,
     onDoneButtonClicked: () -> Unit,
     onBack: () -> Unit,
+    onAutoProceed: (suspend () -> Unit)? = null,
 ) {
     val screenConfig =
         TutorialScreenConfig(
@@ -58,6 +59,7 @@ fun HomeGestureTutorialScreen(
         onEasterEggFinished = easterEggGestureViewModel::onEasterEggFinished,
         onDoneButtonClicked = onDoneButtonClicked,
         onBack = onBack,
+        onAutoProceed = onAutoProceed,
     )
 }
 

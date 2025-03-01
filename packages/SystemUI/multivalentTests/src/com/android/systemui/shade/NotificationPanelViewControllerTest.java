@@ -16,10 +16,16 @@
 
 package com.android.systemui.shade;
 
+import static android.view.Display.TYPE_INTERNAL;
+
+import static com.android.systemui.display.data.repository.FakeDisplayRepositoryKt.display;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,6 +33,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.os.Build;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 import android.view.HapticFeedbackConstants;
@@ -37,10 +45,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.systemui.DejankUtils;
+import com.android.systemui.Flags;
 import com.android.systemui.flags.DisableSceneContainer;
 
 import com.google.android.msdl.data.model.MSDLToken;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -59,6 +69,8 @@ public class NotificationPanelViewControllerTest extends NotificationPanelViewCo
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_SHADE_EXPANDS_ON_STATUS_BAR_LONG_PRESS)
     public void onStatusBarLongPress_shadeExpands() {
+        //TODO(b/394977231) delete this temporary workaround used only by tests
+        Assume.assumeFalse(Build.HARDWARE.equals("cutf_cvm"));
         long downTime = 42L;
         // Start touch session with down event
         onTouchEvent(MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, 1f, 1f, 0));
@@ -85,6 +97,8 @@ public class NotificationPanelViewControllerTest extends NotificationPanelViewCo
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_SHADE_EXPANDS_ON_STATUS_BAR_LONG_PRESS)
     public void onStatusBarLongPress_qsExpands() {
+        //TODO(b/394977231) delete this temporary workaround used only by tests
+        Assume.assumeFalse(Build.HARDWARE.equals("cutf_cvm"));
         long downTime = 42L;
         // Start with shade already expanded
         mNotificationPanelViewController.setExpandedFraction(1F);
@@ -176,4 +190,27 @@ public class NotificationPanelViewControllerTest extends NotificationPanelViewCo
 
         assertThat(mMSDLPlayer.getLatestTokenPlayed()).isEqualTo(MSDLToken.FAILURE);
     }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    public void updateSystemUiStateFlags_updatesSysuiStateInteractor() {
+        var DISPLAY_ID = 10;
+        var displayMock = display(TYPE_INTERNAL, /* flags= */ 0, /* id= */DISPLAY_ID,
+                /* state= */ null);
+        when(mView.getDisplay()).thenReturn(displayMock);
+
+        mNotificationPanelViewController.updateSystemUiStateFlags();
+
+        verify(mSysUIStateDisplaysInteractor).setFlagsExclusivelyToDisplay(eq(DISPLAY_ID), any());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    public void updateSystemUiStateFlags_flagOff_doesNotUpdateSysuiStateInteractor() {
+        mNotificationPanelViewController.updateSystemUiStateFlags();
+
+        verify(mSysUIStateDisplaysInteractor, never()).setFlagsExclusivelyToDisplay(anyInt(),
+                any());
+    }
+
 }

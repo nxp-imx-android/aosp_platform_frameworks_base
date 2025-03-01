@@ -66,6 +66,8 @@ import static org.mockito.Mockito.when;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.AdaptiveIconDrawable;
@@ -620,6 +622,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     public void testAutoGrouped_singleOngoing_removeOngoingChild() {
         final String pkg = "package";
 
@@ -639,7 +642,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         }
 
         // remove ongoing
-        mGroupHelper.onNotificationRemoved(notifications.get(0));
+        mGroupHelper.onNotificationRemoved(notifications.get(0), new ArrayList<>(), false);
 
         // Summary is no longer ongoing
         verify(mCallback).updateAutogroupSummary(anyInt(), anyString(), anyString(),
@@ -776,7 +779,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         }
 
         // remove ongoing
-        mGroupHelper.onNotificationRemoved(notifications.get(1));
+        mGroupHelper.onNotificationRemoved(notifications.get(1), new ArrayList<>(), false);
 
         // Summary is still ongoing
         verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
@@ -936,7 +939,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             mGroupHelper.onNotificationPosted(r, false);
         }
 
-        mGroupHelper.onNotificationRemoved(notifications.get(0));
+        mGroupHelper.onNotificationRemoved(notifications.get(0), new ArrayList<>(), false);
 
         // Summary should still be autocancelable
         verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
@@ -944,6 +947,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testDropToZeroRemoveGroup_disableFlag() {
         final String pkg = "package";
@@ -963,19 +967,20 @@ public class GroupHelperTest extends UiServiceTestCase {
         Mockito.reset(mCallback);
 
         for (int i = 0; i < AUTOGROUP_AT_COUNT - 1; i++) {
-            mGroupHelper.onNotificationRemoved(posted.remove(0));
+            mGroupHelper.onNotificationRemoved(posted.remove(0), new ArrayList<>(), false);
         }
         verify(mCallback, never()).removeAutoGroup(anyString());
         verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
         Mockito.reset(mCallback);
 
-        mGroupHelper.onNotificationRemoved(posted.remove(0));
+        mGroupHelper.onNotificationRemoved(posted.remove(0), new ArrayList<>(), false);
         verify(mCallback, never()).removeAutoGroup(anyString());
         verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), anyString(), anyString());
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
+            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
     public void testDropToZeroRemoveGroup() {
         final String pkg = "package";
         ArrayList<NotificationRecord> posted = new ArrayList<>();
@@ -994,13 +999,13 @@ public class GroupHelperTest extends UiServiceTestCase {
         Mockito.reset(mCallback);
 
         for (int i = 0; i < AUTOGROUP_AT_COUNT - 1; i++) {
-            mGroupHelper.onNotificationRemoved(posted.remove(0));
+            mGroupHelper.onNotificationRemoved(posted.remove(0), new ArrayList<>(), false);
         }
         verify(mCallback, never()).removeAutoGroup(anyString());
         verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
         Mockito.reset(mCallback);
 
-        mGroupHelper.onNotificationRemoved(posted.remove(0));
+        mGroupHelper.onNotificationRemoved(posted.remove(0), new ArrayList<>(), false);
         verify(mCallback, never()).removeAutoGroup(anyString());
         verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), anyString(), anyString());
     }
@@ -1072,6 +1077,7 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
     @DisableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
     public void testNewNotificationsAddedToAutogroup_ifOriginalNotificationsCanceled_alwaysGroup() {
         final String pkg = "package";
@@ -1091,7 +1097,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         Mockito.reset(mCallback);
 
         for (int i = posted.size() - 2; i >= 0; i--) {
-            mGroupHelper.onNotificationRemoved(posted.remove(i));
+            mGroupHelper.onNotificationRemoved(posted.remove(i), new ArrayList<>(), false);
         }
         verify(mCallback, never()).removeAutoGroup(anyString());
         verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
@@ -1114,7 +1120,8 @@ public class GroupHelperTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST)
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING,
+            android.app.Flags.FLAG_CHECK_AUTOGROUP_BEFORE_POST})
     public void testNewNotificationsAddedToAutogroup_ifOriginalNotificationsCanceled() {
         final String pkg = "package";
         ArrayList<NotificationRecord> posted = new ArrayList<>();
@@ -1134,7 +1141,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         Mockito.reset(mCallback);
 
         for (int i = posted.size() - 2; i >= 0; i--) {
-            mGroupHelper.onNotificationRemoved(posted.remove(i));
+            mGroupHelper.onNotificationRemoved(posted.remove(i), new ArrayList<>(), false);
         }
         verify(mCallback, never()).removeAutoGroup(anyString());
         verify(mCallback, never()).removeAutoGroupSummary(anyInt(), anyString(), anyString());
@@ -1481,7 +1488,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         }
 
         // Remove last notification (the only one with different icon and color)
-        mGroupHelper.onNotificationRemoved(notifications.get(lastIdx));
+        mGroupHelper.onNotificationRemoved(notifications.get(lastIdx), new ArrayList<>(), false);
 
         // Summary should be updated to the common icon and color
         verify(mCallback, times(1)).updateAutogroupSummary(anyInt(), anyString(), anyString(),
@@ -2162,7 +2169,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             NotificationRecord r = getNotificationRecord(pkg, i, String.valueOf(i),
                     UserHandle.SYSTEM, "testGrp " + i, false);
             r.setOverrideGroupKey(expectedGroupKey);
-            mGroupHelper.onNotificationRemoved(r, notificationList);
+            mGroupHelper.onNotificationRemoved(r, notificationList, false);
         }
         // Check that the autogroup summary is removed
         verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), eq(pkg),
@@ -2206,7 +2213,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         Mockito.reset(mCallback);
         for (NotificationRecord r: childrenToRemove) {
             notificationList.remove(r);
-            mGroupHelper.onNotificationRemoved(r, notificationList);
+            mGroupHelper.onNotificationRemoved(r, notificationList, false);
         }
         // Only call onGroupedNotificationRemovedWithDelay with the summary notification
         mGroupHelper.onGroupedNotificationRemovedWithDelay(summary, notificationList,
@@ -2270,7 +2277,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         Mockito.reset(mCallback);
         for (NotificationRecord r: childrenToRemove) {
             notificationList.remove(r);
-            mGroupHelper.onNotificationRemoved(r, notificationList);
+            mGroupHelper.onNotificationRemoved(r, notificationList, false);
         }
         // Only call onGroupedNotificationRemovedWithDelay with the summary notification
         mGroupHelper.onGroupedNotificationRemovedWithDelay(summary, notificationList,
@@ -2327,7 +2334,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         for (NotificationRecord r: notificationList) {
             if (r.getGroupKey().contains(groupToRemove)) {
                 r.isCanceled = true;
-                mGroupHelper.onNotificationRemoved(r, notificationList);
+                mGroupHelper.onNotificationRemoved(r, notificationList, false);
             }
         }
         // Only call onGroupedNotificationRemovedWithDelay with the summary notification
@@ -2452,7 +2459,7 @@ public class GroupHelperTest extends UiServiceTestCase {
                 true);
         assertThat(GroupHelper.getSection(notifToInvalidate)).isNull();
         notificationList.remove(notifToInvalidate);
-        mGroupHelper.onNotificationRemoved(notifToInvalidate, notificationList);
+        mGroupHelper.onNotificationRemoved(notifToInvalidate, notificationList, false);
 
         // Check that the autogroup was updated
         verify(mCallback, never()).removeAutoGroup(anyString());
@@ -4023,7 +4030,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         //Cancel child 0 => remove cached summary
         childToRemove.isCanceled = true;
         notificationListAfterGrouping.remove(childToRemove);
-        mGroupHelper.onNotificationRemoved(childToRemove, notificationListAfterGrouping);
+        mGroupHelper.onNotificationRemoved(childToRemove, notificationListAfterGrouping, false);
         CachedSummary cachedSummary = mGroupHelper.findCanceledSummary(pkg, String.valueOf(id), id,
                 UserHandle.SYSTEM.getIdentifier());
         assertThat(cachedSummary).isNull();
@@ -4399,4 +4406,41 @@ public class GroupHelperTest extends UiServiceTestCase {
                 "PeopleSection(priority)");
     }
 
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void onNotificationRemoved_lastChildOfCachedSummary_firesCachedSummaryDeleteIntent() {
+        final List<NotificationRecord> notificationList = new ArrayList<>();
+        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
+        final String pkg = "package";
+        NotificationRecord onlyChildOfFirstGroup = null;
+        PendingIntent deleteIntentofFirstSummary = PendingIntent.getActivity(mContext, 1,
+                new Intent(), PendingIntent.FLAG_IMMUTABLE);
+        // Post singleton groups, above forced group limit, so they are force grouped
+        for (int i = 0; i < AUTOGROUP_AT_COUNT; i++) {
+            NotificationRecord summary = getNotificationRecord(pkg, i,
+                    String.valueOf(i), UserHandle.SYSTEM, "testGrp " + i, true);
+            notificationList.add(summary);
+            NotificationRecord child = getNotificationRecord(pkg, i + 42,
+                    String.valueOf(i + 42), UserHandle.SYSTEM, "testGrp " + i, false);
+            notificationList.add(child);
+            summaryByGroup.put(summary.getGroupKey(), summary);
+            if (i == 0) {
+                onlyChildOfFirstGroup = child;
+                summary.getNotification().deleteIntent = deleteIntentofFirstSummary;
+            }
+            mGroupHelper.onNotificationPostedWithDelay(child, notificationList, summaryByGroup);
+            summary.isCanceled = true;  // simulate removing the app summary
+            mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
+        }
+        // Sparse group autogrouping would've removed the summary.
+        notificationList.remove(0);
+
+        // Now remove the only child of the first (force-grouped, cuz sparse) group.
+        notificationList.remove(0);
+        onlyChildOfFirstGroup.isCanceled = true;
+        mGroupHelper.onNotificationRemoved(onlyChildOfFirstGroup, notificationList, true);
+
+        verify(mCallback).sendAppProvidedSummaryDeleteIntent(eq(pkg),
+                eq(deleteIntentofFirstSummary));
+    }
 }

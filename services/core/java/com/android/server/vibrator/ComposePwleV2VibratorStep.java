@@ -72,7 +72,8 @@ final class ComposePwleV2VibratorStep extends AbstractComposedVibratorStep {
                         + controller.getVibratorInfo().getId());
             }
             PwlePoint[] pwlesArray = pwles.toArray(new PwlePoint[pwles.size()]);
-            long vibratorOnResult = controller.on(pwlesArray, getVibration().id);
+            int stepId = conductor.nextVibratorCallbackStepId(getVibratorId());
+            long vibratorOnResult = controller.on(pwlesArray, getVibration().id, stepId);
             handleVibratorOnResult(vibratorOnResult);
             getVibration().stats.reportComposePwle(vibratorOnResult, pwlesArray);
 

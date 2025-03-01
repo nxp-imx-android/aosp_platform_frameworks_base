@@ -211,12 +211,12 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
 
         /**
-         * Notifies when the state of running animation is changed. The state is either "running" or
-         * "idle".
+         * Notifies when the insets types of running animation have changed. The animatingTypes
+         * contain all types, which have an ongoing animation.
          *
-         * @param running {@code true} if there is any animation running; {@code false} otherwise.
+         * @param animatingTypes the {@link InsetsType}s that are currently animating
          */
-        default void notifyAnimationRunningStateChanged(boolean running) {}
+        default void updateAnimatingTypes(@InsetsType int animatingTypes) {}
 
         /** @see ViewRootImpl#isHandlingPointerEvent */
         default boolean isHandlingPointerEvent() {
@@ -235,8 +235,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
     private static final int ANIMATION_DELAY_DIM_MS = 500;
 
-    private static final int ANIMATION_DURATION_SYNC_IME_MS = 285;
-    private static final int ANIMATION_DURATION_UNSYNC_IME_MS = 200;
+    static final int ANIMATION_DURATION_SYNC_IME_MS = 285;
+    static final int ANIMATION_DURATION_UNSYNC_IME_MS = 200;
 
     private static final int PENDING_CONTROL_TIMEOUT_MS = 2000;
 
@@ -256,11 +256,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             return 1f - SYSTEM_BARS_ALPHA_INTERPOLATOR.getInterpolation(innerFraction);
         }
     };
-    private static final Interpolator SYNC_IME_INTERPOLATOR =
+    static final Interpolator SYNC_IME_INTERPOLATOR =
             new PathInterpolator(0.2f, 0f, 0f, 1f);
     private static final Interpolator LINEAR_OUT_SLOW_IN_INTERPOLATOR =
             new PathInterpolator(0, 0, 0.2f, 1f);
-    private static final Interpolator FAST_OUT_LINEAR_IN_INTERPOLATOR =
+    static final Interpolator FAST_OUT_LINEAR_IN_INTERPOLATOR =
             new PathInterpolator(0.4f, 0f, 1f, 1f);
 
     /** Visible for WindowManagerWrapper */
@@ -665,6 +665,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     /** Set of inset types which are requested visible which are reported to the host */
     private @InsetsType int mReportedRequestedVisibleTypes = WindowInsets.Type.defaultVisible();
 
+    /** Set of insets types which are currently animating */
+    private @InsetsType int mAnimatingTypes = 0;
+
     /** Set of inset types that we have controls of */
     private @InsetsType int mControllableTypes;
 
@@ -745,9 +748,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                             mFrame, mFromState, mToState, RESIZE_INTERPOLATOR,
                             ANIMATION_DURATION_RESIZE, mTypes, InsetsController.this);
                     if (mRunningAnimations.isEmpty()) {
-                        mHost.notifyAnimationRunningStateChanged(true);
+                        mHost.updateAnimatingTypes(runner.getTypes());
                     }
                     mRunningAnimations.add(new RunningAnimation(runner, runner.getAnimationType()));
+                    mAnimatingTypes |= runner.getTypes();
                 }
             };
 
@@ -1299,7 +1303,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             // Handle the pending show request for other insets types since the IME insets
             // has being requested hidden.
             handlePendingControlRequest(statsToken);
-            getImeSourceConsumer().removeSurface();
+            if (!Flags.refactorInsetsController()) {
+                // the surface can't be removed until the end of the animation. This is handled by
+                // IMMS after the window was requested to be hidden.
+                getImeSourceConsumer().removeSurface();
+            }
         }
         applyAnimation(typesReady, false /* show */, fromIme, false /* skipsCallbacks */,
                 statsToken);
@@ -1560,9 +1568,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             }
         }
         ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_CLIENT_ANIMATION_RUNNING);
-        if (mRunningAnimations.isEmpty()) {
-            mHost.notifyAnimationRunningStateChanged(true);
-        }
+        mAnimatingTypes |= runner.getTypes();
+        mHost.updateAnimatingTypes(mAnimatingTypes);
         mRunningAnimations.add(new RunningAnimation(runner, animationType));
         if (DEBUG) Log.d(TAG, "Animation added to runner. useInsetsAnimationThread: "
                 + useInsetsAnimationThread);
@@ -1574,11 +1581,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             Trace.asyncTraceBegin(TRACE_TAG_VIEW, "IC.pendingAnim", 0);
         }
 
-        if (Flags.refactorInsetsController()) {
-            onAnimationStateChanged(typesReady, true /* running */);
-        } else {
-            onAnimationStateChanged(types, true /* running */);
-        }
+        onAnimationStateChanged(types, true /* running */);
 
         if (fromIme) {
             switch (animationType) {
@@ -1827,7 +1830,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                     dispatchAnimationEnd(runningAnimation.runner.getAnimation());
                 } else {
                     if (Flags.refactorInsetsController()) {
-                        if (removedTypes == ime()
+                        if ((removedTypes & ime()) != 0
                                 && control.getAnimationType() == ANIMATION_TYPE_HIDE) {
                             if (mHost != null) {
                                 // if the (hide) animation is cancelled, the
@@ -1842,9 +1845,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 break;
             }
         }
-        if (mRunningAnimations.isEmpty()) {
-            mHost.notifyAnimationRunningStateChanged(false);
+        if (removedTypes > 0) {
+            mAnimatingTypes &= ~removedTypes;
+            mHost.updateAnimatingTypes(mAnimatingTypes);
         }
+
         onAnimationStateChanged(removedTypes, false /* running */);
     }
 
@@ -1969,14 +1974,6 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         return animatingTypes;
     }
 
-    private @InsetsType int computeAnimatingTypes() {
-        int animatingTypes = 0;
-        for (int i = 0; i < mRunningAnimations.size(); i++) {
-            animatingTypes |= mRunningAnimations.get(i).runner.getTypes();
-        }
-        return animatingTypes;
-    }
-
     /**
      * Called when finishing setting requested visible types or finishing setting controls.
      *
@@ -1989,7 +1986,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             // report its requested visibility at the end of the animation, otherwise we would
             // lose the leash, and it would disappear during the animation
             // TODO(b/326377046) revisit this part and see if we can make it more general
-            typesToReport = mRequestedVisibleTypes | (computeAnimatingTypes() & ime());
+            typesToReport = mRequestedVisibleTypes | (mAnimatingTypes & ime());
         } else {
             typesToReport = mRequestedVisibleTypes;
         }

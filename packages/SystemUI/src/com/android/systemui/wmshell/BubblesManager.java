@@ -23,6 +23,7 @@ import static android.service.notification.NotificationListenerService.REASON_AP
 import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL_ALL;
 import static android.service.notification.NotificationListenerService.REASON_GROUP_SUMMARY_CANCELED;
 import static android.service.notification.NotificationListenerService.REASON_PACKAGE_BANNED;
+import static android.service.notification.NotificationListenerService.REASON_PACKAGE_CHANGED;
 import static android.service.notification.NotificationStats.DISMISSAL_BUBBLE;
 import static android.service.notification.NotificationStats.DISMISS_SENTIMENT_NEUTRAL;
 
@@ -69,6 +70,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.notifcollection.DismissedByUserStats;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener;
+import com.android.systemui.statusbar.notification.collection.notifcollection.UpdateSource;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider;
 import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
@@ -443,15 +445,16 @@ public class BubblesManager {
             }
 
             @Override
-            public void onEntryUpdated(NotificationEntry entry, boolean fromSystem) {
-                BubblesManager.this.onEntryUpdated(entry, fromSystem);
+            public void onEntryUpdated(NotificationEntry entry, UpdateSource source) {
+                BubblesManager.this.onEntryUpdated(entry, source != UpdateSource.SystemUi);
             }
 
             @Override
             public void onEntryRemoved(NotificationEntry entry,
                     @NotifCollection.CancellationReason int reason) {
                 if (reason == REASON_APP_CANCEL || reason == REASON_APP_CANCEL_ALL
-                        || reason == REASON_PACKAGE_BANNED) {
+                        || reason == REASON_PACKAGE_BANNED
+                        || reason == REASON_PACKAGE_CHANGED) {
                     BubblesManager.this.onEntryRemoved(entry);
                 }
             }

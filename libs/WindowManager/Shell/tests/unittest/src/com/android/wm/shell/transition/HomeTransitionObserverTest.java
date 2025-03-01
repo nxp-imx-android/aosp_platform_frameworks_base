@@ -17,36 +17,44 @@
 package com.android.wm.shell.transition;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PREPARE_BACK_NAVIGATION;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
 import android.app.WindowConfiguration.ActivityType;
 import android.content.Context;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
 import android.window.TransitionInfo.TransitionMode;
+import android.window.WindowContainerToken;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestShellExecutor;
@@ -188,6 +196,72 @@ public class HomeTransitionObserverTest extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN, Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE})
+    public void testDragTaskToBubbleOverHome_notifiesHomeIsVisible() throws RemoteException {
+        ActivityManager.RunningTaskInfo homeTask = createTaskInfo(1, ACTIVITY_TYPE_HOME);
+        ActivityManager.RunningTaskInfo bubbleTask = createTaskInfo(2, ACTIVITY_TYPE_STANDARD);
+
+        TransitionInfo startDragTransition =
+                new TransitionInfoBuilder(TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP)
+                        .addChange(TRANSIT_TO_FRONT, homeTask)
+                        .addChange(TRANSIT_TO_BACK, bubbleTask)
+                        .build();
+
+        // Start drag to desktop which brings home to front
+        mHomeTransitionObserver.onTransitionReady(new Binder(), startDragTransition,
+                MockTransactionPool.create(), MockTransactionPool.create());
+        // Does not notify home visibility yet
+        verify(mListener, never()).onHomeVisibilityChanged(anyBoolean());
+
+        TransitionInfo convertToBubbleTransition =
+                new TransitionInfoBuilder(TRANSIT_CONVERT_TO_BUBBLE)
+                        .addChange(TRANSIT_TO_FRONT, bubbleTask)
+                        .build();
+
+        // Convert to bubble. Transition does not include changes for home task
+        mHomeTransitionObserver.onTransitionReady(new Binder(), convertToBubbleTransition,
+                MockTransactionPool.create(), MockTransactionPool.create());
+
+        // Notifies home visibility change that was pending from the start of drag
+        verify(mListener).onHomeVisibilityChanged(true);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN, Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE})
+    public void testDragTaskToBubbleOverOtherTask_notifiesHomeIsNotVisible()
+            throws RemoteException {
+        ActivityManager.RunningTaskInfo homeTask = createTaskInfo(1, ACTIVITY_TYPE_HOME);
+        ActivityManager.RunningTaskInfo bubbleTask = createTaskInfo(2, ACTIVITY_TYPE_STANDARD);
+        ActivityManager.RunningTaskInfo otherTask = createTaskInfo(3, ACTIVITY_TYPE_STANDARD);
+
+        TransitionInfo startDragTransition =
+                new TransitionInfoBuilder(TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP)
+                        .addChange(TRANSIT_TO_FRONT, homeTask)
+                        .addChange(TRANSIT_TO_BACK, bubbleTask)
+                        .build();
+
+        // Start drag to desktop which brings home to front
+        mHomeTransitionObserver.onTransitionReady(new Binder(), startDragTransition,
+                MockTransactionPool.create(), MockTransactionPool.create());
+        // Does not notify home visibility yet
+        verify(mListener, never()).onHomeVisibilityChanged(anyBoolean());
+
+        TransitionInfo convertToBubbleTransition =
+                new TransitionInfoBuilder(TRANSIT_CONVERT_TO_BUBBLE)
+                        .addChange(TRANSIT_TO_FRONT, bubbleTask)
+                        .addChange(TRANSIT_TO_FRONT, otherTask)
+                        .addChange(TRANSIT_TO_BACK, homeTask)
+                        .build();
+
+        // Convert to bubble. Transition includes home task to back which updates home visibility
+        mHomeTransitionObserver.onTransitionReady(new Binder(), convertToBubbleTransition,
+                MockTransactionPool.create(), MockTransactionPool.create());
+
+        // Notifies home visibility change due to home moving to back in the second transition
+        verify(mListener).onHomeVisibilityChanged(false);
+    }
+
+    @Test
     public void testHomeActivityWithBackGestureNotifiesHomeIsVisibleAfterClose()
             throws RemoteException {
         TransitionInfo info = mock(TransitionInfo.class);
@@ -226,5 +300,15 @@ public class HomeTransitionObserverTest extends ShellTestCase {
         when(taskInfo.getActivityType()).thenReturn(activityType);
         when(change.getMode()).thenReturn(mode);
         taskInfo.isRunning = isRunning;
+    }
+
+    private static ActivityManager.RunningTaskInfo createTaskInfo(int taskId, int activityType) {
+        ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        taskInfo.taskId = taskId;
+        taskInfo.topActivityType = activityType;
+        taskInfo.configuration.windowConfiguration.setActivityType(activityType);
+        taskInfo.token = mock(WindowContainerToken.class);
+        taskInfo.isRunning = true;
+        return taskInfo;
     }
 }

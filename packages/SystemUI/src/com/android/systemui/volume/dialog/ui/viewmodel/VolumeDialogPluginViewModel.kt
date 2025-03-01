@@ -16,6 +16,7 @@
 
 package com.android.systemui.volume.dialog.ui.viewmodel
 
+import com.android.internal.logging.UiEventLogger
 import com.android.systemui.volume.Events
 import com.android.systemui.volume.dialog.VolumeDialog
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogPlugin
@@ -26,6 +27,7 @@ import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogVisibili
 import com.android.systemui.volume.dialog.shared.VolumeDialogLogger
 import com.android.systemui.volume.dialog.shared.model.CsdWarningConfigModel
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel
+import com.android.systemui.volume.dialog.ui.VolumeDialogUiEvent
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
@@ -44,6 +46,7 @@ constructor(
     private val volumeDialogProvider: Provider<VolumeDialog>,
     private val logger: VolumeDialogLogger,
     val csdWarningConfigModel: CsdWarningConfigModel,
+    private val uiEventLogger: UiEventLogger,
 ) {
 
     fun launchVolumeDialog() {
@@ -52,11 +55,11 @@ constructor(
                 with(visibilityModel) {
                     if (this is VolumeDialogVisibilityModel.Visible) {
                         showDialog()
-                        Events.writeEvent(Events.EVENT_SHOW_DIALOG, reason, keyguardLocked)
+                        toVolumeDialogUiEvent()?.let(uiEventLogger::log)
                         logger.onShow(reason)
                     }
                     if (this is VolumeDialogVisibilityModel.Dismissed) {
-                        Events.writeEvent(Events.EVENT_DISMISS_DIALOG, reason)
+                        toVolumeDialogUiEvent()?.let(uiEventLogger::log)
                         logger.onDismiss(reason)
                     }
                 }
@@ -84,5 +87,31 @@ constructor(
                 }
             }
             .show()
+    }
+}
+
+private fun VolumeDialogVisibilityModel.Dismissed.toVolumeDialogUiEvent(): VolumeDialogUiEvent? {
+    return when (reason) {
+        Events.DISMISS_REASON_TOUCH_OUTSIDE ->
+            VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_TOUCH_OUTSIDE
+        Events.DISMISS_REASON_VOLUME_CONTROLLER -> VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_SYSTEM
+        Events.DISMISS_REASON_TIMEOUT -> VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_TIMEOUT
+        Events.DISMISS_REASON_SCREEN_OFF -> VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_SCREEN_OFF
+        Events.DISMISS_REASON_SETTINGS_CLICKED -> VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_SETTINGS
+        Events.DISMISS_STREAM_GONE -> VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_STREAM_GONE
+        Events.DISMISS_REASON_USB_OVERHEAD_ALARM_CHANGED ->
+            VolumeDialogUiEvent.VOLUME_DIALOG_DISMISS_USB_TEMP_ALARM_CHANGED
+        else -> null
+    }
+}
+
+private fun VolumeDialogVisibilityModel.Visible.toVolumeDialogUiEvent(): VolumeDialogUiEvent? {
+    return when (reason) {
+        Events.SHOW_REASON_VOLUME_CHANGED -> VolumeDialogUiEvent.VOLUME_DIALOG_SHOW_VOLUME_CHANGED
+        Events.SHOW_REASON_REMOTE_VOLUME_CHANGED ->
+            VolumeDialogUiEvent.VOLUME_DIALOG_SHOW_REMOTE_VOLUME_CHANGED
+        Events.SHOW_REASON_USB_OVERHEAD_ALARM_CHANGED ->
+            VolumeDialogUiEvent.VOLUME_DIALOG_SHOW_USB_TEMP_ALARM_CHANGED
+        else -> null
     }
 }

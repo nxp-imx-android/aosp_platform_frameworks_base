@@ -357,4 +357,9 @@ public abstract class PowerManagerInternal {
      * This may affect dream eligibility.
      */
     public abstract void setDevicePostured(boolean isPostured);
+
+    /**
+     * Notifies PowerManager that settings have changed and that it should refresh its state.
+     */
+    public abstract void updateSettings();
 }

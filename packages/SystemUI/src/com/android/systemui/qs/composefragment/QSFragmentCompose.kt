@@ -21,6 +21,7 @@ import android.content.Context
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
+import android.os.Trace
 import android.util.IndentingPrintWriter
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -41,7 +42,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeightIn
@@ -53,6 +53,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -111,6 +112,7 @@ import com.android.systemui.plugins.qs.QS
 import com.android.systemui.plugins.qs.QSContainerController
 import com.android.systemui.qs.composefragment.SceneKeys.QuickQuickSettings
 import com.android.systemui.qs.composefragment.SceneKeys.QuickSettings
+import com.android.systemui.qs.composefragment.SceneKeys.debugName
 import com.android.systemui.qs.composefragment.SceneKeys.toIdleSceneKey
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.composefragment.ui.NotificationScrimClipParams
@@ -125,6 +127,7 @@ import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.panels.ui.compose.TileGrid
 import com.android.systemui.qs.shared.ui.ElementKeys
 import com.android.systemui.qs.ui.composable.QuickSettingsShade
+import com.android.systemui.qs.ui.composable.QuickSettingsShade.systemGestureExclusionInShade
 import com.android.systemui.qs.ui.composable.QuickSettingsTheme
 import com.android.systemui.res.R
 import com.android.systemui.util.LifecycleFragment
@@ -251,18 +254,17 @@ constructor(
                     Box(
                         modifier =
                             Modifier.graphicsLayer { alpha = viewModel.viewAlpha }
+                                .thenIf(notificationScrimClippingParams.isEnabled) {
+                                    Modifier.notificationScrimClip {
+                                        notificationScrimClippingParams.params
+                                    }
+                                }
                                 .thenIf(!Flags.notificationShadeBlur()) {
-                                    // Clipping before translation to match QSContainerImpl.onDraw
                                     Modifier.offset {
                                         IntOffset(
                                             x = 0,
                                             y = viewModel.viewTranslationY.fastRoundToInt(),
                                         )
-                                    }
-                                }
-                                .thenIf(notificationScrimClippingParams.isEnabled) {
-                                    Modifier.notificationScrimClip {
-                                        notificationScrimClippingParams.params
                                     }
                                 }
                                 // Disable touches in the whole composable while the mirror is
@@ -285,9 +287,15 @@ constructor(
      */
     @Composable
     private fun CollapsableQuickSettingsSTL() {
+        val nextCookie = remember {
+            object {
+                var value = 0
+            }
+        }
+        val transitionToCookie = remember { mutableMapOf<TransitionState.Transition, Int>() }
         val sceneState =
             rememberMutableSceneTransitionLayoutState(
-                viewModel.expansionState.toIdleSceneKey(),
+                initialScene = remember { viewModel.expansionState.toIdleSceneKey() },
                 transitions =
                     transitions {
                         from(QuickQuickSettings, QuickSettings) {
@@ -298,6 +306,20 @@ constructor(
                             toEditMode()
                         }
                     },
+                onTransitionStart = { transition ->
+                    val cookie = nextCookie.value++
+                    transitionToCookie[transition] = cookie
+                    Trace.beginAsyncSection(
+                        "CollapsableQuickSettingsSTL ${transition.debugName}",
+                        cookie,
+                    )
+                },
+                onTransitionEnd = { transition ->
+                    Trace.endAsyncSection(
+                        "CollapsableQuickSettingsSTL ${transition.debugName}",
+                        transitionToCookie.remove(transition) ?: -1,
+                    )
+                },
             )
 
         LaunchedEffect(Unit) {
@@ -311,20 +333,18 @@ constructor(
         SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
             scene(QuickSettings) {
                 LaunchedEffect(Unit) { viewModel.onQSOpen() }
-                QuickSettingsElement(Modifier.element(QuickSettings.rootElementKey))
+                Element(QuickSettings.rootElementKey, Modifier) { QuickSettingsElement() }
             }
 
             scene(QuickQuickSettings) {
                 LaunchedEffect(Unit) { viewModel.onQQSOpen() }
                 // Cannot pass the element modifier in because the top element has a `testTag`
                 // and this would overwrite it.
-                Box(Modifier.element(QuickQuickSettings.rootElementKey)) {
-                    QuickQuickSettingsElement()
-                }
+                Element(QuickQuickSettings.rootElementKey, Modifier) { QuickQuickSettingsElement() }
             }
 
             scene(SceneKeys.EditMode) {
-                EditModeElement(Modifier.element(SceneKeys.EditMode.rootElementKey))
+                Element(SceneKeys.EditMode.rootElementKey, Modifier) { EditModeElement() }
             }
         }
     }
@@ -655,10 +675,7 @@ constructor(
                 )
         ) {
             if (viewModel.isQsEnabled) {
-                Box(
-                    modifier =
-                        Modifier.element(ElementKeys.QuickSettingsContent).fillMaxSize().weight(1f)
-                ) {
+                Element(ElementKeys.QuickSettingsContent, modifier = Modifier.weight(1f)) {
                     DisposableEffect(Unit) {
                         lifecycleScope.launch { scrollState.scrollTo(0) }
                         onDispose { lifecycleScope.launch { scrollState.scrollTo(0) } }
@@ -666,7 +683,8 @@ constructor(
 
                     Column(
                         modifier =
-                            Modifier.onPlaced { coordinates ->
+                            Modifier.fillMaxSize()
+                                .onPlaced { coordinates ->
                                     val positionOnScreen = coordinates.positionOnScreen()
                                     val left = positionOnScreen.x
                                     val right = left + coordinates.size.width
@@ -698,10 +716,7 @@ constructor(
                                 BrightnessSliderContainer(
                                     viewModel = containerViewModel.brightnessSliderViewModel,
                                     modifier =
-                                        Modifier.fillMaxWidth()
-                                            .height(
-                                                QuickSettingsShade.Dimensions.BrightnessSliderHeight
-                                            ),
+                                        Modifier.systemGestureExclusionInShade().fillMaxWidth(),
                                 )
                             }
                         val TileGrid =
@@ -743,13 +758,15 @@ constructor(
                     }
                 }
                 QuickSettingsTheme {
-                    FooterActions(
-                        viewModel = viewModel.footerActionsViewModel,
-                        qsVisibilityLifecycleOwner = this@QSFragmentCompose,
-                        modifier =
-                            Modifier.sysuiResTag(ResIdTags.qsFooterActions)
-                                .element(ElementKeys.FooterActions),
-                    )
+                    Element(
+                        ElementKeys.FooterActions,
+                        Modifier.sysuiResTag(ResIdTags.qsFooterActions),
+                    ) {
+                        FooterActions(
+                            viewModel = viewModel.footerActionsViewModel,
+                            qsVisibilityLifecycleOwner = this@QSFragmentCompose,
+                        )
+                    }
                 }
             }
         }
@@ -855,6 +872,9 @@ object SceneKeys {
     val QuickQuickSettings = SceneKey("QuickQuickSettingsScene")
     val QuickSettings = SceneKey("QuickSettingsScene")
     val EditMode = SceneKey("EditModeScene")
+
+    val TransitionState.Transition.debugName: String
+        get() = "[from=${fromContent.debugName}, to=${toContent.debugName}]"
 
     fun QSFragmentComposeViewModel.QSExpansionState.toIdleSceneKey(): SceneKey {
         return when {

@@ -27,6 +27,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.domain.startable.sceneContainerStartable
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
 import com.android.systemui.testKosmos
@@ -62,13 +63,13 @@ class BouncerUserActionsViewModelTest : SysuiTestCase() {
             kosmos.fakeSceneDataSource.changeScene(Scenes.QuickSettings)
             runCurrent()
 
-            kosmos.fakeSceneDataSource.changeScene(Scenes.Bouncer)
+            kosmos.fakeSceneDataSource.showOverlay(Overlays.Bouncer)
             runCurrent()
 
             assertThat(actions)
                 .containsEntriesExactly(
-                    Back to UserActionResult(Scenes.QuickSettings),
-                    Swipe.Down to UserActionResult(Scenes.QuickSettings),
+                    Back to UserActionResult.HideOverlay(Overlays.Bouncer),
+                    Swipe.Down to UserActionResult.HideOverlay(Overlays.Bouncer),
                 )
         }
 }

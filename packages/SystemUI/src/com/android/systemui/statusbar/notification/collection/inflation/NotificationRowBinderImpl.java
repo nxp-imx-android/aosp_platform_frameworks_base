@@ -136,9 +136,7 @@ public class NotificationRowBinderImpl implements NotificationRowBinder {
             @NonNull NotifInflater.Params params,
             NotificationRowContentBinder.InflationCallback callback)
             throws InflationException {
-        //TODO(b/217799515): Remove the entry parameter from getViewParentForNotification(), this
-        // function returns the NotificationStackScrollLayout regardless of the entry.
-        ViewGroup parent = mListContainer.getViewParentForNotification(entry);
+        ViewGroup parent = mListContainer.getViewParentForNotification();
 
         if (entry.rowExists()) {
             mLogger.logUpdatingRow(entry, params);

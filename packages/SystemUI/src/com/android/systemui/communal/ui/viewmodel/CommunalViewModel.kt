@@ -168,7 +168,7 @@ constructor(
     override val isCommunalContentFlowFrozen: Flow<Boolean> =
         allOf(
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Communal,
+                    content = Scenes.Communal,
                     stateWithoutSceneContainer = KeyguardState.GLANCEABLE_HUB,
                 ),
                 keyguardInteractor.isKeyguardOccluded,
@@ -204,7 +204,7 @@ constructor(
     override val isFocusable: Flow<Boolean> =
         combine(
                 keyguardTransitionInteractor.isFinishedIn(
-                    scene = Scenes.Communal,
+                    content = Scenes.Communal,
                     stateWithoutSceneContainer = KeyguardState.GLANCEABLE_HUB,
                 ),
                 communalInteractor.isIdleOnCommunal,
@@ -237,7 +237,15 @@ constructor(
         with(mediaHost) {
             expansion = MediaHostState.EXPANDED
             expandedMatchesParentHeight = true
-            showsOnlyActiveMedia = false
+            if (v2FlagEnabled()) {
+                // Only show active media to match lock screen, not resumable media, which can
+                // persist
+                // for up to 2 days.
+                showsOnlyActiveMedia = true
+            } else {
+                // Maintain old behavior on tablet until V2 flag rolls out.
+                showsOnlyActiveMedia = false
+            }
             falsingProtectionNeeded = false
             disablePagination = true
             init(MediaHierarchyManager.LOCATION_COMMUNAL_HUB)
@@ -359,7 +367,13 @@ constructor(
     /** See [CommunalSettingsInteractor.isV2FlagEnabled] */
     fun v2FlagEnabled(): Boolean = communalSettingsInteractor.isV2FlagEnabled()
 
-    fun swipeToHubEnabled(): Boolean = swipeToHub
+    val swipeToHubEnabled: StateFlow<Boolean> by lazy {
+        if (v2FlagEnabled()) {
+            communalInteractor.shouldShowCommunal
+        } else {
+            MutableStateFlow(swipeToHub)
+        }
+    }
 
     companion object {
         const val POPUP_AUTO_HIDE_TIMEOUT_MS = 12000L

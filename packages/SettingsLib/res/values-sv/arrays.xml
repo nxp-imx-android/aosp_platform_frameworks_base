@@ -295,7 +295,7 @@
     <item msgid="7521112827893653392">"Fokusbaserad"</item>
   </string-array>
   <string-array name="shade_display_awareness_summaries">
-    <item msgid="2964753205732912921">"Visa endast skugga på enhetens skärm"</item>
+    <item msgid="2964753205732912921">"Visa panelen endast på enhetens skärm"</item>
     <item msgid="1955398604822147783">"Visa skugga på en enda extern skärm"</item>
     <item msgid="391477482416751568">"Visa skugga på skärmen där statusfältet senast interagerades med"</item>
     <item msgid="1746820128097981528">"Visa skugga på skärmen som sist var i fokus"</item>

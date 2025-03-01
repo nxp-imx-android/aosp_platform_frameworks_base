@@ -17,16 +17,20 @@
 package com.android.wm.shell.recents;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
+import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
+import static android.view.WindowManager.TRANSIT_SLEEP;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED;
+import static com.android.wm.shell.transition.Transitions.TRANSIT_END_RECENTS_TRANSITION;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -64,7 +68,6 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
 import com.android.internal.os.IResultReceiver;
-import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
@@ -73,6 +76,7 @@ import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.shared.R;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -308,13 +312,75 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mRecentsTransitionHandler.findController(transition).merge(
                 mergeTransitionInfo,
                 new StubTransaction(),
-                finishT,
-                transition,
+                new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
         mMainExecutor.flushAll();
 
         verify(animationRunner).onTasksAppeared(
                 /* appearedTargets= */ any(), eq(mergeTransitionInfo));
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION)
+    public void testMerge_consumeBookendTransition() throws Exception {
+        // Start and finish the transition
+        final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+        mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
+                false /* sendUserLeaveHint */, mock(IResultReceiver.class));
+        mMainExecutor.flushAll();
+
+        // Merge the bookend transition
+        TransitionInfo mergeTransitionInfo =
+                new TransitionInfoBuilder(TRANSIT_END_RECENTS_TRANSITION)
+                        .addChange(TRANSIT_OPEN, new TestRunningTaskInfoBuilder().build())
+                        .build();
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        Transitions.TransitionFinishCallback finishCallback
+                = mock(Transitions.TransitionFinishCallback.class);
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                finishT,
+                finishCallback);
+        mMainExecutor.flushAll();
+
+        // Verify that we've merged
+        verify(finishCallback).onTransitionFinished(any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION)
+    public void testMerge_pendingBookendTransition_mergesTransition() throws Exception {
+        // Start and finish the transition
+        final IRecentsAnimationRunner animationRunner = mock(IRecentsAnimationRunner.class);
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false, animationRunner);
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+        mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
+                false /* sendUserLeaveHint */, mock(IResultReceiver.class));
+        mMainExecutor.flushAll();
+
+        // Merge a new transition while we have a pending finish
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_OPEN, new TestRunningTaskInfoBuilder().build())
+                .build();
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        Transitions.TransitionFinishCallback finishCallback
+                = mock(Transitions.TransitionFinishCallback.class);
+        mRecentsTransitionHandler.findController(transition).merge(
+                mergeTransitionInfo,
+                new StubTransaction(),
+                finishT,
+                finishCallback);
+        mMainExecutor.flushAll();
+
+        // Verify that we've cleaned up the original transition
+        assertNull(mRecentsTransitionHandler.findController(transition));
     }
 
     @Test
@@ -336,7 +402,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 mergeTransitionInfo,
                 new StubTransaction(),
                 finishT,
-                transition,
                 mock(Transitions.TransitionFinishCallback.class));
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
                 false /* sendUserLeaveHint */, mock(IResultReceiver.class));
@@ -385,15 +450,23 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     private TransitionInfo createTransitionInfo() {
-        final ActivityManager.RunningTaskInfo task = new TestRunningTaskInfoBuilder()
+        final ActivityManager.RunningTaskInfo homeTask = new TestRunningTaskInfoBuilder()
                 .setTopActivityType(ACTIVITY_TYPE_HOME)
                 .build();
+        final ActivityManager.RunningTaskInfo appTask = new TestRunningTaskInfoBuilder()
+                .setTopActivityType(ACTIVITY_TYPE_STANDARD)
+                .build();
         final TransitionInfo.Change homeChange = new TransitionInfo.Change(
-                task.token, new SurfaceControl());
+                homeTask.token, new SurfaceControl());
         homeChange.setMode(TRANSIT_TO_FRONT);
-        homeChange.setTaskInfo(task);
+        homeChange.setTaskInfo(homeTask);
+        final TransitionInfo.Change appChange = new TransitionInfo.Change(
+                appTask.token, new SurfaceControl());
+        appChange.setMode(TRANSIT_TO_FRONT);
+        appChange.setTaskInfo(appTask);
         return new TransitionInfoBuilder(TRANSIT_START_RECENTS_TRANSITION)
                 .addChange(homeChange)
+                .addChange(appChange)
                 .build();
     }
 

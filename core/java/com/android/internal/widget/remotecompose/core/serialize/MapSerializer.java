@@ -25,11 +25,17 @@ import java.util.Map;
 public interface MapSerializer {
 
     /**
+     * Adds a "type" field with this value
+     *
+     * @param type The name of the type
+     */
+    MapSerializer addType(String type);
+
+    /**
      * Add a float expression
      *
-     * @param key
-     * @param value
-     * @return
+     * @param key The key
+     * @param value The float src
      */
     MapSerializer addFloatExpressionSrc(String key, float[] value);
 

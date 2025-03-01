@@ -17,21 +17,54 @@
 package com.android.systemui.wallpapers.ui.viewmodel
 
 import android.graphics.RectF
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.wallpapers.domain.interactor.WallpaperFocalAreaInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
 
 class WallpaperFocalAreaViewModel
 @Inject
-constructor(private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor) {
+constructor(
+    private val wallpaperFocalAreaInteractor: WallpaperFocalAreaInteractor,
+    val keyguardTransitionInteractor: KeyguardTransitionInteractor,
+) {
     val hasFocalArea = wallpaperFocalAreaInteractor.hasFocalArea
 
-    val wallpaperFocalAreaBounds = wallpaperFocalAreaInteractor.wallpaperFocalAreaBounds
+    val wallpaperFocalAreaBounds =
+        combine(
+                wallpaperFocalAreaInteractor.wallpaperFocalAreaBounds,
+                keyguardTransitionInteractor.startedKeyguardTransitionStep,
+                // Emit transition state when FINISHED instead of STARTED to avoid race with
+                // wakingup command, causing layout change command not be received.
+                keyguardTransitionInteractor
+                    .transition(
+                        edge = Edge.create(to = Scenes.Lockscreen),
+                        edgeWithoutSceneContainer = Edge.create(to = KeyguardState.LOCKSCREEN),
+                    )
+                    .filter { it.transitionState == TransitionState.FINISHED },
+                ::Triple,
+            )
+            .map { (bounds, startedStep, _) ->
+                // Avoid sending wrong bounds when transitioning from LOCKSCREEN to GONE
+                if (
+                    startedStep.to == KeyguardState.LOCKSCREEN &&
+                        startedStep.from != KeyguardState.LOCKSCREEN
+                ) {
+                    bounds
+                } else {
+                    null
+                }
+            }
+            .filterNotNull()
 
     fun setFocalAreaBounds(bounds: RectF) {
         wallpaperFocalAreaInteractor.setFocalAreaBounds(bounds)
-    }
-
-    fun setTapPosition(x: Float, y: Float) {
-        wallpaperFocalAreaInteractor.setTapPosition(x, y)
     }
 }

@@ -99,7 +99,7 @@ constructor(
     }
 
     override fun getDetailsViewModel(): TileDetailsViewModel {
-        return internetDetailsViewModelFactory.create { longClick(null) }
+        return internetDetailsViewModelFactory.create()
     }
 
     override fun handleUpdateState(state: QSTile.BooleanState, arg: Any?) {

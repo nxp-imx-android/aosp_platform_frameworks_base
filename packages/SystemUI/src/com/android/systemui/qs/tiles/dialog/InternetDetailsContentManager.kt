@@ -51,7 +51,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
-import com.android.internal.telephony.flags.Flags
 import com.android.settingslib.satellite.SatelliteDialogUtils.TYPE_IS_WIFI
 import com.android.settingslib.satellite.SatelliteDialogUtils.mayStartSatelliteWarningDialog
 import com.android.settingslib.wifi.WifiEnterpriseRestrictionUtils
@@ -456,22 +455,18 @@ constructor(
     }
 
     private fun handleWifiToggleClicked(isChecked: Boolean) {
-        if (Flags.oemEnabledSatelliteFlag()) {
-            if (clickJob != null && !clickJob!!.isCompleted) {
-                return
-            }
-            clickJob =
-                mayStartSatelliteWarningDialog(contentView.context, coroutineScope, TYPE_IS_WIFI) {
-                    isAllowClick: Boolean ->
-                    if (isAllowClick) {
-                        setWifiEnabled(isChecked)
-                    } else {
-                        wifiToggle.isChecked = !isChecked
-                    }
-                }
+        if (clickJob != null && !clickJob!!.isCompleted) {
             return
         }
-        setWifiEnabled(isChecked)
+        clickJob =
+            mayStartSatelliteWarningDialog(contentView.context, coroutineScope, TYPE_IS_WIFI) {
+                isAllowClick: Boolean ->
+                if (isAllowClick) {
+                    setWifiEnabled(isChecked)
+                } else {
+                    wifiToggle.isChecked = !isChecked
+                }
+            }
     }
 
     private fun setWifiEnabled(isEnabled: Boolean) {

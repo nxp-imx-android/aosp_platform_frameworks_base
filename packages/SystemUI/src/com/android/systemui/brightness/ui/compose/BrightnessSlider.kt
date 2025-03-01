@@ -70,6 +70,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.modifiers.padding
 import com.android.compose.ui.graphics.drawInOverlay
 import com.android.systemui.Flags
 import com.android.systemui.biometrics.Utils.toBitmap
@@ -348,7 +349,13 @@ fun BrightnessSliderContainer(
 
     DisposableEffect(Unit) { onDispose { viewModel.setIsDragging(false) } }
 
-    Box(modifier = modifier.fillMaxWidth().sysuiResTag("brightness_slider")) {
+    Box(
+        modifier =
+            modifier
+                .padding(vertical = { SliderBackgroundFrameSize.height.roundToPx() })
+                .fillMaxWidth()
+                .sysuiResTag("brightness_slider")
+    ) {
         BrightnessSlider(
             gammaValue = gamma,
             valueRange = viewModel.minBrightness.value..viewModel.maxBrightness.value,

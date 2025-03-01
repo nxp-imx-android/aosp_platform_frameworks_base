@@ -243,7 +243,6 @@ class MediaDataProcessorTest(flags: FlagsParameterization) : SysuiTestCase() {
                 mediaDataCombineLatest = mediaDataCombineLatest,
                 mediaDataFilter = mediaDataFilter,
                 mediaFilterRepository = mediaFilterRepository,
-                mediaFlags = kosmos.mediaFlags,
             )
         mediaCarouselInteractor.start()
         verify(mediaTimeoutListener).stateCallback = capture(stateCallbackCaptor)

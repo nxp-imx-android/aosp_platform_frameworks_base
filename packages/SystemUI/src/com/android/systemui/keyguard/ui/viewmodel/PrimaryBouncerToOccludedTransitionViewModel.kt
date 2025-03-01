@@ -27,7 +27,6 @@ import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 @SysUISingleton
 class PrimaryBouncerToOccludedTransitionViewModel
@@ -51,7 +50,7 @@ constructor(
                 if (Flags.notificationShadeBlur()) {
                     transitionAnimation.immediatelyTransitionTo(blurConfig.maxBlurRadiusPx)
                 } else {
-                    emptyFlow()
+                    transitionAnimation.immediatelyTransitionTo(blurConfig.minBlurRadiusPx)
                 },
             flowWhenShadeIsNotExpanded =
                 transitionAnimation.immediatelyTransitionTo(blurConfig.minBlurRadiusPx),

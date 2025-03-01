@@ -68,4 +68,8 @@
     <color name="desktop_mode_caption_button_on_hover_light">#11000000</color>
     <color name="desktop_mode_caption_button_on_hover_dark">#11FFFFFF</color>
     <color name="desktop_mode_caption_button">#00000000</color>
+    <color name="tiling_divider_background_light">#C9C7B6</color>
+    <color name="tiling_divider_background_dark">#4A4739</color>
+    <color name="tiling_handle_background_light">#000000</color>
+    <color name="tiling_handle_background_dark">#FFFFFF</color>
 </resources>

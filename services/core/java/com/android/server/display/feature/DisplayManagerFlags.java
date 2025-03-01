@@ -156,11 +156,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_DOZE_BRIGHTNESS_FLOAT,
             Flags::dozeBrightnessFloat);
 
-    private final FlagState mOffloadControlsDozeAutoBrightness = new FlagState(
-            Flags.FLAG_OFFLOAD_CONTROLS_DOZE_AUTO_BRIGHTNESS,
-            Flags::offloadControlsDozeAutoBrightness
-    );
-
     private final FlagState mPeakRefreshRatePhysicalLimit = new FlagState(
             Flags.FLAG_ENABLE_PEAK_REFRESH_RATE_PHYSICAL_LIMIT,
             Flags::enablePeakRefreshRatePhysicalLimit
@@ -283,6 +278,11 @@ public class DisplayManagerFlags {
     private final FlagState mCommittedStateSeparateEvent = new FlagState(
             Flags.FLAG_COMMITTED_STATE_SEPARATE_EVENT,
             Flags::committedStateSeparateEvent
+    );
+
+    private final FlagState mDelayImplicitRrRegistrationUntilRrAccessed = new FlagState(
+            Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED,
+            Flags::delayImplicitRrRegistrationUntilRrAccessed
     );
 
     /**
@@ -440,13 +440,6 @@ public class DisplayManagerFlags {
         return mDozeBrightnessFloat.isEnabled();
     }
 
-    /**
-     * @return Whether DisplayOffload should control auto-brightness in doze
-     */
-    public boolean offloadControlsDozeAutoBrightness() {
-        return mOffloadControlsDozeAutoBrightness.isEnabled();
-    }
-
     public boolean isPeakRefreshRatePhysicalLimitEnabled() {
         return mPeakRefreshRatePhysicalLimit.isEnabled();
     }
@@ -598,7 +591,6 @@ public class DisplayManagerFlags {
         return mFramerateOverrideTriggersRrCallbacks.isEnabled();
     }
 
-
     /**
      * @return {@code true} if the flag for sending refresh rate events only for the apps in
      * foreground is enabled
@@ -613,6 +605,13 @@ public class DisplayManagerFlags {
      */
     public boolean isCommittedStateSeparateEventEnabled() {
         return mCommittedStateSeparateEvent.isEnabled();
+    }
+
+    /**
+     * @return {@code true} if the flag for only explicit subscription for RR changes is enabled
+     */
+    public boolean isDelayImplicitRrRegistrationUntilRrAccessedEnabled() {
+        return mDelayImplicitRrRegistrationUntilRrAccessed.isEnabled();
     }
 
     /**
@@ -647,7 +646,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mResolutionBackupRestore);
         pw.println(" " + mUseFusionProxSensor);
         pw.println(" " + mDozeBrightnessFloat);
-        pw.println(" " + mOffloadControlsDozeAutoBrightness);
         pw.println(" " + mPeakRefreshRatePhysicalLimit);
         pw.println(" " + mIgnoreAppPreferredRefreshRate);
         pw.println(" " + mSynthetic60hzModes);
@@ -673,6 +671,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mFramerateOverrideTriggersRrCallbacks);
         pw.println(" " + mRefreshRateEventForForegroundApps);
         pw.println(" " + mCommittedStateSeparateEvent);
+        pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
     }
 
     private static class FlagState {

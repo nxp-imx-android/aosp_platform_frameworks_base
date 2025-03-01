@@ -198,6 +198,7 @@ import android.annotation.Nullable;
 import android.annotation.PermissionMethod;
 import android.annotation.PermissionName;
 import android.annotation.RequiresPermission;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.app.Activity;
 import android.app.ActivityClient;
@@ -301,6 +302,7 @@ import android.content.pm.ProviderInfoList;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.SharedLibraryInfo;
+import android.content.pm.SystemFeaturesCache;
 import android.content.pm.TestUtilityService;
 import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
@@ -2559,9 +2561,20 @@ public class ActivityManagerService extends IActivityManager.Stub
         mTraceErrorLogger = new TraceErrorLogger();
         mComponentAliasResolver = new ComponentAliasResolver(this);
         sCreatorTokenCacheCleaner = new Handler(mHandlerThread.getLooper());
+
+        ApplicationSharedMemory applicationSharedMemory = ApplicationSharedMemory.getInstance();
+        if (android.content.pm.Flags.cacheSdkSystemFeatures()) {
+            // Install the cache into the process-wide singleton for in-proc queries, as well as
+            // shared memory. Apps will inflate the cache from shared memory in bindApplication.
+            SystemFeaturesCache systemFeaturesCache =
+                    new SystemFeaturesCache(SystemConfig.getInstance().getAvailableFeatures());
+            SystemFeaturesCache.setInstance(systemFeaturesCache);
+            applicationSharedMemory.writeSystemFeaturesCache(
+                    systemFeaturesCache.getSdkFeatureVersions());
+        }
         try {
             mApplicationSharedMemoryReadOnlyFd =
-                    ApplicationSharedMemory.getInstance().getReadOnlyFileDescriptor();
+                    applicationSharedMemory.getReadOnlyFileDescriptor();
         } catch (IOException e) {
             Slog.e(TAG, "Failed to get read only fd for shared memory", e);
             throw new RuntimeException(e);
@@ -3909,8 +3922,8 @@ public class ActivityManagerService extends IActivityManager.Stub
      * The pkg name and app id have to be specified.
      */
     @Override
-    public void killApplication(String pkg, int appId, int userId, String reason,
-            int exitInfoReason) {
+    public void killApplication(String pkg, int appId, @CanBeALL @UserIdInt int userId,
+            String reason, int exitInfoReason) {
         if (pkg == null) {
             return;
         }
@@ -4295,7 +4308,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     final boolean forceStopPackageLocked(String packageName, int appId,
             boolean callerWillRestart, boolean purgeCache, boolean doit,
             boolean evenPersistent, boolean uninstalling, boolean packageStateStopped,
-            int userId, String reasonString, int reason) {
+            @CanBeALL @UserIdInt int userId, String reasonString, int reason) {
         return forceStopPackageInternalLocked(packageName, appId, callerWillRestart, purgeCache,
                 doit, evenPersistent, uninstalling, packageStateStopped, userId, reasonString,
                 reason, ProcessList.INVALID_ADJ);
@@ -4305,7 +4318,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     private boolean forceStopPackageInternalLocked(String packageName, int appId,
             boolean callerWillRestart, boolean purgeCache, boolean doit,
             boolean evenPersistent, boolean uninstalling, boolean packageStateStopped,
-            int userId, String reasonString, int reason, int minOomAdj) {
+            @CanBeALL @UserIdInt int userId, String reasonString, int reason, int minOomAdj) {
         int i;
 
         if (userId == UserHandle.USER_ALL && packageName == null) {
@@ -18081,7 +18094,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public void killApplicationSync(String pkgName, int appId, int userId,
+        public void killApplicationSync(String pkgName, int appId, @CanBeALL @UserIdInt int userId,
                 String reason, int exitInfoReason) {
             if (pkgName == null) {
                 return;
@@ -19458,7 +19471,7 @@ public class ActivityManagerService extends IActivityManager.Stub
     /**
      * @hide
      */
-    @EnforcePermission("android.permission.INTERACT_ACROSS_USERS_FULL")
+    @EnforcePermission(INTERACT_ACROSS_USERS_FULL)
     public IBinder refreshIntentCreatorToken(Intent intent) {
         refreshIntentCreatorToken_enforcePermission();
         IBinder binder = intent.getCreatorToken();

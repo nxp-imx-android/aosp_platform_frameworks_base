@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar;
 
+import static android.app.Flags.notificationsRedesignTemplates;
+
 import android.app.Flags;
 import android.app.Notification;
 import android.graphics.drawable.Drawable;
@@ -70,6 +72,7 @@ public class NotificationGroupingUtil {
         mRow = row;
 
         final IconComparator iconVisibilityComparator = new IconComparator() {
+            @Override
             public boolean compare(View parent, View child, Object parentData,
                     Object childData) {
                 if (Flags.notificationsRedesignAppIcons() && mRow.isShowingAppIcon()) {
@@ -81,6 +84,7 @@ public class NotificationGroupingUtil {
             }
         };
         final IconComparator greyComparator = new IconComparator() {
+            @Override
             public boolean compare(View parent, View child, Object parentData,
                     Object childData) {
                 if (Flags.notificationsRedesignAppIcons() && mRow.isShowingAppIcon()) {
@@ -427,7 +431,8 @@ public class NotificationGroupingUtil {
 
         @Override
         public void apply(View parent, View view, boolean apply, boolean reset) {
-            if (reset && parent instanceof ConversationLayout) {
+            if (!notificationsRedesignTemplates()
+                    && reset && parent instanceof ConversationLayout) {
                 ConversationLayout layout = (ConversationLayout) parent;
                 apply = layout.shouldHideAppName();
             }

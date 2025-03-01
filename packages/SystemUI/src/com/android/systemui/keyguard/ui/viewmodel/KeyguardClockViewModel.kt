@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.content.Context
 import android.content.res.Resources
 import androidx.constraintlayout.helper.widget.Layer
+import com.android.keyguard.ClockEventController
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.customization.R as customR
 import com.android.systemui.dagger.SysUISingleton
@@ -68,6 +69,7 @@ constructor(
                 initialValue = true,
             )
 
+    val clockEventController: ClockEventController = keyguardClockInteractor.clockEventController
     val currentClock = keyguardClockInteractor.currentClock
 
     val hasCustomWeatherDataDisplay =

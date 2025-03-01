@@ -54,7 +54,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_BASE_APPLICATION;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_FLAG_APP_CRASHED;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
@@ -502,6 +501,17 @@ class Task extends TaskFragment {
      */
     int mOffsetXForInsets;
     int mOffsetYForInsets;
+
+    /**
+     * When set to true, the task will be kept at a PERCEPTIBLE_APP_ADJ, and downgraded
+     * to PREVIOUS_APP_ADJ if not in foreground for a period of time.
+     * One example use case is for desktop form factors, where it is important keep tasks in the
+     * perceptible state (rather than cached where it may be frozen) when a user moves it to the
+     * foreground.
+     * On startup, restored Tasks will not be perceptible, until user actually interacts with it
+     * (i.e. brings it to the foreground)
+     */
+    boolean mIsPerceptible = false;
 
     /**
      * Whether the compatibility overrides that change the resizability of the app should be allowed
@@ -1647,8 +1657,7 @@ class Task extends TaskFragment {
                 // Prevent the transition from being executed too early if the top activity is
                 // resumed but the mVisibleRequested of any other activity is true, the transition
                 // should wait until next activity resumed.
-                if (r.isState(RESUMED) || (r.isVisible()
-                        && !mDisplayContent.mAppTransition.containsTransitRequest(TRANSIT_CLOSE))) {
+                if (r.isState(RESUMED) || r.isVisible()) {
                     r.finishIfPossible(reason, false /* oomAdj */);
                 } else {
                     r.destroyIfPossible(reason);
@@ -1837,9 +1846,9 @@ class Task extends TaskFragment {
 
     private void updateAllowForceResizeOverride() {
         try {
-            mAllowForceResizeOverride = mAtmService.mContext.getPackageManager().getProperty(
+            mAllowForceResizeOverride = mAtmService.mContext.getPackageManager().getPropertyAsUser(
                     PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES,
-                    getBasePackageName()).getBoolean();
+                    getBasePackageName(), null /* className */, mUserId).getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
             // Package not found or property not defined, reset to default value.
             mAllowForceResizeOverride = true;
@@ -2028,7 +2037,7 @@ class Task extends TaskFragment {
         }
 
         if (shouldStartChangeTransition(prevWinMode, mTmpPrevBounds)) {
-            initializeChangeTransition(mTmpPrevBounds);
+            mTransitionController.collectVisibleChange(this);
         }
 
         // If the configuration supports persistent bounds (eg. Freeform), keep track of the
@@ -2161,25 +2170,29 @@ class Task extends TaskFragment {
 
     void adjustForMinimalTaskDimensions(@NonNull Rect bounds, @NonNull Rect previousBounds,
             @NonNull Configuration parentConfig) {
-        int minWidth = mMinWidth;
-        int minHeight = mMinHeight;
         // If the task has no requested minimal size, we'd like to enforce a minimal size
         // so that the user can not render the task fragment too small to manipulate. We don't need
         // to do this for the root pinned task as the bounds are controlled by the system.
-        if (!inPinnedWindowingMode()) {
-            // Use Display specific min sizes when there is one associated with this Task.
-            final int defaultMinSizeDp = mDisplayContent == null
-                    ? DEFAULT_MIN_TASK_SIZE_DP : mDisplayContent.mMinSizeOfResizeableTaskDp;
-            final float density = (float) parentConfig.densityDpi / DisplayMetrics.DENSITY_DEFAULT;
-            final int defaultMinSize = (int) (defaultMinSizeDp * density);
-
-            if (minWidth == INVALID_MIN_SIZE) {
-                minWidth = defaultMinSize;
-            }
-            if (minHeight == INVALID_MIN_SIZE) {
-                minHeight = defaultMinSize;
-            }
+        if (inPinnedWindowingMode()) {
+            Slog.i(TAG, "Skip adjustForMinimalTaskDimensions for pip task");
+            return;
         }
+
+        int minWidth = mMinWidth;
+        int minHeight = mMinHeight;
+        // Use Display specific min sizes when there is one associated with this Task.
+        final int defaultMinSizeDp = mDisplayContent == null
+                ? DEFAULT_MIN_TASK_SIZE_DP : mDisplayContent.mMinSizeOfResizeableTaskDp;
+        final float density = (float) parentConfig.densityDpi / DisplayMetrics.DENSITY_DEFAULT;
+        final int defaultMinSize = (int) (defaultMinSizeDp * density);
+
+        if (minWidth == INVALID_MIN_SIZE) {
+            minWidth = defaultMinSize;
+        }
+        if (minHeight == INVALID_MIN_SIZE) {
+            minHeight = defaultMinSize;
+        }
+
         if (bounds.isEmpty()) {
             // If inheriting parent bounds, check if parent bounds adhere to minimum size. If they
             // do, we can just skip.
@@ -2322,11 +2335,6 @@ class Task extends TaskFragment {
         }
         transaction.setWindowCrop(mSurfaceControl, width, height);
         mLastSurfaceSize.set(width, height);
-    }
-
-    @VisibleForTesting
-    boolean isInChangeTransition() {
-        return AppTransition.isChangeTransitOld(mTransit);
     }
 
     @Override
@@ -3576,7 +3584,7 @@ class Task extends TaskFragment {
                 & StartingWindowInfo.TYPE_PARAMETER_ACTIVITY_CREATED) != 0) {
             final WindowState topMainWin = getTopFullscreenMainWindow();
             if (topMainWin != null) {
-                info.mainWindowLayoutParams = topMainWin.getAttrs();
+                info.mainWindowLayoutParams = topMainWin.mAttrs;
                 info.requestedVisibleTypes = topMainWin.getRequestedVisibleTypes();
             }
         }
@@ -3854,6 +3862,7 @@ class Task extends TaskFragment {
         pw.print(ActivityInfo.resizeModeToString(mResizeMode));
         pw.print(" mSupportsPictureInPicture="); pw.print(mSupportsPictureInPicture);
         pw.print(" isResizeable="); pw.println(isResizeable());
+        pw.print(" isPerceptible="); pw.println(mIsPerceptible);
         pw.print(prefix); pw.print("lastActiveTime="); pw.print(lastActiveTime);
         pw.println(" (inactive for " + (getInactiveDuration() / 1000) + "s)");
         pw.print(prefix); pw.println(" isTrimmable=" + mIsTrimmableFromRecents);
@@ -5293,11 +5302,9 @@ class Task extends TaskFragment {
 
         // Place a new activity at top of root task, so it is next to interact with the user.
         if ((r.intent.getFlags() & Intent.FLAG_ACTIVITY_NO_ANIMATION) != 0) {
-            mDisplayContent.prepareAppTransition(TRANSIT_NONE);
             mTaskSupervisor.mNoAnimActivities.add(r);
             mTransitionController.setNoAnimation(r);
         } else {
-            mDisplayContent.prepareAppTransition(TRANSIT_OPEN);
             mTaskSupervisor.mNoAnimActivities.remove(r);
         }
         if (newTask && !r.mLaunchTaskBehind) {
@@ -5477,7 +5484,8 @@ class Task extends TaskFragment {
         Slog.w(TAG, "  Force finishing activity "
                 + r.intent.getComponent().flattenToShortString());
         Task finishedTask = r.getTask();
-        mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE, TRANSIT_FLAG_APP_CRASHED);
+        mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE, TRANSIT_FLAG_APP_CRASHED,
+                finishedTask);
         r.finishIfPossible(reason, false /* oomAdj */);
 
         // Also terminate any activities below it that aren't yet stopped, to avoid a situation
@@ -5681,10 +5689,6 @@ class Task extends TaskFragment {
         return foundParentInTask;
     }
 
-    void removeLaunchTickMessages() {
-        forAllActivities(ActivityRecord::removeLaunchTickRunnable);
-    }
-
     private void updateTransitLocked(@WindowManager.TransitionType int transit,
             ActivityOptions options) {
         if (options != null) {
@@ -5695,7 +5699,6 @@ class Task extends TaskFragment {
                 ActivityOptions.abort(options);
             }
         }
-        mDisplayContent.prepareAppTransition(transit);
     }
 
     final void moveTaskToFront(Task tr, boolean noAnimation, ActivityOptions options,
@@ -5747,12 +5750,9 @@ class Task extends TaskFragment {
 
             if (DEBUG_TRANSITION) Slog.v(TAG_TRANSITION, "Prepare to front transition: task=" + tr);
             if (noAnimation) {
-                mDisplayContent.prepareAppTransition(TRANSIT_NONE);
                 mTaskSupervisor.mNoAnimActivities.add(top);
-                if (mTransitionController.isShellTransitionsEnabled()) {
-                    mTransitionController.collect(top);
-                    mTransitionController.setNoAnimation(top);
-                }
+                mTransitionController.collect(top);
+                mTransitionController.setNoAnimation(top);
                 ActivityOptions.abort(options);
             } else {
                 updateTransitLocked(TRANSIT_TO_FRONT, options);
@@ -5862,10 +5862,6 @@ class Task extends TaskFragment {
                         moveTaskToBackInner(tr, transition);
                     });
         } else {
-            // Skip the transition for pinned task.
-            if (!inPinnedWindowingMode()) {
-                mDisplayContent.prepareAppTransition(TRANSIT_TO_BACK);
-            }
             moveTaskToBackInner(tr, null /* transition */);
         }
         return true;

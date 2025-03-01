@@ -34,8 +34,10 @@ public class FloatAnimation extends Easing implements Serializable {
     private float mWrap = Float.NaN;
     private float mInitialValue = Float.NaN;
     private float mTargetValue = Float.NaN;
+    private int mDirectionalSnap = 0;
     //    private float mScale = 1;
     float mOffset = 0;
+    private boolean mPropagate = false;
 
     @NonNull
     @Override
@@ -161,11 +163,15 @@ public class FloatAnimation extends Easing implements Serializable {
         int type = 0;
         float wrapValue = Float.NaN;
         float initialValue = Float.NaN;
+        int directionalSnap = 0;
+        boolean propagate = false;
         if (mSpec.length > 1) {
             int num_type = Float.floatToRawIntBits(mSpec[1]);
             type = num_type & 0xFF;
             boolean wrap = ((num_type >> 8) & 0x1) > 0;
             boolean init = ((num_type >> 8) & 0x2) > 0;
+            directionalSnap = (num_type >> 10) & 0x3;
+            propagate = ((num_type >> 12) & 0x1) > 0;
             len = (num_type >> 16) & 0xFFFF;
             int off = 2 + len;
             if (init) {
@@ -229,6 +235,12 @@ public class FloatAnimation extends Easing implements Serializable {
         if (!Float.isNaN(wrapValue)) {
             str += " wrap =" + wrapValue;
         }
+        if (directionalSnap != 0) {
+            str += " directionalSnap=" + directionalSnap;
+        }
+        if (propagate) {
+            str += " propagate";
+        }
         return str;
     }
 
@@ -246,6 +258,8 @@ public class FloatAnimation extends Easing implements Serializable {
             mType = num_type & 0xFF;
             boolean wrap = ((num_type >> 8) & 0x1) > 0;
             boolean init = ((num_type >> 8) & 0x2) > 0;
+            int directional = (num_type >> 10) & 0x3;
+            boolean propagate = ((num_type >> 12) & 0x1) > 0;
             len = (num_type >> 16) & 0xFFFF;
             int off = 2 + len;
             if (init) {
@@ -254,6 +268,8 @@ public class FloatAnimation extends Easing implements Serializable {
             if (wrap) {
                 mWrap = mSpec[off];
             }
+            mDirectionalSnap = directional;
+            mPropagate = propagate;
         }
         create(mType, description, 2, len);
     }
@@ -347,7 +363,13 @@ public class FloatAnimation extends Easing implements Serializable {
             float dist = wrapDistance(mWrap, mInitialValue, mTargetValue);
             if ((dist > 0) && (mTargetValue < mInitialValue)) {
                 mTargetValue += mWrap;
-            } else if ((dist < 0) && (mTargetValue > mInitialValue)) {
+            } else if ((dist < 0) && mDirectionalSnap != 0) {
+                if (mDirectionalSnap == 1 && mTargetValue > mInitialValue) {
+                    mInitialValue = mTargetValue;
+                }
+                if (mDirectionalSnap == 2 && mTargetValue < mInitialValue) {
+                    mInitialValue = mTargetValue;
+                }
                 mTargetValue -= mWrap;
             }
         }
@@ -377,6 +399,14 @@ public class FloatAnimation extends Easing implements Serializable {
     /** get the value at time t in seconds since start */
     @Override
     public float get(float t) {
+        if (mDirectionalSnap == 1 && mTargetValue < mInitialValue) {
+            mInitialValue = mTargetValue;
+            return mTargetValue;
+        }
+        if (mDirectionalSnap == 2 && mTargetValue > mInitialValue) {
+            mInitialValue = mTargetValue;
+            return mTargetValue;
+        }
         return mEasingCurve.get(t / mDuration) * (mTargetValue - mInitialValue) + mInitialValue;
     }
 
@@ -384,6 +414,13 @@ public class FloatAnimation extends Easing implements Serializable {
     @Override
     public float getDiff(float t) {
         return mEasingCurve.getDiff(t / mDuration) * (mTargetValue - mInitialValue);
+    }
+
+    /**
+     * @return if you should propagate the animation
+     */
+    public boolean isPropagate() {
+        return mPropagate;
     }
 
     /**
@@ -398,7 +435,7 @@ public class FloatAnimation extends Easing implements Serializable {
     @Override
     public void serialize(MapSerializer serializer) {
         serializer
-                .add("type", "FloatAnimation")
+                .addType("FloatAnimation")
                 .add("initialValue", mInitialValue)
                 .add("targetValue", mInitialValue)
                 .add("duration", mInitialValue)

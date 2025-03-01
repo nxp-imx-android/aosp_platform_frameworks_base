@@ -40,8 +40,6 @@ import android.content.Context;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.UserManager;
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import com.android.settingslib.flags.Flags;
@@ -76,9 +74,6 @@ public class CsipDeviceManagerTest {
     private final static String DEVICE_ADDRESS_1 = "AA:BB:CC:DD:EE:11";
     private final static String DEVICE_ADDRESS_2 = "AA:BB:CC:DD:EE:22";
     private final static String DEVICE_ADDRESS_3 = "AA:BB:CC:DD:EE:33";
-    private static final int METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25;
-    private static final String TEMP_BOND_METADATA =
-            "<TEMP_BOND_TYPE>le_audio_sharing</TEMP_BOND_TYPE>";
     private final static int GROUP1 = 1;
     private final BluetoothClass DEVICE_CLASS_1 =
             createBtClass(BluetoothClass.Device.AUDIO_VIDEO_HEADPHONES);
@@ -342,7 +337,6 @@ public class CsipDeviceManagerTest {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING)
     public void addMemberDevicesIntoMainDevice_preferredDeviceIsMainAndTwoMain_returnTrue() {
         // Condition: The preferredDevice is main and there is another main device in top list
         // Expected Result: return true and there is the preferredDevice in top list
@@ -352,6 +346,7 @@ public class CsipDeviceManagerTest {
         mCachedDevices.add(preferredDevice);
         mCachedDevices.add(mCachedDevice2);
         mCachedDevices.add(mCachedDevice3);
+        mSetFlagsRule.disableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING);
 
         assertThat(mCsipDeviceManager.addMemberDevicesIntoMainDevice(GROUP1, preferredDevice))
                 .isTrue();
@@ -364,7 +359,6 @@ public class CsipDeviceManagerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_LE_AUDIO_SHARING, Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI})
     public void
             addMemberDevicesIntoMainDevice_preferredDeviceIsMainAndTwoMain_workProfile_doNothing() {
         // Condition: The preferredDevice is main and there is another main device in top list
@@ -375,6 +369,7 @@ public class CsipDeviceManagerTest {
         mCachedDevices.add(preferredDevice);
         mCachedDevices.add(mCachedDevice2);
         mCachedDevices.add(mCachedDevice3);
+        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING);
         when(mBroadcast.isEnabled(null)).thenReturn(true);
         BluetoothLeBroadcastMetadata metadata = Mockito.mock(BluetoothLeBroadcastMetadata.class);
         when(mBroadcast.getLatestBluetoothLeBroadcastMetadata()).thenReturn(metadata);
@@ -382,8 +377,6 @@ public class CsipDeviceManagerTest {
                 BluetoothLeBroadcastReceiveState.class);
         when(state.getBisSyncState()).thenReturn(ImmutableList.of(1L));
         when(mAssistant.getAllSources(mDevice2)).thenReturn(ImmutableList.of(state));
-        when(mDevice2.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
-                .thenReturn(TEMP_BOND_METADATA.getBytes());
         when(mContext.getSystemService(UserManager.class)).thenReturn(mUserManager);
         when(mUserManager.isManagedProfile()).thenReturn(true);
 
@@ -394,13 +387,10 @@ public class CsipDeviceManagerTest {
         assertThat(mCachedDevices.contains(mCachedDevice3)).isTrue();
         assertThat(preferredDevice.getMemberDevice()).contains(mCachedDevice2);
         verify(mAssistant, never()).addSource(mDevice1, metadata, /* isGroupOp= */ false);
-        verify(mDevice1, never()).setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                TEMP_BOND_METADATA.getBytes());
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_LE_AUDIO_SHARING, Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI})
-    public void addMemberDevicesIntoMainDevice_preferredDeviceIsMainAndTwoMain_syncState() {
+    public void addMemberDevicesIntoMainDevice_preferredDeviceIsMainAndTwoMain_syncSource() {
         // Condition: The preferredDevice is main and there is another main device in top list
         // Expected Result: return true and there is the preferredDevice in top list
         CachedBluetoothDevice preferredDevice = mCachedDevice1;
@@ -409,6 +399,7 @@ public class CsipDeviceManagerTest {
         mCachedDevices.add(preferredDevice);
         mCachedDevices.add(mCachedDevice2);
         mCachedDevices.add(mCachedDevice3);
+        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING);
         when(mBroadcast.isEnabled(null)).thenReturn(true);
         BluetoothLeBroadcastMetadata metadata = Mockito.mock(BluetoothLeBroadcastMetadata.class);
         when(mBroadcast.getLatestBluetoothLeBroadcastMetadata()).thenReturn(metadata);
@@ -416,8 +407,6 @@ public class CsipDeviceManagerTest {
                 BluetoothLeBroadcastReceiveState.class);
         when(state.getBisSyncState()).thenReturn(ImmutableList.of(1L));
         when(mAssistant.getAllSources(mDevice2)).thenReturn(ImmutableList.of(state));
-        when(mDevice2.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
-                .thenReturn(TEMP_BOND_METADATA.getBytes());
 
         assertThat(mCsipDeviceManager.addMemberDevicesIntoMainDevice(GROUP1, preferredDevice))
                 .isTrue();
@@ -426,8 +415,6 @@ public class CsipDeviceManagerTest {
         assertThat(mCachedDevices.contains(mCachedDevice3)).isTrue();
         assertThat(preferredDevice.getMemberDevice()).contains(mCachedDevice2);
         verify(mAssistant).addSource(mDevice1, metadata, /* isGroupOp= */ false);
-        verify(mDevice1).setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                TEMP_BOND_METADATA.getBytes());
     }
 
     @Test
@@ -449,13 +436,13 @@ public class CsipDeviceManagerTest {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_LE_AUDIO_SHARING, Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI})
     public void addMemberDevicesIntoMainDevice_preferredDeviceIsMemberAndTwoMain_returnTrue() {
         // Condition: The preferredDevice is member and there are two main device in top list
         // Expected Result: return true and there is the preferredDevice in top list
         CachedBluetoothDevice preferredDevice = mCachedDevice2;
         BluetoothDevice expectedMainBluetoothDevice = preferredDevice.getDevice();
         mCachedDevice3.setGroupId(GROUP1);
+        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING);
         when(mBroadcast.isEnabled(null)).thenReturn(false);
 
         assertThat(mCsipDeviceManager.addMemberDevicesIntoMainDevice(GROUP1, preferredDevice))
@@ -470,20 +457,16 @@ public class CsipDeviceManagerTest {
         assertThat(mCachedDevice1.getDevice()).isEqualTo(expectedMainBluetoothDevice);
         verify(mAssistant, never()).addSource(any(BluetoothDevice.class),
                 any(BluetoothLeBroadcastMetadata.class), anyBoolean());
-        verify(mDevice2, never()).setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                TEMP_BOND_METADATA.getBytes());
-        verify(mDevice3, never()).setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                TEMP_BOND_METADATA.getBytes());
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_ENABLE_LE_AUDIO_SHARING, Flags.FLAG_ENABLE_TEMPORARY_BOND_DEVICES_UI})
-    public void addMemberDevicesIntoMainDevice_preferredDeviceIsMemberAndTwoMain_syncState() {
+    public void addMemberDevicesIntoMainDevice_preferredDeviceIsMemberAndTwoMain_syncSource() {
         // Condition: The preferredDevice is member and there are two main device in top list
         // Expected Result: return true and there is the preferredDevice in top list
         CachedBluetoothDevice preferredDevice = mCachedDevice2;
         BluetoothDevice expectedMainBluetoothDevice = preferredDevice.getDevice();
         mCachedDevice3.setGroupId(GROUP1);
+        mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING);
         when(mBroadcast.isEnabled(null)).thenReturn(true);
         BluetoothLeBroadcastMetadata metadata = Mockito.mock(BluetoothLeBroadcastMetadata.class);
         when(mBroadcast.getLatestBluetoothLeBroadcastMetadata()).thenReturn(metadata);
@@ -491,8 +474,6 @@ public class CsipDeviceManagerTest {
                 BluetoothLeBroadcastReceiveState.class);
         when(state.getBisSyncState()).thenReturn(ImmutableList.of(1L));
         when(mAssistant.getAllSources(mDevice1)).thenReturn(ImmutableList.of(state));
-        when(mDevice1.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
-                .thenReturn(TEMP_BOND_METADATA.getBytes());
 
         assertThat(mCsipDeviceManager.addMemberDevicesIntoMainDevice(GROUP1, preferredDevice))
                 .isTrue();
@@ -507,10 +488,6 @@ public class CsipDeviceManagerTest {
         assertThat(mCachedDevice1.getDevice()).isEqualTo(expectedMainBluetoothDevice);
         verify(mAssistant).addSource(mDevice2, metadata, /* isGroupOp= */ false);
         verify(mAssistant).addSource(mDevice3, metadata, /* isGroupOp= */ false);
-        verify(mDevice2).setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                TEMP_BOND_METADATA.getBytes());
-        verify(mDevice3).setMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                TEMP_BOND_METADATA.getBytes());
     }
 
     @Test

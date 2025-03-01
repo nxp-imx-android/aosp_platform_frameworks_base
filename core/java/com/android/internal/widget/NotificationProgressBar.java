@@ -555,6 +555,18 @@ public final class NotificationProgressBar extends ProgressBar implements
         mNotificationProgressDrawable.setParts(p.first);
         mAdjustedProgressFraction =
                 (p.second - mTrackerDrawWidth / 2F) / (width - mTrackerDrawWidth);
+
+        mNotificationProgressDrawable.updateEndDotColor(getEndDotColor(fallbackSegments));
+    }
+
+    private int getEndDotColor(List<ProgressStyle.Segment> fallbackSegments) {
+        if (!mProgressModel.isStyledByProgress()) return Color.TRANSPARENT;
+        if (mProgressModel.getProgress() == mProgressModel.getProgressMax()) {
+            return Color.TRANSPARENT;
+        }
+
+        return fallbackSegments == null ? mProgressModel.getSegments().getLast().getColor()
+                : fallbackSegments.getLast().getColor();
     }
 
     private void updateTrackerAndBarPos(int w, int h) {

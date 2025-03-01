@@ -245,12 +245,17 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"ເຊື່ອມຕໍ່ Bluetooth ແລ້ວ."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"ໄອຄອນອຸປະກອນ Bluetooth"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"ຄລິກເພື່ອຕັ້ງຄ່າລາຍລະອຽດອຸປະກອນ"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"ຄລິກເພື່ອເບິ່ງອຸປະກອນທັງໝົດ"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"ຄລິກເພື່ອຈັບຄູ່ອຸປະກອນໃໝ່"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. ຕັ້ງຄ່າລາຍລະອຽດອຸປະກອນ"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"ເບິ່ງອຸປະກອນທັງໝົດ"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"ຈັບຄູ່ອຸປະກອນໃໝ່"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"ບໍ່ຮູ້ເປີເຊັນແບັດເຕີຣີ."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"ເຊື່ອມ​ຕໍ່​ຫາ <xliff:g id="BLUETOOTH">%s</xliff:g> ແລ້ວ."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"ເຊື່ອມຕໍ່ຫາ <xliff:g id="CAST">%s</xliff:g> ແລ້ວ."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ຂະຫຍາຍກຸ່ມ."</string>
+    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
+    <skip />
+    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
+    <skip />
     <string name="accessibility_open_application" msgid="1749126077501259712">"ເປີດແອັບພລິເຄຊັນ."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"ບໍ່ໄດ້ເຊື່ອມຕໍ່."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"ໂຣມມິງ"</string>
@@ -328,7 +333,8 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ການປ້ອນຂໍ້ມູນ"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"ເຄື່ອງຊ່ວຍຟັງ"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ກຳລັງເປີດ..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"ບໍ່ສາມາດປັບຄວາມແຈ້ງເນື່ອງຈາກມັນ\n ຖືກຄວບຄຸມໂດຍແອັບຍອດນິຍົມ"</string>
+    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
+    <skip />
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ໝຸນ​ອັດ​ຕະ​ໂນ​ມັດ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ໝຸນໜ້າຈໍອັດຕະໂນມັດ"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"ສະຖານທີ່"</string>
@@ -420,6 +426,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ສຽງແວດລ້ອມ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ຊ້າຍ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ຂວາ"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ຂະຫຍາຍເປັນການຄວບຄຸມທີ່ແຍກເບື້ອງຊ້າຍ ແລະ ຂວາ"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ຫຍໍ້ລົງເປັນການຄວບຄຸມແບບຮວມ"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"ປິດສຽງແວດລ້ອມ"</string>
@@ -534,6 +546,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"ຍົກເລີກການເລືອກວິດເຈັດ"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"ຫຼຸດຄວາມສູງ"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"ເພີ່ມຄວາມສູງ"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"ສະແດງເພງຖັດໄປ"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"ສະແດງເພງກ່ອນໜ້າ"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"ວິດເຈັດໃນໜ້າຈໍລັອກ"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"ເພື່ອເປີດແອັບໂດຍໃຊ້ວິດເຈັດ, ທ່ານຈະຕ້ອງຢັ້ງຢືນວ່າແມ່ນທ່ານ. ນອກຈາກນັ້ນ, ກະລຸນາຮັບຊາບວ່າທຸກຄົນສາມາດເບິ່ງຂໍ້ມູນດັ່ງກ່າວໄດ້, ເຖິງແມ່ນວ່າແທັບເລັດຂອງທ່ານຈະລັອກຢູ່ກໍຕາມ. ວິດເຈັດບາງຢ່າງອາດບໍ່ໄດ້ມີໄວ້ສຳລັບໜ້າຈໍລັອກຂອງທ່ານ ແລະ ອາດບໍ່ປອດໄພທີ່ຈະເພີ່ມໃສ່ບ່ອນນີ້."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"ເຂົ້າໃຈແລ້ວ"</string>
@@ -806,7 +820,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ບໍ່ຮອງຮັບຄຸນສົມບັດການສົນທະນາ"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"ຄຳຕິຊົມ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ປິດໄວ້"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"ບໍ່ຕ້ອງສະແດງອີກ"</string>
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ຢ່າສະແດງເປັນປັກໝຸດ"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"ກຳລັງສະແດງອັບເດດສົດ"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"ການແຈ້ງເຕືອນທີ່ປັກໝຸດໄວ້ຈະສະແດງຂໍ້ມູນສົດຈາກແອັບຕ່າງໆ ແລະ ຈະປາກົດຢູ່ແຖບສະຖານະ ແລະ ໜ້າຈໍລັອກສະເໝີ"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ບໍ່ສາມາດແກ້ໄຂການແຈ້ງເຕືອນເຫຼົ່ານີ້ໄດ້."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"ບໍ່ສາມາດແກ້ໄຂການແຈ້ງເຕືອນການໂທໄດ້."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"ບໍ່ສາມາດຕັ້ງຄ່າກຸ່ມການແຈ້ງເຕືອນນີ້ຢູ່ບ່ອນນີ້ໄດ້"</string>
@@ -893,7 +909,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"ການເຮັດຫຼາຍໜ້າວຽກພ້ອມກັນ"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ໃຊ້ໂໝດແບ່ງໜ້າຈໍໂດຍໃຫ້ແອັບຢູ່ເບື້ອງຂວາ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ໃຊ້ໂໝດແບ່ງໜ້າຈໍໂດຍໃຫ້ແອັບຢູ່ເບື້ອງຊ້າຍ"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"ສະຫຼັບໄປໃຊ້ໂໝດເຕັມຈໍ"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ໃຊ້ແບບເຕັມຈໍ"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ໃຊ້ມຸມມອງເດັສທັອບ"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ສະຫຼັບໄປໃຊ້ແອັບຢູ່ຂວາ ຫຼື ທາງລຸ່ມໃນຂະນະທີ່ໃຊ້ແບ່ງໜ້າຈໍ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ສະຫຼັບໄປໃຊ້ແອັບຢູ່ຊ້າຍ ຫຼື ທາງເທິງໃນຂະນະທີ່ໃຊ້ແບ່ງໜ້າຈໍ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ໃນລະຫວ່າງແບ່ງໜ້າຈໍ: ໃຫ້ປ່ຽນຈາກແອັບໜຶ່ງເປັນອີກແອັບໜຶ່ງ"</string>
@@ -980,6 +997,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"ສະແດງໄອຄອນການແຈ້ງເຕືອນຄວາມສຳຄັນຕ່ຳ"</string>
     <string name="other" msgid="429768510980739978">"ອື່ນໆ"</string>
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"ສະຫຼັບຂະໜາດຂອງແຜ່ນ"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ລຶບແຜ່ນອອກ"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"ເພີ່ມແຜ່ນໃສ່ຕຳແໜ່ງສຸດທ້າຍ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ຍ້າຍແຜ່ນ"</string>
@@ -1494,6 +1512,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"ເບິ່ງແອັບຫຼ້າສຸດ"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"ສະຫຼັບແອັບ"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"ແລ້ວໆ"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"ຕໍ່ໄປ"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"ກະລຸນາລອງໃໝ່!"</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"ກັບຄືນ"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"ປັດຊ້າຍ ຫຼື ຂວາໂດຍໃຊ້ມືສາມນິ້ວຢູ່ແຜ່ນສໍາຜັດຂອງທ່ານ"</string>
@@ -1531,7 +1550,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"ເພື່ອເບິ່ງແອັບຫຼ້າສຸດ, ໃຫ້ໃຊ້ 3 ນິ້ວປັດຂຶ້ນ ແລ້ວຄ້າງໄວ້ເທິງແຜ່ນສໍາຜັດ"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"ເພື່ອເບິ່ງແອັບທັງໝົດຂອງທ່ານ, ໃຫ້ກົດປຸ່ມຄຳສັ່ງຢູ່ແປ້ນພິມຂອງທ່ານ"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"ປົກປິດໄວ້ແລ້ວ"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"ປົດລັອກເພື່ອເບິ່ງ"</string>
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"ປົດລັອກເພື່ອເບິ່ງ"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"ປົດລັອກເພື່ອເບິ່ງລະຫັດ"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"ການສຶກສາຕາມບໍລິບົດ"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"ໃຊ້ແຜ່ນສໍາຜັດຂອງທ່ານເພື່ອກັບຄືນ"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"ໃຊ້ 3 ນິ້ວປັດຊ້າຍ ຫຼື ຂວາ. ແຕະເພື່ອສຶກສາທ່າທາງເພີ່ມເຕີມ."</string>
@@ -1554,4 +1574,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ບໍ່ຮູ້ຈັກ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"ຣີເຊັດແຜ່ນທັງໝົດບໍ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ແຜ່ນການຕັ້ງຄ່າດ່ວນທັງໝົດຈະຣີເຊັດເປັນການຕັ້ງຄ່າແບບເກົ່າຂອງອຸປະກອນ"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

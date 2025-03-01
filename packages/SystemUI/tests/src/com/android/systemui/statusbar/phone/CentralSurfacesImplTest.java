@@ -144,7 +144,7 @@ import com.android.systemui.scene.domain.startable.ScrimStartable;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.settings.brightness.BrightnessSliderController;
-import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor;
+import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
 import com.android.systemui.shade.CameraLauncher;
 import com.android.systemui.shade.GlanceableHubContainerController;
 import com.android.systemui.shade.NotificationPanelView;
@@ -388,8 +388,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     private final ScreenLifecycle mScreenLifecycle = new ScreenLifecycle(mDumpManager);
     private MessageRouterImpl mMessageRouter = new MessageRouterImpl(mMainExecutor);
 
-    private final BrightnessMirrorShowingInteractor mBrightnessMirrorShowingInteractor =
-            mKosmos.getBrightnessMirrorShowingInteractor();
+    private final BrightnessMirrorShowingRepository mBrightnessMirrorShowingRepository =
+            mKosmos.getBrightnessMirrorShowingRepository();
 
     private final StatusBarModePerDisplayRepository mStatusBarModePerDisplayRepository =
             mKosmos.getStatusBarModePerDisplayRepository();
@@ -639,7 +639,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                 mAlternateBouncerInteractor,
                 mUserTracker,
                 mActivityStarter,
-                mBrightnessMirrorShowingInteractor,
+                mBrightnessMirrorShowingRepository,
                 mGlanceableHubContainerController,
                 mEmergencyGestureIntentFactory,
                 mViewCaptureAwareWindowManager,
@@ -1146,11 +1146,11 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
         final ScrimStartable scrimStartable = mKosmos.getScrimStartable();
         scrimStartable.start();
 
-        mBrightnessMirrorShowingInteractor.setMirrorShowing(true);
+        mBrightnessMirrorShowingRepository.setMirrorShowing(true);
         mTestScope.getTestScheduler().runCurrent();
         verify(mScrimController, atLeastOnce()).transitionTo(ScrimState.BRIGHTNESS_MIRROR);
 
-        mBrightnessMirrorShowingInteractor.setMirrorShowing(false);
+        mBrightnessMirrorShowingRepository.setMirrorShowing(false);
         mTestScope.getTestScheduler().runCurrent();
         ArgumentCaptor<ScrimState> captor = ArgumentCaptor.forClass(ScrimState.class);
         // The default is to call the one with the callback argument
@@ -1162,12 +1162,12 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @DisableSceneContainer
     @EnableFlags(QSComposeFragment.FLAG_NAME)
     public void brightnesShowingChanged_qsUiRefactorFlagEnabled_ScrimControllerNotified() {
-        mBrightnessMirrorShowingInteractor.setMirrorShowing(true);
+        mBrightnessMirrorShowingRepository.setMirrorShowing(true);
         mTestScope.getTestScheduler().runCurrent();
         verify(mScrimController, atLeastOnce()).legacyTransitionTo(ScrimState.BRIGHTNESS_MIRROR);
         clearInvocations(mScrimController);
 
-        mBrightnessMirrorShowingInteractor.setMirrorShowing(false);
+        mBrightnessMirrorShowingRepository.setMirrorShowing(false);
         mTestScope.getTestScheduler().runCurrent();
         ArgumentCaptor<ScrimState> captor = ArgumentCaptor.forClass(ScrimState.class);
         // The default is to call the one with the callback argument
@@ -1179,7 +1179,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @DisableSceneContainer
     @DisableFlags(QSComposeFragment.FLAG_NAME)
     public void brightnesShowingChanged_flagsDisabled_ScrimControllerNotified() {
-        mBrightnessMirrorShowingInteractor.setMirrorShowing(true);
+        mBrightnessMirrorShowingRepository.setMirrorShowing(true);
         mTestScope.getTestScheduler().runCurrent();
         verify(mScrimController, never()).legacyTransitionTo(ScrimState.BRIGHTNESS_MIRROR);
         verify(mScrimController, never())

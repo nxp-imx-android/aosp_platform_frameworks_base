@@ -19,6 +19,7 @@ package com.android.systemui.qs.tiles.base.viewmodel
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.UiBackground
 import com.android.systemui.plugins.FalsingManager
+import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.tiles.base.analytics.QSTileAnalytics
 import com.android.systemui.qs.tiles.base.interactor.DisabledByPolicyInteractor
@@ -70,9 +71,7 @@ sealed interface QSTileViewModelFactory<T> {
          * Creates [QSTileViewModelImpl] based on the interactors obtained from [QSTileComponent].
          * Reference of that [QSTileComponent] is then stored along the view model.
          */
-        fun create(
-            tileSpec: TileSpec,
-        ): QSTileViewModel {
+        fun create(tileSpec: TileSpec): QSTileViewModel {
             val config = qsTileConfigProvider.getConfig(tileSpec.spec)
             val component =
                 customTileComponentBuilder.qsTileConfigModule(QSTileConfigModule(config)).build()
@@ -90,6 +89,7 @@ sealed interface QSTileViewModelFactory<T> {
                 backgroundDispatcher,
                 uiBackgroundDispatcher,
                 component.coroutineScope(),
+                /* tileDetailsViewModel= */ null,
             )
         }
     }
@@ -127,6 +127,7 @@ sealed interface QSTileViewModelFactory<T> {
             userActionInteractor: QSTileUserActionInteractor<T>,
             tileDataInteractor: QSTileDataInteractor<T>,
             mapper: QSTileDataToStateMapper<T>,
+            tileDetailsViewModel: TileDetailsViewModel? = null,
         ): QSTileViewModelImpl<T> =
             QSTileViewModelImpl(
                 qsTileConfigProvider.getConfig(tileSpec.spec),
@@ -142,6 +143,7 @@ sealed interface QSTileViewModelFactory<T> {
                 backgroundDispatcher,
                 uiBackgroundDispatcher,
                 coroutineScopeFactory.create(),
+                tileDetailsViewModel,
             )
     }
 }

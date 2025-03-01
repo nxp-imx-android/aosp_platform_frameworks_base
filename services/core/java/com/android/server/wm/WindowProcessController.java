@@ -37,6 +37,7 @@ import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STARTED;
 import static com.android.server.wm.ActivityRecord.State.STOPPING;
+import static com.android.server.wm.ActivityRecord.State.STOPPED;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_RELEASE;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_CONFIGURATION;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_RELEASE;
@@ -344,6 +345,12 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
      */
     private volatile int mActivityStateFlags = ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
+    /**
+     * The most recent timestamp of when one of this process's stopped activities in a
+     * perceptible task became stopped. Written by window manager and read by activity manager.
+     */
+    private volatile long mPerceptibleTaskStoppedTimeMillis = Long.MIN_VALUE;
+
     public WindowProcessController(@NonNull ActivityTaskManagerService atm,
             @NonNull ApplicationInfo info, String name, int uid, int userId, Object owner,
             @NonNull WindowProcessListener listener) {
@@ -475,8 +482,9 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             r.detachFromProcess();
             if (r.isVisibleRequested()) {
                 hasVisibleActivity = true;
+                Task finishingTask = r.getTask();
                 r.mDisplayContent.requestTransitionAndLegacyPrepare(TRANSIT_CLOSE,
-                        TRANSIT_FLAG_APP_CRASHED);
+                        TRANSIT_FLAG_APP_CRASHED, finishingTask);
             }
             r.destroyIfPossible("handleAppCrashed");
         }
@@ -1228,6 +1236,17 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         return mActivityStateFlags;
     }
 
+    /**
+     * Returns the most recent timestamp when one of this process's stopped activities in a
+     * perceptible task became stopped. It should only be called if {@link #hasActivities}
+     * returns {@code true} and {@link #getActivityStateFlags} does not have any of
+     * the ACTIVITY_STATE_FLAG_IS_(VISIBLE|PAUSING_OR_PAUSED|STOPPING) bit set.
+     */
+    @HotPath(caller = HotPath.OOM_ADJUSTMENT)
+    public long getPerceptibleTaskStoppedTimeMillis() {
+        return mPerceptibleTaskStoppedTimeMillis;
+    }
+
     void computeProcessActivityState() {
         // Since there could be more than one activities in a process record, we don't need to
         // compute the OomAdj with each of them, just need to find out the activity with the
@@ -1239,6 +1258,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         int minTaskLayer = Integer.MAX_VALUE;
         int stateFlags = 0;
         int nonOccludedRatio = 0;
+        long perceptibleTaskStoppedTimeMillis = Long.MIN_VALUE;
         final boolean wasResumed = hasResumedActivity();
         final boolean wasAnyVisible = (mActivityStateFlags
                 & (ACTIVITY_STATE_FLAG_IS_VISIBLE | ACTIVITY_STATE_FLAG_IS_WINDOW_VISIBLE)) != 0;
@@ -1287,6 +1307,11 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
                     bestInvisibleState = STOPPING;
                     // Not "finishing" if any of activity isn't finishing.
                     allStoppingFinishing &= r.finishing;
+                } else if (bestInvisibleState == DESTROYED && r.isState(STOPPED)) {
+                    if (task.mIsPerceptible) {
+                        perceptibleTaskStoppedTimeMillis =
+                                Long.max(r.mStoppedTime, perceptibleTaskStoppedTimeMillis);
+                    }
                 }
             }
         }
@@ -1324,6 +1349,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
             }
         }
         mActivityStateFlags = stateFlags;
+        mPerceptibleTaskStoppedTimeMillis = perceptibleTaskStoppedTimeMillis;
 
         final boolean anyVisible = (stateFlags
                 & (ACTIVITY_STATE_FLAG_IS_VISIBLE | ACTIVITY_STATE_FLAG_IS_WINDOW_VISIBLE)) != 0;

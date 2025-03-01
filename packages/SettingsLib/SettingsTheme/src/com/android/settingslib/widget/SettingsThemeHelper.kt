@@ -50,13 +50,9 @@ object SettingsThemeHelper {
     }
 
     private fun tryInit(context: Context) {
-        if (expressiveThemeState != ExpressiveThemeState.UNKNOWN) {
-            return
-        }
-
         expressiveThemeState =
             if (
-                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) &&
+                (Build.VERSION.SDK_INT > Build.VERSION_CODES.VANILLA_ICE_CREAM) &&
                         (getPropBoolean(context, IS_EXPRESSIVE_DESIGN_ENABLED, false) ||
                                 Flags.isExpressiveDesignEnabled())
             ) {

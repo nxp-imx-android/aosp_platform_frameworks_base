@@ -227,7 +227,13 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
     /** Hides the IME for Bubbles when the device is locked. */
     public void hideImeForBubblesWhenLocked(int displayId) {
         PerDisplay pd = mImePerDisplay.get(displayId);
-        pd.setImeInputTargetRequestedVisibility(false, pd.getImeSourceControl().getImeStatsToken());
+        InsetsSourceControl imeSourceControl = pd.getImeSourceControl();
+        if (imeSourceControl != null) {
+            ImeTracker.Token imeStatsToken = imeSourceControl.getImeStatsToken();
+            if (imeStatsToken != null) {
+                pd.setImeInputTargetRequestedVisibility(false, imeStatsToken);
+            }
+        }
     }
 
     /** An implementation of {@link IDisplayWindowInsetsController} for a given display id. */
@@ -324,8 +330,10 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                         }
                         applyVisibilityToLeash(imeSourceControl);
                     }
-                    if (!mImeShowing) {
-                        removeImeSurface(mDisplayId);
+                    if (!android.view.inputmethod.Flags.refactorInsetsController()) {
+                        if (!mImeShowing) {
+                            removeImeSurface(mDisplayId);
+                        }
                     }
                 }
             } else {
@@ -449,6 +457,14 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
             try {
                 mWmService.updateDisplayWindowRequestedVisibleTypes(mDisplayId,
                         visibleTypes, WindowInsets.Type.ime(), statsToken);
+            } catch (RemoteException e) {
+            }
+        }
+
+        private void setAnimating(boolean imeAnimationOngoing) {
+            int animatingTypes = imeAnimationOngoing ? WindowInsets.Type.ime() : 0;
+            try {
+                mWmService.updateDisplayWindowAnimatingTypes(mDisplayId, animatingTypes);
             } catch (RemoteException e) {
             }
         }
@@ -611,6 +627,9 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                                 + imeTop(hiddenY, defaultY) + "->" + imeTop(shownY, defaultY)
                                 + " showing:" + (mAnimationDirection == DIRECTION_SHOW));
                     }
+                    if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
+                        setAnimating(true);
+                    }
                     int flags = dispatchStartPositioning(mDisplayId, imeTop(hiddenY, defaultY),
                             imeTop(shownY, defaultY), mAnimationDirection == DIRECTION_SHOW,
                             isFloating, t);
@@ -658,12 +677,16 @@ public class DisplayImeController implements DisplayController.OnDisplaysChanged
                     }
                     if (!android.view.inputmethod.Flags.refactorInsetsController()) {
                         dispatchEndPositioning(mDisplayId, mCancelled, t);
+                    } else if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
+                        setAnimating(false);
                     }
                     if (mAnimationDirection == DIRECTION_HIDE && !mCancelled) {
                         ImeTracker.forLogging().onProgress(mStatsToken,
                                 ImeTracker.PHASE_WM_ANIMATION_RUNNING);
                         t.hide(animatingLeash);
-                        removeImeSurface(mDisplayId);
+                        if (!android.view.inputmethod.Flags.refactorInsetsController()) {
+                            removeImeSurface(mDisplayId);
+                        }
                         if (android.view.inputmethod.Flags.refactorInsetsController()) {
                             setVisibleDirectly(false /* visible */, statsToken);
                         }

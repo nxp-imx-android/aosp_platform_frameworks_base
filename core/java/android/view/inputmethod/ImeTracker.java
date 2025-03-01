@@ -225,6 +225,7 @@ public interface ImeTracker {
             PHASE_SERVER_UPDATE_CLIENT_VISIBILITY,
             PHASE_WM_DISPLAY_IME_CONTROLLER_SET_IME_REQUESTED_VISIBLE,
             PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES,
+            PHASE_WM_REQUESTED_VISIBLE_TYPES_NOT_CHANGED,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface Phase {}
@@ -445,6 +446,9 @@ public interface ImeTracker {
     /** The control target reported its requestedVisibleTypes back to WindowManagerService. */
     int PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES =
             ImeProtoEnums.PHASE_WM_UPDATE_DISPLAY_WINDOW_REQUESTED_VISIBLE_TYPES;
+    /** The requestedVisibleTypes have not been changed, so this request is not continued. */
+    int PHASE_WM_REQUESTED_VISIBLE_TYPES_NOT_CHANGED =
+            ImeProtoEnums.PHASE_WM_REQUESTED_VISIBLE_TYPES_NOT_CHANGED;
 
     /**
      * Called when an IME request is started.

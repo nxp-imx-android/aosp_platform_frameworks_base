@@ -49,6 +49,7 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
+import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
 
 /**
  * Animated visual indicator for Desktop Mode windowing transitions.
@@ -98,7 +99,9 @@ public class DesktopModeVisualIndicator {
                 return FROM_SPLIT;
             } else if (taskInfo.isFreeform()) {
                 return FROM_FREEFORM;
-            } else return null;
+            } else {
+                return null;
+            }
         }
     }
 
@@ -110,6 +113,7 @@ public class DesktopModeVisualIndicator {
 
     private IndicatorType mCurrentType;
     private final DragStartState mDragStartState;
+    private final SnapEventHandler mSnapEventHandler;
 
     public DesktopModeVisualIndicator(@ShellDesktopThread ShellExecutor desktopExecutor,
             @ShellMainThread ShellExecutor mainExecutor,
@@ -118,18 +122,20 @@ public class DesktopModeVisualIndicator {
             Context context, SurfaceControl taskSurface,
             RootTaskDisplayAreaOrganizer taskDisplayAreaOrganizer,
             DragStartState dragStartState,
-            @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider) {
+            @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider,
+            SnapEventHandler snapEventHandler) {
         SurfaceControl.Builder builder = new SurfaceControl.Builder();
         taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
         mVisualIndicatorViewContainer = new VisualIndicatorViewContainer(
                 DesktopModeFlags.ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX.isTrue()
                         ? desktopExecutor : mainExecutor,
-                mainExecutor, builder, syncQueue, bubbleBoundsProvider);
+                mainExecutor, builder, syncQueue, bubbleBoundsProvider, snapEventHandler);
         mTaskInfo = taskInfo;
         mDisplayController = displayController;
         mContext = context;
         mCurrentType = NO_INDICATOR;
         mDragStartState = dragStartState;
+        mSnapEventHandler = snapEventHandler;
         mVisualIndicatorViewContainer.createView(
                 mContext,
                 mDisplayController.getDisplay(mTaskInfo.displayId),
@@ -143,7 +149,8 @@ public class DesktopModeVisualIndicator {
     public void fadeOutIndicator(
             @NonNull Runnable callback) {
         mVisualIndicatorViewContainer.fadeOutIndicator(
-                mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType, callback
+                mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType, callback,
+                mTaskInfo.displayId, mSnapEventHandler
         );
     }
 

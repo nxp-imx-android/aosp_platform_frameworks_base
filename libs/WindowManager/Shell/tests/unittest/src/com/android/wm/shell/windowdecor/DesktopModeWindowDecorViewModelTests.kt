@@ -278,6 +278,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODALS_POLICY)
+    @DisableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testDecorationIsNotCreatedForTopTranslucentActivities() {
         val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN).apply {
             isActivityStackTransparent = true
@@ -317,6 +318,19 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         onTaskOpening(task)
 
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
+    }
+
+    @Test
+    fun testOnTaskInfoChanged_tilingNotified() {
+        val task = createTask(
+            windowingMode = WINDOWING_MODE_FREEFORM
+        )
+        setUpMockDecorationsForTasks(task)
+
+        onTaskOpening(task)
+        desktopModeWindowDecorViewModel.onTaskInfoChanged(task)
+
+        verify(mockTilingWindowDecoration).onTaskInfoChange(task)
     }
 
     @Test

@@ -119,7 +119,8 @@ constructor(
         } else {
             val targetState =
                 if (idle.currentScene == Scenes.Lockscreen) {
-                    transitionInteractor.startedKeyguardTransitionStep.value.from
+                    repository.nextLockscreenTargetState.value
+                        ?: transitionInteractor.startedKeyguardTransitionStep.value.from
                 } else {
                     UNDEFINED
                 }
@@ -197,11 +198,11 @@ constructor(
             TransitionInfo(
                 ownerName = this::class.java.simpleName,
                 from = UNDEFINED,
-                to = repository.nextLockscreenTargetState.value,
+                to = repository.nextLockscreenTargetState.value ?: DEFAULT_STATE,
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
-        repository.nextLockscreenTargetState.value = DEFAULT_STATE
+        repository.nextLockscreenTargetState.value = null
         startTransition(newTransition)
     }
 
@@ -215,7 +216,7 @@ constructor(
                 animator = null,
                 modeOnCanceled = TransitionModeOnCanceled.RESET,
             )
-        repository.nextLockscreenTargetState.value = DEFAULT_STATE
+        repository.nextLockscreenTargetState.value = null
         startTransition(newTransition)
     }
 

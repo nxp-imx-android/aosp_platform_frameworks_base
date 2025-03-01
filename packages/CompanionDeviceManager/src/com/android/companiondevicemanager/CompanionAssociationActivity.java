@@ -176,6 +176,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     // an association to CDM.
     private boolean mApproved;
     private boolean mCancelled;
+    // Indicates user has completely scrolled through the permissions list.
+    private boolean mIsPermissionsListScrolledToBottom;
     // A reference to the device selected by the user, to be sent back to the application via
     // onActivityResult() after the association is created.
     private @Nullable DeviceFilterPair<?> mSelectedDevice;
@@ -337,7 +339,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     private void onDiscoveryStateChanged(DiscoveryState newState) {
         switch (newState) {
             case IN_PROGRESS: {
-                mTimeoutMessage.setText(null);
+                mTimeoutMessage.setVisibility(View.GONE);
                 mProgressBar.setIndeterminate(true);
                 break;
             }
@@ -349,6 +351,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
                         R.string.message_discovery_soft_timeout,
                         deviceType, discoveryType, profile);
                 mTimeoutMessage.setText(message);
+                mTimeoutMessage.setVisibility(View.VISIBLE);
                 break;
             }
             case FINISHED_STOPPED: {
@@ -361,6 +364,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
                         }
                     }
                     mTimeoutMessage.setText(getString(R.string.message_discovery_hard_timeout));
+                    mTimeoutMessage.setVisibility(View.VISIBLE);
                 }
                 mProgressBar.setIndeterminate(false);
                 break;
@@ -450,7 +454,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     }
 
     private void stopDiscovery() {
-        if (!mRequest.isSelfManaged()) {
+        if (mRequest != null && !mRequest.isSelfManaged()) {
             CompanionDeviceDiscoveryService.stop(this);
         }
     }
@@ -526,6 +530,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         mVendorHeader.setVisibility(View.VISIBLE);
         mProfileIcon.setVisibility(View.GONE);
         mDeviceListRecyclerView.setVisibility(View.GONE);
+        mTimeoutMessage.setVisibility(View.GONE);
         mProgressBar.setVisibility(View.GONE);
         mBorderBottom.setVisibility(View.GONE);
     }
@@ -589,6 +594,15 @@ public class CompanionAssociationActivity extends FragmentActivity implements
 
             mDeviceListRecyclerView.setVisibility(View.VISIBLE);
         }
+
+        // Set accessibility action for mCancelScanLayout (wraps mButtonCancelScan) for TalkBack.
+        mButtonCancelScan.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_CLICK);
+            }
+        });
+
 
         mSummary.setVisibility(View.GONE);
         mButtonAllow.setVisibility(View.GONE);
@@ -670,10 +684,30 @@ public class CompanionAssociationActivity extends FragmentActivity implements
 
     private void onPositiveButtonClick(View v) {
         Slog.d(TAG, "onPositiveButtonClick()");
+        // Scroll the permission list when a user presses the `Allow` button.
+        if (mPermissionListRecyclerView != null
+                && mPermissionListRecyclerView.isVisibleToUser()
+                && !mIsPermissionsListScrolledToBottom) {
+            LinearLayoutManager layoutManager =
+                    (LinearLayoutManager) mPermissionListRecyclerView.getLayoutManager();
+            if (layoutManager == null) return;
 
+            int lastVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
+            int firstVisibleItemPosition = layoutManager.findFirstCompletelyVisibleItemPosition();
+            int scrollOffset = lastVisibleItemPosition - firstVisibleItemPosition;
+            int numItems = mPermissionListRecyclerView.getAdapter().getItemCount();
+
+            // Calculate the next scroll position with the offset
+            int nextScrollPosition = Math.min(
+                    lastVisibleItemPosition + scrollOffset + 1, numItems - 1);
+            mPermissionListRecyclerView.smoothScrollToPosition(nextScrollPosition);
+
+            return;
+        }
         // Disable the button, to prevent more clicks.
         v.setEnabled(false);
 
+        // Approved the association creation if the list is scrolled to the bottom.
         if (mRequest.isSelfManaged()) {
             onAssociationApproved(null);
         } else {
@@ -774,31 +808,48 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         }
     }
 
-    // Disable and grey out the Allow and Don't allow buttons if the last permission in the
+    // 1. Disable and grey out the Don't allow button if the last permission in the
     // permission list is not visible to the users.
+    // 2. Remove the text for Allow button.
+    // 3. Set the background that includes the downward arrow icon.
     private void disableButtons() {
-        mButtonAllow.setEnabled(false);
+        mButtonAllow.setText("");
+        mButtonAllow.setBackgroundResource(R.drawable.btn_positive_button_with_arrow);
+        mButtonAllow.setContentDescription("");
+        mButtonAllow.setAccessibilityDelegate(new View.AccessibilityDelegate() {
+            public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
+                super.onInitializeAccessibilityNodeInfo(host, info);
+                info.setContentDescription(getString(R.string.downward_arrow));
+                info.addAction(
+                        new AccessibilityNodeInfo.AccessibilityAction(
+                                AccessibilityNodeInfo.ACTION_CLICK,
+                                getString(R.string.downward_arrow_action)
+                        )
+                );
+            }
+        });
+
         mButtonNotAllow.setEnabled(false);
-        mButtonAllow.setTextColor(
-                getResources().getColor(android.R.color.system_neutral1_400, null));
         mButtonNotAllow.setTextColor(
                 getResources().getColor(android.R.color.system_neutral1_400, null));
-        mButtonAllow.getBackground().setColorFilter(
-                (new BlendModeColorFilter(Color.LTGRAY,  BlendMode.DARKEN)));
         mButtonNotAllow.getBackground().setColorFilter(
                 (new BlendModeColorFilter(Color.LTGRAY,  BlendMode.DARKEN)));
     }
-    // Enable and restore the color for the Allow and Don't allow buttons if the last permission in
-    // the permission list is visible to the users.
+    // 1.Enable and restore the color for the Allow and Don't allow buttons if the
+    // last permission in the permission list is visible to the users.
+    // 2. Re-set the background for the Allow button which remove the downward arrow icon.
     private void enableButtons() {
-        mButtonAllow.setEnabled(true);
+        mButtonAllow.setText(R.string.consent_yes);
+        mButtonAllow.setBackgroundResource(R.drawable.btn_positive_button);
+        mButtonAllow.setContentDescription(getString(R.string.consent_yes));
+        mButtonAllow.setAccessibilityDelegate(null);
+
         mButtonNotAllow.setEnabled(true);
-        mButtonAllow.getBackground().setColorFilter(null);
         mButtonNotAllow.getBackground().setColorFilter(null);
-        mButtonAllow.setTextColor(
-                getResources().getColor(android.R.color.system_neutral1_900, null));
         mButtonNotAllow.setTextColor(
                 getResources().getColor(android.R.color.system_neutral1_900, null));
+
+        mIsPermissionsListScrolledToBottom = true;
     }
 
     private final ResultReceiver mOnAssociationCreatedReceiver =

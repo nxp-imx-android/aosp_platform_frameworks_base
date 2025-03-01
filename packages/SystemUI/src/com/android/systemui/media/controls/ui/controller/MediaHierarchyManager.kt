@@ -51,6 +51,7 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dream.MediaDreamComplication
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
@@ -58,6 +59,7 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.CrossFadeHelper
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
+import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator
 import com.android.systemui.statusbar.phone.KeyguardBypassController
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -113,7 +115,7 @@ constructor(
     private val dreamOverlayStateController: DreamOverlayStateController,
     private val keyguardInteractor: KeyguardInteractor,
     communalTransitionViewModel: CommunalTransitionViewModel,
-    configurationController: ConfigurationController,
+    @ShadeDisplayAware configurationController: ConfigurationController,
     wakefulnessLifecycle: WakefulnessLifecycle,
     shadeInteractor: ShadeInteractor,
     private val secureSettings: SecureSettings,
@@ -229,7 +231,7 @@ constructor(
         else result.setIntersect(animationStartClipping, targetClipping)
     }
 
-    private val mediaHosts = arrayOfNulls<MediaHost>(LOCATION_COMMUNAL_HUB + 1)
+    private val mediaHosts = arrayOfNulls<MediaHost>(LOCATION_STATUS_BAR_POPUP + 1)
 
     /**
      * The last location where this view was at before going to the desired location. This is useful
@@ -285,12 +287,11 @@ constructor(
                 field = value
                 mediaCarouselController.mediaCarouselScrollHandler.qsExpanded = value
             }
-            // qs is expanded on LS shade and HS shade
-            if (value && (isLockScreenShadeVisibleToUser() || isHomeScreenShadeVisibleToUser())) {
-                mediaCarouselController.logSmartspaceImpression(value)
-            }
             updateUserVisibility()
         }
+
+    /** The expansion fraction of notification shade. */
+    var shadeExpandedFraction: Float = 0.0f
 
     /**
      * distance that the full shade transition takes in order for media to fully transition to the
@@ -369,6 +370,15 @@ constructor(
     var collapsingShadeFromQS: Boolean = false
         set(value) {
             if (field != value) {
+                field = value
+                updateDesiredLocation(forceNoAnimation = true)
+            }
+        }
+
+    /** Is the Media Control StatusBarPopup showing */
+    var isMediaControlPopupShowing: Boolean = false
+        set(value) {
+            if (field != value && StatusBarPopupChips.isEnabled) {
                 field = value
                 updateDesiredLocation(forceNoAnimation = true)
             }
@@ -510,12 +520,6 @@ constructor(
 
                 override fun onStateChanged(newState: Int) {
                     updateTargetState()
-                    // Enters shade from lock screen
-                    if (
-                        newState == StatusBarState.SHADE_LOCKED && isLockScreenShadeVisibleToUser()
-                    ) {
-                        mediaCarouselController.logSmartspaceImpression(qsExpanded)
-                    }
                     updateUserVisibility()
                 }
 
@@ -526,10 +530,6 @@ constructor(
                 override fun onDozingChanged(isDozing: Boolean) {
                     if (!isDozing) {
                         dozeAnimationRunning = false
-                        // Enters lock screen from screen off
-                        if (isLockScreenVisibleToUser()) {
-                            mediaCarouselController.logSmartspaceImpression(qsExpanded)
-                        }
                     } else {
                         updateDesiredLocation()
                         qsExpanded = false
@@ -539,10 +539,6 @@ constructor(
                 }
 
                 override fun onExpandedChanged(isExpanded: Boolean) {
-                    // Enters shade from home screen
-                    if (isHomeScreenShadeVisibleToUser()) {
-                        mediaCarouselController.logSmartspaceImpression(qsExpanded)
-                    }
                     updateUserVisibility()
                 }
             }
@@ -876,7 +872,13 @@ constructor(
         if (isCurrentlyInGuidedTransformation()) {
             return false
         }
-        if (skipQqsOnExpansion) {
+        if (
+            skipQqsOnExpansion ||
+                (QSComposeFragment.isEnabled &&
+                    desiredLocation == LOCATION_QQS &&
+                    previousLocation == LOCATION_QS &&
+                    shadeExpandedFraction == 0.0f)
+        ) {
             return false
         }
         if (isHubTransition) {
@@ -1137,10 +1139,11 @@ constructor(
         traceSection("MediaHierarchyManager#updateHostAttachment") {
             if (SceneContainerFlag.isEnabled) {
                 // No need to manage transition states - just update the desired location directly
-                logger.logMediaHostAttachment(desiredLocation)
+                val host = getHost(desiredLocation)
+                logger.logMediaHostAttachment(desiredLocation, host?.visible)
                 mediaCarouselController.onDesiredLocationChanged(
                     desiredLocation = desiredLocation,
-                    desiredHostState = getHost(desiredLocation),
+                    desiredHostState = host,
                     animate = false,
                 )
                 return
@@ -1177,7 +1180,8 @@ constructor(
                     // that and directly set the mediaFrame's bounds within the premeasured host.
                     targetHost.addView(mediaFrame)
                 }
-                logger.logMediaHostAttachment(currentAttachmentLocation)
+                val host = getHost(currentAttachmentLocation)
+                logger.logMediaHostAttachment(currentAttachmentLocation, host?.visible)
                 if (isCrossFadeAnimatorRunning) {
                     // When cross-fading with an animation, we only notify the media carousel of the
                     // location change, once the view is reattached to the new place and not
@@ -1225,6 +1229,7 @@ constructor(
             // Keep the current location until we're allowed to again
             return desiredLocation
         }
+
         val onLockscreen =
             (!bypassController.bypassEnabled && (statusbarState == StatusBarState.KEYGUARD))
 
@@ -1234,6 +1239,8 @@ constructor(
             (onCommunalNotDreaming && qsExpansion == 0.0f) || onCommunalDreamingAndShadeExpanding
         val location =
             when {
+                isMediaControlPopupShowing && StatusBarPopupChips.isEnabled ->
+                    LOCATION_STATUS_BAR_POPUP
                 dreamOverlayActive && dreamMediaComplicationActive -> LOCATION_DREAM_OVERLAY
                 onCommunal -> LOCATION_COMMUNAL_HUB
                 (qsExpansion > 0.0f || inSplitShade) && !onLockscreen -> LOCATION_QS
@@ -1318,6 +1325,7 @@ constructor(
                 isHomeScreenShadeVisibleToUser() ||
                 isGlanceableHubVisibleToUser()
         val mediaVisible = qsExpanded || hasActiveMediaOrRecommendation
+        logger.logUserVisibilityChange(shadeVisible, mediaVisible)
         mediaCarouselController.mediaCarouselScrollHandler.visibleToUser =
             shadeVisible && mediaVisible
     }
@@ -1377,6 +1385,9 @@ constructor(
         /** Attached to a view in the communal UI grid */
         const val LOCATION_COMMUNAL_HUB = 4
 
+        /** Attached to a popup that is shown with a media control chip in the status bar */
+        const val LOCATION_STATUS_BAR_POPUP = 5
+
         /** Attached at the root of the hierarchy in an overlay */
         const val IN_OVERLAY = -1000
 
@@ -1422,6 +1433,7 @@ private annotation class TransformationType
             MediaHierarchyManager.LOCATION_LOCKSCREEN,
             MediaHierarchyManager.LOCATION_DREAM_OVERLAY,
             MediaHierarchyManager.LOCATION_COMMUNAL_HUB,
+            MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP,
             MediaHierarchyManager.LOCATION_UNKNOWN,
         ],
 )

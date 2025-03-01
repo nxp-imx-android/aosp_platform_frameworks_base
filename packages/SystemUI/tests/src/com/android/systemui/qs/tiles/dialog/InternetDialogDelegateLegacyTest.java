@@ -878,4 +878,18 @@ public class InternetDialogDelegateLegacyTest extends SysuiTestCase {
         mMobileDataLayout.setVisibility(mobileDataVisible ? View.VISIBLE : View.GONE);
         mConnectedWifi.setVisibility(connectedWifiVisible ? View.VISIBLE : View.GONE);
     }
+
+    @Test
+    public void updateDialog_wifiIsDisabled_turnOffProgressBar() {
+        when(mInternetDetailsContentController.isWifiEnabled()).thenReturn(false);
+        mInternetDialogDelegateLegacy.mIsProgressBarVisible = true;
+
+        mInternetDialogDelegateLegacy.updateDialog(false);
+
+        mBgExecutor.runAllReady();
+        mInternetDialogDelegateLegacy.mDataInternetContent.observe(
+                mInternetDialogDelegateLegacy.mLifecycleOwner, i -> {
+                    assertThat(mInternetDialogDelegateLegacy.mIsProgressBarVisible).isFalse();
+                });
+    }
 }

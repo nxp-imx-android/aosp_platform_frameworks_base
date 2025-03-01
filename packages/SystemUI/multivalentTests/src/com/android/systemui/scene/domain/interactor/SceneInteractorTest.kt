@@ -73,9 +73,8 @@ class SceneInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
-    private val fakeSceneDataSource = kosmos.fakeSceneDataSource
-
-    private val underTest = kosmos.sceneInteractor
+    private val fakeSceneDataSource by lazy { kosmos.fakeSceneDataSource }
+    private val underTest by lazy { kosmos.sceneInteractor }
 
     @Before
     fun setUp() {
@@ -756,5 +755,131 @@ class SceneInteractorTest : SysuiTestCase() {
             underTest.changeScene(toScene = checkNotNull(currentScene), loggingReason = "")
 
             verify(processor, never()).onSceneAboutToChange(any(), any())
+        }
+
+    @Test
+    fun changeScene_sameScene_withFreeze() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(underTest.currentScene)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
+            underTest.registerSceneStateProcessor(processor)
+            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
+
+            underTest.changeScene(
+                toScene = Scenes.Lockscreen,
+                loggingReason = "test",
+                sceneState = KeyguardState.AOD,
+                forceSettleToTargetScene = true,
+            )
+
+            verify(processor).onSceneAboutToChange(Scenes.Lockscreen, KeyguardState.AOD)
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(1)
+        }
+
+    @Test
+    fun changeScene_sameScene_withoutFreeze() =
+        kosmos.runTest {
+            val currentScene by collectLastValue(underTest.currentScene)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            val processor = mock<SceneInteractor.OnSceneAboutToChangeListener>()
+            underTest.registerSceneStateProcessor(processor)
+            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
+
+            underTest.changeScene(
+                toScene = Scenes.Lockscreen,
+                loggingReason = "test",
+                sceneState = KeyguardState.AOD,
+                forceSettleToTargetScene = false,
+            )
+
+            verify(processor, never()).onSceneAboutToChange(any(), any())
+            assertThat(fakeSceneDataSource.freezeAndAnimateToCurrentStateCallCount).isEqualTo(0)
+        }
+
+    @Test
+    fun topmostContent_sceneChange_noOverlays() =
+        kosmos.runTest {
+            val topmostContent by collectLastValue(underTest.topmostContent)
+
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+
+            underTest.snapToScene(Scenes.Lockscreen, "reason")
+
+            assertThat(topmostContent).isEqualTo(Scenes.Lockscreen)
+
+            underTest.changeScene(Scenes.Gone, "reason")
+
+            assertThat(topmostContent).isEqualTo(Scenes.Gone)
+        }
+
+    @Test
+    fun topmostContent_sceneChange_withOverlay() =
+        kosmos.runTest {
+            kosmos.enableDualShade()
+            runCurrent()
+
+            val topmostContent by collectLastValue(underTest.topmostContent)
+
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+
+            underTest.snapToScene(Scenes.Lockscreen, "reason")
+            underTest.showOverlay(Overlays.NotificationsShade, "reason")
+
+            assertThat(topmostContent).isEqualTo(Overlays.NotificationsShade)
+
+            underTest.changeScene(Scenes.Gone, "reason")
+
+            assertThat(topmostContent).isEqualTo(Overlays.NotificationsShade)
+        }
+
+    @Test
+    fun topmostContent_overlayChange_higherZOrder() =
+        kosmos.runTest {
+            kosmos.enableDualShade()
+            runCurrent()
+
+            val topmostContent by collectLastValue(underTest.topmostContent)
+
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+
+            underTest.snapToScene(Scenes.Lockscreen, "reason")
+            underTest.showOverlay(Overlays.NotificationsShade, "reason")
+
+            assertThat(topmostContent).isEqualTo(Overlays.NotificationsShade)
+
+            underTest.showOverlay(Overlays.QuickSettingsShade, "reason")
+
+            assertThat(topmostContent).isEqualTo(Overlays.QuickSettingsShade)
+        }
+
+    @Test
+    fun topmostContent_overlayChange_lowerZOrder() =
+        kosmos.runTest {
+            kosmos.enableDualShade()
+            runCurrent()
+
+            val topmostContent by collectLastValue(underTest.topmostContent)
+
+            kosmos.fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+
+            underTest.snapToScene(Scenes.Lockscreen, "reason")
+            underTest.showOverlay(Overlays.QuickSettingsShade, "reason")
+
+            assertThat(topmostContent).isEqualTo(Overlays.QuickSettingsShade)
+
+            underTest.showOverlay(Overlays.NotificationsShade, "reason")
+
+            assertThat(topmostContent).isEqualTo(Overlays.QuickSettingsShade)
         }
 }

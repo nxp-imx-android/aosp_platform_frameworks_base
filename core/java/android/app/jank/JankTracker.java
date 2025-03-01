@@ -20,6 +20,7 @@ import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Log;
 import android.view.AttachedSurfaceControl;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
@@ -30,16 +31,22 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * This class is responsible for registering callbacks that will receive JankData batches.
  * It handles managing the background thread that JankData will be processed on. As well as acting
  * as an intermediary between widgets and the state tracker, routing state changes to the tracker.
+ *
  * @hide
  */
 @FlaggedApi(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
 public class JankTracker {
-
+    private static final boolean DEBUG = false;
+    private static final String DEBUG_KEY = "JANKTRACKER";
+    // How long to delay the JankData listener registration.
+    //TODO b/394956095 see if this can be reduced or eliminated.
+    private static final int REGISTRATION_DELAY_MS = 1000;
     // Tracks states reported by widgets.
     private StateTracker mStateTracker;
     // Processes JankData batches and associates frames to widget states.
@@ -48,9 +55,6 @@ public class JankTracker {
     // Background thread responsible for processing JankData batches.
     private HandlerThread mHandlerThread = new HandlerThread("AppJankTracker");
     private Handler mHandler = null;
-
-    // Needed so we know when the view is attached to a window.
-    private ViewTreeObserver mViewTreeObserver;
 
     // Handle to a registered OnJankData listener.
     private SurfaceControl.OnJankDataListenerRegistration mJankDataListenerRegistration;
@@ -76,6 +80,40 @@ public class JankTracker {
      */
     private boolean mListenersRegistered = false;
 
+    @FlaggedApi(com.android.window.flags.Flags.FLAG_JANK_API)
+    private final SurfaceControl.OnJankDataListener mJankDataListener =
+            new SurfaceControl.OnJankDataListener() {
+                @Override
+                public void onJankDataAvailable(
+                        @androidx.annotation.NonNull List<SurfaceControl.JankData> jankData) {
+                    if (mJankDataProcessor == null) return;
+                    mJankDataProcessor.processJankData(jankData, mActivityName, mAppUid);
+                }
+            };
+
+    private final ViewTreeObserver.OnWindowAttachListener mOnWindowAttachListener =
+            new ViewTreeObserver.OnWindowAttachListener() {
+                @Override
+                public void onWindowAttached() {
+                    getHandler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            mDecorView.getViewTreeObserver()
+                                    .removeOnWindowAttachListener(mOnWindowAttachListener);
+                            registerForJankData();
+                        }
+                    }, REGISTRATION_DELAY_MS);
+                }
+
+                // Leave this empty. Only need to know when the DecorView is attached to the Window
+                // in order to get a handle to AttachedSurfaceControl. There is no need to tie
+                // anything to when the view is detached as all un-registration code is tied to
+                // the lifecycle of the enclosing activity.
+                @Override
+                public void onWindowDetached() {
+
+                }
+            };
 
     public JankTracker(Choreographer choreographer, View decorView) {
         mStateTracker = new StateTracker(choreographer);
@@ -108,9 +146,10 @@ public class JankTracker {
 
     /**
      * Will add the widget category, id and state as a UI state to associate frames to it.
+     *
      * @param widgetCategory preselected general widget category
-     * @param widgetId developer defined widget id if available.
-     * @param widgetState the current active widget state.
+     * @param widgetId       developer defined widget id if available.
+     * @param widgetState    the current active widget state.
      */
     public void addUiState(String widgetCategory, String widgetId, String widgetState) {
         if (!shouldTrack()) return;
@@ -121,9 +160,10 @@ public class JankTracker {
     /**
      * Will remove the widget category, id and state as a ui state and no longer attribute frames
      * to it.
+     *
      * @param widgetCategory preselected general widget category
-     * @param widgetId developer defined widget id if available.
-     * @param widgetState no longer active widget state.
+     * @param widgetId       developer defined widget id if available.
+     * @param widgetState    no longer active widget state.
      */
     public void removeUiState(String widgetCategory, String widgetId, String widgetState) {
         if (!shouldTrack()) return;
@@ -133,10 +173,11 @@ public class JankTracker {
 
     /**
      * Call to update a jank state to a different state.
+     *
      * @param widgetCategory preselected general widget category.
-     * @param widgetId developer defined widget id if available.
-     * @param currentState current state of the widget.
-     * @param nextState the state the widget will be in.
+     * @param widgetId       developer defined widget id if available.
+     * @param currentState   current state of the widget.
+     * @param nextState      the state the widget will be in.
      */
     public void updateUiState(String widgetCategory, String widgetId, String currentState,
             String nextState) {
@@ -150,10 +191,11 @@ public class JankTracker {
      */
     public void enableAppJankTracking() {
         // Add the activity as a state, this will ensure we track frames to the activity without the
-        // need of a decorated widget to be used.
+        // need for a decorated widget to be used.
         // TODO b/376116199 replace "NONE" with UNSPECIFIED once the API changes are merged.
         mStateTracker.putState("NONE", mActivityName, "NONE");
         mTrackingEnabled = true;
+        registerForJankData();
     }
 
     /**
@@ -163,10 +205,12 @@ public class JankTracker {
         mTrackingEnabled = false;
         // TODO b/376116199 replace "NONE" with UNSPECIFIED once the API changes are merged.
         mStateTracker.removeState("NONE", mActivityName, "NONE");
+        unregisterForJankData();
     }
 
     /**
      * Retrieve all pending widget states, this is intended for testing purposes only.
+     *
      * @param stateDataList the ArrayList that will be populated with the pending states.
      */
     @VisibleForTesting
@@ -190,16 +234,35 @@ public class JankTracker {
     @VisibleForTesting
     public void forceListenerRegistration() {
         mSurfaceControl = mDecorView.getRootSurfaceControl();
-        registerForJankData();
-        // TODO b/376116199 Check if registration is good.
-        mListenersRegistered = true;
+        registerJankDataListener();
+    }
+
+    private void unregisterForJankData() {
+        if (mJankDataListenerRegistration == null) return;
+
+        if (com.android.window.flags.Flags.jankApi()) {
+            mJankDataListenerRegistration.release();
+        }
+        mJankDataListenerRegistration = null;
+        mListenersRegistered = false;
     }
 
     private void registerForJankData() {
-        if (mSurfaceControl == null) return;
-        /*
-        TODO b/376115668 Register for JankData batches from new JankTracking API
-         */
+        if (mDecorView == null) return;
+
+        mSurfaceControl = mDecorView.getRootSurfaceControl();
+
+        if (mSurfaceControl == null || mListenersRegistered) return;
+
+        // Wait a short time before registering the listener. During development it was observed
+        // that if a listener is registered too quickly after a hot or warm start no data is
+        // received b/394956095.
+        getHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                registerJankDataListener();
+            }
+        }, REGISTRATION_DELAY_MS);
     }
 
     /**
@@ -218,23 +281,30 @@ public class JankTracker {
      */
     private void registerWindowListeners() {
         if (mDecorView == null) return;
-        mViewTreeObserver = mDecorView.getViewTreeObserver();
-        mViewTreeObserver.addOnWindowAttachListener(new ViewTreeObserver.OnWindowAttachListener() {
-            @Override
-            public void onWindowAttached() {
-                getHandler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        forceListenerRegistration();
-                    }
-                }, 1000);
-            }
+        mDecorView.getViewTreeObserver().addOnWindowAttachListener(mOnWindowAttachListener);
+    }
 
-            @Override
-            public void onWindowDetached() {
-                // TODO b/376116199  do we un-register the callback or just not process the data.
+    private void registerJankDataListener() {
+        if (mSurfaceControl == null) {
+            if (DEBUG) {
+                Log.d(DEBUG_KEY, "SurfaceControl is Null");
             }
-        });
+            return;
+        }
+
+        if (com.android.window.flags.Flags.jankApi()) {
+            mJankDataListenerRegistration = mSurfaceControl.registerOnJankDataListener(
+                    mHandlerThread.getThreadExecutor(), mJankDataListener);
+
+            if (mJankDataListenerRegistration
+                    == SurfaceControl.OnJankDataListenerRegistration.NONE) {
+                if (DEBUG) {
+                    Log.d(DEBUG_KEY, "OnJankDataListenerRegistration is assigned NONE");
+                }
+                return;
+            }
+            mListenersRegistered = true;
+        }
     }
 
     private Handler getHandler() {

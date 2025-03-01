@@ -231,6 +231,11 @@ class AudioSharingDeviceItemActionInteractorTest : SysuiTestCase() {
                 actionInteractorImpl.onActionIconClick(inAudioSharingMediaDeviceItem) {}
                 assertThat(bluetoothTileDialogAudioSharingRepository.audioSharingStarted)
                     .isEqualTo(false)
+                verify(bluetoothTileDialogLogger)
+                    .logAudioSharingButtonClick(
+                        AudioSharingButtonClick.CHECK_MARK,
+                        inAudioSharingMediaDeviceItem,
+                    )
             }
         }
     }
@@ -243,6 +248,11 @@ class AudioSharingDeviceItemActionInteractorTest : SysuiTestCase() {
                 actionInteractorImpl.onActionIconClick(connectedAudioSharingMediaDeviceItem) {}
                 assertThat(bluetoothTileDialogAudioSharingRepository.audioSharingStarted)
                     .isEqualTo(true)
+                verify(bluetoothTileDialogLogger)
+                    .logAudioSharingButtonClick(
+                        AudioSharingButtonClick.PLUS_BUTTON,
+                        connectedAudioSharingMediaDeviceItem,
+                    )
             }
         }
     }

@@ -73,7 +73,7 @@ constructor(
         _promotedNotificationChipTapEvent.asSharedFlow()
 
     suspend fun onPromotedNotificationChipTapped(key: String) {
-        StatusBarNotifChips.assertInNewMode()
+        StatusBarNotifChips.unsafeAssertInNewMode()
         _promotedNotificationChipTapEvent.emit(key)
     }
 
@@ -145,7 +145,7 @@ constructor(
      * Emits all notifications that are eligible to show as chips in the status bar. This is
      * different from which chips will *actually* show, see [shownNotificationChips] for that.
      */
-    private val allNotificationChips: Flow<List<NotificationChipModel>> =
+    val allNotificationChips: Flow<List<NotificationChipModel>> =
         if (StatusBarNotifChips.isEnabled) {
             // For all our current interactors...
             // TODO(b/364653005): When a promoted notification is added or removed, each individual

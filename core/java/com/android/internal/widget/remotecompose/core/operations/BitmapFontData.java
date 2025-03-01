@@ -221,6 +221,6 @@ public class BitmapFontData extends Operation implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME).add("id", mId);
+        serializer.addType(CLASS_NAME).add("id", mId);
     }
 }

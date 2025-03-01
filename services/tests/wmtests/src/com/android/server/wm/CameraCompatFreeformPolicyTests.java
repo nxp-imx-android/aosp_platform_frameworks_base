@@ -25,6 +25,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_PAUSE;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_STOP;
+import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION;
 import static android.content.pm.ActivityInfo.OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT;
 import static android.content.pm.ActivityInfo.RESIZE_MODE_RESIZEABLE;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_FULL_USER;
@@ -42,6 +43,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.wm.AppCompatConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING;
+import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -134,8 +136,10 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testIsCameraRunningAndWindowingModeEligible_overrideDisabled_returnsFalse() {
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT})
+    @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION})
+    public void testIsCameraRunningAndWindowingModeEligible_disabledViaOverride_returnsFalse() {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
 
         mCameraAvailabilityCallback.onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
@@ -165,6 +169,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testIsCameraRunningAndWindowingModeEligible_optInFreeformCameraRunning_true() {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
@@ -175,13 +180,36 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT})
+    public void testIsCameraRunningAndWindowingModeEligible_freeformCameraRunning_true() {
+        configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+
+        onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+        assertTrue(mCameraCompatFreeformPolicy.isCameraRunningAndWindowingModeEligible(mActivity));
+    }
+
+    @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
-    public void testIsFreeformLetterboxingForCameraAllowed_overrideDisabled_returnsFalse() {
+    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
+    public void testIsFreeformLetterboxingForCameraAllowed_optInMechanism_notOptedIn_retFalse() {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
 
         onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
         assertFalse(mCameraCompatFreeformPolicy.isFreeformLetterboxingForCameraAllowed(mActivity));
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT})
+    public void testIsFreeformLetterboxingForCameraAllowed_notOptedOut_returnsTrue() {
+        configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+
+        onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+        assertTrue(mCameraCompatFreeformPolicy.isFreeformLetterboxingForCameraAllowed(mActivity));
     }
 
     @Test
@@ -206,6 +234,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
     @EnableCompatChanges({OVERRIDE_CAMERA_COMPAT_ENABLE_FREEFORM_WINDOWING_TREATMENT})
     public void testIsFreeformLetterboxingForCameraAllowed_optInFreeformCameraRunning_true() {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
@@ -330,12 +359,25 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
     @Test
     @EnableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
+    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT)
     public void testShouldApplyCameraCompatFreeformTreatment_overrideNotEnabled_returnsFalse() {
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
 
         onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
         assertFalse(mCameraCompatFreeformPolicy.isTreatmentEnabledForActivity(mActivity,
+                /* checkOrientation */ true));
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING,
+            FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING_OPT_OUT})
+    public void testShouldApplyCameraCompatFreeformTreatment_notOptedOut_returnsTrue() {
+        configureActivity(SCREEN_ORIENTATION_PORTRAIT);
+
+        onCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+        assertTrue(mCameraCompatFreeformPolicy.isTreatmentEnabledForActivity(mActivity,
                 /* checkOrientation */ true));
     }
 

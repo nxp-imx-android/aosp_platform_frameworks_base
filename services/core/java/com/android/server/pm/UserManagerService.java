@@ -2621,20 +2621,22 @@ public class UserManagerService extends IUserManager.Stub {
      * Valid user is the current user or the system or in the same profile group as the current
      * user. Visible background users are not valid calling users.
      */
-    public static void enforceCurrentUserIfVisibleBackgroundEnabled(@UserIdInt int currentUserId) {
+    public static void enforceCurrentUserIfVisibleBackgroundEnabled() {
         if (!UserManager.isVisibleBackgroundUsersEnabled()) {
             return;
         }
         final int callingUserId = UserHandle.getCallingUserId();
-        if (DBG) {
-            Slog.d(LOG_TAG, "enforceValidCallingUser: callingUserId=" + callingUserId
-                    + " isSystemUser=" + (callingUserId == USER_SYSTEM)
-                    + " currentUserId=" + currentUserId
-                    + " callingPid=" + Binder.getCallingPid()
-                    + " callingUid=" + Binder.getCallingUid());
-        }
         final long ident = Binder.clearCallingIdentity();
         try {
+            final int currentUserId = ActivityManager.getCurrentUser();
+            if (DBG) {
+                Slog.d(LOG_TAG, "enforceCurrentUserIfVisibleBackgroundEnabled:"
+                        + " callingUserId=" + callingUserId
+                        + " isSystemUser=" + (callingUserId == USER_SYSTEM)
+                        + " currentUserId=" + currentUserId
+                        + " callingPid=" + Binder.getCallingPid()
+                        + " callingUid=" + Binder.getCallingUid());
+            }
             if (callingUserId != USER_SYSTEM && callingUserId != currentUserId
                     && !UserManagerService.getInstance()
                     .isSameProfileGroup(callingUserId, currentUserId)) {
@@ -2937,28 +2939,20 @@ public class UserManagerService extends IUserManager.Stub {
 
         int flags = UserManager.SWITCHABILITY_STATUS_OK;
 
-        t.traceBegin("TM.isInCall");
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            final TelecomManager telecomManager = mContext.getSystemService(TelecomManager.class);
-            if (com.android.internal.telephony.flags
-                    .Flags.enforceTelephonyFeatureMappingForPublicApis()) {
-                if (mContext.getPackageManager().hasSystemFeature(
-                        PackageManager.FEATURE_TELECOM)) {
-                    if (telecomManager != null && telecomManager.isInCall()) {
-                        flags |= UserManager.SWITCHABILITY_STATUS_USER_IN_CALL;
-                    }
-                }
-            } else {
+        if (mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELECOM)) {
+            t.traceBegin("TM.isInCall");
+            final long identity = Binder.clearCallingIdentity();
+            try {
+                final TelecomManager telecomManager = mContext.getSystemService(
+                        TelecomManager.class);
                 if (telecomManager != null && telecomManager.isInCall()) {
                     flags |= UserManager.SWITCHABILITY_STATUS_USER_IN_CALL;
                 }
+            } finally {
+                Binder.restoreCallingIdentity(identity);
             }
-        } finally {
-            Binder.restoreCallingIdentity(identity);
+            t.traceEnd();
         }
-        t.traceEnd();
-
         t.traceBegin("hasUserRestriction-DISALLOW_USER_SWITCH");
         if (mLocalService.hasUserRestriction(DISALLOW_USER_SWITCH, userId)) {
             flags |= UserManager.SWITCHABILITY_STATUS_USER_SWITCH_DISALLOWED;
@@ -5784,8 +5778,8 @@ public class UserManagerService extends IUserManager.Stub {
         final boolean isRestricted = UserManager.isUserTypeRestricted(userType);
         final boolean isDemo = UserManager.isUserTypeDemo(userType);
         final boolean isManagedProfile = UserManager.isUserTypeManagedProfile(userType);
-        final boolean isCommunalProfile = UserManager.isUserTypeCommunalProfile(userType);
         final boolean isPrivateProfile = UserManager.isUserTypePrivateProfile(userType);
+        final boolean requiresProfileParent = userTypeDetails.isProfileParentRequired();
 
         final long ident = Binder.clearCallingIdentity();
         UserInfo userInfo;
@@ -5825,7 +5819,7 @@ public class UserManagerService extends IUserManager.Stub {
                             UserManager.USER_OPERATION_ERROR_MAX_USERS);
                 }
                 // TODO(b/142482943): Perhaps let the following code apply to restricted users too.
-                if (isProfile && !isCommunalProfile &&
+                if (requiresProfileParent &&
                         !canAddMoreProfilesToUser(userType, parentId, false)) {
                     throwCheckedUserOperationException(
                             "Cannot add more profiles of type " + userType

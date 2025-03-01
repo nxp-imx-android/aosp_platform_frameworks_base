@@ -850,6 +850,14 @@ package android.app.prediction {
 
 }
 
+package android.app.supervision {
+
+  @FlaggedApi("android.app.supervision.flags.supervision_manager_apis") public class SupervisionManager {
+    method public void setSupervisionEnabled(boolean);
+  }
+
+}
+
 package android.app.usage {
 
   public class StorageStatsManager {
@@ -1729,6 +1737,7 @@ package android.hardware.display {
     method @NonNull public int[] getUserDisabledHdrTypes();
     method public boolean isMinimalPostProcessingRequested(int);
     method @RequiresPermission(android.Manifest.permission.ACCESS_SURFACE_FLINGER) public void overrideHdrTypes(int, @NonNull int[]);
+    method @FlaggedApi("com.android.server.display.feature.flags.delay_implicit_rr_registration_until_rr_accessed") public void resetImplicitRefreshRateCallbackStatus();
     method @RequiresPermission(android.Manifest.permission.WRITE_SECURE_SETTINGS) public void setAreUserDisabledHdrTypesAllowed(boolean);
     method @RequiresPermission(android.Manifest.permission.MODIFY_USER_PREFERRED_DISPLAY_MODE) public void setGlobalUserPreferredDisplayMode(@NonNull android.view.Display.Mode);
     method @RequiresPermission(android.Manifest.permission.MODIFY_HDR_CONVERSION_MODE) public void setHdrConversionMode(@NonNull android.hardware.display.HdrConversionMode);
@@ -1906,6 +1915,10 @@ package android.hardware.soundtrigger {
 }
 
 package android.hardware.usb {
+
+  public class UsbManager {
+    method public boolean isUvcGadgetSupportEnabled();
+  }
 
   public final class UsbPort {
     method @FlaggedApi("android.hardware.usb.flags.enable_is_mode_change_supported_api") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public boolean isModeChangeSupported();
@@ -2113,6 +2126,12 @@ package android.media {
   public final class PlaybackParams implements android.os.Parcelable {
     method public int getAudioStretchMode();
     method public android.media.PlaybackParams setAudioStretchMode(int);
+  }
+
+  public class Utils {
+    ctor public Utils();
+    field public static final String SYNCHRONIZED_VIBRATION = "synchronized";
+    field public static final String VIBRATION_URI_PARAM = "vibration_uri";
   }
 
   public final class VolumePolicy implements android.os.Parcelable {
@@ -2573,7 +2592,7 @@ package android.os {
   }
 
   public class UserManager {
-    method @FlaggedApi("android.os.allow_private_profile") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}, conditional=true) public boolean canAddPrivateProfile();
+    method @FlaggedApi("android.os.allow_private_profile") @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public boolean canAddPrivateProfile();
     method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public android.content.pm.UserInfo createProfileForUser(@Nullable String, @NonNull String, int, int, @Nullable String[]);
     method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public android.content.pm.UserInfo createRestrictedProfile(@Nullable String);
     method @Nullable @RequiresPermission(anyOf={android.Manifest.permission.MANAGE_USERS, android.Manifest.permission.CREATE_USERS}) public android.content.pm.UserInfo createUser(@Nullable String, @NonNull String, int);

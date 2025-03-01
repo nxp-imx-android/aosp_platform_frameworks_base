@@ -22,6 +22,7 @@ import static com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper.enabl
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.TaskInfo;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.SystemProperties;
@@ -287,6 +288,16 @@ public class DesktopModeStatus {
     }
 
     /**
+     * @return If {@code true} we set opaque background for all freeform tasks to prevent freeform
+     * tasks below from being visible if freeform task window above is translucent.
+     * Otherwise if fluid resize is enabled, add a background to freeform tasks.
+     */
+    public static boolean shouldSetBackground(@NonNull TaskInfo taskInfo) {
+        return taskInfo.isFreeform() && (!DesktopModeStatus.isVeiledResizeEnabled()
+                || DesktopModeFlags.ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS.isTrue());
+    }
+
+    /**
      * @return {@code true} if the app handle should be shown because desktop mode is enabled or
      * the device has a large screen
      */
@@ -374,7 +385,7 @@ public class DesktopModeStatus {
      * of the display's root [TaskDisplayArea] is set to WINDOWING_MODE_FREEFORM.
      */
     public static boolean enterDesktopByDefaultOnFreeformDisplay(@NonNull Context context) {
-        if (!Flags.enterDesktopByDefaultOnFreeformDisplays()) {
+        if (!DesktopExperienceFlags.ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS.isTrue()) {
             return false;
         }
         return SystemProperties.getBoolean(ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
@@ -387,7 +398,7 @@ public class DesktopModeStatus {
      * screen.
      */
     public static boolean shouldMaximizeWhenDragToTopEdge(@NonNull Context context) {
-        if (!Flags.enableDragToMaximize()) {
+        if (!DesktopExperienceFlags.ENABLE_DRAG_TO_MAXIMIZE.isTrue()) {
             return false;
         }
         return SystemProperties.getBoolean(ENABLE_DRAG_TO_MAXIMIZE_SYS_PROP,

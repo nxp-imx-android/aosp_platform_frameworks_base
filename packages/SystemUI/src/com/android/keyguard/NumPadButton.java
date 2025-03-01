@@ -25,6 +25,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 
 import com.android.systemui.Flags;
@@ -41,6 +42,12 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
     private int mOrientation;
     private int mStyleAttr;
     private boolean mIsTransparentMode;
+
+    @DrawableRes
+    private int mDrawableForTransparentMode = 0;
+
+    @DrawableRes
+    private int mDefaultDrawable = 0;
 
     public NumPadButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -123,8 +130,14 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
         mIsTransparentMode = isTransparentMode;
 
         if (isTransparentMode) {
+            if (mDrawableForTransparentMode != 0) {
+                setImageResource(mDrawableForTransparentMode);
+            }
             setBackgroundColor(getResources().getColor(android.R.color.transparent));
         } else {
+            if (mDefaultDrawable != 0) {
+                setImageResource(mDefaultDrawable);
+            }
             Drawable bgDrawable = getContext().getDrawable(R.drawable.num_pad_key_background);
             if (Flags.bouncerUiRevamp2() && bgDrawable != null) {
                 bgDrawable.setTint(Color.actionBg);
@@ -153,5 +166,20 @@ public class NumPadButton extends AlphaOptimizedImageButton implements NumPadAni
     public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
         super.onInitializeAccessibilityNodeInfo(info);
         info.setTextEntryKey(true);
+    }
+
+    /**
+     * Drawable to use when transparent mode is enabled
+     */
+    public void setDrawableForTransparentMode(@DrawableRes int drawableResId) {
+        mDrawableForTransparentMode = drawableResId;
+    }
+
+    /**
+     * Drawable to use when transparent mode is not enabled.
+     */
+    public void setDefaultDrawable(@DrawableRes int drawableResId) {
+        mDefaultDrawable = drawableResId;
+        setImageResource(mDefaultDrawable);
     }
 }

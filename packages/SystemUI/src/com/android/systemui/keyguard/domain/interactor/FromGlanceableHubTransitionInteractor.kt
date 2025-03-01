@@ -77,7 +77,7 @@ constructor(
         if (!communalSettingsInteractor.isCommunalFlagEnabled()) {
             return
         }
-        listenForHubToDozing()
+        listenForHubToAodOrDozing()
         listenForHubToPrimaryBouncer()
         listenForHubToAlternateBouncer()
         listenForHubToOccluded()
@@ -123,15 +123,15 @@ constructor(
         }
     }
 
-    private fun listenForHubToDozing() {
+    private fun listenForHubToAodOrDozing() {
         scope.launch {
             powerInteractor.isAsleep
                 .filterRelevantKeyguardStateAnd { isAsleep -> isAsleep }
                 .collect {
-                    communalSceneInteractor.snapToScene(
+                    communalSceneInteractor.changeScene(
                         newScene = CommunalScenes.Blank,
-                        loggingReason = "hub to dozing",
-                        keyguardState = KeyguardState.DOZING,
+                        loggingReason = "hub to sleep",
+                        keyguardState = keyguardInteractor.asleepKeyguardState.value,
                     )
                 }
         }
@@ -254,5 +254,6 @@ constructor(
         val TO_LOCKSCREEN_DURATION = 1.seconds
         val TO_BOUNCER_DURATION = 400.milliseconds
         val TO_OCCLUDED_DURATION = 450.milliseconds
+        val TO_AOD_DURATION = 500.milliseconds
     }
 }

@@ -83,7 +83,6 @@ import com.android.systemui.media.controls.util.MediaControllerFactory
 import com.android.systemui.media.controls.util.MediaDataUtils
 import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.media.controls.util.MediaUiEventLogger
-import com.android.systemui.media.controls.util.SmallHash
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.NotificationMediaManager.isPlayingState
@@ -758,7 +757,6 @@ class MediaDataProcessor(
                     appUid = appUid,
                     isExplicit = isExplicit,
                     resumeProgress = progress,
-                    smartspaceId = SmallHash.hash(appUid + systemClock.currentTimeMillis().toInt()),
                 ),
             )
         }
@@ -1010,7 +1008,6 @@ class MediaDataProcessor(
                 instanceId = instanceId,
                 appUid = appUid,
                 isExplicit = isExplicit,
-                smartspaceId = SmallHash.hash(appUid + systemClock.currentTimeMillis().toInt()),
             )
 
         if (isSameMediaData(context, mediaController, mediaData, oldEntry)) {

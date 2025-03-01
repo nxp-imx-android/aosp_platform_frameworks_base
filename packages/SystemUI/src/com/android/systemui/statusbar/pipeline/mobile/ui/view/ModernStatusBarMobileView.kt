@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.view
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.widget.FrameLayout
 import android.widget.ImageView
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView.getVisibleStateString
@@ -61,12 +62,33 @@ class ModernStatusBarMobileView(context: Context, attrs: AttributeSet?) :
                 .also {
                     // Flag-specific configuration
                     if (NewStatusBarIcons.isEnabled) {
-                        val iconView = it.requireViewById<ImageView>(R.id.mobile_signal)
-                        val lp = iconView.layoutParams
-                        lp.height =
-                            context.resources.getDimensionPixelSize(
-                                R.dimen.status_bar_mobile_signal_size_updated
-                            )
+                        // triangle
+                        it.requireViewById<ImageView>(R.id.mobile_signal).apply {
+                            layoutParams.height =
+                                context.resources.getDimensionPixelSize(
+                                    R.dimen.status_bar_mobile_signal_size_updated
+                                )
+                        }
+
+                        // RAT indicator container
+                        it.requireViewById<FrameLayout>(R.id.mobile_type_container).apply {
+                            (layoutParams as MarginLayoutParams).marginEnd =
+                                context.resources.getDimensionPixelSize(
+                                    R.dimen.status_bar_mobile_container_margin_end
+                                )
+                            layoutParams.height =
+                                context.resources.getDimensionPixelSize(
+                                    R.dimen.status_bar_mobile_container_height_updated
+                                )
+                        }
+
+                        // RAT indicator
+                        it.requireViewById<ImageView>(R.id.mobile_type).apply {
+                            layoutParams.height =
+                                context.resources.getDimensionPixelSize(
+                                    R.dimen.status_bar_mobile_type_size_updated
+                                )
+                        }
                     }
 
                     it.subId = viewModel.subscriptionId

@@ -236,8 +236,8 @@ fun Telemetry(universe: Universe, showControls: Boolean) {
                                     ((closest.pos - pos).mag() - closest.radius).toInt()
                                 listOfNotNull(
                                         landing?.let {
-                                            "LND: ${it.planet.name.toUpperCase()}\n" +
-                                                "JOB: ${it.text.toUpperCase()}"
+                                            "LND: ${it.planet.name.uppercase()}\n" +
+                                                "JOB: ${it.text.uppercase()}"
                                         }
                                             ?: if (distToClosest < 10_000) {
                                                 "ALT: $distToClosest"

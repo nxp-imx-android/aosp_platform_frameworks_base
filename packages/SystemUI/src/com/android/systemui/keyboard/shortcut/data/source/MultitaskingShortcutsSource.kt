@@ -19,6 +19,7 @@ package com.android.systemui.keyboard.shortcut.data.source
 import android.content.Context
 import android.content.res.Resources
 import android.view.KeyEvent.KEYCODE_D
+import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_LEFT
 import android.view.KeyEvent.KEYCODE_DPAD_RIGHT
 import android.view.KeyEvent.KEYCODE_DPAD_UP
@@ -73,6 +74,15 @@ constructor(@Main private val resources: Resources, @Application private val con
                 command(META_META_ON or META_CTRL_ON, KEYCODE_DPAD_UP)
             }
         )
+        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+            //  Switch to desktop view
+            //   - Meta + Ctrl + Down arrow
+            add(
+                shortcutInfo(resources.getString(R.string.system_multitasking_desktop_view)) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_DPAD_DOWN)
+                }
+            )
+        }
         if (enableMoveToNextDisplayShortcut()) {
             // Move a window to the next display:
             //  - Meta + Ctrl + D

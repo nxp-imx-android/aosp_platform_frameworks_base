@@ -13,6 +13,7 @@
  */
 package com.android.systemui.plugins.clocks
 
+import android.graphics.RectF
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.SimpleProperty
 import java.io.PrintWriter
@@ -37,7 +38,12 @@ interface ClockController {
     val events: ClockEvents
 
     /** Initializes various rendering parameters. If never called, provides reasonable defaults. */
-    fun initialize(isDarkTheme: Boolean, dozeFraction: Float, foldFraction: Float)
+    fun initialize(
+        isDarkTheme: Boolean,
+        dozeFraction: Float,
+        foldFraction: Float,
+        onBoundsChanged: (RectF) -> Unit,
+    )
 
     /** Optional method for dumping debug information */
     fun dump(pw: PrintWriter)

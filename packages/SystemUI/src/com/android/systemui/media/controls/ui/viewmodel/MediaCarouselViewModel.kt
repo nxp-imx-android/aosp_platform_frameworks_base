@@ -25,7 +25,6 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarou
 import com.android.systemui.media.controls.domain.pipeline.interactor.factory.MediaControlInteractorFactory
 import com.android.systemui.media.controls.shared.MediaLogger
 import com.android.systemui.media.controls.shared.model.MediaCommonModel
-import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider
 import com.android.systemui.util.Utils
@@ -52,7 +51,6 @@ constructor(
     private val controlInteractorFactory: MediaControlInteractorFactory,
     private val recommendationsViewModel: MediaRecommendationsViewModel,
     private val logger: MediaUiEventLogger,
-    private val mediaFlags: MediaFlags,
     private val mediaLogger: MediaLogger,
 ) {
 
@@ -103,25 +101,14 @@ constructor(
 
     private var allowReorder = false
 
-    fun onSwipeToDismiss(location: Int) {
+    fun onSwipeToDismiss() {
         logger.logSwipeDismiss()
-        interactor.onSwipeToDismiss(location)
+        interactor.onSwipeToDismiss()
     }
 
     fun onReorderingAllowed() {
         allowReorder = true
         interactor.reorderMedia()
-    }
-
-    fun onCardVisibleToUser(
-        qsExpanded: Boolean,
-        visibleIndex: Int,
-        location: Int,
-        isUpdate: Boolean = false,
-    ) {
-        // Skip logging if on LS or QQS, and there is no active media card
-        if (!qsExpanded && !interactor.hasActiveMediaOrRecommendation()) return
-        interactor.logSmartspaceSeenCard(visibleIndex, location, isUpdate)
     }
 
     private fun toViewModel(

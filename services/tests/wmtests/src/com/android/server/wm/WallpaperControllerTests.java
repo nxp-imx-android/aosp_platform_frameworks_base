@@ -120,7 +120,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
         // No wallpaper WSA Surface
         final WindowState wallpaperWindow = createWallpaperWindow(dc);
 
-        WindowManager.LayoutParams attrs = wallpaperWindow.getAttrs();
+        WindowManager.LayoutParams attrs = wallpaperWindow.mAttrs;
         Rect bounds = dc.getBounds();
         int displayWidth = dc.getBounds().width();
         int displayHeight = dc.getBounds().height();
@@ -170,7 +170,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
     public void testWallpaperZoom() throws RemoteException {
         final DisplayContent dc = mWm.mRoot.getDefaultDisplay();
         final WindowState wallpaperWindow = createWallpaperWindow(dc);
-        wallpaperWindow.getAttrs().privateFlags |=
+        wallpaperWindow.mAttrs.privateFlags |=
                 WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS;
 
         final WindowState homeWindow = createWallpaperTargetWindow(dc);
@@ -201,7 +201,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
     public void testWallpaperZoom_shouldNotScaleWallpaper() throws RemoteException {
         final DisplayContent dc = mWm.mRoot.getDefaultDisplay();
         final WindowState wallpaperWindow = createWallpaperWindow(dc);
-        wallpaperWindow.getAttrs().privateFlags |=
+        wallpaperWindow.mAttrs.privateFlags |=
                 WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS;
 
         final WindowState homeWindow = createWallpaperTargetWindow(dc);
@@ -234,7 +234,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
     public void testWallpaperZoom_multipleCallers() {
         final DisplayContent dc = mWm.mRoot.getDefaultDisplay();
         final WindowState wallpaperWindow = createWallpaperWindow(dc);
-        wallpaperWindow.getAttrs().privateFlags |=
+        wallpaperWindow.mAttrs.privateFlags |=
                 WindowManager.LayoutParams.PRIVATE_FLAG_WANTS_OFFSET_NOTIFICATIONS;
 
 
@@ -580,7 +580,7 @@ public class WallpaperControllerTests extends WindowTestsBase {
 
         WindowState appWindow = newWindowBuilder("wallpaperTargetWindow",
                 TYPE_BASE_APPLICATION).setWindowToken(homeActivity).build();
-        appWindow.getAttrs().flags |= FLAG_SHOW_WALLPAPER;
+        appWindow.mAttrs.flags |= FLAG_SHOW_WALLPAPER;
         appWindow.mHasSurface = true;
         spyOn(appWindow);
         doReturn(true).when(appWindow).isDrawFinishedLw();

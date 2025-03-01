@@ -30,7 +30,6 @@ import com.android.systemui.shade.display.ShadeExpansionIntent
 import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.notificationElement
 import com.android.systemui.shade.domain.interactor.qsElement
-import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.util.settings.fakeGlobalSettings
 
 val Kosmos.defaultShadeDisplayPolicy: DefaultDisplayShadePolicy by
@@ -49,9 +48,8 @@ val Kosmos.statusBarTouchShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy by
         StatusBarTouchShadeDisplayPolicy(
             displayRepository = displayRepository,
             backgroundScope = testScope.backgroundScope,
-            shadeInteractor = { shadeInteractor },
-            notificationElement = { notificationElement },
             qsShadeElement = { qsElement },
+            notificationElement = { notificationElement },
         )
     }
 val Kosmos.shadeExpansionIntent: ShadeExpansionIntent by
@@ -65,6 +63,7 @@ val Kosmos.shadeDisplaysRepository: ShadeDisplaysRepository by
             defaultPolicy = defaultShadeDisplayPolicy,
             shadeOnDefaultDisplayWhenLocked = true,
             keyguardRepository = keyguardRepository,
+            displayRepository = displayRepository,
         )
     }
 

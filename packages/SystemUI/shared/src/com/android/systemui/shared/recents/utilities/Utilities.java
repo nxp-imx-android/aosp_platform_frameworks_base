@@ -19,6 +19,7 @@ package com.android.systemui.shared.recents.utilities;
 import static android.app.StatusBarManager.NAVBAR_BACK_DISMISS_IME;
 import static android.app.StatusBarManager.NAVBAR_IME_SWITCHER_BUTTON_VISIBLE;
 import static android.app.StatusBarManager.NAVBAR_IME_VISIBLE;
+import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 
 import android.annotation.TargetApi;
 import android.app.StatusBarManager.NavbarFlags;
@@ -34,6 +35,8 @@ import android.os.Message;
 import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.WindowManager;
+
+import com.android.systemui.shared.recents.model.Task;
 
 /* Common code */
 public class Utilities {
@@ -164,5 +167,11 @@ public class Utilities {
     public static float dpiFromPx(float size, int densityDpi) {
         float densityRatio = (float) densityDpi / DisplayMetrics.DENSITY_DEFAULT;
         return (size / densityRatio);
+    }
+
+    /** Whether a task is in freeform mode. */
+    public static boolean isFreeformTask(Task task) {
+        return task != null && task.getKey() != null
+                && task.getKey().windowingMode == WINDOWING_MODE_FREEFORM;
     }
 }

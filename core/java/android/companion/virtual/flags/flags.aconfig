@@ -120,8 +120,33 @@ flag {
 }
 
 flag {
+    name: "correct_virtual_display_power_state"
+    namespace: "virtual_devices"
+    description: "Fix the virtual display power state"
+    bug: "371125136"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "vdm_settings"
     namespace: "virtual_devices"
     description: "Show virtual devices in Settings"
     bug: "338974320"
+}
+
+flag {
+    name: "migrate_viewconfiguration_constants_to_resources"
+    namespace: "virtual_devices"
+    description: "Use resources instead of constants in ViewConfiguration"
+    is_fixed_read_only: true
+    bug: "370928384"
+}
+
+flag {
+    name: "device_aware_settings_override"
+    namespace: "virtual_devices"
+    description: "Settings override for virtual devices"
+    bug: "371801645"
 }

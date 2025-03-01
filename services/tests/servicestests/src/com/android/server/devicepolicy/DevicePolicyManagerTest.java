@@ -1768,7 +1768,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
-    @Ignore // b/396073342
     public void testCertificateDisclosure() throws Exception {
         final int userId = CALLER_USER_HANDLE;
         final UserHandle user = UserHandle.of(userId);
@@ -4613,7 +4612,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
-    @Ignore // b/396073342
     public void testGetLastBugReportRequestTime() throws Exception {
         mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
         setupDeviceOwner();
@@ -4661,7 +4659,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
-    @Ignore // b/396073342
     public void testGetLastNetworkLogRetrievalTime() throws Exception {
         mContext.binder.callingUid = DpmMockContext.CALLER_SYSTEM_USER_UID;
         setupDeviceOwner();
@@ -6444,7 +6441,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
-    @Ignore // b/396073342
     public void testGetOwnerInstalledCaCertsForDeviceOwner() throws Exception {
         mServiceContext.packageName = mRealTestContext.getPackageName();
         mServiceContext.applicationInfo = new ApplicationInfo();
@@ -6456,7 +6452,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
-    @Ignore // b/396073342
     public void testGetOwnerInstalledCaCertsForProfileOwner() throws Exception {
         mServiceContext.packageName = mRealTestContext.getPackageName();
         mServiceContext.applicationInfo = new ApplicationInfo();
@@ -6469,7 +6464,6 @@ public class DevicePolicyManagerTest extends DpmTestBase {
     }
 
     @Test
-    @Ignore // b/396073342
     public void testGetOwnerInstalledCaCertsForDelegate() throws Exception {
         mServiceContext.packageName = mRealTestContext.getPackageName();
         mServiceContext.applicationInfo = new ApplicationInfo();

@@ -66,7 +66,7 @@ oneway interface ILauncherProxy {
     /**
      * Sent when some system ui state changes.
      */
-    void onSystemUiStateChanged(long stateFlags) = 16;
+    void onSystemUiStateChanged(long stateFlags, int displayId) = 16;
 
     /**
      * Sent when suggested rotation button could be shown

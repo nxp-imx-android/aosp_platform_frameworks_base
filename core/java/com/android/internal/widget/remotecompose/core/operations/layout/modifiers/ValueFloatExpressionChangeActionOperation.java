@@ -133,7 +133,7 @@ public class ValueFloatExpressionChangeActionOperation extends Operation
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER, SerializeTags.ACTION)
-                .add("type", "ValueFloatExpressionChangeActionOperation")
+                .addType("ValueFloatExpressionChangeActionOperation")
                 .add("targetValueId", mTargetValueId)
                 .add("valueExpressionId", mValueExpressionId);
     }

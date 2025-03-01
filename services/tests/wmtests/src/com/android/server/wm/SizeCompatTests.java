@@ -5128,9 +5128,9 @@ public class SizeCompatTests extends WindowTestsBase {
 
         // Application level.
         try {
-            doReturn(property).when(pm).getProperty(
+            doReturn(property).when(pm).getPropertyAsUser(
                     WindowManager.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY,
-                    name.getPackageName());
+                    name.getPackageName(), null /* className */, 0 /* userId */);
         } catch (PackageManager.NameNotFoundException e) {
             throw new RuntimeException(e);
         }

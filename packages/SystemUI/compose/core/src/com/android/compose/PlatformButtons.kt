@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 
@@ -40,12 +41,15 @@ fun PlatformButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: ButtonColors = filledButtonColors(),
+    contentPadding: PaddingValues = ButtonPaddings,
+    shape: Shape = ButtonDefaults.shape,
     content: @Composable RowScope.() -> Unit,
 ) {
     androidx.compose.material3.Button(
         modifier = modifier.heightIn(min = 36.dp),
         colors = colors,
-        contentPadding = ButtonPaddings,
+        contentPadding = contentPadding,
+        shape = shape,
         onClick = onClick,
         enabled = enabled,
     ) {

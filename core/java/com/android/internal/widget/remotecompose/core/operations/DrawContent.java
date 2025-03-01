@@ -114,6 +114,6 @@ public class DrawContent extends PaintOperation implements Serializable {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serializer.add("type", CLASS_NAME);
+        serializer.addType(CLASS_NAME);
     }
 }

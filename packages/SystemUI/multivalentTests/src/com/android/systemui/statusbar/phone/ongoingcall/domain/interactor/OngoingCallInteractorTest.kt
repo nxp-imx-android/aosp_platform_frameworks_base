@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.phone.ongoingcall.domain.interactor
 
 import android.app.PendingIntent
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
@@ -31,9 +30,8 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
-import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
@@ -51,10 +49,9 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(StatusBarChipsModernization.FLAG_NAME)
+@EnableChipsModernization
 class OngoingCallInteractorTest : SysuiTestCase() {
     private val kosmos = Kosmos().useUnconfinedTestDispatcher()
-    private val repository = kosmos.activeNotificationListRepository
     private val underTest = kosmos.ongoingCallInteractor
 
     @Before
@@ -69,18 +66,19 @@ class OngoingCallInteractorTest : SysuiTestCase() {
     }
 
     @Test
-    fun ongoingCallNotification_setsAllFields() =
+    fun ongoingCallNotification_setsAllFields_withAppHidden() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.ongoingCallState)
 
             // Set up notification with icon view and intent
+            val key = "promotedCall"
+            val startTimeMs = 1000L
             val testIconView: StatusBarIconView = mock()
             val testIntent: PendingIntent = mock()
-            val testPromotedContent =
-                PromotedNotificationContentModel.Builder("promotedCall").build()
+            val testPromotedContent = PromotedNotificationContentModel.Builder(key).build()
             addOngoingCallState(
-                key = "promotedCall",
-                startTimeMs = 1000L,
+                key = key,
+                startTimeMs = startTimeMs,
                 statusBarChipIconView = testIconView,
                 contentIntent = testIntent,
                 promotedContent = testPromotedContent,
@@ -89,8 +87,41 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             // Verify model is InCall and has the correct icon, intent, and promoted content.
             assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
             val model = latest as OngoingCallModel.InCall
+            assertThat(model.startTimeMs).isEqualTo(startTimeMs)
             assertThat(model.notificationIconView).isSameInstanceAs(testIconView)
             assertThat(model.intent).isSameInstanceAs(testIntent)
+            assertThat(model.notificationKey).isEqualTo(key)
+            assertThat(model.promotedContent).isSameInstanceAs(testPromotedContent)
+        }
+
+    @Test
+    fun ongoingCallNotification_setsAllFields_withAppVisible() =
+        kosmos.runTest {
+            kosmos.activityManagerRepository.fake.startingIsAppVisibleValue = true
+            val latest by collectLastValue(underTest.ongoingCallState)
+
+            // Set up notification with icon view and intent
+            val key = "promotedCall"
+            val startTimeMs = 1000L
+            val testIconView: StatusBarIconView = mock()
+            val testIntent: PendingIntent = mock()
+            val testPromotedContent = PromotedNotificationContentModel.Builder(key).build()
+            addOngoingCallState(
+                key = key,
+                startTimeMs = startTimeMs,
+                statusBarChipIconView = testIconView,
+                contentIntent = testIntent,
+                promotedContent = testPromotedContent,
+            )
+
+            // Verify model is InCallWithVisibleApp and has the correct icon, intent, and promoted
+            // content.
+            assertThat(latest).isInstanceOf(OngoingCallModel.InCallWithVisibleApp::class.java)
+            val model = latest as OngoingCallModel.InCallWithVisibleApp
+            assertThat(model.startTimeMs).isEqualTo(startTimeMs)
+            assertThat(model.notificationIconView).isSameInstanceAs(testIconView)
+            assertThat(model.intent).isSameInstanceAs(testIntent)
+            assertThat(model.notificationKey).isEqualTo(key)
             assertThat(model.promotedContent).isSameInstanceAs(testPromotedContent)
         }
 

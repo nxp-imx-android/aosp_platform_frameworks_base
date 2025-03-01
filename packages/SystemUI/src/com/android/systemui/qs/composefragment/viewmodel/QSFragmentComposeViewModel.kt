@@ -43,7 +43,6 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.log.table.TableLogBuffer
-import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QQS
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
 import com.android.systemui.media.controls.ui.view.MediaHost
@@ -62,7 +61,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.MediaInRowInLandscapeViewMode
 import com.android.systemui.qs.panels.ui.viewmodel.QuickQuickSettingsViewModel
 import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.res.R
-import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.shade.LargeScreenHeaderHelper
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -101,7 +100,7 @@ constructor(
     private val footerActionsController: FooterActionsController,
     private val sysuiStatusBarStateController: SysuiStatusBarStateController,
     deviceEntryInteractor: DeviceEntryInteractor,
-    DisableFlagsInteractor: DisableFlagsInteractor,
+    disableFlagsInteractor: DisableFlagsInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     private val largeScreenShadeInterpolator: LargeScreenShadeInterpolator,
     shadeInteractor: ShadeInteractor,
@@ -119,7 +118,7 @@ constructor(
     @Assisted private val lifecycleScope: LifecycleCoroutineScope,
 ) : Dumpable, ExclusiveActivatable() {
 
-    val containerViewModel = containerViewModelFactory.create(true)
+    val containerViewModel = containerViewModelFactory.create(supportsBrightnessMirroring = true)
     val quickQuickSettingsViewModel = quickQuickSettingsViewModelFactory.create()
 
     private val qqsMediaInRowViewModel = mediaInRowInLandscapeViewModelFactory.create(LOCATION_QQS)
@@ -199,8 +198,8 @@ constructor(
     val isQsEnabled by
         hydrator.hydratedStateOf(
             traceName = "isQsEnabled",
-            initialValue = DisableFlagsInteractor.disableFlags.value.isQuickSettingsEnabled(),
-            source = DisableFlagsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
+            initialValue = disableFlagsInteractor.disableFlags.value.isQuickSettingsEnabled(),
+            source = disableFlagsInteractor.disableFlags.map { it.isQuickSettingsEnabled() },
         )
 
     var isInSplitShade by mutableStateOf(false)
@@ -434,7 +433,7 @@ constructor(
             initialValue = false,
             source =
                 keyguardTransitionInteractor.isInTransition(
-                    Edge.create(to = Scenes.Bouncer),
+                    Edge.create(to = Overlays.Bouncer),
                     Edge.create(to = KeyguardState.PRIMARY_BOUNCER),
                 ),
         )
@@ -490,12 +489,12 @@ constructor(
         qqsMediaHost.apply {
             expansion = qqsMediaExpansion
             showsOnlyActiveMedia = true
-            init(MediaHierarchyManager.LOCATION_QQS)
+            init(LOCATION_QQS)
         }
         qsMediaHost.apply {
             expansion = MediaHostState.EXPANDED
             showsOnlyActiveMedia = false
-            init(MediaHierarchyManager.LOCATION_QS)
+            init(LOCATION_QS)
         }
     }
 

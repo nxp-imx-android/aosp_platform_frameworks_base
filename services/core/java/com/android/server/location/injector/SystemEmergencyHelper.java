@@ -29,7 +29,6 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 
 import com.android.internal.telephony.TelephonyIntents;
-import com.android.internal.telephony.flags.Flags;
 import com.android.server.FgThread;
 
 import java.util.Objects;
@@ -107,26 +106,19 @@ public class SystemEmergencyHelper extends EmergencyHelper {
         boolean isInExtensionTime = mEmergencyCallEndRealtimeMs != Long.MIN_VALUE
                 && (SystemClock.elapsedRealtime() - mEmergencyCallEndRealtimeMs) < extensionTimeMs;
 
-        if (!Flags.enforceTelephonyFeatureMapping()) {
-            return mIsInEmergencyCall
-                    || isInExtensionTime
-                    || mTelephonyManager.getEmergencyCallbackMode()
-                    || mTelephonyManager.isInEmergencySmsMode();
-        } else {
-            boolean emergencyCallbackMode = false;
-            boolean emergencySmsMode = false;
-            PackageManager pm = mContext.getPackageManager();
-            if (pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING)) {
-                emergencyCallbackMode = mTelephonyManager.getEmergencyCallbackMode();
-            }
-            if (pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_MESSAGING)) {
-                emergencySmsMode = mTelephonyManager.isInEmergencySmsMode();
-            }
-            return mIsInEmergencyCall
-                    || isInExtensionTime
-                    || emergencyCallbackMode
-                    || emergencySmsMode;
+        boolean emergencyCallbackMode = false;
+        boolean emergencySmsMode = false;
+        PackageManager pm = mContext.getPackageManager();
+        if (pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING)) {
+            emergencyCallbackMode = mTelephonyManager.getEmergencyCallbackMode();
         }
+        if (pm.hasSystemFeature(PackageManager.FEATURE_TELEPHONY_MESSAGING)) {
+            emergencySmsMode = mTelephonyManager.isInEmergencySmsMode();
+        }
+        return mIsInEmergencyCall
+                || isInExtensionTime
+                || emergencyCallbackMode
+                || emergencySmsMode;
     }
 
     private class EmergencyCallTelephonyCallback extends TelephonyCallback implements

@@ -146,6 +146,7 @@ interface IActivityTaskManager {
     int getFrontActivityScreenCompatMode();
     void setFrontActivityScreenCompatMode(int mode);
     void setFocusedTask(int taskId);
+    boolean setTaskIsPerceptible(int taskId, boolean isPerceptible);
     boolean removeTask(int taskId);
     void removeAllVisibleRecentTasks();
     List<ActivityManager.RunningTaskInfo> getTasks(int maxNum, boolean filterOnlyVisibleRecents,

@@ -245,12 +245,15 @@
     <string name="accessibility_bluetooth_connected" msgid="4745196874551115205">"Bluetooth je priključen."</string>
     <string name="accessibility_bluetooth_device_icon" msgid="9163840051642587982">"Ikona Bluetooth uređaja"</string>
     <string name="accessibility_bluetooth_device_settings_gear" msgid="3314916468105272540">"Kliknite da biste konfigurisali detalje o uređaju"</string>
-    <string name="accessibility_bluetooth_device_settings_see_all" msgid="9111952496905423543">"Kliknite da biste videli sve uređaje"</string>
-    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="2435184865793496966">"Kliknite da biste uparili nov uređaj"</string>
+    <string name="accessibility_bluetooth_device_settings_gear_with_name" msgid="114373701123165491">"<xliff:g id="DEVICE_NAME">%s</xliff:g>. Konfigurišite detalje o uređaju"</string>
+    <string name="accessibility_bluetooth_device_settings_see_all" msgid="5260390270128256620">"Pogledajte sve uređaje"</string>
+    <string name="accessibility_bluetooth_device_settings_pair_new_device" msgid="7988547106800504256">"Uparite novi uređaj"</string>
     <string name="accessibility_battery_unknown" msgid="1807789554617976440">"Procenat napunjenosti baterije nije poznat."</string>
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Povezani ste sa <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Povezani smo sa uređajem <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"Proširite grupu."</string>
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Dodajte uređaj u grupu."</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Uklonite uređaj iz grupe."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Otvorite aplikaciju."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Nije povezano."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roming"</string>
@@ -328,7 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Unos"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Slušni aparati"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Uključuje se..."</string>
-    <string name="quick_settings_brightness_unable_adjust_msg" msgid="786478497970492300">"Ne možete da prilagodite osvetljenost jer je\n kontroliše aplikacija u vrhu"</string>
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"Ne možete da prilagodite osvetljenost jer je kontroliše aplikacija u prvom planu"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"Automatska rotacija"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Automatsko rotiranje ekrana"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Lokacija"</string>
@@ -420,6 +423,12 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Okruženje"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Levo"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Desno"</string>
+    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
+    <skip />
+    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
+    <skip />
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Proširi na kontrole razdvojene na levu i desnu stranu"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Skupi u jedinstvenu kontrolu"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Isključi zvuk okruženja"</string>
@@ -534,6 +543,8 @@
     <string name="accessibility_action_label_unselect_widget" msgid="1041811747619468698">"poništi izbor vidžeta"</string>
     <string name="accessibility_action_label_shrink_widget" msgid="8259511040536438771">"Smanji visinu"</string>
     <string name="accessibility_action_label_expand_widget" msgid="9190524260912211759">"Povećaj visinu"</string>
+    <string name="accessibility_action_label_umo_show_next" msgid="8033581654789193281">"Prikažite sledeće"</string>
+    <string name="accessibility_action_label_umo_show_previous" msgid="5935831384525173810">"Prikažite prethodno"</string>
     <string name="communal_widgets_disclaimer_title" msgid="1150954395585308868">"Vidžeti za zaključani ekran"</string>
     <string name="communal_widgets_disclaimer_text" msgid="1423545475160506349">"Da biste otvorili aplikaciju koja koristi vidžet, treba da potvrdite da ste to vi. Imajte u vidu da svako može da ga vidi, čak i kada je tablet zaključan. Neki vidžeti možda nisu namenjeni za zaključani ekran i možda nije bezbedno da ih tamo dodate."</string>
     <string name="communal_widgets_disclaimer_button" msgid="4423059765740780753">"Važi"</string>
@@ -806,7 +817,9 @@
     <string name="no_shortcut" msgid="8257177117568230126">"<xliff:g id="APP_NAME">%1$s</xliff:g> ne podržava funkcije konverzacije"</string>
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Povratne informacije"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Odbaci"</string>
-    <string name="notification_inline_disable_promotion" msgid="6880961831026048166">"Ne prikazuj ponovo"</string>
+    <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Ne prikazuj kao zakačeno"</string>
+    <string name="live_notifications_title" msgid="1586553354601345379">"Prikazuju se novosti uživo"</string>
+    <string name="live_notifications_desc" msgid="7470787001768372152">"Zakačena obaveštenja prikazuju informacije uživo iz aplikacija i uvek se pojavljuju na statusnoj traci i zaključanom ekranu"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Ova obaveštenja ne mogu da se menjaju."</string>
     <string name="notification_unblockable_call_desc" msgid="5907328164696532169">"Obaveštenja o pozivima ne mogu da se menjaju."</string>
     <string name="notification_multichannel_desc" msgid="7414593090056236179">"Ova grupa obaveštenja ne može da se konfiguriše ovde"</string>
@@ -893,7 +906,8 @@
     <string name="keyboard_shortcut_group_system_multitasking" msgid="6967816258924795558">"Obavljanje više zadataka istovremeno"</string>
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Koristi podeljeni ekran sa aplikacijom s desne strane"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Koristi podeljeni ekran sa aplikacijom s leve strane"</string>
-    <string name="system_multitasking_full_screen" msgid="4940465971687159429">"Pređi na režim preko celog ekrana"</string>
+    <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Koristi prikaz preko celog ekrana"</string>
+    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Koristi prikaz za računare"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Pređi u aplikaciju zdesna ili ispod dok je podeljen ekran"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Pređite u aplikaciju sleva ili iznad dok koristite podeljeni ekran"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"U režimu podeljenog ekrana: zamena jedne aplikacije drugom"</string>
@@ -980,6 +994,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"Prikaži ikone obaveštenja niskog prioriteta"</string>
     <string name="other" msgid="429768510980739978">"Drugo"</string>
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"uključivanje ili isključivanje veličine pločice"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"uklonili pločicu"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"dodali pločicu na poslednju poziciju"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Premestite pločicu"</string>
@@ -1370,7 +1385,7 @@
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"Promenite izlaz"</string>
     <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"Nepoznato"</string>
     <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"s:min"</string>
-    <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"č:min"</string>
+    <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"Želite da dozvolite da <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g> pristupa svim evidencijama uređaja?"</string>
     <string name="log_access_confirmation_allow" msgid="752147861593202968">"Dozvoli jednokratan pristup"</string>
     <string name="log_access_confirmation_deny" msgid="2389461495803585795">"Ne dozvoli"</string>
@@ -1494,6 +1509,7 @@
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Prikaži nedavno korišćene aplikacije"</string>
     <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Pređi na drugu aplikaciju"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Gotovo"</string>
+    <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Dalje"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Probajte ponovo."</string>
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Nazad"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Prevucite ulevo ili udesno sa tri prsta na tačpedu"</string>
@@ -1531,7 +1547,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"Da biste pregledali nedavne aplikacije, prevucite nagore i zadržite sa tri prsta na tačpedu"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"Da biste pogledali sve aplikacije, pritisnite taster radnji na tastaturi"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"Redigovano"</string>
-    <string name="redacted_notification_single_line_text" msgid="8684166405005242945">"Otključajte za prikaz"</string>
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"Otključajte za prikaz"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"Otključajte da biste videli kôd"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"Kontekstualno obrazovanje"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"Koristite tačped za vraćanje nazad"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"Prevucite ulevo ili udesno sa tri prsta. Dodirnite da biste videli više pokreta."</string>
@@ -1554,4 +1571,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite da resetujete sve pločice?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve pločice Brzih podešavanja će se resetovati na prvobitna podešavanja uređaja"</string>
+    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
+    <skip />
 </resources>

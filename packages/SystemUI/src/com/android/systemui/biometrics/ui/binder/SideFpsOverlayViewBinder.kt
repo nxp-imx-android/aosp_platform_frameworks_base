@@ -137,6 +137,9 @@ constructor(
             )
         bind(overlayView!!, overlayViewModel, windowManager.get())
         overlayView!!.visibility = View.INVISIBLE
+        overlayView!!.setOnClickListener { v ->
+            v.requireViewById<LottieAnimationView>(R.id.sidefps_animation).toggleAnimation()
+        }
         Log.d(TAG, "show(): adding overlayView $overlayView")
         windowManager.get().addView(overlayView, overlayViewModel.defaultOverlayViewParams)
     }
@@ -231,6 +234,14 @@ private fun LottieAnimationView.addOverlayDynamicColor(colorCallbacks: List<Lott
                 PorterDuffColorFilter(callback.color, PorterDuff.Mode.SRC_ATOP)
             }
         }
+        resumeAnimation()
+    }
+}
+
+fun LottieAnimationView.toggleAnimation() {
+    if (isAnimating) {
+        pauseAnimation()
+    } else {
         resumeAnimation()
     }
 }

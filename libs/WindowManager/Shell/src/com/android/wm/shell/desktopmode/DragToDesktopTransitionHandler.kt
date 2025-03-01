@@ -35,6 +35,7 @@ import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
+import com.android.internal.util.LatencyTracker
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.animation.FloatProperties
 import com.android.wm.shell.bubbles.BubbleController
@@ -42,7 +43,7 @@ import com.android.wm.shell.bubbles.BubbleTransitions
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
-import com.android.wm.shell.protolog.ShellProtoLogGroup
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.animation.PhysicsAnimator
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
@@ -119,10 +120,7 @@ sealed class DragToDesktopTransitionHandler(
         dragToDesktopAnimator: MoveToDesktopAnimator,
     ) {
         if (inProgress) {
-            ProtoLog.v(
-                ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE,
-                "DragToDesktop: Drag to desktop transition already in progress.",
-            )
+            logV("Drag to desktop transition already in progress.")
             return
         }
 
@@ -536,12 +534,14 @@ sealed class DragToDesktopTransitionHandler(
             state.cancelState == CancelState.CANCEL_SPLIT_LEFT ||
                 state.cancelState == CancelState.CANCEL_SPLIT_RIGHT
         ) {
+            logV("mergeAnimation: cancel through split")
             clearState()
             return
         }
         // In case of bubble animation, finish the initial desktop drag animation, but keep the
         // current animation running and have bubbles take over
         if (info.type == TRANSIT_CONVERT_TO_BUBBLE) {
+            logV("mergeAnimation: convert-to-bubble")
             state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
             clearState()
             return
@@ -561,6 +561,7 @@ sealed class DragToDesktopTransitionHandler(
             state.startTransitionFinishCb
                 ?: error("Start transition expected to be waiting for merge but wasn't")
         if (isEndTransition) {
+            logV("mergeAnimation: end-transition, target=$mergeTarget")
             setupEndDragToDesktop(
                 info,
                 startTransaction = startT,
@@ -568,8 +569,15 @@ sealed class DragToDesktopTransitionHandler(
             )
             // Call finishCallback to merge animation before startTransitionFinishCb is called
             finishCallback.onTransitionFinished(/* wct= */ null)
+            LatencyTracker.getInstance(context)
+                .onActionEnd(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
             animateEndDragToDesktop(startTransaction = startT, startTransitionFinishCb)
-        } else if (isCancelTransition) {
+            return
+        }
+        if (isCancelTransition) {
+            logV("mergeAnimation: cancel-transition, target=$mergeTarget")
+            LatencyTracker.getInstance(context)
+                .onActionCancel(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
             info.changes.forEach { change ->
                 startT.show(change.leash)
                 startTransactionFinishT.show(change.leash)
@@ -578,7 +586,9 @@ sealed class DragToDesktopTransitionHandler(
             finishCallback.onTransitionFinished(/* wct= */ null)
             startTransitionFinishCb.onTransitionFinished(/* wct= */ null)
             clearState()
+            return
         }
+        logW("unhandled merge transition: transitionInfo=$info")
     }
 
     protected open fun setupEndDragToDesktop(
@@ -719,10 +729,7 @@ sealed class DragToDesktopTransitionHandler(
             return
         }
         if (state.startTransitionToken == transition) {
-            ProtoLog.v(
-                ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE,
-                "DragToDesktop: onTransitionConsumed() start transition aborted",
-            )
+            logV("onTransitionConsumed() start transition aborted")
             state.startAborted = true
             // The start-transition (DRAG_HOLD) is aborted, cancel its jank interaction.
             interactionJankMonitor.cancel(CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD)
@@ -945,7 +952,16 @@ sealed class DragToDesktopTransitionHandler(
         CANCEL_BUBBLE_RIGHT,
     }
 
+    private fun logV(msg: String, vararg arguments: Any?) {
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
     companion object {
+        private const val TAG = "DragToDesktopTransitionHandler"
         /** The duration of the animation to commit or cancel the drag-to-desktop gesture. */
         @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
         const val DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS = 336L
@@ -1047,10 +1063,7 @@ constructor(
         val state = requireTransitionState()
         val homeLeash = state.homeChange?.leash
         if (homeLeash == null) {
-            ProtoLog.e(
-                ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE,
-                "DragToDesktop: home leash is null",
-            )
+            logE("home leash is null")
         } else {
             // Hide home on finish to prevent flickering when wallpaper activity flag is enabled
             finishTransaction.hide(homeLeash)
@@ -1091,6 +1104,12 @@ constructor(
         val startBoundsWithOffset =
             Rect(startBounds).apply { offset(startPosition.x.toInt(), startPosition.y.toInt()) }
 
+        logV(
+            "animateEndDragToDesktop: startBounds=$startBounds, endBounds=$endBounds, " +
+                "startScale=$startScale, startPosition=$startPosition, " +
+                "startBoundsWithOffset=$startBoundsWithOffset"
+        )
+
         dragToDesktopStateListener?.onCommitToDesktopAnimationStart()
         // Accept the merge by applying the merging transaction (applied by #showResizeVeil)
         // and finish callback. Show the veil and position the task at the first frame before
@@ -1119,8 +1138,11 @@ constructor(
             .spring(FloatProperties.RECT_HEIGHT, endBounds.height().toFloat(), sizeSpringConfig)
             .addUpdateListener { animBounds, _ ->
                 val animFraction =
-                    (animBounds.width() - startBounds.width()).toFloat() /
-                        (endBounds.width() - startBounds.width())
+                    getAnimationFraction(
+                        startBounds = startBounds,
+                        endBounds = endBounds,
+                        animBounds = animBounds,
+                    )
                 val animScale = startScale + animFraction * (1 - startScale)
                 // Freeform animation starts with freeform animation offset relative to the commit
                 // animation and plays until the commit animation ends. For instance:
@@ -1173,6 +1195,37 @@ constructor(
     }
 
     companion object {
+        private const val TAG = "SpringDragToDesktopTransitionHandler"
+
+        @VisibleForTesting
+        fun getAnimationFraction(startBounds: Rect, endBounds: Rect, animBounds: Rect): Float {
+            if (startBounds.width() != endBounds.width()) {
+                return (animBounds.width() - startBounds.width()).toFloat() /
+                    (endBounds.width() - startBounds.width())
+            }
+            if (startBounds.height() != endBounds.height()) {
+                return (animBounds.height() - startBounds.height()).toFloat() /
+                    (endBounds.height() - startBounds.height())
+            }
+            logW(
+                "same start and end sizes, returning 0: " +
+                    "startBounds=$startBounds, endBounds=$endBounds, animBounds=$animBounds"
+            )
+            return 0f
+        }
+
+        private fun logV(msg: String, vararg arguments: Any?) {
+            ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+        }
+
+        private fun logW(msg: String, vararg arguments: Any?) {
+            ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+        }
+
+        private fun logE(msg: String, vararg arguments: Any?) {
+            ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+        }
+
         /** The freeform tasks initial scale when committing the drag-to-desktop gesture. */
         private val FREEFORM_TASKS_INITIAL_SCALE =
             propertyValue("freeform_tasks_initial_scale", scale = 100f, default = 0.9f)

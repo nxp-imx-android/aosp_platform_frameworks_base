@@ -58,11 +58,22 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
     private final BiMap<Integer, AmbientVolumeSlider> mSideToSliderMap = HashBiMap.create();
     private int mVolumeLevel = AMBIENT_VOLUME_LEVEL_DEFAULT;
 
+    private HearingDevicesUiEventLogger mUiEventLogger;
+    private int mLaunchSourceId;
+
     private final AmbientVolumeSlider.OnChangeListener mSliderOnChangeListener =
             (slider, value) -> {
-                if (mListener != null) {
-                    final int side = mSideToSliderMap.inverse().get(slider);
-                    mListener.onSliderValueChange(side, value);
+                final Integer side = mSideToSliderMap.inverse().get(slider);
+                if (side != null) {
+                    if (mUiEventLogger != null) {
+                        HearingDevicesUiEvent uiEvent = side == SIDE_UNIFIED
+                                ? HearingDevicesUiEvent.HEARING_DEVICES_AMBIENT_CHANGE_UNIFIED
+                                : HearingDevicesUiEvent.HEARING_DEVICES_AMBIENT_CHANGE_SEPARATED;
+                        mUiEventLogger.log(uiEvent, mLaunchSourceId);
+                    }
+                    if (mListener != null) {
+                        mListener.onSliderValueChange(side, value);
+                    }
                 }
             };
 
@@ -94,6 +105,12 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
                 return;
             }
             setMuted(!mMuted);
+            if (mUiEventLogger != null) {
+                HearingDevicesUiEvent uiEvent = mMuted
+                        ? HearingDevicesUiEvent.HEARING_DEVICES_AMBIENT_MUTE
+                        : HearingDevicesUiEvent.HEARING_DEVICES_AMBIENT_UNMUTE;
+                mUiEventLogger.log(uiEvent, mLaunchSourceId);
+            }
             if (mListener != null) {
                 mListener.onAmbientVolumeIconClick();
             }
@@ -103,6 +120,12 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
         mExpandIcon = requireViewById(R.id.ambient_expand_icon);
         mExpandIcon.setOnClickListener(v -> {
             setExpanded(!mExpanded);
+            if (mUiEventLogger != null) {
+                HearingDevicesUiEvent uiEvent = mExpanded
+                        ? HearingDevicesUiEvent.HEARING_DEVICES_AMBIENT_EXPAND_CONTROLS
+                        : HearingDevicesUiEvent.HEARING_DEVICES_AMBIENT_COLLAPSE_CONTROLS;
+                mUiEventLogger.log(uiEvent, mLaunchSourceId);
+            }
             if (mListener != null) {
                 mListener.onExpandIconClick();
             }
@@ -243,6 +266,11 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
         updateVolumeLevel();
     }
 
+    void setUiEventLogger(HearingDevicesUiEventLogger uiEventLogger, int launchSourceId) {
+        mUiEventLogger = uiEventLogger;
+        mLaunchSourceId = launchSourceId;
+    }
+
     private void updateVolumeLevel() {
         int leftLevel, rightLevel;
         if (mExpanded) {
@@ -299,8 +327,19 @@ public class AmbientVolumeLayout extends LinearLayout implements AmbientVolumeUi
         slider.addOnChangeListener(mSliderOnChangeListener);
         if (side == SIDE_LEFT) {
             slider.setTitle(mContext.getString(R.string.hearing_devices_ambient_control_left));
+            slider.setContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_left));
+            slider.setSliderContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_left_description));
         } else if (side == SIDE_RIGHT) {
             slider.setTitle(mContext.getString(R.string.hearing_devices_ambient_control_right));
+            slider.setContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_right));
+            slider.setSliderContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_right_description));
+        } else {
+            slider.setSliderContentDescription(
+                    mContext.getString(R.string.hearing_devices_ambient_control_description));
         }
         mSideToSliderMap.put(side, slider);
     }

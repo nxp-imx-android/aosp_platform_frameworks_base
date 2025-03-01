@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Resources
+import android.graphics.RectF
 import android.os.Trace
 import android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS
 import android.provider.Settings.Global.ZEN_MODE_OFF
@@ -78,7 +79,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -147,7 +148,7 @@ constructor(
         val clockStr = clock.toString()
         loggers.forEach { it.d({ "New Clock: $str1" }) { str1 = clockStr } }
 
-        clock.initialize(isDarkTheme(), dozeAmount, 0f)
+        clock.initialize(isDarkTheme(), dozeAmount.value, 0f, { onClockBoundsChanged.value = it })
 
         if (!regionSamplingEnabled) {
             updateColors()
@@ -240,16 +241,15 @@ constructor(
     private var smallClockFrame: ViewGroup? = null
     private var onGlobalLayoutListener: OnGlobalLayoutListener? = null
 
-    private var isDozing = false
-        private set
-
     private var isCharging = false
-    private var dozeAmount = 0f
     private var isKeyguardVisible = false
     private var isRegistered = false
     private var disposableHandle: DisposableHandle? = null
     private val regionSamplingEnabled = featureFlags.isEnabled(REGION_SAMPLING)
     private var largeClockOnSecondaryDisplay = false
+
+    val dozeAmount = MutableStateFlow(0f)
+    val onClockBoundsChanged = MutableStateFlow<RectF?>(null)
 
     private fun isDarkTheme(): Boolean {
         val isLightTheme = TypedValue()
@@ -306,7 +306,7 @@ constructor(
     var smallTimeListener: TimeListener? = null
     var largeTimeListener: TimeListener? = null
     val shouldTimeListenerRun: Boolean
-        get() = isKeyguardVisible && dozeAmount < DOZE_TICKRATE_THRESHOLD
+        get() = isKeyguardVisible && dozeAmount.value < DOZE_TICKRATE_THRESHOLD
 
     private var weatherData: WeatherData? = null
     private var zenData: ZenData? = null
@@ -386,7 +386,7 @@ constructor(
 
     @VisibleForTesting
     internal fun listenForDnd(scope: CoroutineScope): Job {
-        ModesUi.assertInNewMode()
+        ModesUi.unsafeAssertInNewMode()
         return scope.launch {
             zenModeInteractor.dndMode.collect {
                 val zenMode =
@@ -466,7 +466,6 @@ constructor(
         disposableHandle =
             parent.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
-                    listenForDozing(this)
                     if (ModesUi.isEnabled) {
                         listenForDnd(this)
                     }
@@ -576,17 +575,17 @@ constructor(
     }
 
     private fun handleDoze(doze: Float) {
-        dozeAmount = doze
         clock?.run {
             Trace.beginSection("$TAG#smallClock.animations.doze")
-            smallClock.animations.doze(dozeAmount)
+            smallClock.animations.doze(doze)
             Trace.endSection()
             Trace.beginSection("$TAG#largeClock.animations.doze")
-            largeClock.animations.doze(dozeAmount)
+            largeClock.animations.doze(doze)
             Trace.endSection()
         }
         smallTimeListener?.update(doze < DOZE_TICKRATE_THRESHOLD)
         largeTimeListener?.update(doze < DOZE_TICKRATE_THRESHOLD)
+        dozeAmount.value = doze
     }
 
     @VisibleForTesting
@@ -639,18 +638,6 @@ constructor(
                 .transition(Edge.create(to = DOZING))
                 .filter { it.transitionState == TransitionState.FINISHED }
                 .collect { handleDoze(1f) }
-        }
-    }
-
-    @VisibleForTesting
-    internal fun listenForDozing(scope: CoroutineScope): Job {
-        return scope.launch {
-            combine(keyguardInteractor.dozeAmount, keyguardInteractor.isDozing) {
-                    localDozeAmount,
-                    localIsDozing ->
-                    localDozeAmount > dozeAmount || localIsDozing
-                }
-                .collect { localIsDozing -> isDozing = localIsDozing }
         }
     }
 

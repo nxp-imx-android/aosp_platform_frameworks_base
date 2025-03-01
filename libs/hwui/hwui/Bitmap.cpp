@@ -16,6 +16,8 @@
 #include "Bitmap.h"
 
 #include <android-base/file.h>
+
+#include "FeatureFlags.h"
 #include "HardwareBitmapUploader.h"
 #include "Properties.h"
 #ifdef __ANDROID__  // Layoutlib does not support render thread
@@ -547,9 +549,16 @@ BitmapPalette Bitmap::computePalette(const SkImageInfo& info, const void* addr, 
     }
 
     ALOGV("samples = %d, hue [min = %f, max = %f, avg = %f]; saturation [min = %f, max = %f, avg = "
-          "%f]",
+          "%f] %d x %d",
           sampledCount, hue.min(), hue.max(), hue.average(), saturation.min(), saturation.max(),
-          saturation.average());
+          saturation.average(), info.width(), info.height());
+
+    if (CC_UNLIKELY(view_accessibility_flags::force_invert_color())) {
+        if (saturation.delta() > 0.1f ||
+            (hue.delta() > 20 && saturation.average() > 0.2f && value.average() < 0.9f)) {
+            return BitmapPalette::Colorful;
+        }
+    }
 
     if (hue.delta() <= 20 && saturation.delta() <= .1f) {
         if (value.average() >= .5f) {

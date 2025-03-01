@@ -87,7 +87,7 @@ constructor(
                             )
                         is ObservableTransitionState.Transition ->
                             if (
-                                state.fromContent == Scenes.Bouncer &&
+                                state.fromContent == Overlays.Bouncer &&
                                     state.toContent == Scenes.Lockscreen
                             ) {
                                 // Lockscreen is not visible during preview stage of predictive back

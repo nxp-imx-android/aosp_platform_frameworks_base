@@ -78,7 +78,7 @@ class PanelExpansionInteractorImplTest : SysuiTestCase() {
             changeScene(Scenes.Lockscreen) { assertThat(panelExpansion).isEqualTo(1f) }
             assertThat(panelExpansion).isEqualTo(1f)
 
-            changeScene(Scenes.Bouncer) { assertThat(panelExpansion).isEqualTo(1f) }
+            showOverlay(Overlays.Bouncer) { assertThat(panelExpansion).isEqualTo(1f) }
             assertThat(panelExpansion).isEqualTo(1f)
 
             changeScene(Scenes.Shade) { assertThat(panelExpansion).isEqualTo(1f) }
@@ -133,7 +133,7 @@ class PanelExpansionInteractorImplTest : SysuiTestCase() {
             changeScene(Scenes.Lockscreen) { assertThat(panelExpansion).isEqualTo(1f) }
             assertThat(panelExpansion).isEqualTo(1f)
 
-            changeScene(Scenes.Bouncer) { assertThat(panelExpansion).isEqualTo(1f) }
+            showOverlay(Overlays.Bouncer) { assertThat(panelExpansion).isEqualTo(1f) }
             assertThat(panelExpansion).isEqualTo(1f)
 
             showOverlay(Overlays.NotificationsShade) { assertThat(panelExpansion).isEqualTo(1f) }

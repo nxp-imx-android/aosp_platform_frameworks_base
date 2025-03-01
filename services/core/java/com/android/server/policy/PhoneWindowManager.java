@@ -3701,15 +3701,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 break;
             case KeyEvent.KEYCODE_N:
                 if (firstDown && event.isMetaPressed()) {
-                    if (event.isCtrlPressed()) {
-                        sendSystemKeyToStatusBarAsync(event);
-                        notifyKeyGestureCompleted(event,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES);
-                    } else {
-                        toggleNotificationPanel();
-                        notifyKeyGestureCompleted(event,
-                                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
-                    }
+                    toggleNotificationPanel();
+                    notifyKeyGestureCompleted(event,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL);
                     return true;
                 }
                 break;
@@ -4289,22 +4283,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     case KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
                     case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION:
                     case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB:
-                        return true;
                     case KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD:
                     case KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD:
                     case KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS:
                     case KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT:
-                        return mDefaultDisplayPolicy.isAwake();
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
-                        return mDefaultDisplayPolicy.isAwake() && mAccessibilityShortcutController
-                                .isAccessibilityShortcutAvailable(isKeyguardLocked());
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD:
-                        return mDefaultDisplayPolicy.isAwake() && mAccessibilityShortcutController
-                                .isAccessibilityShortcutAvailable(false);
                     case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
-                        return enableTalkbackAndMagnifierKeyGestures();
                     case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
-                        return enableVoiceAccessKeyGestures();
+                        return true;
+                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
+                        return mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
+                                isKeyguardLocked());
+                    case KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD:
+                        return mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
+                                false);
                     default:
                         return false;
                 }

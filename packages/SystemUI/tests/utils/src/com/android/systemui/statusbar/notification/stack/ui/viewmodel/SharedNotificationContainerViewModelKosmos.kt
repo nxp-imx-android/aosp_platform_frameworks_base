@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.stack.ui.viewmodel
 
 import android.content.applicationContext
+import com.android.systemui.bouncer.domain.interactor.bouncerInteractor
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.dump.dumpManager
@@ -25,6 +26,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.alternateBouncerToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
+import com.android.systemui.keyguard.ui.viewmodel.aodToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodToGoneTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.aodToOccludedTransitionViewModel
@@ -34,6 +36,7 @@ import com.android.systemui.keyguard.ui.viewmodel.dozingToLockscreenTransitionVi
 import com.android.systemui.keyguard.ui.viewmodel.dozingToOccludedTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.dozingToPrimaryBouncerTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.dreamingToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.goneToAodTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.goneToDozingTransitionViewModel
@@ -72,6 +75,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         keyguardInteractor = keyguardInteractor,
         keyguardTransitionInteractor = keyguardTransitionInteractor,
         shadeInteractor = shadeInteractor,
+        bouncerInteractor = bouncerInteractor,
         shadeModeInteractor = shadeModeInteractor,
         notificationStackAppearanceInteractor = notificationStackAppearanceInteractor,
         alternateBouncerToGoneTransitionViewModel = alternateBouncerToGoneTransitionViewModel,
@@ -110,5 +114,7 @@ val Kosmos.sharedNotificationContainerViewModel by Fixture {
         headsUpNotificationInteractor = { headsUpNotificationInteractor },
         largeScreenHeaderHelperLazy = { largeScreenHeaderHelper },
         unfoldTransitionInteractor = unfoldTransitionInteractor,
+        glanceableHubToAodTransitionViewModel = glanceableHubToAodTransitionViewModel,
+        aodToGlanceableHubTransitionViewModel = aodToGlanceableHubTransitionViewModel,
     )
 }

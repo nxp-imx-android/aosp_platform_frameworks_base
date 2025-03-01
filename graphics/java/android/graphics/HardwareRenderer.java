@@ -79,6 +79,7 @@ import sun.misc.Cleaner;
  * Failure to do so will cause the render thread to stall on that surface, blocking all
  * HardwareRenderer instances.</p>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class HardwareRenderer {
     private static final String LOG_TAG = "HardwareRenderer";
 
@@ -658,12 +659,26 @@ public class HardwareRenderer {
     }
 
     /**
+     * @hide
+     */
+    public void addObserver(long nativeObserver) {
+        nAddObserver(mNativeProxy, nativeObserver);
+    }
+
+    /**
      * TODO: Public API this?
      *
      * @hide
      */
     public void removeObserver(HardwareRendererObserver observer) {
         nRemoveObserver(mNativeProxy, observer.getNativeInstance());
+    }
+
+    /**
+     * @hide
+     */
+    public void removeObserver(long nativeObserver) {
+        nRemoveObserver(mNativeProxy, nativeObserver);
     }
 
     /**

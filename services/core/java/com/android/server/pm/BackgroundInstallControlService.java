@@ -332,7 +332,8 @@ public class BackgroundInstallControlService extends SystemService {
                 userId)
                 != PERMISSION_GRANTED) {
             if(Build.IS_DEBUGGABLE) {
-                Slog.d(TAG, "handlePackageAdd " + packageName + ": installer doesn't "
+                Slog.d(TAG, "handlePackageAdd " + packageName + ": installer ("
+                    + installerPackageName + ") doesn't "
                     + "have INSTALL_PACKAGES permission, skipping");
             }
             return;
@@ -389,10 +390,11 @@ public class BackgroundInstallControlService extends SystemService {
                 .max(Comparator.comparingLong(PackageInstaller.SessionInfo::getCreatedMillis));
     }
 
-    // ADB sets installerPackageName to null, this creates a loophole to bypass BIC which will be
-    // addressed with b/265203007
     private boolean installedByAdb(String initiatingPackageName) {
-        if(PackageManagerServiceUtils.isInstalledByAdb(initiatingPackageName)) {
+        // GTS tests needs to adopt shell identity to install apps.
+        if(!SystemProperties.get("gts.transparency.bg-install-apps").isEmpty()) {
+            Slog.d(TAG, "handlePackageAdd: is GTS tests, skipping ADB check");
+        } else if(PackageManagerServiceUtils.isInstalledByAdb(initiatingPackageName)) {
             Slog.d(TAG, "handlePackageAdd: is installed by ADB, skipping");
             return true;
         }

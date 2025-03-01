@@ -45,11 +45,15 @@ HSPLandroid/os/MessageQueue$OnFileDescriptorEventListener;->*
 HSPLandroid/os/MessageQueue$StackNodeType;->*
 HSPLandroid/os/MessageQueue$StateNode;->*
 HSPLandroid/os/MessageQueue$TimedParkStateNode;->*
+
+# For now, compile all methods in PerfettoTrace and PerfettoTrackEventExtra.
+# Similar to the existing Trace APIs, these new APIs can impact the performance
+# of many subsystems including MessageQueue. This also keeps benchmark
+# comparisons between both APIs fair.
 HSPLandroid/os/PerfettoTrace$Category;->*
 HSPLandroid/os/PerfettoTrace;->*
 HSPLandroid/os/PerfettoTrackEventExtra;->*
-HSPLandroid/os/PerfettoTrackEventExtra$BuilderImpl;->*
-HSPLandroid/os/PerfettoTrackEventExtra$NoOpBuilder;->*
+HSPLandroid/os/PerfettoTrackEventExtra$Builder;->*
 HSPLandroid/os/PerfettoTrackEventExtra$ArgBool;->*
 HSPLandroid/os/PerfettoTrackEventExtra$ArgInt64;->*
 HSPLandroid/os/PerfettoTrackEventExtra$ArgDouble;->*

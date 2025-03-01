@@ -25,8 +25,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -43,10 +43,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
@@ -67,6 +65,7 @@ import com.android.compose.animation.scene.ValueKey
 import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
+import com.android.compose.theme.colorAttr
 import com.android.settingslib.Utils
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.battery.BatteryMeterViewController
@@ -77,21 +76,18 @@ import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.privacy.OngoingPrivacyChip
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.shade.ui.composable.ShadeHeader.Colors.chipBackground
-import com.android.systemui.shade.ui.composable.ShadeHeader.Colors.chipHighlighted
 import com.android.systemui.shade.ui.composable.ShadeHeader.Colors.onScrimDim
+import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingHorizontal
+import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.ChipPaddingVertical
 import com.android.systemui.shade.ui.composable.ShadeHeader.Dimensions.CollapsedHeight
 import com.android.systemui.shade.ui.composable.ShadeHeader.Values.ClockScale
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel.HeaderChipHighlight
-import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerStatusBarViewBinder
-import com.android.systemui.statusbar.phone.NotificationIconContainer
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernShadeCarrierGroupMobileView
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.ShadeCarrierGroupMobileIconViewModel
 import com.android.systemui.statusbar.policy.Clock
-import kotlinx.coroutines.launch
 
 object ShadeHeader {
     object Elements {
@@ -110,6 +106,8 @@ object ShadeHeader {
     object Dimensions {
         val CollapsedHeight = 48.dp
         val ExpandedHeight = 120.dp
+        val ChipPaddingHorizontal = 6.dp
+        val ChipPaddingVertical = 4.dp
     }
 
     object Colors {
@@ -118,12 +116,6 @@ object ShadeHeader {
 
         val ColorScheme.onScrimDim: Color
             get() = Color.DarkGray
-
-        val ColorScheme.chipBackground: Color
-            get() = Color.DarkGray
-
-        val ColorScheme.chipHighlighted: Color
-            get() = Color.LightGray
     }
 
     object TestTags {
@@ -149,9 +141,6 @@ fun ContentScope.CollapsedShadeHeader(
             }
         }
 
-    val longerDateText by viewModel.longerDateText.collectAsStateWithLifecycle()
-    val shorterDateText by viewModel.shorterDateText.collectAsStateWithLifecycle()
-
     val isShadeLayoutWide = viewModel.isShadeLayoutWide
 
     val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
@@ -167,9 +156,9 @@ fun ContentScope.CollapsedShadeHeader(
             ) {
                 Clock(scale = 1f, onClick = viewModel::onClockClicked)
                 VariableDayDate(
-                    longerDateText = longerDateText,
-                    shorterDateText = shorterDateText,
-                    chipHighlight = viewModel.notificationsChipHighlight,
+                    longerDateText = viewModel.longerDateText,
+                    shorterDateText = viewModel.shorterDateText,
+                    textColor = colorAttr(android.R.attr.textColorPrimary),
                     modifier = Modifier.element(ShadeHeader.Elements.CollapsedContentStart),
                 )
             }
@@ -229,8 +218,6 @@ fun ContentScope.ExpandedShadeHeader(
         derivedStateOf { shouldUseExpandedFormat(layoutState.transitionState) }
     }
 
-    val longerDateText by viewModel.longerDateText.collectAsStateWithLifecycle()
-    val shorterDateText by viewModel.shorterDateText.collectAsStateWithLifecycle()
     val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
 
     Box(modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root)) {
@@ -269,9 +256,9 @@ fun ContentScope.ExpandedShadeHeader(
                 modifier = Modifier.element(ShadeHeader.Elements.ExpandedContent),
             ) {
                 VariableDayDate(
-                    longerDateText = longerDateText,
-                    shorterDateText = shorterDateText,
-                    chipHighlight = viewModel.notificationsChipHighlight,
+                    longerDateText = viewModel.longerDateText,
+                    shorterDateText = viewModel.shorterDateText,
+                    textColor = colorAttr(android.R.attr.textColorPrimary),
                     modifier = Modifier.widthIn(max = 90.dp),
                 )
                 Spacer(modifier = Modifier.weight(1f))
@@ -316,6 +303,7 @@ fun ContentScope.OverlayShadeHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
+                val chipHighlight = viewModel.notificationsChipHighlight
                 if (isShadeLayoutWide) {
                     Clock(
                         scale = 1f,
@@ -324,28 +312,15 @@ fun ContentScope.OverlayShadeHeader(
                     )
                     Spacer(modifier = Modifier.width(5.dp))
                 }
-                val chipHighlight = viewModel.notificationsChipHighlight
-                NotificationIconChip(
-                    chipHighlight = chipHighlight,
+                NotificationsChip(
                     onClick = viewModel::onNotificationIconChipClicked,
+                    backgroundColor = chipHighlight.backgroundColor(MaterialTheme.colorScheme),
                 ) {
-                    if (isShadeLayoutWide) {
-                        NotificationIcons(
-                            chipHighlight = chipHighlight,
-                            notificationIconContainerStatusBarViewBinder =
-                                viewModel.notificationIconContainerStatusBarViewBinder,
-                            modifier = Modifier.width(IntrinsicSize.Min).height(20.dp),
-                        )
-                    } else {
-                        val longerDateText by viewModel.longerDateText.collectAsStateWithLifecycle()
-                        val shorterDateText by
-                            viewModel.shorterDateText.collectAsStateWithLifecycle()
-                        VariableDayDate(
-                            longerDateText = longerDateText,
-                            shorterDateText = shorterDateText,
-                            chipHighlight = viewModel.notificationsChipHighlight,
-                        )
-                    }
+                    VariableDayDate(
+                        longerDateText = viewModel.longerDateText,
+                        shorterDateText = viewModel.shorterDateText,
+                        textColor = chipHighlight.foregroundColor(MaterialTheme.colorScheme),
+                    )
                 }
             }
         },
@@ -357,14 +332,13 @@ fun ContentScope.OverlayShadeHeader(
             ) {
                 val chipHighlight = viewModel.quickSettingsChipHighlight
                 SystemIconChip(
-                    chipHighlight = chipHighlight,
+                    backgroundColor = chipHighlight.backgroundColor(MaterialTheme.colorScheme),
                     onClick = viewModel::onSystemIconChipClicked,
                 ) {
                     StatusIcons(
                         viewModel = viewModel,
                         useExpandedFormat = false,
                         modifier = Modifier.padding(end = 6.dp).weight(1f, fill = false),
-                        chipHighlight = chipHighlight,
                     )
                     BatteryIcon(
                         createBatteryMeterViewController =
@@ -466,33 +440,36 @@ private fun CutoutAwareShadeHeader(
 private fun ContentScope.Clock(scale: Float, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val layoutDirection = LocalLayoutDirection.current
 
-    Element(key = ShadeHeader.Elements.Clock, modifier = modifier) {
+    ElementWithValues(key = ShadeHeader.Elements.Clock, modifier = modifier) {
         val animatedScale by animateElementFloatAsState(scale, ClockScale, canOverflow = false)
-        AndroidView(
-            factory = { context ->
-                Clock(
-                    ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings_Header),
-                    null,
-                )
-            },
-            modifier =
-                modifier
-                    // use graphicsLayer instead of Modifier.scale to anchor transform
-                    // to the (start, top) corner
-                    .graphicsLayer {
-                        scaleX = animatedScale
-                        scaleY = animatedScale
-                        transformOrigin =
-                            TransformOrigin(
-                                when (layoutDirection) {
-                                    LayoutDirection.Ltr -> 0f
-                                    LayoutDirection.Rtl -> 1f
-                                },
-                                0.5f,
-                            )
-                    }
-                    .clickable { onClick() },
-        )
+
+        content {
+            AndroidView(
+                factory = { context ->
+                    Clock(
+                        ContextThemeWrapper(context, R.style.Theme_SystemUI_QuickSettings_Header),
+                        null,
+                    )
+                },
+                modifier =
+                    modifier
+                        // use graphicsLayer instead of Modifier.scale to anchor transform to the
+                        // (start, top) corner
+                        .graphicsLayer {
+                            scaleX = animatedScale
+                            scaleY = animatedScale
+                            transformOrigin =
+                                TransformOrigin(
+                                    when (layoutDirection) {
+                                        LayoutDirection.Ltr -> 0f
+                                        LayoutDirection.Rtl -> 1f
+                                    },
+                                    0.5f,
+                                )
+                        }
+                        .clickable { onClick() },
+            )
+        }
     }
 }
 
@@ -534,6 +511,7 @@ private fun BatteryIcon(
             batteryIcon.setPercentShowMode(
                 if (useExpandedFormat) BatteryMeterView.MODE_ESTIMATE else BatteryMeterView.MODE_ON
             )
+            // TODO(b/397223606): Get the actual spec for this.
             if (chipHighlight is HeaderChipHighlight.Strong) {
                 batteryIcon.updateColors(primaryColor, inverseColor, inverseColor)
             } else if (chipHighlight is HeaderChipHighlight.Weak) {
@@ -546,11 +524,8 @@ private fun BatteryIcon(
 
 @Composable
 private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifier = Modifier) {
-    Row(modifier = modifier) {
-        val subIds by viewModel.mobileSubIds.collectAsStateWithLifecycle()
-
-        for (subId in subIds) {
-            Spacer(modifier = Modifier.width(5.dp))
+    Row(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+        for (subId in viewModel.mobileSubIds) {
             AndroidView(
                 factory = { context ->
                     ModernShadeCarrierGroupMobileView.constructAndBind(
@@ -571,36 +546,10 @@ private fun ShadeCarrierGroup(viewModel: ShadeHeaderViewModel, modifier: Modifie
 }
 
 @Composable
-private fun NotificationIcons(
-    chipHighlight: HeaderChipHighlight,
-    notificationIconContainerStatusBarViewBinder: NotificationIconContainerStatusBarViewBinder,
-    modifier: Modifier = Modifier,
-) {
-    val scope = rememberCoroutineScope()
-
-    AndroidView(
-        factory = { context ->
-            NotificationIconContainer(context, null).also { view ->
-                view.setOverrideIconColor(true)
-                scope.launch {
-                    notificationIconContainerStatusBarViewBinder.bindWhileAttached(
-                        view = view,
-                        displayId = context.displayId,
-                    )
-                }
-            }
-        },
-        update = { it.setUseInverseOverrideIconColor(chipHighlight is HeaderChipHighlight.Strong) },
-        modifier = modifier,
-    )
-}
-
-@Composable
 private fun ContentScope.StatusIcons(
     viewModel: ShadeHeaderViewModel,
     useExpandedFormat: Boolean,
     modifier: Modifier = Modifier,
-    chipHighlight: HeaderChipHighlight = HeaderChipHighlight.None,
 ) {
     val localContext = LocalContext.current
     val themedContext =
@@ -627,6 +576,8 @@ private fun ContentScope.StatusIcons(
     val iconManager = remember {
         viewModel.createTintedIconManager(iconContainer, StatusBarLocation.QS)
     }
+
+    val chipHighlight = viewModel.quickSettingsChipHighlight
 
     AndroidView(
         factory = { context ->
@@ -664,6 +615,7 @@ private fun ContentScope.StatusIcons(
                 iconContainer.removeIgnoredSlot(locationSlot)
             }
 
+            // TODO(b/397223606): Get the actual spec for this.
             if (chipHighlight is HeaderChipHighlight.Strong) {
                 iconManager.setTint(inverseColor, primaryColor)
             } else if (chipHighlight is HeaderChipHighlight.Weak) {
@@ -675,62 +627,49 @@ private fun ContentScope.StatusIcons(
 }
 
 @Composable
-private fun NotificationIconChip(
-    chipHighlight: HeaderChipHighlight,
+private fun NotificationsChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit,
+    backgroundColor: Color = Color.Unspecified,
+    content: @Composable BoxScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    Box(modifier = modifier) {
-        Row(
-            modifier =
-                Modifier.align(Alignment.CenterStart)
-                    .clickable(
-                        interactionSource = interactionSource,
-                        indication = null,
-                        onClick = { onClick() },
-                    )
-                    .clip(RoundedCornerShape(25.dp))
-                    .background(
-                        if (chipHighlight is HeaderChipHighlight.Strong)
-                            MaterialTheme.colorScheme.chipHighlighted
-                        else MaterialTheme.colorScheme.chipBackground
-                    )
-                    .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            content()
-        }
+    Box(
+        modifier =
+            modifier
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onClick,
+                )
+                .background(backgroundColor, RoundedCornerShape(25.dp))
+                .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
+    ) {
+        content()
     }
 }
 
 @Composable
 private fun SystemIconChip(
     modifier: Modifier = Modifier,
-    chipHighlight: HeaderChipHighlight = HeaderChipHighlight.None,
+    backgroundColor: Color = Color.Unspecified,
     onClick: (() -> Unit)? = null,
     content: @Composable RowScope.() -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     val hoverModifier =
-        Modifier.clip(RoundedCornerShape(CollapsedHeight / 4))
-            .background(MaterialTheme.colorScheme.onScrimDim)
-    val backgroundColor =
-        if (chipHighlight is HeaderChipHighlight.Strong) MaterialTheme.colorScheme.chipHighlighted
-        else MaterialTheme.colorScheme.chipBackground
+        with(MaterialTheme.colorScheme) {
+            Modifier.background(onScrimDim, RoundedCornerShape(CollapsedHeight / 4))
+        }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
-                .thenIf(chipHighlight !is HeaderChipHighlight.None) {
-                    Modifier.graphicsLayer {
-                            shape = RoundedCornerShape(25.dp)
-                            clip = true
-                        }
-                        .background(backgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                .thenIf(backgroundColor != Color.Unspecified) {
+                    Modifier.background(backgroundColor, RoundedCornerShape(25.dp))
+                        .padding(horizontal = ChipPaddingHorizontal, vertical = ChipPaddingVertical)
                 }
                 .thenIf(onClick != null) {
                     Modifier.clickable(

@@ -87,6 +87,9 @@ interface MagneticNotificationRowManager {
      */
     fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float? = null)
 
+    /* Reset any roundness that magnetic targets may have */
+    fun resetRoundness()
+
     /**
      * Reset any magnetic and roundable targets set, as well as any internal state.
      *
@@ -123,6 +126,8 @@ interface MagneticNotificationRowManager {
                         row: ExpandableNotificationRow,
                         velocity: Float?,
                     ) {}
+
+                    override fun resetRoundness() {}
 
                     override fun reset() {}
                 }

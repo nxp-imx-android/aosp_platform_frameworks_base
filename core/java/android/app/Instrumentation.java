@@ -50,6 +50,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodReplace;
 import android.util.AndroidRuntimeException;
 import android.util.Log;
@@ -188,6 +189,7 @@ public class Instrumentation {
      * @param arguments Any additional arguments that were supplied when the 
      *                  instrumentation was started.
      */
+    @android.ravenwood.annotation.RavenwoodKeep
     public void onCreate(Bundle arguments) {
     }
 
@@ -460,10 +462,18 @@ public class Instrumentation {
      * 
      * @param runner The code to run on the main thread.
      */
+    @RavenwoodReplace(blockedBy = ActivityThread.class)
     public void runOnMainSync(Runnable runner) {
         validateNotAppThread();
         SyncRunnable sr = new SyncRunnable(runner);
         mThread.getHandler().post(sr);
+        sr.waitForComplete();
+    }
+
+    private void runOnMainSync$ravenwood(Runnable runner) {
+        validateNotAppThread();
+        SyncRunnable sr = new SyncRunnable(runner);
+        mInstrContext.getMainExecutor().execute(sr);
         sr.waitForComplete();
     }
 
@@ -2442,7 +2452,8 @@ public class Instrumentation {
         }
     }
 
-    private final void validateNotAppThread() {
+    @RavenwoodKeep
+    private void validateNotAppThread() {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             throw new RuntimeException(
                 "This method can not be called from the main application thread");
@@ -2586,6 +2597,7 @@ public class Instrumentation {
         }
     }
 
+    @RavenwoodKeepWholeClass
     private static final class SyncRunnable implements Runnable {
         private final Runnable mTarget;
         private boolean mComplete;

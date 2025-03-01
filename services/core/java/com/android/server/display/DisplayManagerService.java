@@ -812,7 +812,7 @@ public final class DisplayManagerService extends SystemService {
             handleMinimalPostProcessingAllowedSettingChange();
 
             if (mFlags.isDisplayContentModeManagementEnabled()) {
-                updateMirrorBuiltInDisplaySettingLocked();
+                updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/ true);
             }
 
             final UserManager userManager = getUserManager();
@@ -868,7 +868,7 @@ public final class DisplayManagerService extends SystemService {
                 updateHdrConversionModeSettingsLocked();
             }
             if (mFlags.isDisplayContentModeManagementEnabled()) {
-                updateMirrorBuiltInDisplaySettingLocked();
+                updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/ false);
             }
         }
 
@@ -1237,8 +1237,11 @@ public final class DisplayManagerService extends SystemService {
             }
 
             if (Settings.Secure.getUriFor(MIRROR_BUILT_IN_DISPLAY).equals(uri)) {
-                if (mFlags.isDisplayContentModeManagementEnabled()) {
-                    updateMirrorBuiltInDisplaySettingLocked();
+                synchronized (mSyncRoot) {
+                    if (mFlags.isDisplayContentModeManagementEnabled()) {
+                        updateMirrorBuiltInDisplaySettingLocked(/*shouldSendDisplayChangeEvent=*/
+                                true);
+                    }
                 }
                 return;
             }
@@ -1258,18 +1261,19 @@ public final class DisplayManagerService extends SystemService {
                 1, UserHandle.USER_CURRENT) != 0);
     }
 
-    private void updateMirrorBuiltInDisplaySettingLocked() {
-        synchronized (mSyncRoot) {
-            ContentResolver resolver = mContext.getContentResolver();
-            final boolean mirrorBuiltInDisplay = Settings.Secure.getIntForUser(resolver,
-                    MIRROR_BUILT_IN_DISPLAY, 0, UserHandle.USER_CURRENT) != 0;
-            if (mMirrorBuiltInDisplay == mirrorBuiltInDisplay) {
-                return;
-            }
-            mMirrorBuiltInDisplay = mirrorBuiltInDisplay;
-            if (mFlags.isDisplayContentModeManagementEnabled()) {
-                mLogicalDisplayMapper.forEachLocked(this::updateCanHostTasksIfNeededLocked);
-            }
+    private void updateMirrorBuiltInDisplaySettingLocked(boolean shouldSendDisplayChangeEvent) {
+        ContentResolver resolver = mContext.getContentResolver();
+        final boolean mirrorBuiltInDisplay = Settings.Secure.getIntForUser(resolver,
+                MIRROR_BUILT_IN_DISPLAY, 0, UserHandle.USER_CURRENT) != 0;
+        if (mMirrorBuiltInDisplay == mirrorBuiltInDisplay) {
+            return;
+        }
+        mMirrorBuiltInDisplay = mirrorBuiltInDisplay;
+        if (mFlags.isDisplayContentModeManagementEnabled()) {
+            mLogicalDisplayMapper.forEachLocked(logicalDisplay -> {
+                    updateCanHostTasksIfNeededLocked(logicalDisplay,
+                            shouldSendDisplayChangeEvent);
+            });
         }
     }
 
@@ -2380,7 +2384,7 @@ public final class DisplayManagerService extends SystemService {
                 new BrightnessPair(brightnessDefault, brightnessDefault));
 
         if (mFlags.isDisplayContentModeManagementEnabled()) {
-            updateCanHostTasksIfNeededLocked(display);
+            updateCanHostTasksIfNeededLocked(display, /*shouldSendDisplayChangeEvent=*/ false);
         }
 
         DisplayManagerGlobal.invalidateLocalDisplayInfoCaches();
@@ -2614,7 +2618,8 @@ public final class DisplayManagerService extends SystemService {
         // Blank or unblank the display immediately to match the state requested
         // by the display power controller (if known).
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
-        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
+        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
+                || android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
             final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(device);
             if (display == null) {
                 return null;
@@ -2702,8 +2707,9 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
-    private void updateCanHostTasksIfNeededLocked(LogicalDisplay display) {
-        if (display.setCanHostTasksLocked(!mMirrorBuiltInDisplay)) {
+    private void updateCanHostTasksIfNeededLocked(LogicalDisplay display,
+            boolean shouldSendDisplayChangeEvent) {
+        if (display.setCanHostTasksLocked(!mMirrorBuiltInDisplay) && shouldSendDisplayChangeEvent) {
             sendDisplayEventIfEnabledLocked(display,
                     DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
         }
@@ -5574,7 +5580,9 @@ public final class DisplayManagerService extends SystemService {
                     final DisplayDevice displayDevice = mLogicalDisplayMapper.getDisplayLocked(
                             id).getPrimaryDisplayDeviceLocked();
                     final int flags = displayDevice.getDisplayDeviceInfoLocked().flags;
-                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
+                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
+                            || android.companion.virtualdevice.flags.Flags
+                                    .correctVirtualDisplayPowerState()) {
                         final DisplayPowerController displayPowerController =
                                 mDisplayPowerControllers.get(id);
                         if (displayPowerController != null) {

@@ -16,8 +16,87 @@
 
 package com.android.systemui.statusbar.notification.collection;
 
+import static com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt.BUCKET_ALERTING;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
+import com.android.systemui.statusbar.notification.stack.PriorityBucket;
+
 /**
  * Class to represent a notification, group, or bundle in the pipeline.
  */
-public class PipelineEntry {
+public abstract class PipelineEntry {
+
+    final String mKey;
+    final ListAttachState mAttachState = ListAttachState.create();
+    final ListAttachState mPreviousAttachState = ListAttachState.create();
+    protected int mBucket = BUCKET_ALERTING;
+
+    public PipelineEntry(String key) {
+        this.mKey = key;
+    }
+
+    /**
+     * Key of the representative entry.
+     */
+    public @NonNull String getKey() {
+        return mKey;
+    }
+
+    /**
+     * @return The representative NotificationEntry:
+     *      for NotificationEntry, return itself
+     *      for GroupEntry, return the summary NotificationEntry, or null if it does not exist
+     *      for BundleEntry, return null
+     */
+    public abstract @Nullable NotificationEntry getRepresentativeEntry();
+
+    /**
+     * @return NotifSection that ShadeListBuilder assigned to this PipelineEntry.
+     */
+    @Nullable public NotifSection getSection() {
+        return mAttachState.getSection();
+    }
+
+    /**
+     * @return True if this entry was attached in the last pass, else false.
+     */
+    public boolean wasAttachedInPreviousPass() {
+        return getPreviousAttachState().getParent() != null;
+    }
+
+    /**
+     * @return Index of section assigned to this entry.
+     */
+    public abstract int getSectionIndex();
+
+    /**
+     * @return Parent PipelineEntry
+     */
+    public abstract @Nullable PipelineEntry getParent();
+
+    /**
+     * @return Current state that ShadeListBuilder assigned to this PipelineEntry.
+     */
+    final ListAttachState getAttachState() {
+        return mAttachState;
+    }
+
+    /**
+     * @return Previous state that ShadeListBuilder assigned to this PipelineEntry.
+     */
+    final ListAttachState getPreviousAttachState() {
+        return mPreviousAttachState;
+    }
+
+    @PriorityBucket
+    public int getBucket() {
+        return mBucket;
+    }
+
+    public void setBucket(@PriorityBucket int bucket) {
+        mBucket = bucket;
+    }
 }

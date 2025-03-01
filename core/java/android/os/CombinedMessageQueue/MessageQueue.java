@@ -76,8 +76,13 @@ public final class MessageQueue {
     @SuppressWarnings("unused")
     private long mPtr; // used by native code
 
-    @UnsupportedAppUsage
+    @UnsupportedAppUsage(
+            maxTargetSdk = Build.VERSION_CODES.BAKLAVA,
+            publicAlternatives =
+                    "To manipulate the queue in Instrumentation tests, use {@link"
+                        + " android.os.TestLooperManager}")
     Message mMessages;
+
     private Message mLast;
     @UnsupportedAppUsage
     private final ArrayList<IdleHandler> mIdleHandlers = new ArrayList<IdleHandler>();
@@ -92,11 +97,8 @@ public final class MessageQueue {
     // queue for async messages when inserting a message at the tail.
     private int mAsyncMessageCount;
 
-    /**
-     * @hide
-     */
     private final AtomicLong mMessageCount = new AtomicLong();
-    private final Thread mThread;
+    private final String mThreadName;
     private final long mTid;
 
     /**
@@ -130,10 +132,10 @@ public final class MessageQueue {
 
     MessageQueue(boolean quitAllowed) {
         initIsProcessAllowedToUseConcurrent();
-        mUseConcurrent = sIsProcessAllowedToUseConcurrent && !isInstrumenting();
+        mUseConcurrent = sIsProcessAllowedToUseConcurrent;
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
-        mThread = Thread.currentThread();
+        mThreadName = Thread.currentThread().getName();
         mTid = Process.myTid();
     }
 
@@ -178,11 +180,6 @@ public final class MessageQueue {
 
         // We can lift these restrictions in the future after we've made it possible for test
         // authors to test Looper and MessageQueue without resorting to reflection.
-
-        // Holdback study.
-        if (sIsProcessAllowedToUseConcurrent && Flags.messageQueueForceLegacy()) {
-            sIsProcessAllowedToUseConcurrent = false;
-        }
     }
 
     @RavenwoodReplace
@@ -207,15 +204,6 @@ public final class MessageQueue {
         return;
     }
 
-    private static boolean isInstrumenting() {
-        final ActivityThread activityThread = ActivityThread.currentActivityThread();
-        if (activityThread == null) {
-            return false;
-        }
-        final Instrumentation instrumentation = activityThread.getInstrumentation();
-        return instrumentation != null && instrumentation.isInstrumenting();
-    }
-
     @Override
     protected void finalize() throws Throwable {
         try {
@@ -237,17 +225,21 @@ public final class MessageQueue {
 
         traceMessageCount();
         PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
-                .addFlow(msg.mEventId.get())
-                .addArg("receiving_thread", mThread.getName())
-                .addArg("delay", when - SystemClock.uptimeMillis())
-                .addArg("what", msg.what)
+                .setFlow(msg.mEventId.get())
+                .beginProto()
+                .beginNested(2004 /* message_queue */)
+                .addField(2 /* receiving_thread_name */, mThreadName)
+                .addField(3 /* message_code */, msg.what)
+                .addField(4 /* message_delay_ms */, when - SystemClock.uptimeMillis())
+                .endNested()
+                .endProto()
                 .emit();
     }
 
     /** @hide */
     private void traceMessageCount() {
         PerfettoTrace.counter(PerfettoTrace.MQ_CATEGORY, mMessageCount.get())
-                .usingThreadCounterTrack(mTid, mThread.getName())
+                .usingThreadCounterTrack(mTid, mThreadName)
                 .emit();
     }
 
@@ -1008,7 +1000,11 @@ public final class MessageQueue {
         }
     }
 
-    @UnsupportedAppUsage
+    @UnsupportedAppUsage(
+            maxTargetSdk = Build.VERSION_CODES.BAKLAVA,
+            publicAlternatives =
+                    "To manipulate the queue in Instrumentation tests, use {@link"
+                        + " android.os.TestLooperManager}")
     Message next() {
         if (mUseConcurrent) {
             return nextConcurrent();

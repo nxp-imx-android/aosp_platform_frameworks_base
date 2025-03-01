@@ -17,6 +17,8 @@
 package com.android.server.supervision;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
+import static android.Manifest.permission.MANAGE_USERS;
+import static android.Manifest.permission.QUERY_USERS;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import static com.android.internal.util.Preconditions.checkCallAuthorization;
@@ -62,6 +64,18 @@ import java.util.List;
 public class SupervisionService extends ISupervisionManager.Stub {
     private static final String LOG_TAG = "SupervisionService";
 
+    /**
+     * Activity action: Requests user confirmation of supervision credentials.
+     *
+     * <p>Use {@link Activity#startActivityForResult} to launch this activity. The result will be
+     * {@link Activity#RESULT_OK} if credentials are valid.
+     *
+     * <p>If supervision credentials are not configured, this action initiates the setup flow.
+     */
+    @VisibleForTesting
+    static final String ACTION_CONFIRM_SUPERVISION_CREDENTIALS =
+            "android.app.supervision.action.CONFIRM_SUPERVISION_CREDENTIALS";
+
     // TODO(b/362756788): Does this need to be a LockGuard lock?
     private final Object mLockDoNoUseDirectly = new Object();
 
@@ -86,6 +100,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
      */
     @Override
     public boolean isSupervisionEnabledForUser(@UserIdInt int userId) {
+        enforceAnyPermission(QUERY_USERS, MANAGE_USERS);
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -96,6 +111,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public void setSupervisionEnabledForUser(@UserIdInt int userId, boolean enabled) {
+        // TODO(b/395630828): Ensure that this method can only be called by the system.
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -114,6 +130,31 @@ public class SupervisionService extends ISupervisionManager.Stub {
         synchronized (getLockObject()) {
             return getUserDataLocked(userId).supervisionAppPackage;
         }
+    }
+
+    /**
+     * Creates an {@link Intent} that can be used with {@link Context#startActivity(Intent)} to
+     * launch the activity to verify supervision credentials.
+     *
+     * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this
+     * method is called, the launched activity still need to perform validity checks as the
+     * supervision state can change when it's launched. A null intent is returned if supervision is
+     * disabled at the time of this method call.
+     *
+     * <p>A result code of {@link android.app.Activity#RESULT_OK} indicates successful verification
+     * of the supervision credentials.
+     */
+    @Override
+    @Nullable
+    public Intent createConfirmSupervisionCredentialsIntent() {
+        // TODO(b/392961554): (1) Return null if supervision is not enabled.
+        // (2) check if PIN exists before return a valid intent.
+        enforceAnyPermission(QUERY_USERS, MANAGE_USERS);
+        final Intent intent = new Intent(ACTION_CONFIRM_SUPERVISION_CREDENTIALS);
+        // explicitly set the package for security
+        intent.setPackage("com.android.settings");
+
+        return intent;
     }
 
     @Override
@@ -181,8 +222,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
      * Ensures that supervision is enabled when the supervision app is the profile owner.
      *
      * <p>The state syncing with the DevicePolicyManager can only enable supervision and never
-     * disable. Supervision can only be disabled explicitly via calls to the
-     * {@link #setSupervisionEnabledForUser} method.
+     * disable. Supervision can only be disabled explicitly via calls to the {@link
+     * #setSupervisionEnabledForUser} method.
      */
     private void syncStateWithDevicePolicyManager(@UserIdInt int userId) {
         final DevicePolicyManagerInternal dpmInternal = mInjector.getDpmInternal();
@@ -219,6 +260,17 @@ public class SupervisionService extends ISupervisionManager.Stub {
     private void enforcePermission(String permission) {
         checkCallAuthorization(
                 mContext.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED);
+    }
+
+    /** Enforces that the caller has at least one of the given permission. */
+    private void enforceAnyPermission(String... permissions) {
+        boolean authorized = false;
+        for (String permission : permissions) {
+            if (mContext.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED) {
+                authorized = true;
+            }
+        }
+        checkCallAuthorization(authorized);
     }
 
     /** Provides local services in a lazy manner. */
@@ -280,7 +332,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         }
 
         @VisibleForTesting
-        @SuppressLint("MissingPermission")  // not needed for a system service
+        @SuppressLint("MissingPermission")
         void registerProfileOwnerListener() {
             IntentFilter poIntentFilter = new IntentFilter();
             poIntentFilter.addAction(DevicePolicyManager.ACTION_PROFILE_OWNER_CHANGED);

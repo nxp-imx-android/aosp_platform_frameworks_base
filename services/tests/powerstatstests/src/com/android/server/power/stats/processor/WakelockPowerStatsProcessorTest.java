@@ -31,6 +31,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.mock;
 
+import android.annotation.SuppressLint;
 import android.os.BatteryConsumer;
 import android.os.PersistableBundle;
 import android.os.Process;
@@ -123,6 +124,7 @@ public class WakelockPowerStatsProcessorTest {
         return history;
     }
 
+    @SuppressLint("CheckResult")
     private void assertAggregatedPowerStats(AggregatedPowerStats aggregatedPowerStats) {
         PowerComponentAggregatedPowerStats stats =
                 aggregatedPowerStats.getPowerComponentStats(POWER_COMPONENT_WAKELOCK);

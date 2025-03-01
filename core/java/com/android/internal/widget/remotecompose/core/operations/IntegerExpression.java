@@ -233,7 +233,7 @@ public class IntegerExpression extends Operation implements VariableSupport, Ser
     public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.EXPRESSION)
-                .add("type", CLASS_NAME)
+                .addType(CLASS_NAME)
                 .add("id", mId)
                 .add("mask", mId)
                 .addIntExpressionSrc("srcValues", mSrcValue, mMask);

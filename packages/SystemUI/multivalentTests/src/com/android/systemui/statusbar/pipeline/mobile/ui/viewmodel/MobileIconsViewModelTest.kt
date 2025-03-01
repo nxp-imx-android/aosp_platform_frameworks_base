@@ -21,8 +21,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.FakeFeatureFlagsClassic
-import com.android.systemui.flags.Flags
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
@@ -60,7 +58,6 @@ class MobileIconsViewModelTest : SysuiTestCase() {
 
     private lateinit var underTest: MobileIconsViewModel
     private val interactor = FakeMobileIconsInteractor(FakeMobileMappingsProxy(), mock())
-    private val flags = FakeFeatureFlagsClassic().also { it.set(Flags.NEW_NETWORK_SLICE_UI, false) }
 
     private lateinit var airplaneModeInteractor: AirplaneModeInteractor
     @Mock private lateinit var constants: ConnectivityConstants
@@ -88,7 +85,6 @@ class MobileIconsViewModelTest : SysuiTestCase() {
                 interactor,
                 airplaneModeInteractor,
                 constants,
-                flags,
                 testScope.backgroundScope,
             )
 
@@ -108,7 +104,7 @@ class MobileIconsViewModelTest : SysuiTestCase() {
                         isOpportunistic = false,
                         carrierName = "Carrier 1",
                         profileClass = PROFILE_CLASS_UNSET,
-                    ),
+                    )
                 )
             assertThat(latest).isEqualTo(listOf(1))
 

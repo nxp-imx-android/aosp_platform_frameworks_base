@@ -230,10 +230,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 pipBoundsState, mTouchState, mPipScheduler, mPipTransitionState, pipUiEventLogger,
                 menuController, this::getMovementBounds, mPipDisplayLayoutState, pipDesktopState,
                 mainExecutor, mPipPerfHintController);
-        mPipBoundsState.addOnAspectRatioChangedCallback(aspectRatio -> {
-            updateMinMaxSize(aspectRatio);
-            onAspectRatioChanged();
-        });
+        mPipBoundsState.addOnAspectRatioChangedCallback(aspectRatio -> onAspectRatioChanged());
 
         mMoveOnShelVisibilityChanged = () -> {
             if (mIsImeShowing && mImeHeight > mShelfHeight) {
@@ -418,15 +415,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
         mMainExecutor.executeDelayed(mMoveOnShelVisibilityChanged, PIP_KEEP_CLEAR_AREAS_DELAY);
     }
 
-    /**
-     * Called when SysUI state changed.
-     *
-     * @param isSysUiStateValid Is SysUI valid or not.
-     */
-    public void onSystemUiStateChanged(boolean isSysUiStateValid) {
-        mPipResizeGestureHandler.onSystemUiStateChanged(isSysUiStateValid);
-    }
-
     void adjustBoundsForRotation(Rect outBounds, Rect curBounds, Rect insetBounds) {
         final Rect toMovementBounds = new Rect();
         mPipBoundsAlgorithm.getMovementBounds(outBounds, insetBounds, toMovementBounds, 0);
@@ -480,8 +468,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                 mPipBoundsState.getExpandedBounds(), insetBounds, expandedMovementBounds,
                 bottomOffset);
 
-        updatePipSizeConstraints(normalBounds, aspectRatio);
-
         // The extra offset does not really affect the movement bounds, but are applied based on the
         // current state (ime showing, or shelf offset) when we need to actually shift
         int extraOffset = Math.max(
@@ -504,35 +490,6 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
             mSavedSnapFraction = -1f;
             mDeferResizeToNormalBoundsUntilRotation = -1;
         }
-    }
-
-    /**
-     * Update the values for min/max allowed size of picture in picture window based on the aspect
-     * ratio.
-     * @param aspectRatio aspect ratio to use for the calculation of min/max size
-     */
-    public void updateMinMaxSize(float aspectRatio) {
-        updatePipSizeConstraints(mPipBoundsState.getNormalBounds(),
-                aspectRatio);
-    }
-
-    private void updatePipSizeConstraints(Rect normalBounds,
-            float aspectRatio) {
-        if (mPipResizeGestureHandler.isUsingPinchToZoom()) {
-            updatePinchResizeSizeConstraints(aspectRatio);
-        } else {
-            mPipResizeGestureHandler.updateMinSize(normalBounds.width(), normalBounds.height());
-            mPipResizeGestureHandler.updateMaxSize(mPipBoundsState.getExpandedBounds().width(),
-                    mPipBoundsState.getExpandedBounds().height());
-        }
-    }
-
-    private void updatePinchResizeSizeConstraints(float aspectRatio) {
-        mPipBoundsState.updateMinMaxSize(aspectRatio);
-        mPipResizeGestureHandler.updateMinSize(mPipBoundsState.getMinSize().x,
-                mPipBoundsState.getMinSize().y);
-        mPipResizeGestureHandler.updateMaxSize(mPipBoundsState.getMaxSize().x,
-                mPipBoundsState.getMaxSize().y);
     }
 
     /**

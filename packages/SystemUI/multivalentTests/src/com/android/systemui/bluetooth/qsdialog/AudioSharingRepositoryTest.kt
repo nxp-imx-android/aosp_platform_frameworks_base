@@ -62,6 +62,7 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
             AudioSharingRepositoryImpl(
                 kosmos.localBluetoothManager,
                 kosmos.audioSharingRepository,
+                kosmos.bluetoothTileDialogLogger,
                 kosmos.testDispatcher,
             )
     }
@@ -95,6 +96,8 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
                 audioSharingRepository.setAudioSharingAvailable(true)
                 underTest.startAudioSharing()
                 verify(leAudioBroadcastProfile).startPrivateBroadcast()
+                verify(bluetoothTileDialogLogger)
+                    .logAudioSharingRequest(AudioSharingRequest.START_BROADCAST)
             }
         }
 
@@ -105,6 +108,8 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
                 audioSharingRepository.setAudioSharingAvailable(false)
                 underTest.startAudioSharing()
                 verify(leAudioBroadcastProfile, never()).startPrivateBroadcast()
+                verify(bluetoothTileDialogLogger, never())
+                    .logAudioSharingRequest(AudioSharingRequest.START_BROADCAST)
             }
         }
 
@@ -117,6 +122,8 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
                 audioSharingRepository.setAudioSharingAvailable(true)
                 underTest.stopAudioSharing()
                 verify(leAudioBroadcastProfile).stopLatestBroadcast()
+                verify(bluetoothTileDialogLogger)
+                    .logAudioSharingRequest(AudioSharingRequest.STOP_BROADCAST)
             }
         }
 
@@ -140,6 +147,7 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
                 runCurrent()
 
                 verify(leAudioBroadcastAssistant, never()).allConnectedDevices
+                verify(bluetoothTileDialogLogger, never()).logAudioSharingRequest(any())
             }
         }
 
@@ -157,6 +165,7 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
                 runCurrent()
 
                 verify(leAudioBroadcastAssistant, never()).allConnectedDevices
+                verify(bluetoothTileDialogLogger, never()).logAudioSharingRequest(any())
             }
         }
 
@@ -177,6 +186,7 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
                 runCurrent()
 
                 verify(leAudioBroadcastAssistant, never()).addSource(any(), any(), anyBoolean())
+                verify(bluetoothTileDialogLogger, never()).logAudioSharingRequest(any())
             }
         }
 
@@ -198,6 +208,8 @@ class AudioSharingRepositoryTest : SysuiTestCase() {
                 runCurrent()
 
                 verify(leAudioBroadcastAssistant).addSource(bluetoothDevice, metadata, false)
+                verify(bluetoothTileDialogLogger)
+                    .logAudioSharingRequest(AudioSharingRequest.ADD_SOURCE)
             }
         }
 }

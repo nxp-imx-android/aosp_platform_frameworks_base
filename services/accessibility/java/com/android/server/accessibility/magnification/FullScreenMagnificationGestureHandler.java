@@ -182,7 +182,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
     private final int mMinimumVelocity;
     private final int mMaximumVelocity;
 
-    private MouseEventHandler mMouseEventHandler;
+    private final MouseEventHandler mMouseEventHandler;
 
     public FullScreenMagnificationGestureHandler(
             @UiContext Context context,
@@ -194,8 +194,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
             boolean detectShortcutTrigger,
             @NonNull WindowMagnificationPromptController promptController,
             int displayId,
-            FullScreenMagnificationVibrationHelper fullScreenMagnificationVibrationHelper,
-            MouseEventHandler mouseEventHandler) {
+            FullScreenMagnificationVibrationHelper fullScreenMagnificationVibrationHelper) {
         this(
                 context,
                 fullScreenMagnificationController,
@@ -210,8 +209,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
                 /* magnificationLogger= */ null,
                 ViewConfiguration.get(context),
                 new OneFingerPanningSettingsProvider(
-                        context, Flags.enableMagnificationOneFingerPanningGesture()),
-                mouseEventHandler);
+                        context, Flags.enableMagnificationOneFingerPanningGesture()));
     }
 
     /** Constructor for tests. */
@@ -229,8 +227,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
             FullScreenMagnificationVibrationHelper fullScreenMagnificationVibrationHelper,
             MagnificationLogger magnificationLogger,
             ViewConfiguration viewConfiguration,
-            OneFingerPanningSettingsProvider oneFingerPanningSettingsProvider,
-            MouseEventHandler mouseEventHandler) {
+            OneFingerPanningSettingsProvider oneFingerPanningSettingsProvider) {
         super(displayId, detectSingleFingerTripleTap, detectTwoFingerTripleTap,
                 detectShortcutTrigger, trace, callback);
         if (DEBUG_ALL) {
@@ -316,7 +313,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
         mOverscrollEdgeSlop = context.getResources().getDimensionPixelSize(
                 R.dimen.accessibility_fullscreen_magnification_gesture_edge_slop);
         mIsWatch = context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
-        mMouseEventHandler = mouseEventHandler;
+        mMouseEventHandler = new MouseEventHandler(mFullScreenMagnificationController);
 
         if (mDetectShortcutTrigger) {
             mScreenStateReceiver = new ScreenStateReceiver(context, this);
@@ -340,15 +337,14 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
 
     @Override
     void handleMouseOrStylusEvent(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
-        if (Flags.enableMagnificationFollowsMouseBugfix()) {
-            if (mFullScreenMagnificationController.isActivated(mDisplayId)) {
-                // TODO(b/354696546): Allow mouse/stylus to activate whichever display they are
-                // over, rather than only interacting with the current display.
-
-                // Send through the mouse/stylus event handler.
-                mMouseEventHandler.onEvent(event, mDisplayId);
-            }
+        if (!mFullScreenMagnificationController.isActivated(mDisplayId)) {
+            return;
         }
+        // TODO(b/354696546): Allow mouse/stylus to activate whichever display they are
+        // over, rather than only interacting with the current display.
+
+        // Send through the mouse/stylus event handler.
+        mMouseEventHandler.onEvent(event, mDisplayId);
     }
 
     private void handleTouchEventWith(
@@ -1170,8 +1166,7 @@ public class FullScreenMagnificationGestureHandler extends MagnificationGestureH
 
         protected void cacheDelayedMotionEvent(MotionEvent event, MotionEvent rawEvent,
                 int policyFlags) {
-            if (Flags.enableMagnificationFollowsMouseBugfix()
-                    && !event.isFromSource(SOURCE_TOUCHSCREEN)) {
+            if (!event.isFromSource(SOURCE_TOUCHSCREEN)) {
                 // Only touch events need to be cached and sent later.
                 return;
             }

@@ -17,18 +17,24 @@
 package com.android.systemui.volume.dialog.ui.binder
 
 import android.app.Dialog
+import android.content.Context
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.view.WindowInsets
+import android.view.accessibility.AccessibilityEvent
 import androidx.compose.ui.util.lerp
-import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.view.updatePadding
 import androidx.dynamicanimation.animation.DynamicAnimation
 import androidx.dynamicanimation.animation.FloatValueHolder
 import androidx.dynamicanimation.animation.SpringAnimation
 import androidx.dynamicanimation.animation.SpringForce
+import com.android.app.tracing.coroutines.launchInTraced
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.internal.view.RotationPolicy
 import com.android.systemui.common.ui.view.onApplyWindowInsets
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
@@ -43,11 +49,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.scan
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 private const val SPRING_STIFFNESS = 700f
@@ -63,32 +68,52 @@ private const val ANIMATION_MINIMUM_VISIBLE_CHANGE = 0.01f
 class VolumeDialogViewBinder
 @Inject
 constructor(
+    @Application context: Context,
     private val viewModel: VolumeDialogViewModel,
     private val jankListenerFactory: JankListenerFactory,
     private val tracer: VolumeTracer,
     private val viewBinders: List<@JvmSuppressWildcards ViewBinder>,
 ) {
 
+    private val halfOpenedOffsetPx: Float =
+        context.resources.getDimensionPixelSize(R.dimen.volume_dialog_half_opened_offset).toFloat()
+
     fun CoroutineScope.bind(dialog: Dialog) {
         val insets: MutableStateFlow<WindowInsets> =
             MutableStateFlow(WindowInsets.Builder().build())
         // Root view of the Volume Dialog.
-        val root: MotionLayout = dialog.requireViewById(R.id.volume_dialog)
+        val root: ViewGroup = dialog.requireViewById(R.id.volume_dialog)
 
+        root.accessibilityDelegate = Accessibility(viewModel)
+        root.setOnHoverListener { _, event ->
+            viewModel.onHover(
+                event.actionMasked == MotionEvent.ACTION_HOVER_ENTER ||
+                    event.actionMasked == MotionEvent.ACTION_HOVER_MOVE
+            )
+            true
+        }
         animateVisibility(root, dialog, viewModel.dialogVisibilityModel)
 
-        viewModel.dialogTitle.onEach { dialog.window?.setTitle(it) }.launchIn(this)
-        viewModel.motionState
-            .scan(0) { acc, motionState ->
+        viewModel.dialogTitle
+            .filter { it.isNotEmpty() }
+            .onEach { dialog.window?.setTitle(it) }
+            .launchInTraced("VDVB#dialogTitle", this)
+        viewModel.isHalfOpened
+            .scan<Boolean, Boolean?>(null) { acc, isHalfOpened ->
                 // don't animate the initial state
-                root.transitionToState(motionState, animate = acc != 0)
-                acc + 1
+                root.applyVerticalOffset(
+                    offsetPx = if (isHalfOpened) halfOpenedOffsetPx else 0f,
+                    shouldAnimate = acc != null,
+                )
+                isHalfOpened
             }
-            .launchIn(this)
+            .launchInTraced("VDVB#isHalfOpened", this)
 
-        launch { root.viewTreeObserver.listenToComputeInternalInsets() }
+        launchTraced("VDVB#viewTreeObserver") {
+            root.viewTreeObserver.listenToComputeInternalInsets()
+        }
 
-        launch {
+        launchTraced("VDVB#insets") {
             root
                 .onApplyWindowInsets { v, newInsets ->
                     val insetsValues = newInsets.getInsets(WindowInsets.Type.displayCutout())
@@ -137,6 +162,7 @@ constructor(
                             jankListenerFactory.show(view).also(animation::addUpdateListener)
                         animation.suspendAnimate(FRACTION_SHOW)
                     }
+
                     is VolumeDialogVisibilityModel.Dismissed -> {
                         tracer.traceVisibilityEnd(it)
                         junkListener?.let(animation::removeUpdateListener)
@@ -145,12 +171,13 @@ constructor(
                         animation.suspendAnimate(FRACTION_HIDE)
                         dialog.dismiss()
                     }
+
                     is VolumeDialogVisibilityModel.Invisible -> {
                         // do nothing
                     }
                 }
             }
-            .launchIn(this)
+            .launchInTraced("VDVB#visibilityModel", this)
     }
 
     /**
@@ -180,11 +207,36 @@ constructor(
             continuation.invokeOnCancellation { removeOnComputeInternalInsetsListener(listener) }
         }
 
-    private fun MotionLayout.transitionToState(newState: Int, animate: Boolean) {
-        if (animate) {
-            transitionToState(newState)
-        } else {
-            jumpToState(newState)
+    private suspend fun View.applyVerticalOffset(offsetPx: Float, shouldAnimate: Boolean) {
+        if (!shouldAnimate) {
+            translationY = offsetPx
+            return
+        }
+        animate().setDuration(150).translationY(offsetPx).suspendAnimate()
+    }
+
+    private class Accessibility(private val viewModel: VolumeDialogViewModel) :
+        View.AccessibilityDelegate() {
+
+        override fun dispatchPopulateAccessibilityEvent(
+            host: View,
+            event: AccessibilityEvent,
+        ): Boolean {
+            // Activities populate their title here. Follow that example.
+            val title = viewModel.dialogTitle.value
+            if (title.isNotEmpty()) {
+                event.text.add(title)
+            }
+            return true
+        }
+
+        override fun onRequestSendAccessibilityEvent(
+            host: ViewGroup,
+            child: View,
+            event: AccessibilityEvent,
+        ): Boolean {
+            viewModel.resetDialogTimeout()
+            return super.onRequestSendAccessibilityEvent(host, child, event)
         }
     }
 }

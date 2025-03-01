@@ -14,6 +14,7 @@ import junit.framework.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.whenever
 
 /** Tests for {@link NotificationTargetsHelper}. */
 @SmallTest
@@ -21,7 +22,7 @@ import org.junit.runner.RunWith
 @RunWithLooper
 class NotificationTargetsHelperTest : SysuiTestCase() {
     private val featureFlags = FakeFeatureFlagsClassic()
-    lateinit var notificationTestHelper: NotificationTestHelper
+    private lateinit var notificationTestHelper: NotificationTestHelper
     private val sectionsManager: NotificationSectionsManager = mock()
     private val stackScrollLayout: NotificationStackScrollLayout = mock()
 
@@ -107,7 +108,12 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
         // THEN all the views that surround it become targets with the swiped view at the middle
         val actual =
             notificationTargetsHelper()
-                .findMagneticTargets(viewSwiped = swiped, stackScrollLayout = stackScrollLayout, 5)
+                .findMagneticTargets(
+                    viewSwiped = swiped,
+                    stackScrollLayout = stackScrollLayout,
+                    sectionsManager,
+                    totalMagneticTargets = 5,
+                )
         assertMagneticTargetsForChildren(actual, children.attachedChildren)
     }
 
@@ -123,7 +129,12 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
         // to the left
         val actual =
             notificationTargetsHelper()
-                .findMagneticTargets(viewSwiped = swiped, stackScrollLayout = stackScrollLayout, 5)
+                .findMagneticTargets(
+                    viewSwiped = swiped,
+                    stackScrollLayout = stackScrollLayout,
+                    sectionsManager,
+                    totalMagneticTargets = 5,
+                )
         val expectedRows =
             listOf(null, null, swiped, children.attachedChildren[1], children.attachedChildren[2])
         assertMagneticTargetsForChildren(actual, expectedRows)
@@ -141,7 +152,12 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
         // to the right
         val actual =
             notificationTargetsHelper()
-                .findMagneticTargets(viewSwiped = swiped, stackScrollLayout = stackScrollLayout, 5)
+                .findMagneticTargets(
+                    viewSwiped = swiped,
+                    stackScrollLayout = stackScrollLayout,
+                    sectionsManager,
+                    totalMagneticTargets = 5,
+                )
         val expectedRows =
             listOf(
                 children.attachedChildren[childrenNumber - 3],
@@ -150,6 +166,54 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
                 null,
                 null,
             )
+        assertMagneticTargetsForChildren(actual, expectedRows)
+    }
+
+    @Test
+    fun findMagneticTargets_doesNotCrossSectionAtTop() {
+        val childrenNumber = 5
+        val children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+
+        // WHEN the second child is swiped and the first one begins a new section
+        val swiped = children.attachedChildren[1]
+        whenever(sectionsManager.beginsSection(swiped, children.attachedChildren[0])).then { true }
+
+        // THEN the neighboring views become targets, with the swiped view at the middle and nulls
+        // to the left since the top view relative to swiped begins a new section
+        val actual =
+            notificationTargetsHelper()
+                .findMagneticTargets(
+                    viewSwiped = swiped,
+                    stackScrollLayout = stackScrollLayout,
+                    sectionsManager,
+                    totalMagneticTargets = 5,
+                )
+        val expectedRows =
+            listOf(null, null, swiped, children.attachedChildren[2], children.attachedChildren[3])
+        assertMagneticTargetsForChildren(actual, expectedRows)
+    }
+
+    @Test
+    fun findMagneticTargets_doesNotCrossSectionAtBottom() {
+        val childrenNumber = 5
+        val children = notificationTestHelper.createGroup(childrenNumber).childrenContainer
+
+        // WHEN the fourth child is swiped and the last one begins a new section
+        val swiped = children.attachedChildren[3]
+        whenever(sectionsManager.beginsSection(children.attachedChildren[4], swiped)).then { true }
+
+        // THEN the neighboring views become targets, with the swiped view at the middle and nulls
+        // to the right since the bottom view relative to swiped begins a new section
+        val actual =
+            notificationTargetsHelper()
+                .findMagneticTargets(
+                    viewSwiped = swiped,
+                    stackScrollLayout = stackScrollLayout,
+                    sectionsManager,
+                    totalMagneticTargets = 5,
+                )
+        val expectedRows =
+            listOf(children.attachedChildren[1], children.attachedChildren[2], swiped, null, null)
         assertMagneticTargetsForChildren(actual, expectedRows)
     }
 

@@ -27,6 +27,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.when;
 
+import android.annotation.SuppressLint;
 import android.hardware.power.stats.EnergyConsumerType;
 import android.os.BatteryConsumer;
 import android.os.Handler;
@@ -166,6 +167,7 @@ public class AmbientDisplayPowerStatsProcessorTest {
         return stats.getPowerComponentStats(BatteryConsumer.POWER_COMPONENT_AMBIENT_DISPLAY);
     }
 
+    @SuppressLint("CheckResult")
     private void assertPowerEstimate(
             PowerComponentAggregatedPowerStats aggregatedStats,
             int powerState, int screenState, double expectedPowerEstimate) {

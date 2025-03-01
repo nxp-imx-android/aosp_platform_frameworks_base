@@ -22,6 +22,8 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.FakeAccessibilityRepository
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.testKosmos
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -32,12 +34,16 @@ import org.junit.runner.RunWith
 @SmallTest
 class ActivatableNotificationViewModelTest : SysuiTestCase() {
 
+    private val kosmos = testKosmos()
+
     // fakes
     private val a11yRepo = FakeAccessibilityRepository()
 
     // real impls
     private val a11yInteractor = AccessibilityInteractor(a11yRepo)
-    private val underTest = ActivatableNotificationViewModel(a11yInteractor)
+    private val windowRootViewBlurInteractor = kosmos.windowRootViewBlurInteractor
+    private val underTest = ActivatableNotificationViewModel(a11yInteractor,
+        windowRootViewBlurInteractor)
 
     @Test
     fun isTouchable_whenA11yTouchExplorationDisabled() = runTest {

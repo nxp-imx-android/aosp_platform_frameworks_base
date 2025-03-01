@@ -86,6 +86,7 @@ import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataS
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.phone.data.repository.fakeDarkIconRepository
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarIconBlockList
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarInteractorShowOperatorName
@@ -521,11 +522,12 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneBouncer_false() =
+    fun isHomeStatusBarAllowedByScene_overlayBouncer_false() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
 
-            kosmos.sceneContainerRepository.snapToScene(Scenes.Bouncer)
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
 
             assertThat(latest).isFalse()
         }
@@ -674,6 +676,60 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
 
             // THEN we still show the operator name view if NoHunBehavior flag is enabled
             assertThat(latest).isTrue()
+        }
+
+    @Test
+    fun canShowOngoingActivityChips_statusBarHidden_noSecureCamera_noHun_false() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            // home status bar not allowed
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_noHun_true() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    fun canShowOngoingActivityChips_statusBarNotHidden_secureCamera_noHun_false() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.OCCLUDED,
+                testScope = testScope,
+            )
+            kosmos.keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hun_false() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest).isFalse()
         }
 
     @Test
@@ -835,7 +891,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
+    @EnableChipsModernization
     fun isNotificationIconContainerVisible_anyChipShowing_ChipsModernizationOn() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
@@ -997,7 +1053,8 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
             val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
 
-            kosmos.sceneContainerRepository.snapToScene(Scenes.Bouncer)
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
 
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)

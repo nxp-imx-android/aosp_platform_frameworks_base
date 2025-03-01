@@ -64,6 +64,13 @@
     <integer name="auto_data_switch_performance_stability_time_threshold_millis">120000</integer>
     <java-symbol type="integer" name="auto_data_switch_performance_stability_time_threshold_millis" />
 
+    <!-- Define the bar for switching data back to the default SIM when both SIMs are out of service
+         in milliseconds. A value of 0 means an immediate switch, otherwise for a negative value,
+         the threshold defined by auto_data_switch_availability_stability_time_threshold_millis
+         will be used instead. -->
+    <integer name="auto_data_switch_availability_switchback_stability_time_threshold_millis">150000</integer>
+    <java-symbol type="integer" name="auto_data_switch_availability_switchback_stability_time_threshold_millis" />
+
     <!-- Define the maximum retry times when a validation for switching failed.-->
     <integer name="auto_data_switch_validation_max_retry">7</integer>
     <java-symbol type="integer" name="auto_data_switch_validation_max_retry" />
@@ -517,4 +524,9 @@
          capabilities. -->
     <string-array name="config_unsupported_network_capabilities" translatable="false"></string-array>
     <java-symbol type="array" name="config_unsupported_network_capabilities" />
+
+    <!-- Whether to enable APDU sender optimization i.e. a logical channel is opened and
+         kept open for multiple APDU commands within one session.-->
+    <bool name="euicc_optimize_apdu_sender">false</bool>
+    <java-symbol type="bool" name="euicc_optimize_apdu_sender" />
 </resources>

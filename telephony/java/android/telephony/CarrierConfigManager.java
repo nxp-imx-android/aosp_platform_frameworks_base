@@ -9786,7 +9786,6 @@ public class CarrierConfigManager {
      * <p>
      * This config is empty by default.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_CARRIER_SUPPORTED_SATELLITE_SERVICES_PER_PROVIDER_BUNDLE =
             "carrier_supported_satellite_services_per_provider_bundle";
 
@@ -9826,7 +9825,6 @@ public class CarrierConfigManager {
      *
      * The default value is false.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_SATELLITE_ATTACH_SUPPORTED_BOOL =
             "satellite_attach_supported_bool";
 
@@ -9848,7 +9846,6 @@ public class CarrierConfigManager {
      * <p>
      * The default value is 180 seconds.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_SATELLITE_CONNECTION_HYSTERESIS_SEC_INT =
             "satellite_connection_hysteresis_sec_int";
 
@@ -9863,7 +9860,6 @@ public class CarrierConfigManager {
      * See SignalStrength#MAX_LTE_RSRP and SignalStrength#MIN_LTE_RSRP. Any signal level outside
      * these boundaries is considered invalid.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_NTN_LTE_RSRP_THRESHOLDS_INT_ARRAY =
             "ntn_lte_rsrp_thresholds_int_array";
 
@@ -9883,7 +9879,6 @@ public class CarrierConfigManager {
      * This key is considered invalid if the format is violated. If the key is invalid or
      * not configured, a default value set will apply.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_NTN_LTE_RSRQ_THRESHOLDS_INT_ARRAY =
             "ntn_lte_rsrq_thresholds_int_array";
 
@@ -9901,7 +9896,6 @@ public class CarrierConfigManager {
      * This key is considered invalid if the format is violated. If the key is invalid or
      * not configured, a default value set will apply.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_NTN_LTE_RSSNR_THRESHOLDS_INT_ARRAY =
             "ntn_lte_rssnr_thresholds_int_array";
 
@@ -9926,7 +9920,6 @@ public class CarrierConfigManager {
      * If the key is invalid or not configured, a default value (RSRP = 1 << 0) will apply.
      *
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_PARAMETERS_USED_FOR_NTN_LTE_SIGNAL_BAR_INT =
             "parameters_used_for_ntn_lte_signal_bar_int";
 
@@ -10018,7 +10011,6 @@ public class CarrierConfigManager {
      *
      * The default value is 7 days.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT =
             "satellite_entitlement_status_refresh_days_int";
 
@@ -10029,7 +10021,6 @@ public class CarrierConfigManager {
      *
      * The default value is false.
      */
-    @FlaggedApi(Flags.FLAG_CARRIER_ENABLED_SATELLITE_FLAG)
     public static final String KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL =
             "satellite_entitlement_supported_bool";
 

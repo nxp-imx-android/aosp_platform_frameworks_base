@@ -990,6 +990,8 @@ public class InputMethodService extends AbstractInputMethodService {
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             if (android.view.inputmethod.Flags.refactorInsetsController()) {
+                // After the IME window was hidden, we can remove its surface
+                scheduleImeSurfaceRemoval();
                 // The hide request first finishes the animation and then proceeds to the server
                 // side, finally reaching here, marking this the end state.
                 ImeTracker.forLogging().onHidden(statsToken);

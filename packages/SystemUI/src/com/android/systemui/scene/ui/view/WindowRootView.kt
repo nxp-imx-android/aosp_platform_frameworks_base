@@ -21,6 +21,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.util.Pair
 import android.view.DisplayCutout
+import android.view.KeyEvent
 import android.view.View
 import android.view.WindowInsets
 import android.widget.FrameLayout
@@ -37,6 +38,11 @@ open class WindowRootView(context: Context, attrs: AttributeSet?) : FrameLayout(
     private var rightInset = 0
 
     private var previousInsets: WindowInsets? = null
+    private lateinit var windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler
+
+    fun setWindowRootViewKeyEventHandler(wrvkeh: WindowRootViewKeyEventHandler) {
+        windowRootViewKeyEventHandler = wrvkeh
+    }
 
     override fun onAttachedToWindow() {
         super.onAttachedToWindow()
@@ -135,6 +141,24 @@ open class WindowRootView(context: Context, attrs: AttributeSet?) : FrameLayout(
     private fun isRoot(): Boolean {
         // TODO(b/283300105): remove this check once there's only one subclass of WindowRootView.
         return parent.let { it !is View || it.id == android.R.id.content }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        windowRootViewKeyEventHandler.collectKeyEvent(event)
+
+        if (windowRootViewKeyEventHandler.interceptMediaKey(event)) {
+            return true
+        }
+
+        if (super.dispatchKeyEvent(event)) {
+            return true
+        }
+
+        return windowRootViewKeyEventHandler.dispatchKeyEvent(event)
+    }
+
+    override fun dispatchKeyEventPreIme(event: KeyEvent): Boolean {
+        return windowRootViewKeyEventHandler.dispatchKeyEventPreIme(event) ?: false
     }
 
     /** Controller responsible for calculating insets for the shade window. */

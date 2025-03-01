@@ -50,6 +50,7 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.Accessibilit
 import androidx.core.view.isGone
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
+import com.android.wm.shell.bubbles.ContextUtils.isRtl
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
@@ -60,6 +61,8 @@ import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewCo
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.calculateMenuPosition
+import com.android.wm.shell.windowdecor.common.DrawableInsets
+import com.android.wm.shell.windowdecor.common.createRippleDrawable
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.isPinned
@@ -70,6 +73,7 @@ import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 
 /**
  * Handle menu opened when the appropriate button is clicked on.
@@ -467,6 +471,33 @@ class HandleMenu(
         val rootView = LayoutInflater.from(context)
             .inflate(R.layout.desktop_mode_window_decor_handle_menu, null /* root */) as View
 
+        private val windowingButtonRippleRadius = context.resources
+            .getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_windowing_action_ripple_radius)
+        private val windowingButtonDrawableInsets = DrawableInsets(
+            vertical = context.resources
+                .getDimensionPixelSize(
+                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base),
+            horizontal = context.resources
+                .getDimensionPixelSize(
+                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base)
+        )
+        private val windowingButtonDrawableInsetsLeft = DrawableInsets(
+            vertical = context.resources
+                .getDimensionPixelSize(
+                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base),
+            horizontalLeft = context.resources
+                .getDimensionPixelSize(
+                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_shift),
+        )
+        private val windowingButtonDrawableInsetsRight = DrawableInsets(
+            vertical = context.resources
+                .getDimensionPixelSize(
+                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base),
+            horizontalRight = context.resources
+                .getDimensionPixelSize(
+                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_shift)
+        )
+
         // App Info Pill.
         private val appInfoPill = rootView.requireViewById<View>(R.id.app_info_pill)
         private val collapseMenuButton = appInfoPill.requireViewById<HandleMenuImageButton>(
@@ -708,6 +739,49 @@ class HandleMenu(
             desktopBtn.isSelected = taskInfo.isFreeform
             desktopBtn.isEnabled = !taskInfo.isFreeform
             desktopBtn.imageTintList = style.windowingButtonColor
+
+            val startInsets = if (context.isRtl) {
+                windowingButtonDrawableInsetsRight
+            } else {
+                windowingButtonDrawableInsetsLeft
+            }
+            val endInsets = if (context.isRtl) {
+                windowingButtonDrawableInsetsLeft
+            } else {
+                windowingButtonDrawableInsetsRight
+            }
+
+            fullscreenBtn.apply {
+                background = createRippleDrawable(
+                    color = style.textColor,
+                    cornerRadius = windowingButtonRippleRadius,
+                    drawableInsets = startInsets
+                )
+            }
+
+            splitscreenBtn.apply {
+                background = createRippleDrawable(
+                    color = style.textColor,
+                    cornerRadius = windowingButtonRippleRadius,
+                    drawableInsets = windowingButtonDrawableInsets
+                )
+            }
+
+            floatingBtn.apply {
+                background = createRippleDrawable(
+                    color = style.textColor,
+                    cornerRadius = windowingButtonRippleRadius,
+                    drawableInsets = windowingButtonDrawableInsets
+                )
+            }
+
+            desktopBtn.apply {
+                background = createRippleDrawable(
+                    color = style.textColor,
+                    cornerRadius = windowingButtonRippleRadius,
+                    drawableInsets = endInsets
+                )
+            }
         }
 
         private fun bindMoreActionsPill(style: MenuStyle) {

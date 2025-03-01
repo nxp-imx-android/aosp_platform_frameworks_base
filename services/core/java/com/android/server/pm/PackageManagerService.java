@@ -34,6 +34,7 @@ import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_UNSET;
 import static android.crashrecovery.flags.Flags.refactorCrashrecovery;
 import static android.os.Process.INVALID_UID;
 import static android.os.Trace.TRACE_TAG_PACKAGE_MANAGER;
+import static android.os.UserHandle.USER_ALL;
 import static android.os.storage.StorageManager.FLAG_STORAGE_CE;
 import static android.os.storage.StorageManager.FLAG_STORAGE_DE;
 import static android.os.storage.StorageManager.FLAG_STORAGE_EXTERNAL;
@@ -50,12 +51,14 @@ import android.annotation.AppIdInt;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.StringRes;
 import android.annotation.UserIdInt;
 import android.annotation.WorkerThread;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AppOpsManager;
+import android.app.AppOpsManagerInternal;
 import android.app.ApplicationExitInfo;
 import android.app.ApplicationPackageManager;
 import android.app.BroadcastOptions;
@@ -1586,13 +1589,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     void scheduleWritePackageRestrictions(UserHandle user) {
-        final int userId = user == null ? UserHandle.USER_ALL : user.getIdentifier();
+        final int userId = user == null ? USER_ALL : user.getIdentifier();
         scheduleWritePackageRestrictions(userId);
     }
 
-    void scheduleWritePackageRestrictions(int userId) {
+    void scheduleWritePackageRestrictions(@CanBeALL @UserIdInt int userId) {
         invalidatePackageInfoCache();
-        if (userId == UserHandle.USER_ALL) {
+        if (userId == USER_ALL) {
             synchronized (mDirtyUsers) {
                 for (int aUserId : mUserManager.getUserIds()) {
                     mDirtyUsers.add(aUserId);
@@ -1690,6 +1693,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 (i, pm) -> new ComponentResolver(i.getUserManagerService(), pm.mUserNeedsBadging),
                 (i, pm) -> PermissionManagerService.create(context,
                         i.getSystemConfig().getAvailableFeatures()),
+                (i, pm) -> LocalServices.getService(AppOpsManagerInternal.class),
                 (i, pm) -> new UserManagerService(context, pm,
                         new UserDataPreparer(installer, installLock, context), lock),
                 (i, pm) -> new Settings(Environment.getDataDirectory(),
@@ -1805,7 +1809,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     private void installAllowlistedSystemPackages() {
         if (mUserManager.installWhitelistedSystemPackages(isFirstBoot(), isDeviceUpgrading(),
                 mExistingPackages)) {
-            scheduleWritePackageRestrictions(UserHandle.USER_ALL);
+            scheduleWritePackageRestrictions(USER_ALL);
             scheduleWriteSettings();
         }
     }
@@ -2392,7 +2396,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                     final PackageSetting ps = packageSettings.valueAt(i);
                     if (Objects.equals(StorageManager.UUID_PRIVATE_INTERNAL, ps.getVolumeUuid())) {
                         // No apps are running this early, so no need to freeze
-                        mAppDataHelper.clearAppDataLIF(ps.getPkg(), UserHandle.USER_ALL,
+                        mAppDataHelper.clearAppDataLIF(ps.getPkg(), USER_ALL,
                                 FLAG_STORAGE_DE | FLAG_STORAGE_CE | FLAG_STORAGE_EXTERNAL
                                         | Installer.FLAG_CLEAR_CODE_CACHE_ONLY
                                         | Installer.FLAG_CLEAR_APP_DATA_KEEP_ART_PROFILES);
@@ -3074,8 +3078,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     @NonNull
-    int[] resolveUserIds(int userId) {
-        return (userId == UserHandle.USER_ALL) ? mUserManager.getUserIds() : new int[] { userId };
+    int[] resolveUserIds(@CanBeALL @UserIdInt int userId) {
+        return (userId == USER_ALL) ? mUserManager.getUserIds() : new int[]{userId};
     }
 
     private void setUpInstantAppInstallerActivityLP(ActivityInfo installerActivity) {
@@ -3108,11 +3112,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     void killApplication(String pkgName, @AppIdInt int appId, String reason, int exitInfoReason) {
-        killApplication(pkgName, appId, UserHandle.USER_ALL, reason, exitInfoReason);
+        killApplication(pkgName, appId, USER_ALL, reason, exitInfoReason);
     }
 
     void killApplication(String pkgName, @AppIdInt int appId,
-            @UserIdInt int userId, String reason, int exitInfoReason) {
+            @CanBeALL @UserIdInt int userId, String reason, int exitInfoReason) {
         // Request the ActivityManager to kill the process(only for existing packages)
         // so that we do not end up in a confused state while the user is still using the older
         // version of the application while the new one gets installed.
@@ -3131,7 +3135,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     void killApplicationSync(String pkgName, @AppIdInt int appId,
-            @UserIdInt int userId, String reason, int exitInfoReason) {
+            @CanBeALL @UserIdInt int userId, String reason, int exitInfoReason) {
         ActivityManagerInternal mAmi = LocalServices.getService(ActivityManagerInternal.class);
         if (Thread.holdsLock(mLock) || mAmi == null) {
             // holds PM's lock, go back killApplication to avoid it run into watchdog reset.
@@ -3228,23 +3232,24 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     }
 
     /**
-     * @param inAllUsers Whether to unsuspend packages suspended by the given package in other
-     *                   users. This flag is only used when cross-user suspension is enabled.
+     * @param suspendingUserId The user that has suspended apps using the suspending package.
+     * @param targetUserId The user whose apps should be unsuspended. Pass {@code USER_ALL} to
+     *                     unsuspend for all users.
      */
     void unsuspendForSuspendingPackage(@NonNull Computer computer, String suspendingPackage,
-            @UserIdInt int suspendingUserId, boolean inAllUsers) {
+            @UserIdInt int suspendingUserId, @CanBeALL @UserIdInt int targetUserId) {
         // TODO: This can be replaced by a special parameter to iterate all packages, rather than
         //  this weird pre-collect of all packages.
         final String[] allPackages = computer.getPackageStates().keySet().toArray(new String[0]);
         final Predicate<UserPackage> suspenderPredicate =
                 UserPackage.of(suspendingUserId, suspendingPackage)::equals;
-        if (!crossUserSuspensionEnabledRo() || !inAllUsers) {
+        if (!crossUserSuspensionEnabledRo() || targetUserId != USER_ALL) {
             mSuspendPackageHelper.removeSuspensionsBySuspendingPackage(computer,
-                    allPackages, suspenderPredicate, suspendingUserId);
+                    allPackages, suspenderPredicate, targetUserId);
         } else {
-            for (int targetUserId: mUserManager.getUserIds()) {
+            for (int user : mUserManager.getUserIds()) {
                 mSuspendPackageHelper.removeSuspensionsBySuspendingPackage(
-                        computer, allPackages, suspenderPredicate, targetUserId);
+                        computer, allPackages, suspenderPredicate, user);
             }
         }
     }
@@ -3381,11 +3386,11 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 && !snapshot.isCallerSameApp(packageName, callingUid)) {
             return false;
         }
-        return isPackageDeviceAdmin(packageName, UserHandle.USER_ALL);
+        return isPackageDeviceAdmin(packageName, USER_ALL);
     }
 
     // TODO(b/261957226): centralise this logic in DPM
-    boolean isPackageDeviceAdmin(String packageName, int userId) {
+    boolean isPackageDeviceAdmin(String packageName, @CanBeALL @UserIdInt int userId) {
         final IDevicePolicyManager dpm = getDevicePolicyManager();
         final DevicePolicyManagerInternal dpmi =
                 mInjector.getLocalService(DevicePolicyManagerInternal.class);
@@ -3405,7 +3410,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 // Does it contain a device admin for any user?
                 int[] allUsers = mUserManager.getUserIds();
                 int[] targetUsers;
-                if (userId == UserHandle.USER_ALL) {
+                if (userId == USER_ALL) {
                     targetUsers = allUsers;
                 } else {
                     targetUsers = new int[]{userId};
@@ -3555,7 +3560,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     /** This method takes a specific user id as well as UserHandle.USER_ALL. */
     @GuardedBy("mLock")
     void clearPackagePreferredActivitiesLPw(String packageName,
-            @NonNull SparseBooleanArray outUserChanged, int userId) {
+            @NonNull SparseBooleanArray outUserChanged, @CanBeALL @UserIdInt int userId) {
         mSettings.clearPackagePreferredActivities(packageName, outUserChanged, userId);
     }
 
@@ -4152,7 +4157,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 // This app should not generally be allowed to get disabled by the UI, but
                 // if it ever does, we don't want to end up with some of the user's apps
                 // permanently suspended.
-                unsuspendForSuspendingPackage(computer, packageName, userId, true /* inAllUsers */);
+                unsuspendForSuspendingPackage(computer, packageName, userId, USER_ALL);
                 removeAllDistractingPackageRestrictions(computer, userId);
             }
             success = true;
@@ -4243,9 +4248,9 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         };
         mContext.getContentResolver().registerContentObserver(android.provider.Settings.Global
                         .getUriFor(Global.ENABLE_EPHEMERAL_FEATURE),
-                false, co, UserHandle.USER_ALL);
+                false, co, USER_ALL);
         mContext.getContentResolver().registerContentObserver(android.provider.Settings.Secure
-                .getUriFor(Secure.INSTANT_APPS_ENABLED), false, co, UserHandle.USER_ALL);
+                .getUriFor(Secure.INSTANT_APPS_ENABLED), false, co, USER_ALL);
         co.onChange(true);
 
         mAppsFilter.onSystemReady(LocalServices.getService(PackageManagerInternal.class));
@@ -4388,14 +4393,14 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         }
     }
 
-    public PackageFreezer freezePackage(String packageName, int userId, String killReason,
-            int exitInfoReason, InstallRequest request) {
+    public PackageFreezer freezePackage(String packageName, @CanBeALL @UserIdInt int userId,
+            String killReason, int exitInfoReason, InstallRequest request) {
         return freezePackage(packageName, userId, killReason, exitInfoReason, request,
                 /* waitAppKilled= */ false);
     }
 
-    private PackageFreezer freezePackage(String packageName, int userId, String killReason,
-            int exitInfoReason, InstallRequest request, boolean waitAppKilled) {
+    private PackageFreezer freezePackage(String packageName, @CanBeALL @UserIdInt int userId,
+            String killReason, int exitInfoReason, InstallRequest request, boolean waitAppKilled) {
         return new PackageFreezer(packageName, userId, killReason, this, exitInfoReason, request,
                 waitAppKilled);
     }
@@ -4773,7 +4778,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             final Computer snapshot = snapshotComputer();
             final AndroidPackage pkg = snapshot.getPackage(packageName);
             try (PackageFreezer ignored =
-                            freezePackage(packageName, UserHandle.USER_ALL,
+                            freezePackage(packageName, USER_ALL,
                                     "clearApplicationProfileData",
                                     ApplicationExitInfo.REASON_OTHER, null /* request */)) {
                 try (PackageManagerTracedLock installLock = mInstallLock.acquireLock()) {
@@ -4819,7 +4824,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                 public void run() {
                     mHandler.removeCallbacks(this);
                     final boolean succeeded;
-                    try (PackageFreezer freezer = freezePackage(packageName, UserHandle.USER_ALL,
+                    try (PackageFreezer freezer = freezePackage(packageName, USER_ALL,
                             "clearApplicationUserData",
                             ApplicationExitInfo.REASON_USER_REQUESTED, null /* request */,
                             /* waitAppKilled= */ true)) {
@@ -4846,7 +4851,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                                 == PERMISSION_GRANTED) {
                             final Computer snapshot = snapshotComputer();
                             unsuspendForSuspendingPackage(
-                                    snapshot, packageName, userId, true /* inAllUsers */);
+                                    snapshot, packageName, userId, USER_ALL);
                             removeAllDistractingPackageRestrictions(snapshot, userId);
                             synchronized (mLock) {
                                 flushPackageRestrictionsAsUserInternalLocked(userId);
@@ -6371,13 +6376,13 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             if (mComponentResolver.updateMimeGroup(snapshotComputer(), packageName, mimeGroup)) {
                 Binder.withCleanCallingIdentity(() -> {
                     mPreferredActivityHelper.clearPackagePreferredActivities(packageName,
-                            UserHandle.USER_ALL);
+                            USER_ALL);
                     // Send the ACTION_PACKAGE_CHANGED when the mimeGroup has changes
                     final Computer snapShot = snapshotComputer();
                     final ArrayList<String> components = new ArrayList<>(
                             Collections.singletonList(packageName));
                     final int appId = packageState.getAppId();
-                    final int[] userIds = resolveUserIds(UserHandle.USER_ALL);
+                    final int[] userIds = resolveUserIds(USER_ALL);
                     final String reason = "The mimeGroup is changed";
                     for (int i = 0; i < userIds.length; i++) {
                         final PackageUserStateInternal pkgUserState =

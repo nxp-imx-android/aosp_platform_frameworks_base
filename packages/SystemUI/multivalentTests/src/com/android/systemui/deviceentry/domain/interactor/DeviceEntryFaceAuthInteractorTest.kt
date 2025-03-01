@@ -55,12 +55,14 @@ import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.se
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.eq
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.TestScope
@@ -73,6 +75,7 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
@@ -80,21 +83,26 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
     private val testScope: TestScope = kosmos.testScope
 
     private lateinit var underTest: SystemUIDeviceEntryFaceAuthInteractor
+
     private val bouncerRepository = kosmos.fakeKeyguardBouncerRepository
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
-    private val keyguardTransitionInteractor = kosmos.keyguardTransitionInteractor
     private val faceAuthRepository = kosmos.fakeDeviceEntryFaceAuthRepository
     private val fakeUserRepository = kosmos.fakeUserRepository
     private val facePropertyRepository = kosmos.facePropertyRepository
-    private val fakeDeviceEntryFingerprintAuthInteractor =
-        kosmos.deviceEntryFingerprintAuthInteractor
-    private val powerInteractor = kosmos.powerInteractor
     private val fakeBiometricSettingsRepository = kosmos.fakeBiometricSettingsRepository
 
-    private val keyguardUpdateMonitor = kosmos.keyguardUpdateMonitor
+    private val keyguardUpdateMonitor by lazy { kosmos.keyguardUpdateMonitor }
     private val faceWakeUpTriggersConfig = kosmos.fakeFaceWakeUpTriggersConfig
     private val trustManager = kosmos.trustManager
-    private val deviceEntryFaceAuthStatusInteractor = kosmos.deviceEntryFaceAuthStatusInteractor
+
+    private val keyguardTransitionInteractor by lazy { kosmos.keyguardTransitionInteractor }
+    private val fakeDeviceEntryFingerprintAuthInteractor by lazy {
+        kosmos.deviceEntryFingerprintAuthInteractor
+    }
+    private val powerInteractor by lazy { kosmos.powerInteractor }
+    private val deviceEntryFaceAuthStatusInteractor by lazy {
+        kosmos.deviceEntryFaceAuthStatusInteractor
+    }
 
     @Before
     fun setup() {
@@ -291,9 +299,12 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
         testScope.runTest {
             underTest.start()
 
-            kosmos.sceneInteractor.changeScene(Scenes.Bouncer, "for-test")
+            kosmos.sceneInteractor.snapToScene(Scenes.Lockscreen, "for-test")
+            kosmos.sceneInteractor.showOverlay(Overlays.Bouncer, "for-test")
             kosmos.sceneInteractor.setTransitionState(
-                MutableStateFlow(ObservableTransitionState.Idle(Scenes.Bouncer))
+                MutableStateFlow(
+                    ObservableTransitionState.Idle(Scenes.Lockscreen, setOf(Overlays.Bouncer))
+                )
             )
 
             runCurrent()

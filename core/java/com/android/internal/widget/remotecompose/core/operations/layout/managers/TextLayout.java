@@ -280,7 +280,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                 + " x "
                 + mHeight
                 + ") "
-                + mVisibility;
+                + Visibility.toString(mVisibility);
     }
 
     @NonNull
@@ -308,7 +308,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                         + ", "
                         + mHeight
                         + "] "
-                        + mVisibility
+                        + Visibility.toString(mVisibility)
                         + " ("
                         + mTextId
                         + ":\""
@@ -343,7 +343,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
             flags |= PaintContext.TEXT_COMPLEX;
         }
         context.getTextBounds(mTextId, 0, mCachedString.length(), flags, bounds);
-        if (bounds[2] - bounds[1] > maxWidth && mMaxLines > 1) {
+        if (bounds[2] - bounds[1] > maxWidth && mMaxLines > 1 && maxWidth > 0f) {
             mComputedTextLayout =
                     context.layoutComplexText(
                             mTextId,
@@ -375,12 +375,12 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
     }
 
     @Override
-    public float intrinsicHeight(@Nullable RemoteContext context) {
+    public float minIntrinsicHeight(@Nullable RemoteContext context) {
         return mTextH;
     }
 
     @Override
-    public float intrinsicWidth(@Nullable RemoteContext context) {
+    public float minIntrinsicWidth(@Nullable RemoteContext context) {
         return mTextW;
     }
 

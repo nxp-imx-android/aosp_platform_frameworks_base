@@ -35,6 +35,8 @@ import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 import androidx.preference.Preference;
@@ -43,6 +45,9 @@ import androidx.preference.PreferenceViewHolder;
 import com.android.settingslib.widget.preference.banner.R;
 
 import com.google.android.material.button.MaterialButton;
+
+import java.util.Objects;
+
 /**
  * Banner message is a banner displaying important information (permission request, page error etc),
  * and provide actions for user to address. It requires a user action to be dismissed.
@@ -67,13 +72,15 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
                 R.color.banner_accent_attention_normal,
                 R.color.settingslib_banner_button_background_normal);
 
-        // Corresponds to the enum valye of R.attr.attentionLevel
+        // Corresponds to the enum value of R.attr.attentionLevel
         private final int mAttrValue;
         @ColorRes private final int mBackgroundColorResId;
         @ColorRes private final int mAccentColorResId;
         @ColorRes private final int mButtonBackgroundColorResId;
 
-        AttentionLevel(int attrValue, @ColorRes int backgroundColorResId,
+        AttentionLevel(
+                int attrValue,
+                @ColorRes int backgroundColorResId,
                 @ColorRes int accentColorResId,
                 @ColorRes int buttonBackgroundColorResId) {
             mAttrValue = attrValue;
@@ -115,33 +122,38 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
             new BannerMessagePreference.DismissButtonInfo();
 
     // Default attention level is High.
-    private AttentionLevel mAttentionLevel = AttentionLevel.HIGH;
-    private CharSequence mSubtitle;
-    private CharSequence mHeader;
+    @NonNull private AttentionLevel mAttentionLevel = AttentionLevel.HIGH;
+    @Nullable private CharSequence mSubtitle;
+    @Nullable private CharSequence mHeader;
     private int mButtonOrientation;
+    @Nullable private ResolutionAnimator.Data mResolutionData;
 
-    public BannerMessagePreference(Context context) {
+    public BannerMessagePreference(@NonNull Context context) {
         super(context);
         init(context, null /* attrs */);
     }
 
-    public BannerMessagePreference(Context context, AttributeSet attrs) {
+    public BannerMessagePreference(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs);
     }
 
-    public BannerMessagePreference(Context context, AttributeSet attrs, int defStyleAttr) {
+    public BannerMessagePreference(
+            @NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init(context, attrs);
     }
 
-    public BannerMessagePreference(Context context, AttributeSet attrs, int defStyleAttr,
+    public BannerMessagePreference(
+            @NonNull Context context,
+            @Nullable AttributeSet attrs,
+            int defStyleAttr,
             int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init(context, attrs);
     }
 
-    private void init(Context context, AttributeSet attrs) {
+    private void init(@NonNull Context context, @Nullable AttributeSet attrs) {
         setSelectable(false);
         int resId = SettingsThemeHelper.isExpressiveTheme(context)
                 ? R.layout.settingslib_expressive_banner_message
@@ -166,7 +178,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     @Override
-    public void onBindViewHolder(PreferenceViewHolder holder) {
+    public void onBindViewHolder(@NonNull PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
         final Context context = getContext();
 
@@ -193,14 +205,20 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
         final ImageView iconView = (ImageView) holder.findViewById(R.id.banner_icon);
         if (iconView != null) {
             Drawable icon = getIcon();
-            iconView.setImageDrawable(
-                    icon == null
-                            ? getContext().getDrawable(R.drawable.ic_warning)
-                            : icon);
-            if (mAttentionLevel != AttentionLevel.NORMAL
-                    && !SettingsThemeHelper.isExpressiveTheme(context)) {
-                iconView.setColorFilter(
-                        new PorterDuffColorFilter(accentColor, PorterDuff.Mode.SRC_IN));
+
+            if (icon == null && SettingsThemeHelper.isExpressiveTheme(context)) {
+                iconView.setVisibility(View.GONE);
+            } else {
+                iconView.setVisibility(View.VISIBLE);
+                iconView.setImageDrawable(
+                        icon == null
+                                ? getContext().getDrawable(R.drawable.ic_warning)
+                                : icon);
+                if (mAttentionLevel != AttentionLevel.NORMAL
+                        && !SettingsThemeHelper.isExpressiveTheme(context)) {
+                    iconView.setColorFilter(
+                            new PorterDuffColorFilter(accentColor, PorterDuff.Mode.SRC_IN));
+                }
             }
         }
 
@@ -233,8 +251,10 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
             mDismissButtonInfo.setUpButton();
 
             final TextView subtitleView = (TextView) holder.findViewById(R.id.banner_subtitle);
-            subtitleView.setText(mSubtitle);
-            subtitleView.setVisibility(mSubtitle == null ? View.GONE : View.VISIBLE);
+            if (subtitleView != null) {
+                subtitleView.setText(mSubtitle);
+                subtitleView.setVisibility(mSubtitle == null ? View.GONE : View.VISIBLE);
+            }
 
             TextView headerView = (TextView) holder.findViewById(R.id.banner_header);
             if (headerView != null) {
@@ -268,11 +288,25 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
                 linearLayout.setOrientation(mButtonOrientation);
             }
         }
+
+        View buttonSpace = holder.findViewById(R.id.banner_button_space);
+        if (buttonSpace != null) {
+            if (mPositiveButtonInfo.shouldBeVisible() && mNegativeButtonInfo.shouldBeVisible()) {
+                buttonSpace.setVisibility(View.VISIBLE);
+            } else {
+                buttonSpace.setVisibility(View.GONE);
+            }
+        }
+
+        if (mResolutionData != null) {
+            new ResolutionAnimator(mResolutionData, holder).startResolutionAnimation();
+        }
     }
 
     /**
-     * Set the visibility state of positive button.
+     * Sets the visibility state of the positive button.
      */
+    @NonNull
     public BannerMessagePreference setPositiveButtonVisible(boolean isVisible) {
         if (isVisible != mPositiveButtonInfo.mIsVisible) {
             mPositiveButtonInfo.mIsVisible = isVisible;
@@ -282,8 +316,9 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     /**
-     * Set the visibility state of negative button.
+     * Sets the visibility state of the negative button.
      */
+    @NonNull
     public BannerMessagePreference setNegativeButtonVisible(boolean isVisible) {
         if (isVisible != mNegativeButtonInfo.mIsVisible) {
             mNegativeButtonInfo.mIsVisible = isVisible;
@@ -293,9 +328,10 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     /**
-     * Set the visibility state of dismiss button.
+     * Sets the visibility state of the dismiss button.
      */
     @RequiresApi(Build.VERSION_CODES.S)
+    @NonNull
     public BannerMessagePreference setDismissButtonVisible(boolean isVisible) {
         if (isVisible != mDismissButtonInfo.mIsVisible) {
             mDismissButtonInfo.mIsVisible = isVisible;
@@ -305,10 +341,35 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     /**
-     * Register a callback to be invoked when positive button is clicked.
+     * Sets the enabled state of the positive button.
      */
+    @NonNull
+    public BannerMessagePreference setPositiveButtonEnabled(boolean isEnabled) {
+        if (isEnabled != mPositiveButtonInfo.mIsEnabled) {
+            mPositiveButtonInfo.mIsEnabled = isEnabled;
+            notifyChanged();
+        }
+        return this;
+    }
+
+    /**
+     * Sets the enabled state of the negative button.
+     */
+    @NonNull
+    public BannerMessagePreference setNegativeButtonEnabled(boolean isEnabled) {
+        if (isEnabled != mNegativeButtonInfo.mIsEnabled) {
+            mNegativeButtonInfo.mIsEnabled = isEnabled;
+            notifyChanged();
+        }
+        return this;
+    }
+
+    /**
+     * Registers a callback to be invoked when positive button is clicked.
+     */
+    @NonNull
     public BannerMessagePreference setPositiveButtonOnClickListener(
-            View.OnClickListener listener) {
+            @Nullable View.OnClickListener listener) {
         if (listener != mPositiveButtonInfo.mListener) {
             mPositiveButtonInfo.mListener = listener;
             notifyChanged();
@@ -317,10 +378,11 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     /**
-     * Register a callback to be invoked when negative button is clicked.
+     * Registers a callback to be invoked when negative button is clicked.
      */
+    @NonNull
     public BannerMessagePreference setNegativeButtonOnClickListener(
-            View.OnClickListener listener) {
+            @Nullable View.OnClickListener listener) {
         if (listener != mNegativeButtonInfo.mListener) {
             mNegativeButtonInfo.mListener = listener;
             notifyChanged();
@@ -329,11 +391,12 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     /**
-     * Register a callback to be invoked when the dismiss button is clicked.
+     * Registers a callback to be invoked when the dismiss button is clicked.
      */
     @RequiresApi(Build.VERSION_CODES.S)
+    @NonNull
     public BannerMessagePreference setDismissButtonOnClickListener(
-            View.OnClickListener listener) {
+            @Nullable View.OnClickListener listener) {
         if (listener != mDismissButtonInfo.mListener) {
             mDismissButtonInfo.mListener = listener;
             notifyChanged();
@@ -344,6 +407,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Sets the text to be displayed in positive button.
      */
+    @NonNull
     public BannerMessagePreference setPositiveButtonText(@StringRes int textResId) {
         return setPositiveButtonText(getContext().getString(textResId));
     }
@@ -351,7 +415,9 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Sets the text to be displayed in positive button.
      */
-    public BannerMessagePreference setPositiveButtonText(CharSequence positiveButtonText) {
+    @NonNull
+    public BannerMessagePreference setPositiveButtonText(
+            @Nullable CharSequence positiveButtonText) {
         if (!TextUtils.equals(positiveButtonText, mPositiveButtonInfo.mText)) {
             mPositiveButtonInfo.mText = positiveButtonText;
             notifyChanged();
@@ -362,6 +428,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Sets the text to be displayed in negative button.
      */
+    @NonNull
     public BannerMessagePreference setNegativeButtonText(@StringRes int textResId) {
         return setNegativeButtonText(getContext().getString(textResId));
     }
@@ -369,7 +436,9 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Sets the text to be displayed in negative button.
      */
-    public BannerMessagePreference setNegativeButtonText(CharSequence negativeButtonText) {
+    @NonNull
+    public BannerMessagePreference setNegativeButtonText(
+            @Nullable CharSequence negativeButtonText) {
         if (!TextUtils.equals(negativeButtonText, mNegativeButtonInfo.mText)) {
             mNegativeButtonInfo.mText = negativeButtonText;
             notifyChanged();
@@ -380,8 +449,12 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Sets button orientation.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    @NonNull
     public BannerMessagePreference setButtonOrientation(int orientation) {
+        if (!SettingsThemeHelper.isExpressiveTheme(getContext())) {
+            return this;
+        }
+
         if (mButtonOrientation != orientation) {
             mButtonOrientation = orientation;
             notifyChanged();
@@ -393,6 +466,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
      * Sets the subtitle.
      */
     @RequiresApi(Build.VERSION_CODES.S)
+    @NonNull
     public BannerMessagePreference setSubtitle(@StringRes int textResId) {
         return setSubtitle(getContext().getString(textResId));
     }
@@ -401,7 +475,8 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
      * Sets the subtitle.
      */
     @RequiresApi(Build.VERSION_CODES.S)
-    public BannerMessagePreference setSubtitle(CharSequence subtitle) {
+    @NonNull
+    public BannerMessagePreference setSubtitle(@Nullable CharSequence subtitle) {
         if (!TextUtils.equals(subtitle, mSubtitle)) {
             mSubtitle = subtitle;
             notifyChanged();
@@ -412,7 +487,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Sets the header.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    @NonNull
     public BannerMessagePreference setHeader(@StringRes int textResId) {
         return setHeader(getContext().getString(textResId));
     }
@@ -420,8 +495,12 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     /**
      * Sets the header.
      */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
-    public BannerMessagePreference setHeader(CharSequence header) {
+    @NonNull
+    public BannerMessagePreference setHeader(@Nullable CharSequence header) {
+        if (!SettingsThemeHelper.isExpressiveTheme(getContext())) {
+            return this;
+        }
+
         if (!TextUtils.equals(header, mHeader)) {
             mHeader = header;
             notifyChanged();
@@ -430,32 +509,75 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     /**
-     * Sets the attention level. This will update the color theme of the preference.
+     * Plays a resolution animation, showing the given message.
      */
-    public BannerMessagePreference setAttentionLevel(AttentionLevel attentionLevel) {
-        if (attentionLevel == mAttentionLevel) {
+    @NonNull
+    public BannerMessagePreference showResolutionAnimation(
+            @NonNull CharSequence resolutionMessage,
+            @NonNull ResolutionCompletedCallback onCompletionCallback) {
+        if (!SettingsThemeHelper.isExpressiveTheme(getContext())) {
             return this;
         }
-
-        if (attentionLevel != null) {
-            mAttentionLevel = attentionLevel;
+        ResolutionAnimator.Data resolutionData =
+                new ResolutionAnimator.Data(resolutionMessage, onCompletionCallback);
+        if (!Objects.equals(mResolutionData, resolutionData)) {
+            mResolutionData = resolutionData;
             notifyChanged();
         }
         return this;
     }
 
+    /**
+     * Removes the resolution animation from this preference.
+     *
+     * <p>Should be called after the resolution animation completes if this preference will be
+     * reused. Otherwise the resolution animation will be played everytime this preference is
+     * displayed.
+     */
+    @NonNull
+    public BannerMessagePreference clearResolutionAnimation() {
+        if (!SettingsThemeHelper.isExpressiveTheme(getContext())) {
+            return this;
+        }
+        if (mResolutionData != null) {
+            mResolutionData = null;
+            notifyChanged();
+        }
+        return this;
+    }
+
+    /**
+     * Sets the attention level. This will update the color theme of the preference.
+     */
+    @NonNull
+    public BannerMessagePreference setAttentionLevel(@NonNull AttentionLevel attentionLevel) {
+        if (attentionLevel == mAttentionLevel) {
+            return this;
+        }
+
+        mAttentionLevel = attentionLevel;
+        notifyChanged();
+        return this;
+    }
+
     static class ButtonInfo {
-        private Button mButton;
-        private CharSequence mText;
-        private View.OnClickListener mListener;
+        @Nullable private Button mButton;
+        @Nullable private CharSequence mText;
+        @Nullable private View.OnClickListener mListener;
         private boolean mIsVisible = true;
+        private boolean mIsEnabled = true;
         @ColorInt private int mColor;
         @ColorInt private int mBackgroundColor;
-        private ColorStateList mStrokeColor;
+        @Nullable private ColorStateList mStrokeColor;
 
         void setUpButton() {
+            if (mButton == null) {
+                return;
+            }
+
             mButton.setText(mText);
             mButton.setOnClickListener(mListener);
+            mButton.setEnabled(mIsEnabled);
 
             MaterialButton btn = null;
             if (mButton instanceof MaterialButton) {
@@ -492,11 +614,15 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     }
 
     static class DismissButtonInfo {
-        private ImageButton mButton;
-        private View.OnClickListener mListener;
+        @Nullable private ImageButton mButton;
+        @Nullable private View.OnClickListener mListener;
         private boolean mIsVisible = true;
 
         void setUpButton() {
+            if (mButton == null) {
+                return;
+            }
+
             mButton.setOnClickListener(mListener);
             if (shouldBeVisible()) {
                 mButton.setVisibility(View.VISIBLE);

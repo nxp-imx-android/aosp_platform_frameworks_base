@@ -16,6 +16,9 @@
 
 package com.android.systemui.media.controls.ui.viewmodel
 
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import android.media.MediaMetadata
 import android.media.session.MediaController
 import android.media.session.MediaSession
@@ -34,6 +37,7 @@ import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.concurrency.FakeRepeatableExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth.assertThat
+import java.util.Locale
 import org.junit.After
 import org.junit.Before
 import org.junit.Ignore
@@ -155,6 +159,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN the controller is updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN the duration is extracted
         assertThat(viewModel.progress.value!!.duration).isEqualTo(duration)
         assertThat(viewModel.progress.value!!.enabled).isTrue()
@@ -173,6 +178,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getMetadata()).thenReturn(metadata)
         // WHEN the controller is updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN the duration is extracted
         assertThat(viewModel.progress.value!!.duration).isEqualTo(duration)
         assertThat(viewModel.progress.value!!.enabled).isFalse()
@@ -197,6 +203,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN the controller is updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN the seek bar is disabled
         assertThat(viewModel.progress.value!!.enabled).isFalse()
     }
@@ -220,6 +227,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN the controller is updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN the seek bar is disabled
         assertThat(viewModel.progress.value!!.enabled).isFalse()
     }
@@ -238,6 +246,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN the controller is updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN the seek bar is disabled
         assertThat(viewModel.progress.value!!.enabled).isFalse()
     }
@@ -254,6 +263,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN the controller is updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN elapsed time is captured
         assertThat(viewModel.progress.value!!.elapsedTime).isEqualTo(200.toInt())
     }
@@ -536,6 +546,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN the controller is updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN a task is queued
         assertThat(fakeExecutor.numPending()).isEqualTo(1)
     }
@@ -551,6 +562,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN an update task is not queued
         assertThat(fakeExecutor.numPending()).isEqualTo(0)
     }
@@ -572,6 +584,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN an update task is queued
         assertThat(fakeExecutor.numPending()).isEqualTo(1)
     }
@@ -593,6 +606,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.getPlaybackState()).thenReturn(state)
         // WHEN updated
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // THEN an update task is not queued
         assertThat(fakeExecutor.numPending()).isEqualTo(0)
     }
@@ -719,6 +733,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
             }
         whenever(mockController.getPlaybackState()).thenReturn(state)
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         // WHEN start listening
         viewModel.listening = true
         // THEN an update task is queued
@@ -820,6 +835,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         whenever(mockController.playbackState).thenReturn(state)
         val captor = ArgumentCaptor.forClass(MediaController.Callback::class.java)
         viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
         verify(mockController).registerCallback(captor.capture())
         assertThat(viewModel.progress.value!!.elapsedTime).isEqualTo(firstPosition.toInt())
 
@@ -831,8 +847,48 @@ public class SeekBarViewModelTest : SysuiTestCase() {
                 build()
             }
         captor.value.onPlaybackStateChanged(secondState)
+        fakeExecutor.runNextReady()
 
         // THEN then elapsed time should be updated
         assertThat(viewModel.progress.value!!.elapsedTime).isEqualTo(secondPosition.toInt())
+    }
+
+    @Test
+    fun contentDescriptionUpdated() {
+        // When there is a duration and position
+        val duration = (1.5 * 60 * 60 * 1000).toLong()
+        val metadata =
+            MediaMetadata.Builder().run {
+                putLong(MediaMetadata.METADATA_KEY_DURATION, duration)
+                build()
+            }
+        whenever(mockController.getMetadata()).thenReturn(metadata)
+
+        val elapsedTime = 3000L
+        val state =
+            PlaybackState.Builder().run {
+                setState(PlaybackState.STATE_PLAYING, elapsedTime, 1f)
+                build()
+            }
+        whenever(mockController.getPlaybackState()).thenReturn(state)
+
+        viewModel.updateController(mockController)
+        fakeExecutor.runNextReady()
+
+        // Then the content description is set
+        val result = viewModel.progress.value!!
+
+        val expectedProgress =
+            MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                .formatMeasures(Measure(3, MeasureUnit.SECOND))
+        val expectedDuration =
+            MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+                .formatMeasures(
+                    Measure(1, MeasureUnit.HOUR),
+                    Measure(30, MeasureUnit.MINUTE),
+                    Measure(0, MeasureUnit.SECOND),
+                )
+        assertThat(result.durationDescription).isEqualTo(expectedDuration)
+        assertThat(result.elapsedTimeDescription).isEqualTo(expectedProgress)
     }
 }

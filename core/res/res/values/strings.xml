@@ -5009,6 +5009,9 @@
     <!-- Title of hearing aids feature, shown in the warning dialog about the accessibility shortcut. [CHAR LIMIT=none] -->
     <string name="hearing_aids_feature_name">Hearing devices</string>
 
+    <!-- Title of autoclick feature, shown in the warning dialog about the accessibility shortcut. [CHAR LIMIT=none] -->
+    <string name="autoclick_feature_name">Autoclick</string>
+
     <!-- Text of hearing device disconnected state. [CHAR LIMIT=20] -->
     <string name="hearing_device_status_disconnected">Disconnected</string>
 
@@ -5060,8 +5063,6 @@
     <!-- Notification action button. Click it will open the bluetooth device details page for this hearing device. It will be shown when making a phone call with the hearing device. [CHAR LIMIT=none] -->
     <string name="hearing_device_notification_settings_button">Settings</string>
 
-    <!-- Text spoken when the current user is switched if accessibility is enabled. [CHAR LIMIT=none] -->
-    <string name="user_switched">Current user <xliff:g id="name" example="Bob">%1$s</xliff:g>.</string>
     <!-- Message shown when switching to a user [CHAR LIMIT=none] -->
     <string name="user_switching_message">Switching to <xliff:g id="name" example="Bob">%1$s</xliff:g>\u2026</string>
     <!-- Message when logging out a user on a split user system -->
@@ -5411,7 +5412,7 @@
     <!-- Notification shown when device owner silently installs a package [CHAR LIMIT=NONE] -->
     <string name="package_installed_device_owner">Installed by your admin.\nGo to settings to view granted permissions</string>
     <!-- Notification shown when device owner silently updates a package [CHAR LIMIT=NONE] -->
-    <string name="package_updated_device_owner">Updated by your admin</string>
+    <string name="package_updated_device_owner">Updated by your admin.\nGo to settings to view granted permissions</string>
     <!-- Notification shown when device owner silently deletes a package [CHAR LIMIT=NONE] -->
     <string name="package_deleted_device_owner">Deleted by your admin</string>
 

@@ -22,6 +22,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.FalsingManagerFake
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.qs.FakeTileDetailsViewModel
 import com.android.systemui.qs.tiles.base.analytics.QSTileAnalytics
 import com.android.systemui.qs.tiles.base.interactor.FakeDisabledByPolicyInteractor
 import com.android.systemui.qs.tiles.base.interactor.FakeQSTileDataInteractor
@@ -97,6 +98,7 @@ class QSTileViewModelImplTest : SysuiTestCase() {
                 testCoroutineDispatcher,
                 testCoroutineDispatcher,
                 testScope.backgroundScope,
+                FakeTileDetailsViewModel("QSTileViewModelImplTest"),
             )
     }
 

@@ -631,7 +631,6 @@ public class DisplayPolicy {
                 mHandler.post(mAppTransitionFinished);
             }
         };
-        displayContent.mAppTransition.registerListenerLocked(mAppTransitionListener);
         displayContent.mTransitionController.registerLegacyListener(mAppTransitionListener);
 
         // TODO: Make it can take screenshot on external display
@@ -1865,6 +1864,7 @@ public class DisplayPolicy {
         return mContext;
     }
 
+    @NonNull
     Context getSystemUiContext() {
         return mUiContext;
     }
@@ -1875,18 +1875,40 @@ public class DisplayPolicy {
     }
 
     void notifyDisplayAddSystemDecorations() {
-        mHandler.post(() -> {
+        if (enableDisplayContentModeManagement()) {
             final int displayId = getDisplayId();
-            StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
-            if (statusBar != null) {
-                statusBar.onDisplayAddSystemDecorations(displayId);
-            }
-            final WallpaperManagerInternal wpMgr = LocalServices
-                    .getService(WallpaperManagerInternal.class);
-            if (wpMgr != null) {
-                wpMgr.onDisplayAddSystemDecorations(displayId);
-            }
-        });
+            final boolean isSystemDecorationsSupported =
+                    mDisplayContent.isSystemDecorationsSupported();
+            final boolean isHomeSupported = mDisplayContent.isHomeSupported();
+            mHandler.post(() -> {
+                if (isSystemDecorationsSupported) {
+                    StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+                    if (statusBar != null) {
+                        statusBar.onDisplayAddSystemDecorations(displayId);
+                    }
+                }
+                if (isHomeSupported) {
+                    final WallpaperManagerInternal wpMgr =
+                            LocalServices.getService(WallpaperManagerInternal.class);
+                    if (wpMgr != null) {
+                        wpMgr.onDisplayAddSystemDecorations(displayId);
+                    }
+                }
+            });
+        } else {
+            mHandler.post(() -> {
+                final int displayId = getDisplayId();
+                StatusBarManagerInternal statusBar = getStatusBarManagerInternal();
+                if (statusBar != null) {
+                    statusBar.onDisplayAddSystemDecorations(displayId);
+                }
+                final WallpaperManagerInternal wpMgr = LocalServices
+                        .getService(WallpaperManagerInternal.class);
+                if (wpMgr != null) {
+                    wpMgr.onDisplayAddSystemDecorations(displayId);
+                }
+            });
+        }
     }
 
     void notifyDisplayRemoveSystemDecorations() {
@@ -2365,7 +2387,7 @@ public class DisplayPolicy {
 
         // Immersive mode confirmation should never affect the system bar visibility, otherwise
         // it will unhide the navigation bar and hide itself.
-        if ((winCandidate.getAttrs().privateFlags
+        if ((winCandidate.mAttrs.privateFlags
                 & PRIVATE_FLAG_IMMERSIVE_CONFIRMATION_WINDOW) != 0) {
             if (mNotificationShade != null && mNotificationShade.canReceiveKeys()) {
                 // Let notification shade control the system bar visibility.
@@ -2542,7 +2564,7 @@ public class DisplayPolicy {
             final int rootDisplayAreaId = root == null ? FEATURE_UNDEFINED : root.mFeatureId;
             // TODO(b/277290737): Move this to the client side, instead of using a proxy.
             callStatusBarSafely(statusBar -> statusBar.immersiveModeChanged(getDisplayId(),
-                        rootDisplayAreaId, isImmersiveMode));
+                        rootDisplayAreaId, isImmersiveMode, win.getWindowType()));
         }
 
         // Show transient bars for panic if needed.
@@ -2633,9 +2655,9 @@ public class DisplayPolicy {
         }
 
         final boolean drawsSystemBars =
-                (win.getAttrs().flags & FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) != 0;
+                (win.mAttrs.flags & FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS) != 0;
         final boolean forceDrawsSystemBars =
-                (win.getAttrs().privateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
+                (win.mAttrs.privateFlags & PRIVATE_FLAG_FORCE_DRAW_BAR_BACKGROUNDS) != 0;
 
         return forceDrawsSystemBars || drawsSystemBars;
     }

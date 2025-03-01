@@ -52,7 +52,7 @@
     <dimen name="primary_content_alpha_device_default">0.38</dimen>
 
     <!--  values for wear material3 progress bar(progress indicator)  -->
-    <item name="progressbar_inner_radius_ratio" format="float" type="dimen">2.12</item>
+    <item name="progressbar_inner_radius_ratio" format="float" type="dimen">2</item>
     <dimen name="progressbar_thickness">8dp</dimen>
     <dimen name="progressbar_elevation">0.1dp</dimen>
 

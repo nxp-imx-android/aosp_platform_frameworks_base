@@ -7,13 +7,6 @@ container: "system"
 
 flag {
     namespace: "windowing_sdk"
-    name: "activity_embedding_overlay_presentation_flag"
-    description: "Whether the overlay presentation feature is enabled"
-    bug: "293370683"
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "task_fragment_system_organizer_flag"
     description: "Whether the TaskFragment system organizer feature is enabled"
     bug: "284050041"
@@ -58,16 +51,6 @@ flag {
     name: "activity_embedding_animation_customization_flag"
     description: "Whether the animation customization feature for AE is enabled"
     bug: "293658614"
-}
-
-flag {
-    namespace: "windowing_sdk"
-     name: "move_animation_options_to_change"
-     description: "Move AnimationOptions from TransitionInfo to each Change"
-     bug: "327332488"
-     metadata {
-         purpose: PURPOSE_BUGFIX
-     }
 }
 
 flag {
@@ -134,16 +117,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "normalize_home_intent"
-    description: "To ensure home is started in correct intent"
-    bug: "378505461"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "condense_configuration_change_for_simple_mode"
     description: "Condense configuration change for simple mode"
     bug: "356738240"
@@ -175,6 +148,17 @@ flag {
     name: "fix_layout_existing_task"
     description: "Layout the existing task to ensure the bounds are updated."
     bug: "390291971"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "cleanup_dispatch_pending_transactions_remote_exception"
+    description: "Refactor to cleanup for RemoteException from dispatchPendingTransactions"
+    bug: "323801078"
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX

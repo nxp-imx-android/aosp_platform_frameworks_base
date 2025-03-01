@@ -21,6 +21,7 @@ import android.annotation.Nullable;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
+import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
@@ -139,6 +140,24 @@ public class CollapsibleRowLayout extends RowLayout {
     }
 
     @Override
+    public float minIntrinsicWidth(@NonNull RemoteContext context) {
+        float width = computeModifierDefinedWidth(context);
+        if (!mChildrenComponents.isEmpty()) {
+            width += mChildrenComponents.get(0).minIntrinsicWidth(context);
+        }
+        return width;
+    }
+
+    @Override
+    public float minIntrinsicHeight(@NonNull RemoteContext context) {
+        float height = computeModifierDefinedHeight(context);
+        if (!mChildrenComponents.isEmpty()) {
+            height += mChildrenComponents.get(0).minIntrinsicHeight(context);
+        }
+        return height;
+    }
+
+    @Override
     public void computeWrapSize(
             @NonNull PaintContext context,
             float maxWidth,
@@ -157,18 +176,34 @@ public class CollapsibleRowLayout extends RowLayout {
         float childrenWidth = 0f;
         float childrenHeight = 0f;
         boolean changedVisibility = false;
+        int visibleChildren = 0;
+        ComponentMeasure self = measure.get(this);
+        self.clearVisibilityOverride();
+        if (selfWidth <= 0 || selfHeight <= 0) {
+            self.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+            return true;
+        }
         for (Component child : mChildrenComponents) {
             ComponentMeasure childMeasure = measure.get(child);
-            if (childMeasure.getVisibility() == Visibility.GONE) {
+            int visibility = childMeasure.getVisibility();
+            childMeasure.clearVisibilityOverride();
+            if (!childMeasure.isVisible()) {
                 continue;
             }
-            if (childrenWidth + childMeasure.getW() > selfWidth) {
-                childMeasure.setVisibility(Visibility.GONE);
-                changedVisibility = true;
+            if (childrenWidth + childMeasure.getW() > selfWidth
+                    && childrenHeight + childMeasure.getH() > selfHeight) {
+                childMeasure.addVisibilityOverride(Visibility.OVERRIDE_GONE);
+                if (visibility != childMeasure.getVisibility()) {
+                    changedVisibility = true;
+                }
             } else {
                 childrenWidth += childMeasure.getW();
                 childrenHeight = Math.max(childrenHeight, childMeasure.getH());
+                visibleChildren++;
             }
+        }
+        if (visibleChildren == 0) {
+            self.addVisibilityOverride(Visibility.OVERRIDE_GONE);
         }
         return changedVisibility;
     }

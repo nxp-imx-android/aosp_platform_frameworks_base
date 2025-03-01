@@ -129,6 +129,6 @@ public class TouchCancelModifierOperation extends ListActionsOperation implement
     @Override
     public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
-        serializer.add("type", "TouchCancelModifierOperation");
+        serializer.addType("TouchCancelModifierOperation");
     }
 }

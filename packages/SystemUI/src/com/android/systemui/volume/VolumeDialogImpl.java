@@ -308,9 +308,9 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private int mWindowGravity;
 
     @VisibleForTesting
-    final int mVolumeRingerIconDrawableId = R.drawable.ic_speaker_on;
+    final int mVolumeRingerIconDrawableId = R.drawable.ic_legacy_speaker_on;
     @VisibleForTesting
-    final int mVolumeRingerMuteIconDrawableId = R.drawable.ic_speaker_mute;
+    final int mVolumeRingerMuteIconDrawableId = R.drawable.ic_legacy_speaker_mute;
 
     private int mOriginalGravity;
     private final DevicePostureController.Callback mDevicePostureControllerCallback;
@@ -1791,8 +1791,9 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             enableRingerViewsH(!isZenMuted);
             switch (mState.ringerModeInternal) {
                 case AudioManager.RINGER_MODE_VIBRATE:
-                    mRingerIcon.setImageResource(R.drawable.ic_volume_ringer_vibrate);
-                    mSelectedRingerIcon.setImageResource(R.drawable.ic_volume_ringer_vibrate);
+                    mRingerIcon.setImageResource(R.drawable.ic_legacy_volume_ringer_vibrate);
+                    mSelectedRingerIcon.setImageResource(
+                            R.drawable.ic_legacy_volume_ringer_vibrate);
                     addAccessibilityDescription(mRingerIcon, RINGER_MODE_VIBRATE,
                             mContext.getString(R.string.volume_ringer_hint_mute));
                     mRingerIcon.setTag(Events.ICON_STATE_VIBRATE);
@@ -1990,7 +1991,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         if (zenMuted) {
             iconRes = com.android.internal.R.drawable.ic_qs_dnd;
         } else if (isRingVibrate) {
-            iconRes = R.drawable.ic_volume_ringer_vibrate;
+            iconRes = R.drawable.ic_legacy_volume_ringer_vibrate;
         } else if (isRingSilent) {
             iconRes = row.iconMuteRes;
         } else if (ss.routedToBluetooth) {
@@ -2009,7 +2010,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
 
         row.setIcon(iconRes, mContext.getTheme());
         row.iconState =
-                iconRes == R.drawable.ic_volume_ringer_vibrate ? Events.ICON_STATE_VIBRATE
+                iconRes == R.drawable.ic_legacy_volume_ringer_vibrate ? Events.ICON_STATE_VIBRATE
                 : (iconRes == R.drawable.ic_volume_media_bt_mute || iconRes == row.iconMuteRes)
                         ? Events.ICON_STATE_MUTE
                 : (iconRes == R.drawable.ic_volume_media_bt || iconRes == row.iconRes

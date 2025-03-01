@@ -16,10 +16,10 @@
 
 #define LOG_TAG "PublicFormatUtils_JNI"
 
-#include <utils/misc.h>
-#include <ui/PublicFormat.h>
-#include <android_runtime/AndroidRuntime.h>
 #include <jni.h>
+#include <jni_wrappers.h>
+#include <ui/PublicFormat.h>
+#include <utils/misc.h>
 
 using namespace android;
 
@@ -53,7 +53,6 @@ static const JNINativeMethod gMethods[] = {
 };
 
 int register_android_media_PublicFormatUtils(JNIEnv *env) {
-    return AndroidRuntime::registerNativeMethods(env,
-             "android/media/PublicFormatUtils", gMethods, NELEM(gMethods));
+    return RegisterMethodsOrDie(env, "android/media/PublicFormatUtils", gMethods, NELEM(gMethods));
 }
 

@@ -98,7 +98,7 @@ import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.AuthMethodBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.BouncerMessageViewModel
-import com.android.systemui.bouncer.ui.viewmodel.BouncerSceneContentViewModel
+import com.android.systemui.bouncer.ui.viewmodel.BouncerOverlayContentViewModel
 import com.android.systemui.bouncer.ui.viewmodel.MessageViewModel
 import com.android.systemui.bouncer.ui.viewmodel.PasswordBouncerViewModel
 import com.android.systemui.bouncer.ui.viewmodel.PatternBouncerViewModel
@@ -118,7 +118,7 @@ import platform.test.motion.compose.values.motionTestValues
 
 @Composable
 fun BouncerContent(
-    viewModel: BouncerSceneContentViewModel,
+    viewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
     modifier: Modifier = Modifier,
 ) {
@@ -131,8 +131,8 @@ fun BouncerContent(
 @Composable
 @VisibleForTesting
 fun BouncerContent(
-    layout: BouncerSceneLayout,
-    viewModel: BouncerSceneContentViewModel,
+    layout: BouncerOverlayLayout,
+    viewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
     modifier: Modifier,
 ) {
@@ -147,11 +147,12 @@ fun BouncerContent(
         modifier = modifier.imePadding().onKeyEvent(viewModel::onKeyEvent).scale(scale)
     ) {
         when (layout) {
-            BouncerSceneLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
-            BouncerSceneLayout.BESIDE_USER_SWITCHER ->
+            BouncerOverlayLayout.STANDARD_BOUNCER -> StandardLayout(viewModel = viewModel)
+            BouncerOverlayLayout.BESIDE_USER_SWITCHER ->
                 BesideUserSwitcherLayout(viewModel = viewModel)
-            BouncerSceneLayout.BELOW_USER_SWITCHER -> BelowUserSwitcherLayout(viewModel = viewModel)
-            BouncerSceneLayout.SPLIT_BOUNCER -> SplitLayout(viewModel = viewModel)
+            BouncerOverlayLayout.BELOW_USER_SWITCHER ->
+                BelowUserSwitcherLayout(viewModel = viewModel)
+            BouncerOverlayLayout.SPLIT_BOUNCER -> SplitLayout(viewModel = viewModel)
         }
 
         Dialog(bouncerViewModel = viewModel, dialogFactory = dialogFactory)
@@ -163,7 +164,10 @@ fun BouncerContent(
  * authentication attempt, including all messaging UI (directives, reasoning, errors, etc.).
  */
 @Composable
-private fun StandardLayout(viewModel: BouncerSceneContentViewModel, modifier: Modifier = Modifier) {
+private fun StandardLayout(
+    viewModel: BouncerOverlayContentViewModel,
+    modifier: Modifier = Modifier,
+) {
     val isHeightExpanded =
         LocalWindowSizeClass.current.heightSizeClass == WindowHeightSizeClass.Expanded
 
@@ -208,7 +212,7 @@ private fun StandardLayout(viewModel: BouncerSceneContentViewModel, modifier: Mo
  * by double-tapping on the side.
  */
 @Composable
-private fun SplitLayout(viewModel: BouncerSceneContentViewModel, modifier: Modifier = Modifier) {
+private fun SplitLayout(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
     val authMethod by viewModel.authMethodViewModel.collectAsStateWithLifecycle()
 
     Row(
@@ -297,7 +301,7 @@ private fun SplitLayout(viewModel: BouncerSceneContentViewModel, modifier: Modif
  */
 @Composable
 private fun BesideUserSwitcherLayout(
-    viewModel: BouncerSceneContentViewModel,
+    viewModel: BouncerOverlayContentViewModel,
     modifier: Modifier = Modifier,
 ) {
     val isLeftToRight = LocalLayoutDirection.current == LayoutDirection.Ltr
@@ -452,7 +456,7 @@ private fun BesideUserSwitcherLayout(
 /** Arranges the bouncer contents and user switcher contents one on top of the other, vertically. */
 @Composable
 private fun BelowUserSwitcherLayout(
-    viewModel: BouncerSceneContentViewModel,
+    viewModel: BouncerOverlayContentViewModel,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.padding(vertical = 128.dp)) {
@@ -483,7 +487,7 @@ private fun BelowUserSwitcherLayout(
 
 @Composable
 private fun FoldAware(
-    viewModel: BouncerSceneContentViewModel,
+    viewModel: BouncerOverlayContentViewModel,
     aboveFold: @Composable BoxScope.() -> Unit,
     belowFold: @Composable BoxScope.() -> Unit,
     modifier: Modifier = Modifier,
@@ -606,7 +610,7 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
  * For example, this can be the PIN shapes or password text field.
  */
 @Composable
-private fun OutputArea(viewModel: BouncerSceneContentViewModel, modifier: Modifier = Modifier) {
+private fun OutputArea(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
     val authMethodViewModel: AuthMethodBouncerViewModel? by
         viewModel.authMethodViewModel.collectAsStateWithLifecycle()
     when (val nonNullViewModel = authMethodViewModel) {
@@ -631,7 +635,7 @@ private fun OutputArea(viewModel: BouncerSceneContentViewModel, modifier: Modifi
  */
 @Composable
 private fun InputArea(
-    viewModel: BouncerSceneContentViewModel,
+    viewModel: BouncerOverlayContentViewModel,
     pinButtonRowVerticalSpacing: Dp,
     centerPatternDotsVertically: Boolean,
     modifier: Modifier = Modifier,
@@ -659,7 +663,7 @@ private fun InputArea(
 }
 
 @Composable
-private fun ActionArea(viewModel: BouncerSceneContentViewModel, modifier: Modifier = Modifier) {
+private fun ActionArea(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
     val actionButton: BouncerActionButtonModel? by
         viewModel.actionButton.collectAsStateWithLifecycle()
     val appearFadeInAnimatable = remember { Animatable(0f) }
@@ -723,7 +727,7 @@ private fun ActionArea(viewModel: BouncerSceneContentViewModel, modifier: Modifi
 
 @Composable
 private fun Dialog(
-    bouncerViewModel: BouncerSceneContentViewModel,
+    bouncerViewModel: BouncerOverlayContentViewModel,
     dialogFactory: BouncerDialogFactory,
 ) {
     val dialogViewModel by bouncerViewModel.dialogViewModel.collectAsStateWithLifecycle()
@@ -751,7 +755,7 @@ private fun Dialog(
 
 /** Renders the UI of the user switcher that's displayed on large screens next to the bouncer UI. */
 @Composable
-private fun UserSwitcher(viewModel: BouncerSceneContentViewModel, modifier: Modifier = Modifier) {
+private fun UserSwitcher(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
     val isUserSwitcherVisible by viewModel.isUserSwitcherVisible.collectAsStateWithLifecycle()
     if (!isUserSwitcherVisible) {
         // Take up the same space as the user switcher normally would, but with nothing inside it.
@@ -829,7 +833,7 @@ private fun UserSwitcher(viewModel: BouncerSceneContentViewModel, modifier: Modi
 @Composable
 private fun UserSwitcherDropdownMenu(
     isExpanded: Boolean,
-    items: List<BouncerSceneContentViewModel.UserSwitcherDropdownItemViewModel>,
+    items: List<BouncerOverlayContentViewModel.UserSwitcherDropdownItemViewModel>,
     onDismissed: () -> Unit,
 ) {
     val context = LocalContext.current

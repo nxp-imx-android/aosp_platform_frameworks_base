@@ -41,6 +41,7 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
+import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.FakePromotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
@@ -223,12 +224,12 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
             remoteViewClickHandler = { _, _, _ -> true },
             callback =
                 object : InflationCallback {
-                    override fun handleInflationException(entry: NotificationEntry, e: Exception) {
+                    override fun handleInflationException(e: Exception) {
                         countDownLatch.countDown()
                         throw RuntimeException("No Exception expected")
                     }
 
-                    override fun onAsyncInflationFinished(entry: NotificationEntry) {
+                    override fun onAsyncInflationFinished() {
                         countDownLatch.countDown()
                     }
                 },
@@ -675,14 +676,14 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
             inflater.setInflateSynchronously(true)
             val callback: InflationCallback =
                 object : InflationCallback {
-                    override fun handleInflationException(entry: NotificationEntry, e: Exception) {
+                    override fun handleInflationException(e: Exception) {
                         if (!expectingException) {
                             exceptionHolder.exception = e
                         }
                         countDownLatch.countDown()
                     }
 
-                    override fun onAsyncInflationFinished(entry: NotificationEntry) {
+                    override fun onAsyncInflationFinished() {
                         if (expectingException) {
                             exceptionHolder.exception =
                                 RuntimeException(

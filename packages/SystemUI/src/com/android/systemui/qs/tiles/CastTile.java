@@ -54,6 +54,7 @@ import com.android.systemui.qs.QsEventLogger;
 import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
+import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.connectivity.NetworkController;
 import com.android.systemui.statusbar.connectivity.SignalCallback;
 import com.android.systemui.statusbar.connectivity.WifiIndicators;
@@ -89,6 +90,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
     private final Callback mCallback = new Callback();
     private final TileJavaAdapter mJavaAdapter;
     private final FeatureFlags mFeatureFlags;
+    private final ShadeDialogContextInteractor mShadeDialogContextInteractor;
     private boolean mCastTransportAllowed;
     private boolean mHotspotConnected;
 
@@ -110,7 +112,8 @@ public class CastTile extends QSTileImpl<BooleanState> {
             DialogTransitionAnimator dialogTransitionAnimator,
             ConnectivityRepository connectivityRepository,
             TileJavaAdapter javaAdapter,
-            FeatureFlags featureFlags
+            FeatureFlags featureFlags,
+            ShadeDialogContextInteractor shadeDialogContextInteractor
     ) {
         super(host, uiEventLogger, backgroundLooper, mainHandler, falsingManager, metricsLogger,
                 statusBarStateController, activityStarter, qsLogger);
@@ -120,6 +123,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mJavaAdapter = javaAdapter;
         mFeatureFlags = featureFlags;
+        mShadeDialogContextInteractor = shadeDialogContextInteractor;
         mController.observe(this, mCallback);
         mKeyguard.observe(this, mCallback);
         if (!mFeatureFlags.isEnabled(SIGNAL_CALLBACK_DEPRECATION)) {
@@ -220,7 +224,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
         mUiHandler.post(() -> {
             final DialogHolder holder = new DialogHolder();
             final Dialog dialog = MediaRouteDialogPresenter.createDialog(
-                    mContext,
+                    mShadeDialogContextInteractor.getContext(),
                     ROUTE_TYPE_REMOTE_DISPLAY,
                     v -> {
                         ActivityTransitionAnimator.Controller controller =

@@ -26,6 +26,7 @@ import androidx.compose.ui.input.key.nativeKeyCode
 import androidx.compose.ui.input.key.type
 import com.android.systemui.keyboard.shared.model.ShortcutCustomizationRequestResult
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutCustomizationInteractor
+import com.android.systemui.keyboard.shortcut.extensions.toContentDescription
 import com.android.systemui.keyboard.shortcut.shared.model.KeyCombination
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCustomizationRequestInfo
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutKey
@@ -185,9 +186,28 @@ constructor(
 
             _shortcutCustomizationUiState.update { uiState ->
                 if (uiState is AddShortcutDialog) {
-                    uiState.copy(pressedKeys = keys, errorMessage = errorMessage)
+                    uiState.copy(
+                        pressedKeys = keys,
+                        errorMessage = errorMessage,
+                        pressedKeysDescription = getAccessibilityDescForPressedKeys(keys),
+                    )
                 } else {
                     uiState
+                }
+            }
+        }
+    }
+
+    private fun getAccessibilityDescForPressedKeys(keys: List<ShortcutKey>): String {
+        val andConjunction =
+            context.getString(R.string.shortcut_helper_key_combinations_and_conjunction)
+        return buildString {
+            keys.forEach { key ->
+                key.toContentDescription(context)?.let {
+                    if (isNotEmpty()) {
+                        append(", $andConjunction ")
+                    }
+                    append(it)
                 }
             }
         }
@@ -196,8 +216,7 @@ constructor(
     private suspend fun getErrorMessageForPressedKeys(keys: List<ShortcutKey>): String {
         return if (keys.isEmpty() or isSelectedKeyCombinationAvailable()) {
             ""
-        }
-        else {
+        } else {
             context.getString(R.string.shortcut_customizer_key_combination_in_use_error_message)
         }
     }

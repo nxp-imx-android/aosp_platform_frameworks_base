@@ -152,7 +152,7 @@
     <item msgid="8998632451221157987">"चालू है"</item>
   </string-array>
   <string-array name="tile_states_controls">
-    <item msgid="8199009425335668294">"उपलब्ध नहीं है"</item>
+    <item msgid="8199009425335668294">"उपलब्ध नहीं हैं"</item>
     <item msgid="4544919905196727508">"बंद है"</item>
     <item msgid="3422023746567004609">"चालू है"</item>
   </string-array>
@@ -195,5 +195,10 @@
     <item msgid="5894333929299989301">"उपलब्ध नहीं है"</item>
     <item msgid="6419996398343291862">"बंद है"</item>
     <item msgid="5908720590832378783">"चालू है"</item>
+  </string-array>
+  <string-array name="tile_states_desktopeffects">
+    <item msgid="6253480000354287321">"उपलब्ध नहीं है"</item>
+    <item msgid="6641673879029894995">"बंद है"</item>
+    <item msgid="5806682401126108403">"चालू है"</item>
   </string-array>
 </resources>

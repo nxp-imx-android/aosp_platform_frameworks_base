@@ -136,6 +136,7 @@ import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
 import static com.android.window.flags.Flags.enableBufferTransformHintFromDisplay;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
+import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
 import static com.android.window.flags.Flags.setScPropertiesInClient;
 
 import android.Manifest;
@@ -153,7 +154,6 @@ import android.app.ActivityManager;
 import android.app.ActivityThread;
 import android.app.ResourcesManager;
 import android.app.UiModeManager;
-import android.app.UiModeManager.ForceInvertStateChangeListener;
 import android.app.WindowConfiguration;
 import android.app.compat.CompatChanges;
 import android.app.servertransaction.WindowStateTransactionItem;
@@ -169,6 +169,7 @@ import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.ContentObserver;
 import android.graphics.BLASTBufferQueue;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -196,6 +197,7 @@ import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.input.InputManagerGlobal;
 import android.hardware.input.InputSettings;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
@@ -214,6 +216,7 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.sysprop.DisplayProperties;
 import android.sysprop.ViewProperties;
 import android.text.TextUtils;
@@ -254,6 +257,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.IAccessibilityEmbeddedConnection;
 import android.view.accessibility.IAccessibilityInteractionConnection;
 import android.view.accessibility.IAccessibilityInteractionConnectionCallback;
+import android.view.accessibility.IWindowSurfaceInfoCallback;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.autofill.AutofillManager;
@@ -468,7 +472,7 @@ public final class ViewRootImpl implements ViewParent,
     private CompatOnBackInvokedCallback mCompatOnBackInvokedCallback;
 
     @Nullable
-    private ForceInvertStateChangeListener mForceInvertStateChangeListener;
+    private ContentObserver mForceInvertObserver;
 
     /**
      * Callback for notifying about global configuration changes.
@@ -1254,7 +1258,6 @@ public final class ViewRootImpl implements ViewParent,
     public ViewRootImpl(@UiContext Context context, Display display, IWindowSession session,
             WindowLayout windowLayout) {
         mContext = context;
-        mUiModeManager = context.getSystemService(UiModeManager.class);
         mWindowSession = session;
         mWindowLayout = windowLayout;
         mDisplay = display;
@@ -1834,11 +1837,26 @@ public final class ViewRootImpl implements ViewParent,
                         mBasePackageName);
 
         if (forceInvertColor()) {
-            if (mForceInvertStateChangeListener == null) {
-                mForceInvertStateChangeListener =
-                        forceInvertState -> updateForceDarkMode();
-                mUiModeManager.addForceInvertStateChangeListener(mExecutor,
-                        mForceInvertStateChangeListener);
+            if (mForceInvertObserver == null) {
+                mForceInvertObserver = new ContentObserver(mHandler) {
+                    @Override
+                    public void onChange(boolean selfChange) {
+                        updateForceDarkMode();
+                    }
+                };
+
+                final Uri[] urisToObserve = {
+                    Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED),
+                    Settings.Secure.getUriFor(Settings.Secure.UI_NIGHT_MODE)
+                };
+                for (Uri uri : urisToObserve) {
+                    mContext.getContentResolver().registerContentObserver(
+                            uri,
+                            false,
+                            mForceInvertObserver,
+                            UserHandle.myUserId());
+                }
             }
         }
     }
@@ -1856,10 +1874,9 @@ public final class ViewRootImpl implements ViewParent,
                 .unregisterDisplayListener(mDisplayListener);
 
         if (forceInvertColor()) {
-            if (mForceInvertStateChangeListener != null) {
-                mUiModeManager.removeForceInvertStateChangeListener(
-                        mForceInvertStateChangeListener);
-                mForceInvertStateChangeListener = null;
+            if (mForceInvertObserver != null) {
+                mContext.getContentResolver().unregisterContentObserver(mForceInvertObserver);
+                mForceInvertObserver = null;
             }
         }
 
@@ -2054,26 +2071,40 @@ public final class ViewRootImpl implements ViewParent,
      */
     @VisibleForTesting
     public @ForceDarkType.ForceDarkTypeDef int determineForceDarkType() {
-        if (forceInvertColor()) {
-            // Force invert ignores all developer opt-outs.
-            // We also ignore dark theme, since the app developer can override the user's preference
-            // for dark mode in configuration.uiMode. Instead, we assume that both force invert and
-            // the system's dark theme are enabled.
-            if (mUiModeManager.getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK) {
-                return ForceDarkType.FORCE_INVERT_COLOR_DARK;
+        TypedArray a = mContext.obtainStyledAttributes(R.styleable.Theme);
+        try {
+            if (forceInvertColor()) {
+                // Force invert ignores all developer opt-outs.
+                // We also ignore dark theme, since the app developer can override the user's
+                // preference for dark mode in configuration.uiMode. Instead, we assume that both
+                // force invert and the system's dark theme are enabled.
+                if (getUiModeManager().getForceInvertState() ==
+                        UiModeManager.FORCE_INVERT_TYPE_DARK) {
+                    final boolean isLightTheme =
+                        a.getBoolean(R.styleable.Theme_isLightTheme, false);
+                    // TODO: b/372558459 - Also check the background ColorDrawable color lightness
+                    // TODO: b/368725782 - Use hwui color area detection instead of / in
+                    //  addition to these heuristics.
+                    if (isLightTheme) {
+                        return ForceDarkType.FORCE_INVERT_COLOR_DARK;
+                    } else {
+                        return ForceDarkType.NONE;
+                    }
+                }
             }
-        }
 
-        boolean useAutoDark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
-        if (useAutoDark) {
-            boolean forceDarkAllowedDefault =
-                    SystemProperties.getBoolean(ThreadedRenderer.DEBUG_FORCE_DARK, false);
-            TypedArray a = mContext.obtainStyledAttributes(R.styleable.Theme);
-            useAutoDark = a.getBoolean(R.styleable.Theme_isLightTheme, true)
-                    && a.getBoolean(R.styleable.Theme_forceDarkAllowed, forceDarkAllowedDefault);
+            boolean useAutoDark = getNightMode() == Configuration.UI_MODE_NIGHT_YES;
+            if (useAutoDark) {
+                boolean forceDarkAllowedDefault =
+                        SystemProperties.getBoolean(ThreadedRenderer.DEBUG_FORCE_DARK, false);
+                useAutoDark = a.getBoolean(R.styleable.Theme_isLightTheme, true)
+                        && a.getBoolean(R.styleable.Theme_forceDarkAllowed,
+                            forceDarkAllowedDefault);
+            }
+            return useAutoDark ? ForceDarkType.FORCE_DARK : ForceDarkType.NONE;
+        } finally {
             a.recycle();
         }
-        return useAutoDark ? ForceDarkType.FORCE_DARK : ForceDarkType.NONE;
     }
 
     private void updateForceDarkMode() {
@@ -2517,11 +2548,12 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     /**
-     * Notify the when the running state of a insets animation changed.
+     * Notify the when the animating insets types have changed.
      */
     @VisibleForTesting
-    public void notifyInsetsAnimationRunningStateChanged(boolean running) {
+    public void updateAnimatingTypes(@InsetsType int animatingTypes) {
         if (sToolkitSetFrameRateReadOnlyFlagValue) {
+            boolean running = animatingTypes != 0;
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
                 Trace.instant(Trace.TRACE_TAG_VIEW,
                         TextUtils.formatSimple("notifyInsetsAnimationRunningStateChanged(%s)",
@@ -2529,7 +2561,7 @@ public final class ViewRootImpl implements ViewParent,
             }
             mInsetsAnimationRunning = running;
             try {
-                mWindowSession.notifyInsetsAnimationRunningStateChanged(mWindow, running);
+                mWindowSession.updateAnimatingTypes(mWindow, animatingTypes);
             } catch (RemoteException e) {
             }
         }
@@ -6052,8 +6084,12 @@ public final class ViewRootImpl implements ViewParent,
     }
 
     void updateSystemGestureExclusionRectsForView(View view) {
+        boolean msgInQueue = reduceChangedExclusionRectsMsgs()
+                && mGestureExclusionTracker.isWaitingForComputeChanges();
         mGestureExclusionTracker.updateRectsForView(view);
-        mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        if (!msgInQueue) {
+            mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        }
     }
 
     void systemGestureExclusionChanged() {
@@ -6097,8 +6133,12 @@ public final class ViewRootImpl implements ViewParent,
      * the root's view hierarchy.
      */
     public void setRootSystemGestureExclusionRects(@NonNull List<Rect> rects) {
+        boolean msgInQueue = reduceChangedExclusionRectsMsgs()
+                && mGestureExclusionTracker.isWaitingForComputeChanges();
         mGestureExclusionTracker.setRootRects(rects);
-        mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        if (!msgInQueue) {
+            mHandler.sendEmptyMessage(MSG_SYSTEM_GESTURE_EXCLUSION_CHANGED);
+        }
     }
 
     /**
@@ -9369,6 +9409,13 @@ public final class ViewRootImpl implements ViewParent,
         return mAudioManager;
     }
 
+    private UiModeManager getUiModeManager() {
+        if (mUiModeManager == null) {
+            mUiModeManager = mContext.getSystemService(UiModeManager.class);
+        }
+        return mUiModeManager;
+    }
+
     private Vibrator getSystemVibrator() {
         if (mVibrator == null) {
             mVibrator = mContext.getSystemService(Vibrator.class);
@@ -12282,6 +12329,15 @@ public final class ViewRootImpl implements ViewParent,
                 } catch (RemoteException re) {
                     /* best effort - ignore */
                 }
+            }
+        }
+
+        @Override
+        public void getWindowSurfaceInfo(IWindowSurfaceInfoCallback callback) {
+            ViewRootImpl viewRootImpl = mViewRootImpl.get();
+            if (viewRootImpl != null && viewRootImpl.mView != null) {
+                viewRootImpl.getAccessibilityInteractionController()
+                        .getWindowSurfaceInfoClientThread(callback);
             }
         }
 

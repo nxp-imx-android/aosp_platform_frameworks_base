@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import android.hardware.HardwareBuffer;
+import android.platform.test.annotations.DisabledOnRavenwood;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -252,6 +253,7 @@ public class BitmapTest {
                     | GraphicBuffer.USAGE_SW_WRITE_OFTEN;
 
     @Test
+    @DisabledOnRavenwood(blockedBy = HardwareBuffer.class)
     public void testWrapHardwareBufferWithSrgbColorSpace() {
         GraphicBuffer buffer = GraphicBuffer.create(10, 10, PixelFormat.RGBA_8888, GRAPHICS_USAGE);
         Canvas canvas = buffer.lockCanvas();
@@ -265,6 +267,7 @@ public class BitmapTest {
     }
 
     @Test
+    @DisabledOnRavenwood(blockedBy = HardwareBuffer.class)
     public void testWrapHardwareBufferWithDisplayP3ColorSpace() {
         GraphicBuffer buffer = GraphicBuffer.create(10, 10, PixelFormat.RGBA_8888, GRAPHICS_USAGE);
         Canvas canvas = buffer.lockCanvas();

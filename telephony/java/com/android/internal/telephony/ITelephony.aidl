@@ -3203,6 +3203,31 @@ interface ITelephony {
             in List<String> satelliteCountryCodes, String satelliteAccessConfigurationFile);
 
     /**
+     * This API can be used by only CTS to override the satellite access allowed state for
+     * a list of subscription IDs.
+     *
+     * @param subIdListStr The string representation of the list of subscription IDs,
+     *                     which are numbers separated by comma.
+     * @return {@code true} if the satellite access allowed state is set successfully,
+     * {@code false} otherwise.
+     */
+    boolean setSatelliteAccessAllowedForSubscriptions(in String subIdListStr);
+
+    /**
+     * This API can be used by only CTS to override satellite TN scanning support.
+     *
+     * @param reset {@code true} mean the overridden configs should not be used, {@code false}
+     *              otherwise.
+     * @param concurrentTnScanningSupported Whether concurrent TN scanning is supported.
+     * @param tnScanningDuringSatelliteSessionAllowed Whether TN scanning is allowed during
+     * a satellite session.
+     * @return {@code true} if the TN scanning support is set successfully,
+     * {@code false} otherwise.
+     */
+    boolean setTnScanningSupport(in boolean reset, in boolean concurrentTnScanningSupported,
+        in boolean tnScanningDuringSatelliteSessionAllowed);
+
+    /**
      * This API can be used in only testing to override oem-enabled satellite provision status.
      *
      * @param reset {@code true} mean the overriding status should not be used, {@code false}

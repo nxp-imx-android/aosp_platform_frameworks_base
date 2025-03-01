@@ -196,4 +196,9 @@
     <item msgid="6419996398343291862">"Off"</item>
     <item msgid="5908720590832378783">"On"</item>
   </string-array>
+  <string-array name="tile_states_desktopeffects">
+    <item msgid="6253480000354287321">"Unavailable"</item>
+    <item msgid="6641673879029894995">"Off"</item>
+    <item msgid="5806682401126108403">"On"</item>
+  </string-array>
 </resources>

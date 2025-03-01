@@ -26,14 +26,16 @@ import android.hardware.display.DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
 import android.os.Handler
 import android.util.Log
 import android.view.Display
+import android.view.IWindowManager
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.traceSection
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.DisplayEvent
+import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.util.Compile
 import com.android.systemui.util.kotlin.pairwiseBy
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -43,6 +45,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -50,12 +53,13 @@ import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 
-/** Provides a [Flow] of [Display] as returned by [DisplayManager]. */
+/** Repository for providing access to display related information and events. */
 interface DisplayRepository {
     /** Display change event indicating a change to the given displayId has occurred. */
     val displayChangeEvent: Flow<Int>
@@ -65,6 +69,9 @@ interface DisplayRepository {
 
     /** Display removal event indicating a display has been removed. */
     val displayRemovalEvent: Flow<Int>
+
+    /** A [StateFlow] that maintains a set of display IDs that should have system decorations. */
+    val displayIdsWithSystemDecorations: StateFlow<Set<Int>>
 
     /**
      * Provides the current set of displays.
@@ -124,6 +131,8 @@ class DisplayRepositoryImpl
 @Inject
 constructor(
     private val displayManager: DisplayManager,
+    private val commandQueue: CommandQueue,
+    private val windowManager: IWindowManager,
     @Background backgroundHandler: Handler,
     @Background bgApplicationScope: CoroutineScope,
     @Background backgroundCoroutineDispatcher: CoroutineDispatcher,
@@ -424,6 +433,56 @@ constructor(
             }
             .filter { it != emptyInitialState }
             .map { it.resultSet }
+    }
+
+    private val decorationEvents: Flow<Event> = callbackFlow {
+        val callback =
+            object : CommandQueue.Callbacks {
+                override fun onDisplayAddSystemDecorations(displayId: Int) {
+                    trySend(Event.Add(displayId))
+                }
+
+                override fun onDisplayRemoveSystemDecorations(displayId: Int) {
+                    trySend(Event.Remove(displayId))
+                }
+            }
+        commandQueue.addCallback(callback)
+        awaitClose { commandQueue.removeCallback(callback) }
+    }
+
+    private val initialDisplayIdsWithDecorations: Set<Int> =
+        displayIds.value.filter { windowManager.shouldShowSystemDecors(it) }.toSet()
+
+    /**
+     * A [StateFlow] that maintains a set of display IDs that should have system decorations.
+     *
+     * Updates to the set are triggered by:
+     * - Adding displays via [CommandQueue.Callbacks.onDisplayAddSystemDecorations].
+     * - Removing displays via [CommandQueue.Callbacks.onDisplayRemoveSystemDecorations].
+     * - Removing displays via [displayRemovalEvent] emissions.
+     *
+     * The set is initialized with displays that qualify for system decorations based on
+     * [WindowManager.shouldShowSystemDecors].
+     */
+    override val displayIdsWithSystemDecorations: StateFlow<Set<Int>> =
+        merge(decorationEvents, displayRemovalEvent.map { Event.Remove(it) })
+            .scan(initialDisplayIdsWithDecorations) { displayIds: Set<Int>, event: Event ->
+                when (event) {
+                    is Event.Add -> displayIds + event.displayId
+                    is Event.Remove -> displayIds - event.displayId
+                }
+            }
+            .distinctUntilChanged()
+            .stateIn(
+                scope = bgApplicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = initialDisplayIdsWithDecorations,
+            )
+
+    private sealed class Event(val displayId: Int) {
+        class Add(displayId: Int) : Event(displayId)
+
+        class Remove(displayId: Int) : Event(displayId)
     }
 
     private companion object {

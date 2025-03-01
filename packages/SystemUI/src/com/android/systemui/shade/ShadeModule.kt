@@ -22,6 +22,8 @@ import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.plugins.qs.QSContainerController
 import com.android.systemui.qs.ui.adapter.QSSceneAdapterImpl
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor
+import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractorPassThrough
 import com.android.systemui.shade.carrier.ShadeCarrierGroupControllerLog
 import com.android.systemui.shade.data.repository.PrivacyChipRepository
 import com.android.systemui.shade.data.repository.PrivacyChipRepositoryImpl
@@ -147,6 +149,19 @@ abstract class ShadeModule {
             sceneContainerOn: Provider<QuickSettingsControllerSceneImpl>,
             sceneContainerOff: Provider<QuickSettingsControllerImpl>,
         ): QuickSettingsController {
+            return if (SceneContainerFlag.isEnabled) {
+                sceneContainerOn.get()
+            } else {
+                sceneContainerOff.get()
+            }
+        }
+
+        @Provides
+        @SysUISingleton
+        fun providesBrightnessMirrorInteractor(
+            sceneContainerOn: Provider<BrightnessMirrorShowingInteractorPassThrough>,
+            sceneContainerOff: Provider<NotificationPanelViewController>,
+        ): BrightnessMirrorShowingInteractor {
             return if (SceneContainerFlag.isEnabled) {
                 sceneContainerOn.get()
             } else {

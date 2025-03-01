@@ -163,10 +163,24 @@ TEST_F(FlaggedResourcesTest, EnabledXmlELementAttributeRemoved) {
   auto loaded_apk = LoadedApk::LoadApkFromPath(apk_path, &noop_diag);
 
   std::string output;
-  DumpXmlTreeToString(loaded_apk.get(), "res/layout-v22/layout1.xml", &output);
+  DumpXmlTreeToString(loaded_apk.get(), "res/layout-v36/layout1.xml", &output);
   ASSERT_FALSE(output.contains("test.package.trueFlag"));
   ASSERT_TRUE(output.contains("FIND_ME"));
   ASSERT_TRUE(output.contains("test.package.readWriteFlag"));
+}
+
+TEST_F(FlaggedResourcesTest, ReadWriteFlagInPathFails) {
+  test::TestDiagnosticsImpl diag;
+  const std::string compiled_files_dir = GetTestPath("compiled");
+  ASSERT_FALSE(CompileFile(GetTestPath("res/values/flag(!test.package.rwFlag)/bools.xml"),
+                           R"(<resources>
+                                <bool name="bool1">false</bool>
+                              </resources>)",
+                           compiled_files_dir, &diag,
+                           {"--feature-flags", "test.package.rwFlag=false"}));
+
+  ASSERT_TRUE(diag.GetLog().contains(
+      "Only read only flags may be used with resources: test.package.rwFlag"));
 }
 
 }  // namespace aapt

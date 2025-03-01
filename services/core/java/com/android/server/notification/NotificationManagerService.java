@@ -3211,6 +3211,11 @@ public class NotificationManagerService extends SystemService {
             }
 
             @Override
+            public void sendAppProvidedSummaryDeleteIntent(String pkg, PendingIntent deleteIntent) {
+                sendDeleteIntent(deleteIntent, pkg);
+            }
+
+            @Override
             public void removeNotificationFromCanceledGroup(int userId, String pkg,
                     String groupKey, int cancelReason) {
                 synchronized (mNotificationLock) {
@@ -9898,7 +9903,8 @@ public class NotificationManagerService extends SystemService {
                             if (notificationForceGrouping()) {
                                 mHandler.post(() -> {
                                     synchronized (mNotificationLock) {
-                                        mGroupHelper.onNotificationRemoved(r, mNotificationList);
+                                        mGroupHelper.onNotificationRemoved(r, mNotificationList,
+                                                /* sendingDelete= */ false);
                                     }
                                 });
                             } else {
@@ -10826,20 +10832,7 @@ public class NotificationManagerService extends SystemService {
 
         // tell the app
         if (sendDelete) {
-            final PendingIntent deleteIntent = r.getNotification().deleteIntent;
-            if (deleteIntent != null) {
-                try {
-                    // make sure deleteIntent cannot be used to start activities from background
-                    LocalServices.getService(ActivityManagerInternal.class)
-                            .clearPendingIntentAllowBgActivityStarts(deleteIntent.getTarget(),
-                                    ALLOWLIST_TOKEN);
-                    deleteIntent.send();
-                } catch (PendingIntent.CanceledException ex) {
-                    // do nothing - there's no relevant way to recover, and
-                    //     no reason to let this propagate
-                    Slog.w(TAG, "canceled PendingIntent for " + r.getSbn().getPackageName(), ex);
-                }
-            }
+            sendDeleteIntent(r.getNotification().deleteIntent, r.getSbn().getPackageName());
         }
 
         // Only cancel these if this notification actually got to be posted.
@@ -10854,7 +10847,7 @@ public class NotificationManagerService extends SystemService {
                     mHandler.removeCallbacksAndEqualMessages(r.getKey());
                     mHandler.post(() -> {
                         synchronized (NotificationManagerService.this.mNotificationLock) {
-                            mGroupHelper.onNotificationRemoved(r, mNotificationList);
+                            mGroupHelper.onNotificationRemoved(r, mNotificationList, sendDelete);
                         }
                     });
 
@@ -10949,6 +10942,21 @@ public class NotificationManagerService extends SystemService {
         if (wasPosted) {
             mNotificationRecordLogger.logNotificationCancelled(r, reason,
                     r.getStats().getDismissalSurface());
+        }
+    }
+
+    private static void sendDeleteIntent(@Nullable PendingIntent deleteIntent, String fromPkg) {
+        if (deleteIntent != null) {
+            try {
+                // make sure deleteIntent cannot be used to start activities from background
+                LocalServices.getService(ActivityManagerInternal.class)
+                        .clearPendingIntentAllowBgActivityStarts(deleteIntent.getTarget(),
+                                ALLOWLIST_TOKEN);
+                deleteIntent.send();
+            } catch (PendingIntent.CanceledException ex) {
+                // There's no relevant way to recover, and no reason to let this propagate
+                Slog.w(TAG, "canceled PendingIntent for " + fromPkg, ex);
+            }
         }
     }
 

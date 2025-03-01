@@ -24,6 +24,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Binder
 import android.os.IBinder
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
@@ -127,7 +128,7 @@ class DesktopTasksTransitionObserverTest {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun backNavigation_taskMinimized() {
         val task = createTaskInfo(1)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
 
         transitionObserver.onTransitionReady(
             transition = mock(),
@@ -145,7 +146,9 @@ class DesktopTasksTransitionObserverTest {
     fun backNavigation_withCloseTransitionNotLastTask_taskMinimized() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(2)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isOnlyVisibleTask(task.taskId, task.displayId)).thenReturn(false)
+        whenever(taskRepository.hasOnlyOneVisibleTask(task.displayId)).thenReturn(false)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
 
@@ -168,10 +171,11 @@ class DesktopTasksTransitionObserverTest {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
-    fun backNavigation_withCloseTransitionLastTask_taskMinimized() {
+    @DisableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
+    fun backNavigation_withCloseTransitionLastTask_wallpaperActivityClosed_taskMinimized() {
         val task = createTaskInfo(1)
         val transition = mock<IBinder>()
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
         whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
 
@@ -193,10 +197,39 @@ class DesktopTasksTransitionObserverTest {
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
+    fun backNavigation_withCloseTransitionLastTask_wallpaperActivityReordered_taskMinimized() {
+        val task = createTaskInfo(1)
+        val transition = mock<IBinder>()
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
+        whenever(taskRepository.isClosingTask(task.taskId)).thenReturn(false)
+        whenever(backAnimationController.latestTriggerBackTask).thenReturn(task.taskId)
+
+        transitionObserver.onTransitionReady(
+            transition = transition,
+            info = createBackNavigationTransition(task, TRANSIT_CLOSE, true, TRANSIT_TO_BACK),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(taskRepository).minimizeTask(task.displayId, task.taskId)
+        val pendingTransition =
+            DesktopMixedTransitionHandler.PendingMixedTransition.Minimize(
+                transition,
+                task.taskId,
+                isLastTask = true,
+            )
+        verify(mixedHandler).addPendingMixedTransition(pendingTransition)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun backNavigation_nullTaskInfo_taskNotMinimized() {
         val task = createTaskInfo(1)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
 
         transitionObserver.onTransitionReady(
             transition = mock(),
@@ -212,7 +245,7 @@ class DesktopTasksTransitionObserverTest {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun removeTasks_onTaskFullscreenLaunchWithOpenTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -230,7 +263,7 @@ class DesktopTasksTransitionObserverTest {
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
     fun removeTasks_onTaskFullscreenLaunchExitDesktopTransition_taskRemovedFromRepo() {
         val task = createTaskInfo(1, WINDOWING_MODE_FULLSCREEN)
-        whenever(taskRepository.getVisibleTaskCount(any())).thenReturn(1)
+        whenever(taskRepository.isAnyDeskActive(any())).thenReturn(true)
         whenever(taskRepository.isActiveTask(task.taskId)).thenReturn(true)
 
         transitionObserver.onTransitionReady(
@@ -249,7 +282,7 @@ class DesktopTasksTransitionObserverTest {
     fun closeLastTask_wallpaperTokenExists_wallpaperIsRemoved() {
         val mockTransition = Mockito.mock(IBinder::class.java)
         val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
-        whenever(taskRepository.getVisibleTaskCount(task.displayId)).thenReturn(0)
+        whenever(taskRepository.isAnyDeskActive(task.displayId)).thenReturn(false)
 
         transitionObserver.onTransitionReady(
             transition = mockTransition,
@@ -307,51 +340,6 @@ class DesktopTasksTransitionObserverTest {
     }
 
     @Test
-    fun transitOpenWallpaper_wallpaperActivityVisibilitySaved() {
-        val wallpaperTask = createWallpaperTaskInfo()
-
-        transitionObserver.onTransitionReady(
-            transition = mock(),
-            info = createOpenChangeTransition(wallpaperTask),
-            startTransaction = mock(),
-            finishTransaction = mock(),
-        )
-
-        verify(desktopWallpaperActivityTokenProvider)
-            .setWallpaperActivityIsVisible(isVisible = true, wallpaperTask.displayId)
-    }
-
-    @Test
-    fun transitToFrontWallpaper_wallpaperActivityVisibilitySaved() {
-        val wallpaperTask = createWallpaperTaskInfo()
-
-        transitionObserver.onTransitionReady(
-            transition = mock(),
-            info = createToFrontTransition(wallpaperTask),
-            startTransaction = mock(),
-            finishTransaction = mock(),
-        )
-
-        verify(desktopWallpaperActivityTokenProvider)
-            .setWallpaperActivityIsVisible(isVisible = true, wallpaperTask.displayId)
-    }
-
-    @Test
-    fun transitToBackWallpaper_wallpaperActivityVisibilitySaved() {
-        val wallpaperTask = createWallpaperTaskInfo()
-
-        transitionObserver.onTransitionReady(
-            transition = mock(),
-            info = createToBackTransition(wallpaperTask),
-            startTransaction = mock(),
-            finishTransaction = mock(),
-        )
-
-        verify(desktopWallpaperActivityTokenProvider)
-            .setWallpaperActivityIsVisible(isVisible = false, wallpaperTask.displayId)
-    }
-
-    @Test
     fun transitCloseWallpaper_wallpaperActivityVisibilitySaved() {
         val wallpaperTask = createWallpaperTaskInfo()
 
@@ -374,7 +362,7 @@ class DesktopTasksTransitionObserverTest {
 
         transitionObserver.onTransitionReady(
             transition = pipTransition,
-            info = createOpenChangeTransition(task, TRANSIT_PIP),
+            info = createOpenChangeTransition(task, type = TRANSIT_PIP),
             startTransaction = mock(),
             finishTransaction = mock(),
         )
@@ -434,6 +422,7 @@ class DesktopTasksTransitionObserverTest {
         task: RunningTaskInfo?,
         type: Int = TRANSIT_TO_BACK,
         withWallpaper: Boolean = false,
+        wallpaperChangeMode: Int = TRANSIT_CLOSE,
     ): TransitionInfo {
         return TransitionInfo(type, /* flags= */ 0).apply {
             addChange(
