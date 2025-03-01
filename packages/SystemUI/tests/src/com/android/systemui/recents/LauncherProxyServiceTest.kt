@@ -24,6 +24,7 @@ import android.os.PowerManager
 import android.os.UserManager
 import android.testing.TestableContext
 import android.testing.TestableLooper
+import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.app.AssistUtils
@@ -66,6 +67,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.any
 import org.mockito.Mockito.anyInt
@@ -165,7 +167,8 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
         verify(launcherProxy)
             .onSystemUiStateChanged(
-                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_AWAKE }
+                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_AWAKE },
+                eq(Display.DEFAULT_DISPLAY),
             )
     }
 
@@ -175,7 +178,8 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
         verify(launcherProxy)
             .onSystemUiStateChanged(
-                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_WAKING }
+                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_WAKING },
+                eq(Display.DEFAULT_DISPLAY),
             )
     }
 
@@ -185,7 +189,8 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
         verify(launcherProxy)
             .onSystemUiStateChanged(
-                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_ASLEEP }
+                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_ASLEEP },
+                eq(Display.DEFAULT_DISPLAY),
             )
     }
 
@@ -197,7 +202,8 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
         verify(launcherProxy)
             .onSystemUiStateChanged(
-                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_GOING_TO_SLEEP }
+                longThat { it and SYSUI_STATE_WAKEFULNESS_MASK == WAKEFULNESS_GOING_TO_SLEEP },
+                eq(Display.DEFAULT_DISPLAY),
             )
     }
 

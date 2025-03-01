@@ -16,8 +16,10 @@
 
 package com.android.systemui.display.data.repository
 
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.testScope
 import kotlinx.coroutines.CoroutineScope
 
 class FakePerDisplayStore(
@@ -45,5 +47,32 @@ val Kosmos.fakePerDisplayStore by
         FakePerDisplayStore(
             backgroundApplicationScope = applicationCoroutineScope,
             displayRepository = displayRepository,
+        )
+    }
+
+class FakePerDisplayInstanceProviderWithTeardown :
+    PerDisplayInstanceProviderWithTeardown<TestPerDisplayInstance> {
+    val destroyed = mutableListOf<TestPerDisplayInstance>()
+
+    override fun destroyInstance(instance: TestPerDisplayInstance) {
+        destroyed += instance
+    }
+
+    override fun createInstance(displayId: Int): TestPerDisplayInstance? {
+        return TestPerDisplayInstance(displayId)
+    }
+}
+
+val Kosmos.fakePerDisplayInstanceProviderWithTeardown by
+    Kosmos.Fixture { FakePerDisplayInstanceProviderWithTeardown() }
+
+val Kosmos.fakePerDisplayInstanceRepository by
+    Kosmos.Fixture {
+        PerDisplayInstanceRepositoryImpl(
+            debugName = "fakePerDisplayInstanceRepository",
+            instanceProvider = fakePerDisplayInstanceProviderWithTeardown,
+            testScope.backgroundScope,
+            displayRepository,
+            dumpManager,
         )
     }

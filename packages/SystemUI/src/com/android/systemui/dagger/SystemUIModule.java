@@ -65,9 +65,9 @@ import com.android.systemui.dagger.qualifiers.UiBackground;
 import com.android.systemui.demomode.dagger.DemoModeModule;
 import com.android.systemui.deviceentry.DeviceEntryModule;
 import com.android.systemui.display.DisplayModule;
+import com.android.systemui.display.data.repository.PerDisplayRepository;
 import com.android.systemui.doze.dagger.DozeComponent;
 import com.android.systemui.dreams.dagger.DreamModule;
-import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.FlagDependenciesModule;
 import com.android.systemui.flags.FlagsModule;
@@ -88,7 +88,6 @@ import com.android.systemui.mediaprojection.appselector.MediaProjectionActivitie
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherModule;
 import com.android.systemui.mediarouter.MediaRouterModule;
 import com.android.systemui.model.SysUiState;
-import com.android.systemui.model.SysUiStateImpl;
 import com.android.systemui.motiontool.MotionToolModule;
 import com.android.systemui.navigationbar.NavigationBarComponent;
 import com.android.systemui.navigationbar.gestural.dagger.GestureModule;
@@ -289,7 +288,8 @@ import javax.inject.Named;
         UtilModule.class,
         NoteTaskModule.class,
         WalletModule.class,
-        LowLightModule.class
+        LowLightModule.class,
+        PerDisplayRepositoriesModule.class
 },
         subcomponents = {
                 ComplicationComponent.class,
@@ -326,11 +326,8 @@ public abstract class SystemUIModule {
     @SysUISingleton
     @Provides
     static SysUiState provideSysUiState(
-            DumpManager dumpManager,
-            SysUiStateImpl.Factory sysUiStateFactory) {
-        final SysUiState state = sysUiStateFactory.create(Display.DEFAULT_DISPLAY);
-        dumpManager.registerDumpable(state);
-        return state;
+            PerDisplayRepository<SysUiState> repository) {
+        return repository.get(Display.DEFAULT_DISPLAY);
     }
 
     /**
