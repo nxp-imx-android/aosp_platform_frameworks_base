@@ -1573,6 +1573,25 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(items.get(1).isFirstDeviceInGroup()).isFalse();
     }
 
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
+    @Test
+    public void deviceListUpdateWithDifferentDevices_firstSelectedDeviceIsFirstDeviceInGroup() {
+        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(true);
+        doReturn(mMediaDevices)
+                .when(mLocalMediaManager)
+                .getSelectedMediaDevice();
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.getMediaItemList().clear();
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+        mMediaDevices.clear();
+        mMediaDevices.add(mMediaDevice2);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
+        assertThat(items.get(0).isFirstDeviceInGroup()).isTrue();
+    }
+
     private int getNumberOfConnectDeviceButtons() {
         int numberOfConnectDeviceButtons = 0;
         for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
