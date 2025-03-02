@@ -648,10 +648,6 @@ public class MediaSwitchingController
             final MediaDevice connectedMediaDevice =
                     needToHandleMutingExpectedDevice ? null
                             : getCurrentConnectedMediaDevice();
-
-            Set<String> selectedDevicesIds = getSelectedMediaDevice().stream()
-                    .map(MediaDevice::getId)
-                    .collect(Collectors.toSet());
             if (oldMediaItems.isEmpty()) {
                 if (connectedMediaDevice == null) {
                     if (DEBUG) {
@@ -660,14 +656,12 @@ public class MediaSwitchingController
                     return categorizeMediaItemsLocked(
                             /* connectedMediaDevice */ null,
                             devices,
-                            selectedDevicesIds,
                             needToHandleMutingExpectedDevice);
                 } else {
                     // selected device exist
                     return categorizeMediaItemsLocked(
                             connectedMediaDevice,
                             devices,
-                            selectedDevicesIds,
                             /* needToHandleMutingExpectedDevice */ false);
                 }
             }
@@ -701,20 +695,9 @@ public class MediaSwitchingController
                 devices.removeAll(targetMediaDevices);
                 targetMediaDevices.addAll(devices);
             }
-            List<MediaItem> finalMediaItems = new ArrayList<>();
-            boolean shouldAddFirstSeenSelectedDevice =
-                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping();
-            for (MediaDevice targetMediaDevice : targetMediaDevices) {
-                if (shouldAddFirstSeenSelectedDevice
-                        && selectedDevicesIds.contains(targetMediaDevice.getId())) {
-                    finalMediaItems.add(MediaItem.createDeviceMediaItem(
-                            targetMediaDevice, /* isFirstDeviceInGroup */ true));
-                    shouldAddFirstSeenSelectedDevice = false;
-                } else {
-                    finalMediaItems.add(MediaItem.createDeviceMediaItem(
-                            targetMediaDevice, /* isFirstDeviceInGroup */ false));
-                }
-            }
+            List<MediaItem> finalMediaItems = targetMediaDevices.stream()
+                    .map(MediaItem::createDeviceMediaItem)
+                    .collect(Collectors.toList());
             dividerItems.forEach(finalMediaItems::add);
             attachConnectNewDeviceItemIfNeeded(finalMediaItems);
             return finalMediaItems;
@@ -741,9 +724,11 @@ public class MediaSwitchingController
     @GuardedBy("mMediaDevicesLock")
     private List<MediaItem> categorizeMediaItemsLocked(MediaDevice connectedMediaDevice,
             List<MediaDevice> devices,
-            Set<String> selectedDevicesIds,
             boolean needToHandleMutingExpectedDevice) {
         List<MediaItem> finalMediaItems = new ArrayList<>();
+        Set<String> selectedDevicesIds = getSelectedMediaDevice().stream()
+                .map(MediaDevice::getId)
+                .collect(Collectors.toSet());
         if (connectedMediaDevice != null) {
             selectedDevicesIds.add(connectedMediaDevice.getId());
         }
