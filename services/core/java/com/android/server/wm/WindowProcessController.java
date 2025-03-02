@@ -36,8 +36,8 @@ import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
 import static com.android.server.wm.ActivityRecord.State.STARTED;
-import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.server.wm.ActivityRecord.State.STOPPED;
+import static com.android.server.wm.ActivityRecord.State.STOPPING;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_RELEASE;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_CONFIGURATION;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.POSTFIX_RELEASE;
@@ -69,7 +69,6 @@ import android.content.pm.ServiceInfo;
 import android.content.res.Configuration;
 import android.os.Binder;
 import android.os.Build;
-import android.os.DeadObjectException;
 import android.os.FactoryTest;
 import android.os.LocaleList;
 import android.os.Message;
@@ -458,6 +457,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
                 mAtm.getLifecycleManager().scheduleTransactionItemNow(
                         thread, configurationChangeItem);
             } catch (Exception e) {
+                // TODO(b/323801078): remove Exception when cleanup
                 Slog.e(TAG_CONFIGURATION, "Failed to schedule ConfigurationChangeItem="
                         + configurationChangeItem + " owner=" + mOwner, e);
             }
@@ -1793,13 +1793,11 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
                 // Non-UI process can handle the change directly.
                 mAtm.getLifecycleManager().scheduleTransactionItemNow(thread, transactionItem);
             }
-        } catch (DeadObjectException e) {
+        } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             // Expected if the process has been killed.
             Slog.w(TAG_CONFIGURATION, "Failed for dead process. ClientTransactionItem="
                     + transactionItem + " owner=" + mOwner);
-        } catch (Exception e) {
-            Slog.e(TAG_CONFIGURATION, "Failed to schedule ClientTransactionItem="
-                    + transactionItem + " owner=" + mOwner, e);
         }
     }
 
