@@ -1443,17 +1443,32 @@ class ProcessRecord implements WindowProcessListener {
 
     void onProcessFrozen() {
         mProfile.onProcessFrozen();
-        if (mThread != null) mThread.onProcessPaused();
+        final ApplicationThreadDeferred t;
+        synchronized (mService) {
+            t = mThread;
+        }
+        // Release the lock before calling the notifier, in case that calls back into AM.
+        if (t != null) t.onProcessPaused();
     }
 
     void onProcessUnfrozen() {
-        if (mThread != null) mThread.onProcessUnpaused();
+        final ApplicationThreadDeferred t;
+        synchronized (mService) {
+            t = mThread;
+        }
+        // Release the lock before calling the notifier, in case that calls back into AM.
+        if (t != null) t.onProcessUnpaused();
         mProfile.onProcessUnfrozen();
         mServices.onProcessUnfrozen();
     }
 
     void onProcessFrozenCancelled() {
-        if (mThread != null) mThread.onProcessPausedCancelled();
+        final ApplicationThreadDeferred t;
+        synchronized (mService) {
+            t = mThread;
+        }
+        // Release the lock before calling the notifier, in case that calls back into AM.
+        if (t != null) t.onProcessPausedCancelled();
         mServices.onProcessFrozenCancelled();
     }
 
