@@ -86,13 +86,6 @@ public class AutoclickTypePanel {
     })
     public @interface Corner {}
 
-    private static final @Corner int[] CORNER_ROTATION_ORDER = {
-            CORNER_BOTTOM_RIGHT,
-            CORNER_BOTTOM_LEFT,
-            CORNER_TOP_LEFT,
-            CORNER_TOP_RIGHT
-    };
-
     // An interface exposed to {@link AutoclickController) to handle different actions on the panel,
     // including changing autoclick type, pausing/resuming autoclick.
     public interface ClickPanelControllerInterface {
@@ -136,10 +129,9 @@ public class AutoclickTypePanel {
 
     // Whether autoclick is paused.
     private boolean mPaused = false;
-    // Tracks the current corner position of the panel using an index into CORNER_ROTATION_ORDER
-    // array. This allows the panel to cycle through screen corners in a defined sequence when
-    // repositioned.
-    private int mCurrentCornerIndex = 0;
+
+    // The current corner position of the panel, default to bottom right.
+    private @Corner int mCurrentCorner = CORNER_BOTTOM_RIGHT;
 
     private final LinearLayout mLeftClickButton;
     private final LinearLayout mRightClickButton;
@@ -257,13 +249,13 @@ public class AutoclickTypePanel {
             params.gravity = Gravity.START | Gravity.TOP;
             // Set the current corner to be bottom-left to ensure that the subsequent reposition
             // action rotates the panel clockwise from bottom-left towards top-left.
-            mCurrentCornerIndex = 1;
+            mCurrentCorner = CORNER_BOTTOM_LEFT;
         } else {
             // Snap to right edge. Set params.gravity to make sure x, y offsets from correct anchor.
             params.gravity = Gravity.END | Gravity.TOP;
             // Set the current corner to be top-right to ensure that the subsequent reposition
             // action rotates the panel clockwise from top-right towards bottom-right.
-            mCurrentCornerIndex = 3;
+            mCurrentCorner = CORNER_TOP_RIGHT;
         }
 
         // Apply final position: set params.x to be edge margin, params.y to maintain vertical
@@ -415,10 +407,10 @@ public class AutoclickTypePanel {
 
     /** Moves the panel to the next corner in clockwise direction. */
     private void moveToNextCorner() {
-        @Corner int nextCornerIndex = (mCurrentCornerIndex + 1) % CORNER_ROTATION_ORDER.length;
-        mCurrentCornerIndex = nextCornerIndex;
+        @Corner int nextCorner = (mCurrentCorner + 1) % 4;
+        mCurrentCorner = nextCorner;
 
-        setPanelPositionForCorner(mParams, mCurrentCornerIndex);
+        setPanelPositionForCorner(mParams, mCurrentCorner);
         mWindowManager.updateViewLayout(mContentView, mParams);
     }
 
@@ -457,7 +449,7 @@ public class AutoclickTypePanel {
                 String.valueOf(mParams.gravity),
                 String.valueOf(mParams.x),
                 String.valueOf(mParams.y),
-                String.valueOf(mCurrentCornerIndex)
+                String.valueOf(mCurrentCorner)
         });
         Settings.Secure.putStringForUser(mContext.getContentResolver(),
                 ACCESSIBILITY_AUTOCLICK_PANEL_POSITION, positionString, mUserId);
@@ -473,7 +465,7 @@ public class AutoclickTypePanel {
                 ACCESSIBILITY_AUTOCLICK_PANEL_POSITION, mUserId);
         if (savedPosition == null) {
             setPanelPositionForCorner(mParams, CORNER_BOTTOM_RIGHT);
-            mCurrentCornerIndex = 0;
+            mCurrentCorner = CORNER_BOTTOM_RIGHT;
             return;
         }
 
@@ -481,7 +473,7 @@ public class AutoclickTypePanel {
         String[] parts = TextUtils.split(savedPosition, POSITION_DELIMITER);
         if (!isValidPositionParts(parts)) {
             setPanelPositionForCorner(mParams, CORNER_BOTTOM_RIGHT);
-            mCurrentCornerIndex = 0;
+            mCurrentCorner = CORNER_BOTTOM_RIGHT;
             return;
         }
 
@@ -489,7 +481,7 @@ public class AutoclickTypePanel {
         mParams.gravity = Integer.parseInt(parts[0]);
         mParams.x = Integer.parseInt(parts[1]);
         mParams.y = Integer.parseInt(parts[2]);
-        mCurrentCornerIndex = Integer.parseInt(parts[3]);
+        mCurrentCorner = Integer.parseInt(parts[3]);
     }
 
     private boolean isValidPositionParts(String[] parts) {
@@ -538,8 +530,8 @@ public class AutoclickTypePanel {
 
     @VisibleForTesting
     @Corner
-    int getCurrentCornerIndexForTesting() {
-        return mCurrentCornerIndex;
+    int getCurrentCornerForTesting() {
+        return mCurrentCorner;
     }
 
     @VisibleForTesting
