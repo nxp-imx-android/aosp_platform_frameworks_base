@@ -2103,6 +2103,7 @@ class DesktopTasksController(
         // TODO(b/337915660): Add a transition handler for these; animations
         //  need updates in some cases.
         val baseActivity = callingTaskInfo.baseActivity ?: return
+        val userHandle = UserHandle.of(callingTaskInfo.userId)
         val fillIn: Intent =
             userProfileContexts
                 .getOrCreate(callingTaskInfo.userId)
@@ -2110,11 +2111,13 @@ class DesktopTasksController(
                 .getLaunchIntentForPackage(baseActivity.packageName) ?: return
         fillIn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
         val launchIntent =
-            PendingIntent.getActivity(
+            PendingIntent.getActivityAsUser(
                 context,
                 /* requestCode= */ 0,
                 fillIn,
                 PendingIntent.FLAG_IMMUTABLE,
+                /* options= */ null,
+                userHandle,
             )
         val options = createNewWindowOptions(callingTaskInfo)
         when (options.launchWindowingMode) {
