@@ -75,6 +75,14 @@ flag {
 }
 
 flag {
+  name: "action_mode_edge_to_edge"
+  namespace: "windowing_frontend"
+  description: "Make contextual action bar edge-to-edge"
+  bug: "379783298"
+  is_fixed_read_only: true
+}
+
+flag {
   name: "keyguard_going_away_timeout"
   namespace: "windowing_frontend"
   description: "Allow a maximum of 10 seconds with keyguardGoingAway=true before force-resetting"
