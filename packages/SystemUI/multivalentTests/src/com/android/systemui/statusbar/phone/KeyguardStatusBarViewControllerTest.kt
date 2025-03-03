@@ -70,6 +70,7 @@ import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.time.FakeSystemClock
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -83,6 +84,7 @@ import org.mockito.Captor
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -155,7 +157,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         testScope = kosmos.testScope
         shadeViewStateProvider = TestShadeViewStateProvider()
 
-        Mockito.`when`(
+        whenever(
                 kosmos.mockStatusBarContentInsetsProvider
                     .getStatusBarContentInsetsForCurrentRotation()
             )
@@ -163,9 +165,9 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(iconManagerFactory.create(ArgumentMatchers.any(), ArgumentMatchers.any()))
+        whenever(iconManagerFactory.create(ArgumentMatchers.any(), ArgumentMatchers.any()))
             .thenReturn(iconManager)
-        Mockito.`when`(statusBarContentInsetsProviderStore.forDisplay(context.displayId))
+        whenever(statusBarContentInsetsProviderStore.forDisplay(context.displayId))
             .thenReturn(kosmos.mockStatusBarContentInsetsProvider)
         allowTestableLooperAsMainThread()
         looper.runWithLooper {
@@ -174,7 +176,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
                     LayoutInflater.from(mContext).inflate(R.layout.keyguard_status_bar, null)
                         as KeyguardStatusBarView
                 )
-            Mockito.`when`(keyguardStatusBarView.getDisplay()).thenReturn(mContext.display)
+            whenever(keyguardStatusBarView.display).thenReturn(mContext.display)
         }
 
         controller = createController()
@@ -404,14 +406,14 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     fun updateViewState_alphaAndVisibilityGiven_viewUpdated() {
         // Verify the initial values so we know the method triggers changes.
         Truth.assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
 
         val newAlpha = 0.5f
         val newVisibility = View.INVISIBLE
         controller.updateViewState(newAlpha, newVisibility)
 
         Truth.assertThat(keyguardStatusBarView.alpha).isEqualTo(newAlpha)
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(newVisibility)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(newVisibility)
     }
 
     @Test
@@ -423,7 +425,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         controller.updateViewState(1f, View.VISIBLE)
 
         // Since we're disabled, we stay invisible
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -444,15 +446,15 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     fun updateViewState_bypassEnabledAndShouldListenForFace_viewHidden() {
         controller.onViewAttached()
         updateStateToKeyguard()
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
 
-        Mockito.`when`(keyguardUpdateMonitor.shouldListenForFace()).thenReturn(true)
-        Mockito.`when`(keyguardBypassController.bypassEnabled).thenReturn(true)
+        whenever(keyguardUpdateMonitor.shouldListenForFace()).thenReturn(true)
+        whenever(keyguardBypassController.bypassEnabled).thenReturn(true)
         onFinishedGoingToSleep()
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -461,13 +463,13 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         controller.onViewAttached()
         updateStateToKeyguard()
 
-        Mockito.`when`(keyguardUpdateMonitor.shouldListenForFace()).thenReturn(true)
-        Mockito.`when`(keyguardBypassController.bypassEnabled).thenReturn(false)
+        whenever(keyguardUpdateMonitor.shouldListenForFace()).thenReturn(true)
+        whenever(keyguardBypassController.bypassEnabled).thenReturn(false)
         onFinishedGoingToSleep()
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
@@ -476,13 +478,13 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         controller.onViewAttached()
         updateStateToKeyguard()
 
-        Mockito.`when`(keyguardUpdateMonitor.shouldListenForFace()).thenReturn(false)
-        Mockito.`when`(keyguardBypassController.bypassEnabled).thenReturn(true)
+        whenever(keyguardUpdateMonitor.shouldListenForFace()).thenReturn(false)
+        whenever(keyguardBypassController.bypassEnabled).thenReturn(true)
         onFinishedGoingToSleep()
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
@@ -495,7 +497,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -508,7 +510,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -520,7 +522,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
@@ -532,7 +534,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -544,7 +546,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
@@ -556,7 +558,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -568,7 +570,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.setDozing(true)
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -580,7 +582,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.setDozing(false)
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
@@ -595,7 +597,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState()
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.GONE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.GONE)
         Truth.assertThat(keyguardStatusBarView.alpha).isEqualTo(0.456f)
     }
 
@@ -611,7 +613,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
 
         controller.updateViewState(0.789f, View.VISIBLE)
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.GONE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.GONE)
         Truth.assertThat(keyguardStatusBarView.alpha).isEqualTo(0.456f)
     }
 
@@ -635,13 +637,13 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         controller.init()
         controller.onViewAttached()
         updateStateToKeyguard()
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
 
         controller.setDozing(true)
 
         // setDozing(true) should typically cause the view to hide. But since the flag is on, we
         // should ignore these set dozing calls and stay the same visibility.
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
@@ -679,7 +681,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         shadeViewStateProvider.setShouldHeadsUpBeVisible(true)
         controller.updateForHeadsUp(/* animate= */ false)
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
@@ -695,7 +697,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         shadeViewStateProvider.setShouldHeadsUpBeVisible(false)
         controller.updateForHeadsUp(/* animate= */ false)
 
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
     }
 
     @Test
@@ -728,7 +730,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
 
         // GIVEN the setting is off
-        Mockito.`when`(secureSettings.getInt(Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON, 0))
+        whenever(secureSettings.getInt(Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON, 0))
             .thenReturn(0)
 
         // WHEN CollapsedStatusBarFragment builds the blocklist
@@ -744,7 +746,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         val str = mContext.getString(com.android.internal.R.string.status_bar_volume)
 
         // GIVEN the setting is ON
-        Mockito.`when`(
+        whenever(
                 secureSettings.getIntForUser(
                     Settings.Secure.STATUS_BAR_SHOW_VIBRATE_ICON,
                     0,
@@ -779,42 +781,52 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         controller.onViewAttached()
         updateStateToKeyguard()
         setDisableSystemInfo(true)
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
 
         controller.animateKeyguardStatusBarIn()
 
         // Since we're disabled, we don't actually animate in and stay invisible
-        Truth.assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+        assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
     @Test
     fun animateToGlanceableHub_affectsAlpha() =
         testScope.runTest {
-            controller.init()
-            val transitionAlphaAmount = .5f
-            ViewUtils.attachView(keyguardStatusBarView)
-            looper.processAllMessages()
-            updateStateToKeyguard()
-            kosmos.fakeCommunalSceneRepository.snapToScene(CommunalScenes.Communal)
-            runCurrent()
-            controller.updateCommunalAlphaTransition(transitionAlphaAmount)
-            Truth.assertThat(keyguardStatusBarView.getAlpha()).isEqualTo(transitionAlphaAmount)
+            try {
+                controller.init()
+                val transitionAlphaAmount = .5f
+                ViewUtils.attachView(keyguardStatusBarView)
+
+                looper.processAllMessages()
+                updateStateToKeyguard()
+                kosmos.fakeCommunalSceneRepository.snapToScene(CommunalScenes.Communal)
+                runCurrent()
+                controller.updateCommunalAlphaTransition(transitionAlphaAmount)
+                assertThat(keyguardStatusBarView.getAlpha()).isEqualTo(transitionAlphaAmount)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
         }
 
     @Test
     fun animateToGlanceableHub_alphaResetOnCommunalNotShowing() =
         testScope.runTest {
-            controller.init()
-            val transitionAlphaAmount = .5f
-            ViewUtils.attachView(keyguardStatusBarView)
-            looper.processAllMessages()
-            updateStateToKeyguard()
-            kosmos.fakeCommunalSceneRepository.snapToScene(CommunalScenes.Communal)
-            runCurrent()
-            controller.updateCommunalAlphaTransition(transitionAlphaAmount)
-            kosmos.fakeCommunalSceneRepository.snapToScene(CommunalScenes.Blank)
-            runCurrent()
-            Truth.assertThat(keyguardStatusBarView.getAlpha()).isNotEqualTo(transitionAlphaAmount)
+            try {
+                controller.init()
+                val transitionAlphaAmount = .5f
+                ViewUtils.attachView(keyguardStatusBarView)
+
+                looper.processAllMessages()
+                updateStateToKeyguard()
+                kosmos.fakeCommunalSceneRepository.snapToScene(CommunalScenes.Communal)
+                runCurrent()
+                controller.updateCommunalAlphaTransition(transitionAlphaAmount)
+                kosmos.fakeCommunalSceneRepository.snapToScene(CommunalScenes.Blank)
+                runCurrent()
+                assertThat(keyguardStatusBarView.getAlpha()).isNotEqualTo(transitionAlphaAmount)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
         }
 
     /**
