@@ -1059,7 +1059,9 @@ public class StackScrollAlgorithm {
                             shouldHunAppearFromBottom(ambientState, childState);
                     if (NotificationsHunSharedAnimationValues.isEnabled()) {
                         int yTranslation =
-                                mHeadsUpAnimator.getHeadsUpYTranslation(shouldHunAppearFromBottom);
+                                mHeadsUpAnimator.getHeadsUpYTranslation(
+                                        shouldHunAppearFromBottom,
+                                        row.hasStatusBarChipDuringHeadsUpAnimation());
                         childState.setYTranslation(yTranslation);
                     } else {
                         if (shouldHunAppearFromBottom) {

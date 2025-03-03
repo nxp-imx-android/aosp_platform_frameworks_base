@@ -17,13 +17,18 @@
 package com.android.systemui.statusbar.notification.headsup
 
 import android.content.Context
+import com.android.internal.policy.SystemBarUtils
 import com.android.systemui.res.R
+import com.android.systemui.statusbar.ui.SystemBarUtilsProxy
 
 /**
  * A class shared between [StackScrollAlgorithm] and [StackStateAnimator] to ensure all heads up
  * animations use the same animation values.
+ *
+ * @param systemBarUtilsProxy optional utility class to provide the status bar height. Typically
+ *   null in production code and non-null in tests.
  */
-class HeadsUpAnimator(context: Context) {
+class HeadsUpAnimator(context: Context, private val systemBarUtilsProxy: SystemBarUtilsProxy?) {
     init {
         NotificationsHunSharedAnimationValues.unsafeAssertInNewMode()
     }
@@ -32,6 +37,7 @@ class HeadsUpAnimator(context: Context) {
     var stackTopMargin: Int = 0
 
     private var headsUpAppearStartAboveScreen = context.fetchHeadsUpAppearStartAboveScreen()
+    private var statusBarHeight = fetchStatusBarHeight(context)
 
     /**
      * Returns the Y translation for a heads-up notification animation.
@@ -40,12 +46,18 @@ class HeadsUpAnimator(context: Context) {
      * animation. For a disappear animation, the returned Y translation should be the ending value
      * of the animation.
      */
-    fun getHeadsUpYTranslation(isHeadsUpFromBottom: Boolean): Int {
+    fun getHeadsUpYTranslation(isHeadsUpFromBottom: Boolean, hasStatusBarChip: Boolean): Int {
         NotificationsHunSharedAnimationValues.unsafeAssertInNewMode()
 
         if (isHeadsUpFromBottom) {
             // start from or end at the bottom of the screen
             return headsUpAppearHeightBottom + headsUpAppearStartAboveScreen
+        }
+
+        if (hasStatusBarChip) {
+            // If this notification is also represented by a chip in the status bar, we don't want
+            // any HUN transitions to obscure that chip.
+            return statusBarHeight - stackTopMargin
         }
 
         // start from or end at the top of the screen
@@ -55,9 +67,15 @@ class HeadsUpAnimator(context: Context) {
     /** Should be invoked when resource values may have changed. */
     fun updateResources(context: Context) {
         headsUpAppearStartAboveScreen = context.fetchHeadsUpAppearStartAboveScreen()
+        statusBarHeight = fetchStatusBarHeight(context)
     }
 
     private fun Context.fetchHeadsUpAppearStartAboveScreen(): Int {
         return this.resources.getDimensionPixelSize(R.dimen.heads_up_appear_y_above_screen)
+    }
+
+    private fun fetchStatusBarHeight(context: Context): Int {
+        return systemBarUtilsProxy?.getStatusBarHeight()
+            ?: SystemBarUtils.getStatusBarHeight(context)
     }
 }

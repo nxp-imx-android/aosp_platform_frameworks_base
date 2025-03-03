@@ -20,6 +20,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.domain.interactor.RemoteInputInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
@@ -56,6 +57,7 @@ class NotificationListViewModel
 constructor(
     val shelf: NotificationShelfViewModel,
     val hideListViewModel: HideListViewModel,
+    val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
     val footerViewModelFactory: FooterViewModel.Factory,
     val emptyShadeViewModelFactory: EmptyShadeViewModel.Factory,
     val logger: Optional<NotificationLoggerViewModel>,
@@ -363,6 +365,14 @@ constructor(
             headsUpNotificationInteractor.hasPinnedRows.dumpWhileCollecting("hasPinnedHeadsUpRow")
         }
     }
+
+    /**
+     * A list of keys for the visible status bar chips.
+     *
+     * Note that this list can contain both notification keys, as well as keys for other types of
+     * chips like screen recording.
+     */
+    val visibleStatusBarChipKeys = ongoingActivityChipsViewModel.visibleChipKeys
 
     // TODO(b/325936094) use it for the text displayed in the StatusBar
     fun headsUpRow(key: HeadsUpRowKey): HeadsUpRowViewModel =

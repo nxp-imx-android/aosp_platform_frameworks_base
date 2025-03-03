@@ -350,6 +350,26 @@ constructor(
                 .stateIn(scope, SharingStarted.Lazily, MultipleOngoingActivityChipsModelLegacy())
         }
 
+    private val activeChips =
+        if (StatusBarChipsModernization.isEnabled) {
+            chips.map { it.active }
+        } else {
+            chipsLegacy.map {
+                val list = mutableListOf<OngoingActivityChipModel.Active>()
+                if (it.primary is OngoingActivityChipModel.Active) {
+                    list.add(it.primary)
+                }
+                if (it.secondary is OngoingActivityChipModel.Active) {
+                    list.add(it.secondary)
+                }
+                list
+            }
+        }
+
+    /** A flow modeling just the keys for the currently visible chips. */
+    val visibleChipKeys: Flow<List<String>> =
+        activeChips.map { chips -> chips.filter { !it.isHidden }.map { it.key } }
+
     /**
      * Sort the given chip [bundle] in order of priority, and divide the chips between active,
      * overflow, and inactive (see [MultipleOngoingActivityChipsModel] for a description of each).

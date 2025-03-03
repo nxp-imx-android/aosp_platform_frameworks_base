@@ -48,6 +48,7 @@ import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.Me
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.notification.ui.viewmodel.NotifChipsViewModelTest.Companion.assertIsNotifChip
+import com.android.systemui.statusbar.chips.screenrecord.ui.viewmodel.ScreenRecordChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
@@ -172,6 +173,18 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun visibleChipKeys_allInactive() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleChipKeys)
+
+            screenRecordState.value = ScreenRecordModel.DoingNothing
+            mediaProjectionState.value = MediaProjectionState.NotProjecting
+            setNotifs(emptyList())
+
+            assertThat(latest).isEmpty()
+        }
+
+    @Test
     fun primaryChip_screenRecordShow_restHidden_screenRecordShown() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
@@ -243,6 +256,20 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsScreenRecordChip(latest!!.primary)
             assertIsCallChip(latest!!.secondary, callNotificationKey)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
+        }
+
+    @Test
+    fun visibleChipKeys_screenRecordShowAndCallShow_hasBothKeys() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleChipKeys)
+
+            val callNotificationKey = "call"
+            screenRecordState.value = ScreenRecordModel.Recording
+            addOngoingCallState(callNotificationKey)
+
+            assertThat(latest)
+                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey)
+                .inOrder()
         }
 
     @EnableChipsModernization
@@ -864,6 +891,37 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
+    @Test
+    fun visibleChipKeys_threePromotedNotifs_topTwoInList() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleChipKeys)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "firstNotif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("firstNotif").build(),
+                    ),
+                    activeNotificationModel(
+                        key = "secondNotif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("secondNotif").build(),
+                    ),
+                    activeNotificationModel(
+                        key = "thirdNotif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("thirdNotif").build(),
+                    ),
+                )
+            )
+
+            assertThat(latest).containsExactly("firstNotif", "secondNotif").inOrder()
+        }
+
     @DisableChipsModernization
     @Test
     fun chipsLegacy_callAndPromotedNotifs_primaryIsCallSecondaryIsNotif() =
@@ -955,6 +1013,27 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsScreenRecordChip(latest!!.primary)
             assertIsCallChip(latest!!.secondary, callNotificationKey)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
+        }
+
+    @Test
+    fun visibleChipKeys_screenRecordAndCallAndPromotedNotifs_topTwoInList() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleChipKeys)
+
+            val callNotificationKey = "call"
+            addOngoingCallState(callNotificationKey)
+            screenRecordState.value = ScreenRecordModel.Recording
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif",
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                )
+            )
+
+            assertThat(latest)
+                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey)
+                .inOrder()
         }
 
     @EnableChipsModernization
