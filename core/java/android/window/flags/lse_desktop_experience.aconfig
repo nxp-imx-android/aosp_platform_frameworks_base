@@ -803,6 +803,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_app_handle_animation"
+    namespace: "lse_desktop_experience"
+    description: "Enables the animation that occurs when the app handle of a task in immersive mode is shown or hidden."
+    bug: "375252977"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_indicator_in_separate_thread_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables running visual indicator view operations in ShellDesktopThread."
