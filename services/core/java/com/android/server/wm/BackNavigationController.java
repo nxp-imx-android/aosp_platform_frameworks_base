@@ -691,8 +691,8 @@ class BackNavigationController {
             return false;
         }
         if (window.mAttrs.windowAnimations != 0) {
-            final TransitionAnimation transitionAnimation = window.getDisplayContent()
-                    .mAppTransition.mTransitionAnimation;
+            final TransitionAnimation transitionAnimation = window.mDisplayContent
+                    .mTransitionAnimation;
             final int attr = com.android.internal.R.styleable
                     .WindowAnimation_activityCloseExitAnimation;
             final int appResId = transitionAnimation.getAnimationResId(

@@ -247,6 +247,7 @@ import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
 import com.android.internal.util.function.pooled.PooledLambda;
@@ -364,7 +365,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private boolean mTmpInitial;
     private int mMaxUiWidth = 0;
 
-    final AppTransition mAppTransition;
+    // TODO(b/400335290): extract the needed methods and remove this field.
+    final TransitionAnimation mTransitionAnimation;
 
     final UnknownAppVisibilityController mUnknownAppVisibilityController;
 
@@ -1179,7 +1181,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mHoldScreenWakeLock.setReferenceCounted(false);
 
         mFixedRotationTransitionListener = new FixedRotationTransitionListener(mDisplayId);
-        mAppTransition = new AppTransition(mWmService.mContext, mWmService, this);
+        mTransitionAnimation = new TransitionAnimation(mWmService.mContext, false /* debug */, TAG);
         mTransitionController.registerLegacyListener(mFixedRotationTransitionListener);
         mUnknownAppVisibilityController = new UnknownAppVisibilityController(mWmService, this);
         mRemoteDisplayChangeController = new RemoteDisplayChangeController(this);
