@@ -17,7 +17,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
-import android.graphics.RectF
 import android.icu.text.NumberFormat
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -29,6 +28,7 @@ import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
 import com.android.systemui.plugins.clocks.ClockConfig
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockEventListener
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceController
@@ -102,7 +102,7 @@ class DefaultClockController(
         isDarkTheme: Boolean,
         dozeFraction: Float,
         foldFraction: Float,
-        onBoundsChanged: (RectF) -> Unit,
+        clockListener: ClockEventListener?,
     ) {
         largeClock.recomputePadding(null)
 
