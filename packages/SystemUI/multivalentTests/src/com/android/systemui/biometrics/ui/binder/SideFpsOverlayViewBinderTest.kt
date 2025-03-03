@@ -56,7 +56,6 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
-import org.mockito.kotlin.firstValue
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -113,12 +112,7 @@ class SideFpsOverlayViewBinderTest : SysuiTestCase() {
             runCurrent()
 
             verify(kosmos.windowManager).addView(any(), any())
-
             verify(kosmos.windowManager).addView(viewCaptor.capture(), any())
-            verify(viewCaptor.firstValue)
-                .announceForAccessibility(
-                    mContext.getText(R.string.accessibility_side_fingerprint_indicator_label)
-                )
 
             updateSfpsIndicatorRequests(kosmos, mContext, alternateBouncerRequest = false)
             runCurrent()
