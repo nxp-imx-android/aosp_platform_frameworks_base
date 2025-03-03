@@ -42,8 +42,7 @@ class MediaViewModelCallback(
         ) {
             oldItem.instanceId == newItem.instanceId
         } else {
-            oldItem is MediaCommonViewModel.MediaRecommendations &&
-                newItem is MediaCommonViewModel.MediaRecommendations
+            false
         }
     }
 
@@ -56,11 +55,6 @@ class MediaViewModelCallback(
         ) {
             oldItem.immediatelyUpdateUi == newItem.immediatelyUpdateUi &&
                 oldItem.updateTime == newItem.updateTime
-        } else if (
-            oldItem is MediaCommonViewModel.MediaRecommendations &&
-                newItem is MediaCommonViewModel.MediaRecommendations
-        ) {
-            oldItem.key == newItem.key && oldItem.loadingEnabled == newItem.loadingEnabled
         } else {
             false
         }

@@ -61,14 +61,12 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
 import com.android.systemui.media.controls.ui.binder.MediaControlViewBinder
-import com.android.systemui.media.controls.ui.binder.MediaRecommendationsViewBinder
 import com.android.systemui.media.controls.ui.util.MediaViewModelCallback
 import com.android.systemui.media.controls.ui.util.MediaViewModelListUpdateCallback
 import com.android.systemui.media.controls.ui.view.MediaCarouselScrollHandler
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.controls.ui.view.MediaScrollView
 import com.android.systemui.media.controls.ui.view.MediaViewHolder
-import com.android.systemui.media.controls.ui.view.RecommendationViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.MediaCarouselViewModel
 import com.android.systemui.media.controls.ui.viewmodel.MediaCommonViewModel
 import com.android.systemui.media.controls.util.MediaUiEventLogger
@@ -478,40 +476,9 @@ constructor(
                     MediaPlayerData.isSwipedAway = false
                 }
 
-                override fun onSmartspaceMediaDataLoaded(
-                    key: String,
-                    data: SmartspaceMediaData,
-                    shouldPrioritize: Boolean,
-                ) {
-                    debugLogger.logRecommendationLoaded(key, data.isActive)
-                    // Log the case where the hidden media carousel with the existed inactive resume
-                    // media is shown by the Smartspace signal.
-                    if (data.isActive) {
-                        addSmartspaceMediaRecommendations(key, data, shouldPrioritize)
-                    } else {
-                        // Handle update to inactive as a removal
-                        onSmartspaceMediaDataRemoved(data.targetId, immediately = true)
-                    }
-                    MediaPlayerData.isSwipedAway = false
-                }
-
                 override fun onMediaDataRemoved(key: String, userInitiated: Boolean) {
                     debugLogger.logMediaRemoved(key, userInitiated)
                     removePlayer(key, userInitiated = userInitiated)
-                }
-
-                override fun onSmartspaceMediaDataRemoved(key: String, immediately: Boolean) {
-                    debugLogger.logRecommendationRemoved(key, immediately)
-                    if (immediately || isReorderingAllowed) {
-                        removePlayer(key)
-                        if (!immediately) {
-                            // Although it wasn't requested, we were able to process the removal
-                            // immediately since reordering is allowed. So, notify hosts to update
-                            updateHostVisibility()
-                        }
-                    } else {
-                        keysNeedRemoval.add(key)
-                    }
                 }
             }
         )
@@ -655,22 +622,6 @@ constructor(
                 mediaContent.addView(viewHolder.player, position)
                 controllerById[commonViewModel.instanceId.toString()] = viewController
             }
-            is MediaCommonViewModel.MediaRecommendations -> {
-                val viewHolder =
-                    RecommendationViewHolder.create(LayoutInflater.from(context), mediaContent)
-                viewController.attachRecommendations(viewHolder)
-                viewController.recommendationViewHolder?.recommendations?.layoutParams = lp
-                MediaRecommendationsViewBinder.bind(
-                    viewHolder,
-                    commonViewModel.recsViewModel,
-                    viewController,
-                    falsingManager,
-                    backgroundDispatcher,
-                    mainDispatcher,
-                )
-                mediaContent.addView(viewHolder.recommendations, position)
-                controllerById[commonViewModel.key] = viewController
-            }
         }
         viewController.setListening(mediaCarouselScrollHandler.visibleToUser && currentlyExpanded)
         updateViewControllerToState(viewController, noAnimation = true)
@@ -695,21 +646,10 @@ constructor(
     }
 
     private fun onRemoved(commonViewModel: MediaCommonViewModel) {
-        val id =
-            when (commonViewModel) {
-                is MediaCommonViewModel.MediaControl -> commonViewModel.instanceId.toString()
-                is MediaCommonViewModel.MediaRecommendations -> commonViewModel.key
-            }
+        val id = (commonViewModel as MediaCommonViewModel.MediaControl).instanceId.toString()
         controllerById.remove(id)?.let {
-            when (commonViewModel) {
-                is MediaCommonViewModel.MediaControl -> {
-                    mediaCarouselScrollHandler.onPrePlayerRemoved(it.mediaViewHolder!!.player)
-                    mediaContent.removeView(it.mediaViewHolder!!.player)
-                }
-                is MediaCommonViewModel.MediaRecommendations -> {
-                    mediaContent.removeView(it.recommendationViewHolder!!.recommendations)
-                }
-            }
+            mediaCarouselScrollHandler.onPrePlayerRemoved(it.mediaViewHolder!!.player)
+            mediaContent.removeView(it.mediaViewHolder!!.player)
             it.onDestroy()
             mediaCarouselScrollHandler.onPlayersChanged()
             updatePageIndicator()
@@ -718,21 +658,10 @@ constructor(
     }
 
     private fun onMoved(commonViewModel: MediaCommonViewModel, from: Int, to: Int) {
-        val id =
-            when (commonViewModel) {
-                is MediaCommonViewModel.MediaControl -> commonViewModel.instanceId.toString()
-                is MediaCommonViewModel.MediaRecommendations -> commonViewModel.key
-            }
+        val id = (commonViewModel as MediaCommonViewModel.MediaControl).instanceId.toString()
         controllerById[id]?.let {
             mediaContent.removeViewAt(from)
-            when (commonViewModel) {
-                is MediaCommonViewModel.MediaControl -> {
-                    mediaContent.addView(it.mediaViewHolder!!.player, to)
-                }
-                is MediaCommonViewModel.MediaRecommendations -> {
-                    mediaContent.addView(it.recommendationViewHolder!!.recommendations, to)
-                }
-            }
+            mediaContent.addView(it.mediaViewHolder!!.player, to)
         }
         updatePageIndicator()
         mediaCarouselScrollHandler.onPlayersChanged()
@@ -746,11 +675,9 @@ constructor(
         val viewIds =
             viewModels
                 .map { mediaCommonViewModel ->
-                    when (mediaCommonViewModel) {
-                        is MediaCommonViewModel.MediaControl ->
-                            mediaCommonViewModel.instanceId.toString()
-                        is MediaCommonViewModel.MediaRecommendations -> mediaCommonViewModel.key
-                    }
+                    (mediaCommonViewModel as MediaCommonViewModel.MediaControl)
+                        .instanceId
+                        .toString()
                 }
                 .toHashSet()
         controllerById
@@ -758,7 +685,6 @@ constructor(
             .forEach {
                 mediaCarouselScrollHandler.onPrePlayerRemoved(it.value.mediaViewHolder?.player)
                 mediaContent.removeView(it.value.mediaViewHolder?.player)
-                mediaContent.removeView(it.value.recommendationViewHolder?.recommendations)
                 it.value.onDestroy()
                 mediaCarouselScrollHandler.onPlayersChanged()
                 updatePageIndicator()
@@ -808,9 +734,6 @@ constructor(
         mediaContent.removeAllViews()
         for (mediaPlayer in MediaPlayerData.players()) {
             mediaPlayer.mediaViewHolder?.let { mediaContent.addView(it.player) }
-                ?: mediaPlayer.recommendationViewHolder?.let {
-                    mediaContent.addView(it.recommendations)
-                }
         }
         mediaCarouselScrollHandler.onPlayersChanged()
         mediaControlChipInteractor.updateMediaControlChipModelLegacy(
@@ -980,67 +903,6 @@ constructor(
         return MediaViewHolder.create(LayoutInflater.from(context), mediaContent)
     }
 
-    private fun addSmartspaceMediaRecommendations(
-        key: String,
-        data: SmartspaceMediaData,
-        shouldPrioritize: Boolean,
-    ) =
-        traceSection("MediaCarouselController#addSmartspaceMediaRecommendations") {
-            if (DEBUG) Log.d(TAG, "Updating smartspace target in carousel")
-            MediaPlayerData.getMediaPlayer(key)?.let {
-                Log.w(TAG, "Skip adding smartspace target in carousel")
-                return
-            }
-
-            val existingSmartspaceMediaKey = MediaPlayerData.smartspaceMediaKey()
-            existingSmartspaceMediaKey?.let {
-                val removedPlayer =
-                    removePlayer(existingSmartspaceMediaKey, dismissMediaData = false)
-                removedPlayer?.run {
-                    debugLogger.logPotentialMemoryLeak(existingSmartspaceMediaKey)
-                    onDestroy()
-                }
-            }
-
-            val newRecs = mediaControlPanelFactory.get()
-            newRecs.attachRecommendation(
-                RecommendationViewHolder.create(LayoutInflater.from(context), mediaContent)
-            )
-            newRecs.mediaViewController.sizeChangedListener = this::updateCarouselDimensions
-            val lp =
-                LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                )
-            newRecs.recommendationViewHolder?.recommendations?.setLayoutParams(lp)
-            newRecs.bindRecommendation(data)
-            val curVisibleMediaKey =
-                MediaPlayerData.visiblePlayerKeys()
-                    .elementAtOrNull(mediaCarouselScrollHandler.visibleMediaIndex)
-            MediaPlayerData.addMediaRecommendation(
-                key,
-                data,
-                newRecs,
-                shouldPrioritize,
-                systemClock,
-                debugLogger,
-            )
-            updateViewControllerToState(newRecs.mediaViewController, noAnimation = true)
-            reorderAllPlayers(curVisibleMediaKey)
-            updatePageIndicator()
-            mediaFrame.requiresRemeasuring = true
-            // Check postcondition: mediaContent should have the same number of children as there
-            // are elements in mediaPlayers.
-            if (MediaPlayerData.players().size != mediaContent.childCount) {
-                Log.e(
-                    TAG,
-                    "Size of players list and number of views in carousel are out of sync. " +
-                        "Players size is ${MediaPlayerData.players().size}. " +
-                        "View count is ${mediaContent.childCount}.",
-                )
-            }
-        }
-
     fun removePlayer(
         key: String,
         dismissMediaData: Boolean = true,
@@ -1057,7 +919,6 @@ constructor(
         return removed?.apply {
             mediaCarouselScrollHandler.onPrePlayerRemoved(removed.mediaViewHolder?.player)
             mediaContent.removeView(removed.mediaViewHolder?.player)
-            mediaContent.removeView(removed.recommendationViewHolder?.recommendations)
             removed.onDestroy()
             mediaCarouselScrollHandler.onPlayersChanged()
             mediaControlChipInteractor.updateMediaControlChipModelLegacy(
@@ -1095,31 +956,18 @@ constructor(
         val mediaDataList = MediaPlayerData.mediaData()
         // Do not loop through the original list of media data because the re-addition of media data
         // is being executed in background thread.
-        mediaDataList.forEach { (key, data, isSsMediaRec) ->
-            if (isSsMediaRec) {
-                val smartspaceMediaData = MediaPlayerData.smartspaceMediaData
+        mediaDataList.forEach { (key, data, _) ->
+            val isSsReactivated = MediaPlayerData.isSsReactivated(key)
+            if (recreateMedia) {
                 removePlayer(key, dismissMediaData = false, dismissRecommendation = false)
-                smartspaceMediaData?.let {
-                    addSmartspaceMediaRecommendations(
-                        it.targetId,
-                        it,
-                        MediaPlayerData.shouldPrioritizeSs,
-                    )
-                }
-                onUiExecutionEnd.run()
-            } else {
-                val isSsReactivated = MediaPlayerData.isSsReactivated(key)
-                if (recreateMedia) {
-                    removePlayer(key, dismissMediaData = false, dismissRecommendation = false)
-                }
-                addOrUpdatePlayer(
-                    key = key,
-                    oldKey = null,
-                    data = data,
-                    isSsReactivated = isSsReactivated,
-                    onUiExecutionEnd = onUiExecutionEnd,
-                )
             }
+            addOrUpdatePlayer(
+                key = key,
+                oldKey = null,
+                data = data,
+                isSsReactivated = isSsReactivated,
+                onUiExecutionEnd = onUiExecutionEnd,
+            )
         }
     }
 
@@ -1129,12 +977,8 @@ constructor(
         if (recreateMedia) {
             mediaContent.removeAllViews()
             commonViewModels.forEachIndexed { index, viewModel ->
-                when (viewModel) {
-                    is MediaCommonViewModel.MediaControl ->
-                        controllerById[viewModel.instanceId.toString()]?.onDestroy()
-                    is MediaCommonViewModel.MediaRecommendations ->
-                        controllerById[viewModel.key]?.onDestroy()
-                }
+                val mediaControlViewModel = (viewModel as MediaCommonViewModel.MediaControl)
+                controllerById[mediaControlViewModel.instanceId.toString()]?.onDestroy()
                 onAdded(viewModel, index, configChanged = true)
             }
         }
