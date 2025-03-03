@@ -51,6 +51,7 @@ import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -58,6 +59,7 @@ import com.android.systemui.shared.customization.data.content.CustomizationProvi
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEYGUARD_QUICK_AFFORDANCE_ID_NONE
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.util.kotlin.combine
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
 import dagger.Lazy
@@ -89,6 +91,7 @@ constructor(
     private val logger: KeyguardQuickAffordancesLogger,
     private val metricsLogger: KeyguardQuickAffordancesMetricsLogger,
     private val devicePolicyManager: DevicePolicyManager,
+    private val secureLockDeviceInteractor: Lazy<SecureLockDeviceInteractor>,
     private val dockManager: DockManager,
     private val biometricSettingsRepository: BiometricSettingsRepository,
     private val accessibilityInteractor: AccessibilityInteractor,
@@ -145,8 +148,21 @@ constructor(
             },
             shadeInteractor.anyExpansion.map { it < 1.0f }.distinctUntilChanged(),
             biometricSettingsRepository.isCurrentUserInLockdown,
-        ) { affordance, isDozing, isKeyguardShowing, isQuickSettingsVisible, isUserInLockdown ->
-            if (!isDozing && isKeyguardShowing && isQuickSettingsVisible && !isUserInLockdown) {
+            secureLockDeviceInteractor.get().isSecureLockDeviceEnabled,
+        ) {
+            affordance,
+            isDozing,
+            isKeyguardShowing,
+            isQuickSettingsVisible,
+            isUserInLockdown,
+            isSecureLockDeviceEnabled ->
+            if (
+                !isDozing &&
+                    isKeyguardShowing &&
+                    isQuickSettingsVisible &&
+                    !isUserInLockdown &&
+                    !isSecureLockDeviceEnabled
+            ) {
                 affordance
             } else {
                 KeyguardQuickAffordanceModel.Hidden
