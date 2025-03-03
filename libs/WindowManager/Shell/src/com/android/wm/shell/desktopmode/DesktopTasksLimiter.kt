@@ -268,6 +268,7 @@ class DesktopTasksLimiter(
         // If it's a running task, reorder it to back.
         taskIdToMinimize
             ?.let { shellTaskOrganizer.getRunningTaskInfo(it) }
+            // TODO: b/391485148 - this won't really work with multi-desks enabled.
             ?.let { wct.reorder(it.token, /* onTop= */ false) }
         return taskIdToMinimize
     }
