@@ -483,3 +483,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "early_launch_hint"
+    namespace: "windowing_frontend"
+    description: "Sets Launch powermode for activity launches earlier"
+    bug: "399380676"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
