@@ -920,7 +920,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             addOngoingCallState(key = "call")
 
             assertIsScreenRecordChip(latest!!.chips.active[0])
-            assertIsCallChip(latest!!.chips.active[1], "call")
+            assertIsCallChip(latest!!.chips.active[1], "call", context)
         }
 
     @Test
