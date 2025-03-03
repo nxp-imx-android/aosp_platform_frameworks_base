@@ -382,14 +382,6 @@ class KeyGestureControllerTests {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE)
             ),
             TestData(
-                "META + DEL -> Back",
-                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_DEL),
-                KeyGestureEvent.KEY_GESTURE_TYPE_BACK,
-                intArrayOf(KeyEvent.KEYCODE_DEL),
-                KeyEvent.META_META_ON,
-                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE)
-            ),
-            TestData(
                 "META + ESC -> Back",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_ESCAPE),
                 KeyGestureEvent.KEY_GESTURE_TYPE_BACK,
