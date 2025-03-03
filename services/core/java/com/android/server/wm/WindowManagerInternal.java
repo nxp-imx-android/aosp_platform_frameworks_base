@@ -152,6 +152,30 @@ public abstract class WindowManagerInternal {
         }
     }
 
+    /** Interface for clients to receive callbacks related to window change. */
+    public interface WindowFocusChangeListener {
+        /**
+         * Notify on focus changed.
+         *
+         * @param focusedWindowToken the token of the newly focused window.
+         */
+        void focusChanged(@NonNull IBinder focusedWindowToken);
+    }
+
+    /**
+     * Registers a listener to be notified about window focus changes.
+     *
+     * @param listener the {@link WindowFocusChangeListener} to register.
+     */
+    public abstract void registerWindowFocusChangeListener(WindowFocusChangeListener listener);
+
+    /**
+     * Unregisters a listener that was registered via {@link #registerWindowFocusChangeListener}.
+     *
+     * @param listener the {@link WindowFocusChangeListener} to unregister.
+     */
+    public abstract void unregisterWindowFocusChangeListener(WindowFocusChangeListener listener);
+
     /**
      * Interface to receive a callback when the windows reported for
      * accessibility changed.

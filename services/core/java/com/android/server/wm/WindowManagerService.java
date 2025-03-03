@@ -145,6 +145,7 @@ import static com.android.server.wm.WindowManagerDebugConfig.SHOW_VERBOSE_TRANSA
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.server.wm.WindowManagerInternal.OnWindowRemovedListener;
+import static com.android.server.wm.WindowManagerInternal.WindowFocusChangeListener;
 import static com.android.server.wm.WindowManagerServiceDumpProto.BACK_NAVIGATION;
 import static com.android.server.wm.WindowManagerServiceDumpProto.FOCUSED_APP;
 import static com.android.server.wm.WindowManagerServiceDumpProto.FOCUSED_DISPLAY_ID;
@@ -1078,14 +1079,12 @@ public class WindowManagerService extends IWindowManager.Stub
 
     private ViewServer mViewServer;
     final ArrayList<WindowChangeListener> mWindowChangeListeners = new ArrayList<>();
+    final ArrayList<WindowFocusChangeListener> mWindowFocusChangeListeners = new ArrayList<>();
     boolean mWindowsChanged = false;
 
-    public interface WindowChangeListener {
+    interface WindowChangeListener {
         /** Notify on windows changed */
         void windowsChanged();
-
-        /** Notify on focus changed */
-        void focusChanged();
     }
 
     final HighRefreshRateDenylist mHighRefreshRateDenylist;
@@ -5306,15 +5305,27 @@ public class WindowManagerService extends IWindowManager.Stub
         return success;
     }
 
-    public void addWindowChangeListener(WindowChangeListener listener) {
+    void addWindowChangeListener(WindowChangeListener listener) {
         synchronized (mGlobalLock) {
             mWindowChangeListeners.add(listener);
         }
     }
 
-    public void removeWindowChangeListener(WindowChangeListener listener) {
+    void removeWindowChangeListener(WindowChangeListener listener) {
         synchronized (mGlobalLock) {
             mWindowChangeListeners.remove(listener);
+        }
+    }
+
+    void addWindowFocusChangeListener(WindowFocusChangeListener listener) {
+        synchronized (mGlobalLock) {
+            mWindowFocusChangeListeners.add(listener);
+        }
+    }
+
+    void removeWindowFocusChangeListener(WindowFocusChangeListener listener) {
+        synchronized (mGlobalLock) {
+            mWindowFocusChangeListeners.remove(listener);
         }
     }
 
@@ -5350,18 +5361,19 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-    private void notifyFocusChanged() {
-        WindowChangeListener[] windowChangeListeners;
+    private void notifyFocusChanged(IBinder focusedWindowToken) {
+        WindowFocusChangeListener[] windowFocusChangeListeners;
         synchronized (mGlobalLock) {
-            if(mWindowChangeListeners.isEmpty()) {
+            if(mWindowFocusChangeListeners.isEmpty()) {
                 return;
             }
-            windowChangeListeners = new WindowChangeListener[mWindowChangeListeners.size()];
-            windowChangeListeners = mWindowChangeListeners.toArray(windowChangeListeners);
+            windowFocusChangeListeners =
+                    new WindowFocusChangeListener[mWindowFocusChangeListeners.size()];
+            mWindowFocusChangeListeners.toArray(windowFocusChangeListeners);
         }
-        int N = windowChangeListeners.length;
+        int N = windowFocusChangeListeners.length;
         for(int i = 0; i < N; i++) {
-            windowChangeListeners[i].focusChanged();
+            windowFocusChangeListeners[i].focusChanged(focusedWindowToken);
         }
     }
 
@@ -5636,7 +5648,7 @@ public class WindowManagerService extends IWindowManager.Stub
         if (newFocusedWindow != null && newFocusedWindow.mInputChannelToken == newToken) {
             mAnrController.onFocusChanged(newFocusedWindow);
             newFocusedWindow.reportFocusChangedSerialized(true);
-            notifyFocusChanged();
+            notifyFocusChanged(newTarget.getWindowToken());
         }
 
         WindowState lastFocusedWindow = lastTarget != null ? lastTarget.getWindowState() : null;
@@ -8647,6 +8659,16 @@ public class WindowManagerService extends IWindowManager.Stub
                     mCaptureBlockedToastShownUids.clear();
                 }
             }
+        }
+
+        @Override
+        public void registerWindowFocusChangeListener(WindowFocusChangeListener listener) {
+            WindowManagerService.this.addWindowFocusChangeListener(listener);
+        }
+
+        @Override
+        public void unregisterWindowFocusChangeListener(WindowFocusChangeListener listener) {
+            WindowManagerService.this.removeWindowFocusChangeListener(listener);
         }
 
         @Override
