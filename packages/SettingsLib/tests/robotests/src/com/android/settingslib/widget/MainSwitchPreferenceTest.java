@@ -18,13 +18,22 @@ package com.android.settingslib.widget;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.preference.PreferenceDataStore;
 import androidx.preference.PreferenceViewHolder;
 import androidx.test.core.app.ApplicationProvider;
 
+import com.android.settingslib.preference.PreferenceScreenFactory;
 import com.android.settingslib.widget.mainswitch.R;
 
 import org.junit.Before;
@@ -66,5 +75,32 @@ public class MainSwitchPreferenceTest {
 
         assertThat(mRootView.<MainSwitchBar>requireViewById(
                 R.id.settingslib_main_switch_bar).isChecked()).isTrue();
+    }
+
+    @Test
+    public void setOnPreferenceChangeListener() {
+        // Attach preference to preference screen, otherwise `Preference.performClick` does not
+        // interact with underlying datastore
+        new PreferenceScreenFactory(mContext).getOrCreatePreferenceScreen().addPreference(
+                mPreference);
+
+        PreferenceDataStore preferenceDataStore = mock(PreferenceDataStore.class);
+        // always return the provided default value
+        when(preferenceDataStore.getBoolean(any(), anyBoolean())).thenAnswer(
+                invocation -> invocation.getArguments()[1]);
+        mPreference.setPreferenceDataStore(preferenceDataStore);
+
+        String key = "key";
+        mPreference.setKey(key);
+        mPreference.setOnPreferenceChangeListener((preference, newValue) -> false);
+        mPreference.onBindViewHolder(mHolder);
+
+        mPreference.performClick();
+        verify(preferenceDataStore, never()).putBoolean(any(), anyBoolean());
+
+        mPreference.setOnPreferenceChangeListener((preference, newValue) -> true);
+
+        mPreference.performClick();
+        verify(preferenceDataStore).putBoolean(any(), anyBoolean());
     }
 }

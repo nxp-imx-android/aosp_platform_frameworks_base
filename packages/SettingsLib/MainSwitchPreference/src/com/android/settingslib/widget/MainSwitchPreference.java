@@ -80,7 +80,14 @@ public class MainSwitchPreference extends TwoStatePreference implements OnChecke
         mainSwitchBar.setIconSpaceReserved(isIconSpaceReserved());
         // To support onPreferenceChange callback, it needs to call callChangeListener() when
         // MainSwitchBar is clicked.
-        mainSwitchBar.setOnClickListener(view -> callChangeListener(isChecked()));
+        mainSwitchBar.setOnClickListener(view -> {
+            boolean isChecked = isChecked();
+            if (!callChangeListener(isChecked)) {
+                // Change checked state back if listener doesn't like it.
+                // Note that CompoundButton maintains internal state to avoid infinite recursion.
+                mainSwitchBar.setChecked(!isChecked);
+            }
+        });
 
         // Remove all listeners to 1. avoid triggering listener when update UI 2. prevent potential
         // listener leaking when the view holder is reused by RecyclerView
@@ -88,7 +95,11 @@ public class MainSwitchPreference extends TwoStatePreference implements OnChecke
         mainSwitchBar.setChecked(isChecked());
         mainSwitchBar.addOnSwitchChangeListener(this);
 
-        mainSwitchBar.show();
+        if (isVisible()) {
+            mainSwitchBar.show();
+        } else {
+            mainSwitchBar.hide();
+        }
     }
 
     @Override
@@ -101,7 +112,10 @@ public class MainSwitchPreference extends TwoStatePreference implements OnChecke
 
     /**
      * Adds a listener for switch changes
+     *
+     * @deprecated Use {@link #setOnPreferenceChangeListener(OnPreferenceChangeListener)}
      */
+    @Deprecated
     public void addOnSwitchChangeListener(OnCheckedChangeListener listener) {
         if (!mSwitchChangeListeners.contains(listener)) {
             mSwitchChangeListeners.add(listener);
@@ -110,7 +124,10 @@ public class MainSwitchPreference extends TwoStatePreference implements OnChecke
 
     /**
      * Remove a listener for switch changes
+     *
+     * @deprecated Use {@link #setOnPreferenceChangeListener(OnPreferenceChangeListener)}
      */
+    @Deprecated
     public void removeOnSwitchChangeListener(OnCheckedChangeListener listener) {
         mSwitchChangeListeners.remove(listener);
     }
