@@ -66,6 +66,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.graphics.drawable.IconCompat;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.media.flags.Flags;
 import com.android.settingslib.RestrictedLockUtilsInternal;
 import com.android.settingslib.Utils;
 import com.android.settingslib.bluetooth.BluetoothUtils;
@@ -78,7 +79,6 @@ import com.android.settingslib.media.InputMediaDevice;
 import com.android.settingslib.media.InputRouteManager;
 import com.android.settingslib.media.LocalMediaManager;
 import com.android.settingslib.media.MediaDevice;
-import com.android.settingslib.media.flags.Flags;
 import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
@@ -226,7 +226,7 @@ public class MediaSwitchingController
                 InfoMediaManager.createInstance(mContext, packageName, userHandle, lbm, token);
         mLocalMediaManager = new LocalMediaManager(mContext, lbm, imm, packageName);
         mMetricLogger = new MediaOutputMetricLogger(mContext, mPackageName);
-        mOutputMediaItemListProxy = new OutputMediaItemListProxy();
+        mOutputMediaItemListProxy = new OutputMediaItemListProxy(context);
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mNearbyMediaDevicesManager = nearbyMediaDevicesManager;
         mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromSystemColors(mContext);
@@ -308,7 +308,8 @@ public class MediaSwitchingController
     }
 
     private MediaController getMediaController() {
-        if (mToken != null && Flags.usePlaybackInfoForRoutingControls()) {
+        if (mToken != null
+                && com.android.settingslib.media.flags.Flags.usePlaybackInfoForRoutingControls()) {
             return new MediaController(mContext, mToken);
         } else {
             for (NotificationEntry entry : mNotifCollection.getAllNotifs()) {
@@ -577,19 +578,35 @@ public class MediaSwitchingController
 
     private void buildMediaItems(List<MediaDevice> devices) {
         synchronized (mMediaDevicesLock) {
-            List<MediaItem> updatedMediaItems =
-                    buildMediaItems(mOutputMediaItemListProxy.getOutputMediaItemList(), devices);
-            mOutputMediaItemListProxy.clearAndAddAll(updatedMediaItems);
+            if (!mLocalMediaManager.isPreferenceRouteListingExist()) {
+                attachRangeInfo(devices);
+                Collections.sort(devices, Comparator.naturalOrder());
+            }
+            if (Flags.fixOutputMediaItemListIndexOutOfBoundsException()) {
+                // For the first time building list, to make sure the top device is the connected
+                // device.
+                boolean needToHandleMutingExpectedDevice =
+                        hasMutingExpectedDevice() && !isCurrentConnectedDeviceRemote();
+                final MediaDevice connectedMediaDevice =
+                        needToHandleMutingExpectedDevice ? null : getCurrentConnectedMediaDevice();
+                mOutputMediaItemListProxy.updateMediaDevices(
+                        devices,
+                        getSelectedMediaDevice(),
+                        connectedMediaDevice,
+                        needToHandleMutingExpectedDevice,
+                        getConnectNewDeviceItem());
+            } else {
+                List<MediaItem> updatedMediaItems =
+                        buildMediaItems(
+                                mOutputMediaItemListProxy.getOutputMediaItemList(), devices);
+                mOutputMediaItemListProxy.clearAndAddAll(updatedMediaItems);
+            }
         }
     }
 
     protected List<MediaItem> buildMediaItems(
             List<MediaItem> oldMediaItems, List<MediaDevice> devices) {
         synchronized (mMediaDevicesLock) {
-            if (!mLocalMediaManager.isPreferenceRouteListingExist()) {
-                attachRangeInfo(devices);
-                Collections.sort(devices, Comparator.naturalOrder());
-            }
             // For the first time building list, to make sure the top device is the connected
             // device.
             boolean needToHandleMutingExpectedDevice =
@@ -648,8 +665,7 @@ public class MediaSwitchingController
                     .map(MediaItem::createDeviceMediaItem)
                     .collect(Collectors.toList());
 
-            boolean shouldAddFirstSeenSelectedDevice =
-                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping();
+            boolean shouldAddFirstSeenSelectedDevice = Flags.enableOutputSwitcherDeviceGrouping();
 
             if (shouldAddFirstSeenSelectedDevice) {
                 finalMediaItems.clear();
@@ -675,7 +691,7 @@ public class MediaSwitchingController
     }
 
     private boolean enableInputRouting() {
-        return com.android.media.flags.Flags.enableAudioInputDeviceRoutingAndVolumeControl();
+        return Flags.enableAudioInputDeviceRoutingAndVolumeControl();
     }
 
     private void buildInputMediaItems(List<MediaDevice> devices) {
@@ -703,8 +719,7 @@ public class MediaSwitchingController
         if (connectedMediaDevice != null) {
             selectedDevicesIds.add(connectedMediaDevice.getId());
         }
-        boolean groupSelectedDevices =
-                com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping();
+        boolean groupSelectedDevices = Flags.enableOutputSwitcherDeviceGrouping();
         int nextSelectedItemIndex = 0;
         boolean suggestedDeviceAdded = false;
         boolean displayGroupAdded = false;
@@ -877,6 +892,11 @@ public class MediaSwitchingController
 
     public MediaDevice getCurrentConnectedMediaDevice() {
         return mLocalMediaManager.getCurrentConnectedDevice();
+    }
+
+    @VisibleForTesting
+    void clearMediaItemList() {
+        mOutputMediaItemListProxy.clear();
     }
 
     boolean addDeviceToPlayMedia(MediaDevice device) {
