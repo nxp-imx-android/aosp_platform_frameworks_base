@@ -716,7 +716,13 @@ constructor(
                                 BrightnessSliderContainer(
                                     viewModel = containerViewModel.brightnessSliderViewModel,
                                     modifier =
-                                        Modifier.systemGestureExclusionInShade().fillMaxWidth(),
+                                        Modifier.systemGestureExclusionInShade(
+                                                enabled = {
+                                                    layoutState.transitionState is
+                                                        TransitionState.Idle
+                                                }
+                                            )
+                                            .fillMaxWidth(),
                                 )
                             }
                         val TileGrid =
