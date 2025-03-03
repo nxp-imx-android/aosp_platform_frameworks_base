@@ -827,13 +827,10 @@ flag {
 }
 
 flag {
-    name: "enable_persisting_density_scale_for_connected_displays"
+    name: "enable_persisting_display_size_for_connected_displays"
     namespace: "lse_desktop_experience"
-    description: "Enables persisting density scale on resolution change for connected displays."
+    description: "Enables persisting display size on resolution change for connected displays."
     bug: "392855657"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

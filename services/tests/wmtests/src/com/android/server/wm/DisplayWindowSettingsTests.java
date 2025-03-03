@@ -274,7 +274,7 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
                 mSecondaryDisplay.mBaseDisplayDensity);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DENSITY_SCALE_FOR_CONNECTED_DISPLAYS)
+    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testSetForcedDensityRatio() {
         mDisplayWindowSettings.setForcedDensity(mSecondaryDisplay.getDisplayInfo(),
