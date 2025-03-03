@@ -817,7 +817,13 @@ public final class NotificationRecord {
                 }
                 if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())
                         && signals.containsKey(KEY_SUMMARIZATION)) {
-                    mSummarization = signals.getString(KEY_SUMMARIZATION);
+                    CharSequence summary = signals.getCharSequence(KEY_SUMMARIZATION,
+                            signals.getString(KEY_SUMMARIZATION));
+                    if (summary != null) {
+                        mSummarization = summary.toString();
+                    } else {
+                        mSummarization = null;
+                    }
                     EventLogTags.writeNotificationAdjusted(getKey(),
                             KEY_SUMMARIZATION, Boolean.toString(mSummarization != null));
                 }

@@ -225,7 +225,7 @@ public final class Adjustment implements Parcelable {
     public static final int TYPE_CONTENT_RECOMMENDATION = 4;
 
     /**
-     * Data type: String, a summarization of the text of the notification, or, if provided for
+     * Data type: CharSequence, a summarization of the text of the notification, or, if provided for
      * a group summary, a summarization of the text of all of the notificatrions in the group.
      * Send this key with a null value to remove an existing summarization.
      */
