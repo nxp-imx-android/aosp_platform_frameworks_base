@@ -27,6 +27,7 @@ import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -71,7 +72,7 @@ class CallChipViewModelTest : SysuiTestCase() {
     private val mockExpandable: Expandable =
         mock<Expandable>().apply { whenever(dialogTransitionController(any())).thenReturn(mock()) }
 
-    private val underTest by lazy { kosmos.callChipViewModel }
+    private val Kosmos.underTest by Kosmos.Fixture { callChipViewModel }
 
     @Test
     fun chip_noCall_isHidden() =

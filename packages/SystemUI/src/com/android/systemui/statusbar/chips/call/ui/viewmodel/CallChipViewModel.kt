@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.call.ui.viewmodel
 
+import android.app.PendingIntent
 import android.content.Context
 import android.view.View
 import com.android.internal.jank.Cuj
@@ -65,61 +66,63 @@ constructor(
                 when (state) {
                     is OngoingCallModel.NoCall,
                     is OngoingCallModel.InCallWithVisibleApp -> OngoingActivityChipModel.Inactive()
-                    is OngoingCallModel.InCall -> {
-                        val key = state.notificationKey
-                        val contentDescription = getContentDescription(state.appName)
-                        val icon =
-                            if (state.notificationIconView != null) {
-                                StatusBarConnectedDisplays.assertInLegacyMode()
-                                OngoingActivityChipModel.ChipIcon.StatusBarView(
-                                    state.notificationIconView,
-                                    contentDescription,
-                                )
-                            } else if (StatusBarConnectedDisplays.isEnabled) {
-                                OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
-                                    state.notificationKey,
-                                    contentDescription,
-                                )
-                            } else {
-                                OngoingActivityChipModel.ChipIcon.SingleColorIcon(phoneIcon)
-                            }
-
-                        val colors = ColorsModel.AccentThemed
-
-                        // This block mimics OngoingCallController#updateChip.
-                        if (state.startTimeMs <= 0L) {
-                            // If the start time is invalid, don't show a timer and show just an
-                            // icon. See b/192379214.
-                            OngoingActivityChipModel.Active.IconOnly(
-                                key = key,
-                                icon = icon,
-                                colors = colors,
-                                onClickListenerLegacy = getOnClickListener(state),
-                                clickBehavior = getClickBehavior(state),
-                            )
-                        } else {
-                            val startTimeInElapsedRealtime =
-                                state.startTimeMs - systemClock.currentTimeMillis() +
-                                    systemClock.elapsedRealtime()
-                            OngoingActivityChipModel.Active.Timer(
-                                key = key,
-                                icon = icon,
-                                colors = colors,
-                                startTimeMs = startTimeInElapsedRealtime,
-                                onClickListenerLegacy = getOnClickListener(state),
-                                clickBehavior = getClickBehavior(state),
-                            )
-                        }
-                    }
+                    is OngoingCallModel.InCall -> prepareChip(state, systemClock)
                 }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), OngoingActivityChipModel.Inactive())
 
-    private fun getOnClickListener(state: OngoingCallModel.InCall): View.OnClickListener? {
-        if (state.intent == null) {
-            return null
-        }
+    /** Builds an [OngoingActivityChipModel.Active] from all the relevant information. */
+    private fun prepareChip(
+        state: OngoingCallModel.InCall,
+        systemClock: SystemClock,
+    ): OngoingActivityChipModel.Active {
+        val key = state.notificationKey
+        val contentDescription = getContentDescription(state.appName)
+        val icon =
+            if (state.notificationIconView != null) {
+                StatusBarConnectedDisplays.assertInLegacyMode()
+                OngoingActivityChipModel.ChipIcon.StatusBarView(
+                    state.notificationIconView,
+                    contentDescription,
+                )
+            } else if (StatusBarConnectedDisplays.isEnabled) {
+                OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon(
+                    state.notificationKey,
+                    contentDescription,
+                )
+            } else {
+                OngoingActivityChipModel.ChipIcon.SingleColorIcon(phoneIcon)
+            }
 
+        val colors = ColorsModel.AccentThemed
+
+        // This block mimics OngoingCallController#updateChip.
+        if (state.startTimeMs <= 0L) {
+            // If the start time is invalid, don't show a timer and show just an icon.
+            // See b/192379214.
+            return OngoingActivityChipModel.Active.IconOnly(
+                key = key,
+                icon = icon,
+                colors = colors,
+                onClickListenerLegacy = getOnClickListener(state.intent),
+                clickBehavior = getClickBehavior(state.intent),
+            )
+        } else {
+            val startTimeInElapsedRealtime =
+                state.startTimeMs - systemClock.currentTimeMillis() + systemClock.elapsedRealtime()
+            return OngoingActivityChipModel.Active.Timer(
+                key = key,
+                icon = icon,
+                colors = colors,
+                startTimeMs = startTimeInElapsedRealtime,
+                onClickListenerLegacy = getOnClickListener(state.intent),
+                clickBehavior = getClickBehavior(state.intent),
+            )
+        }
+    }
+
+    private fun getOnClickListener(intent: PendingIntent?): View.OnClickListener? {
+        if (intent == null) return null
         return View.OnClickListener { view ->
             StatusBarChipsModernization.assertInLegacyMode()
             logger.log(TAG, LogLevel.INFO, {}, { "Chip clicked" })
@@ -127,7 +130,7 @@ constructor(
                 view.requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
             // This mimics OngoingCallController#updateChipClickListener.
             activityStarter.postStartActivityDismissingKeyguard(
-                state.intent,
+                intent,
                 ActivityTransitionAnimator.Controller.fromView(
                     backgroundView,
                     Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP,
@@ -136,10 +139,8 @@ constructor(
         }
     }
 
-    private fun getClickBehavior(
-        state: OngoingCallModel.InCall
-    ): OngoingActivityChipModel.ClickBehavior =
-        if (state.intent == null) {
+    private fun getClickBehavior(intent: PendingIntent?): OngoingActivityChipModel.ClickBehavior =
+        if (intent == null) {
             OngoingActivityChipModel.ClickBehavior.None
         } else {
             OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -149,10 +150,7 @@ constructor(
                         expandable.activityTransitionController(
                             Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
                         )
-                    activityStarter.postStartActivityDismissingKeyguard(
-                        state.intent,
-                        animationController,
-                    )
+                    activityStarter.postStartActivityDismissingKeyguard(intent, animationController)
                 }
             )
         }
