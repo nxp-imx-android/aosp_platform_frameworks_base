@@ -983,6 +983,14 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             Objects.requireNonNull(providerInfo, "providerInfo must not be null");
 
             for (MediaRoute2Info route : providerInfo.getRoutes()) {
+                if (Flags.enableMirroringInMediaRouter2()
+                        && route.supportsRemoteRouting()
+                        && route.supportsSystemMediaRouting()
+                        && route.getDeduplicationIds().isEmpty()) {
+                    // This code is not accessible if the app is using the public API.
+                    throw new SecurityException("Route is missing deduplication id: " + route);
+                }
+
                 if (route.isSystemRoute()) {
                     throw new SecurityException(
                             "Only the system is allowed to publish system routes. "
