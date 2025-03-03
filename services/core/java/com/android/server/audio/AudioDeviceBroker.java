@@ -1484,8 +1484,8 @@ public class AudioDeviceBroker {
         mAudioService.postAccessoryPlugMediaUnmute(device);
     }
 
-    /*package*/ int getVssVolumeForDevice(int streamType, int device) {
-        return mAudioService.getVssVolumeForDevice(streamType, device);
+    /*package*/ int getVolumeForDeviceIgnoreMute(int streamType, int device) {
+        return mAudioService.getVolumeForDeviceIgnoreMute(streamType, device);
     }
 
     /*package*/ int getMaxVssVolumeForStream(int streamType) {
