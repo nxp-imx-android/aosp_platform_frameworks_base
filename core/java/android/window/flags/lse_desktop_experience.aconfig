@@ -131,6 +131,16 @@ flag {
 }
 
 flag {
+    name: "enable_input_layer_transition_fix"
+    namespace: "lse_desktop_experience"
+    description: "Enables a bugfix for input layer disposal during certain transitions."
+    bug: "371473978"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_accessible_custom_headers"
     namespace: "lse_desktop_experience"
     description: "Enables a11y-friendly custom header input handling"
