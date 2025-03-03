@@ -228,6 +228,7 @@ private fun StatusBarIcon(
     iconFactory: () -> StatusBarIconView?,
 ) {
     val context = LocalContext.current
+    val colorTintList = ColorStateList.valueOf(colors.text(context))
 
     val iconSizePx =
         context.resources.getDimensionPixelSize(
@@ -238,9 +239,9 @@ private fun StatusBarIcon(
         factory = { _ ->
             iconFactory.invoke()?.apply {
                 layoutParams = ViewGroup.LayoutParams(iconSizePx, iconSizePx)
-                imageTintList = ColorStateList.valueOf(colors.text(context))
             } ?: throw IllegalStateException("Missing StatusBarIconView for $notificationKey")
         },
+        update = { iconView -> iconView.imageTintList = colorTintList },
     )
 }
 
