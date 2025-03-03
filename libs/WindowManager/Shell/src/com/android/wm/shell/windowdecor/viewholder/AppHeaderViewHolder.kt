@@ -725,6 +725,11 @@ class AppHeaderViewHolder(
                 Configuration.UI_MODE_NIGHT_YES
     }
 
+    override fun close() {
+        // Should not fire long press events after closing the window decoration.
+        maximizeWindowButton.cancelLongPress()
+    }
+
     companion object {
         private const val TAG = "DesktopModeAppControlsWindowDecorationViewHolder"
 
