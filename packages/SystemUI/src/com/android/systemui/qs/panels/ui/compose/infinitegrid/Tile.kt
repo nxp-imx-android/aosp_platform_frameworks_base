@@ -84,7 +84,9 @@ import com.android.systemui.plugins.qs.QSTile
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.compose.BounceableInfo
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileEndPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileHeight
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileStartPadding
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabel
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.TileUiState
@@ -270,7 +272,7 @@ fun TileContainer(
                     iconOnly = iconOnly,
                 )
                 .sysuiResTag(if (iconOnly) TEST_TAG_SMALL else TEST_TAG_LARGE)
-                .tilePadding(),
+                .thenIf(!iconOnly) { Modifier.largeTilePadding() }, // Icon tiles are center aligned
         content = content,
     )
 }
@@ -284,7 +286,7 @@ fun LargeStaticTile(uiState: TileUiState, modifier: Modifier = Modifier) {
             .clip(TileDefaults.animateTileShapeAsState(state = uiState.state).value)
             .background(colors.background)
             .height(TileHeight)
-            .tilePadding()
+            .largeTilePadding()
     ) {
         LargeTileContent(
             label = uiState.label,
@@ -311,8 +313,8 @@ fun tileHorizontalArrangement(): Arrangement.Horizontal {
     return spacedBy(space = CommonTileDefaults.TileArrangementPadding, alignment = Alignment.Start)
 }
 
-fun Modifier.tilePadding(): Modifier {
-    return padding(CommonTileDefaults.TilePadding)
+fun Modifier.largeTilePadding(): Modifier {
+    return padding(start = TileStartPadding, end = TileEndPadding)
 }
 
 @Composable
@@ -356,10 +358,10 @@ private object TileDefaults {
     val ActiveIconCornerRadius = 16.dp
     val ActiveTileCornerRadius = 24.dp
 
-    /** An active tile without dual target uses the active color as background */
+    /** An active icon tile uses the active color as background */
     @Composable
     @ReadOnlyComposable
-    fun activeTileColors(): TileColors =
+    fun activeIconTileColors(): TileColors =
         TileColors(
             background = MaterialTheme.colorScheme.primary,
             iconBackground = MaterialTheme.colorScheme.primary,
@@ -418,10 +420,10 @@ private object TileDefaults {
     fun getColorForState(uiState: TileUiState, iconOnly: Boolean): TileColors {
         return when (uiState.state) {
             STATE_ACTIVE -> {
-                if (uiState.handlesSecondaryClick && !iconOnly) {
+                if (!iconOnly) {
                     activeDualTargetTileColors()
                 } else {
-                    activeTileColors()
+                    activeIconTileColors()
                 }
             }
 

@@ -713,7 +713,7 @@ private fun AvailableTileGridCell(
     // Displays the tile as an icon tile with the label underneath
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = spacedBy(CommonTileDefaults.TilePadding, Alignment.Top),
+        verticalArrangement = spacedBy(CommonTileDefaults.TileStartPadding, Alignment.Top),
         modifier =
             modifier
                 .graphicsLayer { this.alpha = alpha }
@@ -813,7 +813,7 @@ fun EditTile(
                         placeable.place(startPadding.roundToInt(), 0)
                     }
                 }
-                .tilePadding(),
+                .largeTilePadding(),
     ) {
         // Icon
         Box(Modifier.size(ToggleTargetSize)) {
@@ -847,7 +847,7 @@ private fun toAvailableTiles(
 
 private fun MeasureScope.iconHorizontalCenter(containerSize: Int): Float {
     return (containerSize - ToggleTargetSize.roundToPx()) / 2f -
-        CommonTileDefaults.TilePadding.toPx()
+        CommonTileDefaults.TileStartPadding.toPx()
 }
 
 private fun Modifier.tileBackground(color: Color): Modifier {
