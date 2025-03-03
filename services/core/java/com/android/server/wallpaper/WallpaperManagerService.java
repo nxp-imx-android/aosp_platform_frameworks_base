@@ -1173,12 +1173,19 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     return;
                 }
 
-                final ComponentName wpService = mWallpaper.getComponent();
                 // The broadcast of package update could be delayed after service disconnected. Try
                 // to re-bind the service for 10 seconds.
                 mWallpaper.mBindSource = BindSource.CONNECTION_TRY_TO_REBIND;
-                if (bindWallpaperComponentLocked(
-                        wpService, true, false, mWallpaper, null)) {
+                boolean success;
+                if (liveWallpaperContentHandling()) {
+                    success = bindWallpaperDescriptionLocked(
+                            mWallpaper.getDescription(), /* force= */ true,
+                            /* fromUser= */ false, mWallpaper, /* reply= */ null);
+                } else {
+                    success = bindWallpaperComponentLocked(mWallpaper.getComponent(), /* force= */
+                            true, /* fromUser= */false, mWallpaper, /* reply= */ null);
+                }
+                if (success) {
                     mWallpaper.connection.scheduleTimeoutLocked();
                 } else if (SystemClock.uptimeMillis() - mWallpaper.lastDiedTime
                         < WALLPAPER_RECONNECT_TIMEOUT_MS) {
@@ -1189,7 +1196,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     // Timeout
                     Slog.w(TAG, "Reverting to built-in wallpaper!");
                     clearWallpaperLocked(mWallpaper.mWhich, mWallpaper.userId, false, null);
-                    final String flattened = wpService.flattenToString();
+                    final String flattened = mWallpaper.getComponent().flattenToString();
                     EventLog.writeEvent(EventLogTags.WP_WALLPAPER_CRASHED,
                             flattened.substring(0, Math.min(flattened.length(),
                                     MAX_WALLPAPER_COMPONENT_LOG_LENGTH)));
