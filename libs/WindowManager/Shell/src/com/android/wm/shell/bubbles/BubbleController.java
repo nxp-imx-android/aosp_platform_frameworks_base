@@ -2643,6 +2643,15 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubbleData.setSelectedBubbleAndExpandStack(bubbleToSelect);
     }
 
+    private void moveBubbleToFullscreen(String key) {
+        Bubble b = mBubbleData.getBubbleInStackWithKey(key);
+        if (b == null) {
+            Log.w(TAG, "can't find bubble with key " + key + " to move to fullscreen");
+            return;
+        }
+        b.getTaskView().moveToFullscreen();
+    }
+
     private boolean isDeviceLocked() {
         return !mIsStatusBarShade;
     }
@@ -2928,6 +2937,11 @@ public class BubbleController implements ConfigurationChangeListener,
                     hideBubbleBarExpandedViewDropTarget();
                 }
             });
+        }
+
+        @Override
+        public void moveBubbleToFullscreen(String key) {
+            mMainExecutor.execute(() -> mController.moveBubbleToFullscreen(key));
         }
     }
 
