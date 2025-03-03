@@ -367,12 +367,22 @@ constructor(
     /** See [CommunalSettingsInteractor.isV2FlagEnabled] */
     fun v2FlagEnabled(): Boolean = communalSettingsInteractor.isV2FlagEnabled()
 
-    val swipeToHubEnabled: StateFlow<Boolean> by lazy {
-        if (v2FlagEnabled()) {
-            communalInteractor.shouldShowCommunal
-        } else {
-            MutableStateFlow(swipeToHub)
-        }
+    val swipeToHubEnabled: Flow<Boolean> by lazy {
+        val inAllowedDeviceState =
+            if (swipeToHub) {
+                MutableStateFlow(true)
+            } else if (v2FlagEnabled()) {
+                communalInteractor.shouldShowCommunal
+            } else {
+                MutableStateFlow(false)
+            }
+
+        val inAllowedKeyguardState =
+            keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
+                it.to == KeyguardState.LOCKSCREEN || it.to == KeyguardState.GLANCEABLE_HUB
+            }
+
+        allOf(inAllowedDeviceState, inAllowedKeyguardState)
     }
 
     companion object {
