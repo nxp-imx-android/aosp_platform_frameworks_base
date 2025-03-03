@@ -1436,7 +1436,7 @@ public class HeadsUpManagerImpl
                         mAvalancheController.getDuration(this, mAutoDismissTime);
 
                 if (remainingDuration instanceof RemainingDuration.HideImmediately) {
-                    StatusBarNotifChips.assertInNewMode();
+                    /* Check if */ StatusBarNotifChips.isUnexpectedlyInLegacyMode();
                     return 0;
                 }
 
