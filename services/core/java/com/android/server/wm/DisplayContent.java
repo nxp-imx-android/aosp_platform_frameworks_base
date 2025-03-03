@@ -82,7 +82,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.REMOVE_CONTENT_MODE_DESTROY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
@@ -5636,29 +5635,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * @deprecated new transition should use {@link #requestTransitionAndLegacyPrepare(int, int)}
-     */
-    @Deprecated
-    void prepareAppTransition(@WindowManager.TransitionType int transit) {
-        prepareAppTransition(transit, 0 /* flags */);
-    }
-
-    /**
-     * @deprecated new transition should use {@link #requestTransitionAndLegacyPrepare(int, int)}
-     */
-    @Deprecated
-    void prepareAppTransition(@WindowManager.TransitionType int transit,
-            @WindowManager.TransitionFlags int flags) {
-        mAppTransition.prepareAppTransition(transit, flags);
-    }
-
-    /**
      * Helper that both requests a transition (using the new transition system) and prepares
      * the legacy transition system. Use this when both systems have the same start-point.
      *
      * @see TransitionController#requestTransitionIfNeeded(int, int, WindowContainer,
      *      WindowContainer)
-     * @see AppTransition#prepareAppTransition
      */
     void requestTransitionAndLegacyPrepare(@WindowManager.TransitionType int transit,
             @WindowManager.TransitionFlags int flags, @Nullable WindowContainer trigger) {
@@ -6546,19 +6527,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // If keyguard is not locked, the change of flags won't affect activity visibility.
             return;
         }
-        // We might change the visibilities here, so prepare an empty app transition which might be
-        // overridden later if we actually change visibilities.
-        final boolean wasTransitionSet = mAppTransition.isTransitionSet();
-        if (!wasTransitionSet) {
-            prepareAppTransition(TRANSIT_NONE);
-        }
         mRootWindowContainer.ensureActivitiesVisible();
-
-        // If there was a transition set already we don't want to interfere with it as we might be
-        // starting it too early.
-        if (!wasTransitionSet) {
-            executeAppTransition();
-        }
+        // In case there is a visibility change.
+        executeAppTransition();
     }
 
     /**

@@ -1510,9 +1510,6 @@ class ActivityClientController extends IActivityClientController.Stub {
         synchronized (mGlobalLock) {
             final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
             if (r != null && r.isState(RESUMED, PAUSING)) {
-                r.mDisplayContent.mAppTransition.overridePendingAppTransition(
-                        packageName, enterAnim, exitAnim, backgroundColor, null, null,
-                        r.mOverrideTaskTransition);
                 r.mTransitionController.setOverrideAnimation(
                         TransitionInfo.AnimationOptions.makeCustomAnimOptions(packageName,
                                 enterAnim, 0 /* changeResId */, exitAnim,

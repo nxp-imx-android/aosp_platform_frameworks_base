@@ -59,9 +59,7 @@ import static android.security.Flags.preventIntentRedirectAbortOrThrowException;
 import static android.security.Flags.preventIntentRedirectShowToast;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.TRANSIT_FLAG_AVOID_MOVE_TO_FRONT;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
-import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TaskFragmentOperation.OP_TYPE_START_ACTIVITY_IN_TASK_FRAGMENT;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONFIGURATION;
@@ -2558,11 +2556,6 @@ class ActivityStarter {
                 if (actuallyMoved) {
                     // Only record if the activity actually moved.
                     mMovedToTopActivity = act;
-                    if (mNoAnimation) {
-                        act.mDisplayContent.prepareAppTransition(TRANSIT_NONE);
-                    } else {
-                        act.mDisplayContent.prepareAppTransition(TRANSIT_TO_FRONT);
-                    }
                 }
                 act.updateOptionsLocked(mOptions);
                 deliverNewIntent(act, intentGrants);
