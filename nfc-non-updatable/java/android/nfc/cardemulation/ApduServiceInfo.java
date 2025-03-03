@@ -569,7 +569,6 @@ public final class ApduServiceInfo implements Parcelable {
      * Returns the current polling loop filters for this service.
      * @return List of polling loop filters.
      */
-    @FlaggedApi(Flags.FLAG_NFC_READ_POLLING_LOOP)
     @NonNull
     public List<String> getPollingLoopFilters() {
         return new ArrayList<>(mAutoTransact.keySet());
@@ -581,7 +580,6 @@ public final class ApduServiceInfo implements Parcelable {
      * @param plf the polling loop filter to query.
      * @return {@code true} indicating to auto transact, {@code false} indicating to not.
      */
-    @FlaggedApi(Flags.FLAG_NFC_READ_POLLING_LOOP)
     public boolean getShouldAutoTransact(@NonNull String plf) {
         if (mAutoTransact.getOrDefault(plf.toUpperCase(Locale.ROOT), false)) {
             return true;
@@ -605,7 +603,6 @@ public final class ApduServiceInfo implements Parcelable {
      * Returns the current polling loop pattern filters for this service.
      * @return List of polling loop pattern filters.
      */
-    @FlaggedApi(Flags.FLAG_NFC_READ_POLLING_LOOP)
     @NonNull
     public List<Pattern> getPollingLoopPatternFilters() {
         return new ArrayList<>(mAutoTransactPatterns.keySet());
@@ -823,7 +820,6 @@ public final class ApduServiceInfo implements Parcelable {
      * @param autoTransact when true, disable observe mode when this filter matches, when false,
      *                     matching does not change the observe mode state
      */
-    @FlaggedApi(Flags.FLAG_NFC_READ_POLLING_LOOP)
     public void addPollingLoopFilter(@NonNull String pollingLoopFilter,
             boolean autoTransact) {
         if (!PLF_PATTERN.matcher(pollingLoopFilter).matches()
@@ -843,7 +839,6 @@ public final class ApduServiceInfo implements Parcelable {
      * longer be delivered to {@link HostApduService#processPollingFrames(List)}.
      * @param pollingLoopFilter this polling loop filter to add.
      */
-    @FlaggedApi(Flags.FLAG_NFC_READ_POLLING_LOOP)
     public void removePollingLoopFilter(@NonNull String pollingLoopFilter) {
         mAutoTransact.remove(pollingLoopFilter.toUpperCase(Locale.ROOT));
     }
@@ -857,7 +852,6 @@ public final class ApduServiceInfo implements Parcelable {
      * @param autoTransact when true, disable observe mode when this filter matches, when false,
      *                     matching does not change the observe mode state
      */
-    @FlaggedApi(Flags.FLAG_NFC_READ_POLLING_LOOP)
     public void addPollingLoopPatternFilter(@NonNull String pollingLoopPatternFilter,
             boolean autoTransact) {
         if (!PLPF_PATTERN.matcher(pollingLoopPatternFilter).matches()) {
@@ -877,7 +871,6 @@ public final class ApduServiceInfo implements Parcelable {
      * no longer be delivered to {@link HostApduService#processPollingFrames(List)}.
      * @param pollingLoopPatternFilter this polling loop filter to add.
      */
-    @FlaggedApi(Flags.FLAG_NFC_READ_POLLING_LOOP)
     public void removePollingLoopPatternFilter(@NonNull String pollingLoopPatternFilter) {
         mAutoTransactPatterns.remove(
                 Pattern.compile(pollingLoopPatternFilter.toUpperCase(Locale.ROOT)));
