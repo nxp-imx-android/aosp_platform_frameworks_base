@@ -16,6 +16,8 @@
 
 package com.android.server.location.contexthub;
 
+import static com.android.server.location.contexthub.ContextHubTransactionManager.RELIABLE_MESSAGE_DUPLICATE_DETECTION_TIMEOUT;
+
 import android.annotation.NonNull;
 import android.app.AppOpsManager;
 import android.content.Context;
@@ -44,6 +46,9 @@ import com.android.internal.annotations.GuardedBy;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -119,6 +124,14 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
          */
         private final Set<Integer> mPendingSequenceNumbers = new HashSet<>();
 
+        /**
+         * Stores the history of received messages that are timestamped. We use a LinkedHashMap to
+         * guarantee insertion ordering for easier manipulation of removing expired entries.
+         *
+         * <p>The key is the sequence number, and the value is the timestamp in milliseconds.
+         */
+        private final LinkedHashMap<Integer, Long> mRxMessageHistoryMap = new LinkedHashMap<>();
+
         Session(HubEndpointInfo remoteEndpointInfo, boolean remoteInitiated) {
             mRemoteEndpointInfo = remoteEndpointInfo;
             mRemoteInitiated = remoteInitiated;
@@ -156,6 +169,38 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             for (int sequenceNumber : mPendingSequenceNumbers) {
                 consumer.accept(sequenceNumber);
             }
+        }
+
+        public boolean isInMessageHistory(HubMessage message) {
+            // Clean up the history
+            Iterator<Map.Entry<Integer, Long>> iterator =
+                    mRxMessageHistoryMap.entrySet().iterator();
+            long nowMillis = System.currentTimeMillis();
+            while (iterator.hasNext()) {
+                Map.Entry<Integer, Long> nextEntry = iterator.next();
+                long expiryMillis = RELIABLE_MESSAGE_DUPLICATE_DETECTION_TIMEOUT.toMillis();
+                if (nowMillis >= nextEntry.getValue() + expiryMillis) {
+                    iterator.remove();
+                }
+                break;
+            }
+
+            return mRxMessageHistoryMap.containsKey(message.getMessageSequenceNumber());
+        }
+
+        public void addMessageToHistory(HubMessage message) {
+            if (mRxMessageHistoryMap.containsKey(message.getMessageSequenceNumber())) {
+                long value = mRxMessageHistoryMap.get(message.getMessageSequenceNumber());
+                Log.w(
+                        TAG,
+                        "Message already exists in history (inserted @ "
+                                + value
+                                + " ms): "
+                                + message);
+                return;
+            }
+            mRxMessageHistoryMap.put(
+                    message.getMessageSequenceNumber(), System.currentTimeMillis());
         }
     }
 
@@ -492,9 +537,9 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     }
 
     /* package */ void onMessageReceived(int sessionId, HubMessage message) {
-        byte code = onMessageReceivedInternal(sessionId, message);
-        if (code != ErrorCode.OK && message.isResponseRequired()) {
-            sendMessageDeliveryStatus(sessionId, message.getMessageSequenceNumber(), code);
+        byte errorCode = onMessageReceivedInternal(sessionId, message);
+        if (errorCode != ErrorCode.OK && message.isResponseRequired()) {
+            sendMessageDeliveryStatus(sessionId, message.getMessageSequenceNumber(), errorCode);
         }
     }
 
@@ -567,7 +612,6 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
     }
 
     private byte onMessageReceivedInternal(int sessionId, HubMessage message) {
-        HubEndpointInfo remote;
         synchronized (mOpenSessionLock) {
             if (!isSessionActive(sessionId)) {
                 Log.e(
@@ -578,29 +622,36 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                                 + message);
                 return ErrorCode.PERMANENT_ERROR;
             }
-            remote = mSessionMap.get(sessionId).getRemoteEndpointInfo();
-        }
+            HubEndpointInfo remote = mSessionMap.get(sessionId).getRemoteEndpointInfo();
+            if (mSessionMap.get(sessionId).isInMessageHistory(message)) {
+                Log.e(TAG, "Dropping duplicate message: " + message);
+                return ErrorCode.TRANSIENT_ERROR;
+            }
 
-        try {
-            Binder.withCleanCallingIdentity(
-                    () -> {
-                        if (!notePermissions(remote)) {
-                            throw new RuntimeException(
-                                    "Dropping message from "
-                                            + remote
-                                            + ". "
-                                            + mPackageName
-                                            + " doesn't have permission");
-                        }
-                    });
-        } catch (RuntimeException e) {
-            Log.e(TAG, e.getMessage());
-            return ErrorCode.PERMISSION_DENIED;
-        }
+            try {
+                Binder.withCleanCallingIdentity(
+                        () -> {
+                            if (!notePermissions(remote)) {
+                                throw new RuntimeException(
+                                        "Dropping message from "
+                                                + remote
+                                                + ". "
+                                                + mPackageName
+                                                + " doesn't have permission");
+                            }
+                        });
+            } catch (RuntimeException e) {
+                Log.e(TAG, e.getMessage());
+                return ErrorCode.PERMISSION_DENIED;
+            }
 
-        boolean success =
-                invokeCallback((consumer) -> consumer.onMessageReceived(sessionId, message));
-        return success ? ErrorCode.OK : ErrorCode.TRANSIENT_ERROR;
+            boolean success =
+                    invokeCallback((consumer) -> consumer.onMessageReceived(sessionId, message));
+            if (success) {
+                mSessionMap.get(sessionId).addMessageToHistory(message);
+            }
+            return success ? ErrorCode.OK : ErrorCode.TRANSIENT_ERROR;
+        }
     }
 
     /**
