@@ -108,7 +108,8 @@ constructor(
             val currentDisplay = shadeContext.display ?: error("Current shade display is null")
             currentId = currentDisplay.displayId
             if (currentId == destinationId) {
-                error("Trying to move the shade to a display it was already in")
+                Log.w(TAG, "Trying to move the shade to a display ($currentId) it was already in ")
+                return
             }
 
             withContext(mainThreadContext) {
