@@ -1466,11 +1466,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 // Freeze the configuration size with offset to prevent app get a configuration
                 // changed or relaunch. This is required to make sure client apps will calculate
                 // insets properly after layout shifted.
-                if (mTargetYOffset == 0) {
-                    mSplitLayoutHandler.setLayoutOffsetTarget(0, 0, SplitLayout.this);
-                } else {
-                    mSplitLayoutHandler.setLayoutOffsetTarget(0, mTargetYOffset, SplitLayout.this);
-                }
+                mSplitLayoutHandler.setLayoutOffsetTarget(0, mTargetYOffset, SplitLayout.this);
             }
 
             // Make {@link DividerView} non-interactive while IME showing in split mode. Listen to
