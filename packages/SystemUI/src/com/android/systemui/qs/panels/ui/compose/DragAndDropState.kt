@@ -35,7 +35,6 @@ import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.center
 import androidx.compose.ui.unit.toRect
 import com.android.systemui.qs.panels.shared.model.SizedTile
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
@@ -171,10 +170,10 @@ private fun DragAndDropEvent.toOffset(): Offset {
 }
 
 private fun insertAfter(item: LazyGridItemInfo, offset: Offset): Boolean {
-    // We want to insert the tile after the target if we're aiming at the right side of a large tile
+    // We want to insert the tile after the target if we're aiming at the end of a large tile
     // TODO(ostonge): Verify this behavior in RTL
-    val itemCenter = item.offset + item.size.center
-    return item.span != 1 && offset.x > itemCenter.x
+    val itemCenter = item.offset.x + item.size.width * .75
+    return item.span != 1 && offset.x > itemCenter
 }
 
 @OptIn(ExperimentalFoundationApi::class)
