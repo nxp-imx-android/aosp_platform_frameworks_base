@@ -9465,24 +9465,6 @@ public final class Settings {
                 "reduce_bright_colors_persist_across_reboots";
 
         /**
-         * Setting that specifies whether Even Dimmer - a feature that allows the brightness
-         * slider to go below what the display can conventionally do, should be enabled.
-         *
-         * @hide
-         */
-        public static final String EVEN_DIMMER_ACTIVATED =
-                "even_dimmer_activated";
-
-        /**
-         * Setting that specifies which nits level Even Dimmer should allow the screen brightness
-         * to go down to.
-         *
-         * @hide
-         */
-        public static final String EVEN_DIMMER_MIN_NITS =
-                "even_dimmer_min_nits";
-
-        /**
          * Setting that holds EM_VALUE (proprietary)
          *
          * @hide
