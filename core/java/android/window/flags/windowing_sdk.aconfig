@@ -152,3 +152,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "support_widget_intents_on_connected_display"
+    description: "Launch widget intents on originating display"
+    bug: "358368849"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
