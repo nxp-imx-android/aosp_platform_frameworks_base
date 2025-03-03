@@ -83,7 +83,11 @@ public class SizeChangeAnimation {
     private static final int ANIMATION_RESOLUTION = 1000;
 
     public SizeChangeAnimation(Rect startBounds, Rect endBounds) {
-        mAnimation = buildContainerAnimation(startBounds, endBounds);
+        this(startBounds, endBounds, 1f);
+    }
+
+    public SizeChangeAnimation(Rect startBounds, Rect endBounds, float initialScale) {
+        mAnimation = buildContainerAnimation(startBounds, endBounds, initialScale);
         mSnapshotAnim = buildSnapshotAnimation(startBounds, endBounds);
     }
 
@@ -167,7 +171,8 @@ public class SizeChangeAnimation {
     }
 
     /** Animation for the whole container (snapshot is inside this container). */
-    private static AnimationSet buildContainerAnimation(Rect startBounds, Rect endBounds) {
+    private static AnimationSet buildContainerAnimation(Rect startBounds, Rect endBounds,
+            float initialScale) {
         final long duration = ANIMATION_RESOLUTION;
         boolean growing = endBounds.width() - startBounds.width()
                 + endBounds.height() - startBounds.height() >= 0;
@@ -180,15 +185,27 @@ public class SizeChangeAnimation {
 
         final Animation scaleAnim = new ScaleAnimation(startScaleX, 1, startScaleY, 1);
         scaleAnim.setDuration(scalePeriod);
+        long scaleStartOffset = 0;
         if (!growing) {
-            scaleAnim.setStartOffset(duration - scalePeriod);
+            scaleStartOffset = duration - scalePeriod;
         }
+        scaleAnim.setStartOffset(scaleStartOffset);
         animSet.addAnimation(scaleAnim);
+
+        if (initialScale != 1f) {
+            final Animation initialScaleAnim = new ScaleAnimation(initialScale, 1f, initialScale,
+                    1f);
+            initialScaleAnim.setDuration(scalePeriod);
+            initialScaleAnim.setStartOffset(scaleStartOffset);
+            animSet.addAnimation(initialScaleAnim);
+        }
+
         final Animation translateAnim = new TranslateAnimation(startBounds.left,
                 endBounds.left, startBounds.top, endBounds.top);
         translateAnim.setDuration(duration);
         animSet.addAnimation(translateAnim);
         Rect startClip = new Rect(startBounds);
+        startClip.scale(initialScale);
         Rect endClip = new Rect(endBounds);
         startClip.offsetTo(0, 0);
         endClip.offsetTo(0, 0);

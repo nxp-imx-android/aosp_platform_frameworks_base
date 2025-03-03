@@ -25,6 +25,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -35,6 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.view.SurfaceControl;
@@ -138,13 +140,14 @@ public class BubbleTransitionsTest extends ShellTestCase {
         return taskInfo;
     }
 
-    private TransitionInfo setupFullscreenTaskTransition(ActivityManager.RunningTaskInfo taskInfo) {
+    private TransitionInfo setupFullscreenTaskTransition(ActivityManager.RunningTaskInfo taskInfo,
+            SurfaceControl taskLeash, SurfaceControl snapshot) {
         final TransitionInfo info = new TransitionInfo(TRANSIT_CONVERT_TO_BUBBLE, 0);
-        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
-                mock(SurfaceControl.class));
+        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token, taskLeash);
         chg.setTaskInfo(taskInfo);
         chg.setMode(TRANSIT_CHANGE);
         chg.setStartAbsBounds(new Rect(0, 0, FULLSCREEN_TASK_WIDTH, FULLSCREEN_TASK_HEIGHT));
+        chg.setSnapshot(snapshot, /* luma= */ 0f);
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
         return info;
@@ -172,7 +175,9 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Ensure we are communicating with the taskviewtransitions queue
         assertTrue(mTaskViewTransitions.hasPending());
 
-        final TransitionInfo info = setupFullscreenTaskTransition(taskInfo);
+        SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();
+        final TransitionInfo info = setupFullscreenTaskTransition(taskInfo, taskLeash, snapshot);
         SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         final boolean[] finishCalled = new boolean[]{false};
@@ -183,7 +188,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         ctb.startAnimation(ctb.mTransition, info, startT, finishT, finishCb);
         assertFalse(mTaskViewTransitions.hasPending());
 
-        verify(startT).setPosition(any(), eq(0f), eq(0f));
+        verify(startT).setPosition(taskLeash, 0, 0);
+        verify(startT).setPosition(snapshot, 0, 0);
 
         verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean());
 
@@ -194,7 +200,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // Check that preparing transition is not reset before continueExpand is called
         verify(mBubble, never()).setPreparingTransition(any());
         ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
-        verify(mLayerView).animateConvert(any(), any(), any(), any(), animCb.capture());
+        verify(mLayerView).animateConvert(any(), any(), anyFloat(), any(), any(), animCb.capture());
 
         // continueExpand is now called, check that preparing transition is cleared
         ctb.continueExpand();
@@ -209,14 +215,14 @@ public class BubbleTransitionsTest extends ShellTestCase {
     public void testConvertToBubble_drag() {
         ActivityManager.RunningTaskInfo taskInfo = setupBubble();
 
-        Rect draggedTaskBounds = new Rect(10, 20, 30, 40);
         WindowContainerTransaction pendingWct = new WindowContainerTransaction();
         WindowContainerToken pendingDragOpToken = createMockToken();
         pendingWct.reorder(pendingDragOpToken, /* onTop= */ false);
 
+        PointF dragPosition = new PointF(10f, 20f);
         BubbleTransitions.DragData dragData = new BubbleTransitions.DragData(
-                draggedTaskBounds, pendingWct, /* releasedOnLeft= */ false
-        );
+                /* releasedOnLeft= */ false, /* taskScale= */ 0.5f, dragPosition,
+                pendingWct);
 
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
@@ -234,15 +240,19 @@ public class BubbleTransitionsTest extends ShellTestCase {
                 == WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
                 && op.getContainer() == pendingDragOpToken.asBinder())).isTrue();
 
-        final TransitionInfo info = setupFullscreenTaskTransition(taskInfo);
+        SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();
+        final TransitionInfo info = setupFullscreenTaskTransition(taskInfo, taskLeash, snapshot);
         SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
         Transitions.TransitionFinishCallback finishCb = wct -> {};
         ctb.startAnimation(ctb.mTransition, info, startT, finishT, finishCb);
 
-        // Verify that dragged task bounds are used for the position
-        verify(startT).setPosition(any(), eq((float) draggedTaskBounds.left),
-                eq((float) draggedTaskBounds.top));
+        // Verify that snapshot and task are placed at where the drag ended
+        verify(startT).setPosition(taskLeash, dragPosition.x, dragPosition.y);
+        verify(startT).setPosition(snapshot, dragPosition.x, dragPosition.y);
+        // Snapshot has the scale of the dragged task
+        verify(startT).setScale(snapshot, dragData.getTaskScale(), dragData.getTaskScale());
     }
 
     @Test
