@@ -20,8 +20,8 @@ import android.view.Display
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.traceSection
 import com.android.systemui.common.ui.ConfigurationState
+import com.android.systemui.display.data.repository.PerDisplayRepository
 import com.android.systemui.lifecycle.repeatWhenAttached
-import com.android.systemui.statusbar.data.repository.StatusBarConfigurationStateStore
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder.IconViewStore
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerStatusBarViewModel
@@ -36,7 +36,7 @@ class NotificationIconContainerStatusBarViewBinder
 @Inject
 constructor(
     private val viewModel: NotificationIconContainerStatusBarViewModel,
-    private val configurationStore: StatusBarConfigurationStateStore,
+    private val configurationStateRepository: PerDisplayRepository<ConfigurationState>,
     private val defaultConfigurationState: ConfigurationState,
     private val systemBarUtilsState: SystemBarUtilsState,
     private val failureTracker: StatusBarIconViewBindingFailureTracker,
@@ -57,7 +57,7 @@ constructor(
                         }
                     }
                 val configurationState: ConfigurationState =
-                    configurationStore.forDisplay(displayId) ?: defaultConfigurationState
+                    configurationStateRepository[displayId] ?: defaultConfigurationState
                 lifecycleScope.launch {
                     NotificationIconContainerViewBinder.bind(
                         displayId = displayId,
