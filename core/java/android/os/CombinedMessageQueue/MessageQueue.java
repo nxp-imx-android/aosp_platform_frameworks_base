@@ -144,8 +144,8 @@ public final class MessageQueue {
             return;
         }
 
-        if (RavenwoodEnvironment.getInstance().isRunningOnRavenwood()) {
-            sIsProcessAllowedToUseConcurrent = false;
+        if (Flags.forceConcurrentMessageQueue()) {
+            sIsProcessAllowedToUseConcurrent = true;
             return;
         }
 

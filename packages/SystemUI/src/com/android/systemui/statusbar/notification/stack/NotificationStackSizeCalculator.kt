@@ -409,12 +409,12 @@ constructor(
 
             if (counter != null) {
                 if (NotificationBundleUi.isEnabled) {
-                    val entry = (currentNotification as? ExpandableNotificationRow)?.entry
-                    counter.incrementForBucket(entry?.bucket)
-                } else {
                     val entryAdapter =
                         (currentNotification as? ExpandableNotificationRow)?.entryAdapter
                     counter.incrementForBucket(entryAdapter?.sectionBucket)
+                } else {
+                    val entry = (currentNotification as? ExpandableNotificationRow)?.entry
+                    counter.incrementForBucket(entry?.bucket)
                 }
             }
 

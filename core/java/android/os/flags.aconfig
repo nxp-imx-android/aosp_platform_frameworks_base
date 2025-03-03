@@ -211,6 +211,14 @@ flag {
 }
 
 flag {
+     name: "force_concurrent_message_queue"
+     namespace: "system_performance"
+     is_exported: true
+     description: "Whether MessageQueue uses the new concurrent implementation"
+     bug: "336880969"
+}
+
+flag {
     name: "get_private_space_settings"
     namespace: "profile_experiences"
     description: "Guards a new Private Profile API in LauncherApps"

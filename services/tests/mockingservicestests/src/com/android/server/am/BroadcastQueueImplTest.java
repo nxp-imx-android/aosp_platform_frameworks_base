@@ -87,6 +87,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -1769,6 +1770,33 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
     }
 
     @Test
+    public void testBroadcastProcessedEventRecord_broadcastDelivered_processedEventLogged()
+            throws Exception {
+        testBroadcastProcessedEventRecordLogged(
+                /* isAssumedDelivered= */ false,
+                /* isDelivered= */ true,
+                /* numberOfInvocations= */ 1);
+    }
+
+    @Test
+    public void testBroadcastProcessedEventRecord_broadcastDeliveryFailed_eventNotLogged()
+            throws Exception {
+        testBroadcastProcessedEventRecordLogged(
+                /* isAssumedDelivered= */ false,
+                /* isDelivered= */ false,
+                /* numberOfInvocations= */ 0);
+    }
+
+    @Test
+    public void testBroadcastProcessedEventRecord_broadcastAssumedDelivered_eventNotLogged()
+            throws Exception {
+        testBroadcastProcessedEventRecordLogged(
+                /* isAssumedDelivered= */ true,
+                /* isDelivered= */ true,
+                /* numberOfInvocations= */ 0);
+    }
+
+    @Test
     public void testGetPreferredSchedulingGroup() throws Exception {
         final BroadcastProcessQueue queue = new BroadcastProcessQueue(mConstants,
                 PACKAGE_GREEN, getUidForPackage(PACKAGE_GREEN));
@@ -2308,6 +2336,28 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
         mImpl.onProcessFreezableChangedLocked(greenProcess);
         waitForIdle();
         assertFalse(mImpl.isProcessFreezable(greenProcess));
+    }
+
+    @SuppressWarnings("GuardedBy")
+    private void testBroadcastProcessedEventRecordLogged(
+            boolean isAssumedDelivered,
+            boolean isDelivered,
+            int numberOfInvocations) throws Exception {
+        final Intent timeTick = new Intent(Intent.ACTION_TIME_TICK);
+        final BroadcastOptions optionsTimeTick = BroadcastOptions.makeBasic();
+        optionsTimeTick.setDeliveryGroupPolicy(BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT);
+
+        final BroadcastRecord broadcastRecordSpy = Mockito.spy(
+                makeBroadcastRecord(timeTick, optionsTimeTick));
+        mImpl.enqueueBroadcastLocked(broadcastRecordSpy);
+
+        doReturn(isDelivered).when(broadcastRecordSpy).wasDelivered(anyInt());
+        doReturn(isAssumedDelivered).when(broadcastRecordSpy).isAssumedDelivered(anyInt());
+        waitForIdle();
+
+        verify(broadcastRecordSpy, times(numberOfInvocations)).updateBroadcastProcessedEventRecord(
+                any(), anyLong());
+        verify(broadcastRecordSpy).logBroadcastProcessedEventRecord();
     }
 
     BroadcastFilter makeRegisteredReceiver(ProcessRecord app, int priority) {
