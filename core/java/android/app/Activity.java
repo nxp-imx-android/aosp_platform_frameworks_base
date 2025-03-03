@@ -10060,9 +10060,11 @@ public class Activity extends ContextThemeWrapper
                     }
                 });
                 if (mJankTracker == null) {
-                    // TODO b/377960907 use the Choreographer attached to the ViewRootImpl instead.
-                    mJankTracker = new JankTracker(Choreographer.getInstance(),
-                            decorView);
+                    if (android.app.jank.Flags.viewrootChoreographer()) {
+                        mJankTracker = new JankTracker(decorView);
+                    } else {
+                        mJankTracker = new JankTracker(Choreographer.getInstance(), decorView);
+                    }
                 }
                 // TODO b/377674765 confirm this is the string we want logged.
                 mJankTracker.setActivityName(getComponentName().getClassName());

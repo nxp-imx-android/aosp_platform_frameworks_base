@@ -25,6 +25,7 @@ import android.view.AttachedSurfaceControl;
 import android.view.Choreographer;
 import android.view.SurfaceControl;
 import android.view.View;
+import android.view.ViewRootImpl;
 import android.view.ViewTreeObserver;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -100,7 +101,7 @@ public class JankTracker {
                         public void run() {
                             mDecorView.getViewTreeObserver()
                                     .removeOnWindowAttachListener(mOnWindowAttachListener);
-                            registerForJankData();
+                            initializeJankTrackingComponents();
                         }
                     }, REGISTRATION_DELAY_MS);
                 }
@@ -115,9 +116,23 @@ public class JankTracker {
                 }
             };
 
+    // TODO remove this once the viewroot_choreographer bugfix has been rolled out. b/399724640
     public JankTracker(Choreographer choreographer, View decorView) {
         mStateTracker = new StateTracker(choreographer);
         mJankDataProcessor = new JankDataProcessor(mStateTracker);
+        mDecorView = decorView;
+        mHandlerThread.start();
+        registerWindowListeners();
+    }
+
+    /**
+     * Using this constructor delays the instantiation of the StateTracker and JankDataProcessor
+     * until after the OnWindowAttachListener is fired and the instance of Choreographer attached to
+     * the ViewRootImpl can be passed to StateTracker. This should ensures the vsync ids we are
+     * using to keep track of active states line up with the ids that are being returned by
+     * OnJankDataListener.
+     */
+    public JankTracker(View decorView) {
         mDecorView = decorView;
         mHandlerThread.start();
         registerWindowListeners();
@@ -131,6 +146,9 @@ public class JankTracker {
         getHandler().post(new Runnable() {
             @Override
             public void run() {
+                if (mJankDataProcessor == null) {
+                    return;
+                }
                 mJankDataProcessor.mergeJankStats(appJankStats, mActivityName);
             }
         });
@@ -192,8 +210,7 @@ public class JankTracker {
     public void enableAppJankTracking() {
         // Add the activity as a state, this will ensure we track frames to the activity without the
         // need for a decorated widget to be used.
-        // TODO b/376116199 replace "NONE" with UNSPECIFIED once the API changes are merged.
-        mStateTracker.putState("NONE", mActivityName, "NONE");
+        addActivityToStateTracking();
         mTrackingEnabled = true;
         registerForJankData();
     }
@@ -203,27 +220,33 @@ public class JankTracker {
      */
     public void disableAppJankTracking() {
         mTrackingEnabled = false;
-        // TODO b/376116199 replace "NONE" with UNSPECIFIED once the API changes are merged.
-        mStateTracker.removeState("NONE", mActivityName, "NONE");
+        removeActivityFromStateTracking();
         unregisterForJankData();
     }
 
     /**
-     * Retrieve all pending widget states, this is intended for testing purposes only.
+     * Retrieve all pending widget states, this is intended for testing purposes only. If
+     * this is called before StateTracker has been created the method will just return without
+     * copying any data to the stateDataList parameter.
      *
      * @param stateDataList the ArrayList that will be populated with the pending states.
      */
     @VisibleForTesting
     public void getAllUiStates(@NonNull ArrayList<StateTracker.StateData> stateDataList) {
+        if (mStateTracker == null) return;
         mStateTracker.retrieveAllStates(stateDataList);
     }
 
     /**
      * Retrieve all pending jank stats before they are logged, this is intended for testing
-     * purposes only.
+     * purposes only. If this method is called before JankDataProcessor is created it will return
+     * an empty HashMap.
      */
     @VisibleForTesting
     public HashMap<String, JankDataProcessor.PendingJankStat> getPendingJankStats() {
+        if (mJankDataProcessor == null) {
+            return new HashMap<>();
+        }
         return mJankDataProcessor.getPendingJankStats();
     }
 
@@ -233,8 +256,10 @@ public class JankTracker {
      */
     @VisibleForTesting
     public void forceListenerRegistration() {
+        addActivityToStateTracking();
         mSurfaceControl = mDecorView.getRootSurfaceControl();
         registerJankDataListener();
+        mListenersRegistered = true;
     }
 
     private void unregisterForJankData() {
@@ -270,6 +295,10 @@ public class JankTracker {
      */
     @VisibleForTesting
     public boolean shouldTrack() {
+        if (DEBUG) {
+            Log.d(DEBUG_KEY, String.format("mTrackingEnabled: %s | mListenersRegistered: %s",
+                    mTrackingEnabled, mListenersRegistered));
+        }
         return mTrackingEnabled && mListenersRegistered;
     }
 
@@ -312,5 +341,37 @@ public class JankTracker {
             mHandler = new Handler(mHandlerThread.getLooper());
         }
         return mHandler;
+    }
+
+    private void addActivityToStateTracking() {
+        if (mStateTracker == null) return;
+
+        mStateTracker.putState(AppJankStats.WIDGET_CATEGORY_UNSPECIFIED, mActivityName,
+                AppJankStats.WIDGET_STATE_UNSPECIFIED);
+    }
+
+    private void removeActivityFromStateTracking() {
+        if (mStateTracker == null) return;
+
+        mStateTracker.removeState(AppJankStats.WIDGET_CATEGORY_UNSPECIFIED, mActivityName,
+                AppJankStats.WIDGET_STATE_UNSPECIFIED);
+    }
+
+    private void initializeJankTrackingComponents() {
+        ViewRootImpl viewRoot = mDecorView.getViewRootImpl();
+        if (viewRoot == null || viewRoot.getChoreographer() == null) {
+            return;
+        }
+
+        if (mStateTracker == null) {
+            mStateTracker = new StateTracker(viewRoot.getChoreographer());
+        }
+
+        if (mJankDataProcessor == null) {
+            mJankDataProcessor = new JankDataProcessor(mStateTracker);
+        }
+
+        addActivityToStateTracking();
+        registerForJankData();
     }
 }
