@@ -174,6 +174,8 @@ public class CachedBluetoothDeviceTest {
         updateProfileStatus(connectingProfile, BluetoothProfile.STATE_CONNECTING);
         // Set connection policy
         when(connectingProfile.getConnectionPolicy(mDevice)).thenReturn(connectionPolicy);
+        when(connectingProfile.isEnabled(mDevice))
+                .thenReturn(connectionPolicy > BluetoothProfile.CONNECTION_POLICY_FORBIDDEN);
 
         // Act & Assert:
         //   Get the expected connection summary.
@@ -183,6 +185,9 @@ public class CachedBluetoothDeviceTest {
 
     @Test
     public void onProfileStateChanged_testConnectingToDisconnected_policyAllowed_problem() {
+        when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
+        when(mProfileManager.getLeAudioProfile()).thenReturn(mLeAudioProfile);
+
         String connectTimeoutString = mContext.getString(R.string.profile_connect_timeout_subtext);
 
         testTransitionFromConnectingToDisconnected(mA2dpProfile, mLeAudioProfile,
@@ -197,6 +202,9 @@ public class CachedBluetoothDeviceTest {
 
     @Test
     public void onProfileStateChanged_testConnectingToDisconnected_policyForbidden_noProblem() {
+        when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
+        when(mProfileManager.getLeAudioProfile()).thenReturn(mLeAudioProfile);
+
         testTransitionFromConnectingToDisconnected(mA2dpProfile, mLeAudioProfile,
         BluetoothProfile.CONNECTION_POLICY_FORBIDDEN, null);
         testTransitionFromConnectingToDisconnected(mHearingAidProfile, mLeAudioProfile,
@@ -209,6 +217,9 @@ public class CachedBluetoothDeviceTest {
 
     @Test
     public void onProfileStateChanged_testConnectingToDisconnected_policyUnknown_noProblem() {
+        when(mProfileManager.getA2dpProfile()).thenReturn(mA2dpProfile);
+        when(mProfileManager.getLeAudioProfile()).thenReturn(mLeAudioProfile);
+
         testTransitionFromConnectingToDisconnected(mA2dpProfile, mLeAudioProfile,
         BluetoothProfile.CONNECTION_POLICY_UNKNOWN, null);
         testTransitionFromConnectingToDisconnected(mHearingAidProfile, mLeAudioProfile,
@@ -1822,6 +1833,10 @@ public class CachedBluetoothDeviceTest {
     @Test
     public void getConnectionSummary_profileConnectedFail_showErrorMessage() {
         final A2dpProfile profile = mock(A2dpProfile.class);
+        when(mProfileManager.getA2dpProfile()).thenReturn(profile);
+        when(profile.getConnectionPolicy(mDevice))
+                .thenReturn(BluetoothProfile.CONNECTION_POLICY_ALLOWED);
+        when(profile.isEnabled(mDevice)).thenReturn(true);
         mCachedDevice.onProfileStateChanged(profile, BluetoothProfile.STATE_CONNECTED);
         mCachedDevice.setProfileConnectedStatus(BluetoothProfile.A2DP, true);
 
@@ -1834,6 +1849,10 @@ public class CachedBluetoothDeviceTest {
     @Test
     public void getTvConnectionSummary_profileConnectedFail_showErrorMessage() {
         final A2dpProfile profile = mock(A2dpProfile.class);
+        when(mProfileManager.getA2dpProfile()).thenReturn(profile);
+        when(profile.getConnectionPolicy(mDevice))
+                .thenReturn(BluetoothProfile.CONNECTION_POLICY_ALLOWED);
+        when(profile.isEnabled(mDevice)).thenReturn(true);
         mCachedDevice.onProfileStateChanged(profile, BluetoothProfile.STATE_CONNECTED);
         mCachedDevice.setProfileConnectedStatus(BluetoothProfile.A2DP, true);
 
