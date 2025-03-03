@@ -540,7 +540,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             return;
         }
 
-        if (oldRootView != mResult.mRootView) {
+        if (DesktopModeFlags.SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX.isTrue()
+                ? (oldRootView != mResult.mRootView && taskInfo.isVisibleRequested)
+                : oldRootView != mResult.mRootView) {
             disposeStatusBarInputLayer();
             mWindowDecorViewHolder = createViewHolder();
             // Load these only when first creating the view.
