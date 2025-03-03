@@ -34,6 +34,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeExpansionChangeEvent
+import com.android.systemui.shared.Flags as SharedFlags
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScrimController
@@ -43,10 +44,11 @@ import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.WallpaperController
 import com.android.systemui.util.mockito.eq
-import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
+import java.util.function.Consumer
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -67,8 +69,6 @@ import org.mockito.Mockito.reset
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnit
-import java.util.Optional
-import java.util.function.Consumer
 
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
@@ -76,7 +76,6 @@ import java.util.function.Consumer
 class NotificationShadeDepthControllerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
-    private val applicationScope = kosmos.testScope.backgroundScope
     @Mock private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
     @Mock private lateinit var statusBarStateController: StatusBarStateController
     @Mock private lateinit var blurUtils: BlurUtils
@@ -85,7 +84,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @Mock private lateinit var keyguardInteractor: KeyguardInteractor
     @Mock private lateinit var choreographer: Choreographer
     @Mock private lateinit var wallpaperController: WallpaperController
-    @Mock private lateinit var wallpaperInteractor: WallpaperInteractor
     @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
     @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var appZoomOutOptional: Optional<AppZoomOut>
@@ -130,14 +128,12 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
                 keyguardInteractor,
                 choreographer,
                 wallpaperController,
-                wallpaperInteractor,
                 notificationShadeWindowController,
                 dozeParameters,
                 context,
                 ResourcesSplitShadeStateController(),
                 windowRootViewBlurInteractor,
                 appZoomOutOptional,
-                applicationScope,
                 dumpManager,
                 configurationController,
             )
@@ -314,21 +310,19 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     @Test
-    fun onDozeAmountChanged_doesNotApplyBlurWithAmbientAod() {
-        notificationShadeDepthController.wallpaperSupportsAmbientMode = false
-
-        statusBarStateListener.onDozeAmountChanged(1f, 1f)
-        notificationShadeDepthController.updateBlurCallback.doFrame(0)
-        verify(blurUtils).applyBlur(any(), eq(0), eq(false))
-    }
-
-    @Test
-    fun onDozeAmountChanged_appliesBlurWithAmbientAod() {
-        notificationShadeDepthController.wallpaperSupportsAmbientMode = true
-
+    @DisableFlags(SharedFlags.FLAG_AMBIENT_AOD)
+    fun onDozeAmountChanged_appliesBlur() {
         statusBarStateListener.onDozeAmountChanged(1f, 1f)
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(blurUtils).applyBlur(any(), eq(maxBlur), eq(false))
+    }
+
+    @Test
+    @EnableFlags(SharedFlags.FLAG_AMBIENT_AOD)
+    fun onDozeAmountChanged_doesNotApplyBlurWithAmbientAod() {
+        statusBarStateListener.onDozeAmountChanged(1f, 1f)
+        notificationShadeDepthController.updateBlurCallback.doFrame(0)
+        verify(blurUtils).applyBlur(any(), eq(0), eq(false))
     }
 
     @Test
