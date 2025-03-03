@@ -18,11 +18,13 @@ package com.android.systemui.common.shared.model
 
 import android.annotation.StringRes
 import android.content.Context
+import androidx.compose.runtime.Stable
 
 /**
  * Models a content description, that can either be already [loaded][ContentDescription.Loaded] or
  * be a [reference][ContentDescription.Resource] to a resource.
  */
+@Stable
 sealed class ContentDescription {
     data class Loaded(val description: String?) : ContentDescription()
 
