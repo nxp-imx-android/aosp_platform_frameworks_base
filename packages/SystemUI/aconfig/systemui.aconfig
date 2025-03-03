@@ -2110,3 +2110,10 @@ flag {
     description: "Enables moving the launching window on top of the origin window in the Animation library."
     bug: "390422470"
 }
+
+flag {
+    name: "status_bar_chips_return_animations"
+    namespace: "systemui"
+    description: "Enables return animations for status bar chips"
+    bug: "202516970"
+}
