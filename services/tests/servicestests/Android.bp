@@ -347,6 +347,17 @@ test_module_config {
     include_filters: ["com.android.server.om."],
 }
 
+test_module_config {
+    name: "FrameworksServicesTests_theme",
+    base: "FrameworksServicesTests",
+    test_suites: [
+        "device-tests",
+        "automotive-tests",
+    ],
+
+    include_filters: ["com.android.server.theming."],
+}
+
 // Used by contexthub TEST_MAPPING
 test_module_config {
     name: "FrameworksServicesTests_contexthub_presubmit",
