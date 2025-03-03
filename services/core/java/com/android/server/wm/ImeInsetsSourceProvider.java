@@ -285,11 +285,15 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 // If insets target is not available (e.g. RemoteInsetsControlTarget), use current
                 // IME input target to update IME request state. For example, switch from a task
                 // with showing IME to a split-screen task without showing IME.
-                InsetsTarget insetsTarget = target.getWindow();
-                if (insetsTarget == null && mServerVisible) {
-                    insetsTarget = mDisplayContent.getImeInputTarget();
+                InputTarget imeInputTarget = mDisplayContent.getImeInputTarget();
+                if (imeInputTarget != target && imeInputTarget != null) {
+                    // The controlTarget should be updated with the visibility of the
+                    // current IME input target.
+                    reportImeInputTargetStateToControlTarget(imeInputTarget, target,
+                            statsToken);
+                } else {
+                    invokeOnImeRequestedChangedListener(target, statsToken);
                 }
-                invokeOnImeRequestedChangedListener(insetsTarget, statsToken);
             }
         }
     }
