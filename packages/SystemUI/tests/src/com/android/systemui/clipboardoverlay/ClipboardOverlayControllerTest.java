@@ -28,7 +28,6 @@ import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBO
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_SHOWN_EXPANDED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_SHOWN_MINIMIZED;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_SWIPE_DISMISSED;
-import static com.android.systemui.flags.Flags.CLIPBOARD_IMAGE_TIMEOUT;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -60,7 +59,6 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.broadcast.BroadcastSender;
-import com.android.systemui.flags.FakeFeatureFlags;
 import com.android.systemui.screenshot.TimeoutHandler;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.util.concurrency.FakeExecutor;
@@ -102,7 +100,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     @Mock
     private UiEventLogger mUiEventLogger;
     private FakeDisplayTracker mDisplayTracker = new FakeDisplayTracker(mContext);
-    private FakeFeatureFlags mFeatureFlags = new FakeFeatureFlags();
 
     @Mock
     private Animator mAnimator;
@@ -152,8 +149,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
         mSampleClipData = new ClipData("Test", new String[]{"text/plain"},
                 new ClipData.Item("Test Item"));
-
-        mFeatureFlags.set(CLIPBOARD_IMAGE_TIMEOUT, true); // turned off for legacy tests
     }
 
     /**
@@ -170,13 +165,13 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
                 getFakeBroadcastDispatcher(),
                 mBroadcastSender,
                 mTimeoutHandler,
-                mFeatureFlags,
                 mClipboardUtils,
                 mExecutor,
                 mClipboardImageLoader,
                 mClipboardTransitionExecutor,
                 mClipboardIndicationProvider,
-                mUiEventLogger);
+                mUiEventLogger,
+                new ActionIntentCreator());
         verify(mClipboardOverlayView).setCallbacks(mOverlayCallbacksCaptor.capture());
         mCallbacks = mOverlayCallbacksCaptor.getValue();
     }
@@ -193,7 +188,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
         ClipData clipData = new ClipData("", new String[]{"image/png"},
                 new ClipData.Item(Uri.parse("")));
-        mFeatureFlags.set(CLIPBOARD_IMAGE_TIMEOUT, false);
 
         mOverlayController.setClipData(clipData, "");
 
@@ -208,7 +202,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
         ClipData clipData = new ClipData("", new String[]{"resource/png"},
                 new ClipData.Item(Uri.parse("")));
-        mFeatureFlags.set(CLIPBOARD_IMAGE_TIMEOUT, false);
 
         mOverlayController.setClipData(clipData, "");
 
@@ -219,7 +212,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
     @Test
     public void test_setClipData_textData_legacy() {
-        mFeatureFlags.set(CLIPBOARD_IMAGE_TIMEOUT, false);
         initController();
 
         mOverlayController.setClipData(mSampleClipData, "abc");
@@ -232,7 +224,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
 
     @Test
     public void test_setClipData_sensitiveTextData_legacy() {
-        mFeatureFlags.set(CLIPBOARD_IMAGE_TIMEOUT, false);
         initController();
 
         ClipDescription description = mSampleClipData.getDescription();
@@ -250,7 +241,6 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
     @Test
     public void test_setClipData_repeatedCalls_legacy() {
         when(mAnimator.isRunning()).thenReturn(true);
-        mFeatureFlags.set(CLIPBOARD_IMAGE_TIMEOUT, false);
         initController();
 
         mOverlayController.setClipData(mSampleClipData, "");
