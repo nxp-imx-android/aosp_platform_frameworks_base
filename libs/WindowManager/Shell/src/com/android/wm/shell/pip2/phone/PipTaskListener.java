@@ -61,7 +61,7 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
     private final PipBoundsState mPipBoundsState;
     private final PipBoundsAlgorithm mPipBoundsAlgorithm;
     private final ShellExecutor mMainExecutor;
-    private final PictureInPictureParams mPictureInPictureParams =
+    private PictureInPictureParams mPictureInPictureParams =
             new PictureInPictureParams.Builder().build();
 
     private boolean mWaitingForAspectRatioChange = false;
@@ -92,6 +92,11 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
         }
         mPipResizeAnimatorSupplier = PipResizeAnimator::new;
         mPipScheduler.setPipParamsSupplier(this::getPictureInPictureParams);
+        // Reset {@link #mPictureInPictureParams} after exiting PiP. For instance, next Activity
+        // with null aspect ratio would accidentally inherit the aspect ratio from a previous
+        // PiP Activity.
+        mPipBoundsState.addOnPipComponentChangedListener(((oldPipComponent, newPipComponent) ->
+                mPictureInPictureParams = new PictureInPictureParams.Builder().build()));
     }
 
     void setPictureInPictureParams(@Nullable PictureInPictureParams params) {
@@ -138,9 +143,8 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
         if (mPictureInPictureParams.hasSetAspectRatio()
                 && mPipBoundsAlgorithm.isValidPictureInPictureAspectRatio(newAspectRatio)
                 && PipUtils.aspectRatioChanged(newAspectRatio, mPipBoundsState.getAspectRatio())) {
-            mPipTransitionState.setOnIdlePipTransitionStateRunnable(() -> {
-                onAspectRatioChanged(newAspectRatio);
-            });
+            mPipTransitionState.setOnIdlePipTransitionStateRunnable(
+                    () -> onAspectRatioChanged(newAspectRatio));
         }
     }
 
