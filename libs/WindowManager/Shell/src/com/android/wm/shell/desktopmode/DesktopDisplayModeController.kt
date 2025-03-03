@@ -35,9 +35,11 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.transition.Transitions
 
 /** Controls the display windowing mode in desktop mode */
@@ -49,6 +51,7 @@ class DesktopDisplayModeController(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val inputManager: InputManager,
+    private val displayController: DisplayController,
     @ShellMainThread private val mainHandler: Handler,
 ) {
 
@@ -128,14 +131,25 @@ class DesktopDisplayModeController(
         return windowManager.getWindowingMode(DEFAULT_DISPLAY)
     }
 
-    // TODO: b/375319538 - Replace the check with a DisplayManager API once it's available.
-    private fun isExtendedDisplayEnabled() =
-        0 !=
+    private fun isExtendedDisplayEnabled(): Boolean {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue) {
+            return rootTaskDisplayAreaOrganizer
+                .getDisplayIds()
+                .filter { it != DEFAULT_DISPLAY }
+                .any { displayId ->
+                    displayController.getDisplay(displayId)?.let { display ->
+                        DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+                    } ?: false
+                }
+        }
+
+        return 0 !=
             Settings.Global.getInt(
                 context.contentResolver,
                 DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS,
                 0,
             )
+    }
 
     private fun hasExternalDisplay() =
         rootTaskDisplayAreaOrganizer.getDisplayIds().any { it != DEFAULT_DISPLAY }
