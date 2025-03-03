@@ -251,10 +251,6 @@ class AppCompatActivityRobot {
         doReturn(mTaskStack.top()).when(mActivityStack.top()).getOrganizedTask();
     }
 
-    void setIsInLetterboxAnimation(boolean inAnimation) {
-        doReturn(inAnimation).when(mActivityStack.top()).isInLetterboxAnimation();
-    }
-
     void setTopTaskInMultiWindowMode(boolean inMultiWindowMode) {
         doReturn(inMultiWindowMode).when(mTaskStack.top()).inMultiWindowMode();
     }

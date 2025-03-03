@@ -58,7 +58,7 @@ class AppCompatRoundedCorners {
     @VisibleForTesting
     @Nullable
     Rect getCropBoundsIfNeeded(@NonNull final WindowState mainWindow) {
-        if (!requiresRoundedCorners(mainWindow) || mActivityRecord.isInLetterboxAnimation()) {
+        if (!requiresRoundedCorners(mainWindow)) {
             // We don't want corner radius on the window.
             // In the case the ActivityRecord requires a letterboxed animation we never want
             // rounded corners on the window because rounded corners are applied at the

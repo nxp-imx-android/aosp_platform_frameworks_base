@@ -672,9 +672,6 @@ final class ActivityRecord extends WindowToken {
     // TODO(b/317000737): Replace it with visibility states lookup.
     int mTransitionChangeFlags;
 
-    /** Whether we need to setup the animation to animate only within the letterbox. */
-    private boolean mNeedsLetterboxedAnimation;
-
     /**
      * @see #currentLaunchCanTurnScreenOn()
      */
@@ -5580,18 +5577,6 @@ final class ActivityRecord extends WindowToken {
         commitVisibility(visible, performLayout, false /* fromTransition */);
     }
 
-    void setNeedsLetterboxedAnimation(boolean needsLetterboxedAnimation) {
-        mNeedsLetterboxedAnimation = needsLetterboxedAnimation;
-    }
-
-    boolean isNeedsLetterboxedAnimation() {
-        return mNeedsLetterboxedAnimation;
-    }
-
-    boolean isInLetterboxAnimation() {
-        return mNeedsLetterboxedAnimation && isAnimating();
-    }
-
     /** Updates draw state and shows drawn windows. */
     void commitFinishDrawing(SurfaceControl.Transaction t) {
         boolean committed = false;
@@ -7253,10 +7238,6 @@ final class ActivityRecord extends WindowToken {
                 .setParent(getAnimationLeashParent())
                 .setName(getSurfaceControl() + " - animation-bounds")
                 .setCallsite("ActivityRecord.createAnimationBoundsLayer");
-        if (mNeedsLetterboxedAnimation) {
-            // Needs to be an effect layer to support rounded corners
-            builder.setEffectLayer();
-        }
         final SurfaceControl boundsLayer = builder.build();
         t.show(boundsLayer);
         return boundsLayer;
@@ -7274,11 +7255,6 @@ final class ActivityRecord extends WindowToken {
 
     @Override
     public void onLeashAnimationStarting(Transaction t, SurfaceControl leash) {
-        if (mNeedsLetterboxedAnimation) {
-            updateLetterboxSurfaceIfNeeded(findMainWindow(), t);
-            mNeedsAnimationBoundsLayer = true;
-        }
-
         // If the animation needs to be cropped then an animation bounds layer is created as a
         // child of the root pinned task or animation layer. The leash is then reparented to this
         // new layer.
@@ -7290,17 +7266,6 @@ final class ActivityRecord extends WindowToken {
             // Crop to root task bounds.
             t.setLayer(leash, 0);
             t.setLayer(mAnimationBoundsLayer, getLastLayer());
-
-            if (mNeedsLetterboxedAnimation) {
-                final int cornerRadius = mAppCompatController.getLetterboxPolicy()
-                        .getRoundedCornersRadius(findMainWindow());
-
-                final Rect letterboxInnerBounds = new Rect();
-                getLetterboxInnerBounds(letterboxInnerBounds);
-
-                t.setCornerRadius(mAnimationBoundsLayer, cornerRadius)
-                        .setCrop(mAnimationBoundsLayer, letterboxInnerBounds);
-            }
 
             // Reparent leash to animation bounds layer.
             t.reparent(leash, mAnimationBoundsLayer);
@@ -7355,10 +7320,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         mNeedsAnimationBoundsLayer = false;
-        if (mNeedsLetterboxedAnimation) {
-            mNeedsLetterboxedAnimation = false;
-            updateLetterboxSurfaceIfNeeded(findMainWindow(), t);
-        }
     }
 
     @Override
