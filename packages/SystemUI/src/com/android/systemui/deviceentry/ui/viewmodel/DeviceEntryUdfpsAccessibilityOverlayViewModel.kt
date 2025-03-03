@@ -17,6 +17,7 @@
 package com.android.systemui.deviceentry.ui.viewmodel
 
 import com.android.systemui.accessibility.domain.interactor.AccessibilityInteractor
+import com.android.systemui.biometrics.UdfpsUtils
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.keyguard.ui.view.DeviceEntryIconView
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryForegroundViewModel
@@ -33,10 +34,12 @@ constructor(
     accessibilityInteractor: AccessibilityInteractor,
     private val deviceEntryIconViewModel: DeviceEntryIconViewModel,
     private val deviceEntryFgIconViewModel: DeviceEntryForegroundViewModel,
+    udfpsUtils: UdfpsUtils,
 ) :
     UdfpsAccessibilityOverlayViewModel(
         udfpsOverlayInteractor,
         accessibilityInteractor,
+        udfpsUtils,
     ) {
     /** Overlay is only visible if the UDFPS icon is visible on the keyguard. */
     override fun isVisibleWhenTouchExplorationEnabled(): Flow<Boolean> =

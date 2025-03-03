@@ -18,27 +18,58 @@
 package com.android.systemui.deviceentry.ui.binder
 
 import android.annotation.SuppressLint
+import android.util.Log
+import android.view.MotionEvent
+import android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO
+import android.view.View.IMPORTANT_FOR_ACCESSIBILITY_YES
 import androidx.core.view.isInvisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
 import com.android.systemui.deviceentry.ui.viewmodel.UdfpsAccessibilityOverlayViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 
 object UdfpsAccessibilityOverlayBinder {
+    private const val TAG = "UdfpsAccessibilityOverlayBinder"
 
     /** Forwards hover events to the view model to make guided announcements for accessibility. */
     @SuppressLint("ClickableViewAccessibility")
     @JvmStatic
-    fun bind(
-        view: UdfpsAccessibilityOverlay,
-        viewModel: UdfpsAccessibilityOverlayViewModel,
-    ) {
-        view.setOnHoverListener { v, event -> viewModel.onHoverEvent(v, event) }
+    fun bind(view: UdfpsAccessibilityOverlay, viewModel: UdfpsAccessibilityOverlayViewModel) {
         view.repeatWhenAttached {
             // Repeat on CREATED because we update the visibility of the view
             repeatOnLifecycle(Lifecycle.State.CREATED) {
-                viewModel.visible.collect { visible -> view.isInvisible = !visible }
+                view.setOnHoverListener { v, event ->
+                    if (event.action == MotionEvent.ACTION_HOVER_ENTER) {
+                        launch { viewModel.onHoverEvent(v, event) }
+                    }
+                    false
+                }
+
+                launch { viewModel.visible.collect { visible -> view.isInvisible = !visible } }
+
+                launch {
+                    viewModel.contentDescription.collect { contentDescription ->
+                        if (contentDescription != null) {
+                            view.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_YES
+                            view.contentDescription = contentDescription
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.clearAccessibilityOverlayMessageReason.collect { reason ->
+                        Log.d(
+                            TAG,
+                            "clearing content description of UDFPS accessibility overlay " +
+                                "for reason: $reason",
+                        )
+                        view.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+                        view.contentDescription = null
+                        viewModel.setContentDescription(null)
+                    }
+                }
             }
         }
     }

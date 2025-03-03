@@ -19,21 +19,19 @@ package com.android.systemui.keyguard.ui.binder
 
 import android.os.Bundle
 import android.view.View
+import android.view.accessibility.AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.keyguard.ui.viewmodel.AccessibilityActionsViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
 import kotlinx.coroutines.DisposableHandle
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /** View binder for accessibility actions placeholder on keyguard. */
 object AccessibilityActionsViewBinder {
-    fun bind(
-        view: View,
-        viewModel: AccessibilityActionsViewModel,
-    ): DisposableHandle {
+    fun bind(view: View, viewModel: AccessibilityActionsViewModel): DisposableHandle {
         val disposableHandle =
             view.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -60,9 +58,10 @@ object AccessibilityActionsViewBinder {
                                 object : View.AccessibilityDelegate() {
                                     override fun onInitializeAccessibilityNodeInfo(
                                         host: View,
-                                        info: AccessibilityNodeInfo
+                                        info: AccessibilityNodeInfo,
                                     ) {
                                         super.onInitializeAccessibilityNodeInfo(host, info)
+
                                         // Add custom actions
                                         if (canOpenGlanceableHub) {
                                             val action =
@@ -80,7 +79,7 @@ object AccessibilityActionsViewBinder {
                                     override fun performAccessibilityAction(
                                         host: View,
                                         action: Int,
-                                        args: Bundle?
+                                        args: Bundle?,
                                     ): Boolean {
                                         return if (
                                             action == R.id.accessibility_action_open_communal_hub
@@ -88,6 +87,20 @@ object AccessibilityActionsViewBinder {
                                             viewModel.openCommunalHub()
                                             true
                                         } else super.performAccessibilityAction(host, action, args)
+                                    }
+
+                                    override fun sendAccessibilityEvent(
+                                        host: View,
+                                        eventType: Int,
+                                    ) {
+                                        if (eventType == TYPE_VIEW_ACCESSIBILITY_FOCUSED) {
+                                            launch {
+                                                viewModel.clearUdfpsAccessibilityOverlayMessage(
+                                                    "eventType $eventType on view $host"
+                                                )
+                                            }
+                                        }
+                                        super.sendAccessibilityEvent(host, eventType)
                                     }
                                 }
                         }
