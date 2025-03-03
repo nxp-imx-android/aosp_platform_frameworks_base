@@ -17,6 +17,7 @@
 package com.android.wm.shell.windowdecor.tiling
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration.WINDOWING_MODE_PINNED
 import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -28,9 +29,11 @@ import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_OPEN
+import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
+import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.annotations.VisibleForTesting
@@ -422,6 +425,8 @@ class DesktopTilingWindowDecoration(
             change.taskInfo?.let {
                 if (it.isFullscreen || isMinimized(change.mode, info.type)) {
                     removeTaskIfTiled(it.taskId, /* taskVanished= */ false, it.isFullscreen)
+                } else if (isEnteringPip(change, info.type)) {
+                    removeTaskIfTiled(it.taskId, /* taskVanished= */ true, it.isFullscreen)
                 }
             }
         }
@@ -432,6 +437,27 @@ class DesktopTilingWindowDecoration(
             (infoType == TRANSIT_MINIMIZE ||
                 infoType == TRANSIT_TO_BACK ||
                 infoType == TRANSIT_OPEN))
+    }
+
+    private fun isEnteringPip(change: Change, transitType: Int): Boolean {
+        if (change.taskInfo != null && change.taskInfo?.windowingMode == WINDOWING_MODE_PINNED) {
+            // - TRANSIT_PIP: type (from RootWindowContainer)
+            // - TRANSIT_OPEN (from apps that enter PiP instantly on opening, mostly from
+            // CTS/Flicker tests).
+            // - TRANSIT_TO_FRONT, though uncommon with triggering PiP, should semantically also
+            // be allowed to animate if the task in question is pinned already - see b/308054074.
+            // - TRANSIT_CHANGE: This can happen if the request to enter PIP happens when we are
+            // collecting for another transition, such as TRANSIT_CHANGE (display rotation).
+            if (
+                transitType == TRANSIT_PIP ||
+                    transitType == TRANSIT_OPEN ||
+                    transitType == TRANSIT_TO_FRONT ||
+                    transitType == TRANSIT_CHANGE
+            ) {
+                return true
+            }
+        }
+        return false
     }
 
     class AppResizingHelper(
@@ -550,12 +576,16 @@ class DesktopTilingWindowDecoration(
         taskVanished: Boolean = false,
         shouldDelayUpdate: Boolean = false,
     ) {
+        val taskRepository = desktopUserRepositories.current
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
             removeTask(leftTaskResizingHelper, taskVanished, shouldDelayUpdate)
             leftTaskResizingHelper = null
-            rightTaskResizingHelper
-                ?.desktopModeWindowDecoration
-                ?.updateDisabledResizingEdge(NONE, shouldDelayUpdate)
+            val taskId = rightTaskResizingHelper?.taskInfo?.taskId
+            if (taskId != null && taskRepository.isVisibleTask(taskId)) {
+                rightTaskResizingHelper
+                    ?.desktopModeWindowDecoration
+                    ?.updateDisabledResizingEdge(NONE, shouldDelayUpdate)
+            }
             tearDownTiling()
             return
         }
@@ -563,9 +593,12 @@ class DesktopTilingWindowDecoration(
         if (taskId == rightTaskResizingHelper?.taskInfo?.taskId) {
             removeTask(rightTaskResizingHelper, taskVanished, shouldDelayUpdate)
             rightTaskResizingHelper = null
-            leftTaskResizingHelper
-                ?.desktopModeWindowDecoration
-                ?.updateDisabledResizingEdge(NONE, shouldDelayUpdate)
+            val taskId = leftTaskResizingHelper?.taskInfo?.taskId
+            if (taskId != null && taskRepository.isVisibleTask(taskId)) {
+                leftTaskResizingHelper
+                    ?.desktopModeWindowDecoration
+                    ?.updateDisabledResizingEdge(NONE, shouldDelayUpdate)
+            }
             tearDownTiling()
         }
     }
@@ -600,7 +633,6 @@ class DesktopTilingWindowDecoration(
 
     fun onOverviewAnimationStateChange(isRunning: Boolean) {
         if (!isTilingManagerInitialised) return
-
         if (isRunning) {
             desktopTilingDividerWindowManager?.hideDividerBar()
         } else if (allTiledTasksVisible()) {
