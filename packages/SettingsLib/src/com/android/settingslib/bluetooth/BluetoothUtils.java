@@ -701,18 +701,18 @@ public class BluetoothUtils {
             // However, app layer need to gate the feature based on whether the device has audio
             // sharing capability regardless of the BT state.
             // So here we check the BluetoothProperties when BT off.
-            //
-            // TODO: Also check SystemProperties "persist.bluetooth.leaudio_dynamic_switcher.mode"
-            // and return true if it is in broadcast mode.
-            // Now SystemUI don't have access to read the value.
+            String mode = BluetoothProperties.le_audio_dynamic_switcher_mode().orElse("none");
+            Set<String> disabledModes = ImmutableSet.of("disabled", "unicast");
             int sourceSupportedCode = adapter.isLeAudioBroadcastSourceSupported();
             int assistantSupportedCode = adapter.isLeAudioBroadcastAssistantSupported();
             return (sourceSupportedCode == BluetoothStatusCodes.FEATURE_SUPPORTED
                     || (sourceSupportedCode == BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED
-                    && BluetoothProperties.isProfileBapBroadcastSourceEnabled().orElse(false)))
+                    && BluetoothProperties.isProfileBapBroadcastSourceEnabled().orElse(false)
+                    && !disabledModes.contains(mode)))
                     && (assistantSupportedCode == BluetoothStatusCodes.FEATURE_SUPPORTED
                     || (assistantSupportedCode == BluetoothStatusCodes.ERROR_BLUETOOTH_NOT_ENABLED
-                    && BluetoothProperties.isProfileBapBroadcastAssistEnabled().orElse(false)));
+                    && BluetoothProperties.isProfileBapBroadcastAssistEnabled().orElse(false)
+                    && !disabledModes.contains(mode)));
         } catch (IllegalStateException e) {
             Log.d(TAG, "Fail to check isAudioSharingSupported, e = ", e);
             return false;
