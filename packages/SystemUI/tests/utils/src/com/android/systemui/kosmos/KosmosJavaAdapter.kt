@@ -66,6 +66,7 @@ import com.android.systemui.scene.shared.model.sceneDataSource
 import com.android.systemui.scene.ui.view.mockWindowRootViewProvider
 import com.android.systemui.settings.brightness.data.repository.brightnessMirrorShowingRepository
 import com.android.systemui.settings.displayTracker
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeLayoutParams
@@ -199,5 +200,6 @@ class KosmosJavaAdapter() {
     val windowRootViewBlurInteractor by lazy { kosmos.windowRootViewBlurInteractor }
     val sysuiState by lazy { kosmos.sysUiState }
     val displayTracker by lazy { kosmos.displayTracker }
+    val fakeShadeDisplaysRepository by lazy { kosmos.fakeShadeDisplaysRepository }
     val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
 }

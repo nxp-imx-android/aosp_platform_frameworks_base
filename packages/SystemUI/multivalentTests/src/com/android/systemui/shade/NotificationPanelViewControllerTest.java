@@ -195,9 +195,7 @@ public class NotificationPanelViewControllerTest extends NotificationPanelViewCo
     @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
     public void updateSystemUiStateFlags_updatesSysuiStateInteractor() {
         var DISPLAY_ID = 10;
-        var displayMock = display(TYPE_INTERNAL, /* flags= */ 0, /* id= */DISPLAY_ID,
-                /* state= */ null);
-        when(mView.getDisplay()).thenReturn(displayMock);
+        mKosmos.getFakeShadeDisplaysRepository().setPendingDisplayId(DISPLAY_ID);
 
         mNotificationPanelViewController.updateSystemUiStateFlags();
 
