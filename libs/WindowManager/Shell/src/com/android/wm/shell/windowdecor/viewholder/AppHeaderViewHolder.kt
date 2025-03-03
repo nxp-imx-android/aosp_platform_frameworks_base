@@ -23,10 +23,6 @@ import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
-import android.graphics.drawable.LayerDrawable
-import android.graphics.drawable.RippleDrawable
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.RoundRectShape
 import android.os.Bundle
 import android.view.View
 import android.view.View.OnLongClickListener
@@ -55,14 +51,12 @@ import com.android.internal.R.color.materialColorSurfaceDim
 import com.android.wm.shell.R
 import com.android.wm.shell.windowdecor.MaximizeButtonView
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
+import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.OPACITY_100
-import com.android.wm.shell.windowdecor.common.OPACITY_11
-import com.android.wm.shell.windowdecor.common.OPACITY_15
 import com.android.wm.shell.windowdecor.common.OPACITY_55
 import com.android.wm.shell.windowdecor.common.OPACITY_65
 import com.android.wm.shell.windowdecor.common.Theme
-import com.android.wm.shell.windowdecor.common.DrawableInsets
-import com.android.wm.shell.windowdecor.common.createRippleDrawable
+import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isLightCaptionBarAppearance
 import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppearance
 
@@ -385,7 +379,7 @@ class AppHeaderViewHolder(
         val colorStateList = ColorStateList.valueOf(foregroundColor).withAlpha(foregroundAlpha)
         // App chip.
         openMenuButton.apply {
-            background = createRippleDrawable(
+            background = createBackgroundDrawable(
                 color = foregroundColor,
                 cornerRadius = headerButtonsRippleRadius,
                 drawableInsets = appChipDrawableInsets,
@@ -396,11 +390,12 @@ class AppHeaderViewHolder(
                 setTextColor(colorStateList)
             }
             appIconImageView.imageAlpha = foregroundAlpha
+            defaultFocusHighlightEnabled = false
         }
         // Minimize button.
         minimizeWindowButton.apply {
             imageTintList = colorStateList
-            background = createRippleDrawable(
+            background = createBackgroundDrawable(
                 color = foregroundColor,
                 cornerRadius = headerButtonsRippleRadius,
                 drawableInsets = minimizeDrawableInsets
@@ -413,7 +408,7 @@ class AppHeaderViewHolder(
                 darkMode = header.appTheme == Theme.DARK,
                 iconForegroundColor = colorStateList,
                 baseForegroundColor = foregroundColor,
-                rippleDrawable = createRippleDrawable(
+                backgroundDrawable = createBackgroundDrawable(
                     color = foregroundColor,
                     cornerRadius = headerButtonsRippleRadius,
                     drawableInsets = maximizeDrawableInsets
@@ -451,7 +446,7 @@ class AppHeaderViewHolder(
         // Close button.
         closeWindowButton.apply {
             imageTintList = colorStateList
-            background = createRippleDrawable(
+            background = createBackgroundDrawable(
                 color = foregroundColor,
                 cornerRadius = headerButtonsRippleRadius,
                 drawableInsets = closeDrawableInsets
