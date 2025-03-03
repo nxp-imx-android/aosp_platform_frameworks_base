@@ -55,66 +55,6 @@ static bool gHasRenderThreadInstance = false;
 
 static JVMAttachHook gOnStartHook = nullptr;
 
-ASurfaceControlFunctions::ASurfaceControlFunctions() {
-    void* handle_ = dlopen("libandroid.so", RTLD_NOW | RTLD_NODELETE);
-    createFunc = (ASC_create)dlsym(handle_, "ASurfaceControl_create");
-    LOG_ALWAYS_FATAL_IF(createFunc == nullptr,
-                        "Failed to find required symbol ASurfaceControl_create!");
-
-    acquireFunc = (ASC_acquire) dlsym(handle_, "ASurfaceControl_acquire");
-    LOG_ALWAYS_FATAL_IF(acquireFunc == nullptr,
-            "Failed to find required symbol ASurfaceControl_acquire!");
-
-    releaseFunc = (ASC_release) dlsym(handle_, "ASurfaceControl_release");
-    LOG_ALWAYS_FATAL_IF(releaseFunc == nullptr,
-            "Failed to find required symbol ASurfaceControl_release!");
-
-    registerListenerFunc = (ASC_registerSurfaceStatsListener) dlsym(handle_,
-            "ASurfaceControl_registerSurfaceStatsListener");
-    LOG_ALWAYS_FATAL_IF(registerListenerFunc == nullptr,
-            "Failed to find required symbol ASurfaceControl_registerSurfaceStatsListener!");
-
-    unregisterListenerFunc = (ASC_unregisterSurfaceStatsListener) dlsym(handle_,
-            "ASurfaceControl_unregisterSurfaceStatsListener");
-    LOG_ALWAYS_FATAL_IF(unregisterListenerFunc == nullptr,
-            "Failed to find required symbol ASurfaceControl_unregisterSurfaceStatsListener!");
-
-    getAcquireTimeFunc = (ASCStats_getAcquireTime) dlsym(handle_,
-            "ASurfaceControlStats_getAcquireTime");
-    LOG_ALWAYS_FATAL_IF(getAcquireTimeFunc == nullptr,
-            "Failed to find required symbol ASurfaceControlStats_getAcquireTime!");
-
-    getFrameNumberFunc = (ASCStats_getFrameNumber) dlsym(handle_,
-            "ASurfaceControlStats_getFrameNumber");
-    LOG_ALWAYS_FATAL_IF(getFrameNumberFunc == nullptr,
-            "Failed to find required symbol ASurfaceControlStats_getFrameNumber!");
-
-    transactionCreateFunc = (AST_create)dlsym(handle_, "ASurfaceTransaction_create");
-    LOG_ALWAYS_FATAL_IF(transactionCreateFunc == nullptr,
-                        "Failed to find required symbol ASurfaceTransaction_create!");
-
-    transactionDeleteFunc = (AST_delete)dlsym(handle_, "ASurfaceTransaction_delete");
-    LOG_ALWAYS_FATAL_IF(transactionDeleteFunc == nullptr,
-                        "Failed to find required symbol ASurfaceTransaction_delete!");
-
-    transactionApplyFunc = (AST_apply)dlsym(handle_, "ASurfaceTransaction_apply");
-    LOG_ALWAYS_FATAL_IF(transactionApplyFunc == nullptr,
-                        "Failed to find required symbol ASurfaceTransaction_apply!");
-
-    transactionReparentFunc = (AST_reparent)dlsym(handle_, "ASurfaceTransaction_reparent");
-    LOG_ALWAYS_FATAL_IF(transactionReparentFunc == nullptr,
-                        "Failed to find required symbol transactionReparentFunc!");
-
-    transactionSetVisibilityFunc =
-            (AST_setVisibility)dlsym(handle_, "ASurfaceTransaction_setVisibility");
-    LOG_ALWAYS_FATAL_IF(transactionSetVisibilityFunc == nullptr,
-                        "Failed to find required symbol ASurfaceTransaction_setVisibility!");
-
-    transactionSetZOrderFunc = (AST_setZOrder)dlsym(handle_, "ASurfaceTransaction_setZOrder");
-    LOG_ALWAYS_FATAL_IF(transactionSetZOrderFunc == nullptr,
-                        "Failed to find required symbol ASurfaceTransaction_setZOrder!");
-}
-
 void RenderThread::extendedFrameCallback(const AChoreographerFrameCallbackData* cbData,
                                          void* data) {
     RenderThread* rt = reinterpret_cast<RenderThread*>(data);

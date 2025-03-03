@@ -139,6 +139,7 @@ cc_defaults {
                 "libandroidfw",
                 "libcrypto",
                 "libsync",
+                "libgui",
                 "libui",
                 "aconfig_text_flags_c_lib",
                 "aconfig_view_accessibility_flags_c_lib",
