@@ -2631,10 +2631,19 @@ public class DisplayContentTests extends WindowTestsBase {
         final BooleanSupplier keyguardGoingAway = () -> keyguard.isKeyguardGoingAway(displayId);
         final BooleanSupplier appVisible = activity::isVisibleRequested;
 
-        // Begin locked and in AOD
+        // Begin unlocked.
+        keyguard.setKeyguardShown(displayId, false /* keyguard */, false /* aod */);
+        transitions.flush();
+
+        // Lock and go to AOD.
         keyguard.setKeyguardShown(displayId, true /* keyguard */, true /* aod */);
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertFalse(appVisible.getAsBoolean());
+        if (Flags.aodTransition()) {
+            assertThat(transitions.mLastTransit).flags().contains(TRANSIT_FLAG_AOD_APPEARING);
+        } else {
+            assertThat(transitions.mLastTransit).flags().doesNotContain(TRANSIT_FLAG_AOD_APPEARING);
+        }
         transitions.flush();
 
         // Start unlocking from AOD.
@@ -2654,14 +2663,7 @@ public class DisplayContentTests extends WindowTestsBase {
         keyguard.setKeyguardShown(displayId, true /* keyguard */, false /* aod */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
-
-        if (Flags.aodTransition()) {
-            assertThat(transitions.mLastTransit).flags()
-                    .containsExactly(TRANSIT_FLAG_AOD_APPEARING);
-        } else {
-            assertThat(transitions.mLastTransit).isNull();
-        }
-        transitions.flush();
+        assertThat(transitions.mLastTransit).isNull();
 
         // Finish unlock
         keyguard.setKeyguardShown(displayId, false /* keyguard */, false /* aod */);
@@ -2684,10 +2686,19 @@ public class DisplayContentTests extends WindowTestsBase {
         final BooleanSupplier keyguardGoingAway = () -> keyguard.isKeyguardGoingAway(displayId);
         final BooleanSupplier appVisible = activity::isVisibleRequested;
 
-        // Begin locked and in AOD
+        // Begin unlocked.
+        keyguard.setKeyguardShown(displayId, false /* keyguard */, false /* aod */);
+        transitions.flush();
+
+        // Lock and go to AOD.
         keyguard.setKeyguardShown(displayId, true /* keyguard */, true /* aod */);
         assertFalse(keyguardGoingAway.getAsBoolean());
         assertFalse(appVisible.getAsBoolean());
+        if (Flags.aodTransition()) {
+            assertThat(transitions.mLastTransit).flags().contains(TRANSIT_FLAG_AOD_APPEARING);
+        } else {
+            assertThat(transitions.mLastTransit).flags().doesNotContain(TRANSIT_FLAG_AOD_APPEARING);
+        }
         transitions.flush();
 
         // Start unlocking from AOD.
@@ -2705,14 +2716,7 @@ public class DisplayContentTests extends WindowTestsBase {
         keyguard.setKeyguardShown(displayId, true /* keyguard */, false /* aod */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
-
-        if (Flags.aodTransition()) {
-            assertThat(transitions.mLastTransit).flags()
-                    .containsExactly(TRANSIT_FLAG_AOD_APPEARING);
-        } else {
-            assertThat(transitions.mLastTransit).isNull();
-        }
-        transitions.flush();
+        assertThat(transitions.mLastTransit).isNull();
 
         // Same API call a second time cancels the unlock, because AOD isn't changing.
         keyguard.setKeyguardShown(displayId, true /* keyguard */, false /* aod */);
