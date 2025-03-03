@@ -15,12 +15,24 @@ license {
     ],
 }
 
+filegroup {
+    name: "jni_exports",
+    srcs: ["jni_exports.lds"],
+    visibility: [":__subpackages__"],
+}
+
+cc_defaults {
+    name: "media_jni_lib_defaults",
+    version_script: ":jni_exports",
+}
+
 cc_library_shared {
     name: "libmedia_jni",
 
     defaults: [
         "aconfig_lib_cc_static_link.defaults",
         "libcodec2-internal-defaults",
+        "media_jni_lib_defaults",
     ],
     min_sdk_version: "",
 
