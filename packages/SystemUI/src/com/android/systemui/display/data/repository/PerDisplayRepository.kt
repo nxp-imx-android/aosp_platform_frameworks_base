@@ -91,18 +91,6 @@ interface PerDisplayRepository<T> {
 
     /** Debug name for this repository, mainly for tracing and logging. */
     val debugName: String
-
-    /**
-     * Invokes the specified action on each instance held by this repository.
-     *
-     * The action will receive the displayId and the instance associated with that display.
-     * If there is no instance for the display, the action is not called.
-     */
-    fun forEachInstance(action: (Int, T) -> Unit) {
-        displayIds.forEach { displayId ->
-            get(displayId)?.let { instance -> action(displayId, instance) }
-        }
-    }
 }
 
 /**

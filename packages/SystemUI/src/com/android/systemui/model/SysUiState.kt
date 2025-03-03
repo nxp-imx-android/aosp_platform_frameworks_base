@@ -74,6 +74,9 @@ interface SysUiState : Dumpable {
      */
     fun destroy()
 
+    /** The display ID this instances is associated with */
+    val displayId: Int
+
     companion object {
         const val DEBUG: Boolean = false
     }
@@ -84,7 +87,7 @@ private const val TAG = "SysUIState"
 class SysUiStateImpl
 @AssistedInject
 constructor(
-    @Assisted private val displayId: Int,
+    @Assisted override val displayId: Int,
     private val sceneContainerPlugin: SceneContainerPlugin?,
     private val dumpManager: DumpManager,
     private val stateDispatcher: SysUIStateDispatcher,
