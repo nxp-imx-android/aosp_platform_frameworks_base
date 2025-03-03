@@ -130,6 +130,7 @@ constructor(
         displayRepository.displayIds.collectLatest { displayIds ->
             val toRemove = perDisplayInstances.keys - displayIds
             toRemove.forEach { displayId ->
+                Log.d(TAG, "<$debugName> destroying instance for displayId=$displayId.")
                 perDisplayInstances.remove(displayId)?.let { instance ->
                     (instanceProvider as? PerDisplayInstanceProviderWithTeardown)?.destroyInstance(
                         instance
@@ -147,6 +148,7 @@ constructor(
 
         // If it doesn't exist, create it and put it in the map.
         return perDisplayInstances.computeIfAbsent(displayId) { key ->
+            Log.d(TAG, "<$debugName> creating instance for displayId=$key, as it wasn't available.")
             val instance =
                 traceSection({ "creating instance of $debugName for displayId=$key" }) {
                     instanceProvider.createInstance(key)
