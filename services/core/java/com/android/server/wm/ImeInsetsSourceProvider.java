@@ -104,7 +104,8 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             if (!mGivenInsetsReady && isServerVisible() && !givenInsetsPending
                     && mControlTarget != null) {
                 ProtoLog.d(WM_DEBUG_IME,
-                        "onPostLayout: IME control ready to be dispatched, ws=%s", ws);
+                        "onPostLayout: IME control ready to be dispatched, controlTarget=%s",
+                        mControlTarget);
                 mGivenInsetsReady = true;
                 ImeTracker.forLogging().onProgress(mStatsToken,
                         ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
@@ -115,13 +116,15 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 // If the server visibility didn't change (still visible), and mGivenInsetsReady
                 // is set, we won't call into notifyControlChanged. Therefore, we can reset the
                 // statsToken, if available.
-                ProtoLog.w(WM_DEBUG_IME, "onPostLayout cancel statsToken, ws=%s", ws);
+                ProtoLog.w(WM_DEBUG_IME, "onPostLayout cancel statsToken, controlTarget=%s",
+                        mControlTarget);
                 ImeTracker.forLogging().onCancelled(mStatsToken,
                         ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
                 mStatsToken = null;
             } else if (wasServerVisible && !isServerVisible()) {
-                ProtoLog.d(WM_DEBUG_IME, "onPostLayout: setImeShowing(false) was: %s, ws=%s",
-                        isImeShowing(), ws);
+                ProtoLog.d(WM_DEBUG_IME,
+                        "onPostLayout: setImeShowing(false) was: %s, controlTarget=%s",
+                        isImeShowing(), mControlTarget);
                 setImeShowing(false);
             }
         }
