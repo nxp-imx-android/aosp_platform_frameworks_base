@@ -142,12 +142,14 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                                 PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
                     }
+                    options.setLaunchNextToBubble(true);
                     mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                 } else if (isShortcutBubble) {
                     if (mBubble.isChat()) {
                         options.setLaunchedFromBubble(true);
                         options.setApplyActivityFlagsForBubbles(true);
                     } else {
+                        options.setLaunchNextToBubble(true);
                         options.setApplyMultipleTaskFlagForShortcut(true);
                     }
                     mTaskView.startShortcutActivity(mBubble.getShortcutInfo(),

@@ -365,8 +365,8 @@ public class BubbleController implements ConfigurationChangeListener,
         mDisplayController = displayController;
         final TaskViewTransitions tvTransitions;
         if (TaskViewTransitions.useRepo()) {
-            tvTransitions = new TaskViewTransitions(transitions, taskViewRepository, organizer,
-                    syncQueue);
+            tvTransitions = new BubbleTaskViewTransitions(transitions, taskViewRepository,
+                    organizer, syncQueue);
         } else {
             tvTransitions = taskViewTransitions;
         }
