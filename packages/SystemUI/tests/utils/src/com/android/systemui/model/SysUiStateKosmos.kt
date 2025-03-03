@@ -19,6 +19,7 @@ package com.android.systemui.model
 import android.view.Display
 import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.display.data.repository.FakePerDisplayRepository
+import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
@@ -45,5 +46,5 @@ val Kosmos.sysUiStateFactory by Fixture {
 val Kosmos.fakeSysUIStatePerDisplayRepository by Fixture { FakePerDisplayRepository<SysUiState>() }
 
 val Kosmos.sysuiStateInteractor by Fixture {
-    SysUIStateDisplaysInteractor(fakeSysUIStatePerDisplayRepository)
+    SysUIStateDisplaysInteractor(fakeSysUIStatePerDisplayRepository, displayRepository)
 }
