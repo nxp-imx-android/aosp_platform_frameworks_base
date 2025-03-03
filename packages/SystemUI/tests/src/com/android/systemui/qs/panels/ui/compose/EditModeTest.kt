@@ -25,6 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -80,7 +82,9 @@ class EditModeTest : SysuiTestCase() {
         composeRule.assertCurrentTilesGridContainsExactly(
             listOf("tileA", "tileB", "tileC", "tileD_large", "tileE", "tileF")
         )
-        composeRule.assertAvailableTilesGridContainsExactly(listOf("tileG_large"))
+        composeRule.assertAvailableTilesGridContainsExactly(
+            TestEditTiles.map { it.tile.tileSpec.spec }
+        )
     }
 
     @Test
@@ -88,7 +92,8 @@ class EditModeTest : SysuiTestCase() {
         composeRule.setContent { EditTileGridUnderTest() }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithContentDescription("tileA").performClick() // Selects
+        // Selects first "tileA", i.e. the one in the current grid
+        composeRule.onAllNodesWithText("tileA").onFirst().performClick()
         composeRule.onNodeWithText("Remove").performClick() // Removes
 
         composeRule.waitForIdle()
@@ -96,7 +101,9 @@ class EditModeTest : SysuiTestCase() {
         composeRule.assertCurrentTilesGridContainsExactly(
             listOf("tileB", "tileC", "tileD_large", "tileE")
         )
-        composeRule.assertAvailableTilesGridContainsExactly(listOf("tileA", "tileF", "tileG_large"))
+        composeRule.assertAvailableTilesGridContainsExactly(
+            TestEditTiles.map { it.tile.tileSpec.spec }
+        )
     }
 
     private fun ComposeContentTestRule.assertCurrentTilesGridContainsExactly(specs: List<String>) =
