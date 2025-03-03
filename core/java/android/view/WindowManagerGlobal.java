@@ -44,6 +44,7 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.inputmethod.InputMethodManager;
+import android.view.translation.ListenerGroup;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
 import android.window.TrustedPresentationThresholds;
@@ -58,6 +59,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -147,6 +149,12 @@ public final class WindowManagerGlobal {
 
     @UnsupportedAppUsage
     private final ArrayList<View> mViews = new ArrayList<View>();
+    /**
+     * The {@link ListenerGroup} that is associated to {@link #mViews}.
+     * @hide
+     */
+    @GuardedBy("mLock")
+    private final ListenerGroup<List<View>> mWindowViewsListenerGroup = new ListenerGroup<>();
     @UnsupportedAppUsage
     private final ArrayList<ViewRootImpl> mRoots = new ArrayList<ViewRootImpl>();
     @UnsupportedAppUsage
@@ -319,6 +327,29 @@ public final class WindowManagerGlobal {
         }
     }
 
+    /**
+     * Adds a listener that will be notified whenever {@link #getWindowViews()} changes. The
+     * current value is provided immediately. If it was registered previously then this is ano op.
+     */
+    public void addWindowViewsListener(@NonNull Executor executor,
+            @NonNull Consumer<List<View>> consumer) {
+        synchronized (mLock) {
+            mWindowViewsListenerGroup.addListener(executor, consumer);
+            mWindowViewsListenerGroup.accept(getWindowViews());
+        }
+    }
+
+    /**
+     * Removes a listener that was registered in
+     * {@link #addWindowViewsListener(Executor, Consumer)}. If it was not registered previously,
+     * then this is a no op.
+     */
+    public void removeWindowViewsListener(@NonNull Consumer<List<View>> consumer) {
+        synchronized (mLock) {
+            mWindowViewsListenerGroup.removeListener(consumer);
+        }
+    }
+
     public View getWindowView(IBinder windowToken) {
         synchronized (mLock) {
             final int numViews = mViews.size();
@@ -454,6 +485,7 @@ public final class WindowManagerGlobal {
             // do this last because it fires off messages to start doing things
             try {
                 root.setView(view, wparams, panelParentView, userId);
+                mWindowViewsListenerGroup.accept(getWindowViews());
             } catch (RuntimeException e) {
                 Log.e(TAG, "Couldn't add view: " + view, e);
                 final int viewIndex = (index >= 0) ? index : (mViews.size() - 1);
@@ -575,6 +607,7 @@ public final class WindowManagerGlobal {
                 mDyingViews.remove(view);
             }
             allViewsRemoved = mRoots.isEmpty();
+            mWindowViewsListenerGroup.accept(getWindowViews());
         }
 
         // If we don't have any views anymore in our process, we no longer need the
