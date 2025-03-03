@@ -18,4 +18,7 @@ package com.android.systemui.dagger.qualifiers
 import javax.inject.Qualifier
 
 /** Annotates a class that is display specific. */
-@Qualifier @MustBeDocumented @Retention(AnnotationRetention.RUNTIME) annotation class DisplaySpecific
+@Qualifier
+@MustBeDocumented
+@Retention(AnnotationRetention.RUNTIME)
+public annotation class DisplaySpecific
