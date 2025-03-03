@@ -253,6 +253,7 @@ import android.annotation.Size;
 import android.app.Activity;
 import android.app.ActivityManager.TaskDescription;
 import android.app.ActivityOptions;
+import android.app.IApplicationThread;
 import android.app.IScreenCaptureObserver;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
@@ -1351,15 +1352,16 @@ final class ActivityRecord extends WindowToken {
                     this, displayId);
             return;
         }
-        try {
-            ProtoLog.v(WM_DEBUG_SWITCH, "Reporting activity moved to "
-                    + "display, activityRecord=%s, displayId=%d, config=%s", this, displayId,
-                    config);
+        ProtoLog.v(WM_DEBUG_SWITCH, "Reporting activity moved to "
+                        + "display, activityRecord=%s, displayId=%d, config=%s", this, displayId,
+                config);
 
-            final MoveToDisplayItem item =
-                    new MoveToDisplayItem(token, displayId, config, activityWindowInfo);
+        final MoveToDisplayItem item =
+                new MoveToDisplayItem(token, displayId, config, activityWindowInfo);
+        try {
             mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
         } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             // If process died, whatever.
         }
     }
@@ -1371,14 +1373,15 @@ final class ActivityRecord extends WindowToken {
                     + "update - client not running, activityRecord=%s", this);
             return;
         }
-        try {
-            ProtoLog.v(WM_DEBUG_CONFIGURATION, "Sending new config to %s, "
-                    + "config: %s", this, config);
+        ProtoLog.v(WM_DEBUG_CONFIGURATION, "Sending new config to %s, "
+                + "config: %s", this, config);
 
-            final ActivityConfigurationChangeItem item =
-                    new ActivityConfigurationChangeItem(token, config, activityWindowInfo);
+        final ActivityConfigurationChangeItem item =
+                new ActivityConfigurationChangeItem(token, config, activityWindowInfo);
+        try {
             mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
         } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             // If process died, whatever.
         }
     }
@@ -1393,19 +1396,18 @@ final class ActivityRecord extends WindowToken {
         if (onTop) {
             app.addToPendingTop();
         }
-        try {
-            ProtoLog.v(WM_DEBUG_STATES, "Sending position change to %s, onTop: %b",
-                    this, onTop);
+        ProtoLog.v(WM_DEBUG_STATES, "Sending position change to %s, onTop: %b",
+                this, onTop);
 
-            final TopResumedActivityChangeItem item =
-                    new TopResumedActivityChangeItem(token, onTop);
-            mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
+        final TopResumedActivityChangeItem item = new TopResumedActivityChangeItem(token, onTop);
+        try {
+            return mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
         } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             // If process died, whatever.
             Slog.w(TAG, "Failed to send top-resumed=" + onTop + " to " + this, e);
             return false;
         }
-        return true;
     }
 
     void updateMultiWindowMode() {
@@ -2604,14 +2606,21 @@ final class ActivityRecord extends WindowToken {
             removeStartingWindow();
             return;
         }
+        mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_ATTACH_TO_CLIENT;
+        final TransferSplashScreenViewStateItem item =
+                new TransferSplashScreenViewStateItem(token, parcelable, windowAnimationLeash);
+        boolean isSuccessful;
         try {
-            mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_ATTACH_TO_CLIENT;
-            final TransferSplashScreenViewStateItem item =
-                    new TransferSplashScreenViewStateItem(token, parcelable, windowAnimationLeash);
-            mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
-            scheduleTransferSplashScreenTimeout();
-        } catch (Exception e) {
+            isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                    app.getThread(), item);
+        } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             Slog.w(TAG, "onCopySplashScreenComplete fail: " + this);
+            isSuccessful = false;
+        }
+        if (isSuccessful) {
+            scheduleTransferSplashScreenTimeout();
+        } else {
             mStartingWindow.cancelAnimation();
             parcelable.clearIfNeeded();
             mTransferringSplashScreenState = TRANSFER_SPLASH_SCREEN_FINISH;
@@ -3957,11 +3966,23 @@ final class ActivityRecord extends WindowToken {
 
             boolean skipDestroy = false;
 
-            try {
-                if (DEBUG_SWITCH) Slog.i(TAG_SWITCH, "Destroying: " + this);
+            if (DEBUG_SWITCH) Slog.i(TAG_SWITCH, "Destroying: " + this);
+            boolean isSuccessful;
+            final IApplicationThread client = app.getThread();
+            if (client == null) {
+                Slog.w(TAG_WM, "Failed to schedule DestroyActivityItem because client is inactive");
+                isSuccessful = false;
+            } else {
                 final DestroyActivityItem item = new DestroyActivityItem(token, finishing);
-                mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
-            } catch (Exception e) {
+                try {
+                    isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                            client, item);
+                } catch (RemoteException e) {
+                    // TODO(b/323801078): remove Exception when cleanup
+                    isSuccessful = false;
+                }
+            }
+            if (!isSuccessful) {
                 // We can just ignore exceptions here...  if the process has crashed, our death
                 // notification will clean things up.
                 if (finishing) {
@@ -4884,13 +4905,17 @@ final class ActivityRecord extends WindowToken {
         }
 
         if (isState(RESUMED) && attachedToProcess()) {
+            final ArrayList<ResultInfo> list = new ArrayList<>();
+            list.add(new ResultInfo(resultWho, requestCode, resultCode, data, callerToken));
+            final ActivityResultItem item = new ActivityResultItem(token, list);
             try {
-                final ArrayList<ResultInfo> list = new ArrayList<>();
-                list.add(new ResultInfo(resultWho, requestCode, resultCode, data, callerToken));
-                final ActivityResultItem item = new ActivityResultItem(token, list);
-                mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
-                return;
-            } catch (Exception e) {
+                final boolean isSuccessful = mAtmService.getLifecycleManager()
+                        .scheduleTransactionItem(app.getThread(), item);
+                if (isSuccessful) {
+                    return;
+                }
+            } catch (RemoteException e) {
+                // TODO(b/323801078): remove Exception when cleanup
                 Slog.w(TAG, "Exception thrown sending result to " + this, e);
             }
         }
@@ -4917,6 +4942,7 @@ final class ActivityRecord extends WindowToken {
                             app.getThread(), activityResultItem);
                 }
             } catch (RemoteException e) {
+                // TODO(b/323801078): remove Exception when cleanup
                 Slog.w(TAG, "Exception thrown sending result to " + this, e);
             }
             // We return here to ensure that result for media projection setup is not stored as a
@@ -4989,7 +5015,6 @@ final class ActivityRecord extends WindowToken {
         }
         final ReferrerIntent rintent = new ReferrerIntent(intent, getFilteredReferrer(referrer),
                 callerToken);
-        boolean unsent = true;
         final boolean isTopActivityWhileSleeping = isSleeping() && isTopRunningActivity();
 
         // We want to immediately deliver the intent to the activity if:
@@ -4998,25 +5023,26 @@ final class ActivityRecord extends WindowToken {
         // - The device is sleeping and it is the top activity behind the lock screen (b/6700897).
         if ((mState == RESUMED || mState == PAUSED || isTopActivityWhileSleeping)
                 && attachedToProcess()) {
+            final ArrayList<ReferrerIntent> ar = new ArrayList<>(1);
+            ar.add(rintent);
+            // Making sure the client state is RESUMED after transaction completed and doing
+            // so only if activity is currently RESUMED. Otherwise, client may have extra
+            // life-cycle calls to RESUMED (and PAUSED later).
+            final NewIntentItem item = new NewIntentItem(token, ar, mState == RESUMED /* resume */);
             try {
-                ArrayList<ReferrerIntent> ar = new ArrayList<>(1);
-                ar.add(rintent);
-                // Making sure the client state is RESUMED after transaction completed and doing
-                // so only if activity is currently RESUMED. Otherwise, client may have extra
-                // life-cycle calls to RESUMED (and PAUSED later).
-                final NewIntentItem item =
-                        new NewIntentItem(token, ar, mState == RESUMED /* resume */);
-                mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
-                unsent = false;
+                final boolean isSuccessful = mAtmService.getLifecycleManager()
+                        .scheduleTransactionItem(app.getThread(), item);
+                if (isSuccessful) {
+                    return;
+                }
             } catch (RemoteException e) {
-                Slog.w(TAG, "Exception thrown sending new intent to " + this, e);
-            } catch (NullPointerException e) {
+                // TODO(b/323801078): remove Exception when cleanup
                 Slog.w(TAG, "Exception thrown sending new intent to " + this, e);
             }
         }
-        if (unsent) {
-            addNewIntentLocked(rintent);
-        }
+
+        // Didn't send.
+        addNewIntentLocked(rintent);
     }
 
     void updateOptionsLocked(ActivityOptions options) {
@@ -6044,11 +6070,12 @@ final class ActivityRecord extends WindowToken {
             setState(PAUSING, "makeActiveIfNeeded");
             EventLogTags.writeWmPauseActivity(mUserId, System.identityHashCode(this),
                     shortComponentName, "userLeaving=false", "make-active");
+            final PauseActivityItem item = new PauseActivityItem(token, finishing,
+                    false /* userLeaving */, false /* dontReport */, mAutoEnteringPip);
             try {
-                final PauseActivityItem item = new PauseActivityItem(token, finishing,
-                        false /* userLeaving */, false /* dontReport */, mAutoEnteringPip);
                 mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
-            } catch (Exception e) {
+            } catch (RemoteException e) {
+                // TODO(b/323801078): remove Exception when cleanup
                 Slog.w(TAG, "Exception thrown sending pause: " + intent.getComponent(), e);
             }
         } else if (shouldStartActivity()) {
@@ -6057,10 +6084,11 @@ final class ActivityRecord extends WindowToken {
             }
             setState(STARTED, "makeActiveIfNeeded");
 
+            final StartActivityItem item = new StartActivityItem(token, takeSceneTransitionInfo());
             try {
-                mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(),
-                        new StartActivityItem(token, takeSceneTransitionInfo()));
-            } catch (Exception e) {
+                mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
+            } catch (RemoteException e) {
+                // TODO(b/323801078): remove Exception when cleanup
                 Slog.w(TAG, "Exception thrown sending start: " + intent.getComponent(), e);
             }
             // The activity may be waiting for stop, but that is no longer appropriate if we are
@@ -6343,23 +6371,29 @@ final class ActivityRecord extends WindowToken {
             return;
         }
         resumeKeyDispatchingLocked();
+        ProtoLog.v(WM_DEBUG_STATES, "Moving to STOPPING: %s (stop requested)", this);
+
+        setState(STOPPING, "stopIfPossible");
+        if (DEBUG_VISIBILITY) {
+            Slog.v(TAG_VISIBILITY, "Stopping:" + this);
+        }
+        EventLogTags.writeWmStopActivity(
+                mUserId, System.identityHashCode(this), shortComponentName);
+        final StopActivityItem item = new StopActivityItem(token);
+        boolean isSuccessful;
         try {
-            ProtoLog.v(WM_DEBUG_STATES, "Moving to STOPPING: %s (stop requested)", this);
-
-            setState(STOPPING, "stopIfPossible");
-            if (DEBUG_VISIBILITY) {
-                Slog.v(TAG_VISIBILITY, "Stopping:" + this);
-            }
-            EventLogTags.writeWmStopActivity(
-                    mUserId, System.identityHashCode(this), shortComponentName);
-            mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(),
-                    new StopActivityItem(token));
-
-            mAtmService.mH.postDelayed(mStopTimeoutRunnable, STOP_TIMEOUT);
-        } catch (Exception e) {
+            isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                    app.getThread(), item);
+        } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             // Maybe just ignore exceptions here...  if the process has crashed, our death
             // notification will clean things up.
             Slog.w(TAG, "Exception thrown during pause", e);
+            isSuccessful = false;
+        }
+        if (isSuccessful) {
+            mAtmService.mH.postDelayed(mStopTimeoutRunnable, STOP_TIMEOUT);
+        } else {
             // Just in case, assume it to be stopped.
             mAppStopped = true;
             mStoppedTime = SystemClock.uptimeMillis();
@@ -8926,29 +8960,34 @@ final class ActivityRecord extends WindowToken {
                     task.mTaskId, shortComponentName, Integer.toHexString(configChangeFlags));
         }
 
+        ProtoLog.i(WM_DEBUG_STATES, "Moving to %s Relaunching %s callers=%s" ,
+                (andResume ? "RESUMED" : "PAUSED"), this, Debug.getCallers(6));
+        final ClientTransactionItem callbackItem = new ActivityRelaunchItem(token,
+                pendingResults, pendingNewIntents, configChangeFlags,
+                new MergedConfiguration(getProcessGlobalConfiguration(),
+                        getMergedOverrideConfiguration()),
+                preserveWindow, getActivityWindowInfo());
+        final ActivityLifecycleItem lifecycleItem;
+        if (andResume) {
+            lifecycleItem = new ResumeActivityItem(token, isTransitionForward(),
+                    shouldSendCompatFakeFocus());
+        } else {
+            lifecycleItem = new PauseActivityItem(token);
+        }
+        boolean isSuccessful;
         try {
-            ProtoLog.i(WM_DEBUG_STATES, "Moving to %s Relaunching %s callers=%s" ,
-                    (andResume ? "RESUMED" : "PAUSED"), this, Debug.getCallers(6));
-            final ClientTransactionItem callbackItem = new ActivityRelaunchItem(token,
-                    pendingResults, pendingNewIntents, configChangeFlags,
-                    new MergedConfiguration(getProcessGlobalConfiguration(),
-                            getMergedOverrideConfiguration()),
-                    preserveWindow, getActivityWindowInfo());
-            final ActivityLifecycleItem lifecycleItem;
-            if (andResume) {
-                lifecycleItem = new ResumeActivityItem(token, isTransitionForward(),
-                        shouldSendCompatFakeFocus());
-            } else {
-                lifecycleItem = new PauseActivityItem(token);
-            }
-            mAtmService.getLifecycleManager().scheduleTransactionItems(
+            isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItems(
                     app.getThread(), callbackItem, lifecycleItem);
+        } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
+            Slog.w(TAG, "Failed to relaunch " + this + ": " + e);
+            isSuccessful = false;
+        }
+        if (isSuccessful) {
             startRelaunching();
             // Note: don't need to call pauseIfSleepingLocked() here, because the caller will only
             // request resume if this activity is currently resumed, which implies we aren't
             // sleeping.
-        } catch (RemoteException e) {
-            Slog.w(TAG, "Failed to relaunch " + this + ": " + e);
         }
 
         if (andResume) {
@@ -9028,10 +9067,11 @@ final class ActivityRecord extends WindowToken {
     private void scheduleStopForRestartProcess() {
         // The process will be killed until the activity reports stopped with saved state (see
         // {@link ActivityTaskManagerService.activityStopped}).
+        final StopActivityItem item = new StopActivityItem(token);
         try {
-            mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(),
-                    new StopActivityItem(token));
+            mAtmService.getLifecycleManager().scheduleTransactionItem(app.getThread(), item);
         } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             Slog.w(TAG, "Exception thrown during restart " + this, e);
         }
         mTaskSupervisor.scheduleRestartTimeout(this);

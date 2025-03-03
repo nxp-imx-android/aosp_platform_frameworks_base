@@ -88,6 +88,7 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.DisplayMetrics;
@@ -1751,66 +1752,79 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 }
             }
 
-            try {
-                final IApplicationThread appThread = next.app.getThread();
-                // Deliver all pending results.
-                final ArrayList<ResultInfo> a = next.results;
-                if (a != null) {
-                    final int size = a.size();
-                    if (!next.finishing && size > 0) {
-                        if (DEBUG_RESULTS) {
-                            Slog.v(TAG_RESULTS, "Delivering results to " + next + ": " + a);
-                        }
-                        final ActivityResultItem item = new ActivityResultItem(next.token, a);
-                        mAtmService.getLifecycleManager().scheduleTransactionItem(appThread, item);
+            final IApplicationThread appThread = next.app.getThread();
+            // Deliver all pending results.
+            final ArrayList<ResultInfo> a = next.results;
+            if (a != null) {
+                final int size = a.size();
+                if (!next.finishing && size > 0) {
+                    if (DEBUG_RESULTS) {
+                        Slog.v(TAG_RESULTS, "Delivering results to " + next + ": " + a);
+                    }
+                    final ActivityResultItem item = new ActivityResultItem(next.token, a);
+                    boolean isSuccessful;
+                    try {
+                        isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                                appThread, item);
+                    } catch (RemoteException e) {
+                        // TODO(b/323801078): remove Exception when cleanup
+                        isSuccessful = false;
+                    }
+                    if (!isSuccessful) {
+                        onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
+                                lastFocusedRootTask);
+                        return true;
                     }
                 }
+            }
 
-                if (next.newIntents != null) {
-                    final NewIntentItem item =
-                            new NewIntentItem(next.token, next.newIntents, true /* resume */);
-                    mAtmService.getLifecycleManager().scheduleTransactionItem(appThread, item);
+            if (next.newIntents != null) {
+                final NewIntentItem item =
+                        new NewIntentItem(next.token, next.newIntents, true /* resume */);
+                boolean isSuccessful;
+                try {
+                    isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                            appThread, item);
+                } catch (RemoteException e) {
+                    // TODO(b/323801078): remove Exception when cleanup
+                    isSuccessful = false;
                 }
+                if (!isSuccessful) {
+                    onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
+                            lastFocusedRootTask);
+                    return true;
+                }
+            }
 
-                // Well the app will no longer be stopped.
-                // Clear app token stopped state in window manager if needed.
-                next.notifyAppResumed();
+            // Well the app will no longer be stopped.
+            // Clear app token stopped state in window manager if needed.
+            next.notifyAppResumed();
 
-                EventLogTags.writeWmResumeActivity(next.mUserId, System.identityHashCode(next),
-                        next.getTask().mTaskId, next.shortComponentName);
+            EventLogTags.writeWmResumeActivity(next.mUserId, System.identityHashCode(next),
+                    next.getTask().mTaskId, next.shortComponentName);
 
-                mAtmService.getAppWarningsLocked().onResumeActivity(next);
-                final int topProcessState = mAtmService.mTopProcessState;
-                next.app.setPendingUiCleanAndForceProcessStateUpTo(topProcessState);
-                next.abortAndClearOptionsAnimation();
-                final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
-                        next.token, topProcessState, dc.isNextTransitionForward(),
-                        next.shouldSendCompatFakeFocus());
-                mAtmService.getLifecycleManager().scheduleTransactionItem(
+            mAtmService.getAppWarningsLocked().onResumeActivity(next);
+            final int topProcessState = mAtmService.mTopProcessState;
+            next.app.setPendingUiCleanAndForceProcessStateUpTo(topProcessState);
+            next.abortAndClearOptionsAnimation();
+            final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
+                    next.token, topProcessState, dc.isNextTransitionForward(),
+                    next.shouldSendCompatFakeFocus());
+            boolean isSuccessful;
+            try {
+                isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
                         appThread, resumeActivityItem);
-
-                ProtoLog.d(WM_DEBUG_STATES, "resumeTopActivity: Resumed %s", next);
-            } catch (Exception e) {
-                // Whoops, need to restart this activity!
-                ProtoLog.v(WM_DEBUG_STATES, "Resume failed; resetting state to %s: "
-                        + "%s", lastState, next);
-                next.setState(lastState, "resumeTopActivityInnerLocked");
-
-                // lastResumedActivity being non-null implies there is a lastStack present.
-                if (lastResumedActivity != null) {
-                    lastResumedActivity.setState(RESUMED, "resumeTopActivityInnerLocked");
-                }
-
-                Slog.i(TAG, "Restarting because process died: " + next);
-                if (!next.hasBeenLaunched) {
-                    next.hasBeenLaunched = true;
-                } else if (SHOW_APP_STARTING_PREVIEW && lastFocusedRootTask != null
-                        && lastFocusedRootTask.isTopRootTaskInDisplayArea()) {
-                    next.showStartingWindow(false /* taskSwitch */);
-                }
-                mTaskSupervisor.startSpecificActivity(next, true, false);
+            } catch (RemoteException e) {
+                // TODO(b/323801078): remove Exception when cleanup
+                isSuccessful = false;
+            }
+            if (!isSuccessful) {
+                onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
+                        lastFocusedRootTask);
                 return true;
             }
+
+            ProtoLog.d(WM_DEBUG_STATES, "resumeTopActivity: Resumed %s", next);
 
             next.completeResumeLocked();
         } else {
@@ -1828,6 +1842,29 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         }
 
         return true;
+    }
+
+    /** Likely app process has been killed. Needs to restart this activity. */
+    private void onResumeTopActivityRemoteFailure(@NonNull ActivityRecord.State lastState,
+            @NonNull ActivityRecord next, @Nullable ActivityRecord lastResumedActivity,
+            @Nullable Task lastFocusedRootTask) {
+        ProtoLog.v(WM_DEBUG_STATES, "Resume failed; resetting state to %s: "
+                + "%s", lastState, next);
+        next.setState(lastState, "resumeTopActivityInnerLocked");
+
+        // lastResumedActivity being non-null implies there is a lastStack present.
+        if (lastResumedActivity != null) {
+            lastResumedActivity.setState(RESUMED, "resumeTopActivityInnerLocked");
+        }
+
+        Slog.i(TAG, "Restarting because process died: " + next);
+        if (!next.hasBeenLaunched) {
+            next.hasBeenLaunched = true;
+        } else if (SHOW_APP_STARTING_PREVIEW && lastFocusedRootTask != null
+                && lastFocusedRootTask.isTopRootTaskInDisplayArea()) {
+            next.showStartingWindow(false /* taskSwitch */);
+        }
+        mTaskSupervisor.startSpecificActivity(next, true, false);
     }
 
     boolean shouldSleepOrShutDownActivities() {
@@ -2034,17 +2071,23 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     void schedulePauseActivity(ActivityRecord prev, boolean userLeaving,
             boolean pauseImmediately, boolean autoEnteringPip, String reason) {
         ProtoLog.v(WM_DEBUG_STATES, "Enqueueing pending pause: %s", prev);
-        try {
-            prev.mPauseSchedulePendingForPip = false;
-            EventLogTags.writeWmPauseActivity(prev.mUserId, System.identityHashCode(prev),
-                    prev.shortComponentName, "userLeaving=" + userLeaving, reason);
+        prev.mPauseSchedulePendingForPip = false;
+        EventLogTags.writeWmPauseActivity(prev.mUserId, System.identityHashCode(prev),
+                prev.shortComponentName, "userLeaving=" + userLeaving, reason);
 
-            final PauseActivityItem item = new PauseActivityItem(prev.token, prev.finishing,
-                    userLeaving, pauseImmediately, autoEnteringPip);
-            mAtmService.getLifecycleManager().scheduleTransactionItem(prev.app.getThread(), item);
-        } catch (Exception e) {
+        final PauseActivityItem item = new PauseActivityItem(prev.token, prev.finishing,
+                userLeaving, pauseImmediately, autoEnteringPip);
+        boolean isSuccessful;
+        try {
+            isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                    prev.app.getThread(), item);
+        } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             // Ignore exception, if process died other code will cleanup.
             Slog.w(TAG, "Exception thrown during pause", e);
+            isSuccessful = false;
+        }
+        if (!isSuccessful) {
             mPausingActivity = null;
             mLastPausedActivity = null;
             mTaskSupervisor.mNoHistoryActivities.remove(prev);
