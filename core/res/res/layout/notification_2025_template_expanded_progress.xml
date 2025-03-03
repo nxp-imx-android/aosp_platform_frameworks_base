@@ -99,7 +99,7 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <include layout="@layout/notification_template_right_icon" />
+            <include layout="@layout/notification_2025_right_icon" />
         </FrameLayout>
 
         <ViewStub

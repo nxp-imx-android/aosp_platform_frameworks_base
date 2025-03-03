@@ -70,6 +70,6 @@
 
     </com.android.internal.widget.RemeasuringLinearLayout>
 
-    <include layout="@layout/notification_template_right_icon" />
+    <include layout="@layout/notification_2025_right_icon" />
 
 </com.android.internal.widget.ConversationLayout>

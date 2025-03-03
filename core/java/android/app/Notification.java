@@ -6144,6 +6144,20 @@ public class Notification implements Parcelable
                 result.mTitleMarginSet.applyToView(contentView, p.mTextViewId);
                 contentView.setInt(p.mTextViewId, "setNumIndentLines", p.hasTitle() ? 0 : 1);
             }
+            // The expand button uses paddings rather than margins, so we'll adjust it
+            // separately.
+            adjustExpandButtonPadding(contentView, result.mRightIconVisible);
+        }
+
+        private void adjustExpandButtonPadding(RemoteViews contentView, boolean rightIconVisible) {
+            if (notificationsRedesignTemplates()) {
+                final Resources res = mContext.getResources();
+                int normalPadding = res.getDimensionPixelSize(R.dimen.notification_2025_margin);
+                int iconSpacing = res.getDimensionPixelSize(
+                        R.dimen.notification_2025_expand_button_right_icon_spacing);
+                contentView.setInt(R.id.expand_button, "setStartPadding",
+                        rightIconVisible ? iconSpacing : normalPadding);
+            }
         }
 
         // This code is executed on behalf of other apps' notifications, sometimes even by 3p apps,
@@ -6155,12 +6169,21 @@ public class Notification implements Parcelable
                 @NonNull TemplateBindResult result) {
             final Resources resources = mContext.getResources();
             final float density = resources.getDisplayMetrics().density;
-            final float iconMarginDp = resources.getDimension(
-                    R.dimen.notification_right_icon_content_margin) / density;
+            int iconMarginId = notificationsRedesignTemplates()
+                    ? R.dimen.notification_2025_right_icon_content_margin
+                    : R.dimen.notification_right_icon_content_margin;
+            final float iconMarginDp = resources.getDimension(iconMarginId) / density;
             final float contentMarginDp = resources.getDimension(
                     R.dimen.notification_content_margin_end) / density;
-            final float expanderSizeDp = resources.getDimension(
-                    R.dimen.notification_header_expand_icon_size) / density - contentMarginDp;
+            float spaceForExpanderDp;
+            if (notificationsRedesignTemplates()) {
+                spaceForExpanderDp = resources.getDimension(
+                        R.dimen.notification_2025_right_icon_expanded_margin_end) / density
+                        - contentMarginDp;
+            } else {
+                spaceForExpanderDp = resources.getDimension(
+                        R.dimen.notification_header_expand_icon_size) / density - contentMarginDp;
+            }
             final float viewHeightDp = resources.getDimension(
                     R.dimen.notification_right_icon_size) / density;
             float viewWidthDp = viewHeightDp;  // icons are 1:1 by default
@@ -6177,9 +6200,10 @@ public class Notification implements Parcelable
                     }
                 }
             }
+            // Margin needed for the header to accommodate the icon when shown
             final float extraMarginEndDpIfVisible = viewWidthDp + iconMarginDp;
             result.setRightIconState(rightIcon != null /* visible */, viewWidthDp,
-                    viewHeightDp, extraMarginEndDpIfVisible, expanderSizeDp);
+                    viewHeightDp, extraMarginEndDpIfVisible, spaceForExpanderDp);
         }
 
         /**
@@ -14659,13 +14683,19 @@ public class Notification implements Parcelable
         public final MarginSet mTitleMarginSet = new MarginSet();
 
         public void setRightIconState(boolean visible, float widthDp, float heightDp,
-                float marginEndDpIfVisible, float expanderSizeDp) {
+                float marginEndDpIfVisible, float spaceForExpanderDp) {
             mRightIconVisible = visible;
             mRightIconWidthDp = widthDp;
             mRightIconHeightDp = heightDp;
-            mHeadingExtraMarginSet.setValues(0, marginEndDpIfVisible);
-            mHeadingFullMarginSet.setValues(expanderSizeDp, marginEndDpIfVisible + expanderSizeDp);
-            mTitleMarginSet.setValues(0, marginEndDpIfVisible + expanderSizeDp);
+            mHeadingExtraMarginSet.setValues(
+                    /* valueIfGone = */ 0,
+                    /* valueIfVisible = */ marginEndDpIfVisible);
+            mHeadingFullMarginSet.setValues(
+                    /* valueIfGone = */ spaceForExpanderDp,
+                    /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp);
+            mTitleMarginSet.setValues(
+                    /* valueIfGone = */ 0,
+                    /* valueIfVisible = */ marginEndDpIfVisible + spaceForExpanderDp);
         }
 
         /**
