@@ -31,6 +31,7 @@ import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationSt
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
+import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import kotlinx.coroutines.flow.Flow
@@ -52,7 +53,10 @@ class FakeHomeStatusBarViewModel(
     override val primaryOngoingActivityChip: MutableStateFlow<OngoingActivityChipModel> =
         MutableStateFlow(OngoingActivityChipModel.Inactive())
 
-    override val ongoingActivityChips = MutableStateFlow(MultipleOngoingActivityChipsModel())
+    override val ongoingActivityChips =
+        MutableStateFlow(
+            ChipsVisibilityModel(MultipleOngoingActivityChipsModel(), areChipsAllowed = false)
+        )
 
     override val ongoingActivityChipsLegacy =
         MutableStateFlow(MultipleOngoingActivityChipsModelLegacy())
