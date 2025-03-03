@@ -352,30 +352,35 @@ public class LongScreenshotActivity extends Activity {
     private void doEdit(Uri uri) {
         if (mScreenshotUserHandle != Process.myUserHandle()) {
             // TODO: Fix transition for work profile. Omitting it in the meantime.
-            mActionExecutor.launchIntentAsync(
-                    mActionIntentCreator.createEdit(uri),
-                    mScreenshotUserHandle, false,
-                    /* activityOptions */ null, /* transitionCoordinator */ null);
+            mActionIntentCreator.createEdit(uri, intent -> {
+                mActionExecutor.launchIntentAsync(
+                        intent,
+                        mScreenshotUserHandle, false,
+                        /* activityOptions */ null, /* transitionCoordinator */ null);
+            });
+
         } else {
             if (usePreferredImageEditor()) {
-                Intent intent = mActionIntentCreator.createEdit(uri);
-                Bundle options = null;
+                mActionIntentCreator.createEdit(uri, intent -> {
+                    Bundle options = null;
 
-                if (intent.getComponent() != null) {
-                    // Modify intent for shared transition if we're opening a specific editor.
-                    intent.removeFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.removeFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    mTransitionView.setImageBitmap(mOutputBitmap);
-                    mTransitionView.setVisibility(View.VISIBLE);
-                    mTransitionView.setTransitionName(
-                            ChooserActivity.FIRST_IMAGE_PREVIEW_TRANSITION_NAME);
-                    options = ActivityOptions.makeSceneTransitionAnimation(this, mTransitionView,
-                            ChooserActivity.FIRST_IMAGE_PREVIEW_TRANSITION_NAME).toBundle();
-                    // TODO: listen for transition completing instead of finishing onStop
-                    mTransitionStarted = true;
-                }
+                    if (intent.getComponent() != null) {
+                        // Modify intent for shared transition if we're opening a specific editor.
+                        intent.removeFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        intent.removeFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        mTransitionView.setImageBitmap(mOutputBitmap);
+                        mTransitionView.setVisibility(View.VISIBLE);
+                        mTransitionView.setTransitionName(
+                                ChooserActivity.FIRST_IMAGE_PREVIEW_TRANSITION_NAME);
+                        options = ActivityOptions.makeSceneTransitionAnimation(this,
+                                mTransitionView,
+                                ChooserActivity.FIRST_IMAGE_PREVIEW_TRANSITION_NAME).toBundle();
+                        // TODO: listen for transition completing instead of finishing onStop
+                        mTransitionStarted = true;
+                    }
 
-                startActivity(intent, options);
+                    startActivity(intent, options);
+                });
             } else {
                 String editorPackage = getString(R.string.config_screenshotEditor);
                 Intent intent = new Intent(Intent.ACTION_EDIT);

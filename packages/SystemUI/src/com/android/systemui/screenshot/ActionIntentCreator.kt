@@ -23,18 +23,31 @@ import android.content.ContentProvider
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.os.UserHandle
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
 import com.android.systemui.screenshot.scroll.LongScreenshotActivity
 import com.android.systemui.shared.Flags.usePreferredImageEditor
+import java.util.function.Consumer
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class ActionIntentCreator
 @Inject
-constructor(private val context: Context, private val packageManager: PackageManager) {
+constructor(
+    private val context: Context,
+    private val packageManager: PackageManager,
+    @Application private val applicationScope: CoroutineScope,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
+) {
     /** @return a chooser intent to share the given URI. */
     fun createShare(uri: Uri): Intent = createShare(uri, subject = null, text = null)
 
@@ -76,11 +89,16 @@ constructor(private val context: Context, private val packageManager: PackageMan
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 
+    // Non-suspend version for java compat
+    fun createEdit(rawUri: Uri, consumer: Consumer<Intent>) {
+        applicationScope.launch { consumer.accept(createEdit(rawUri)) }
+    }
+
     /**
      * @return an ACTION_EDIT intent for the given URI, directed to config_preferredScreenshotEditor
      *   if enabled, falling back to config_screenshotEditor if that's non-empty.
      */
-    fun createEdit(rawUri: Uri): Intent {
+    suspend fun createEdit(rawUri: Uri): Intent {
         val uri = uriWithoutUserId(rawUri)
         val editIntent = Intent(Intent.ACTION_EDIT)
 
@@ -112,22 +130,30 @@ constructor(private val context: Context, private val packageManager: PackageMan
             .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
     }
 
-    private fun preferredEditor(): ComponentName? =
+    private suspend fun preferredEditor(): ComponentName? =
         runCatching {
                 val preferredEditor = context.getString(R.string.config_preferredScreenshotEditor)
                 val component = ComponentName.unflattenFromString(preferredEditor) ?: return null
 
+                return if (isComponentAvailable(component)) component else null
+            }
+            .getOrNull()
+
+    private suspend fun isComponentAvailable(component: ComponentName): Boolean =
+        withContext(backgroundDispatcher) {
+            try {
                 val info =
                     packageManager.getPackageInfo(
                         component.packageName,
                         PackageManager.GET_ACTIVITIES,
                     )
-
-                return info.activities
-                    ?.firstOrNull { it.componentName.className.equals(component.className) }
-                    ?.componentName
+                info.activities?.firstOrNull {
+                    it.componentName.className == component.className
+                } != null
+            } catch (e: NameNotFoundException) {
+                false
             }
-            .getOrNull()
+        }
 
     private fun defaultEditor(): ComponentName? =
         runCatching {
