@@ -20,6 +20,7 @@ import android.animation.AnimatorTestRule
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.PointF
 import android.graphics.Rect
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
@@ -28,6 +29,7 @@ import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import com.android.internal.policy.SystemBarUtils
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
+import com.android.window.flags.Flags.FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -45,6 +47,8 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 /**
@@ -343,6 +347,38 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         animatorTestRule.advanceTimeBy(200)
 
         assertThat(visualIndicator.indicatorBounds).isEqualTo(dropTargetBounds)
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
+    fun createIndicator_inTransitionFlagDisabled_isAttachedToDisplayArea() {
+        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
+
+        verify(taskDisplayAreaOrganizer).attachToDisplayArea(anyInt(), any())
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
+    fun createIndicator_fromFreeform_inTransitionFlagEnabled_isAttachedToDisplayArea() {
+        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM)
+
+        verify(taskDisplayAreaOrganizer).attachToDisplayArea(anyInt(), any())
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
+    fun createIndicator_fromFullscreen_inTransitionFlagEnabled_notAttachedToDisplayArea() {
+        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
+
+        verify(taskDisplayAreaOrganizer, never()).attachToDisplayArea(anyInt(), any())
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
+    fun createIndicator_fromSplit_inTransitionFlagEnabled_notAttachedToDisplayArea() {
+        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
+
+        verify(taskDisplayAreaOrganizer, never()).attachToDisplayArea(anyInt(), any())
     }
 
     private fun createVisualIndicator(dragStartState: DesktopModeVisualIndicator.DragStartState) {

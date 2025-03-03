@@ -130,6 +130,12 @@ constructor(
         }
     }
 
+    /** Reparent the indicator to {@code newParent}. */
+    fun reparentLeash(t: SurfaceControl.Transaction, newParent: SurfaceControl) {
+        val leash = indicatorLeash ?: return
+        t.reparent(leash, newParent)
+    }
+
     private fun showIndicator(taskSurface: SurfaceControl, leash: SurfaceControl) {
         mainExecutor.execute {
             indicatorLeash = leash
@@ -166,7 +172,7 @@ constructor(
                 displayController.getDisplayLayout(taskInfo.displayId)
                     ?: error("Expected to find DisplayLayout for taskId${taskInfo.taskId}.")
             if (currentType == IndicatorType.NO_INDICATOR) {
-                fadeInIndicator(layout, newType, taskInfo.displayId, snapEventHandler)
+                fadeInIndicatorInternal(layout, newType, taskInfo.displayId, snapEventHandler)
             } else if (newType == IndicatorType.NO_INDICATOR) {
                 fadeOutIndicator(
                     layout,
@@ -195,10 +201,22 @@ constructor(
     }
 
     /**
+     * Fade indicator in as provided type.
+     *
+     * Animator fades the indicator in while expanding the bounds outwards.
+     */
+    fun fadeInIndicator(layout: DisplayLayout, type: IndicatorType, displayId: Int) {
+        if (isReleased) return
+        desktopExecutor.execute {
+            fadeInIndicatorInternal(layout, type, displayId, snapEventHandler)
+        }
+    }
+
+    /**
      * Fade indicator in as provided type. Animator fades it in while expanding the bounds outwards.
      */
     @VisibleForTesting
-    fun fadeInIndicator(
+    fun fadeInIndicatorInternal(
         layout: DisplayLayout,
         type: IndicatorType,
         displayId: Int,

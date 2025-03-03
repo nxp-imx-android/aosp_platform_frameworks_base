@@ -639,6 +639,7 @@ class DesktopTasksController(
         dragToDesktopTransitionHandler.startDragToDesktopTransition(
             taskInfo,
             dragToDesktopValueAnimator,
+            visualIndicator,
         )
     }
 
