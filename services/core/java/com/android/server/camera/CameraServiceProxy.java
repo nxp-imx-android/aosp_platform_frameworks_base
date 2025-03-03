@@ -559,6 +559,9 @@ public class CameraServiceProxy extends SystemService
         @Override
         public void onKeepClearAreasChanged(int displayId, List<Rect> restricted,
                 List<Rect> unrestricted) { }
+
+        @Override
+        public void onDesktopModeEligibleChanged(int displayId) { }
     }
 
 
