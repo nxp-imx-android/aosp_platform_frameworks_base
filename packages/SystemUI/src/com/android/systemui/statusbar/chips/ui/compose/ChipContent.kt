@@ -27,11 +27,13 @@ import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrain
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,7 @@ import kotlin.math.min
 @Composable
 fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val density = LocalDensity.current
     val isTextOnly = viewModel.icon == null
     val hasEmbeddedIcon =
         viewModel.icon is OngoingActivityChipModel.ChipIcon.StatusBarView ||
@@ -86,7 +89,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
                             startPadding = startPadding,
                             endPadding = endPadding,
                         )
-                        .neverDecreaseWidth(),
+                        .neverDecreaseWidth(density),
             )
         }
 
@@ -97,7 +100,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
                 style = textStyle,
                 color = textColor,
                 softWrap = false,
-                modifier = modifier.neverDecreaseWidth(),
+                modifier = modifier.neverDecreaseWidth(density),
             )
         }
 
@@ -150,22 +153,30 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
 }
 
 /** A modifier that ensures the width of the content only increases and never decreases. */
-private fun Modifier.neverDecreaseWidth(): Modifier {
-    return this.then(NeverDecreaseWidthElement)
+private fun Modifier.neverDecreaseWidth(density: Density): Modifier {
+    return this.then(NeverDecreaseWidthElement(density))
 }
 
-private data object NeverDecreaseWidthElement : ModifierNodeElement<NeverDecreaseWidthNode>() {
+private data class NeverDecreaseWidthElement(val density: Density) :
+    ModifierNodeElement<NeverDecreaseWidthNode>() {
     override fun create(): NeverDecreaseWidthNode {
         return NeverDecreaseWidthNode()
     }
 
     override fun update(node: NeverDecreaseWidthNode) {
-        error("This should never be called")
+        node.onDensityUpdated()
     }
 }
 
 private class NeverDecreaseWidthNode : Modifier.Node(), LayoutModifierNode {
     private var minWidth = 0
+
+    fun onDensityUpdated() {
+        // When the font or display size changes, we should re-determine what our minWidth is from
+        // scratch (e.g. if the font size decreased, we may be able to take *less* room).
+        // See b/395607413.
+        minWidth = 0
+    }
 
     override fun MeasureScope.measure(
         measurable: Measurable,
