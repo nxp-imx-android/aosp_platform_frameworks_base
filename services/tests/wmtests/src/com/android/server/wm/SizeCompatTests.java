@@ -67,6 +67,7 @@ import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_POSITION_MU
 import static com.android.server.wm.AppCompatUtils.computeAspectRatio;
 import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
+import static com.android.window.flags.Flags.FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -109,6 +110,7 @@ import android.provider.DeviceConfig;
 import android.provider.DeviceConfig.Properties;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
+import android.view.InputDevice;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.InsetsState;
@@ -559,6 +561,41 @@ public class SizeCompatTests extends WindowTestsBase {
         // max aspect ratio.
         assertActivityMaxBoundsSandboxed();
         assertDownScaled();
+    }
+
+    @EnableFlags(FLAG_ENABLE_SIZE_COMPAT_MODE_IMPROVEMENTS_FOR_CONNECTED_DISPLAYS)
+    @Test
+    public void testFixedMiscConfigurationWhenMovingToDisplay() {
+        setUpDisplaySizeWithApp(1000, 2500);
+
+        final DisplayContent newDisplay =
+                new TestDisplayContent.Builder(mAtm, 1000, 2000).build();
+        final InputDevice device = new InputDevice.Builder()
+                .setAssociatedDisplayId(newDisplay.mDisplayId)
+                .setSources(InputDevice.SOURCE_TOUCHSCREEN | InputDevice.SOURCE_TRACKBALL
+                        | InputDevice.KEYBOARD_TYPE_ALPHABETIC)
+                .build();
+        final InputDevice[] devices = {device};
+        doReturn(true).when(newDisplay.mWmService.mInputManager)
+                .canDispatchToDisplay(device.getId(), newDisplay.mDisplayId);
+        doReturn(devices).when(newDisplay.mWmService.mInputManager).getInputDevices();
+        mTask.mWmService.mIsTouchDevice = true;
+        mTask.mWmService.displayReady();
+
+        prepareUnresizable(mActivity, 1.5f /* maxAspect */, SCREEN_ORIENTATION_UNSPECIFIED);
+
+        final Configuration originalConfiguration = mActivity.getConfiguration();
+        final int originalTouchscreen = originalConfiguration.touchscreen;
+        final int originalNavigation = originalConfiguration.navigation;
+        final int originalKeyboard = originalConfiguration.keyboard;
+
+        // Move the non-resizable activity to the new display.
+        mTask.reparent(newDisplay.getDefaultTaskDisplayArea(), true /* onTop */);
+
+        final Configuration newConfiguration = mActivity.getConfiguration();
+        assertEquals(originalTouchscreen, newConfiguration.touchscreen);
+        assertEquals(originalNavigation, newConfiguration.navigation);
+        assertEquals(originalKeyboard, newConfiguration.keyboard);
     }
 
     @Test

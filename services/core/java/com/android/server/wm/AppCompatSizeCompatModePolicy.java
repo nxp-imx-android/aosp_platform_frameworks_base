@@ -23,6 +23,7 @@ import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_METADATA;
 import static android.content.pm.ActivityInfo.SIZE_CHANGES_UNSUPPORTED_OVERRIDE;
 import static android.content.res.Configuration.ORIENTATION_UNDEFINED;
 
+import static com.android.window.flags.Flags.enableSizeCompatModeImprovementsForConnectedDisplays;
 import static com.android.server.wm.AppCompatUtils.isInDesktopMode;
 
 import android.annotation.NonNull;
@@ -357,6 +358,11 @@ class AppCompatSizeCompatModePolicy {
         // relatively fixed.
         overrideConfig.colorMode = fullConfig.colorMode;
         overrideConfig.densityDpi = fullConfig.densityDpi;
+        if (enableSizeCompatModeImprovementsForConnectedDisplays()) {
+            overrideConfig.touchscreen = fullConfig.touchscreen;
+            overrideConfig.navigation = fullConfig.navigation;
+            overrideConfig.fontScale = fullConfig.fontScale;
+        }
         // The smallest screen width is the short side of screen bounds. Because the bounds
         // and density won't be changed, smallestScreenWidthDp is also fixed.
         overrideConfig.smallestScreenWidthDp = fullConfig.smallestScreenWidthDp;
