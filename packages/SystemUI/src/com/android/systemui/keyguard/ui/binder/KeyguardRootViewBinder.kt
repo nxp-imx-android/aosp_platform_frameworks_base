@@ -474,7 +474,7 @@ object KeyguardRootViewBinder {
                 val transition = blueprintViewModel.currentTransition.value
                 val shouldAnimate = transition != null && transition.config.type.animateNotifChanges
                 if (prevTransition == transition && shouldAnimate) {
-                    logger.w("Skipping; layout during transition")
+                    logger.w("Skipping onNotificationContainerBoundsChanged during transition")
                     return
                 }
 
