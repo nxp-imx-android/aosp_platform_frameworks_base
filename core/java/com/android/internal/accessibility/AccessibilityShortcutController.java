@@ -136,7 +136,8 @@ public class AccessibilityShortcutController {
 
     private final Context mContext;
     private final Handler mHandler;
-    private final UserSetupCompleteObserver  mUserSetupCompleteObserver;
+    @VisibleForTesting
+    public final UserSetupCompleteObserver  mUserSetupCompleteObserver;
 
     private AlertDialog mAlertDialog;
     private boolean mIsShortcutEnabled;
@@ -471,7 +472,7 @@ public class AccessibilityShortcutController {
         AccessibilityManager accessibilityManager =
                 mFrameworkObjectProvider.getAccessibilityManagerInstance(mContext);
         return accessibilityManager.getEnabledAccessibilityServiceList(
-                FEEDBACK_ALL_MASK).contains(serviceInfo);
+                FEEDBACK_ALL_MASK, mUserId).contains(serviceInfo);
     }
 
     private boolean hasFeatureLeanback() {
@@ -676,7 +677,8 @@ public class AccessibilityShortcutController {
         }
     }
 
-    private class UserSetupCompleteObserver extends ContentObserver {
+    @VisibleForTesting
+    public class UserSetupCompleteObserver extends ContentObserver {
 
         private boolean mIsRegistered = false;
         private int mUserId;
@@ -749,7 +751,8 @@ public class AccessibilityShortcutController {
                     R.string.config_defaultAccessibilityService);
             final List<AccessibilityServiceInfo> enabledServices =
                     mFrameworkObjectProvider.getAccessibilityManagerInstance(
-                            mContext).getEnabledAccessibilityServiceList(FEEDBACK_ALL_MASK);
+                            mContext).getEnabledAccessibilityServiceList(
+                                    FEEDBACK_ALL_MASK, mUserId);
             for (int i = enabledServices.size() - 1; i >= 0; i--) {
                 if (TextUtils.equals(defaultShortcutTarget, enabledServices.get(i).getId())) {
                     return;

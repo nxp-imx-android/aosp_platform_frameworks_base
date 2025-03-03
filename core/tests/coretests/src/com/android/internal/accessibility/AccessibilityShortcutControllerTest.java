@@ -20,6 +20,7 @@ import static android.provider.Settings.Secure.ACCESSIBILITY_SHORTCUT_DIALOG_SHO
 import static android.provider.Settings.Secure.ACCESSIBILITY_SHORTCUT_ON_LOCK_SCREEN;
 import static android.provider.Settings.Secure.ACCESSIBILITY_SHORTCUT_TARGET_SERVICE;
 import static android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES;
+import static android.provider.Settings.Secure.USER_SETUP_COMPLETE;
 
 import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
 import static com.android.internal.accessibility.AccessibilityShortcutController.COLOR_INVERSION_COMPONENT_NAME;
@@ -713,6 +714,25 @@ public class AccessibilityShortcutControllerTest {
         onDismissCap.getValue().onDismiss(mAlertDialog);
         verify(mTextToSpeech).shutdown();
         verify(mRingtone, times(0)).play();
+    }
+
+    @Test
+    public void onUserSetupComplete_noEnabledServices_blankHardwareSetting() throws Exception {
+        AccessibilityShortcutController controller = getController();
+        configureValidShortcutService();
+        // Shortcut setting should be cleared on user setup
+        Settings.Secure.putStringForUser(
+                mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, null, 0);
+        when(mAccessibilityManagerService
+                .getEnabledAccessibilityServiceList(anyInt(), eq(0)))
+                .thenReturn(Collections.emptyList());
+        Settings.Secure.putInt(mContentResolver, USER_SETUP_COMPLETE, 1);
+
+        controller.mUserSetupCompleteObserver.onChange(true);
+
+        final String shortcut = Settings.Secure.getStringForUser(
+                mContentResolver, ACCESSIBILITY_SHORTCUT_TARGET_SERVICE, 0);
+        assertThat(shortcut).isEqualTo("");
     }
 
     private void configureNoShortcutService() throws Exception {
