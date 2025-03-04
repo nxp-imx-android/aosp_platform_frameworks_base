@@ -561,7 +561,7 @@ class WindowStateAnimator {
                         break;
                 }
                 if (attr >= 0) {
-                    a = mWin.getDisplayContent().mAppTransition.loadAnimationAttr(
+                    a = mWin.mDisplayContent.mTransitionAnimation.loadAnimationAttr(
                             mWin.mAttrs, attr, TRANSIT_OLD_NONE);
                 }
             }
