@@ -51,10 +51,8 @@
     <string name="consent_no" msgid="2640796915611404382">"ಅನುಮತಿಸಬೇಡಿ"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"ರದ್ದುಮಾಡಿ"</string>
     <string name="consent_back" msgid="2560683030046918882">"ಹಿಂದೆ"</string>
-    <!-- no translation found for downward_arrow_action (2327165938832076333) -->
-    <skip />
-    <!-- no translation found for downward_arrow (2292427714411156088) -->
-    <skip />
+    <string name="downward_arrow_action" msgid="2327165938832076333">"ಪಟ್ಟಿಯನ್ನು ಕೆಳಗೆ ಸ್ಕ್ರಾಲ್ ಮಾಡಿ"</string>
+    <string name="downward_arrow" msgid="2292427714411156088">"ಕೆಳಮುಖ ಬಾಣ"</string>
     <string name="permission_expand" msgid="893185038020887411">"<xliff:g id="PERMISSION_TYPE">%1$s</xliff:g> ಅನ್ನು ವಿಸ್ತರಿಸಿ"</string>
     <string name="permission_collapse" msgid="3320833884220844084">"<xliff:g id="PERMISSION_TYPE">%1$s</xliff:g> ಅನ್ನು ಕುಗ್ಗಿಸಿ"</string>
     <string name="permission_sync_confirmation_title" msgid="4409622174437248702">"&lt;/strong&gt;<xliff:g id="PRIMARY_DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; ನಲ್ಲಿನ ಅನುಮತಿಗಳನ್ನೇ &lt;/strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt; ನಲ್ಲಿನ ಆ್ಯಪ್‌ಗಳಿಗೆ ನೀಡಬೇಕೆ?"</string>
