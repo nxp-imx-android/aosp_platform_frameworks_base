@@ -69,6 +69,7 @@ public enum DesktopExperienceFlags {
     ENABLE_TASKBAR_CONNECTED_DISPLAYS(Flags::enableTaskbarConnectedDisplays, false),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,
             false),
+    FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH(Flags::formFactorBasedDesktopFirstSwitch, false),
     REPARENT_WINDOW_TOKEN_API(Flags::reparentWindowTokenApi, true)
     // go/keep-sorted end
     ;
