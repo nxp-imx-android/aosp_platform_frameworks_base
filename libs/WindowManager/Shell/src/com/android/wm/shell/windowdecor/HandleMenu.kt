@@ -39,7 +39,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Space
-import android.widget.TextView
 import android.window.DesktopModeFlags
 import android.window.SurfaceSyncGroup
 import androidx.annotation.StringRes
@@ -59,10 +58,10 @@ import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewContainer
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
+import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.calculateMenuPosition
-import com.android.wm.shell.windowdecor.common.DrawableInsets
-import com.android.wm.shell.windowdecor.common.createRippleDrawable
+import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.isPinned
@@ -702,7 +701,7 @@ class HandleMenu(
                 imageTintList = ColorStateList.valueOf(style.textColor)
                 this.taskInfo = this@HandleMenuView.taskInfo
 
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
                     drawableInsets = iconButtonDrawableInsetsBase
@@ -740,7 +739,7 @@ class HandleMenu(
                 else iconButtonDrawableInsetsRight
 
             fullscreenBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
                     drawableInsets = startInsets
@@ -748,7 +747,7 @@ class HandleMenu(
             }
 
             splitscreenBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
                     drawableInsets = iconButtonDrawableInsetsBase
@@ -756,7 +755,7 @@ class HandleMenu(
             }
 
             floatingBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
                     drawableInsets = iconButtonDrawableInsetsBase
@@ -764,7 +763,7 @@ class HandleMenu(
             }
 
             desktopBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
                     drawableInsets = endInsets
