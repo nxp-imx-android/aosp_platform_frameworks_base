@@ -3266,7 +3266,6 @@ public class Notification implements Parcelable
         final Class<? extends Style> notificationStyle = getNotificationStyle();
 
         return notificationStyle == null
-                || BigPictureStyle.class.equals(notificationStyle)
                 || BigTextStyle.class.equals(notificationStyle)
                 || CallStyle.class.equals(notificationStyle)
                 || ProgressStyle.class.equals(notificationStyle);
