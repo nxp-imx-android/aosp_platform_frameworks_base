@@ -163,6 +163,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private Function0<Unit> mOnNewWindowClickListener;
     private Function0<Unit> mOnManageWindowsClickListener;
     private Function0<Unit> mOnChangeAspectRatioClickListener;
+    private Function0<Unit> mOnRestartClickListener;
     private Function0<Unit> mOnMaximizeHoverListener;
     private DragPositioningCallback mDragPositioningCallback;
     private DragResizeInputListener mDragResizeListener;
@@ -406,6 +407,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /** Registers a listener to be called when the aspect ratio action is triggered. */
     void setOnChangeAspectRatioClickListener(Function0<Unit> listener) {
         mOnChangeAspectRatioClickListener = listener;
+    }
+
+    /** Registers a listener to be called when the aspect ratio action is triggered. */
+    void setOnRestartClickListener(Function0<Unit> listener) {
+        mOnRestartClickListener = listener;
     }
 
     /** Registers a listener to be called when the maximize header button is hovered. */
@@ -1461,6 +1467,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 && mMinimumInstancesFound;
         final boolean shouldShowChangeAspectRatioButton = HandleMenu.Companion
                 .shouldShowChangeAspectRatioButton(mTaskInfo);
+        final boolean shouldShowRestartButton = HandleMenu.Companion
+                .shouldShowRestartButton(mTaskInfo);
         final boolean inDesktopImmersive = mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                 .isTaskInFullImmersiveState(mTaskInfo.taskId);
         final boolean isBrowserApp = isBrowserApp();
@@ -1477,6 +1485,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 shouldShowManageWindowsButton,
                 shouldShowChangeAspectRatioButton,
                 isDesktopModeSupportedOnDisplay(mContext, mDisplay),
+                shouldShowRestartButton,
                 isBrowserApp,
                 isBrowserApp ? getAppLink() : getBrowserLink(),
                 mResult.mCaptionWidth,
@@ -1513,6 +1522,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     }
                     return Unit.INSTANCE;
                 },
+                /* onRestartClickListener= */ mOnRestartClickListener,
                 /* onCloseMenuClickListener= */ () -> {
                     closeHandleMenu();
                     return Unit.INSTANCE;

@@ -287,6 +287,7 @@ class HandleMenuTest : ShellTestCase() {
             shouldShowManageWindowsButton = false,
             shouldShowChangeAspectRatioButton = false,
             shouldShowDesktopModeButton = true,
+            shouldShowRestartButton = true,
             isBrowserApp = false,
             null /* openInAppOrBrowserIntent */,
             captionWidth = HANDLE_WIDTH,
@@ -304,6 +305,7 @@ class HandleMenuTest : ShellTestCase() {
             onChangeAspectRatioClickListener = mock(),
             openInAppOrBrowserClickListener = mock(),
             onOpenByDefaultClickListener = mock(),
+            onRestartClickListener = mock(),
             onCloseMenuClickListener = mock(),
             onOutsideTouchListener = mock(),
             forceShowSystemBars = forceShowSystemBars

@@ -79,6 +79,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
+import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
 import com.android.wm.shell.compatui.letterbox.LetterboxTransitionObserver;
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
@@ -1044,7 +1045,8 @@ public abstract class WMShellModule {
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
-            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
+            Optional<CompatUIHandler> compatUI
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -1062,7 +1064,7 @@ public abstract class WMShellModule {
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
-                multiDisplayDragMoveIndicatorController));
+                multiDisplayDragMoveIndicatorController, compatUI.orElse(null)));
     }
 
     @WMSingleton

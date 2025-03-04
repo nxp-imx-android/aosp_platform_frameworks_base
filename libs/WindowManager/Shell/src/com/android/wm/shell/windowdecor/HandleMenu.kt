@@ -94,6 +94,7 @@ class HandleMenu(
     private val shouldShowManageWindowsButton: Boolean,
     private val shouldShowChangeAspectRatioButton: Boolean,
     private val shouldShowDesktopModeButton: Boolean,
+    private val shouldShowRestartButton: Boolean,
     private val isBrowserApp: Boolean,
     private val openInAppOrBrowserIntent: Intent?,
     private val captionWidth: Int,
@@ -138,7 +139,8 @@ class HandleMenu(
 
     private val shouldShowMoreActionsPill: Boolean
         get() = SHOULD_SHOW_SCREENSHOT_BUTTON || shouldShowNewWindowButton ||
-                shouldShowManageWindowsButton || shouldShowChangeAspectRatioButton
+            shouldShowManageWindowsButton || shouldShowChangeAspectRatioButton ||
+            shouldShowRestartButton
 
     private var loadAppInfoJob: Job? = null
 
@@ -156,6 +158,7 @@ class HandleMenu(
         onChangeAspectRatioClickListener: () -> Unit,
         openInAppOrBrowserClickListener: (Intent) -> Unit,
         onOpenByDefaultClickListener: () -> Unit,
+        onRestartClickListener: () -> Unit,
         onCloseMenuClickListener: () -> Unit,
         onOutsideTouchListener: () -> Unit,
         forceShowSystemBars: Boolean = false,
@@ -175,6 +178,7 @@ class HandleMenu(
             onChangeAspectRatioClickListener = onChangeAspectRatioClickListener,
             openInAppOrBrowserClickListener = openInAppOrBrowserClickListener,
             onOpenByDefaultClickListener = onOpenByDefaultClickListener,
+            onRestartClickListener = onRestartClickListener,
             onCloseMenuClickListener = onCloseMenuClickListener,
             onOutsideTouchListener = onOutsideTouchListener,
             forceShowSystemBars = forceShowSystemBars,
@@ -197,6 +201,7 @@ class HandleMenu(
         onChangeAspectRatioClickListener: () -> Unit,
         openInAppOrBrowserClickListener: (Intent) -> Unit,
         onOpenByDefaultClickListener: () -> Unit,
+        onRestartClickListener: () -> Unit,
         onCloseMenuClickListener: () -> Unit,
         onOutsideTouchListener: () -> Unit,
         forceShowSystemBars: Boolean = false,
@@ -211,6 +216,7 @@ class HandleMenu(
             shouldShowManageWindowsButton = shouldShowManageWindowsButton,
             shouldShowChangeAspectRatioButton = shouldShowChangeAspectRatioButton,
             shouldShowDesktopModeButton = shouldShowDesktopModeButton,
+            shouldShowRestartButton = shouldShowRestartButton,
             isBrowserApp = isBrowserApp
         ).apply {
             bind(taskInfo, shouldShowMoreActionsPill)
@@ -224,6 +230,7 @@ class HandleMenu(
             this.onOpenInAppOrBrowserClickListener = {
                 openInAppOrBrowserClickListener.invoke(openInAppOrBrowserIntent!!)
             }
+            this.onRestartClickListener = onRestartClickListener
             this.onOpenByDefaultClickListener = onOpenByDefaultClickListener
             this.onCloseMenuClickListener = onCloseMenuClickListener
             this.onOutsideTouchListener = onOutsideTouchListener
@@ -430,6 +437,10 @@ class HandleMenu(
                 R.dimen.desktop_mode_handle_menu_change_aspect_ratio_height
             )
         }
+        if (!shouldShowRestartButton) {
+            menuHeight -= loadDimensionPixelSize(
+                R.dimen.desktop_mode_handle_menu_restart_button_height)
+        }
         if (!shouldShowMoreActionsPill) {
             menuHeight -= pillTopMargin
         }
@@ -472,6 +483,7 @@ class HandleMenu(
         private val shouldShowManageWindowsButton: Boolean,
         private val shouldShowChangeAspectRatioButton: Boolean,
         private val shouldShowDesktopModeButton: Boolean,
+        private val shouldShowRestartButton: Boolean,
         private val isBrowserApp: Boolean
     ) {
         val rootView = LayoutInflater.from(context)
@@ -549,6 +561,8 @@ class HandleMenu(
             .requireViewById<HandleMenuActionButton>(R.id.manage_windows_button)
         private val changeAspectRatioBtn = moreActionsPill
             .requireViewById<HandleMenuActionButton>(R.id.change_aspect_ratio_button)
+        private val restartBtn = moreActionsPill
+            .requireViewById<HandleMenuActionButton>(R.id.handle_menu_restart_button)
 
         // Open in Browser/App Pill.
         private val openInAppOrBrowserPill = rootView.requireViewById<View>(
@@ -574,6 +588,7 @@ class HandleMenu(
         var onChangeAspectRatioClickListener: (() -> Unit)? = null
         var onOpenInAppOrBrowserClickListener: (() -> Unit)? = null
         var onOpenByDefaultClickListener: (() -> Unit)? = null
+        var onRestartClickListener: (() -> Unit)? = null
         var onCloseMenuClickListener: (() -> Unit)? = null
         var onOutsideTouchListener: (() -> Unit)? = null
 
@@ -590,6 +605,7 @@ class HandleMenu(
             newWindowBtn.setOnClickListener { onNewWindowClickListener?.invoke() }
             manageWindowBtn.setOnClickListener { onManageWindowsClickListener?.invoke() }
             changeAspectRatioBtn.setOnClickListener { onChangeAspectRatioClickListener?.invoke() }
+            restartBtn.setOnClickListener { onRestartClickListener?.invoke() }
 
             rootView.setOnTouchListener { _, event ->
                 if (event.actionMasked == ACTION_OUTSIDE) {
@@ -808,6 +824,7 @@ class HandleMenu(
                 newWindowBtn to shouldShowNewWindowButton,
                 manageWindowBtn to shouldShowManageWindowsButton,
                 changeAspectRatioBtn to shouldShowChangeAspectRatioButton,
+                restartBtn to shouldShowRestartButton,
             ).forEach { (button, shouldShow) ->
                 button.apply {
                     isGone = !shouldShow
@@ -872,6 +889,13 @@ class HandleMenu(
         fun shouldShowChangeAspectRatioButton(taskInfo: RunningTaskInfo): Boolean =
             taskInfo.appCompatTaskInfo.eligibleForUserAspectRatioButton() &&
                     taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+
+        /**
+         * Returns whether the restart button should be shown for the task. It usually means that
+         * the task has moved to a different display.
+         */
+        fun shouldShowRestartButton(taskInfo: RunningTaskInfo): Boolean =
+            taskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
     }
 }
 
@@ -890,6 +914,7 @@ interface HandleMenuFactory {
         shouldShowManageWindowsButton: Boolean,
         shouldShowChangeAspectRatioButton: Boolean,
         shouldShowDesktopModeButton: Boolean,
+        shouldShowRestartButton: Boolean,
         isBrowserApp: Boolean,
         openInAppOrBrowserIntent: Intent?,
         captionWidth: Int,
@@ -914,6 +939,7 @@ object DefaultHandleMenuFactory : HandleMenuFactory {
         shouldShowManageWindowsButton: Boolean,
         shouldShowChangeAspectRatioButton: Boolean,
         shouldShowDesktopModeButton: Boolean,
+        shouldShowRestartButton: Boolean,
         isBrowserApp: Boolean,
         openInAppOrBrowserIntent: Intent?,
         captionWidth: Int,
@@ -934,6 +960,7 @@ object DefaultHandleMenuFactory : HandleMenuFactory {
             shouldShowManageWindowsButton,
             shouldShowChangeAspectRatioButton,
             shouldShowDesktopModeButton,
+            shouldShowRestartButton,
             isBrowserApp,
             openInAppOrBrowserIntent,
             captionWidth,

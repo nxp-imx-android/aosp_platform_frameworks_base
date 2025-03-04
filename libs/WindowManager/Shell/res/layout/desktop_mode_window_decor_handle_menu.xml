@@ -163,6 +163,13 @@
             android:text="@string/change_aspect_ratio_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_change_aspect_ratio"
             style="@style/DesktopModeHandleMenuActionButton"/>
+
+        <com.android.wm.shell.windowdecor.HandleMenuActionButton
+            android:id="@+id/handle_menu_restart_button"
+            android:contentDescription="@string/handle_menu_restart_text"
+            android:text="@string/handle_menu_restart_text"
+            android:src="@drawable/desktop_mode_ic_handle_menu_restart"
+            style="@style/DesktopModeHandleMenuActionButton"/>
     </LinearLayout>
 
     <LinearLayout
