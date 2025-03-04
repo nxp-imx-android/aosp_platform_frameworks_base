@@ -28,7 +28,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
 import com.android.systemui.volume.Events
-import com.android.systemui.volume.dialog.dagger.VolumeDialogComponent
+import com.android.systemui.volume.dialog.dagger.factory.VolumeDialogComponentFactory
 import com.android.systemui.volume.dialog.domain.interactor.VolumeDialogVisibilityInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.awaitCancellation
@@ -37,7 +37,7 @@ class VolumeDialog
 @Inject
 constructor(
     @Application context: Context,
-    private val componentFactory: VolumeDialogComponent.Factory,
+    private val componentFactory: VolumeDialogComponentFactory,
     private val visibilityInteractor: VolumeDialogVisibilityInteractor,
 ) : ComponentDialog(context, R.style.Theme_SystemUI_Dialog_Volume) {
 
