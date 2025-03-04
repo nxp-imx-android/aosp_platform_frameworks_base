@@ -18,26 +18,36 @@ package com.android.systemui.shared.clocks
 
 import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.plugins.clocks.AxisType
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockFontAxis
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 
-fun AxisDefinition.toClockAxis(
-    type: AxisType,
-    currentValue: Float? = null,
-    name: String,
-    description: String,
-): ClockFontAxis {
-    return ClockFontAxis(
-        key = this.tag,
-        type = type,
-        maxValue = this.maxValue,
-        minValue = this.minValue,
-        currentValue = currentValue ?: this.defaultValue,
-        name = name,
-        description = description,
-    )
-}
+object FontUtils {
+    fun AxisDefinition.toClockAxis(
+        type: AxisType,
+        currentValue: Float? = null,
+        name: String,
+        description: String,
+    ): ClockFontAxis {
+        return ClockFontAxis(
+            key = this.tag,
+            type = type,
+            maxValue = this.maxValue,
+            minValue = this.minValue,
+            currentValue = currentValue ?: this.defaultValue,
+            name = name,
+            description = description,
+        )
+    }
 
-fun AxisDefinition.toClockAxisSetting(value: Float? = null): ClockFontAxisSetting {
-    return ClockFontAxisSetting(this.tag, value ?: this.defaultValue)
+    fun ClockAxisStyle.put(def: AxisDefinition, value: Float? = null) {
+        this.put(def.tag, value ?: def.defaultValue)
+    }
+
+    operator fun ClockAxisStyle.set(def: AxisDefinition, value: Float) {
+        this[def.tag] = value
+    }
+
+    operator fun ClockAxisStyle.get(def: AxisDefinition): Float {
+        return this[def.tag] ?: def.defaultValue
+    }
 }

@@ -25,8 +25,8 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.plugins.PluginLifecycleManager
 import com.android.systemui.plugins.PluginListener
 import com.android.systemui.plugins.PluginManager
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 import com.android.systemui.plugins.clocks.ClockId
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockMetadata
@@ -543,7 +543,7 @@ class ClockRegistryTest : SysuiTestCase() {
 
     @Test
     fun jsonDeserialization_fontAxes() {
-        val expected = ClockSettings(axes = listOf(ClockFontAxisSetting("KEY", 10f)))
+        val expected = ClockSettings(axes = ClockAxisStyle("KEY", 10f))
         val json = JSONObject("""{"axes":[{"key":"KEY","value":10}]}""")
         val actual = ClockSettings.fromJson(json)
         assertEquals(expected, actual)
@@ -576,7 +576,7 @@ class ClockRegistryTest : SysuiTestCase() {
 
     @Test
     fun jsonSerialization_axisSettings() {
-        val settings = ClockSettings(axes = listOf(ClockFontAxisSetting("KEY", 10f)))
+        val settings = ClockSettings(axes = ClockAxisStyle("KEY", 10f))
         val actual = ClockSettings.toJson(settings)
         val expected = JSONObject("""{"metadata":{},"axes":[{"key":"KEY","value":10}]}""")
         assertEquals(expected.toString(), actual.toString())
