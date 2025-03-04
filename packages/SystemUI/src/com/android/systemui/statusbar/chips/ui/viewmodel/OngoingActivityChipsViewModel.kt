@@ -555,7 +555,6 @@ constructor(
                 secondary = DEFAULT_INTERNAL_INACTIVE_MODEL,
             )
 
-        // TODO(b/392886257): Support 3 chips if there's space available.
-        private const val MAX_VISIBLE_CHIPS = 2
+        private const val MAX_VISIBLE_CHIPS = 3
     }
 }
