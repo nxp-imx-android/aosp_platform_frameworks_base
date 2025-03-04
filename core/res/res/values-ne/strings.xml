@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"एक हाते मोड"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"अझै मधुरो"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"हियरिङ डिभाइसहरू"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"अटोक्लिक"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"डिस्कनेक्ट गरिएको"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"कनेक्ट गरिएको"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"सक्रिय"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"अनपिन गर्नअघि अनलक प्याटर्न माग्नुहोस्"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"पिन निकाल्नुअघि पासवर्ड सोध्नुहोस्"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"यो प्याकेज तपाईंका एड्मिनले इन्स्टल गर्नुभएको हो।\nप्रदान गरिएका अनुमतिसम्बन्धी जानकारी हेर्न सेटिङमा जानुहोस्"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"तपाईंका प्रशासकले अद्यावधिक गर्नुभएको"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"तपाईंका प्रशासकले मेट्नुभएको"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ठिक छ"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ब्याट्री सेभरले अँध्यारो थिम अन गर्छ र ब्याकग्राउन्डमा हुने क्रियाकलाप, केही भिजुअल इफेक्ट, निश्चित सुविधा र केही नेटवर्क कनेक्सनहरू अफ गर्छ वा सीमित रूपमा मात्र चल्न दिन्छ।"</string>

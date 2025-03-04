@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"មុខងារប្រើដៃម្ខាង"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"ងងឹតខ្លាំង"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"ឧបករណ៍ជំនួយការស្ដាប់"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"ចុចស្វ័យប្រវត្តិ"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"បាន​ផ្ដាច់"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"បានភ្ជាប់"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"សកម្ម"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"សួរ​រក​លំនាំ​ដោះ​សោ​មុន​ពេលដោះខ្ទាស់"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"សួរ​រក​ពាក្យ​សម្ងាត់​មុន​ពេល​ផ្ដាច់"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"បានដំឡើងដោយអ្នកគ្រប់គ្រងរបស់អ្នក។\nចូលទៅកាន់ការកំណត់ ដើម្បីមើលការ​អនុញ្ញាតដែលផ្ដល់ឱ្យ"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"ធ្វើ​បច្ចុប្បន្នភាព​ដោយ​អ្នកគ្រប់គ្រង​របស់​អ្នក"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"លុប​ដោយ​អ្នកគ្រប់គ្រង​របស់​អ្នក"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"យល់ព្រម"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"មុខងារ​សន្សំថ្មបើកទម្រង់រចនាងងឹត និងដាក់កំហិត ឬបិទសកម្មភាពផ្ទៃខាងក្រោយ បែបផែនរូបភាពមួយចំនួន មុខងារជាក់លាក់ និងការតភ្ជាប់បណ្ដាញមួយចំនួន។"</string>

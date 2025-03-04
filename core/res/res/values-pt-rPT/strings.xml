@@ -1804,8 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modo para uma mão"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Mais escuro"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Dispositivos auditivos"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"Clique automático"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desligado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Ligado"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Ativo"</string>
@@ -1967,7 +1966,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pedir padrão de desbloqueio antes de soltar"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pedir palavra-passe antes de soltar"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalado pelo seu administrador.\nAceda às definições para ver as autorizações concedidas"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"Atualizado pelo seu gestor"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Eliminado pelo seu gestor"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"A Poupança de bateria ativa o tema escuro e limita ou desativa a atividade em segundo plano, alguns efeitos visuais, determinadas funcionalidades e algumas ligações de rede."</string>

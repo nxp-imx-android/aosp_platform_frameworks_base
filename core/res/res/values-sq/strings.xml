@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modaliteti i përdorimit me një dorë"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Shumë më i zbehtë"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Pajisjet e dëgjimit"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"Klikimi automatik"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Shkëputur"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Lidhur"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktive"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Kërko motivin e shkyçjes para heqjes së gozhdimit"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Kërko fjalëkalim para heqjes nga gozhdimi."</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instaluar nga administratori.\nShko te cilësimet për të shikuar lejet e dhëna"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"Përditësuar nga administratori"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Fshirë nga administratori"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Në rregull"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"\"Kursyesi i baterisë\" aktivizon \"Temën e errët\" dhe kufizon ose çaktivizon aktivitetin në sfond, disa efekte vizuale, veçori të caktuara dhe disa lidhje të rrjetit."</string>

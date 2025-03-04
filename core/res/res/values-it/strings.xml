@@ -1966,7 +1966,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Richiedi sequenza di sblocco prima di sbloccare"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Richiedi password prima di sbloccare"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Installato dall\'amministratore.\nVai alle impostazioni per visualizzare le autorizzazioni concesse"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"Aggiornato dall\'amministratore"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Eliminato dall\'amministratore"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Ok"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Il risparmio energetico attiva il tema scuro e limita o disattiva l\'attività in background, nonché alcuni effetti visivi, funzionalità e connessioni di rete."</string>
