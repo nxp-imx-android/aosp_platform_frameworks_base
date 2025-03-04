@@ -744,15 +744,22 @@ public abstract class Context {
      */
     public static final long BIND_MATCH_QUARANTINED_COMPONENTS = 0x2_0000_0000L;
 
+    /**
+     * Flag for {@link #bindService} that allows the bound app to be frozen if it is eligible.
+     *
+     * @hide
+     */
+    public static final long BIND_ALLOW_FREEZE = 0x4_0000_0000L;
 
     /**
      * These bind flags reduce the strength of the binding such that we shouldn't
      * consider it as pulling the process up to the level of the one that is bound to it.
      * @hide
      */
-    public static final int BIND_REDUCTION_FLAGS =
+    public static final long BIND_REDUCTION_FLAGS =
             Context.BIND_ALLOW_OOM_MANAGEMENT | Context.BIND_WAIVE_PRIORITY
-                    | Context.BIND_NOT_PERCEPTIBLE | Context.BIND_NOT_VISIBLE;
+                    | Context.BIND_NOT_PERCEPTIBLE | Context.BIND_NOT_VISIBLE
+                    | Context.BIND_ALLOW_FREEZE;
 
     /** @hide */
     @IntDef(flag = true, prefix = { "RECEIVER_VISIBLE" }, value = {
