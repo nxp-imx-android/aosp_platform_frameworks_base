@@ -32,12 +32,7 @@ val Kosmos.sysUiStateFactory by Fixture {
     object : SysUiStateImpl.Factory {
         override fun create(displayId: Int): SysUiStateImpl {
             return spy(
-                SysUiStateImpl(
-                    displayId,
-                    sceneContainerPlugin,
-                    dumpManager,
-                    sysUIStateDispatcher,
-                )
+                SysUiStateImpl(displayId, sceneContainerPlugin, dumpManager, sysUIStateDispatcher)
             )
         }
     }
