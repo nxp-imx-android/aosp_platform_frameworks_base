@@ -350,12 +350,12 @@
       "type": "int",
       "data_points": [
         0,
-        255,
-        255,
-        255,
-        255,
-        255,
-        255,
+        45,
+        126,
+        190,
+        228,
+        246,
+        253,
         255,
         255,
         255,
@@ -371,14 +371,5 @@
         0
       ]
     }
-  ],
-  "\/\/metadata": {
-    "goldenRepoPath": "frameworks\/base\/packages\/SystemUI\/tests\/goldens\/backgroundAnimationWithoutFade_whenReturning_withSpring.json",
-    "goldenIdentifier": "backgroundAnimationWithoutFade_whenReturning_withSpring",
-    "testClassName": "TransitionAnimatorTest",
-    "testMethodName": "backgroundAnimationWithoutFade_whenReturning[true]",
-    "deviceLocalPath": "\/data\/user\/0\/com.android.systemui.tests\/files\/platform_screenshots",
-    "result": "FAILED",
-    "videoLocation": "TransitionAnimatorTest\/backgroundAnimationWithoutFade_whenReturning_withSpring.actual.mp4"
-  }
+  ]
 }

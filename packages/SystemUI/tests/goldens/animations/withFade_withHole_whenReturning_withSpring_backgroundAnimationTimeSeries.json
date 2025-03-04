@@ -371,14 +371,5 @@
         0
       ]
     }
-  ],
-  "\/\/metadata": {
-    "goldenRepoPath": "frameworks\/base\/packages\/SystemUI\/tests\/goldens\/backgroundAnimation_whenLaunching_withSpring.json",
-    "goldenIdentifier": "backgroundAnimation_whenLaunching_withSpring",
-    "testClassName": "TransitionAnimatorTest",
-    "testMethodName": "backgroundAnimation_whenLaunching[true]",
-    "deviceLocalPath": "\/data\/user\/0\/com.android.systemui.tests\/files\/platform_screenshots",
-    "result": "FAILED",
-    "videoLocation": "TransitionAnimatorTest\/backgroundAnimation_whenLaunching_withSpring.actual.mp4"
-  }
+  ]
 }
