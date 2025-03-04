@@ -4459,6 +4459,10 @@
          etc. dialogs. -->
     <string translatable="false" name="config_appsNotReportingCrashes"></string>
 
+    <!-- Specifies the delay in milliseconds for JobScheduler to postpone the running
+         of regular jobs when coming out of doze -->
+    <integer name="config_jobSchedulerBackgroundJobsDelay">3000</integer>
+
     <!-- Inactivity threshold (in milliseconds) used in JobScheduler. JobScheduler will consider
          the device to be "idle" after being inactive for this long. -->
     <integer name="config_jobSchedulerInactivityIdleThreshold">1860000</integer>

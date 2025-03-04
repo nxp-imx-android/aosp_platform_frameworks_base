@@ -3016,6 +3016,7 @@
 
   <java-symbol type="integer" name="config_defaultNightMode" />
 
+  <java-symbol type="integer" name="config_jobSchedulerBackgroundJobsDelay" />
   <java-symbol type="integer" name="config_jobSchedulerInactivityIdleThreshold" />
   <java-symbol type="integer" name="config_jobSchedulerInactivityIdleThresholdOnStablePower" />
   <java-symbol type="integer" name="config_jobSchedulerIdleWindowSlop" />
