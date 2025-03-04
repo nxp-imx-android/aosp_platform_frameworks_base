@@ -209,6 +209,7 @@ class DesktopTasksController(
     private val userProfileContexts: UserProfileContexts,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
+    private val moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -1202,7 +1203,8 @@ class DesktopTasksController(
                 } else {
                     null
                 }
-            val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+            val transition =
+                transitions.startTransition(TRANSIT_CHANGE, wct, moveToDisplayTransitionHandler)
             deactivationRunnable?.invoke(transition)
             return
         }
@@ -1261,7 +1263,8 @@ class DesktopTasksController(
             } else {
                 null
             }
-        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        val transition =
+            transitions.startTransition(TRANSIT_CHANGE, wct, moveToDisplayTransitionHandler)
         deactivationRunnable?.invoke(transition)
         activationRunnable?.invoke(transition)
     }

@@ -36,6 +36,7 @@ import android.os.Handler;
 import android.os.UserManager;
 import android.view.Choreographer;
 import android.view.IWindowManager;
+import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopModeFlags;
 
@@ -93,6 +94,7 @@ import com.android.wm.shell.desktopmode.DesktopModeDragAndDropTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeKeyGestureHandler;
 import com.android.wm.shell.desktopmode.DesktopModeLoggerTransitionObserver;
+import com.android.wm.shell.desktopmode.DesktopModeMoveToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopTaskChangeListener;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
@@ -772,7 +774,8 @@ public abstract class WMShellModule {
             DesksTransitionObserver desksTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
-            DragToDisplayTransitionHandler dragToDisplayTransitionHandler) {
+            DragToDisplayTransitionHandler dragToDisplayTransitionHandler,
+            DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -812,7 +815,8 @@ public abstract class WMShellModule {
                 desksTransitionObserver,
                 userProfileContexts,
                 desktopModeCompatPolicy,
-                dragToDisplayTransitionHandler);
+                dragToDisplayTransitionHandler,
+                moveToDisplayTransitionHandler);
     }
 
     @WMSingleton
@@ -946,6 +950,12 @@ public abstract class WMShellModule {
     @Provides
     static DragToDisplayTransitionHandler provideDragToDisplayTransitionHandler() {
         return new DragToDisplayTransitionHandler();
+    }
+
+    @WMSingleton
+    @Provides
+    static DesktopModeMoveToDisplayTransitionHandler provideMoveToDisplayTransitionHandler() {
+        return new DesktopModeMoveToDisplayTransitionHandler(new SurfaceControl.Transaction());
     }
 
     @WMSingleton
