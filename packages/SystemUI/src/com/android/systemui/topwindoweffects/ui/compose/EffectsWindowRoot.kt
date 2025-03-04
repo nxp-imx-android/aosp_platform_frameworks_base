@@ -16,22 +16,19 @@
 
 package com.android.systemui.topwindoweffects.ui.compose
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.util.AttributeSet
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.AbstractComposeView
 import com.android.systemui.compose.ComposeInitializer
+import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 
-class EffectsWindowRoot : AbstractComposeView {
-    constructor(context: Context) : super(context)
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-
-    constructor(
-        context: Context,
-        attrs: AttributeSet,
-        defStyleAttr: Int,
-    ) : super(context, attrs, defStyleAttr)
+@SuppressLint("ViewConstructor")
+class EffectsWindowRoot(
+    context: Context,
+    private val onEffectFinished: () -> Unit,
+    private val viewModelFactory: SqueezeEffectViewModel.Factory
+) : AbstractComposeView(context) {
 
     override fun onAttachedToWindow() {
         ComposeInitializer.onAttachedToWindow(this)
@@ -45,6 +42,9 @@ class EffectsWindowRoot : AbstractComposeView {
 
     @Composable
     override fun Content() {
-        SqueezeEffect()
+        SqueezeEffect(
+            viewModelFactory = viewModelFactory,
+            onEffectFinished = onEffectFinished
+        )
     }
 }

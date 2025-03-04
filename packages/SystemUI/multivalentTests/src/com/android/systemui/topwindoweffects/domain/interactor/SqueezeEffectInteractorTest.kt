@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.topwindoweffects
+package com.android.systemui.topwindoweffects.domain.interactor
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -25,7 +25,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
-import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith

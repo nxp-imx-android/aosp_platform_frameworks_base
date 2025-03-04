@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.topwindoweffects
+package com.android.systemui.topwindoweffects.data.repository
 
 import android.os.Handler
 import android.platform.test.annotations.DisableFlags
@@ -30,7 +30,6 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shared.Flags
 import com.android.systemui.testKosmos
-import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl
 import com.android.systemui.util.settings.FakeGlobalSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.StandardTestDispatcher
