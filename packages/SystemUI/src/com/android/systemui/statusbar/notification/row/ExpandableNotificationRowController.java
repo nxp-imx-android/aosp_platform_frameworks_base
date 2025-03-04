@@ -45,7 +45,11 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.NotificationActivityStarter;
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
+import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
@@ -56,6 +60,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.row.dagger.AppName;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationKey;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationRowScope;
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
@@ -118,8 +123,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
     private final IStatusBarService mStatusBarService;
     private final UiEventLogger mUiEventLogger;
     private final MSDLPlayer mMSDLPlayer;
-
     private final NotificationSettingsController mSettingsController;
+    private final EntryAdapterFactory mEntryAdapterFactory;
 
     @VisibleForTesting
     final NotificationSettingsController.Listener mSettingsListener =
@@ -285,7 +290,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
             IStatusBarService statusBarService,
             UiEventLogger uiEventLogger,
             MSDLPlayer msdlPlayer,
-            NotificationRebindingTracker notificationRebindingTracker) {
+            NotificationRebindingTracker notificationRebindingTracker,
+            EntryAdapterFactory entryAdapterFactory) {
         mView = view;
         mListContainer = listContainer;
         mRemoteInputViewSubcomponentFactory = rivSubcomponentFactory;
@@ -322,14 +328,16 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mStatusBarService = statusBarService;
         mUiEventLogger = uiEventLogger;
         mMSDLPlayer = msdlPlayer;
+        mEntryAdapterFactory = entryAdapterFactory;
     }
 
     /**
      * Initialize the controller.
      */
-    public void init(NotificationEntry entry) {
+    public void init(PipelineEntry entry) {
         mActivatableNotificationViewController.init();
         mView.initialize(
+                mEntryAdapterFactory.create(entry),
                 entry,
                 mRemoteInputViewSubcomponentFactory,
                 mAppName,

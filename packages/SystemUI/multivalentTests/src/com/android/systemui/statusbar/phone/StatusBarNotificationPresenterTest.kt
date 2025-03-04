@@ -43,6 +43,7 @@ import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.commandQueue
 import com.android.systemui.statusbar.lockscreenShadeTransitionController
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.domain.interactor.notificationAlertsInteractor
@@ -54,6 +55,7 @@ import com.android.systemui.statusbar.notification.interruption.VisualInterrupti
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionRefactor
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.notificationStackScrollLayoutController
 import com.android.systemui.statusbar.notification.visualInterruptionDecisionProvider
@@ -105,10 +107,14 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
     private val notificationAlertsInteractor = kosmos.notificationAlertsInteractor
     private val visualInterruptionDecisionProvider = kosmos.visualInterruptionDecisionProvider
 
+    private lateinit var factory: EntryAdapterFactoryImpl
+
     private lateinit var underTest: StatusBarNotificationPresenter
 
     @Before
     fun setup() {
+        factory = kosmos.entryAdapterFactory
+
         underTest = createPresenter()
         if (VisualInterruptionRefactor.isEnabled) {
             verifyAndCaptureSuppressors()
@@ -451,7 +457,7 @@ class StatusBarNotificationPresenterTest : SysuiTestCase() {
     private fun createRow(entry: NotificationEntry): ExpandableNotificationRow {
         val row: ExpandableNotificationRow = mock()
         if (NotificationBundleUi.isEnabled) {
-            whenever(row.entryAdapter).thenReturn(entry.entryAdapter)
+            whenever(row.entryAdapter).thenReturn(factory.create(entry))
         } else {
             whenever(row.entry).thenReturn(entry)
         }

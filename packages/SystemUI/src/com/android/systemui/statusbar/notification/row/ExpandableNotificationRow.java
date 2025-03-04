@@ -111,6 +111,8 @@ import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.NotificationEntryAdapter;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
@@ -2124,7 +2126,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * Initialize row.
      */
     public void initialize(
-            NotificationEntry entry,
+            EntryAdapter entryAdapter,
+            PipelineEntry entry,
             RemoteInputViewSubcomponent.Factory rivSubcomponentFactory,
             String appName,
             @NonNull String notificationKey,
@@ -2152,11 +2155,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             NotificationRebindingTracker notificationRebindingTracker) {
 
         if (NotificationBundleUi.isEnabled()) {
+            mEntryAdapter = entryAdapter;
             // TODO (b/395857098): remove when all usages are migrated
-            mEntryAdapter = entry.getEntryAdapter();
-            mEntry = entry;
+            mEntry = (NotificationEntry) entry;
         } else {
-            mEntry = entry;
+            mEntry = (NotificationEntry) entry;
         }
         mAppName = appName;
         mRebindingTracker = notificationRebindingTracker;
