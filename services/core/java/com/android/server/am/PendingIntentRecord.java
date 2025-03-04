@@ -31,7 +31,6 @@ import static android.os.Process.SYSTEM_UID;
 
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
-import static com.android.window.flags.Flags.balClearAllowlistDuration;
 
 import android.annotation.IntDef;
 import android.annotation.Nullable;
@@ -330,7 +329,7 @@ public final class PendingIntentRecord extends IIntentSender.Stub {
         mAllowBgActivityStartsForActivitySender.remove(token);
         mAllowBgActivityStartsForBroadcastSender.remove(token);
         mAllowBgActivityStartsForServiceSender.remove(token);
-        if (mAllowlistDuration != null && balClearAllowlistDuration()) {
+        if (mAllowlistDuration != null) {
             TempAllowListDuration duration = mAllowlistDuration.get(token);
             if (duration != null
                     && duration.type == TEMPORARY_ALLOWLIST_TYPE_FOREGROUND_SERVICE_ALLOWED) {
