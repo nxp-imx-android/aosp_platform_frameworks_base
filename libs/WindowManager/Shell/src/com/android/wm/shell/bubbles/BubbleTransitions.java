@@ -159,19 +159,22 @@ public class BubbleTransitions {
         private final WindowContainerTransaction mPendingWct;
         private final boolean mReleasedOnLeft;
         private final float mTaskScale;
+        private final float mCornerRadius;
         private final PointF mDragPosition;
 
         /**
          * @param releasedOnLeft true if the bubble was released in the left drop target
          * @param taskScale      the scale of the task when it was dragged to bubble
+         * @param cornerRadius   the corner radius of the task when it was dragged to bubble
          * @param dragPosition   the position of the task when it was dragged to bubble
          * @param wct            pending operations to be applied when finishing the drag
          */
-        public DragData(boolean releasedOnLeft, float taskScale, @Nullable PointF dragPosition,
-                @Nullable WindowContainerTransaction wct) {
+        public DragData(boolean releasedOnLeft, float taskScale, float cornerRadius,
+                @Nullable PointF dragPosition, @Nullable WindowContainerTransaction wct) {
             mPendingWct = wct;
             mReleasedOnLeft = releasedOnLeft;
             mTaskScale = taskScale;
+            mCornerRadius = cornerRadius;
             mDragPosition = dragPosition != null ? dragPosition : new PointF(0, 0);
         }
 
@@ -195,6 +198,13 @@ public class BubbleTransitions {
          */
         public float getTaskScale() {
             return mTaskScale;
+        }
+
+        /**
+         * @return the corner radius of the task when it was dragged to bubble
+         */
+        public float getCornerRadius() {
+            return mCornerRadius;
         }
 
         /**
@@ -362,6 +372,7 @@ public class BubbleTransitions {
                         (int) mDragData.getDragPosition().y);
                 startTransaction.setScale(mSnapshot, mDragData.getTaskScale(),
                         mDragData.getTaskScale());
+                startTransaction.setCornerRadius(mSnapshot, mDragData.getCornerRadius());
             }
 
             // Now update state (and talk to launcher) in parallel with snapshot stuff
@@ -376,12 +387,6 @@ public class BubbleTransitions {
             startTransaction.reparent(mSnapshot, info.getRoot(0).getLeash());
             startTransaction.setPosition(mSnapshot, left, top);
             startTransaction.setLayer(mSnapshot, Integer.MAX_VALUE);
-
-            BubbleBarExpandedView bbev = mBubble.getBubbleBarExpandedView();
-            if (bbev != null) {
-                // Corners get reset during the animation. Add them back
-                startTransaction.setCornerRadius(mSnapshot, bbev.getRestingCornerRadius());
-            }
 
             startTransaction.apply();
 

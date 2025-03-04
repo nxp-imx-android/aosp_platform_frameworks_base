@@ -327,8 +327,9 @@ sealed class DragToDesktopTransitionHandler(
         val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
         val dragPosition = PointF(state.dragAnimator.position)
         val scale = state.dragAnimator.scale
+        val cornerRadius = state.dragAnimator.cornerRadius
         state.dragAnimator.cancelAnimator()
-        requestBubble(wct, taskInfo, onLeft, scale, dragPosition)
+        requestBubble(wct, taskInfo, onLeft, scale, cornerRadius, dragPosition)
     }
 
     private fun requestBubble(
@@ -336,13 +337,14 @@ sealed class DragToDesktopTransitionHandler(
         taskInfo: RunningTaskInfo,
         onLeft: Boolean,
         taskScale: Float = 1f,
+        cornerRadius: Float = 0f,
         dragPosition: PointF = PointF(0f, 0f),
     ) {
         val controller =
             bubbleController.orElseThrow { IllegalStateException("BubbleController not set") }
         controller.expandStackAndSelectBubble(
             taskInfo,
-            BubbleTransitions.DragData(onLeft, taskScale, dragPosition, wct),
+            BubbleTransitions.DragData(onLeft, taskScale, cornerRadius, dragPosition, wct),
         )
     }
 

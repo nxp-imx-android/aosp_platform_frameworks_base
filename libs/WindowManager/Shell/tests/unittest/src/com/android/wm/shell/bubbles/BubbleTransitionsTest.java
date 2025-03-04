@@ -221,8 +221,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
 
         PointF dragPosition = new PointF(10f, 20f);
         BubbleTransitions.DragData dragData = new BubbleTransitions.DragData(
-                /* releasedOnLeft= */ false, /* taskScale= */ 0.5f, dragPosition,
-                pendingWct);
+                /* releasedOnLeft= */ false, /* taskScale= */ 0.5f, /* cornerRadius= */ 10f,
+                dragPosition, pendingWct);
 
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
                 mBubble, taskInfo, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
@@ -253,6 +253,8 @@ public class BubbleTransitionsTest extends ShellTestCase {
         verify(startT).setPosition(snapshot, dragPosition.x, dragPosition.y);
         // Snapshot has the scale of the dragged task
         verify(startT).setScale(snapshot, dragData.getTaskScale(), dragData.getTaskScale());
+        // Snapshot has dragged task corner radius
+        verify(startT).setCornerRadius(snapshot, dragData.getCornerRadius());
     }
 
     @Test
