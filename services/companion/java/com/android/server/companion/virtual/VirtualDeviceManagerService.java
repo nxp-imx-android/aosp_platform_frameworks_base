@@ -105,7 +105,7 @@ public class VirtualDeviceManagerService extends SystemService {
             AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PROJECTION,
             AssociationRequest.DEVICE_PROFILE_APP_STREAMING,
             AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
-            AssociationRequest.DEVICE_PROFILE_SENSOR_DEVICE_STREAMING);
+            AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE);
 
     /** Enable default device camera access for apps running on virtual devices. */
     @ChangeId

@@ -140,15 +140,15 @@ public final class AssociationRequest implements Parcelable {
      * IMU between an Android host and a nearby device.
      * <p>
      * Only applications that have been granted
-     * {@link android.Manifest.permission#REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING}
+     * {@link android.Manifest.permission#REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE}
      * are allowed to request to be associated with such devices.
      *
      * @see AssociationRequest.Builder#setDeviceProfile
      */
     @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ENABLE_LIMITED_VDM_ROLE)
-    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING)
-    public static final String DEVICE_PROFILE_SENSOR_DEVICE_STREAMING =
-            "android.app.role.COMPANION_DEVICE_SENSOR_DEVICE_STREAMING";
+    @RequiresPermission(Manifest.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE)
+    public static final String DEVICE_PROFILE_VIRTUAL_DEVICE =
+            "android.app.role.COMPANION_DEVICE_VIRTUAL_DEVICE";
 
     /**
      * Device profile: Android Automotive Projection

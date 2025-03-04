@@ -28,7 +28,7 @@ import static android.companion.AssociationRequest.DEVICE_PROFILE_AUTOMOTIVE_PRO
 import static android.companion.AssociationRequest.DEVICE_PROFILE_COMPUTER;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_GLASSES;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING;
-import static android.companion.AssociationRequest.DEVICE_PROFILE_SENSOR_DEVICE_STREAMING;
+import static android.companion.AssociationRequest.DEVICE_PROFILE_VIRTUAL_DEVICE;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WATCH;
 import static android.companion.AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
@@ -87,8 +87,8 @@ public final class PermissionsUtils {
         map.put(DEVICE_PROFILE_GLASSES, Manifest.permission.REQUEST_COMPANION_PROFILE_GLASSES);
         map.put(DEVICE_PROFILE_NEARBY_DEVICE_STREAMING,
                 Manifest.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING);
-        map.put(DEVICE_PROFILE_SENSOR_DEVICE_STREAMING,
-                Manifest.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING);
+        map.put(DEVICE_PROFILE_VIRTUAL_DEVICE,
+                Manifest.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE);
 
         DEVICE_PROFILE_TO_PERMISSION = unmodifiableMap(map);
     }
