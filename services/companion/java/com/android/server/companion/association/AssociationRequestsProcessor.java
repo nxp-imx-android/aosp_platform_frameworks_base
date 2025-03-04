@@ -41,6 +41,7 @@ import static com.android.server.companion.utils.RolesUtils.PROFILE_PERMISSION_S
 import static com.android.server.companion.utils.RolesUtils.addRoleHolderForAssociation;
 import static com.android.server.companion.utils.RolesUtils.isRoleHolder;
 import static com.android.server.companion.utils.RolesUtils.isRolelessProfile;
+import static com.android.server.companion.utils.Utils.generateRandom128BitKey;
 import static com.android.server.companion.utils.Utils.prepareForIpc;
 
 import static java.util.Objects.requireNonNull;
@@ -54,9 +55,11 @@ import android.app.PendingIntent;
 import android.companion.AssociatedDevice;
 import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
+import android.companion.CompanionDeviceManager;
 import android.companion.DeviceId;
 import android.companion.Flags;
 import android.companion.IAssociationRequestCallback;
+import android.companion.ICompanionDeviceManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -90,7 +93,7 @@ import java.util.Set;
  * <li> Requests validation and checking if the package that would own the association holds all
  * necessary permissions.
  * <li> Communication with the requester via a provided
- * {@link android.companion.CompanionDeviceManager.Callback}.
+ * {@link CompanionDeviceManager.Callback}.
  * <li> Constructing an {@link Intent} for collecting user's approval (if needed), and handling the
  * approval.
  * <li> Calling to {@link CompanionDeviceManagerService} to create an association when/if the
@@ -111,11 +114,11 @@ import java.util.Set;
  * {@link #createAssociationAndNotifyApplication(AssociationRequest, String, int, MacAddress, IAssociationRequestCallback, ResultReceiver)}
  * which after calling to  {@link CompanionDeviceManagerService} to create an association, notifies
  * the requester via
- * {@link android.companion.CompanionDeviceManager.Callback#onAssociationCreated(AssociationInfo)}.
+ * {@link CompanionDeviceManager.Callback#onAssociationCreated(AssociationInfo)}.
  *
  * If the user's approval is required: an {@link AssociationRequestsProcessor} constructs a
  * {@link PendingIntent} for the approval UI and sends it back to the requester via
- * {@link android.companion.CompanionDeviceManager.Callback#onAssociationPending(IntentSender)}.
+ * {@link CompanionDeviceManager.Callback#onAssociationPending(IntentSender)}.
  * When/if user approves the request,  {@link AssociationRequestsProcessor} receives a "callback"
  * from the Approval UI in via {@link #mOnRequestConfirmationReceiver} and invokes
  * {@link #processAssociationRequestApproval(AssociationRequest, IAssociationRequestCallback, ResultReceiver, MacAddress)}
@@ -158,7 +161,7 @@ public class AssociationRequestsProcessor {
 
     /**
      * Handle incoming {@link AssociationRequest}s, sent via
-     * {@link android.companion.ICompanionDeviceManager#associate(AssociationRequest,
+     * {@link ICompanionDeviceManager#associate(AssociationRequest,
      * IAssociationRequestCallback, String, int)}
      */
     public void processNewAssociationRequest(@NonNull AssociationRequest request,
@@ -316,7 +319,7 @@ public class AssociationRequestsProcessor {
                  macAddress, displayName, deviceProfile, associatedDevice,
                 selfManaged, /* notifyOnDeviceNearby */ false, /* revoked */ false,
                 /* pending */ false, timestamp, Long.MAX_VALUE, /* systemDataSyncFlags */ 0,
-                deviceIcon, /* deviceId */ null);
+                deviceIcon, /* deviceId */ null, /* packagesToNotify */ null);
 
         if (skipRoleGrant) {
             Slog.i(TAG, "Created association for " + association.getDeviceProfile() + " and userId="
@@ -388,13 +391,21 @@ public class AssociationRequestsProcessor {
     /**
      * Set Device id for the association.
      */
-    public void setDeviceId(int associationId, DeviceId deviceId) {
+    public DeviceId setDeviceId(int associationId, DeviceId deviceId) {
         Slog.i(TAG, "Setting DeviceId=[" + deviceId + "] to id=[" + associationId + "]...");
 
         AssociationInfo association = mAssociationStore.getAssociationWithCallerChecks(
                 associationId);
-        association = (new AssociationInfo.Builder(association)).setDeviceId(deviceId).build();
+        DeviceId newDeviceId = null;
+
+        if (deviceId != null) {
+            newDeviceId = new DeviceId(
+                    deviceId.getCustomId(), deviceId.getMacAddress(), generateRandom128BitKey());
+        }
+        association = (new AssociationInfo.Builder(association)).setDeviceId(newDeviceId).build();
         mAssociationStore.updateAssociation(association);
+
+        return newDeviceId;
     }
 
     private void sendCallbackAndFinish(@Nullable AssociationInfo association,
@@ -476,11 +487,11 @@ public class AssociationRequestsProcessor {
                     }
 
                     final AssociationRequest request = data.getParcelable(EXTRA_ASSOCIATION_REQUEST,
-                            android.companion.AssociationRequest.class);
+                            AssociationRequest.class);
                     final IAssociationRequestCallback callback = IAssociationRequestCallback.Stub
                             .asInterface(data.getBinder(EXTRA_APPLICATION_CALLBACK));
                     final ResultReceiver resultReceiver = data.getParcelable(EXTRA_RESULT_RECEIVER,
-                            android.os.ResultReceiver.class);
+                            ResultReceiver.class);
 
                     requireNonNull(request);
                     requireNonNull(callback);
@@ -491,7 +502,7 @@ public class AssociationRequestsProcessor {
                         macAddress = null;
                     } else {
                         macAddress = data.getParcelable(EXTRA_MAC_ADDRESS,
-                                android.net.MacAddress.class);
+                                MacAddress.class);
                         requireNonNull(macAddress);
                     }
 

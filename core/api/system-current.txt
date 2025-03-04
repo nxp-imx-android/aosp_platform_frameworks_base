@@ -7,6 +7,7 @@ package android {
     field public static final String ACCESS_BROADCAST_RADIO = "android.permission.ACCESS_BROADCAST_RADIO";
     field public static final String ACCESS_BROADCAST_RESPONSE_STATS = "android.permission.ACCESS_BROADCAST_RESPONSE_STATS";
     field public static final String ACCESS_CACHE_FILESYSTEM = "android.permission.ACCESS_CACHE_FILESYSTEM";
+    field @FlaggedApi("android.companion.association_verification") public static final String ACCESS_COMPANION_INFO = "android.permission.ACCESS_COMPANION_INFO";
     field public static final String ACCESS_CONTEXTUAL_SEARCH = "android.permission.ACCESS_CONTEXTUAL_SEARCH";
     field public static final String ACCESS_CONTEXT_HUB = "android.permission.ACCESS_CONTEXT_HUB";
     field public static final String ACCESS_DRM_CERTIFICATES = "android.permission.ACCESS_DRM_CERTIFICATES";
@@ -3403,6 +3404,7 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES) public void associate(@NonNull String, @NonNull android.net.MacAddress, @NonNull byte[]);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public boolean canPairWithoutPrompt(@NonNull String, @NonNull String, @NonNull android.os.UserHandle);
     method @NonNull @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public java.util.List<android.companion.AssociationInfo> getAllAssociations();
+    method @FlaggedApi("android.companion.association_verification") @Nullable @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_INFO) public android.companion.AssociationInfo getAssociationByDeviceId(@NonNull android.companion.DeviceId);
     method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public boolean isDeviceAssociatedForWifiConnection(@NonNull String, @NonNull android.net.MacAddress, @NonNull android.os.UserHandle);
     method @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDeviceAppeared(int);
     method @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_SELF_MANAGED) public void notifyDeviceDisappeared(int);
@@ -3411,6 +3413,14 @@ package android.companion {
 
   public static interface CompanionDeviceManager.OnAssociationsChangedListener {
     method public void onAssociationsChanged(@NonNull java.util.List<android.companion.AssociationInfo>);
+  }
+
+  @FlaggedApi("android.companion.device_presence") public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
+    method @FlaggedApi("android.companion.association_verification") @Nullable public android.companion.DeviceId getDeviceId();
+  }
+
+  public static final class ObservingDevicePresenceRequest.Builder {
+    method @FlaggedApi("android.companion.association_verification") @NonNull @RequiresPermission(android.Manifest.permission.ACCESS_COMPANION_INFO) public android.companion.ObservingDevicePresenceRequest.Builder setDeviceId(@NonNull android.companion.DeviceId);
   }
 
 }

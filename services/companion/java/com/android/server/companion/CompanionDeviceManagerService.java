@@ -17,6 +17,7 @@
 
 package com.android.server.companion;
 
+import static android.Manifest.permission.ACCESS_COMPANION_INFO;
 import static android.Manifest.permission.ASSOCIATE_COMPANION_DEVICES;
 import static android.Manifest.permission.BLUETOOTH_CONNECT;
 import static android.Manifest.permission.DELIVER_COMPANION_MESSAGES;
@@ -725,10 +726,17 @@ public class CompanionDeviceManagerService extends SystemService {
         }
 
         @Override
-        public void setDeviceId(int associationId, DeviceId deviceId) {
-            mAssociationRequestsProcessor.setDeviceId(associationId, deviceId);
+        public DeviceId setDeviceId(int associationId, DeviceId deviceId) {
+            return mAssociationRequestsProcessor.setDeviceId(associationId, deviceId);
         }
 
+        @Override
+        @EnforcePermission(ACCESS_COMPANION_INFO)
+        public AssociationInfo getAssociationByDeviceId(int userId, DeviceId deviceId) {
+            getAssociationByDeviceId_enforcePermission();
+
+            return mAssociationStore.getAssociationByDeviceId(userId, deviceId);
+        }
 
         @Override
         public byte[] getBackupPayload(int userId) {
