@@ -47,7 +47,7 @@ class HeadsUpAnimator(context: Context, private val systemBarUtilsProxy: SystemB
      * of the animation.
      */
     fun getHeadsUpYTranslation(isHeadsUpFromBottom: Boolean, hasStatusBarChip: Boolean): Int {
-        NotificationsHunSharedAnimationValues.unsafeAssertInNewMode()
+        if (NotificationsHunSharedAnimationValues.isUnexpectedlyInLegacyMode()) return 0
 
         if (isHeadsUpFromBottom) {
             // start from or end at the bottom of the screen
