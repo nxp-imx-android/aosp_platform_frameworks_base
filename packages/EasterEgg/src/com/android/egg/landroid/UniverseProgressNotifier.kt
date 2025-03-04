@@ -127,7 +127,7 @@ class UniverseProgressNotifier(val context: Context, val universe: Universe) {
                     val eta = if (speed > 0) "%1.0fs".format(distToTarget / speed) else "???"
                     builder.setContentTitle("headed to: ${target.name}")
                     builder.setContentText(
-                        "autopilot is ${autopilot.strategy.toLowerCase()}" +
+                        "autopilot is ${autopilot.strategy.lowercase()}" +
                             "\ndist: ${distToTarget}u // eta: $eta"
                     )
                     // fun fact: ProgressStyle was originally EnRouteStyle
