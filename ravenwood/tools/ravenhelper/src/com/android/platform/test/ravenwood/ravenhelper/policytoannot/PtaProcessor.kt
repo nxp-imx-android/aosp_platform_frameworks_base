@@ -39,7 +39,7 @@ import java.util.regex.Pattern
  */
 class PtaProcessor : SubcommandHandler {
     override fun handle(args: List<String>) {
-        val options = PtaOptions.parseArgs(args)
+        val options = PtaOptions().apply { parseArgs(args) }
 
         log.v("Options: $options")
 

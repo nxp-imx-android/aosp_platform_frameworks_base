@@ -66,7 +66,7 @@ private fun ClassNodes.isFeatureFlagsClass(className: String): Boolean {
             || className.endsWith("/FeatureFlags")
             || className.endsWith("/FeatureFlagsImpl")
             || className.endsWith("/CustomFeatureFlags")
-            || className.endsWith("/FakeFeatureFlagsImpl");
+            || className.endsWith("/FakeFeatureFlagsImpl")
 }
 
 /**
