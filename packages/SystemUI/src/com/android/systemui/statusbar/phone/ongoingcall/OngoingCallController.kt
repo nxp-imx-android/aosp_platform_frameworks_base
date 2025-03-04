@@ -25,7 +25,6 @@ import android.view.View
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.CoreStartable
-import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
@@ -162,6 +161,10 @@ constructor(
                 notificationKey = currentInfo.key,
                 appName = currentInfo.appName,
                 promotedContent = currentInfo.promotedContent,
+                // [hasOngoingCall()] filters out the case in which the call is ongoing but the app
+                // is visible (we issue [OngoingCallModel.NoCall] below in that case), so this can
+                // be safely made false.
+                isAppVisible = false,
             )
         } else {
             return OngoingCallModel.NoCall

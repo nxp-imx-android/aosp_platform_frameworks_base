@@ -70,9 +70,6 @@ constructor(
     private fun OngoingCallModel.getNotifData(): NotifAndPromotedContent? =
         when (this) {
             is OngoingCallModel.InCall -> NotifAndPromotedContent(notificationKey, promotedContent)
-            is OngoingCallModel.InCallWithVisibleApp ->
-                // TODO(b/395989259): support InCallWithVisibleApp when it has notif data
-                null
             is OngoingCallModel.NoCall -> null
         }
 

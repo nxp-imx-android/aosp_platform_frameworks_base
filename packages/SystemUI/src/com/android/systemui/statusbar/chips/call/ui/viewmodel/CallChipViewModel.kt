@@ -64,9 +64,13 @@ constructor(
         interactor.ongoingCallState
             .map { state ->
                 when (state) {
-                    is OngoingCallModel.NoCall,
-                    is OngoingCallModel.InCallWithVisibleApp -> OngoingActivityChipModel.Inactive()
-                    is OngoingCallModel.InCall -> prepareChip(state, systemClock)
+                    is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
+                    is OngoingCallModel.InCall ->
+                        if (state.isAppVisible) {
+                            OngoingActivityChipModel.Inactive()
+                        } else {
+                            prepareChip(state, systemClock)
+                        }
                 }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), OngoingActivityChipModel.Inactive())
