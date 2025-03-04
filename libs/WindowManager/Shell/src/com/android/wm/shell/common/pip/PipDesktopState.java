@@ -23,6 +23,7 @@ import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.DisplayAreaInfo;
 
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
@@ -58,9 +59,13 @@ public class PipDesktopState {
                 && mDragToDesktopTransitionHandlerOptional.isPresent();
     }
 
-    /** Returns whether PiP in Connected Displays is enabled by checking the flag. */
+    /**
+     * Returns whether PiP in Connected Displays is enabled by checking the following:
+     * - PiP in Connected Displays flag is enabled
+     * - PiP2 flag is enabled
+     */
     public boolean isConnectedDisplaysPipEnabled() {
-        return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue();
+        return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue() && Flags.enablePip2();
     }
 
     /** Returns whether the display with the PiP task is in freeform windowing mode. */
