@@ -1682,13 +1682,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (notificationRowTransparency() && mBackgroundNormal != null) {
             if (NotificationBundleUi.isEnabled() && mEntryAdapter != null) {
-                mBackgroundNormal.setBgIsColorized(
-                        usesTransparentBackground() && mEntryAdapter.isColorized());
+                mBackgroundNormal.setBgIsColorized(mEntryAdapter.isColorized());
             } else {
                 if (mEntry != null) {
                     mBackgroundNormal.setBgIsColorized(
-                            usesTransparentBackground()
-                                    && mEntry.getSbn().getNotification().isColorized());
+                            mEntry.getSbn().getNotification().isColorized());
                 }
             }
         }
