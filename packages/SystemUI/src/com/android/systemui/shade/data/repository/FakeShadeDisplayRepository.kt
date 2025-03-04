@@ -22,15 +22,27 @@ import com.android.systemui.shade.display.ShadeDisplayPolicy
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class FakeShadeDisplayRepository : ShadeDisplaysRepository {
+class FakeShadeDisplayRepository : MutableShadeDisplaysRepository {
     private val _displayId = MutableStateFlow(Display.DEFAULT_DISPLAY)
+    private val _pendingDisplayId = MutableStateFlow(Display.DEFAULT_DISPLAY)
 
     fun setDisplayId(displayId: Int) {
         _displayId.value = displayId
     }
 
+    fun setPendingDisplayId(displayId: Int) {
+        _pendingDisplayId.value = displayId
+    }
+
+    override fun onDisplayChangedSucceeded(displayId: Int) {
+        setDisplayId(displayId)
+    }
+
     override val displayId: StateFlow<Int>
         get() = _displayId
+
+    override val pendingDisplayId: StateFlow<Int>
+        get() = _pendingDisplayId
 
     override val currentPolicy: ShadeDisplayPolicy
         get() = FakeShadeDisplayPolicy

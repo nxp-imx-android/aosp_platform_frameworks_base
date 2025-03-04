@@ -48,3 +48,15 @@ val Kosmos.fakeSysUIStatePerDisplayRepository by Fixture { FakePerDisplayReposit
 val Kosmos.sysuiStateInteractor by Fixture {
     SysUIStateDisplaysInteractor(fakeSysUIStatePerDisplayRepository, displayRepository)
 }
+
+val Kosmos.sysUiStateOverrideFactory by Fixture {
+    { displayId: Int ->
+        SysUIStateOverride(
+            displayId,
+            sceneContainerPlugin,
+            dumpManager,
+            sysUiState,
+            sysUIStateDispatcher,
+        )
+    }
+}
