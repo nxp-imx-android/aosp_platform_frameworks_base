@@ -36,13 +36,15 @@ import org.junit.runner.RunWith;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
-public class IntentCreatorTest extends SysuiTestCase {
+public class DefaultIntentCreatorTest extends SysuiTestCase {
     private static final int EXTERNAL_INTENT_FLAGS = Intent.FLAG_ACTIVITY_NEW_TASK
             | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION;
 
+    private final DefaultIntentCreator mIntentCreator  = new DefaultIntentCreator();
+
     @Test
     public void test_getTextEditorIntent() {
-        Intent intent = IntentCreator.getTextEditorIntent(getContext());
+        Intent intent = mIntentCreator.getTextEditorIntent(getContext());
         assertEquals(new ComponentName(getContext(), EditTextActivity.class),
                 intent.getComponent());
         assertFlags(intent, Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -54,7 +56,7 @@ public class IntentCreatorTest extends SysuiTestCase {
                 "");
 
         ClipData clipData = ClipData.newPlainText("Test", "Test Item");
-        Intent intent = IntentCreator.getRemoteCopyIntent(clipData, getContext());
+        Intent intent = mIntentCreator.getRemoteCopyIntent(clipData, getContext());
 
         assertEquals(null, intent.getComponent());
         assertFlags(intent, EXTERNAL_INTENT_FLAGS);
@@ -66,7 +68,7 @@ public class IntentCreatorTest extends SysuiTestCase {
         getContext().getOrCreateTestableResources().addOverride(R.string.config_remoteCopyPackage,
                 fakeComponent.flattenToString());
 
-        intent = IntentCreator.getRemoteCopyIntent(clipData, getContext());
+        intent = mIntentCreator.getRemoteCopyIntent(clipData, getContext());
         assertEquals(fakeComponent, intent.getComponent());
     }
 
@@ -75,7 +77,7 @@ public class IntentCreatorTest extends SysuiTestCase {
         getContext().getOrCreateTestableResources().addOverride(R.string.config_screenshotEditor,
                 "");
         Uri fakeUri = Uri.parse("content://foo");
-        Intent intent = IntentCreator.getImageEditIntent(fakeUri, getContext());
+        Intent intent = mIntentCreator.getImageEditIntent(fakeUri, getContext());
 
         assertEquals(Intent.ACTION_EDIT, intent.getAction());
         assertEquals("image/*", intent.getType());
@@ -88,14 +90,14 @@ public class IntentCreatorTest extends SysuiTestCase {
                 "com.android.remotecopy.RemoteCopyActivity");
         getContext().getOrCreateTestableResources().addOverride(R.string.config_screenshotEditor,
                 fakeComponent.flattenToString());
-        intent = IntentCreator.getImageEditIntent(fakeUri, getContext());
+        intent = mIntentCreator.getImageEditIntent(fakeUri, getContext());
         assertEquals(fakeComponent, intent.getComponent());
     }
 
     @Test
     public void test_getShareIntent_plaintext() {
         ClipData clipData = ClipData.newPlainText("Test", "Test Item");
-        Intent intent = IntentCreator.getShareIntent(clipData, getContext());
+        Intent intent = mIntentCreator.getShareIntent(clipData, getContext());
 
         assertEquals(Intent.ACTION_CHOOSER, intent.getAction());
         assertFlags(intent, EXTERNAL_INTENT_FLAGS);
@@ -108,7 +110,7 @@ public class IntentCreatorTest extends SysuiTestCase {
     public void test_getShareIntent_html() {
         ClipData clipData = ClipData.newHtmlText("Test", "Some HTML",
                 "<b>Some HTML</b>");
-        Intent intent = IntentCreator.getShareIntent(clipData, getContext());
+        Intent intent = mIntentCreator.getShareIntent(clipData, getContext());
 
         assertEquals(Intent.ACTION_CHOOSER, intent.getAction());
         assertFlags(intent, EXTERNAL_INTENT_FLAGS);
@@ -122,7 +124,7 @@ public class IntentCreatorTest extends SysuiTestCase {
         Uri uri = Uri.parse("content://something");
         ClipData clipData = new ClipData("Test", new String[]{"image/png"},
                 new ClipData.Item(uri));
-        Intent intent = IntentCreator.getShareIntent(clipData, getContext());
+        Intent intent = mIntentCreator.getShareIntent(clipData, getContext());
 
         assertEquals(Intent.ACTION_CHOOSER, intent.getAction());
         assertFlags(intent, EXTERNAL_INTENT_FLAGS);
@@ -135,7 +137,7 @@ public class IntentCreatorTest extends SysuiTestCase {
     @Test
     public void test_getShareIntent_spannableText() {
         ClipData clipData = ClipData.newPlainText("Test", new SpannableString("Test Item"));
-        Intent intent = IntentCreator.getShareIntent(clipData, getContext());
+        Intent intent = mIntentCreator.getShareIntent(clipData, getContext());
 
         assertEquals(Intent.ACTION_CHOOSER, intent.getAction());
         assertFlags(intent, EXTERNAL_INTENT_FLAGS);

@@ -20,6 +20,7 @@ import static android.view.WindowManager.LayoutParams.TYPE_SCREENSHOT;
 
 import static com.android.systemui.Flags.clipboardOverlayMultiuser;
 import static com.android.systemui.Flags.enableViewCaptureTracing;
+import static com.android.systemui.shared.Flags.usePreferredImageEditor;
 import static com.android.systemui.util.ConvenienceExtensionsKt.toKotlinLazy;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -32,7 +33,10 @@ import android.view.WindowManager;
 
 import com.android.app.viewcapture.ViewCapture;
 import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
+import com.android.systemui.clipboardoverlay.ActionIntentCreator;
 import com.android.systemui.clipboardoverlay.ClipboardOverlayView;
+import com.android.systemui.clipboardoverlay.DefaultIntentCreator;
+import com.android.systemui.clipboardoverlay.IntentCreator;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
@@ -100,6 +104,17 @@ public interface ClipboardOverlayModule {
         return new ViewCaptureAwareWindowManager(windowManager,
                 /* lazyViewCapture= */ toKotlinLazy(daggerLazyViewCapture),
                 /* isViewCaptureEnabled= */ enableViewCaptureTracing());
+    }
+
+    @Provides
+    static IntentCreator provideIntentCreator(
+            Lazy<DefaultIntentCreator> defaultIntentCreator,
+            Lazy<ActionIntentCreator> actionIntentCreator) {
+        if (usePreferredImageEditor()) {
+            return actionIntentCreator.get();
+        } else {
+            return defaultIntentCreator.get();
+        }
     }
 
     @Qualifier
