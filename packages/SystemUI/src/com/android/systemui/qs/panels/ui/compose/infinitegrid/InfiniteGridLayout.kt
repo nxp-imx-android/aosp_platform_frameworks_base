@@ -17,7 +17,6 @@
 package com.android.systemui.qs.panels.ui.compose.infinitegrid
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -34,6 +33,7 @@ import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.PaginatableGridLayout
+import com.android.systemui.qs.panels.ui.compose.TileListener
 import com.android.systemui.qs.panels.ui.compose.bounceableInfo
 import com.android.systemui.qs.panels.ui.compose.rememberEditListState
 import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
@@ -59,12 +59,11 @@ constructor(
 ) : PaginatableGridLayout {
 
     @Composable
-    override fun ContentScope.TileGrid(tiles: List<TileViewModel>, modifier: Modifier) {
-        DisposableEffect(tiles) {
-            val token = Any()
-            tiles.forEach { it.startListening(token) }
-            onDispose { tiles.forEach { it.stopListening(token) } }
-        }
+    override fun ContentScope.TileGrid(
+        tiles: List<TileViewModel>,
+        modifier: Modifier,
+        listening: () -> Boolean,
+    ) {
         val viewModel =
             rememberViewModel(traceName = "InfiniteGridLayout.TileGrid") {
                 viewModelFactory.create()
@@ -116,6 +115,8 @@ constructor(
                 )
             }
         }
+
+        TileListener(tiles, listening)
     }
 
     @Composable

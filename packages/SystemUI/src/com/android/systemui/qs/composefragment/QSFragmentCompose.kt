@@ -63,6 +63,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.approachLayout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
@@ -250,10 +251,23 @@ constructor(
     private fun Content() {
         PlatformTheme(isDarkTheme = true) {
             ProvideShortcutHelperIndication(interactionsConfig = interactionsConfig()) {
-                if (viewModel.isQsVisibleAndAnyShadeExpanded) {
+                // TODO(b/389985793): Make sure that there is no coroutine work or recompositions
+                // happening when alwaysCompose is true but isQsVisibleAndAnyShadeExpanded is false.
+                if (alwaysCompose || viewModel.isQsVisibleAndAnyShadeExpanded) {
                     Box(
                         modifier =
-                            Modifier.graphicsLayer { alpha = viewModel.viewAlpha }
+                            Modifier.thenIf(alwaysCompose) {
+                                    Modifier.layout { measurable, constraints ->
+                                        measurable.measure(constraints).run {
+                                            layout(width, height) {
+                                                if (viewModel.isQsVisibleAndAnyShadeExpanded) {
+                                                    place(0, 0)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .graphicsLayer { alpha = viewModel.viewAlpha }
                                 .thenIf(notificationScrimClippingParams.isEnabled) {
                                     Modifier.notificationScrimClip {
                                         notificationScrimClippingParams.params
@@ -331,12 +345,12 @@ constructor(
         }
 
         SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
-            scene(QuickSettings) {
+            scene(QuickSettings, alwaysCompose = alwaysCompose) {
                 LaunchedEffect(Unit) { viewModel.onQSOpen() }
                 Element(QuickSettings.rootElementKey, Modifier) { QuickSettingsElement() }
             }
 
-            scene(QuickQuickSettings) {
+            scene(QuickQuickSettings, alwaysCompose = alwaysCompose) {
                 LaunchedEffect(Unit) { viewModel.onQQSOpen() }
                 // Cannot pass the element modifier in because the top element has a `testTag`
                 // and this would overwrite it.
@@ -626,7 +640,20 @@ constructor(
             ) {
                 val Tiles =
                     @Composable {
-                        QuickQuickSettings(viewModel = viewModel.quickQuickSettingsViewModel)
+                        QuickQuickSettings(
+                            viewModel = viewModel.quickQuickSettingsViewModel,
+                            listening = {
+                                /*
+                                 *  When always compose is false, this will always be true, and we'll be
+                                 *  listening whenever this is composed.
+                                 *  When always compose is true, we listen if we are visible and not
+                                 *  fully expanded
+                                 */
+                                !alwaysCompose ||
+                                    (viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                        viewModel.expansionState.progress < 1f)
+                            },
+                        )
                     }
                 val Media =
                     @Composable {
@@ -726,6 +753,18 @@ constructor(
                                     TileGrid(
                                         viewModel = containerViewModel.tileGridViewModel,
                                         modifier = Modifier.fillMaxWidth(),
+                                        listening = {
+                                            /*
+                                             *  When always compose is false, this will always be true,
+                                             *  and we'll be listening whenever this is composed.
+                                             *  When always compose is true, we look a the second
+                                             *  condition and we'll listen if QS is visible AND we are
+                                             *  not fully collapsed.
+                                             */
+                                            !alwaysCompose ||
+                                                (viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                                    viewModel.expansionState.progress > 0f)
+                                        },
                                     )
                                 }
                             }
@@ -830,6 +869,7 @@ constructor(
                 println("qqsPositionOnScreen", rect)
             }
             println("QQS visible", qqsVisible.value)
+            println("Always composed", alwaysCompose)
             if (::viewModel.isInitialized) {
                 printSection("View Model") { viewModel.dump(this@run, args) }
             }
@@ -1177,3 +1217,6 @@ private fun interactionsConfig() =
         // we are OK using this as our content is clipped and all corner radius are larger than this
         surfaceCornerRadius = 28.dp,
     )
+
+private inline val alwaysCompose
+    get() = Flags.alwaysComposeQsUiFragment()
