@@ -465,34 +465,20 @@ final class KeyGestureController {
     @SuppressLint("MissingPermission")
     private void initKeyGestures() {
         InputManager im = Objects.requireNonNull(mContext.getSystemService(InputManager.class));
-        im.registerKeyGestureEventHandler(new InputManager.KeyGestureEventHandler() {
-            @Override
-            public boolean handleKeyGestureEvent(@NonNull KeyGestureEvent event,
-                    @Nullable IBinder focusedToken) {
-                switch (event.getKeyGestureType()) {
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
-                        if (event.getAction() == KeyGestureEvent.ACTION_GESTURE_START) {
-                            mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
-                            mHandler.sendMessageDelayed(
-                                    mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT),
-                                    getAccessibilityShortcutTimeout());
-                        } else {
-                            mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
-                        }
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-
-            @Override
-            public boolean isKeyGestureSupported(int gestureType) {
-                switch (gestureType) {
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
-                        return true;
-                    default:
-                        return false;
-                }
+        im.registerKeyGestureEventHandler((event, focusedToken) -> {
+            switch (event.getKeyGestureType()) {
+                case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
+                    if (event.getAction() == KeyGestureEvent.ACTION_GESTURE_START) {
+                        mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
+                        mHandler.sendMessageDelayed(
+                                mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT),
+                                getAccessibilityShortcutTimeout());
+                    } else {
+                        mHandler.removeMessages(MSG_ACCESSIBILITY_SHORTCUT);
+                    }
+                    return true;
+                default:
+                    return false;
             }
         });
     }
@@ -1392,17 +1378,6 @@ final class KeyGestureController {
             } catch (RemoteException ex) {
                 Slog.w(TAG, "Failed to send key gesture to process " + mPid
                         + ", assuming it died.", ex);
-                binderDied();
-            }
-            return false;
-        }
-
-        public boolean isKeyGestureSupported(@KeyGestureEvent.KeyGestureType int gestureType) {
-            try {
-                return mKeyGestureHandler.isKeyGestureSupported(gestureType);
-            } catch (RemoteException ex) {
-                Slog.w(TAG, "Failed to identify if key gesture type is supported by the "
-                        + "process " + mPid + ", assuming it died.", ex);
                 binderDied();
             }
             return false;

@@ -521,15 +521,6 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                         @Nullable IBinder focusedToken) {
                     return AccessibilityManagerService.this.handleKeyGestureEvent(event);
                 }
-
-                @Override
-                public boolean isKeyGestureSupported(int gestureType) {
-                    return switch (gestureType) {
-                        case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
-                             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK -> true;
-                        default -> false;
-                    };
-                }
             };
 
     @VisibleForTesting

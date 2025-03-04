@@ -1828,9 +1828,5 @@ class KeyGestureControllerTests {
         override fun handleKeyGesture(event: AidlKeyGestureEvent, token: IBinder?): Boolean {
             return handler(event, token)
         }
-
-        override fun isKeyGestureSupported(gestureType: Int): Boolean {
-            return true
-        }
     }
 }

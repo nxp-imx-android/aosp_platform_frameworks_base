@@ -2757,24 +2757,6 @@ public class InputManagerService extends IInputManager.Stub
                     @Nullable IBinder focussedToken) {
                 return InputManagerService.this.handleKeyGestureEvent(event);
             }
-
-            @Override
-            public boolean isKeyGestureSupported(int gestureType) {
-                switch (gestureType) {
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_TOGGLE:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS:
-                        return true;
-                    default:
-                        return false;
-
-                }
-            }
         });
     }
 
