@@ -733,7 +733,8 @@ class DesktopRepository(
         desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId = null
     }
 
-    private fun notifyVisibleTaskListeners(displayId: Int, visibleTasksCount: Int) {
+    @VisibleForTesting
+    public fun notifyVisibleTaskListeners(displayId: Int, visibleTasksCount: Int) {
         visibleTasksListeners.forEach { (listener, executor) ->
             executor.execute { listener.onTasksVisibilityChanged(displayId, visibleTasksCount) }
         }
@@ -915,6 +916,7 @@ class DesktopRepository(
         val wasActive = desktopData.getActiveDesk(desk.displayId)?.deskId == desk.deskId
         val activeTasks = ArraySet(desk.activeTasks)
         desktopData.remove(desk.deskId)
+        notifyVisibleTaskListeners(desk.displayId, getVisibleTaskCount(displayId = desk.displayId))
         deskChangeListeners.forEach { (listener, executor) ->
             executor.execute {
                 if (wasActive) {
