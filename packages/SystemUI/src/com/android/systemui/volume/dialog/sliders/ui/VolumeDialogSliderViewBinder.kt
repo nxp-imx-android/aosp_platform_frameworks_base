@@ -16,7 +16,6 @@
 
 package com.android.systemui.volume.dialog.sliders.ui
 
-import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -29,7 +28,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
@@ -43,7 +41,8 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.theme.PlatformTheme
-import com.android.compose.ui.graphics.painter.DrawablePainter
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.res.R
@@ -155,7 +154,7 @@ private fun VolumeDialogSlider(
                 },
             )
         },
-        accessibilityParams = AccessibilityParams(label = sliderStateModel.label),
+        accessibilityParams = AccessibilityParams(contentDescription = sliderStateModel.label),
         modifier =
             modifier.pointerInput(Unit) {
                 coroutineScope {
@@ -172,7 +171,7 @@ private fun VolumeDialogSlider(
 
 @Composable
 private fun BoxScope.VolumeIcon(
-    drawable: Drawable,
+    icon: Icon.Loaded,
     isVisible: Boolean,
     modifier: Modifier = Modifier,
 ) {
@@ -182,6 +181,6 @@ private fun BoxScope.VolumeIcon(
         exit = fadeOut(animationSpec = tween(durationMillis = 50)),
         modifier = modifier.align(Alignment.Center).size(40.dp).padding(10.dp),
     ) {
-        Icon(painter = DrawablePainter(drawable), contentDescription = null)
+        Icon(icon)
     }
 }

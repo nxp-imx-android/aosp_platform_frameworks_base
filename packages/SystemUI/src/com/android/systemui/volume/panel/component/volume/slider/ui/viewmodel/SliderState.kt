@@ -27,18 +27,17 @@ import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 sealed interface SliderState {
     val value: Float
     val valueRange: ClosedFloatingPointRange<Float>
+    val step: Float
     val hapticFilter: SliderHapticFeedbackFilter
 
-    val icon: Icon?
+    // Force preloaded icon
+    val icon: Icon.Loaded?
     val isEnabled: Boolean
     val label: String
-    /**
-     * A11y slider controls works by adjusting one step up or down. The default slider step isn't
-     * enough to trigger rounding to the correct value.
-     */
-    val a11yStep: Float
+
     val a11yClickDescription: String?
     val a11yStateDescription: String?
+    val a11yContentDescription: String
     val disabledMessage: String?
     val isMutable: Boolean
 
@@ -46,12 +45,13 @@ sealed interface SliderState {
         override val value: Float = 0f
         override val valueRange: ClosedFloatingPointRange<Float> = 0f..1f
         override val hapticFilter = SliderHapticFeedbackFilter()
-        override val icon: Icon? = null
+        override val icon: Icon.Loaded? = null
         override val label: String = ""
         override val disabledMessage: String? = null
-        override val a11yStep: Float = 0f
+        override val step: Float = 0f
         override val a11yClickDescription: String? = null
         override val a11yStateDescription: String? = null
+        override val a11yContentDescription: String = label
         override val isEnabled: Boolean = true
         override val isMutable: Boolean = false
     }

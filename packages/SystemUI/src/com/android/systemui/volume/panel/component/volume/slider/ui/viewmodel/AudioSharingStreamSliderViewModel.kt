@@ -16,9 +16,11 @@
 
 package com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel
 
+import android.content.Context
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.dagger.qualifiers.UiBackground
 import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.res.R
@@ -28,6 +30,7 @@ import com.android.systemui.volume.panel.ui.VolumePanelUiEvent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,11 +42,14 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
 
 class AudioSharingStreamSliderViewModel
 @AssistedInject
 constructor(
+    private val context: Context,
     @Assisted private val coroutineScope: CoroutineScope,
+    @UiBackground private val uiBackgroundContext: CoroutineContext,
     private val audioSharingInteractor: AudioSharingInteractor,
     private val uiEventLogger: UiEventLogger,
     private val hapticsViewModelFactory: SliderHapticsViewModel.Factory,
@@ -51,6 +57,12 @@ constructor(
 ) : SliderViewModel {
     private val volumeChanges = MutableStateFlow<Int?>(null)
 
+    private val audioSharingIcon =
+        Icon.Loaded(
+            drawable = context.getDrawable(R.drawable.ic_volume_media_bt)!!,
+            contentDescription = null,
+            res = R.drawable.ic_volume_media_bt,
+        )
     override val slider: StateFlow<SliderState> =
         combine(
                 audioSharingInteractor.volume.distinctUntilChanged().onEach {
@@ -62,16 +74,17 @@ constructor(
                 if (volume == null) {
                     SliderState.Empty
                 } else {
-
-                    State(
-                        value = volume.toFloat(),
-                        valueRange =
-                            audioSharingInteractor.volumeMin.toFloat()..audioSharingInteractor
-                                    .volumeMax
-                                    .toFloat(),
-                        icon = Icon.Resource(R.drawable.ic_volume_media_bt, null),
-                        label = deviceName,
-                    )
+                    withContext(uiBackgroundContext) {
+                        State(
+                            value = volume.toFloat(),
+                            valueRange =
+                                audioSharingInteractor.volumeMin.toFloat()..audioSharingInteractor
+                                        .volumeMax
+                                        .toFloat(),
+                            icon = audioSharingIcon,
+                            label = deviceName,
+                        )
+                    }
                 }
             }
             .stateIn(coroutineScope, SharingStarted.Eagerly, SliderState.Empty)
@@ -107,7 +120,7 @@ constructor(
     private data class State(
         override val value: Float,
         override val valueRange: ClosedFloatingPointRange<Float>,
-        override val icon: Icon,
+        override val icon: Icon.Loaded?,
         override val label: String,
     ) : SliderState {
         override val hapticFilter: SliderHapticFeedbackFilter
@@ -116,7 +129,7 @@ constructor(
         override val isEnabled: Boolean
             get() = true
 
-        override val a11yStep: Float
+        override val step: Float
             get() = 1f
 
         override val disabledMessage: String?
@@ -124,6 +137,9 @@ constructor(
 
         override val isMutable: Boolean
             get() = false
+
+        override val a11yContentDescription: String
+            get() = label
 
         override val a11yClickDescription: String?
             get() = null

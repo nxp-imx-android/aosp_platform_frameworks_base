@@ -58,6 +58,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
@@ -106,7 +107,10 @@ fun VolumeSlider(
         return
     }
 
-    Column(modifier = modifier.animateContentSize(), verticalArrangement = Arrangement.Top) {
+    Column(
+        modifier = modifier.animateContentSize().semantics(true) {},
+        verticalArrangement = Arrangement.Top,
+    ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxWidth().height(40.dp),
@@ -123,7 +127,7 @@ fun VolumeSlider(
                 text = state.label,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).clearAndSetSemantics {},
             )
             button?.invoke()
         }
@@ -134,12 +138,11 @@ fun VolumeSlider(
             onValueChanged = onValueChange,
             onValueChangeFinished = { onValueChangeFinished?.invoke() },
             isEnabled = state.isEnabled,
-            stepDistance = state.a11yStep,
+            stepDistance = state.step,
             accessibilityParams =
                 AccessibilityParams(
-                    label = state.label,
-                    disabledMessage = state.disabledMessage,
-                    currentStateDescription = state.a11yStateDescription,
+                    contentDescription = state.a11yContentDescription,
+                    stateDescription = state.a11yStateDescription,
                 ),
             haptics =
                 hapticsViewModelFactory?.let {
@@ -169,7 +172,7 @@ fun VolumeSlider(
                         text = disabledMessage,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.basicMarquee(),
+                        modifier = Modifier.basicMarquee().clearAndSetSemantics {},
                     )
                 }
             }
@@ -229,7 +232,7 @@ private fun LegacyVolumeSlider(
                         }
 
                     val newValue =
-                        (value + targetDirection * state.a11yStep).coerceIn(
+                        (value + targetDirection * state.step).coerceIn(
                             state.valueRange.start,
                             state.valueRange.endInclusive,
                         )
