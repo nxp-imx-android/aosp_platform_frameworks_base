@@ -423,6 +423,13 @@ public final class AnimatorSet extends Animator implements AnimationHandler.Anim
             notifyListeners(AnimatorCaller.ON_CANCEL, false);
             callOnPlayingSet(Animator::cancel);
             mPlayingSet.clear();
+            // If the end callback is pending, invoke the end callbacks of the animator nodes before
+            // ending this set. Pass notifyListeners=false because this endAnimation will do that.
+            if (consumePendingEndListeners(false /* notifyListeners */)) {
+                for (int i = mNodeMap.size() - 1; i >= 0; i--) {
+                    mNodeMap.keyAt(i).consumePendingEndListeners(true /* notifyListeners */);
+                }
+            }
             endAnimation();
         }
     }
