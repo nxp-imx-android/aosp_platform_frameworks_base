@@ -1178,6 +1178,7 @@ public class ConversationLayout extends FrameLayout
             }
             newGroup.setShowingAvatar(!mIsOneToOne && !mIsCollapsed);
             newGroup.setSingleLine(mIsCollapsed && TextUtils.isEmpty(mSummarizedContent));
+            newGroup.setIsCollapsed(mIsCollapsed);
             newGroup.setSender(sender, nameOverride);
             newGroup.setSending(groupIndex == (groups.size() - 1) && showSpinner);
             mGroups.add(newGroup);
