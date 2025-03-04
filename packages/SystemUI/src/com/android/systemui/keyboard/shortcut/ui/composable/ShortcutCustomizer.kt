@@ -409,6 +409,7 @@ private fun Title(title: String) {
         color = MaterialTheme.colorScheme.onSurface,
         lineHeight = 32.sp,
         fontWeight = FontWeight.W400,
+        textAlign = TextAlign.Center,
     )
 }
 
