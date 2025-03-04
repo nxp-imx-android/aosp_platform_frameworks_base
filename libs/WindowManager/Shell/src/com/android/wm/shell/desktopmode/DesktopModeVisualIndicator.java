@@ -103,6 +103,10 @@ public class DesktopModeVisualIndicator {
                 return null;
             }
         }
+
+        private static boolean isDragToDesktopStartState(DragStartState startState) {
+            return startState == FROM_FULLSCREEN || startState == FROM_SPLIT;
+        }
     }
 
     private final VisualIndicatorViewContainer mVisualIndicatorViewContainer;
@@ -125,7 +129,12 @@ public class DesktopModeVisualIndicator {
             @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider,
             SnapEventHandler snapEventHandler) {
         SurfaceControl.Builder builder = new SurfaceControl.Builder();
-        taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
+        if (!DragStartState.isDragToDesktopStartState(dragStartState)
+                || !DesktopModeFlags.ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX.isTrue()) {
+            // In the DragToDesktop transition we attach the indicator to the transition root once
+            // that is available - for all other cases attach the indicator here.
+            taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
+        }
         mVisualIndicatorViewContainer = new VisualIndicatorViewContainer(
                 DesktopModeFlags.ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX.isTrue()
                         ? desktopExecutor : mainExecutor,
@@ -157,6 +166,18 @@ public class DesktopModeVisualIndicator {
     /** Release the visual indicator view and its viewhost. */
     public void releaseVisualIndicator() {
         mVisualIndicatorViewContainer.releaseVisualIndicator();
+    }
+
+    /** Reparent the visual indicator to {@code newParent}. */
+    void reparentLeash(SurfaceControl.Transaction t, SurfaceControl newParent) {
+        mVisualIndicatorViewContainer.reparentLeash(t, newParent);
+    }
+
+    /** Start the fade-in animation. */
+    void fadeInIndicator() {
+        mVisualIndicatorViewContainer.fadeInIndicator(
+                mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType,
+                mTaskInfo.displayId);
     }
 
     /**

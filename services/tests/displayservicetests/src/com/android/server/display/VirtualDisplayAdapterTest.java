@@ -21,19 +21,29 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import android.hardware.display.DisplayManager;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
 import android.media.projection.IMediaProjection;
+import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.Process;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.TestableContext;
 import android.view.Display;
 import android.view.Surface;
+import android.view.SurfaceControl;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -66,6 +76,9 @@ public class VirtualDisplayAdapterTest {
     @Rule
     public final TestableContext mContext = new TestableContext(
             InstrumentationRegistry.getInstrumentation().getContext());
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock
     private VirtualDisplayAdapter.SurfaceControlDisplayFactory mMockSufaceControlDisplayFactory;
@@ -378,6 +391,69 @@ public class VirtualDisplayAdapterTest {
                 assertNull(device);
             }
         }
+    }
+
+    @EnableFlags(
+            android.companion.virtualdevice.flags.Flags.FLAG_CORRECT_VIRTUAL_DISPLAY_POWER_STATE)
+    @Test
+    public void neverBlankDisplay_alwaysOn() {
+        // A non-public non-mirror display is considered never blank.
+        DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
+                /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
+                "uniqueId", /* surface= */ mSurfaceMock, /* flags= */ 0,
+                mVirtualDisplayConfigMock);
+
+        DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
+        assertThat(info.state).isEqualTo(Display.STATE_ON);
+        assertThat(info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK)
+                .isEqualTo(DisplayDeviceInfo.FLAG_NEVER_BLANK);
+    }
+
+    @EnableFlags(
+            android.companion.virtualdevice.flags.Flags.FLAG_CORRECT_VIRTUAL_DISPLAY_POWER_STATE)
+    @Test
+    public void virtualDisplayStateChange_propagatesToSurfaceControl() throws Exception {
+        final String uniqueId = "uniqueId";
+        final IBinder displayToken = new Binder();
+        when(mMockSufaceControlDisplayFactory.createDisplay(
+                any(), anyBoolean(), eq(uniqueId), anyFloat()))
+                .thenReturn(displayToken);
+
+        // The display needs to be public, otherwise it will be considered never blank.
+        DisplayDevice device = mAdapter.createVirtualDisplayLocked(mMockCallback,
+                /* projection= */ null, /* ownerUid= */ 10, /* packageName= */ "testpackage",
+                uniqueId, /* surface= */ mSurfaceMock, DisplayManager.VIRTUAL_DISPLAY_FLAG_PUBLIC,
+                mVirtualDisplayConfigMock);
+
+        DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
+        assertThat(info.state).isEqualTo(Display.STATE_UNKNOWN);
+        assertThat(info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK).isEqualTo(0);
+
+        // Any initial state change is processed because the display state is initially UNKNOWN
+        Runnable stateOnRunnable = device.requestDisplayStateLocked(
+                Display.STATE_ON, /* brightnessState= */ 1.0f, /* sdrBrightnessState= */ 1.0f,
+                /* displayOffloadSession= */ null);
+        assertThat(stateOnRunnable).isNotNull();
+        stateOnRunnable.run();
+        verify(mMockSufaceControlDisplayFactory)
+                .setDisplayPowerMode(displayToken, SurfaceControl.POWER_MODE_NORMAL);
+        verify(mMockCallback).onResumed();
+
+        // Requesting the same display state is a no-op
+        Runnable stateOnSecondRunnable = device.requestDisplayStateLocked(
+                Display.STATE_ON, /* brightnessState= */ 1.0f, /* sdrBrightnessState= */ 1.0f,
+                /* displayOffloadSession= */ null);
+        assertThat(stateOnSecondRunnable).isNull();
+
+        // A change to the display state is processed
+        Runnable stateOffRunnable = device.requestDisplayStateLocked(
+                Display.STATE_OFF, /* brightnessState= */ 1.0f, /* sdrBrightnessState= */ 1.0f,
+                /* displayOffloadSession= */ null);
+        assertThat(stateOffRunnable).isNotNull();
+        stateOffRunnable.run();
+        verify(mMockSufaceControlDisplayFactory)
+                .setDisplayPowerMode(displayToken, SurfaceControl.POWER_MODE_OFF);
+        verify(mMockCallback).onPaused();
     }
 
     private IVirtualDisplayCallback createCallback() {

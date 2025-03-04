@@ -75,6 +75,7 @@ class FooterActionsViewModel(
 
     /** The model for the power button. */
     val power: Flow<FooterActionsButtonViewModel?>,
+    val initialPower: () -> FooterActionsButtonViewModel?,
 
     /**
      * Observe the device monitoring dialog requests and show the dialog accordingly. This function
@@ -181,7 +182,7 @@ class FooterActionsViewModel(
 fun createFooterActionsViewModel(
     @ShadeDisplayAware appContext: Context,
     footerActionsInteractor: FooterActionsInteractor,
-    shadeMode: Flow<ShadeMode>,
+    shadeMode: StateFlow<ShadeMode>,
     falsingManager: FalsingManager,
     globalActionsDialogLite: GlobalActionsDialogLite,
     activityStarter: ActivityStarter,
@@ -291,6 +292,12 @@ fun createFooterActionsViewModel(
         settings = settings,
         power = power,
         observeDeviceMonitoringDialogRequests = ::observeDeviceMonitoringDialogRequests,
+        initialPower =
+            if (showPowerButton) {
+                { powerButtonViewModel(qsThemedContext, ::onPowerButtonClicked, shadeMode.value) }
+            } else {
+                { null }
+            },
     )
 }
 
@@ -411,20 +418,28 @@ fun powerButtonViewModel(
     shadeMode: Flow<ShadeMode>,
 ): Flow<FooterActionsButtonViewModel?> {
     return shadeMode.map { mode ->
-        val isDualShade = mode is ShadeMode.Dual
-        FooterActionsButtonViewModel(
-            id = R.id.pm_lite,
-            Icon.Resource(
-                android.R.drawable.ic_lock_power_off,
-                ContentDescription.Resource(R.string.accessibility_quick_settings_power_menu),
-            ),
-            iconTint =
-                Utils.getColorAttrDefaultColor(
-                    qsThemedContext,
-                    if (isDualShade) R.attr.onShadeInactiveVariant else R.attr.onShadeActive,
-                ),
-            backgroundColor = if (isDualShade) R.attr.shadeInactive else R.attr.shadeActive,
-            onPowerButtonClicked,
-        )
+        powerButtonViewModel(qsThemedContext, onPowerButtonClicked, mode)
     }
+}
+
+fun powerButtonViewModel(
+    qsThemedContext: Context,
+    onPowerButtonClicked: (Expandable) -> Unit,
+    shadeMode: ShadeMode,
+): FooterActionsButtonViewModel {
+    val isDualShade = shadeMode is ShadeMode.Dual
+    return FooterActionsButtonViewModel(
+        id = R.id.pm_lite,
+        Icon.Resource(
+            android.R.drawable.ic_lock_power_off,
+            ContentDescription.Resource(R.string.accessibility_quick_settings_power_menu),
+        ),
+        iconTint =
+            Utils.getColorAttrDefaultColor(
+                qsThemedContext,
+                if (isDualShade) R.attr.onShadeInactiveVariant else R.attr.onShadeActive,
+            ),
+        backgroundColor = if (isDualShade) R.attr.shadeInactive else R.attr.shadeActive,
+        onPowerButtonClicked,
+    )
 }

@@ -141,7 +141,7 @@ fun FooterActions(
         mutableStateOf<FooterActionsForegroundServicesButtonViewModel?>(null)
     }
     var userSwitcher by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
-    var power by remember { mutableStateOf<FooterActionsButtonViewModel?>(null) }
+    var power by remember { mutableStateOf(viewModel.initialPower()) }
 
     LaunchedEffect(
         context,
@@ -218,23 +218,19 @@ fun FooterActions(
             }
 
             val useModifierBasedExpandable = remember { QSComposeFragment.isEnabled }
-            security?.let { SecurityButton(it, useModifierBasedExpandable, Modifier.weight(1f)) }
-            foregroundServices?.let { ForegroundServicesButton(it, useModifierBasedExpandable) }
-            userSwitcher?.let {
-                IconButton(
-                    it,
-                    useModifierBasedExpandable,
-                    Modifier.sysuiResTag("multi_user_switch"),
-                )
-            }
+            SecurityButton({ security }, useModifierBasedExpandable, Modifier.weight(1f))
+            ForegroundServicesButton({ foregroundServices }, useModifierBasedExpandable)
             IconButton(
-                viewModel.settings,
+                { userSwitcher },
+                useModifierBasedExpandable,
+                Modifier.sysuiResTag("multi_user_switch"),
+            )
+            IconButton(
+                { viewModel.settings },
                 useModifierBasedExpandable,
                 Modifier.sysuiResTag("settings_button_container"),
             )
-            power?.let {
-                IconButton(it, useModifierBasedExpandable, Modifier.sysuiResTag("pm_lite"))
-            }
+            IconButton({ power }, useModifierBasedExpandable, Modifier.sysuiResTag("pm_lite"))
         }
     }
 }
@@ -242,10 +238,11 @@ fun FooterActions(
 /** The security button. */
 @Composable
 private fun SecurityButton(
-    model: FooterActionsSecurityButtonViewModel,
+    model: () -> FooterActionsSecurityButtonViewModel?,
     useModifierBasedExpandable: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val model = model() ?: return
     val onClick: ((Expandable) -> Unit)? =
         model.onClick?.let { onClick ->
             val context = LocalContext.current
@@ -265,9 +262,10 @@ private fun SecurityButton(
 /** The foreground services button. */
 @Composable
 private fun RowScope.ForegroundServicesButton(
-    model: FooterActionsForegroundServicesButtonViewModel,
+    model: () -> FooterActionsForegroundServicesButtonViewModel?,
     useModifierBasedExpandable: Boolean,
 ) {
+    val model = model() ?: return
     if (model.displayText) {
         TextButton(
             Icon.Resource(R.drawable.ic_info_outline, contentDescription = null),
@@ -286,6 +284,17 @@ private fun RowScope.ForegroundServicesButton(
             useModifierBasedExpandable,
         )
     }
+}
+
+/** A button with an icon. */
+@Composable
+fun IconButton(
+    model: () -> FooterActionsButtonViewModel?,
+    useModifierBasedExpandable: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val model = model() ?: return
+    IconButton(model, useModifierBasedExpandable, modifier)
 }
 
 /** A button with an icon. */

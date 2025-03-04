@@ -7362,16 +7362,6 @@ public final class ActivityThread extends ClientTransactionHandler
         }
 
         WindowManagerGlobal.getInstance().trimMemory(level);
-
-        if (SystemProperties.getInt("debug.am.run_gc_trim_level", Integer.MAX_VALUE) <= level) {
-            unscheduleGcIdler();
-            doGcIfNeeded("tm");
-        }
-        if (SystemProperties.getInt("debug.am.run_mallopt_trim_level", Integer.MAX_VALUE)
-                <= level) {
-            unschedulePurgeIdler();
-            purgePendingResources();
-        }
     }
 
     private void setupGraphicsSupport(Context context) {

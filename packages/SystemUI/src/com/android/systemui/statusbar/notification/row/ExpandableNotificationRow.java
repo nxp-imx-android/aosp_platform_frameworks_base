@@ -99,6 +99,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.StatusBarIconView;
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
@@ -179,6 +180,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private boolean mIsFaded;
 
     private boolean mIsPromotedOngoing = false;
+    private boolean mHasStatusBarChipDuringHeadsUpAnimation = false;
 
     @Nullable
     public ImageModelIndex mImageModelIndex = null;
@@ -2941,6 +2943,30 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
         mIsPromotedOngoing = promotedOngoing;
         setExpandable(!mIsPromotedOngoing);
+    }
+
+    /**
+     * Sets whether the status bar is showing a chip corresponding to this notification.
+     *
+     * Only set when this notification's heads-up status changes since that's the only time it's
+     * relevant.
+     */
+    public void setHasStatusBarChipDuringHeadsUpAnimation(boolean hasStatusBarChip) {
+        if (StatusBarNotifChips.isUnexpectedlyInLegacyMode()) {
+            return;
+        }
+        mHasStatusBarChipDuringHeadsUpAnimation = hasStatusBarChip;
+    }
+
+    /**
+     * Returns true if the status bar is showing a chip corresponding to this notification during a
+     * heads-up appear or disappear animation.
+     *
+     * Note that this value is only set when this notification's heads-up status changes since
+     * that's the only time it's relevant.
+     */
+    public boolean hasStatusBarChipDuringHeadsUpAnimation() {
+        return StatusBarNotifChips.isEnabled() && mHasStatusBarChipDuringHeadsUpAnimation;
     }
 
     @Override

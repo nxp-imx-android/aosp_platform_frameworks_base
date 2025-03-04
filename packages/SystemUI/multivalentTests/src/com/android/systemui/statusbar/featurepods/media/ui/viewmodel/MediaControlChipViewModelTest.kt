@@ -21,9 +21,10 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.parameterizeSceneContainerFlag
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.shared.model.MediaData
@@ -47,7 +48,8 @@ import platform.test.runner.parameterized.Parameters
 class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val mediaControlChipInteractor by lazy { kosmos.mediaControlChipInteractor }
-    private val Kosmos.underTest by Kosmos.Fixture { kosmos.mediaControlChipViewModel }
+    private val Kosmos.underTest by
+        Kosmos.Fixture { kosmos.mediaControlChipViewModelFactory.create() }
     @Captor lateinit var listener: ArgumentCaptor<MediaDataManager.Listener>
 
     companion object {
@@ -62,6 +64,7 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         mediaControlChipInteractor.initialize()
+        kosmos.underTest.activateIn(kosmos.testScope)
     }
 
     init {
@@ -71,7 +74,7 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun chip_noActiveMedia_IsHidden() =
         kosmos.runTest {
-            val chip by collectLastValue(underTest.chip)
+            val chip = underTest.chip
 
             assertThat(chip).isInstanceOf(PopupChipModel.Hidden::class.java)
         }
@@ -79,30 +82,26 @@ class MediaControlChipViewModelTest(flags: FlagsParameterization) : SysuiTestCas
     @Test
     fun chip_activeMedia_IsShown() =
         kosmos.runTest {
-            val chip by collectLastValue(underTest.chip)
-
             val userMedia = MediaData(active = true, song = "test")
             updateMedia(userMedia)
 
-            assertThat(chip).isInstanceOf(PopupChipModel.Shown::class.java)
+            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Shown::class.java)
         }
 
     @Test
     fun chip_songNameChanges_chipTextUpdated() =
         kosmos.runTest {
-            val chip by collectLastValue(underTest.chip)
-
             val initialSongName = "Initial Song"
             val newSongName = "New Song"
             val userMedia = MediaData(active = true, song = initialSongName)
             updateMedia(userMedia)
-            assertThat(chip).isInstanceOf(PopupChipModel.Shown::class.java)
-            assertThat((chip as PopupChipModel.Shown).chipText).isEqualTo(initialSongName)
+            assertThat(underTest.chip).isInstanceOf(PopupChipModel.Shown::class.java)
+            assertThat((underTest.chip as PopupChipModel.Shown).chipText).isEqualTo(initialSongName)
 
             val updatedUserMedia = userMedia.copy(song = newSongName)
             updateMedia(updatedUserMedia)
 
-            assertThat((chip as PopupChipModel.Shown).chipText).isEqualTo(newSongName)
+            assertThat((underTest.chip as PopupChipModel.Shown).chipText).isEqualTo(newSongName)
         }
 
     private fun updateMedia(mediaData: MediaData) {

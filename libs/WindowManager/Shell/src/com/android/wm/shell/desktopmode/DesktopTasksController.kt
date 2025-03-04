@@ -585,7 +585,7 @@ class DesktopTasksController(
                 reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
             )
 
-        val taskIdToMinimize = addDeskActivationWithMovingTaskChanges(deskId, wct, task)
+        val runOnTransitStart = addDeskActivationWithMovingTaskChanges(deskId, wct, task)
 
         val transition: IBinder
         if (remoteTransition != null) {
@@ -600,20 +600,9 @@ class DesktopTasksController(
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
         )
-        taskIdToMinimize?.let {
-            addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-        }
+        runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksTransitionObserver.addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
-                    token = transition,
-                    displayId = displayId,
-                    deskId = deskId,
-                    enterTaskId = task.taskId,
-                )
-            )
-        } else {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             taskRepository.setActiveDesk(displayId = displayId, deskId = deskId)
         }
         return true
@@ -650,6 +639,7 @@ class DesktopTasksController(
         dragToDesktopTransitionHandler.startDragToDesktopTransition(
             taskInfo,
             dragToDesktopValueAnimator,
+            visualIndicator,
         )
     }
 
@@ -676,7 +666,7 @@ class DesktopTasksController(
                 moveHomeTask(context.displayId, wct)
             }
         }
-        val taskIdToMinimize = addDeskActivationWithMovingTaskChanges(deskId, wct, taskInfo)
+        val runOnTransitStart = addDeskActivationWithMovingTaskChanges(deskId, wct, taskInfo)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
@@ -689,20 +679,9 @@ class DesktopTasksController(
             DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS.toInt()
         )
         if (transition != null) {
-            taskIdToMinimize?.let {
-                addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-            }
+            runOnTransitStart?.invoke(transition)
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                desksTransitionObserver.addPendingTransition(
-                    DeskTransition.ActiveDeskWithTask(
-                        token = transition,
-                        displayId = taskInfo.displayId,
-                        deskId = deskId,
-                        enterTaskId = taskInfo.taskId,
-                    )
-                )
-            } else {
+            if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                 taskRepository.setActiveDesk(displayId = taskInfo.displayId, deskId = deskId)
             }
         } else {
@@ -1057,19 +1036,14 @@ class DesktopTasksController(
                         ?: getDefaultDeskId(displayId)
                 )
             val activateDeskWct = WindowContainerTransaction()
-            addDeskActivationChanges(deskIdToActivate, activateDeskWct)
+            // TODO: b/391485148 - pass in the launching task here to apply task-limit policy,
+            //  but make sure to not do it twice since it is also done at the start of this
+            //  function.
+            activationRunOnTransitStart =
+                addDeskActivationChanges(deskIdToActivate, activateDeskWct)
             // Desk activation must be handled before app launch-related transactions.
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
             launchTransaction = activateDeskWct
-            activationRunOnTransitStart = { transition ->
-                desksTransitionObserver.addPendingTransition(
-                    DeskTransition.ActivateDesk(
-                        token = transition,
-                        displayId = displayId,
-                        deskId = deskIdToActivate,
-                    )
-                )
-            }
             desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
                 FREEFORM_ANIMATION_DURATION
             )
@@ -1255,17 +1229,8 @@ class DesktopTasksController(
             wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
         }
 
-        addDeskActivationChanges(destinationDeskId, wct)
-        val activationRunnable: RunOnTransitStart = { transition ->
-            desksTransitionObserver.addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
-                    token = transition,
-                    displayId = displayId,
-                    deskId = destinationDeskId,
-                    enterTaskId = task.taskId,
-                )
-            )
-        }
+        // TODO: b/391485148 - pass in the moving-to-desk |task| here to apply task-limit policy.
+        val activationRunnable = addDeskActivationChanges(destinationDeskId, wct)
 
         if (Flags.enableDisplayFocusInShellTransitions()) {
             // Bring the destination display to top with includingParents=true, so that the
@@ -2478,10 +2443,10 @@ class DesktopTasksController(
         deskId: Int,
         wct: WindowContainerTransaction,
         task: RunningTaskInfo,
-    ): Int? {
-        val taskIdToMinimize = addDeskActivationChanges(deskId, wct, task)
+    ): RunOnTransitStart? {
+        val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
         addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
-        return taskIdToMinimize
+        return runOnTransitStart
     }
 
     /**
@@ -2756,31 +2721,57 @@ class DesktopTasksController(
         deskId: Int,
         wct: WindowContainerTransaction,
         newTask: RunningTaskInfo? = null,
-    ): Int? {
+    ): RunOnTransitStart? {
+        logV("addDeskActivationChanges newTaskId=%d deskId=%d", newTask?.taskId, deskId)
+        val newTaskIdInFront = newTask?.taskId
         val displayId = taskRepository.getDisplayForDesk(deskId)
-        return if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            prepareForDeskActivation(displayId, wct)
-            desksOrganizer.activateDesk(wct, deskId)
-            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-                // TODO: 362720497 - do non-running tasks need to be restarted with |wct#startTask|?
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            val taskIdToMinimize = bringDesktopAppsToFront(displayId, wct, newTask?.taskId)
+            return { transition ->
+                taskIdToMinimize?.let { minimizingTaskId ->
+                    addPendingMinimizeTransition(
+                        transition = transition,
+                        taskIdToMinimize = minimizingTaskId,
+                        minimizeReason = MinimizeReason.TASK_LIMIT,
+                    )
+                }
             }
-            taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-                doesAnyTaskRequireTaskbarRounding(displayId)
-            )
-            // TODO: b/362720497 - activating a desk with the intention to move a new task to
-            //  it means we may need to minimize something in the activating desk. Do so here
-            //  similar to how it's done in #bringDesktopAppsToFront instead of returning null.
-            null
-        } else {
-            bringDesktopAppsToFront(displayId, wct, newTask?.taskId)
+        }
+        prepareForDeskActivation(displayId, wct)
+        desksOrganizer.activateDesk(wct, deskId)
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
+            // TODO: 362720497 - do non-running tasks need to be restarted with |wct#startTask|?
+        }
+        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
+            doesAnyTaskRequireTaskbarRounding(displayId)
+        )
+        // TODO: b/362720497 - activating a desk with the intention to move a new task to
+        //  it means we may need to minimize something in the activating desk. Do so here
+        //  similar to how it's done in #bringDesktopAppsToFront.
+        return { transition ->
+            val activateDeskTransition =
+                if (newTaskIdInFront != null) {
+                    DeskTransition.ActiveDeskWithTask(
+                        token = transition,
+                        displayId = displayId,
+                        deskId = deskId,
+                        enterTaskId = newTaskIdInFront,
+                    )
+                } else {
+                    DeskTransition.ActivateDesk(
+                        token = transition,
+                        displayId = displayId,
+                        deskId = deskId,
+                    )
+                }
+            desksTransitionObserver.addPendingTransition(activateDeskTransition)
         }
     }
 
     /** Activates the given desk. */
     fun activateDesk(deskId: Int, remoteTransition: RemoteTransition? = null) {
-        val displayId = taskRepository.getDisplayForDesk(deskId)
         val wct = WindowContainerTransaction()
-        addDeskActivationChanges(deskId, wct)
+        val runOnTransitStart = addDeskActivationChanges(deskId, wct)
 
         val transitionType = transitionType(remoteTransition)
         val handler =
@@ -2790,15 +2781,7 @@ class DesktopTasksController(
 
         val transition = transitions.startTransition(transitionType, wct, handler)
         handler?.setTransition(transition)
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksTransitionObserver.addPendingTransition(
-                DeskTransition.ActivateDesk(
-                    token = transition,
-                    displayId = displayId,
-                    deskId = deskId,
-                )
-            )
-        }
+        runOnTransitStart?.invoke(transition)
 
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION

@@ -11,8 +11,11 @@ import android.graphics.PointF
 import android.graphics.Rect
 import android.os.IBinder
 import android.os.SystemProperties
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.TransitionInfo
@@ -23,6 +26,7 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
@@ -78,6 +82,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     @Mock private lateinit var homeTaskLeash: SurfaceControl
     @Mock private lateinit var desktopUserRepositories: DesktopUserRepositories
     @Mock private lateinit var bubbleController: BubbleController
+    @Mock private lateinit var visualIndicator: DesktopModeVisualIndicator
 
     private val transactionSupplier = Supplier { mock<SurfaceControl.Transaction>() }
 
@@ -740,11 +745,47 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         assertThat(fraction).isWithin(TOLERANCE).of(0f)
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
+    fun startDrag_indicatorFlagEnabled_attachesIndicatorToTransitionRoot() {
+        val task = createTask()
+        val rootLeash = mock<SurfaceControl>()
+        val startTransaction = mock<SurfaceControl.Transaction>()
+        startDrag(
+            defaultHandler,
+            task,
+            startTransaction = startTransaction,
+            transitionRootLeash = rootLeash,
+        )
+
+        verify(visualIndicator).reparentLeash(startTransaction, rootLeash)
+        verify(visualIndicator).fadeInIndicator()
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX)
+    fun startDrag_indicatorFlagDisabled_doesNotAttachIndicatorToTransitionRoot() {
+        val task = createTask()
+        val rootLeash = mock<SurfaceControl>()
+        val startTransaction = mock<SurfaceControl.Transaction>()
+        startDrag(
+            defaultHandler,
+            task,
+            startTransaction = startTransaction,
+            transitionRootLeash = rootLeash,
+        )
+
+        verify(visualIndicator, never()).reparentLeash(any(), any())
+        verify(visualIndicator, never()).fadeInIndicator()
+    }
+
     private fun startDrag(
         handler: DragToDesktopTransitionHandler,
         task: RunningTaskInfo = createTask(),
+        startTransaction: SurfaceControl.Transaction = mock(),
         finishTransaction: SurfaceControl.Transaction = mock(),
         homeChange: TransitionInfo.Change? = createHomeChange(),
+        transitionRootLeash: SurfaceControl? = null,
     ): IBinder {
         whenever(dragAnimator.position).thenReturn(PointF())
         // Simulate transition is started and is ready to animate.
@@ -756,8 +797,9 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     type = TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP,
                     draggedTask = task,
                     homeChange = homeChange,
+                    rootLeash = transitionRootLeash,
                 ),
-            startTransaction = mock(),
+            startTransaction = startTransaction,
             finishTransaction = finishTransaction,
             finishCallback = {},
         )
@@ -778,7 +820,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 )
             )
             .thenReturn(token)
-        handler.startDragToDesktopTransition(task, dragAnimator)
+        handler.startDragToDesktopTransition(task, dragAnimator, visualIndicator)
         return token
     }
 
@@ -845,6 +887,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         type: Int,
         draggedTask: RunningTaskInfo,
         homeChange: TransitionInfo.Change? = createHomeChange(),
+        rootLeash: SurfaceControl? = null,
     ) =
         TransitionInfo(type, /* flags= */ 0).apply {
             homeChange?.let { addChange(it) }
@@ -861,6 +904,9 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     flags = flags or FLAG_IS_WALLPAPER
                 }
             )
+            if (rootLeash != null) {
+                addRootLeash(DEFAULT_DISPLAY, rootLeash, /* offsetLeft= */ 0, /* offsetTop= */ 0)
+            }
         }
 
     private fun createHomeChange() =

@@ -120,9 +120,7 @@ class UdfpsControllerOverlayTest : SysuiTestCase() {
     private lateinit var deviceEntryUdfpsTouchOverlayViewModel:
         DeviceEntryUdfpsTouchOverlayViewModel
     @Mock private lateinit var defaultUdfpsTouchOverlayViewModel: DefaultUdfpsTouchOverlayViewModel
-    @Mock
-    private lateinit var udfpsKeyguardAccessibilityDelegate: UdfpsKeyguardAccessibilityDelegate
-    private lateinit var keyguardTransitionRepository: FakeKeyguardTransitionRepository
+    @Mock private lateinit var keyguardTransitionRepository: FakeKeyguardTransitionRepository
     private lateinit var keyguardTransitionInteractor: KeyguardTransitionInteractor
     @Mock private lateinit var shadeInteractor: ShadeInteractor
     @Captor private lateinit var layoutParamsCaptor: ArgumentCaptor<WindowManager.LayoutParams>
@@ -185,7 +183,6 @@ class UdfpsControllerOverlayTest : SysuiTestCase() {
                 primaryBouncerInteractor,
                 alternateBouncerInteractor,
                 isDebuggable,
-                udfpsKeyguardAccessibilityDelegate,
                 keyguardTransitionInteractor,
                 mSelectedUserInteractor,
                 { deviceEntryUdfpsTouchOverlayViewModel },

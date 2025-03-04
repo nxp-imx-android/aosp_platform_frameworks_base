@@ -17,6 +17,7 @@
 package com.android.server.location.contexthub;
 
 import static com.google.common.truth.Truth.assertThat;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
@@ -42,11 +43,9 @@ import android.os.Binder;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.util.Log;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-
-import java.util.Collections;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -56,6 +55,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+
+import java.util.Collections;
+import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 @Presubmit
@@ -72,6 +74,12 @@ public class ContextHubEndpointTest {
 
     private static final String TARGET_ENDPOINT_NAME = "Example target endpoint";
     private static final int TARGET_ENDPOINT_ID = 1;
+
+    private static final int SAMPLE_MESSAGE_TYPE = 1234;
+    private static final HubMessage SAMPLE_MESSAGE =
+            new HubMessage.Builder(SAMPLE_MESSAGE_TYPE, new byte[] {1, 2, 3, 4, 5})
+                    .setResponseRequired(true)
+                    .build();
 
     private ContextHubClientManager mClientManager;
     private ContextHubEndpointManager mEndpointManager;
@@ -229,23 +237,34 @@ public class ContextHubEndpointTest {
         assertThat(mTransactionManager.numReliableMessageTransactionPending()).isEqualTo(0);
     }
 
+    @Test
+    public void testDuplicateMessageRejected() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        int sessionId = openTestSession(endpoint);
+
+        mEndpointManager.onMessageReceived(sessionId, SAMPLE_MESSAGE);
+        ArgumentCaptor<HubMessage> messageCaptor = ArgumentCaptor.forClass(HubMessage.class);
+        verify(mMockCallback).onMessageReceived(eq(sessionId), messageCaptor.capture());
+        assertThat(messageCaptor.getValue()).isEqualTo(SAMPLE_MESSAGE);
+
+        // Send a duplicate message and confirm it can be rejected
+        mEndpointManager.onMessageReceived(sessionId, SAMPLE_MESSAGE);
+        ArgumentCaptor<MessageDeliveryStatus> statusCaptor =
+                ArgumentCaptor.forClass(MessageDeliveryStatus.class);
+        verify(mMockEndpointCommunications)
+                .sendMessageDeliveryStatusToEndpoint(eq(sessionId), statusCaptor.capture());
+        assertThat(statusCaptor.getValue().messageSequenceNumber)
+                .isEqualTo(SAMPLE_MESSAGE.getMessageSequenceNumber());
+        assertThat(statusCaptor.getValue().errorCode).isEqualTo(ErrorCode.TRANSIENT_ERROR);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
     /** A helper method to create a session and validates reliable message sending. */
     private void testMessageTransactionInternal(
             IContextHubEndpoint endpoint, boolean deliverMessageStatus) throws RemoteException {
-        HubEndpointInfo targetInfo =
-                new HubEndpointInfo(
-                        TARGET_ENDPOINT_NAME,
-                        TARGET_ENDPOINT_ID,
-                        ENDPOINT_PACKAGE_NAME,
-                        Collections.emptyList());
-        int sessionId = endpoint.openSession(targetInfo, /* serviceDescriptor= */ null);
-        mEndpointManager.onEndpointSessionOpenComplete(sessionId);
+        int sessionId = openTestSession(endpoint);
 
-        final int messageType = 1234;
-        HubMessage message =
-                new HubMessage.Builder(messageType, new byte[] {1, 2, 3, 4, 5})
-                        .setResponseRequired(true)
-                        .build();
         IContextHubTransactionCallback callback =
                 new IContextHubTransactionCallback.Stub() {
                     @Override
@@ -258,13 +277,13 @@ public class ContextHubEndpointTest {
                         Log.i(TAG, "Received onTransactionComplete callback, result=" + result);
                     }
                 };
-        endpoint.sendMessage(sessionId, message, callback);
+        endpoint.sendMessage(sessionId, SAMPLE_MESSAGE, callback);
         ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
         verify(mMockEndpointCommunications, timeout(1000))
                 .sendMessageToEndpoint(eq(sessionId), messageCaptor.capture());
         Message halMessage = messageCaptor.getValue();
-        assertThat(halMessage.type).isEqualTo(message.getMessageType());
-        assertThat(halMessage.content).isEqualTo(message.getMessageBody());
+        assertThat(halMessage.type).isEqualTo(SAMPLE_MESSAGE.getMessageType());
+        assertThat(halMessage.content).isEqualTo(SAMPLE_MESSAGE.getMessageBody());
         assertThat(mTransactionManager.numReliableMessageTransactionPending()).isEqualTo(1);
 
         if (deliverMessageStatus) {
@@ -307,5 +326,17 @@ public class ContextHubEndpointTest {
         assertThat(statusCaptor.getValue().id.hubId)
                 .isEqualTo(expectedInfo.getIdentifier().getHub());
         assertThat(mEndpointManager.getNumRegisteredClients()).isEqualTo(0);
+    }
+
+    private int openTestSession(IContextHubEndpoint endpoint) throws RemoteException {
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        int sessionId = endpoint.openSession(targetInfo, /* serviceDescriptor= */ null);
+        mEndpointManager.onEndpointSessionOpenComplete(sessionId);
+        return sessionId;
     }
 }

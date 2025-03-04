@@ -207,7 +207,7 @@ BootAnimation::BootAnimation(sp<Callbacks> callbacks)
         : Thread(false), mLooper(new Looper(false)), mClockEnabled(true), mTimeIsAccurate(false),
         mTimeFormat12Hour(false), mTimeCheckThread(nullptr), mCallbacks(callbacks) {
     ATRACE_CALL();
-    mSession = new SurfaceComposerClient();
+    mSession = sp<SurfaceComposerClient>::make();
 
     std::string powerCtl = android::base::GetProperty("sys.powerctl", "");
     if (powerCtl.empty()) {

@@ -29,16 +29,12 @@ import com.intellij.psi.PsiMethod
 import org.jetbrains.uast.UCallExpression
 import org.jetbrains.uast.getContainingUFile
 
-/**
- * Detects test function naming violations regarding use of the backtick-wrapped space-allowed
- * feature of Kotlin functions.
- */
+/** Detects use of `TestScope.runTest` when we should use `Kosmos.runTest` by go/kosmos-runtest */
 class RunTestShouldUseKosmosDetector : Detector(), SourceCodeScanner {
     override fun getApplicableMethodNames() = listOf("runTest")
 
     override fun visitMethodCall(context: JavaContext, node: UCallExpression, method: PsiMethod) {
         if (method.getReceiver()?.qualifiedName == "kotlinx.coroutines.test.TestScope") {
-
             val imports =
                 node.getContainingUFile()?.imports.orEmpty().mapNotNull {
                     it.importReference?.asSourceString()

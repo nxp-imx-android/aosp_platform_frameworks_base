@@ -25,7 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
@@ -85,7 +86,8 @@ class ResizingTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithContentDescription("tileA")
+            .onAllNodesWithText("tileA")
+            .onFirst()
             .performCustomAccessibilityActionWithLabel(
                 context.getString(R.string.accessibility_qs_edit_toggle_tile_size_action)
             )
@@ -103,7 +105,8 @@ class ResizingTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithContentDescription("tileD_large")
+            .onAllNodesWithText("tileD_large")
+            .onFirst()
             .performCustomAccessibilityActionWithLabel(
                 context.getString(R.string.accessibility_qs_edit_toggle_tile_size_action)
             )
@@ -121,7 +124,8 @@ class ResizingTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithContentDescription("tileA")
+            .onAllNodesWithText("tileA")
+            .onFirst()
             .performClick() // Select
             .performTouchInput { // Tap on resizing handle
                 click(centerRight)
@@ -141,7 +145,8 @@ class ResizingTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithContentDescription("tileD_large")
+            .onAllNodesWithText("tileD_large")
+            .onFirst()
             .performClick() // Select
             .performTouchInput { // Tap on resizing handle
                 click(centerRight)
@@ -161,7 +166,8 @@ class ResizingTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithContentDescription("tileA")
+            .onAllNodesWithText("tileA")
+            .onFirst()
             .performClick() // Select
             .performTouchInput { // Resize up
                 swipeRight(startX = right, endX = right * 2)
@@ -181,7 +187,8 @@ class ResizingTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule
-            .onNodeWithContentDescription("tileD_large")
+            .onAllNodesWithText("tileD_large")
+            .onFirst()
             .performClick() // Select
             .performTouchInput { // Resize down
                 swipeLeft()

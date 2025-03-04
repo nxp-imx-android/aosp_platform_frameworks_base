@@ -211,14 +211,28 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
             rightIconLP.setMarginEnd(horizontalMargin);
             mRightIcon.setLayoutParams(rightIconLP);
 
+            // if there is no title and topline view, there is nothing to adjust.
+            if (mNotificationTopLine == null && mTitle == null) {
+                return;
+            }
+
             // align top line view to start of the right icon.
             final int iconSize = mView.getResources().getDimensionPixelSize(
                 com.android.internal.R.dimen.notification_right_icon_size);
             final int marginEnd = 2 * horizontalMargin + iconSize;
-            mNotificationTopLine.setHeaderTextMarginEnd(marginEnd);
+            final boolean isTitleInTopLine;
+            // set margin end for the top line view if it exists
+            if (mNotificationTopLine != null) {
+                mNotificationTopLine.setHeaderTextMarginEnd(marginEnd);
+                isTitleInTopLine = mNotificationTopLine.isTitlePresent();
+            } else {
+                isTitleInTopLine = false;
+            }
 
+            // Margin is to be applied to the title only when it is in the body,
+            // but not in the title.
             // title has too much margin on the right, so we need to reduce it
-            if (mTitle != null) {
+            if (!isTitleInTopLine && mTitle != null) {
                 final ViewGroup.MarginLayoutParams titleLP =
                     (ViewGroup.MarginLayoutParams) mTitle.getLayoutParams();
                 titleLP.setMarginEnd(marginEnd);

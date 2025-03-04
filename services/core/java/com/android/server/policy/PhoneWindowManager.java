@@ -3801,7 +3801,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         return true;
                     }
                 }
-                // fall through
+                break;
             case KeyEvent.KEYCODE_ESCAPE:
                 if (firstDown && event.isMetaPressed()) {
                     notifyKeyGestureCompleted(event,
@@ -6704,12 +6704,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     public boolean inKeyguardRestrictedKeyInputMode() {
         if (mKeyguardDelegate == null) return false;
         return mKeyguardDelegate.isInputRestricted();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isKeyguardUnoccluding() {
-        return keyguardOn() && !mWindowManagerFuncs.isAppTransitionStateIdle();
     }
 
     @Override

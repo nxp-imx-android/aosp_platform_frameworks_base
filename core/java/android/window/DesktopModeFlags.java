@@ -53,12 +53,14 @@ public enum DesktopModeFlags {
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS(
             Flags::enableCaptionCompatInsetForceConsumptionAlways, true),
     ENABLE_CASCADING_WINDOWS(Flags::enableCascadingWindows, true),
+    ENABLE_DESKTOP_APP_HANDLE_ANIMATION(Flags::enableDesktopAppHandleAnimation, false),
     ENABLE_DESKTOP_APP_LAUNCH_ALTTAB_TRANSITIONS_BUGFIX(
             Flags::enableDesktopAppLaunchAlttabTransitionsBugfix, true),
     ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX(Flags::enableDesktopAppLaunchTransitionsBugfix,
             true),
     ENABLE_DESKTOP_CLOSE_SHORTCUT_BUGFIX(Flags::enableDesktopCloseShortcutBugfix, false),
     ENABLE_DESKTOP_COMPAT_UI_VISIBILITY_STATUS(Flags::enableCompatUiVisibilityStatus, true),
+    ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX(Flags::enableDesktopImmersiveDragBugfix, false),
     ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX(
             Flags::enableDesktopIndicatorInSeparateThreadBugfix, false),
     ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX(
@@ -106,6 +108,7 @@ public enum DesktopModeFlags {
     ENABLE_FULLY_IMMERSIVE_IN_DESKTOP(Flags::enableFullyImmersiveInDesktop, true),
     ENABLE_HANDLE_INPUT_FIX(Flags::enableHandleInputFix, true),
     ENABLE_HOLD_TO_DRAG_APP_HANDLE(Flags::enableHoldToDragAppHandle, true),
+    ENABLE_INPUT_LAYER_TRANSITION_FIX(Flags::enableInputLayerTransitionFix, false),
     ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true),
     ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, false),
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(

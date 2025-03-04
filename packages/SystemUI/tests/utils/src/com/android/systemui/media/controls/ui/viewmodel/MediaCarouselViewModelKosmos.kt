@@ -37,7 +37,6 @@ val Kosmos.mediaCarouselViewModel by
             visualStabilityProvider = visualStabilityProvider,
             interactor = mediaCarouselInteractor,
             controlInteractorFactory = mediaControlInteractorFactory,
-            recommendationsViewModel = mediaRecommendationsViewModel,
             logger = mediaUiEventLogger,
             mediaLogger = mediaLogger,
         )

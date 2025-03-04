@@ -88,17 +88,22 @@ class ActivityRefresher {
                 new RefreshCallbackItem(activity.token, cycleThroughStop ? ON_STOP : ON_PAUSE);
         final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
                 activity.token, /* isForward */ false, /* shouldSendCompatFakeFocus */ false);
+        boolean isSuccessful;
         try {
-            activity.mAtmService.getLifecycleManager().scheduleTransactionItems(
+            isSuccessful = activity.mAtmService.getLifecycleManager().scheduleTransactionItems(
                     activity.app.getThread(), refreshCallbackItem, resumeActivityItem);
+        } catch (RemoteException e) {
+            isSuccessful = false;
+        }
+        if (isSuccessful) {
             mHandler.postDelayed(() -> {
                 synchronized (mWmService.mGlobalLock) {
                     onActivityRefreshed(activity);
                 }
             }, REFRESH_CALLBACK_TIMEOUT_MS);
-        } catch (RemoteException e) {
-            activity.mAppCompatController.getCameraOverrides()
-                    .setIsRefreshRequested(false);
+        } else {
+            activity.mAppCompatController.getCameraOverrides().setIsRefreshRequested(false);
+
         }
     }
 

@@ -385,6 +385,13 @@ public class NotificationTopLineView extends ViewGroup {
     }
 
     /**
+     * Returns whether the title is present.
+     */
+    public boolean isTitlePresent() {
+        return mTitle != null;
+    }
+
+    /**
      * Determine if the given point is touching an active part of the top line.
      */
     public boolean isInTouchRect(float x, float y) {

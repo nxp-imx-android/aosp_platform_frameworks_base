@@ -46,8 +46,10 @@ fun Toolbar(viewModel: ToolbarViewModel, modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.weight(1f))
 
-        viewModel.powerButtonViewModel?.let {
-            IconButton(it, useModifierBasedExpandable = true, Modifier.sysuiResTag("pm_lite"))
-        }
+        IconButton(
+            { viewModel.powerButtonViewModel },
+            useModifierBasedExpandable = true,
+            Modifier.sysuiResTag("pm_lite"),
+        )
     }
 }

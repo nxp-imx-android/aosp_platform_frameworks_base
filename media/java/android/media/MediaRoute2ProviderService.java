@@ -759,12 +759,29 @@ public abstract class MediaRoute2ProviderService extends Service {
 
     /**
      * Updates routes of the provider and notifies the system media router service.
+     *
+     * @throws IllegalArgumentException If {@code routes} contains a route that {@link
+     *     MediaRoute2Info#getSupportedRoutingTypes() supports} both system media routing and remote
+     *     routing but doesn't contain any {@link MediaRoute2Info#getDeduplicationIds()
+     *     deduplication ids}.
      */
     public final void notifyRoutes(@NonNull Collection<MediaRoute2Info> routes) {
         requireNonNull(routes, "routes must not be null");
         List<MediaRoute2Info> sanitizedRoutes = new ArrayList<>(routes.size());
 
         for (MediaRoute2Info route : routes) {
+            if (Flags.enableMirroringInMediaRouter2()
+                    && route.supportsRemoteRouting()
+                    && route.supportsSystemMediaRouting()
+                    && route.getDeduplicationIds().isEmpty()) {
+                String errorMessage =
+                        TextUtils.formatSimple(
+                                "Route with id='%s' name='%s' supports both system media and remote"
+                                    + " type routing, but doesn't contain a deduplication id, which"
+                                    + " it needs. You can add the route id as a deduplication id.",
+                                route.getOriginalId(), route.getName());
+                throw new IllegalArgumentException(errorMessage);
+            }
             if (route.isSystemRouteType()) {
                 Log.w(
                         TAG,

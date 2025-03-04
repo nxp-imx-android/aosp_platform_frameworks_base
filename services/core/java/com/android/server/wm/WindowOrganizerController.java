@@ -472,6 +472,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         transition.setAllReady();
     }
 
+    // TODO(b/365884835): remove this method and callers.
     @Override
     public int startLegacyTransition(int type, @NonNull RemoteAnimationAdapter adapter,
             @NonNull IWindowContainerTransactionCallback callback,
@@ -489,16 +490,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     throw new IllegalArgumentException("Can't use legacy transitions in"
                             + " when shell transitions are enabled.");
                 }
-                final DisplayContent dc =
-                        mService.mRootWindowContainer.getDisplayContent(DEFAULT_DISPLAY);
-                if (dc.mAppTransition.isTransitionSet()) {
-                    // a transition already exists, so the callback probably won't be called.
-                    return -1;
-                }
-                adapter.setCallingPidUid(caller.mPid, caller.mUid);
-                dc.prepareAppTransition(type);
-                dc.mAppTransition.overridePendingAppTransitionRemote(adapter, true /* sync */,
-                        false /* isActivityEmbedding */);
                 syncId = startSyncWithOrganizer(callback);
                 applyTransaction(t, syncId, mService.mChainTracker.startLegacy("legacyTransit"),
                         caller);

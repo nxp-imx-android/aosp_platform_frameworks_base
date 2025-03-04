@@ -104,6 +104,7 @@ import com.android.systemui.shade.QSHeaderBoundsProvider;
 import com.android.systemui.shade.TouchLogger;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.StatusBarState;
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FakeShadowView;
@@ -117,6 +118,7 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.emptyshade.shared.ModesEmptyShadeFix;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
 import com.android.systemui.statusbar.notification.footer.ui.view.FooterView;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimationEvent;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil;
@@ -139,6 +141,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.policy.ScrollAdapter;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
+import com.android.systemui.statusbar.ui.SystemBarUtilsProxy;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.ColorUtilKt;
 import com.android.systemui.util.DumpUtilsKt;
@@ -351,10 +354,11 @@ public class NotificationStackScrollLayout
     private final int[] mTempInt2 = new int[2];
     private final HashSet<Runnable> mAnimationFinishedRunnables = new HashSet<>();
     private final HashSet<ExpandableView> mClearTransientViewsWhenFinished = new HashSet<>();
-    private final HashSet<Pair<ExpandableNotificationRow, Boolean>> mHeadsUpChangeAnimations
-            = new HashSet<>();
+    private final Map<ExpandableNotificationRow, HeadsUpAnimationEvent> mHeadsUpChangeAnimations
+            = new HashMap<>();
     private boolean mForceNoOverlappingRendering;
-    private final ArrayList<Pair<ExpandableNotificationRow, Boolean>> mTmpList = new ArrayList<>();
+    private final ArrayList<ExpandableNotificationRow> mTmpHeadsUpChangeAnimations =
+            new ArrayList<>();
     private boolean mAnimationRunning;
     private final ViewTreeObserver.OnPreDrawListener mRunningAnimationUpdater
             = new ViewTreeObserver.OnPreDrawListener() {
@@ -673,7 +677,7 @@ public class NotificationStackScrollLayout
         mExpandHelper.setScrollAdapter(mScrollAdapter);
 
         if (NotificationsHunSharedAnimationValues.isEnabled()) {
-            mHeadsUpAnimator = new HeadsUpAnimator(context);
+            mHeadsUpAnimator = new HeadsUpAnimator(context, /* systemBarUtilsProxy= */ null);
         } else {
             mHeadsUpAnimator = null;
         }
@@ -3074,20 +3078,20 @@ public class NotificationStackScrollLayout
      */
     private boolean removeRemovedChildFromHeadsUpChangeAnimations(View child) {
         boolean hasAddEvent = false;
-        for (Pair<ExpandableNotificationRow, Boolean> eventPair : mHeadsUpChangeAnimations) {
-            ExpandableNotificationRow row = eventPair.first;
-            boolean isHeadsUp = eventPair.second;
+        for (HeadsUpAnimationEvent event : mHeadsUpChangeAnimations.values()) {
+            ExpandableNotificationRow row = event.getRow();
+            boolean isHeadsUp = event.isHeadsUpAppearance();
             if (child == row) {
-                mTmpList.add(eventPair);
+                mTmpHeadsUpChangeAnimations.add(event.getRow());
                 hasAddEvent |= isHeadsUp;
             }
         }
         if (hasAddEvent) {
             // This child was just added lets remove all events.
-            mHeadsUpChangeAnimations.removeAll(mTmpList);
+            mTmpHeadsUpChangeAnimations.forEach((row) -> mHeadsUpChangeAnimations.remove(row));
             ((ExpandableNotificationRow) child).setHeadsUpAnimatingAway(false);
         }
-        mTmpList.clear();
+        mTmpHeadsUpChangeAnimations.clear();
         return hasAddEvent && mAddedHeadsUpChildren.contains(child);
     }
 
@@ -3373,9 +3377,9 @@ public class NotificationStackScrollLayout
     }
 
     private void generateHeadsUpAnimationEvents() {
-        for (Pair<ExpandableNotificationRow, Boolean> eventPair : mHeadsUpChangeAnimations) {
-            ExpandableNotificationRow row = eventPair.first;
-            boolean isHeadsUp = eventPair.second;
+        for (HeadsUpAnimationEvent headsUpEvent : mHeadsUpChangeAnimations.values()) {
+            ExpandableNotificationRow row = headsUpEvent.getRow();
+            boolean isHeadsUp = headsUpEvent.isHeadsUpAppearance();
             if (isHeadsUp != row.isHeadsUp()) {
                 // For cases where we have a heads up showing and appearing again we shouldn't
                 // do the animations at all.
@@ -3433,6 +3437,10 @@ public class NotificationStackScrollLayout
             }
             AnimationEvent event = new AnimationEvent(row, type);
             event.headsUpFromBottom = onBottom;
+
+            boolean hasStatusBarChip =
+                    StatusBarNotifChips.isEnabled() && headsUpEvent.getHasStatusBarChip();
+            event.headsUpHasStatusBarChip = hasStatusBarChip;
             // TODO(b/283084712) remove this and update the HUN filters at creation
             event.filter.animateHeight = false;
             mAnimationEvents.add(event);
@@ -5068,10 +5076,11 @@ public class NotificationStackScrollLayout
         mAnimationFinishedRunnables.add(runnable);
     }
 
-    public void generateHeadsUpAnimation(NotificationEntry entry, boolean isHeadsUp) {
+    public void generateHeadsUpAnimation(
+            NotificationEntry entry, boolean isHeadsUp, boolean hasStatusBarChip) {
         SceneContainerFlag.assertInLegacyMode();
         ExpandableNotificationRow row = entry.getHeadsUpAnimationView();
-        generateHeadsUpAnimation(row, isHeadsUp);
+        generateHeadsUpAnimation(row, isHeadsUp, hasStatusBarChip);
     }
 
     /**
@@ -5080,8 +5089,11 @@ public class NotificationStackScrollLayout
      *
      * @param row to animate
      * @param isHeadsUp true for appear, false for disappear animations
+     * @param hasStatusBarChip true if the status bar is currently displaying a chip for the given
+     *                         notification
      */
-    public void generateHeadsUpAnimation(ExpandableNotificationRow row, boolean isHeadsUp) {
+    public void generateHeadsUpAnimation(
+            ExpandableNotificationRow row, boolean isHeadsUp, boolean hasStatusBarChip) {
         boolean addAnimation =
                 mAnimationsEnabled && (isHeadsUp || mHeadsUpGoingAwayAnimationsAllowed);
         if (NotificationThrottleHun.isEnabled()) {
@@ -5096,25 +5108,35 @@ public class NotificationStackScrollLayout
                             : " isSeenInShade=" + row.getEntry().isSeenInShade()
                                     + " row=" + row.getKey())
                     + " mIsExpanded=" + mIsExpanded
-                    + " isHeadsUp=" + isHeadsUp);
+                    + " isHeadsUp=" + isHeadsUp
+                    + " hasStatusBarChip=" + hasStatusBarChip);
         }
+
         if (addAnimation) {
             // If we're hiding a HUN we just started showing THIS FRAME, then remove that event,
             // and do not add the disappear event either.
-            if (!isHeadsUp && mHeadsUpChangeAnimations.remove(new Pair<>(row, true))) {
+            boolean showingHunThisFrame =
+                    mHeadsUpChangeAnimations.containsKey(row)
+                            && mHeadsUpChangeAnimations.get(row).isHeadsUpAppearance();
+            if (!isHeadsUp && showingHunThisFrame) {
+                mHeadsUpChangeAnimations.remove(row);
                 if (SPEW) {
                     Log.v(TAG, "generateHeadsUpAnimation: previous hun appear animation cancelled");
                 }
                 logHunAnimationSkipped(row, "previous hun appear animation cancelled");
                 return;
             }
-            mHeadsUpChangeAnimations.add(new Pair<>(row, isHeadsUp));
+            mHeadsUpChangeAnimations.put(
+                    row, new HeadsUpAnimationEvent(row, isHeadsUp, hasStatusBarChip));
             mNeedsAnimation = true;
             if (!mIsExpanded && !mWillExpand && !isHeadsUp) {
                 row.setHeadsUpAnimatingAway(true);
                 if (SceneContainerFlag.isEnabled()) {
                     setHeadsUpAnimatingAway(true);
                 }
+            }
+            if (StatusBarNotifChips.isEnabled()) {
+                row.setHasStatusBarChipDuringHeadsUpAnimation(hasStatusBarChip);
             }
             requestChildrenUpdate();
         }
@@ -6469,30 +6491,50 @@ public class NotificationStackScrollLayout
         static AnimationFilter[] FILTERS = new AnimationFilter[]{
 
                 // ANIMATION_TYPE_ADD
-                new AnimationFilter()
-                        .animateAlpha()
-                        .animateHeight()
-                        .animateTopInset()
-                        .animateY()
-                        .animateZ()
-                        .hasDelays(),
+                physicalNotificationMovement()
+                        ? new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                        : new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                                .hasDelays(),
 
                 // ANIMATION_TYPE_REMOVE
-                new AnimationFilter()
-                        .animateAlpha()
-                        .animateHeight()
-                        .animateTopInset()
-                        .animateY()
-                        .animateZ()
-                        .hasDelays(),
+                physicalNotificationMovement()
+                        ? new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                        : new AnimationFilter()
+                                .animateAlpha()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                                .hasDelays(),
 
                 // ANIMATION_TYPE_REMOVE_SWIPED_OUT
-                new AnimationFilter()
-                        .animateHeight()
-                        .animateTopInset()
-                        .animateY()
-                        .animateZ()
-                        .hasDelays(),
+                physicalNotificationMovement()
+                        ? new AnimationFilter()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                        : new AnimationFilter()
+                                .animateHeight()
+                                .animateTopInset()
+                                .animateY()
+                                .animateZ()
+                                .hasDelays(),
 
                 // ANIMATION_TYPE_TOP_PADDING_CHANGED
                 new AnimationFilter()
@@ -6682,6 +6724,7 @@ public class NotificationStackScrollLayout
         final long length;
         View viewAfterChangingView;
         boolean headsUpFromBottom;
+        boolean headsUpHasStatusBarChip;
 
         AnimationEvent(ExpandableView view, int type) {
             this(view, type, LENGTHS[type]);

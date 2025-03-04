@@ -154,6 +154,16 @@ flag {
 }
 
 flag {
+    name: "enable_input_layer_transition_fix"
+    namespace: "lse_desktop_experience"
+    description: "Enables a bugfix for input layer disposal during certain transitions."
+    bug: "371473978"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_accessible_custom_headers"
     namespace: "lse_desktop_experience"
     description: "Enables a11y-friendly custom header input handling"
@@ -803,6 +813,26 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_app_handle_animation"
+    namespace: "lse_desktop_experience"
+    description: "Enables the animation that occurs when the app handle of a task in immersive mode is shown or hidden."
+    bug: "375252977"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_desktop_immersive_drag_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Keeps the app handle visible during a drag."
+    bug: "381280828"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_indicator_in_separate_thread_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables running visual indicator view operations in ShellDesktopThread."
@@ -827,13 +857,10 @@ flag {
 }
 
 flag {
-    name: "enable_persisting_density_scale_for_connected_displays"
+    name: "enable_persisting_display_size_for_connected_displays"
     namespace: "lse_desktop_experience"
-    description: "Enables persisting density scale on resolution change for connected displays."
+    description: "Enables persisting display size on resolution change for connected displays."
     bug: "392855657"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {
@@ -874,4 +901,18 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "enable_size_compat_mode_improvements_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enable some improvements in size compat mode for connected displays."
+    bug: "399752440"
+}
+
+flag {
+    name: "form_factor_based_desktop_first_switch"
+    namespace: "lse_desktop_experience"
+    description: "Enables the desktop-first mode switching logic based on its form factor."
+    bug: "394736817"
 }

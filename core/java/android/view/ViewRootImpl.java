@@ -13654,4 +13654,11 @@ public final class ViewRootImpl implements ViewParent,
             ThreadedRenderer.preInitBufferAllocator();
         }
     }
+
+    /**
+     * @hide
+     */
+    public Choreographer getChoreographer() {
+        return mChoreographer;
+    }
 }

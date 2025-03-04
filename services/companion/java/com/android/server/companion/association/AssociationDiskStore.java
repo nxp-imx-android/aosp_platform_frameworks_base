@@ -299,14 +299,24 @@ public final class AssociationDiskStore {
     public void writeLastRemovedAssociation(AssociationInfo association, String reason) {
         Slog.i(TAG, "Writing last removed association=" + association.getId() + " to disk...");
 
+        // Remove indirect identifier i.e. Mac Address
+        AssociationInfo.Builder builder = new AssociationInfo.Builder(association)
+                .setDeviceMacAddress(null);
+        // Set a placeholder display name if it's null because Mac Address and display name can't be
+        // both null.
+        if (association.getDisplayName() == null) {
+            builder.setDisplayName("");
+        }
+        AssociationInfo redactedAssociation = builder.build();
+
         final AtomicFile file = createStorageFileForUser(
-                association.getUserId(), FILE_NAME_LAST_REMOVED_ASSOCIATION);
+                redactedAssociation.getUserId(), FILE_NAME_LAST_REMOVED_ASSOCIATION);
         writeToFileSafely(file, out -> {
             out.write(String.valueOf(System.currentTimeMillis()).getBytes());
             out.write(' ');
             out.write(reason.getBytes());
             out.write(' ');
-            out.write(association.toString().getBytes());
+            out.write(redactedAssociation.toString().getBytes());
         });
     }
 

@@ -2885,11 +2885,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         verify(desksOrganizer).activateDesk(any(), eq(targetDeskId))
         verify(desksTransitionsObserver)
             .addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
+                DeskTransition.ActivateDesk(
                     token = transition,
                     displayId = SECOND_DISPLAY,
                     deskId = targetDeskId,
-                    enterTaskId = task.taskId,
                 )
             )
     }
@@ -5253,7 +5252,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         // Assert that task is NOT updated via WCT
-        verify(toggleResizeDesktopTaskTransitionHandler, never()).startTransition(any(), any())
+        verify(toggleResizeDesktopTaskTransitionHandler, never())
+            .startTransition(any(), any(), any())
         // Assert that task leash is updated via Surface Animations
         verify(mReturnToDragStartAnimator)
             .start(
@@ -5738,7 +5738,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             InputMethod.TOUCH,
         )
         // Assert that task is NOT updated via WCT
-        verify(toggleResizeDesktopTaskTransitionHandler, never()).startTransition(any(), any())
+        verify(toggleResizeDesktopTaskTransitionHandler, never())
+            .startTransition(any(), any(), any())
 
         // Assert that task leash is updated via Surface Animations
         verify(mReturnToDragStartAnimator)
@@ -5835,7 +5836,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         )
 
         // Assert that task is NOT updated via WCT
-        verify(toggleResizeDesktopTaskTransitionHandler, never()).startTransition(any(), any())
+        verify(toggleResizeDesktopTaskTransitionHandler, never())
+            .startTransition(any(), any(), any())
         verify(mockToast).show()
     }
 
@@ -6903,7 +6905,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     ): WindowContainerTransaction {
         val arg = argumentCaptor<WindowContainerTransaction>()
         verify(toggleResizeDesktopTaskTransitionHandler, atLeastOnce())
-            .startTransition(arg.capture(), eq(currentBounds))
+            .startTransition(arg.capture(), eq(currentBounds), isNull())
         return arg.lastValue
     }
 

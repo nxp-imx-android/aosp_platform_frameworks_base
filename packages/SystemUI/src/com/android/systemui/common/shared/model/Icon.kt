@@ -18,11 +18,13 @@ package com.android.systemui.common.shared.model
 
 import android.annotation.DrawableRes
 import android.graphics.drawable.Drawable
+import androidx.compose.runtime.Stable
 
 /**
  * Models an icon, that can either be already [loaded][Icon.Loaded] or be a [reference]
  * [Icon.Resource] to a resource. In case of [Loaded], the resource ID [res] is optional.
  */
+@Stable
 sealed class Icon {
     abstract val contentDescription: ContentDescription?
 

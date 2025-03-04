@@ -165,20 +165,15 @@ fun BrightnessSlider(
 
     val activeIconColor = colors.activeTickColor
     val inactiveIconColor = colors.inactiveTickColor
-    val trackIcon: DrawScope.(Offset, Color, Float) -> Unit =
-        remember(painter) {
-            { offset, color, alpha ->
-                translate(offset.x + IconPadding.toPx(), offset.y) {
-                    with(painter) {
-                        draw(
-                            IconSize.toSize(),
-                            colorFilter = ColorFilter.tint(color),
-                            alpha = alpha,
-                        )
-                    }
+    val trackIcon: DrawScope.(Offset, Color, Float) -> Unit = remember {
+        { offset, color, alpha ->
+            translate(offset.x + IconPadding.toPx(), offset.y) {
+                with(painter) {
+                    draw(IconSize.toSize(), colorFilter = ColorFilter.tint(color), alpha = alpha)
                 }
             }
         }
+    }
 
     Slider(
         value = animatedValue,

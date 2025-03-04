@@ -22,7 +22,7 @@ import android.annotation.DrawableRes
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.RippleDrawable
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -30,11 +30,11 @@ import android.view.ViewStub
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ProgressBar
+import android.window.DesktopModeFlags
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.core.content.ContextCompat
 import com.android.wm.shell.R
-import android.window.DesktopModeFlags
 
 private const val OPEN_MAXIMIZE_MENU_DELAY_ON_HOVER_MS = 350
 private const val MAX_DRAWABLE_ALPHA = 255
@@ -109,14 +109,14 @@ class MaximizeButtonView(context: Context, attrs: AttributeSet) : FrameLayout(co
         darkMode: Boolean,
         iconForegroundColor: ColorStateList? = null,
         baseForegroundColor: Int? = null,
-        rippleDrawable: RippleDrawable? = null
+        backgroundDrawable: Drawable? = null
     ) {
         if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue()) {
             requireNotNull(iconForegroundColor) { "Icon foreground color must be non-null" }
             requireNotNull(baseForegroundColor) { "Base foreground color must be non-null" }
-            requireNotNull(rippleDrawable) { "Ripple drawable must be non-null" }
+            requireNotNull(backgroundDrawable) { "Background drawable must be non-null" }
             maximizeWindow.imageTintList = iconForegroundColor
-            maximizeWindow.background = rippleDrawable
+            maximizeWindow.background = backgroundDrawable
             stubProgressBarContainer.setOnInflateListener { _, inflated ->
                 val progressBar = (inflated as FrameLayout)
                     .requireViewById(R.id.progress_bar) as ProgressBar

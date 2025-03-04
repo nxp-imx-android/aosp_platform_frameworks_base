@@ -19,6 +19,7 @@ package com.android.systemui.qs.panels.ui.compose.selection
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateOffset
 import androidx.compose.animation.core.animateSize
 import androidx.compose.animation.core.updateTransition
@@ -61,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.size
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BADGE_ANGLE_RAD
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeSize
@@ -184,18 +186,37 @@ private fun Modifier.selectionBorder(
     }
 }
 
+/**
+ * Draws a clickable badge in the top end corner of the parent composable.
+ *
+ * The badge will fade in and fade out based on whether or not it's enabled.
+ *
+ * @param icon the [ImageVector] to display in the badge
+ * @param contentDescription the content description for the icon
+ * @param enabled Whether the badge should be visible and clickable
+ * @param onClick the callback when the badge is clicked
+ */
 @Composable
-fun StaticTileBadge(icon: ImageVector, contentDescription: String?, onClick: () -> Unit) {
+fun StaticTileBadge(
+    icon: ImageVector,
+    contentDescription: String?,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
     val offset = with(LocalDensity.current) { Offset(BadgeXOffset.toPx(), BadgeYOffset.toPx()) }
+    val alpha by animateFloatAsState(if (enabled) 1f else 0f)
     MinimumInteractiveSizeComponent(angle = { BADGE_ANGLE_RAD }, offset = { offset }) {
         Box(
             Modifier.fillMaxSize()
-                .clickable(
-                    interactionSource = null,
-                    indication = null,
-                    onClickLabel = contentDescription,
-                    onClick = onClick,
-                )
+                .graphicsLayer { this.alpha = alpha }
+                .thenIf(enabled) {
+                    Modifier.clickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClickLabel = contentDescription,
+                        onClick = onClick,
+                    )
+                }
         ) {
             val secondaryColor = MaterialTheme.colorScheme.secondary
             Icon(
@@ -214,7 +235,8 @@ fun StaticTileBadge(icon: ImageVector, contentDescription: String?, onClick: () 
 private fun MinimumInteractiveSizeComponent(
     angle: () -> Float,
     offset: () -> Offset,
-    content: @Composable BoxScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit = {},
 ) {
     // Use a higher zIndex than the tile to draw over it, and manually create the touch target
     // as we're drawing over neighbor tiles as well.
@@ -222,7 +244,8 @@ private fun MinimumInteractiveSizeComponent(
     Box(
         contentAlignment = Alignment.Center,
         modifier =
-            Modifier.zIndex(2f)
+            modifier
+                .zIndex(2f)
                 .systemGestureExclusion { Rect(Offset.Zero, it.size.toSize()) }
                 .layout { measurable, constraints ->
                     val size = minTouchTargetSize.roundToPx()

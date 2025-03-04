@@ -65,12 +65,12 @@ class BatteryInteractor @Inject constructor(repo: BatteryRepository) {
      */
     val batteryAttributionType =
         combine(isCharging, powerSave, isBatteryDefenderEnabled) { charging, powerSave, defend ->
-            if (charging) {
-                BatteryAttributionModel.Charging
-            } else if (powerSave) {
+            if (powerSave) {
                 BatteryAttributionModel.PowerSave
             } else if (defend) {
                 BatteryAttributionModel.Defend
+            } else if (charging) {
+                BatteryAttributionModel.Charging
             } else {
                 null
             }

@@ -25,6 +25,7 @@ import android.os.SystemProperties
 import android.os.UserHandle
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CLOSE
+import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
@@ -118,6 +119,7 @@ sealed class DragToDesktopTransitionHandler(
     fun startDragToDesktopTransition(
         taskInfo: RunningTaskInfo,
         dragToDesktopAnimator: MoveToDesktopAnimator,
+        visualIndicator: DesktopModeVisualIndicator?,
     ) {
         if (inProgress) {
             logV("Drag to desktop transition already in progress.")
@@ -163,12 +165,14 @@ sealed class DragToDesktopTransitionHandler(
                     dragAnimator = dragToDesktopAnimator,
                     startTransitionToken = startTransitionToken,
                     otherSplitTask = otherTask,
+                    visualIndicator = visualIndicator,
                 )
             } else {
                 TransitionState.FromFullscreen(
                     draggedTaskId = taskInfo.taskId,
                     dragAnimator = dragToDesktopAnimator,
                     startTransitionToken = startTransitionToken,
+                    visualIndicator = visualIndicator,
                 )
             }
     }
@@ -457,6 +461,13 @@ sealed class DragToDesktopTransitionHandler(
         state.surfaceLayers = layers
         state.startTransitionFinishCb = finishCallback
         state.startTransitionFinishTransaction = finishTransaction
+
+        val taskChange = state.draggedTaskChange ?: error("Expected non-null task change.")
+        val taskInfo = taskChange.taskInfo ?: error("Expected non-null task info.")
+
+        if (DesktopModeFlags.ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX.isTrue) {
+            attachIndicatorToTransitionRoot(state, info, taskInfo, startTransaction)
+        }
         startTransaction.apply()
 
         if (state.cancelState == CancelState.NO_CANCEL) {
@@ -485,8 +496,6 @@ sealed class DragToDesktopTransitionHandler(
                 } else {
                     SPLIT_POSITION_BOTTOM_OR_RIGHT
                 }
-            val taskInfo =
-                state.draggedTaskChange?.taskInfo ?: error("Expected non-null task info.")
             val wct = WindowContainerTransaction()
             restoreWindowOrder(wct)
             state.startTransitionFinishTransaction?.apply()
@@ -509,6 +518,21 @@ sealed class DragToDesktopTransitionHandler(
             requestBubble(wct, taskInfo, onLeft)
         }
         return true
+    }
+
+    private fun attachIndicatorToTransitionRoot(
+        state: TransitionState,
+        info: TransitionInfo,
+        taskInfo: RunningTaskInfo,
+        t: SurfaceControl.Transaction,
+    ) {
+        val transitionRoot = info.getRoot(info.findRootIndex(taskInfo.displayId))
+        state.visualIndicator?.let {
+            // Attach the indicator to the transition root so that it's removed at the end of the
+            // transition regardless of whether we managed to release the indicator.
+            it.reparentLeash(t, transitionRoot.leash)
+            it.fadeInIndicator()
+        }
     }
 
     /**
@@ -901,6 +925,7 @@ sealed class DragToDesktopTransitionHandler(
         abstract var surfaceLayers: DragToDesktopLayers?
         abstract var cancelState: CancelState
         abstract var startAborted: Boolean
+        abstract val visualIndicator: DesktopModeVisualIndicator?
 
         data class FromFullscreen(
             override val draggedTaskId: Int,
@@ -915,6 +940,7 @@ sealed class DragToDesktopTransitionHandler(
             override var surfaceLayers: DragToDesktopLayers? = null,
             override var cancelState: CancelState = CancelState.NO_CANCEL,
             override var startAborted: Boolean = false,
+            override val visualIndicator: DesktopModeVisualIndicator?,
             var otherRootChanges: MutableList<Change> = mutableListOf(),
         ) : TransitionState()
 
@@ -931,6 +957,7 @@ sealed class DragToDesktopTransitionHandler(
             override var surfaceLayers: DragToDesktopLayers? = null,
             override var cancelState: CancelState = CancelState.NO_CANCEL,
             override var startAborted: Boolean = false,
+            override val visualIndicator: DesktopModeVisualIndicator?,
             var splitRootChange: Change? = null,
             var otherSplitTask: Int,
         ) : TransitionState()

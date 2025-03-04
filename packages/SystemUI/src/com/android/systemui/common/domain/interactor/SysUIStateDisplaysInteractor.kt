@@ -16,7 +16,9 @@
 
 package com.android.systemui.common.domain.interactor
 
+import android.util.Log
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.PerDisplayRepository
 import com.android.systemui.model.StateChange
 import com.android.systemui.model.SysUiState
@@ -26,20 +28,36 @@ import javax.inject.Inject
 @SysUISingleton
 class SysUIStateDisplaysInteractor
 @Inject
-constructor(private val sysUIStateRepository: PerDisplayRepository<SysUiState>) {
+constructor(
+    private val sysUIStateRepository: PerDisplayRepository<SysUiState>,
+    private val displayRepository: DisplayRepository,
+) {
 
     /**
      * Sets the flags on the given [targetDisplayId] based on the [stateChanges], while making sure
      * that those flags are not set in any other display.
      */
     fun setFlagsExclusivelyToDisplay(targetDisplayId: Int, stateChanges: StateChange) {
-        sysUIStateRepository.forEachInstance { displayId, instance ->
-            if (displayId == targetDisplayId) {
-                stateChanges.applyTo(instance)
-            } else {
-                stateChanges.clearAllChangedFlagsIn(instance)
-            }
+        if (SysUiState.DEBUG) {
+            Log.d(TAG, "Setting flags $stateChanges only for display $targetDisplayId")
         }
+        displayRepository.displays.value
+            .mapNotNull { sysUIStateRepository[it.displayId] }
+            .apply {
+                // Let's first modify all states, without committing changes ...
+                forEach { displaySysUIState ->
+                    if (displaySysUIState.displayId == targetDisplayId) {
+                        stateChanges.applyTo(displaySysUIState)
+                    } else {
+                        stateChanges.clearFrom(displaySysUIState)
+                    }
+                }
+                // ... And commit changes at the end
+                forEach { sysuiState -> sysuiState.commitUpdate() }
+            }
+    }
+
+    private companion object {
+        const val TAG = "SysUIStateInteractor"
     }
 }
-

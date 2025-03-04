@@ -27,10 +27,10 @@ import com.android.systemui.statusbar.chips.notification.domain.interactor.Statu
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.GroupEntry
-import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifComparator
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter
@@ -459,7 +459,12 @@ constructor(
                 } else {
                     if (posted.isHeadsUpEntry) {
                         // We don't want this to be interrupting anymore, let's remove it
-                        hunMutator.removeNotification(posted.key, false /*removeImmediately*/)
+                        // If the notification is pinned by the user, the only way a user can un-pin
+                        // it is by tapping the status bar notification chip. Since that's a clear
+                        // user action, we should remove the HUN immediately instead of waiting for
+                        // any sort of minimum timeout.
+                        val shouldRemoveImmediately = posted.isPinnedByUser
+                        hunMutator.removeNotification(posted.key, shouldRemoveImmediately)
                     } else {
                         // Don't let the bind finish
                         cancelHeadsUpBind(posted.entry)

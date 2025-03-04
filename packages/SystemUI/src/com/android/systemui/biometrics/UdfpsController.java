@@ -179,7 +179,6 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     @NonNull private final PowerInteractor mPowerInteractor;
     @NonNull private final CoroutineScope mScope;
     @NonNull private final InputManager mInputManager;
-    @NonNull private final UdfpsKeyguardAccessibilityDelegate mUdfpsKeyguardAccessibilityDelegate;
     @NonNull private final SelectedUserInteractor mSelectedUserInteractor;
     private final boolean mIgnoreRefreshRate;
     private final KeyguardTransitionInteractor mKeyguardTransitionInteractor;
@@ -292,7 +291,6 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                             mActivityTransitionAnimator,
                         mPrimaryBouncerInteractor,
                         mAlternateBouncerInteractor,
-                        mUdfpsKeyguardAccessibilityDelegate,
                         mKeyguardTransitionInteractor,
                         mSelectedUserInteractor,
                         mDeviceEntryUdfpsTouchOverlayViewModel,
@@ -691,7 +689,6 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             @NonNull AlternateBouncerInteractor alternateBouncerInteractor,
             @NonNull InputManager inputManager,
             @NonNull DeviceEntryFaceAuthInteractor deviceEntryFaceAuthInteractor,
-            @NonNull UdfpsKeyguardAccessibilityDelegate udfpsKeyguardAccessibilityDelegate,
             @NonNull SelectedUserInteractor selectedUserInteractor,
             @NonNull KeyguardTransitionInteractor keyguardTransitionInteractor,
             Lazy<DeviceEntryUdfpsTouchOverlayViewModel> deviceEntryUdfpsTouchOverlayViewModel,
@@ -742,7 +739,6 @@ public class UdfpsController implements DozeReceiver, Dumpable {
         mPowerInteractor = powerInteractor;
         mScope = scope;
         mInputManager = inputManager;
-        mUdfpsKeyguardAccessibilityDelegate = udfpsKeyguardAccessibilityDelegate;
         mSelectedUserInteractor = selectedUserInteractor;
         mKeyguardTransitionInteractor = keyguardTransitionInteractor;
 

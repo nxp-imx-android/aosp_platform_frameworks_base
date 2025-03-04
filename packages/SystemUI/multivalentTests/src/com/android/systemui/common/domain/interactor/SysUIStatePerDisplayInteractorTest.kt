@@ -19,6 +19,7 @@ package com.android.systemui.common.domain.interactor
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.model.StateChange
 import com.android.systemui.model.fakeSysUIStatePerDisplayRepository
 import com.android.systemui.model.sysUiStateFactory
@@ -26,6 +27,7 @@ import com.android.systemui.model.sysuiStateInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.runner.RunWith
 
@@ -48,6 +50,13 @@ class SysUIStatePerDisplayInteractorTest : SysuiTestCase() {
             add(0, state0)
             add(1, state1)
             add(2, state2)
+        }
+        runBlocking {
+            kosmos.displayRepository.apply {
+                addDisplay(0)
+                addDisplay(1)
+                addDisplay(2)
+            }
         }
     }
 

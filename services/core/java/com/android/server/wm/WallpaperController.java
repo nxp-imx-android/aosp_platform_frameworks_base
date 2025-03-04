@@ -21,7 +21,6 @@ import static android.app.WallpaperManager.COMMAND_UNFREEZE;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY_WITH_WALLPAPER;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
@@ -118,42 +117,20 @@ class WallpaperController {
     private boolean mShouldOffsetWallpaperCenter;
 
     private final ToBooleanFunction<WindowState> mFindWallpaperTargetFunction = w -> {
-        final boolean useShellTransition = w.mTransitionController.isShellTransitionsEnabled();
-        if (!useShellTransition) {
-            if (w.mActivityRecord != null && !w.mActivityRecord.isVisible()
-                    && !w.mActivityRecord.isAnimating(TRANSITION | PARENTS)) {
-                // If this window's app token is hidden and not animating, it is of no interest.
-                if (DEBUG_WALLPAPER) Slog.v(TAG, "Skipping hidden and not animating token: " + w);
-                return false;
-            }
-        } else {
-            final ActivityRecord ar = w.mActivityRecord;
-            // The animating window can still be visible on screen if it is in transition, so we
-            // should check whether this window can be wallpaper target even when visibleRequested
-            // is false.
-            if (ar != null && !ar.isVisibleRequested() && !ar.isVisible()) {
-                // An activity that is not going to remain visible shouldn't be the target.
-                return false;
-            }
+        final ActivityRecord ar = w.mActivityRecord;
+        // The animating window can still be visible on screen if it is in transition, so we
+        // should check whether this window can be wallpaper target even when visibleRequested
+        // is false.
+        if (ar != null && !ar.isVisibleRequested() && !ar.isVisible()) {
+            // An activity that is not going to remain visible shouldn't be the target.
+            return false;
         }
         if (DEBUG_WALLPAPER) Slog.v(TAG, "Win " + w + ": isOnScreen=" + w.isOnScreen()
                 + " mDrawState=" + w.mWinAnimator.mDrawState);
 
-        final WindowContainer animatingContainer = w.mActivityRecord != null
-                ? w.mActivityRecord.getAnimatingContainer() : null;
-        if (!useShellTransition && animatingContainer != null
-                && animatingContainer.isAnimating(TRANSITION | PARENTS)
-                && AppTransition.isKeyguardGoingAwayTransitOld(animatingContainer.mTransit)
-                && (animatingContainer.mTransitFlags
-                & TRANSIT_FLAG_KEYGUARD_GOING_AWAY_WITH_WALLPAPER) != 0) {
-            // Keep the wallpaper visible when Keyguard is going away.
-            mFindResults.setUseTopWallpaperAsTarget(true);
-        }
-
         if (mService.mPolicy.isKeyguardLocked()) {
             if (w.canShowWhenLocked()) {
-                if (mService.mPolicy.isKeyguardOccluded() || (useShellTransition
-                        ? w.inTransition() : mService.mPolicy.isKeyguardUnoccluding())) {
+                if (mService.mPolicy.isKeyguardOccluded() || w.inTransition()) {
                     // The lowest show-when-locked window decides whether to show wallpaper.
                     mFindResults.mNeedsShowWhenLockedWallpaper = !isFullscreen(w.mAttrs)
                             || (w.mActivityRecord != null && !w.mActivityRecord.fillsParent());
@@ -176,15 +153,11 @@ class WallpaperController {
             }
         }
 
-        final boolean animationWallpaper = animatingContainer != null
-                && animatingContainer.getAnimation() != null
-                && animatingContainer.getAnimation().getShowWallpaper();
-        final boolean hasWallpaper = w.hasWallpaper() || animationWallpaper;
         if (isBackNavigationTarget(w)) {
             if (DEBUG_WALLPAPER) Slog.v(TAG, "Found back animation wallpaper target: " + w);
             mFindResults.setWallpaperTarget(w);
             return true;
-        } else if (hasWallpaper
+        } else if (w.hasWallpaper()
                 && (w.mActivityRecord != null ? w.isOnScreen() : w.isReadyForDisplay())) {
             if (DEBUG_WALLPAPER) Slog.v(TAG, "Found wallpaper target: " + w);
             mFindResults.setWallpaperTarget(w);

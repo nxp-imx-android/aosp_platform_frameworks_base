@@ -133,10 +133,10 @@ class DesktopTilingWindowDecoration(
         isDarkMode = isTaskInDarkMode(taskInfo)
         // Observe drag resizing to break tiling if a task is drag resized.
         desktopModeWindowDecoration.addDragResizeListener(this)
-
+        val callback = { initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp) }
         if (isTiled) {
             val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
-            toggleResizeDesktopTaskTransitionHandler.startTransition(wct, currentBounds)
+            toggleResizeDesktopTaskTransitionHandler.startTransition(wct, currentBounds, callback)
         } else {
             // Handle the case where we attempt to snap resize when already snap resized: the task
             // position won't need to change but we want to animate the surface going back to the
@@ -147,10 +147,10 @@ class DesktopTilingWindowDecoration(
                     resizeMetadata.getLeash(),
                     startBounds = currentBounds,
                     endBounds = destinationBounds,
+                    callback,
                 )
             }
         }
-        initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp)
         return isTiled
     }
 

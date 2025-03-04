@@ -17,51 +17,51 @@
 package com.android.systemui.statusbar.featurepods.media.ui.viewmodel
 
 import android.content.Context
+import androidx.compose.runtime.getValue
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.lifecycle.ExclusiveActivatable
+import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.featurepods.media.domain.interactor.MediaControlChipInteractor
 import com.android.systemui.statusbar.featurepods.media.shared.model.MediaControlChipModel
 import com.android.systemui.statusbar.featurepods.popups.shared.model.HoverBehavior
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipId
 import com.android.systemui.statusbar.featurepods.popups.shared.model.PopupChipModel
 import com.android.systemui.statusbar.featurepods.popups.ui.viewmodel.StatusBarPopupChipViewModel
-import javax.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 /**
  * [StatusBarPopupChipViewModel] for a media control chip in the status bar. This view model is
  * responsible for converting the [MediaControlChipModel] to a [PopupChipModel] that can be used to
  * display a media control chip.
  */
-@SysUISingleton
 class MediaControlChipViewModel
-@Inject
+@AssistedInject
 constructor(
-    @Background private val backgroundScope: CoroutineScope,
     @Application private val applicationContext: Context,
     mediaControlChipInteractor: MediaControlChipInteractor,
-) : StatusBarPopupChipViewModel {
-
+) : StatusBarPopupChipViewModel, ExclusiveActivatable() {
+    private val hydrator: Hydrator = Hydrator("MediaControlChipViewModel.hydrator")
     /**
-     * A [StateFlow] of the current [PopupChipModel]. This flow emits a new [PopupChipModel]
+     * A snapshot [State] of the current [PopupChipModel]. This emits a new [PopupChipModel]
      * whenever the underlying [MediaControlChipModel] changes.
      */
-    override val chip: StateFlow<PopupChipModel> =
-        mediaControlChipInteractor.mediaControlChipModel
-            .map { mediaControlChipModel -> toPopupChipModel(mediaControlChipModel) }
-            .stateIn(
-                backgroundScope,
-                SharingStarted.WhileSubscribed(),
-                PopupChipModel.Hidden(PopupChipId.MediaControl),
-            )
+    override val chip: PopupChipModel by
+        hydrator.hydratedStateOf(
+            traceName = "chip",
+            initialValue = PopupChipModel.Hidden(PopupChipId.MediaControl),
+            source =
+                mediaControlChipInteractor.mediaControlChipModel.map { model ->
+                    toPopupChipModel(model)
+                },
+        )
+
+    override suspend fun onActivated(): Nothing {
+        hydrator.activate()
+    }
 
     private fun toPopupChipModel(model: MediaControlChipModel?): PopupChipModel {
         if (model == null || model.songName.isNullOrEmpty()) {
@@ -96,7 +96,12 @@ constructor(
 
         return HoverBehavior.Button(
             icon = Icon.Loaded(drawable = icon, contentDescription = contentDescription),
-            onIconPressed = { backgroundScope.launch { action.run() } },
+            onIconPressed = { action.run() },
         )
+    }
+
+    @AssistedFactory
+    interface Factory {
+        fun create(): MediaControlChipViewModel
     }
 }

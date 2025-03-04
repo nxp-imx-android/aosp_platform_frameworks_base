@@ -67,6 +67,7 @@ import com.android.systemui.flags.FakeFeatureFlagsClassic;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.SourceType;
@@ -1126,6 +1127,30 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         row.markHeadsUpSeen();
         // Then it should NOT stay on screen anymore
         assertThat(row.mustStayOnScreen()).isFalse();
+    }
+
+    @Test
+    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
+    public void hasStatusBarChipDuringHeadsUpAnimation_flagOff_false() throws Exception {
+        final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
+
+        row.setHasStatusBarChipDuringHeadsUpAnimation(true);
+
+        assertThat(row.hasStatusBarChipDuringHeadsUpAnimation()).isFalse();
+    }
+
+    @Test
+    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    public void hasStatusBarChipDuringHeadsUpAnimation_flagOn_returnsValue() throws Exception {
+        final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
+
+        assertThat(row.hasStatusBarChipDuringHeadsUpAnimation()).isFalse();
+
+        row.setHasStatusBarChipDuringHeadsUpAnimation(true);
+        assertThat(row.hasStatusBarChipDuringHeadsUpAnimation()).isTrue();
+
+        row.setHasStatusBarChipDuringHeadsUpAnimation(false);
+        assertThat(row.hasStatusBarChipDuringHeadsUpAnimation()).isFalse();
     }
 
     private void setDrawableIconsInImageView(CachingIconView icon, Drawable iconDrawable,

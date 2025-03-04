@@ -38,7 +38,6 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.media.controls.ui.animation.ColorSchemeTransition
 import com.android.systemui.media.controls.ui.animation.MetadataAnimationHandler
 import com.android.systemui.media.controls.ui.binder.MediaControlViewBinder
-import com.android.systemui.media.controls.ui.binder.MediaRecommendationsViewBinder
 import com.android.systemui.media.controls.ui.binder.SeekBarObserver
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController.Companion.calculateAlpha
 import com.android.systemui.media.controls.ui.view.GutsViewHolder
@@ -48,7 +47,6 @@ import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.hea
 import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.labelLargeTF
 import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.labelMediumTF
 import com.android.systemui.media.controls.ui.view.MediaViewHolder.Companion.titleMediumTF
-import com.android.systemui.media.controls.ui.view.RecommendationViewHolder
 import com.android.systemui.media.controls.ui.viewmodel.MediaControlViewModel
 import com.android.systemui.media.controls.ui.viewmodel.SeekBarViewModel
 import com.android.systemui.res.R
@@ -90,15 +88,6 @@ constructor(
     private val globalSettings: GlobalSettings,
 ) {
 
-    /**
-     * Indicating that the media view controller is for a notification-based player, session-based
-     * player, or recommendation
-     */
-    enum class TYPE {
-        PLAYER,
-        RECOMMENDATION,
-    }
-
     companion object {
         @JvmField val GUTS_ANIMATION_DURATION = 234L
     }
@@ -115,7 +104,6 @@ constructor(
     private var animationDuration: Long = 0
     private var animateNextStateChange: Boolean = false
     private val measurement = MeasurementOutput(0, 0)
-    private var type: TYPE = TYPE.PLAYER
 
     /** A map containing all viewStates for all locations of this mediaState */
     private val viewStates: MutableMap<CacheKey, TransitionViewState?> = mutableMapOf()
@@ -203,7 +191,6 @@ constructor(
     private var isNextButtonAvailable = false
 
     /** View holders for controller */
-    var recommendationViewHolder: RecommendationViewHolder? = null
     var mediaViewHolder: MediaViewHolder? = null
 
     private lateinit var seekBarObserver: SeekBarObserver
@@ -417,13 +404,9 @@ constructor(
 
     /** Set the height of UMO background constraints. */
     private fun setBackgroundHeights(height: Int) {
-        val backgroundIds =
-            if (type == TYPE.PLAYER) {
-                MediaViewHolder.backgroundIds
-            } else {
-                setOf(RecommendationViewHolder.backgroundId)
-            }
-        backgroundIds.forEach { id -> expandedLayout.getConstraint(id).layout.mHeight = height }
+        MediaViewHolder.backgroundIds.forEach { id ->
+            expandedLayout.getConstraint(id).layout.mHeight = height
+        }
     }
 
     /**
@@ -431,11 +414,7 @@ constructor(
      * [TransitionViewState].
      */
     private fun setGutsViewState(viewState: TransitionViewState) {
-        val controlsIds =
-            when (type) {
-                TYPE.PLAYER -> MediaViewHolder.controlsIds
-                TYPE.RECOMMENDATION -> RecommendationViewHolder.controlsIds
-            }
+        val controlsIds = MediaViewHolder.controlsIds
         val gutsIds = GutsViewHolder.ids
         controlsIds.forEach { id ->
             viewState.widgetStates.get(id)?.let { state ->
@@ -467,7 +446,6 @@ constructor(
             squishedViewState.widgetStates.get(id)?.let { state -> state.height = squishedHeight }
         }
 
-        // media player
         calculateWidgetGroupAlphaForSquishiness(
             MediaViewHolder.expandedBottomActionIds,
             squishedViewState.measureHeight.toFloat(),
@@ -477,20 +455,6 @@ constructor(
         calculateWidgetGroupAlphaForSquishiness(
             MediaViewHolder.detailIds,
             squishedViewState.measureHeight.toFloat(),
-            squishedViewState,
-            squishFraction,
-        )
-        // recommendation card
-        val titlesTop =
-            calculateWidgetGroupAlphaForSquishiness(
-                RecommendationViewHolder.mediaTitlesAndSubtitlesIds,
-                squishedViewState.measureHeight.toFloat(),
-                squishedViewState,
-                squishFraction,
-            )
-        calculateWidgetGroupAlphaForSquishiness(
-            RecommendationViewHolder.mediaContainersIds,
-            titlesTop,
             squishedViewState,
             squishFraction,
         )
@@ -661,10 +625,10 @@ constructor(
      * Attach a view to this controller. This may perform measurements if it's not available yet and
      * should therefore be done carefully.
      */
-    fun attach(transitionLayout: TransitionLayout, type: TYPE) =
+    fun attach(transitionLayout: TransitionLayout) =
         traceSection("MediaViewController#attach") {
-            loadLayoutForType(type)
-            logger.logMediaLocation("attach $type", currentStartLocation, currentEndLocation)
+            loadLayoutConstraints()
+            logger.logMediaLocation("attach", currentStartLocation, currentEndLocation)
             this.transitionLayout = transitionLayout
             layoutController.attach(transitionLayout)
             if (currentEndLocation == MediaHierarchyManager.LOCATION_UNKNOWN) {
@@ -691,7 +655,7 @@ constructor(
         seekBarViewModel.setEnabledChangeListener(enabledChangeListener)
 
         val mediaCard = mediaViewHolder.player
-        attach(mediaViewHolder.player, TYPE.PLAYER)
+        attach(mediaViewHolder.player)
 
         val turbulenceNoiseView = mediaViewHolder.turbulenceNoiseView
         turbulenceNoiseController = TurbulenceNoiseController(turbulenceNoiseView)
@@ -811,15 +775,6 @@ constructor(
                 refreshState()
             }
         }
-    }
-
-    fun attachRecommendations(recommendationViewHolder: RecommendationViewHolder) {
-        if (!SceneContainerFlag.isEnabled) return
-        this.recommendationViewHolder = recommendationViewHolder
-
-        attach(recommendationViewHolder.recommendations, TYPE.RECOMMENDATION)
-        recsConfigurationChangeListener =
-            MediaRecommendationsViewBinder::updateRecommendationsVisibility
     }
 
     fun bindSeekBar(onSeek: () -> Unit, onBindSeekBar: (SeekBarViewModel) -> Unit) {
@@ -1026,20 +981,10 @@ constructor(
         return result
     }
 
-    private fun loadLayoutForType(type: TYPE) {
-        this.type = type
-
-        // These XML resources contain ConstraintSets that will apply to this player type's layout
-        when (type) {
-            TYPE.PLAYER -> {
-                collapsedLayout.load(context, R.xml.media_session_collapsed)
-                expandedLayout.load(context, R.xml.media_session_expanded)
-            }
-            TYPE.RECOMMENDATION -> {
-                collapsedLayout.load(context, R.xml.media_recommendations_collapsed)
-                expandedLayout.load(context, R.xml.media_recommendations_expanded)
-            }
-        }
+    private fun loadLayoutConstraints() {
+        // These XML resources contain ConstraintSets that will apply to this player's layout
+        collapsedLayout.load(context, R.xml.media_session_collapsed)
+        expandedLayout.load(context, R.xml.media_session_expanded)
         readjustUIUpdateConstraints()
         refreshState()
     }

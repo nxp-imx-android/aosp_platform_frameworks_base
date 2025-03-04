@@ -98,10 +98,6 @@
     TODO (b/293252410) - change this comment/resource when flag is enabled -->
     <integer name="small_land_lockscreen_quick_settings_max_rows">2</integer>
 
-    <!-- If the dp width of the available space is <= this value, potentially adjust the number
-         of media recommendation items-->
-    <integer name="default_qs_media_rec_width_dp">380</integer>
-
     <!-- The number of columns that the top level tiles span in the QuickSettings -->
 
     <!-- The default tiles to display in QuickSettings -->

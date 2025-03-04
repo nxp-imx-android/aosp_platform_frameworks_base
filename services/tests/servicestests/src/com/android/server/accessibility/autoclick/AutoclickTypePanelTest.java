@@ -201,11 +201,11 @@ public class AutoclickTypePanelTest {
     public void moveToNextCorner_positionButton_rotatesThroughAllPositions() {
         // Define all positions in sequence
         int[][] expectedPositions = {
-                {0, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
-                {1, Gravity.START | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
-                {2, Gravity.START | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
-                {3, Gravity.END | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
-                {0, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90}
+                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
+                {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
+                {CORNER_TOP_LEFT, Gravity.START | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
+                {CORNER_TOP_RIGHT, Gravity.END | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
+                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90}
         };
 
         // Check initial position
@@ -270,7 +270,7 @@ public class AutoclickTypePanelTest {
         int screenWidth = mTestableContext.getResources().getDisplayMetrics().widthPixels;
 
         // Verify initial corner is bottom-right.
-        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+        assertThat(mAutoclickTypePanel.getCurrentCornerForTesting())
                 .isEqualTo(CORNER_BOTTOM_RIGHT);
 
         dispatchDragSequence(contentView,
@@ -279,7 +279,7 @@ public class AutoclickTypePanelTest {
 
         // Verify snapping to the right.
         assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.TOP);
-        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+        assertThat(mAutoclickTypePanel.getCurrentCornerForTesting())
                 .isEqualTo(CORNER_TOP_RIGHT);
     }
 
@@ -293,7 +293,7 @@ public class AutoclickTypePanelTest {
         int screenWidth = mTestableContext.getResources().getDisplayMetrics().widthPixels;
 
         // Verify initial corner is bottom-right.
-        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+        assertThat(mAutoclickTypePanel.getCurrentCornerForTesting())
                 .isEqualTo(CORNER_BOTTOM_RIGHT);
 
         dispatchDragSequence(contentView,
@@ -302,7 +302,7 @@ public class AutoclickTypePanelTest {
 
         // Verify snapping to the left.
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
-        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting())
+        assertThat(mAutoclickTypePanel.getCurrentCornerForTesting())
                 .isEqualTo(CORNER_BOTTOM_LEFT);
     }
 
@@ -319,7 +319,7 @@ public class AutoclickTypePanelTest {
 
         // Verify panel is positioned at default bottom-right corner.
         WindowManager.LayoutParams params = panel.getLayoutParamsForTesting();
-        assertThat(panel.getCurrentCornerIndexForTesting()).isEqualTo(CORNER_BOTTOM_RIGHT);
+        assertThat(panel.getCurrentCornerForTesting()).isEqualTo(CORNER_BOTTOM_RIGHT);
         assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.BOTTOM);
         assertThat(params.x).isEqualTo(15);  // Default edge margin.
         assertThat(params.y).isEqualTo(90);  // Default bottom offset.
@@ -353,7 +353,7 @@ public class AutoclickTypePanelTest {
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
         assertThat(params.x).isEqualTo(15);
         assertThat(params.y).isEqualTo(30);
-        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting()).isEqualTo(
+        assertThat(mAutoclickTypePanel.getCurrentCornerForTesting()).isEqualTo(
                 CORNER_TOP_LEFT);
     }
 
@@ -392,7 +392,7 @@ public class AutoclickTypePanelTest {
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
         assertThat(params.x).isEqualTo(15); // PANEL_EDGE_MARGIN
         assertThat(params.y).isEqualTo(panelLocation[1] + 10);
-        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting()).isEqualTo(
+        assertThat(mAutoclickTypePanel.getCurrentCornerForTesting()).isEqualTo(
                 CORNER_BOTTOM_LEFT);
     }
 
@@ -453,7 +453,7 @@ public class AutoclickTypePanelTest {
 
     private void verifyPanelPosition(int[] expectedPosition) {
         WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
-        assertThat(mAutoclickTypePanel.getCurrentCornerIndexForTesting()).isEqualTo(
+        assertThat(mAutoclickTypePanel.getCurrentCornerForTesting()).isEqualTo(
                 expectedPosition[0]);
         assertThat(params.gravity).isEqualTo(expectedPosition[1]);
         assertThat(params.x).isEqualTo(expectedPosition[2]);

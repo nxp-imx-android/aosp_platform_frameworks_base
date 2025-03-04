@@ -28,7 +28,6 @@ import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY_TO_SHA
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY_WITH_WALLPAPER;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_OCCLUDING;
 import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_UNOCCLUDING;
-import static android.view.WindowManager.TRANSIT_KEYGUARD_GOING_AWAY;
 import static android.view.WindowManager.TRANSIT_KEYGUARD_OCCLUDE;
 import static android.view.WindowManager.TRANSIT_KEYGUARD_UNOCCLUDE;
 import static android.view.WindowManager.TRANSIT_OPEN;
@@ -310,7 +309,6 @@ class KeyguardController {
             state.writeEventLog("keyguardGoingAway");
             final int transitFlags = convertTransitFlags(flags);
             final DisplayContent dc = mRootWindowContainer.getDefaultDisplay();
-            dc.prepareAppTransition(TRANSIT_KEYGUARD_GOING_AWAY, transitFlags);
             // We are deprecating TRANSIT_KEYGUARD_GOING_AWAY for Shell transition and use
             // TRANSIT_FLAG_KEYGUARD_GOING_AWAY to indicate that it should animate keyguard going
             // away.
@@ -490,8 +488,6 @@ class KeyguardController {
                     if (trigger != null) {
                         transition.collect(trigger);
                     }
-                } else {
-                    dc.prepareAppTransition(transitType, transitFlags);
                 }
             } else {
                 if (tc.inTransition()) {
@@ -515,7 +511,6 @@ class KeyguardController {
     private void handleDismissInsecureKeyguard(DisplayContent dc) {
         mService.deferWindowLayout();
         try {
-            dc.prepareAppTransition(TRANSIT_KEYGUARD_GOING_AWAY, 0 /* transitFlags */);
             // We are deprecating TRANSIT_KEYGUARD_GOING_AWAY for Shell transition and use
             // TRANSIT_FLAG_KEYGUARD_GOING_AWAY to indicate that it should animate keyguard going
             // away.
@@ -542,14 +537,6 @@ class KeyguardController {
         mWindowManager.dismissKeyguard(null /* callback */, null /* message */);
         final KeyguardDisplayState state = getDisplayState(displayId);
         state.mDismissalRequested = true;
-
-        // If we are about to unocclude the Keyguard, but we can dismiss it without security,
-        // we immediately dismiss the Keyguard so the activity gets shown without a flicker.
-        final DisplayContent dc = mRootWindowContainer.getDefaultDisplay();
-        if (state.mKeyguardShowing && canDismissKeyguard()
-                && dc.mAppTransition.containsTransitRequest(TRANSIT_KEYGUARD_UNOCCLUDE)) {
-            mWindowManager.executeAppTransition();
-        }
     }
 
     ActivityRecord getTopOccludingActivity(int displayId) {

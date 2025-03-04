@@ -332,6 +332,10 @@ public class DisplayManagerServiceTest {
                         @Override
                         public void destroyDisplay(IBinder displayToken) {
                         }
+
+                        @Override
+                        public void setDisplayPowerMode(IBinder displayToken, int mode) {
+                        }
                     }, flags);
         }
 

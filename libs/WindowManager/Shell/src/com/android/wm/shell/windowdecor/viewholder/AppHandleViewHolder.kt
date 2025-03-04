@@ -274,4 +274,6 @@ internal class AppHandleViewHolder(
             }
         animator.start()
     }
+
+    override fun close() {}
 }

@@ -4975,6 +4975,25 @@ public class ActivityManager {
     }
 
     /**
+     * Fully stop the given app's processes without restoring service starts or
+     * bindings, but without the other durable effects of the full-scale
+     * "force stop" intervention.
+     *
+     * @param packageName The name of the package to be stopped.
+     *
+     * @hide This is not available to third party applications due to
+     * it allowing them to break other applications by stopping their
+     * services.
+     */
+    public void stopPackageForUser(String packageName) {
+        try {
+            getService().stopAppForUser(packageName, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Sets the current locales of the device. Calling app must have the permission
      * {@code android.permission.CHANGE_CONFIGURATION} and
      * {@code android.permission.WRITE_SETTINGS}.
