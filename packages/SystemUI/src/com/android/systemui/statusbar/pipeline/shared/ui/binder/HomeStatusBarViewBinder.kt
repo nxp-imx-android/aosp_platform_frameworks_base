@@ -198,6 +198,8 @@ constructor(
                         OngoingActivityChipBinder.createBinding(
                             view.requireViewById(R.id.ongoing_activity_chip_secondary)
                         )
+                    OngoingActivityChipBinder.updateTypefaces(primaryChipViewBinding)
+                    OngoingActivityChipBinder.updateTypefaces(secondaryChipViewBinding)
                     launch {
                         viewModel.ongoingActivityChipsLegacy.collectLatest { chips ->
                             OngoingActivityChipBinder.bind(
