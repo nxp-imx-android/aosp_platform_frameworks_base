@@ -469,11 +469,7 @@ class AppHeaderViewHolder(
 
     override fun onHandleMenuOpened() {}
 
-    override fun onHandleMenuClosed() {
-        openMenuButton.post {
-            openMenuButton.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
-        }
-    }
+    override fun onHandleMenuClosed() {}
 
     fun onMaximizeWindowHoverExit() {
         maximizeButtonView.cancelHoverAnimation()
