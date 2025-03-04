@@ -64,6 +64,7 @@ import static com.android.server.autofill.FillResponseEventLogger.DETECTION_PREF
 import static com.android.server.autofill.FillResponseEventLogger.DETECTION_PREFER_PCC;
 import static com.android.server.autofill.FillResponseEventLogger.DETECTION_PREFER_UNKNOWN;
 import static com.android.server.autofill.FillResponseEventLogger.HAVE_SAVE_TRIGGER_ID;
+import static com.android.server.autofill.FillResponseEventLogger.RESPONSE_STATUS_CANCELLED;
 import static com.android.server.autofill.FillResponseEventLogger.RESPONSE_STATUS_FAILURE;
 import static com.android.server.autofill.FillResponseEventLogger.RESPONSE_STATUS_SESSION_DESTROYED;
 import static com.android.server.autofill.FillResponseEventLogger.RESPONSE_STATUS_SUCCESS;
@@ -1416,6 +1417,15 @@ final class Session
 
         // Remove the FillContext as there will never be a response for the service
         if (canceledRequest != INVALID_REQUEST_ID && mContexts != null) {
+            // Start a new FillResponse logger for the cancellation case.
+            mFillResponseEventLogger.startLogForNewResponse();
+            mFillResponseEventLogger.maybeSetRequestId(canceledRequest);
+            mFillResponseEventLogger.maybeSetAppPackageUid(uid);
+            mFillResponseEventLogger.maybeSetResponseStatus(RESPONSE_STATUS_CANCELLED);
+            mFillResponseEventLogger.maybeSetLatencyFillResponseReceivedMillis(
+                    (int) (SystemClock.elapsedRealtime() - mLatencyBaseTime));
+            mFillResponseEventLogger.logAndEndEvent();
+
             final int numContexts = mContexts.size();
 
             // It is most likely the last context, hence search backwards
