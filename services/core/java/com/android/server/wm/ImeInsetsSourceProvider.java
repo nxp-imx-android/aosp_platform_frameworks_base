@@ -263,8 +263,8 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         boolean oldVisibility = mSource.isVisible();
         super.updateVisibility();
         if (Flags.refactorInsetsController()) {
-            if (mSource.isVisible() && !oldVisibility && mImeRequester != null) {
-                reportImeDrawnForOrganizerIfNeeded(mImeRequester);
+            if (mSource.isVisible() && !oldVisibility && mControlTarget != null) {
+                reportImeDrawnForOrganizerIfNeeded(mControlTarget);
             }
         }
         onSourceChanged();
