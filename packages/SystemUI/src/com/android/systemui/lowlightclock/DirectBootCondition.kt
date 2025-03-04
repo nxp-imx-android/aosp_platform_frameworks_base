@@ -54,7 +54,6 @@ constructor(
         job?.cancel()
     }
 
-    override fun getStartStrategy(): Int {
-        return START_EAGERLY
-    }
+    override val startStrategy: Int
+        get() = START_EAGERLY
 }

@@ -19,9 +19,9 @@ package com.android.systemui.shared.condition
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.shared.condition.Condition.START_EAGERLY
-import com.android.systemui.shared.condition.Condition.START_LAZILY
-import com.android.systemui.shared.condition.Condition.START_WHEN_NEEDED
+import com.android.systemui.shared.condition.Condition.Companion.START_EAGERLY
+import com.android.systemui.shared.condition.Condition.Companion.START_LAZILY
+import com.android.systemui.shared.condition.Condition.Companion.START_WHEN_NEEDED
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +40,7 @@ class CombinedConditionTest : SysuiTestCase() {
         scope: CoroutineScope,
         initialValue: Boolean?,
         overriding: Boolean = false,
-        @StartStrategy private val startStrategy: Int = START_WHEN_NEEDED,
+        @StartStrategy override val startStrategy: Int = START_WHEN_NEEDED,
     ) : Condition(scope, initialValue, overriding) {
         private var _started = false
         val started: Boolean
@@ -52,10 +52,6 @@ class CombinedConditionTest : SysuiTestCase() {
 
         override fun stop() {
             _started = false
-        }
-
-        override fun getStartStrategy(): Int {
-            return startStrategy
         }
 
         fun setValue(value: Boolean?) {
@@ -75,13 +71,8 @@ class CombinedConditionTest : SysuiTestCase() {
         val combinedCondition =
             CombinedCondition(
                 scope = this,
-                conditions =
-                    listOf(
-                        eagerCondition,
-                        lazyCondition,
-                        startWhenNeededCondition,
-                    ),
-                operand = Evaluator.OP_OR
+                conditions = listOf(eagerCondition, lazyCondition, startWhenNeededCondition),
+                operand = Evaluator.OP_OR,
             )
 
         val callback = Condition.Callback {}
@@ -124,13 +115,8 @@ class CombinedConditionTest : SysuiTestCase() {
         val combinedCondition =
             CombinedCondition(
                 scope = this,
-                conditions =
-                    listOf(
-                        startWhenNeededCondition,
-                        lazyCondition,
-                        eagerCondition,
-                    ),
-                operand = Evaluator.OP_AND
+                conditions = listOf(startWhenNeededCondition, lazyCondition, eagerCondition),
+                operand = Evaluator.OP_AND,
             )
 
         val callback = Condition.Callback {}
@@ -175,7 +161,7 @@ class CombinedConditionTest : SysuiTestCase() {
                     FakeCondition(
                         scope = this,
                         initialValue = false,
-                        startStrategy = START_WHEN_NEEDED
+                        startStrategy = START_WHEN_NEEDED,
                     )
                 }
                 .toList()
@@ -214,7 +200,7 @@ class CombinedConditionTest : SysuiTestCase() {
                     FakeCondition(
                         scope = this,
                         initialValue = false,
-                        startStrategy = START_WHEN_NEEDED
+                        startStrategy = START_WHEN_NEEDED,
                     )
                 }
                 .toList()
@@ -262,7 +248,7 @@ class CombinedConditionTest : SysuiTestCase() {
                     FakeCondition(
                         scope = this,
                         initialValue = false,
-                        startStrategy = START_WHEN_NEEDED
+                        startStrategy = START_WHEN_NEEDED,
                     )
                 }
                 .toList()
@@ -300,9 +286,9 @@ class CombinedConditionTest : SysuiTestCase() {
                         overridingCondition1,
                         lazyCondition,
                         startWhenNeededCondition,
-                        overridingCondition2
+                        overridingCondition2,
                     ),
-                operand = Evaluator.OP_OR
+                operand = Evaluator.OP_OR,
             )
 
         val callback = Condition.Callback {}
@@ -414,11 +400,7 @@ class CombinedConditionTest : SysuiTestCase() {
     fun testEmptyConditions() = runSelfCancelingTest {
         for (operand in intArrayOf(Evaluator.OP_OR, Evaluator.OP_AND)) {
             val combinedCondition =
-                CombinedCondition(
-                    scope = this,
-                    conditions = emptyList(),
-                    operand = operand,
-                )
+                CombinedCondition(scope = this, conditions = emptyList(), operand = operand)
 
             val callback = Condition.Callback {}
             combinedCondition.addCallback(callback)
@@ -435,9 +417,7 @@ class CombinedConditionTest : SysuiTestCase() {
      * Executes the given block of execution within the scope of a dedicated [CoroutineScope] which
      * is then automatically canceled and cleaned-up.
      */
-    private fun runSelfCancelingTest(
-        block: suspend CoroutineScope.() -> Unit,
-    ) =
+    private fun runSelfCancelingTest(block: suspend CoroutineScope.() -> Unit) =
         runBlocking(IMMEDIATE) {
             val scope = CoroutineScope(coroutineContext + Job())
             block(scope)

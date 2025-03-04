@@ -70,7 +70,7 @@ public class ScreenSaverEnabledCondition extends Condition {
     }
 
     @Override
-    protected int getStartStrategy() {
+    public int getStartStrategy() {
         return START_EAGERLY;
     }
 

@@ -41,7 +41,7 @@ class CombinedCondition
 constructor(
     private val scope: CoroutineScope,
     private val conditions: Collection<Condition>,
-    @Evaluator.ConditionOperand private val operand: Int
+    @Evaluator.ConditionOperand private val operand: Int,
 ) : Condition(scope, null, false) {
 
     private var job: Job? = null
@@ -54,7 +54,7 @@ constructor(
 
                 lazilyEvaluate(
                         conditions = groupedConditions.getOrDefault(true, emptyList()),
-                        filterUnknown = true
+                        filterUnknown = true,
                     )
                     .distinctUntilChanged()
                     .flatMapLatest { overriddenValue ->
@@ -62,7 +62,7 @@ constructor(
                         if (overriddenValue == null) {
                             lazilyEvaluate(
                                 conditions = groupedConditions.getOrDefault(false, emptyList()),
-                                filterUnknown = false
+                                filterUnknown = false,
                             )
                         } else {
                             flowOf(overriddenValue)
@@ -188,7 +188,6 @@ constructor(
         return startStrategy
     }
 
-    override fun getStartStrategy(): Int {
-        return _startStrategy
-    }
+    override val startStrategy: Int
+        get() = _startStrategy
 }
