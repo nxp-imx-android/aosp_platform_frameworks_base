@@ -514,6 +514,7 @@ final class UiModeManagerService extends SystemService {
                 mCarModeEnabled = mDockState == Intent.EXTRA_DOCK_STATE_CAR;
                 registerVrStateListener();
                 // register listeners
+                // LINT.IfChange(fi_cb)
                 context.getContentResolver()
                         .registerContentObserver(Secure.getUriFor(Secure.UI_NIGHT_MODE),
                                 false, mDarkThemeObserver, 0);
@@ -523,6 +524,7 @@ final class UiModeManagerService extends SystemService {
                                     Secure.getUriFor(ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED),
                                     false, mForceInvertStateObserver, UserHandle.USER_ALL);
                 }
+                // LINT.ThenChange(/core/java/android/view/ViewRootImpl.java:fi_cb)
                 context.getContentResolver().registerContentObserver(
                         Secure.getUriFor(Secure.CONTRAST_LEVEL), false,
                         mContrastObserver, UserHandle.USER_ALL);
