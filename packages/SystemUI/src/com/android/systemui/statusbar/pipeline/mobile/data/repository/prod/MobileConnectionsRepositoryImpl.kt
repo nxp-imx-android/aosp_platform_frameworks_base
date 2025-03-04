@@ -192,20 +192,16 @@ constructor(
     override val isDeviceEmergencyCallCapable: StateFlow<Boolean> =
         serviceStateChangedEvent
             .mapLatest {
-                val modems = telephonyManager.activeModemCount
-
-                // Assume false for automotive devices which don't have the calling feature.
-                // TODO: b/398045526 to revisit the below.
-                val isAutomotive: Boolean =
-                    context.packageManager.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)
-                val hasFeatureCalling: Boolean =
+                // TODO(b/400460777): check for hasSystemFeature only once
+                val hasRadioAccess: Boolean =
                     context.packageManager.hasSystemFeature(
-                        PackageManager.FEATURE_TELEPHONY_CALLING
+                        PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS
                     )
-                if (isAutomotive && !hasFeatureCalling) {
+                if (!hasRadioAccess) {
                     return@mapLatest false
                 }
 
+                val modems = telephonyManager.activeModemCount
                 // Check the service state for every modem. If any state reports emergency calling
                 // capable, then consider the device to have emergency call capabilities
                 (0..<modems)
