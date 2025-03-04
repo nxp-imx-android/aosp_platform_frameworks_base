@@ -46,22 +46,17 @@ import static android.app.AppOpsManager.OP_WRITE_SMS;
 import static java.lang.Long.min;
 import static java.lang.Math.max;
 
-import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.AppOpsManager;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.permission.flags.Flags;
 import android.provider.DeviceConfig;
 import android.util.Slog;
 
 import com.android.internal.util.ArrayUtils;
-import com.android.internal.util.FrameworkStatsLog;
 
 import java.io.PrintWriter;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Date;
@@ -134,27 +129,6 @@ abstract class DiscreteOpsRegistry {
 
     boolean mDebugMode = false;
 
-    static final int ACCESS_TYPE_NOTE_OP =
-            FrameworkStatsLog.APP_OP_ACCESS_TRACKED__ACCESS_TYPE__NOTE_OP;
-    static final int ACCESS_TYPE_START_OP =
-            FrameworkStatsLog.APP_OP_ACCESS_TRACKED__ACCESS_TYPE__START_OP;
-    static final int ACCESS_TYPE_FINISH_OP =
-            FrameworkStatsLog.APP_OP_ACCESS_TRACKED__ACCESS_TYPE__FINISH_OP;
-    static final int ACCESS_TYPE_PAUSE_OP =
-            FrameworkStatsLog.APP_OP_ACCESS_TRACKED__ACCESS_TYPE__PAUSE_OP;
-    static final int ACCESS_TYPE_RESUME_OP =
-            FrameworkStatsLog.APP_OP_ACCESS_TRACKED__ACCESS_TYPE__RESUME_OP;
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(prefix = {"ACCESS_TYPE_"}, value = {
-            ACCESS_TYPE_NOTE_OP,
-            ACCESS_TYPE_START_OP,
-            ACCESS_TYPE_FINISH_OP,
-            ACCESS_TYPE_PAUSE_OP,
-            ACCESS_TYPE_RESUME_OP
-    })
-    @interface AccessType {}
-
     void systemReady() {
         DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_PRIVACY,
                 AsyncTask.THREAD_POOL_EXECUTOR, (DeviceConfig.Properties p) -> {
@@ -166,8 +140,7 @@ abstract class DiscreteOpsRegistry {
     abstract void recordDiscreteAccess(int uid, String packageName, @NonNull String deviceId,
             int op, @Nullable String attributionTag, @AppOpsManager.OpFlags int flags,
             @AppOpsManager.UidState int uidState, long accessTime, long accessDuration,
-            @AppOpsManager.AttributionFlags int attributionFlags, int attributionChainId,
-            @DiscreteOpsRegistry.AccessType int accessType);
+            @AppOpsManager.AttributionFlags int attributionFlags, int attributionChainId);
 
     /**
      * A periodic callback from {@link AppOpsService} to flush the in memory events to disk.
@@ -227,9 +200,6 @@ abstract class DiscreteOpsRegistry {
         return true;
     }
 
-    // could this be impl detail of discrete registry, just one test is using the method
-    // abstract DiscreteRegistry.DiscreteOps getAllDiscreteOps();
-
     private void setDiscreteHistoryParameters(DeviceConfig.Properties p) {
         if (p.getKeyset().contains(PROPERTY_DISCRETE_HISTORY_CUTOFF)) {
             sDiscreteHistoryCutoff = p.getLong(PROPERTY_DISCRETE_HISTORY_CUTOFF,
@@ -277,28 +247,4 @@ abstract class DiscreteOpsRegistry {
         }
         return result;
     }
-
-    /**
-     * Whether app op access tacking is enabled and a metric event should be logged.
-     */
-    static boolean shouldLogAccess(int op) {
-        return Flags.appopAccessTrackingLoggingEnabled()
-                && ArrayUtils.contains(sDiscreteOpsToLog, op);
-    }
-
-    String getAttributionTag(String attributionTag, String packageName) {
-        if (attributionTag == null || packageName == null) {
-            return attributionTag;
-        }
-        int firstChar = 0;
-        if (attributionTag.startsWith(packageName)) {
-            firstChar = packageName.length();
-            if (firstChar < attributionTag.length() && attributionTag.charAt(firstChar)
-                    == '.') {
-                firstChar++;
-            }
-        }
-        return attributionTag.substring(firstChar);
-    }
-
 }
