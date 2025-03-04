@@ -43,8 +43,6 @@ class StateChange {
         return this
     }
 
-    fun hasChanges() = flagsToSet != 0L || flagsToClear != 0L
-
     /**
      * Applies all changed flags to [sysUiState].
      *
@@ -83,6 +81,7 @@ class StateChange {
         iterateBits(flagsToSet or flagsToClear) { bit -> sysUiState.setFlag(bit, false) }
     }
 
+    /** Resets all the pending changes. */
     fun clear() {
         flagsToSet = 0
         flagsToClear = 0
