@@ -150,3 +150,11 @@ flag {
     description: "Settings override for virtual devices"
     bug: "371801645"
 }
+
+flag {
+    namespace: "virtual_devices"
+    name: "viewconfiguration_apis"
+    description: "APIs for settings ViewConfiguration attributes on virtual devices"
+    bug: "370720522"
+    is_exported: true
+}
