@@ -282,16 +282,14 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         Assert.isMainThread();
         mPipelineState.requireState(STATE_IDLE);
 
-        // TODO(b/396301289) throw exception when setting more than once?
         mNotifBundler = bundler;
+        if (mNotifBundler == null) {
+            throw new IllegalStateException(TAG + ".setBundler: null");
+        }
 
-        if (mIdToBundleEntry.isEmpty()) {
-            if (mNotifBundler == null) {
-                throw new IllegalStateException("NotifBundler not attached.");
-            }
-            for (String id: mNotifBundler.getBundleIds()) {
-                mIdToBundleEntry.put(id, new BundleEntry(id));
-            }
+        mIdToBundleEntry.clear();
+        for (String id: mNotifBundler.getBundleIds()) {
+            mIdToBundleEntry.put(id, new BundleEntry(id));
         }
     }
 
