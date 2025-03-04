@@ -28,8 +28,6 @@ import static android.app.servertransaction.ActivityLifecycleItem.ON_RESUME;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_START;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_STOP;
 import static android.app.servertransaction.ActivityLifecycleItem.PRE_ON_CREATE;
-import static android.content.ContentResolver.DEPRECATE_DATA_COLUMNS;
-import static android.content.ContentResolver.DEPRECATE_DATA_PREFIX;
 import static android.content.pm.ActivityInfo.CONFIG_RESOURCES_UNUSED;
 import static android.content.res.Configuration.UI_MODE_TYPE_DESK;
 import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
@@ -138,7 +136,6 @@ import android.os.DdmSyncStageUpdater;
 import android.os.DdmSyncState.Stage;
 import android.os.Debug;
 import android.os.Environment;
-import android.os.FileUtils;
 import android.os.GraphicsEnvironment;
 import android.os.Handler;
 import android.os.HandlerExecutor;
@@ -188,8 +185,6 @@ import android.se.omapi.SeServiceManager;
 import android.security.NetworkSecurityPolicy;
 import android.security.net.config.NetworkSecurityConfigProvider;
 import android.system.ErrnoException;
-import android.system.OsConstants;
-import android.system.StructStat;
 import android.telephony.TelephonyFrameworkInitializer;
 import android.util.AndroidRuntimeException;
 import android.util.ArrayMap;
@@ -264,9 +259,7 @@ import dalvik.system.VMDebug;
 import dalvik.system.VMRuntime;
 import dalvik.system.ZipPathValidator;
 
-import libcore.io.ForwardingOs;
 import libcore.io.IoUtils;
-import libcore.io.Os;
 import libcore.net.event.NetworkEventDispatcher;
 import libcore.util.NativeAllocationRegistry;
 
@@ -274,7 +267,6 @@ import org.apache.harmony.dalvik.ddmc.DdmVmInternal;
 
 import java.io.File;
 import java.io.FileDescriptor;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -285,7 +277,6 @@ import java.net.InetAddress;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9010,149 +9001,11 @@ public final class ActivityThread extends ClientTransactionHandler
         return mCoreSettings;
     }
 
-    private static class AndroidOs extends ForwardingOs {
-        /**
-         * Install selective syscall interception. For example, this is used to
-         * implement special filesystem paths that will be redirected to
-         * {@link ContentResolver#openFileDescriptor(Uri, String)}.
-         */
-        public static void install() {
-            // If feature is disabled, we don't need to install
-            if (!DEPRECATE_DATA_COLUMNS) return;
-
-            // Install interception and make sure it sticks!
-            Os def;
-            do {
-                def = Os.getDefault();
-            } while (!Os.compareAndSetDefault(def, new AndroidOs(def)));
-        }
-
-        private AndroidOs(Os os) {
-            super(os);
-        }
-
-        private FileDescriptor openDeprecatedDataPath(String path, int mode) throws ErrnoException {
-            final Uri uri = ContentResolver.translateDeprecatedDataPath(path);
-            Log.v(TAG, "Redirecting " + path + " to " + uri);
-
-            final ContentResolver cr = currentActivityThread().getApplication()
-                    .getContentResolver();
-            try {
-                final FileDescriptor fd = new FileDescriptor();
-                fd.setInt$(cr.openFileDescriptor(uri,
-                        FileUtils.translateModePosixToString(mode)).detachFd());
-                return fd;
-            } catch (SecurityException e) {
-                throw new ErrnoException(e.getMessage(), OsConstants.EACCES);
-            } catch (FileNotFoundException e) {
-                throw new ErrnoException(e.getMessage(), OsConstants.ENOENT);
-            }
-        }
-
-        private void deleteDeprecatedDataPath(String path) throws ErrnoException {
-            final Uri uri = ContentResolver.translateDeprecatedDataPath(path);
-            Log.v(TAG, "Redirecting " + path + " to " + uri);
-
-            final ContentResolver cr = currentActivityThread().getApplication()
-                    .getContentResolver();
-            try {
-                if (cr.delete(uri, null, null) == 0) {
-                    throw new FileNotFoundException();
-                }
-            } catch (SecurityException e) {
-                throw new ErrnoException(e.getMessage(), OsConstants.EACCES);
-            } catch (FileNotFoundException e) {
-                throw new ErrnoException(e.getMessage(), OsConstants.ENOENT);
-            }
-        }
-
-        @Override
-        public boolean access(String path, int mode) throws ErrnoException {
-            if (path != null && path.startsWith(DEPRECATE_DATA_PREFIX)) {
-                // If we opened it okay, then access check succeeded
-                IoUtils.closeQuietly(
-                        openDeprecatedDataPath(path, FileUtils.translateModeAccessToPosix(mode)));
-                return true;
-            } else {
-                return super.access(path, mode);
-            }
-        }
-
-        @Override
-        public FileDescriptor open(String path, int flags, int mode) throws ErrnoException {
-            if (path != null && path.startsWith(DEPRECATE_DATA_PREFIX)) {
-                return openDeprecatedDataPath(path, mode);
-            } else {
-                return super.open(path, flags, mode);
-            }
-        }
-
-        @Override
-        public StructStat stat(String path) throws ErrnoException {
-            if (path != null && path.startsWith(DEPRECATE_DATA_PREFIX)) {
-                final FileDescriptor fd = openDeprecatedDataPath(path, OsConstants.O_RDONLY);
-                try {
-                    return android.system.Os.fstat(fd);
-                } finally {
-                    IoUtils.closeQuietly(fd);
-                }
-            } else {
-                return super.stat(path);
-            }
-        }
-
-        @Override
-        public void unlink(String path) throws ErrnoException {
-            if (path != null && path.startsWith(DEPRECATE_DATA_PREFIX)) {
-                deleteDeprecatedDataPath(path);
-            } else {
-                super.unlink(path);
-            }
-        }
-
-        @Override
-        public void remove(String path) throws ErrnoException {
-            if (path != null && path.startsWith(DEPRECATE_DATA_PREFIX)) {
-                deleteDeprecatedDataPath(path);
-            } else {
-                super.remove(path);
-            }
-        }
-
-        @Override
-        public void rename(String oldPath, String newPath) throws ErrnoException {
-            try {
-                super.rename(oldPath, newPath);
-            } catch (ErrnoException e) {
-                // On emulated volumes, we have bind mounts for /Android/data and
-                // /Android/obb, which prevents move from working across those directories
-                // and other directories on the filesystem. To work around that, try to
-                // recover by doing a copy instead.
-                // Note that we only do this for "/storage/emulated", because public volumes
-                // don't have these bind mounts, neither do private volumes that are not
-                // the primary storage.
-                if (e.errno == OsConstants.EXDEV && oldPath.startsWith("/storage/emulated")
-                        && newPath.startsWith("/storage/emulated")) {
-                    Log.v(TAG, "Recovering failed rename " + oldPath + " to " + newPath);
-                    try {
-                        Files.move(new File(oldPath).toPath(), new File(newPath).toPath(),
-                                StandardCopyOption.REPLACE_EXISTING);
-                    } catch (IOException e2) {
-                        Log.e(TAG, "Rename recovery failed ", e2);
-                        throw e;
-                    }
-                } else {
-                    throw e;
-                }
-            }
-        }
-    }
-
     public static void main(String[] args) {
         Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "ActivityThreadMain");
 
         // Install selective syscall interception
-        AndroidOs.install();
+        AndroidForwardingOs.install();
 
         // CloseGuard defaults to true and can be quite spammy.  We
         // disable it here, but selectively enable it later (via

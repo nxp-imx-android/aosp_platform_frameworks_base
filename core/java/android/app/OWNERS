@@ -53,6 +53,10 @@ per-file ActivityThread.java = file:RESOURCES_OWNERS
 # Alarm
 per-file *Alarm* = file:/apex/jobscheduler/ALARM_OWNERS
 
+# AndroidForwardingOs
+per-file AndroidForwardingOs.java = file:/ACTIVITY_MANAGER_OWNERS
+per-file AndroidForwardingOS.java = file:RESOURCES_OWNERS
+
 # AppOps
 per-file *AppOp* = file:/core/java/android/permission/OWNERS
 
