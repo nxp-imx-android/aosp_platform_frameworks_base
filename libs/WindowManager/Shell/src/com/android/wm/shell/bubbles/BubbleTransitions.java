@@ -30,6 +30,7 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.TaskInfo;
 import android.content.Context;
+import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.IBinder;
 import android.util.Slog;
@@ -155,28 +156,23 @@ public class BubbleTransitions {
      * Information about the task when it is being dragged to a bubble
      */
     public static class DragData {
-        private final Rect mBounds;
         private final WindowContainerTransaction mPendingWct;
         private final boolean mReleasedOnLeft;
+        private final float mTaskScale;
+        private final PointF mDragPosition;
 
         /**
-         * @param bounds bounds of the dragged task when the drag was released
-         * @param wct pending operations to be applied when finishing the drag
          * @param releasedOnLeft true if the bubble was released in the left drop target
+         * @param taskScale      the scale of the task when it was dragged to bubble
+         * @param dragPosition   the position of the task when it was dragged to bubble
+         * @param wct            pending operations to be applied when finishing the drag
          */
-        public DragData(@Nullable Rect bounds, @Nullable WindowContainerTransaction wct,
-                boolean releasedOnLeft) {
-            mBounds = bounds;
+        public DragData(boolean releasedOnLeft, float taskScale, @Nullable PointF dragPosition,
+                @Nullable WindowContainerTransaction wct) {
             mPendingWct = wct;
             mReleasedOnLeft = releasedOnLeft;
-        }
-
-        /**
-         * @return bounds of the dragged task when the drag was released
-         */
-        @Nullable
-        public Rect getBounds() {
-            return mBounds;
+            mTaskScale = taskScale;
+            mDragPosition = dragPosition != null ? dragPosition : new PointF(0, 0);
         }
 
         /**
@@ -192,6 +188,20 @@ public class BubbleTransitions {
          */
         public boolean isReleasedOnLeft() {
             return mReleasedOnLeft;
+        }
+
+        /**
+         * @return the scale of the task when it was dragged to bubble
+         */
+        public float getTaskScale() {
+            return mTaskScale;
+        }
+
+        /**
+         * @return position of the task when it was dragged to bubble
+         */
+        public PointF getDragPosition() {
+            return mDragPosition;
         }
     }
 
@@ -347,21 +357,24 @@ public class BubbleTransitions {
             }
             mFinishCb = finishCallback;
 
-            if (mDragData != null && mDragData.getBounds() != null) {
-                // Override start bounds with the dragged task bounds
-                mStartBounds.set(mDragData.getBounds());
+            if (mDragData != null) {
+                mStartBounds.offsetTo((int) mDragData.getDragPosition().x,
+                        (int) mDragData.getDragPosition().y);
+                startTransaction.setScale(mSnapshot, mDragData.getTaskScale(),
+                        mDragData.getTaskScale());
             }
 
             // Now update state (and talk to launcher) in parallel with snapshot stuff
             mBubbleData.notificationEntryUpdated(mBubble, /* suppressFlyout= */ true,
                     /* showInShade= */ false);
 
+            final int left = mStartBounds.left - info.getRoot(0).getOffset().x;
+            final int top = mStartBounds.top - info.getRoot(0).getOffset().y;
+            startTransaction.setPosition(mTaskLeash, left, top);
             startTransaction.show(mSnapshot);
             // Move snapshot to root so that it remains visible while task is moved to taskview
             startTransaction.reparent(mSnapshot, info.getRoot(0).getLeash());
-            startTransaction.setPosition(mSnapshot,
-                    mStartBounds.left - info.getRoot(0).getOffset().x,
-                    mStartBounds.top - info.getRoot(0).getOffset().y);
+            startTransaction.setPosition(mSnapshot, left, top);
             startTransaction.setLayer(mSnapshot, Integer.MAX_VALUE);
 
             BubbleBarExpandedView bbev = mBubble.getBubbleBarExpandedView();
@@ -416,6 +429,8 @@ public class BubbleTransitions {
         private void playAnimation(boolean animate) {
             final TaskViewTaskController tv = mBubble.getTaskView().getController();
             final SurfaceControl.Transaction startT = new SurfaceControl.Transaction();
+            // Set task position to 0,0 as it will be placed inside the TaskView
+            startT.setPosition(mTaskLeash, 0, 0);
             mTaskViewTransitions.prepareOpenAnimation(tv, true /* new */, startT, mFinishT,
                     (ActivityManager.RunningTaskInfo) mTaskInfo, mTaskLeash, mFinishWct);
 
@@ -424,10 +439,12 @@ public class BubbleTransitions {
             }
 
             if (animate) {
-                mLayerView.animateConvert(startT, mStartBounds, mSnapshot, mTaskLeash, () -> {
-                    mFinishCb.onTransitionFinished(mFinishWct);
-                    mFinishCb = null;
-                });
+                float startScale = mDragData != null ? mDragData.getTaskScale() : 1f;
+                mLayerView.animateConvert(startT, mStartBounds, startScale, mSnapshot, mTaskLeash,
+                        () -> {
+                            mFinishCb.onTransitionFinished(mFinishWct);
+                            mFinishCb = null;
+                        });
             } else {
                 startT.apply();
                 mFinishCb.onTransitionFinished(mFinishWct);

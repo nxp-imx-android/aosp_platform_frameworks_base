@@ -423,13 +423,13 @@ public class BubbleBarLayerView extends FrameLayout
      * @param startT A transaction with first-frame work. this *will* be applied here!
      */
     public void animateConvert(@NonNull SurfaceControl.Transaction startT,
-            @NonNull Rect startBounds, @NonNull SurfaceControl snapshot, SurfaceControl taskLeash,
-            Runnable animFinish) {
+            @NonNull Rect startBounds, float startScale, @NonNull SurfaceControl snapshot,
+            SurfaceControl taskLeash, Runnable animFinish) {
         if (!mIsExpanded || mExpandedBubble == null) {
             throw new IllegalStateException("Can't animateExpand without expanded state");
         }
-        mAnimationHelper.animateConvert(mExpandedBubble, startT, startBounds, snapshot, taskLeash,
-                animFinish);
+        mAnimationHelper.animateConvert(mExpandedBubble, startT, startBounds, startScale, snapshot,
+                taskLeash, animFinish);
     }
 
     /**

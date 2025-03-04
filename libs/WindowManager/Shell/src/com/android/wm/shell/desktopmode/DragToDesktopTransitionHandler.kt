@@ -281,6 +281,7 @@ sealed class DragToDesktopTransitionHandler(
         val state = requireTransitionState()
         val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
         val animatedTaskBounds = getAnimatedTaskBounds()
+        state.dragAnimator.cancelAnimator()
         requestSplitSelect(wct, taskInfo, splitPosition, animatedTaskBounds)
     }
 
@@ -292,7 +293,6 @@ sealed class DragToDesktopTransitionHandler(
         val scaledWidth = taskBounds.width() * taskScale
         val scaledHeight = taskBounds.height() * taskScale
         val dragPosition = PointF(state.dragAnimator.position)
-        state.dragAnimator.cancelAnimator()
         return Rect(
             dragPosition.x.toInt(),
             dragPosition.y.toInt(),
@@ -325,22 +325,24 @@ sealed class DragToDesktopTransitionHandler(
         // TODO(b/391928049): update density once we can drag from desktop to bubble
         val state = requireTransitionState()
         val taskInfo = state.draggedTaskChange?.taskInfo ?: error("Expected non-null taskInfo")
-        val taskBounds = getAnimatedTaskBounds()
+        val dragPosition = PointF(state.dragAnimator.position)
+        val scale = state.dragAnimator.scale
         state.dragAnimator.cancelAnimator()
-        requestBubble(wct, taskInfo, onLeft, taskBounds)
+        requestBubble(wct, taskInfo, onLeft, scale, dragPosition)
     }
 
     private fun requestBubble(
         wct: WindowContainerTransaction,
         taskInfo: RunningTaskInfo,
         onLeft: Boolean,
-        taskBounds: Rect = Rect(taskInfo.configuration.windowConfiguration.bounds),
+        taskScale: Float = 1f,
+        dragPosition: PointF = PointF(0f, 0f),
     ) {
         val controller =
             bubbleController.orElseThrow { IllegalStateException("BubbleController not set") }
         controller.expandStackAndSelectBubble(
             taskInfo,
-            BubbleTransitions.DragData(taskBounds, wct, onLeft),
+            BubbleTransitions.DragData(onLeft, taskScale, dragPosition, wct),
         )
     }
 
