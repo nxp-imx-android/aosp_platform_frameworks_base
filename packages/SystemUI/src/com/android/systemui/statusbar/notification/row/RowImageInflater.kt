@@ -83,9 +83,9 @@ interface RowImageInflater {
         inline fun featureFlagEnabled() = PromotedNotificationUiAod.isEnabled
 
         @JvmStatic
-        fun newInstance(previousIndex: ImageModelIndex?): RowImageInflater =
+        fun newInstance(previousIndex: ImageModelIndex?, reinflating: Boolean): RowImageInflater =
             if (featureFlagEnabled()) {
-                RowImageInflaterImpl(previousIndex)
+                RowImageInflaterImpl(previousIndex, reinflating)
             } else {
                 RowImageInflaterStub
             }
@@ -110,7 +110,8 @@ private object RowImageInflaterStub : RowImageInflater {
     override fun getNewImageIndex(): ImageModelIndex? = null
 }
 
-class RowImageInflaterImpl(private val previousIndex: ImageModelIndex?) : RowImageInflater {
+class RowImageInflaterImpl(private val previousIndex: ImageModelIndex?, val reinflating: Boolean) :
+    RowImageInflater {
     private val providedImages = mutableListOf<LazyImage>()
 
     /**
@@ -139,10 +140,15 @@ class RowImageInflaterImpl(private val previousIndex: ImageModelIndex?) : RowIma
                     // ensure all entries are stored
                     providedImages.add(newImage)
                     // load the image result from the index into our new object
-                    previousIndex?.findImage(iconData, sizeClass, transform)?.let {
-                        // copy the result into our new object
-                        newImage.result = it
-                    }
+                    previousIndex
+                        // skip the cached image when we are "reinflating" to avoid stale content
+                        // being displayed from the same URI after the app updated the notif
+                        ?.takeUnless { reinflating }
+                        ?.findImage(iconData, sizeClass, transform)
+                        ?.let {
+                            // copy the result into our new object
+                            newImage.result = it
+                        }
                 }
             }
         }

@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
+import com.android.systemui.statusbar.notification.row.shared.IconData
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.SmallSquare
 import com.google.common.truth.Truth.assertThat
@@ -38,20 +39,22 @@ class RowImageInflaterTest : SysuiTestCase() {
     private val resIcon2 = Icon.createWithResource(context, android.R.drawable.ic_delete)
     private val badUriIcon = Icon.createWithContentUri("content://com.test/does_not_exist")
 
+    private var latestImageModelIndex: ImageModelIndex? = null
+
     @Before
     fun setUp() {
-        rowImageInflater = RowImageInflater.newInstance(null)
+        rowImageInflater = RowImageInflater.newInstance(null, reinflating = false)
     }
 
     @Test
     fun getNewImageIndex_returnsNullWhenUnused() {
-        assertThat(rowImageInflater.getNewImageIndex()).isNull()
+        assertThat(getNewImageIndex()).isNull()
     }
 
     @Test
     fun getNewImageIndex_returnsEmptyIndexWhenZeroImagesLoaded() {
         assertThat(getImageModelsForIcons()).isEmpty()
-        val result = rowImageInflater.getNewImageIndex()
+        val result = getNewImageIndex()
         assertThat(result).isNotNull()
         assertThat(result?.contentsForTesting).isEmpty()
     }
@@ -59,7 +62,7 @@ class RowImageInflaterTest : SysuiTestCase() {
     @Test
     fun getNewImageIndex_returnsSingleImageWhenOneImageLoaded() {
         assertThat(getImageModelsForIcons(resIcon1)).hasSize(1)
-        val result = rowImageInflater.getNewImageIndex()
+        val result = getNewImageIndex()
         assertThat(result).isNotNull()
         assertThat(result?.contentsForTesting).hasSize(1)
     }
@@ -85,7 +88,7 @@ class RowImageInflaterTest : SysuiTestCase() {
         assertThat(providedModels[3].drawable).isNotNull()
 
         // VERIFY the returned index has all 3 entries, 2 of which have drawables
-        val indexGen1 = rowImageInflater.getNewImageIndex()
+        val indexGen1 = getNewImageIndex()
         assertThat(indexGen1).isNotNull()
         assertThat(indexGen1?.contentsForTesting).hasSize(3)
         assertThat(indexGen1?.contentsForTesting?.mapNotNull { it.drawable }).hasSize(2)
@@ -96,7 +99,7 @@ class RowImageInflaterTest : SysuiTestCase() {
         exampleFirstGeneration()
 
         // THEN start a new generation of the inflation
-        rowImageInflater = RowImageInflater.newInstance(rowImageInflater.getNewImageIndex())
+        rowImageInflater = RowImageInflater.newInstance(getNewImageIndex(), reinflating = false)
 
         getNewImageIndex_returnsEmptyIndexWhenZeroImagesLoaded()
     }
@@ -104,12 +107,46 @@ class RowImageInflaterTest : SysuiTestCase() {
     @Test
     fun exampleSecondGeneration_whichLoadsOneImage() {
         exampleFirstGeneration()
+        val gen1Index = latestImageModelIndex!!
 
         // THEN start a new generation of the inflation
-        rowImageInflater = RowImageInflater.newInstance(rowImageInflater.getNewImageIndex())
+        rowImageInflater = RowImageInflater.newInstance(gen1Index, reinflating = false)
 
         getNewImageIndex_returnsSingleImageWhenOneImageLoaded()
+        val gen2Index = latestImageModelIndex!!
+
+        // VERIFY that the drawable was copied from the previous index
+        val gen1model = gen1Index.findModel(resIcon1)
+        val gen2model = gen2Index.findModel(resIcon1)
+        assertThat(gen2model).isNotSameInstanceAs(gen1model)
+        assertThat(gen2model.drawable).isSameInstanceAs(gen1model.drawable)
     }
+
+    @Test
+    fun exampleSecondGeneration_reinflating_whichLoadsOneImage() {
+        exampleFirstGeneration()
+        val gen1Index = latestImageModelIndex!!
+
+        // THEN start a new generation of the inflation
+        rowImageInflater = RowImageInflater.newInstance(gen1Index, reinflating = true)
+
+        getNewImageIndex_returnsSingleImageWhenOneImageLoaded()
+        val gen2Index = latestImageModelIndex!!
+
+        // VERIFY that the drawable was reloaded rather than copied from the previous index
+        val gen1model = gen1Index.findModel(resIcon1)
+        val gen2model = gen2Index.findModel(resIcon1)
+        assertThat(gen2model).isNotSameInstanceAs(gen1model)
+        assertThat(gen2model.drawable).isNotSameInstanceAs(gen1model.drawable)
+    }
+
+    private fun ImageModelIndex.findModel(icon: Icon): LazyImage =
+        IconData.fromIcon(icon)
+            .let { iconData -> contentsForTesting.find { it.icon == iconData } }
+            .also { assertThat(it).isNotNull() }!!
+
+    private fun getNewImageIndex(): ImageModelIndex? =
+        rowImageInflater.getNewImageIndex().also { latestImageModelIndex = it }
 
     private fun getImageModelsForIcons(vararg icons: Icon): List<ImageModel> {
         val provider = rowImageInflater.useForContentModel()
