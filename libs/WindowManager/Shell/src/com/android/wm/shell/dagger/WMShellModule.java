@@ -1466,7 +1466,9 @@ public abstract class WMShellModule {
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             IWindowManager windowManager,
             ShellTaskOrganizer shellTaskOrganizer,
-            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider
+            DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
+            InputManager inputManager,
+            @ShellMainThread Handler mainHandler
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
@@ -1478,7 +1480,9 @@ public abstract class WMShellModule {
                         rootTaskDisplayAreaOrganizer,
                         windowManager,
                         shellTaskOrganizer,
-                        desktopWallpaperActivityTokenProvider));
+                        desktopWallpaperActivityTokenProvider,
+                        inputManager,
+                        mainHandler));
     }
 
     //
