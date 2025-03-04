@@ -877,8 +877,7 @@ public abstract class WMShellModule {
             @ShellMainThread Handler handler) {
         int maxTaskLimit = DesktopModeStatus.getMaxTaskLimit(context);
         if (!DesktopModeStatus.canEnterDesktopMode(context)
-                || !ENABLE_DESKTOP_WINDOWING_TASK_LIMIT.isTrue()
-                || maxTaskLimit <= 0) {
+                || !ENABLE_DESKTOP_WINDOWING_TASK_LIMIT.isTrue()) {
             return Optional.empty();
         }
         return Optional.of(
@@ -886,7 +885,7 @@ public abstract class WMShellModule {
                         transitions,
                         desktopUserRepositories,
                         shellTaskOrganizer,
-                        maxTaskLimit,
+                        maxTaskLimit <= 0 ? null : maxTaskLimit,
                         interactionJankMonitor,
                         context,
                         handler));

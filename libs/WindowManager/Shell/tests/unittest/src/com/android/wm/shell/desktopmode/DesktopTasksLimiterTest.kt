@@ -172,6 +172,20 @@ class DesktopTasksLimiterTest : ShellTestCase() {
     }
 
     @Test
+    fun createDesktopTasksLimiter_withNoLimit_shouldSucceed() {
+        // Instantiation should succeed without an error.
+        DesktopTasksLimiter(
+            transitions,
+            userRepositories,
+            shellTaskOrganizer,
+            maxTasksLimit = null,
+            interactionJankMonitor,
+            mContext,
+            handler,
+        )
+    }
+
+    @Test
     fun addPendingMinimizeTransition_taskIsNotMinimized() {
         desktopTaskRepo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 0)
         desktopTaskRepo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = 0)

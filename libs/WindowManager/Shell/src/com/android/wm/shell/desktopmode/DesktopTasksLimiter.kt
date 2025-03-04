@@ -38,17 +38,17 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionObserver
 
 /**
- * Limits the number of tasks shown in Desktop Mode.
+ * Keeps track of minimized tasks and limits the number of tasks shown in Desktop Mode.
  *
- * This class should only be used if
- * [android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT] is enabled and
- * [maxTasksLimit] is strictly greater than 0.
+ * [maxTasksLimit] must be strictly greater than 0 if it's given.
+ *
+ * TODO(b/400634379): Separate two responsibilities of this class into two classes.
  */
 class DesktopTasksLimiter(
     transitions: Transitions,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val shellTaskOrganizer: ShellTaskOrganizer,
-    private val maxTasksLimit: Int,
+    private val maxTasksLimit: Int?,
     private val interactionJankMonitor: InteractionJankMonitor,
     private val context: Context,
     @ShellMainThread private val handler: Handler,
@@ -59,13 +59,19 @@ class DesktopTasksLimiter(
     private var userId: Int
 
     init {
-        require(maxTasksLimit > 0) {
-            "DesktopTasksLimiter: maxTasksLimit should be greater than 0. Current value: $maxTasksLimit."
+        maxTasksLimit?.let {
+            require(it > 0) {
+                "DesktopTasksLimiter: maxTasksLimit should be greater than 0. Current value: $it."
+            }
         }
         transitions.registerObserver(minimizeTransitionObserver)
         userId = ActivityManager.getCurrentUser()
         desktopUserRepositories.current.addActiveTaskListener(leftoverMinimizedTasksRemover)
-        logV("Starting limiter with a maximum of %d tasks", maxTasksLimit)
+        if (maxTasksLimit != null) {
+            logV("Starting limiter with a maximum of %d tasks", maxTasksLimit)
+        } else {
+            logV("Starting limiter without the task limit")
+        }
     }
 
     data class TaskDetails(
@@ -325,7 +331,7 @@ class DesktopTasksLimiter(
         launchingNewIntent: Boolean,
     ): Int? {
         val newTasksOpening = if (launchingNewIntent) 1 else 0
-        if (visibleOrderedTasks.size + newTasksOpening <= maxTasksLimit) {
+        if (visibleOrderedTasks.size + newTasksOpening <= (maxTasksLimit ?: Int.MAX_VALUE)) {
             logV("No need to minimize; tasks below limit")
             // No need to minimize anything
             return null
