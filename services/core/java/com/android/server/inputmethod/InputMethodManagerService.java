@@ -2902,12 +2902,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final long ident = Binder.clearCallingIdentity();
         try {
             if (windowPerceptible != null && !windowPerceptible) {
-                if ((vis & InputMethodService.IME_VISIBLE) != 0) {
-                    vis &= ~InputMethodService.IME_VISIBLE;
-                    vis |= InputMethodService.IME_VISIBLE_IMPERCEPTIBLE;
-                }
-            } else {
-                vis &= ~InputMethodService.IME_VISIBLE_IMPERCEPTIBLE;
+                vis &= ~InputMethodService.IME_VISIBLE;
             }
             final var curId = bindingController.getCurId();
             // TODO(b/305849394): Make mMenuController multi-user aware.
