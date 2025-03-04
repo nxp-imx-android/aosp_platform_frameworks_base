@@ -111,47 +111,28 @@ class DragZoneFactory(
 
     /** Updates all dimensions after a configuration change. */
     fun onConfigurationUpdated() {
-        dismissDragZoneSize =
-            if (deviceConfig.isSmallTablet) {
-                context.resolveDimension(R.dimen.drag_zone_dismiss_fold)
-            } else {
-                context.resolveDimension(R.dimen.drag_zone_dismiss_tablet)
-            }
-        bubbleDragZoneTabletSize = context.resolveDimension(R.dimen.drag_zone_bubble_tablet)
-        bubbleDragZoneFoldableSize = context.resolveDimension(R.dimen.drag_zone_bubble_fold)
-        fullScreenDragZoneWidth = context.resolveDimension(R.dimen.drag_zone_full_screen_width)
-        fullScreenDragZoneHeight = context.resolveDimension(R.dimen.drag_zone_full_screen_height)
-        desktopWindowDragZoneWidth =
-            context.resolveDimension(R.dimen.drag_zone_desktop_window_width)
-        desktopWindowDragZoneHeight =
-            context.resolveDimension(R.dimen.drag_zone_desktop_window_height)
-        desktopWindowFromExpandedViewDragZoneWidth =
-            context.resolveDimension(R.dimen.drag_zone_desktop_window_expanded_view_width)
-        desktopWindowFromExpandedViewDragZoneHeight =
-            context.resolveDimension(R.dimen.drag_zone_desktop_window_expanded_view_height)
-        splitFromBubbleDragZoneHeight =
-            context.resolveDimension(R.dimen.drag_zone_split_from_bubble_height)
-        splitFromBubbleDragZoneWidth =
-            context.resolveDimension(R.dimen.drag_zone_split_from_bubble_width)
-        hSplitFromExpandedViewDragZoneWidth =
-            context.resolveDimension(R.dimen.drag_zone_h_split_from_expanded_view_width)
-        vSplitFromExpandedViewDragZoneWidth =
-            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_width)
-        vSplitFromExpandedViewDragZoneHeightTablet =
-            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_tablet)
-        vSplitFromExpandedViewDragZoneHeightFoldTall =
-            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_fold_tall)
-        vSplitFromExpandedViewDragZoneHeightFoldShort =
-            context.resolveDimension(R.dimen.drag_zone_v_split_from_expanded_view_height_fold_short)
-        fullScreenDropTargetPadding =
-            context.resolveDimension(R.dimen.drop_target_full_screen_padding)
-        desktopWindowDropTargetPaddingSmall =
-            context.resolveDimension(R.dimen.drop_target_desktop_window_padding_small)
-        desktopWindowDropTargetPaddingLarge =
-            context.resolveDimension(R.dimen.drop_target_desktop_window_padding_large)
-
-        // TODO b/393172431: Use the shared xml resources once we can easily access them from
+        // TODO b/396539130: Use the shared xml resources once we can easily access them from
         //  launcher
+        dismissDragZoneSize =
+            if (deviceConfig.isSmallTablet) 140.dpToPx() else 200.dpToPx()
+        bubbleDragZoneTabletSize = 200.dpToPx()
+        bubbleDragZoneFoldableSize = 140.dpToPx()
+        fullScreenDragZoneWidth = 512.dpToPx()
+        fullScreenDragZoneHeight = 44.dpToPx()
+        desktopWindowDragZoneWidth = 880.dpToPx()
+        desktopWindowDragZoneHeight = 300.dpToPx()
+        desktopWindowFromExpandedViewDragZoneWidth = 200.dpToPx()
+        desktopWindowFromExpandedViewDragZoneHeight = 350.dpToPx()
+        splitFromBubbleDragZoneHeight = 100.dpToPx()
+        splitFromBubbleDragZoneWidth = 60.dpToPx()
+        hSplitFromExpandedViewDragZoneWidth = 60.dpToPx()
+        vSplitFromExpandedViewDragZoneWidth = 200.dpToPx()
+        vSplitFromExpandedViewDragZoneHeightTablet = 285.dpToPx()
+        vSplitFromExpandedViewDragZoneHeightFoldTall = 150.dpToPx()
+        vSplitFromExpandedViewDragZoneHeightFoldShort = 100.dpToPx()
+        fullScreenDropTargetPadding = 20.dpToPx()
+        desktopWindowDropTargetPaddingSmall = 100.dpToPx()
+        desktopWindowDropTargetPaddingLarge = 130.dpToPx()
         expandedViewDropTargetWidth = 364.dpToPx()
         expandedViewDropTargetHeight = 578.dpToPx()
         expandedViewDropTargetPaddingBottom = 108.dpToPx()
