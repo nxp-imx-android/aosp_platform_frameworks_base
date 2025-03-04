@@ -122,6 +122,10 @@ constructor(
         return false
     }
 
+    fun isBackCallbackRegistered(): Boolean {
+        return isCallbackRegistered
+    }
+
     private fun registerBackCallback() {
         if (isCallbackRegistered) {
             return
