@@ -423,12 +423,9 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Surroundings"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Left"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Right"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Surroundings"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Left surroundings"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Right surroundings"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Expand to left and right separated controls"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Collapse to unified control"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Mute surroundings"</string>
@@ -1003,6 +1000,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Add to position <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Position invalid."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Position <xliff:g id="POSITION">%1$d</xliff:g>"</string>
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Tile already added"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Tile added"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Tile removed"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Quick settings editor."</string>

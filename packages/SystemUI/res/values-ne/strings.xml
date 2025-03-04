@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> मा जडित।"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> मा कनेक्ट गरियो।"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"समूह एक्स्पान्ड गर्नुहोस्।"</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"समूहमा डिभाइस हाल्नुहोस्।"</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"समूहबाट डिभाइस हटाउनुहोस्।"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"एप खोल्नुहोस्।"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"जडान नगरिएको।"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"रोमिङ"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"इनपुट"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"हियरिङ डिभाइसहरू"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"सक्रिय गर्दै…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"सिरानको एपले चमक नियन्त्रण गरिरहेकाले चमक मिलाउन मिल्दैन"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"अटो रोटेट"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"स्क्रिन स्वतःघुम्ने"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"लोकेसन"</string>
@@ -997,8 +994,7 @@
   </string-array>
     <string name="tuner_low_priority" msgid="8412666814123009820">"कम प्राथमिकताका सूचना आइकनहरू देखाउनुहोस्"</string>
     <string name="other" msgid="429768510980739978">"अन्य"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_tile_size_action (1485194410119733586) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइलको आकार टगल गर्नुहोस्"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"टाइल हटाउनुहोस्"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"अन्तिम स्थानमा टाइल हाल्नुहोस्"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल सार्नुहोस्"</string>
@@ -1007,6 +1003,8 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"टाइल यो अवस्था <xliff:g id="POSITION">%1$d</xliff:g> मा हाल्नुहोस्"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"पोजिसन अवैध छ।"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"स्थिति <xliff:g id="POSITION">%1$d</xliff:g>"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"टाइल हालियो"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"टाइल हटाइयो"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"द्रुत सेटिङ सम्पादक।"</string>
@@ -1551,10 +1549,8 @@
     <string name="overview_edu_toast_content" msgid="5797030644017804518">"आफूले हालसालै चलाएका एपहरू हेर्न तीन वटा औँलाले टचप्याडमा माथितिर स्वाइप गर्नुहोस् र होल्ड गर्नुहोस्"</string>
     <string name="all_apps_edu_toast_content" msgid="8807496014667211562">"आफ्ना सबै एपहरू हेर्न आफ्नो किबोर्डमा भएको एक्सन की थिच्नुहोस्"</string>
     <string name="redacted_notification_single_line_title" msgid="212019960919261670">"जानकारी लुकाउन सम्पादन गरिएको"</string>
-    <!-- no translation found for public_notification_single_line_text (3576190291791654933) -->
-    <skip />
-    <!-- no translation found for redacted_otp_notification_single_line_text (5179964116354454118) -->
-    <skip />
+    <string name="public_notification_single_line_text" msgid="3576190291791654933">"हेर्न अनलक गर्नुहोस्"</string>
+    <string name="redacted_otp_notification_single_line_text" msgid="5179964116354454118">"कोड हेर्न अनलक गर्नुहोस्"</string>
     <string name="contextual_education_dialog_title" msgid="4630392552837487324">"सान्दर्भिक शिक्षा"</string>
     <string name="back_edu_notification_title" msgid="5624780717751357278">"पछाडि जान आफ्नो टचप्याड प्रयोग गर्नुहोस्"</string>
     <string name="back_edu_notification_content" msgid="2497557451540954068">"तीन वटा औँला प्रयोग गरी बायाँ वा दायाँतिर स्वाइप गर्नुहोस्। थप जेस्चर प्रयोग गर्ने तरिका सिक्न ट्याप गर्नुहोस्।"</string>
@@ -1577,6 +1573,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"अज्ञात"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"सबै टाइलहरू रिसेट गर्ने हो?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"द्रुत सेटिङका सबै टाइलहरू रिसेट गरी डिभाइसका मूल सेटिङ लागू गरिने छन्"</string>
-    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
-    <skip />
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
