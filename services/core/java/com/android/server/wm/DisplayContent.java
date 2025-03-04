@@ -3262,12 +3262,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             Slog.e(TAG, "ShouldShowSystemDecors shouldn't be updated when the flag is off.");
         }
 
-        final boolean shouldShowContent;
         if (!allowContentModeSwitch()) {
             return;
         }
-        shouldShowContent = mDisplay.canHostTasks();
 
+        final boolean shouldShowContent = mDisplay.canHostTasks();
         if (shouldShowContent == mWmService.mDisplayWindowSettings
                 .shouldShowSystemDecorsLocked(this)) {
             return;
@@ -3277,6 +3276,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (!shouldShowContent) {
             clearAllTasksOnDisplay(null /* clearTasksCallback */, false /* isRemovingDisplay */);
         }
+
+        // If the display is allowed to show content, then it belongs to the display topology;
+        // vice versa.
+        mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(mDisplayId,
+                /* inTopology= */ shouldShowContent);
     }
 
      /**
@@ -3292,6 +3296,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         // Private display should never show system decorations.
         if (isPrivate()) {
+            return false;
+        }
+
+        if (shouldNeverShowSystemDecorations()) {
             return false;
         }
 
@@ -5659,16 +5667,23 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return type == TRANSIT_OPEN || type == TRANSIT_TO_FRONT;
     }
 
+    private boolean shouldNeverShowSystemDecorations() {
+        if (mDisplayId == mWmService.mVr2dDisplayId) {
+            // VR virtual display will be used to run and render 2D app within a VR experience.
+            return true;
+        }
+        if (!isTrusted()) {
+            // Do not show system decorations on untrusted virtual display.
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @see Display#FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS
      */
     boolean isSystemDecorationsSupported() {
-        if (mDisplayId == mWmService.mVr2dDisplayId) {
-            // VR virtual display will be used to run and render 2D app within a VR experience.
-            return false;
-        }
-        if (!isTrusted()) {
-            // Do not show system decorations on untrusted virtual display.
+        if (shouldNeverShowSystemDecorations()) {
             return false;
         }
         if (mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(this)

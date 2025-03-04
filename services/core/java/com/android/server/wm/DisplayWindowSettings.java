@@ -240,6 +240,11 @@ class DisplayWindowSettings {
         mSettingsProvider.updateOverrideSettings(displayInfo, overrideSettings);
     }
 
+    /**
+     * Returns {@code true} if either the display is the default display, or the display is allowed
+     * to dynamically add/remove system decorations and the system decorations should be shown on it
+     * currently.
+     */
     boolean shouldShowSystemDecorsLocked(@NonNull DisplayContent dc) {
         if (dc.getDisplayId() == Display.DEFAULT_DISPLAY) {
             // Default display should show system decors.
