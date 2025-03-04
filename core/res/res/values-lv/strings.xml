@@ -1804,8 +1804,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Vienas rokas režīms"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Papildu aptumšošana"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Dzirdes aparāti"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"Automātiskā klikšķināšana"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Atvienota"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Pievienota"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktīva"</string>
@@ -1967,7 +1966,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pirms atspraušanas pieprasīt atbloķēšanas kombināciju"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pirms atspraušanas pieprasīt paroli"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalēja jūsu administrators.\nPārejiet uz iestatījumiem, lai skatītu piešķirtās atļaujas."</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"Atjaunināja administrators"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Dzēsa administrators"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Labi"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Akumulatora enerģijas taupīšanas režīmā tiek ieslēgts tumšais motīvs un tiek ierobežotas vai izslēgtas darbības fonā, daži vizuālie efekti, noteiktas funkcijas un noteikti tīkla savienojumi."</string>

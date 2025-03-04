@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"單手模式"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"超暗"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助聽器"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"自動點擊"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已中斷連線"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"已連線"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"運作中"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定時必須提供解鎖圖案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消固定時必須輸入密碼"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"已由你的管理員安裝。\n請前往設定查看已授予的權限"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"已由你的管理員更新"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"已由你的管理員刪除"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"好"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"「慳電模式」會開啟深色主題背景，並限制或關閉背景活動、部分視覺效果、特定功能和部分網絡連線。"</string>
