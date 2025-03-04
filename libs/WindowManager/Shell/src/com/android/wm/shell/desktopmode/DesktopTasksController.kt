@@ -22,6 +22,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.KeyguardManager
 import android.app.PendingIntent
+import android.app.TaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
@@ -520,7 +521,8 @@ class DesktopTasksController(
             return false
         }
         logV("moveBackgroundTaskToDesktop with taskId=%d", taskId)
-        val taskIdToMinimize = bringDesktopAppsToFront(task.displayId, wct, taskId)
+        val deskId = getDefaultDeskId(task.displayId)
+        val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
@@ -549,9 +551,7 @@ class DesktopTasksController(
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
         )
-        taskIdToMinimize?.let {
-            addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-        }
+        runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
         return true
     }
@@ -1626,7 +1626,10 @@ class DesktopTasksController(
         }
     }
 
-    @Deprecated("Use activeDesk() instead.", ReplaceWith("activateDesk()"))
+    @Deprecated(
+        "Use addDeskActivationChanges() instead.",
+        ReplaceWith("addDeskActivationChanges()"),
+    )
     private fun bringDesktopAppsToFront(
         displayId: Int,
         wct: WindowContainerTransaction,
@@ -2240,7 +2243,9 @@ class DesktopTasksController(
                 runOnTransitStart?.invoke(transition)
                 return wct
             }
-            bringDesktopAppsToFront(task.displayId, wct, task.taskId)
+            val deskId = getDefaultDeskId(task.displayId)
+            val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
+            runOnTransitStart?.invoke(transition)
             wct.reorder(task.token, true)
             return wct
         }
@@ -2303,25 +2308,42 @@ class DesktopTasksController(
             return WindowContainerTransaction().also { wct ->
                 val deskId = getDefaultDeskId(task.displayId)
                 addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
-                // In some launches home task is moved behind new task being launched. Make sure
-                // that's not the case for launches in desktop. Also, if this launch is the first
-                // one to trigger the desktop mode (e.g., when [forceEnterDesktop()]), activate the
-                // desktop mode here.
-                if (
-                    task.baseIntent.flags.and(Intent.FLAG_ACTIVITY_TASK_ON_HOME) != 0 ||
-                        !isDesktopModeShowing(task.displayId)
-                ) {
-                    bringDesktopAppsToFront(task.displayId, wct, task.taskId)
-                    wct.reorder(task.token, true)
-                }
-
-                // Desktop Mode is already showing and we're launching a new Task - we might need to
-                // minimize another Task.
-                val taskIdToMinimize = addAndGetMinimizeChanges(task.displayId, wct, task.taskId)
-                taskIdToMinimize?.let {
-                    addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-                }
-                addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
+                val runOnTransitStart: RunOnTransitStart? =
+                    if (
+                        task.baseIntent.flags.and(Intent.FLAG_ACTIVITY_TASK_ON_HOME) != 0 ||
+                            !isDesktopModeShowing(task.displayId)
+                    ) {
+                        // In some launches home task is moved behind new task being launched. Make
+                        // sure that's not the case for launches in desktop. Also, if this launch is
+                        // the first one to trigger the desktop mode (e.g., when
+                        // [forceEnterDesktop()]), activate the desk here.
+                        val activationRunnable =
+                            addDeskActivationChanges(
+                                deskId = deskId,
+                                wct = wct,
+                                newTask = task,
+                                addPendingLaunchTransition = true,
+                            )
+                        wct.reorder(task.token, true)
+                        activationRunnable
+                    } else {
+                        { transition: IBinder ->
+                            // The desk was already showing and we're launching a new Task - we
+                            // might need to minimize another Task.
+                            val taskIdToMinimize =
+                                addAndGetMinimizeChanges(task.displayId, wct, task.taskId)
+                            taskIdToMinimize?.let { minimizingTaskId ->
+                                addPendingMinimizeTransition(
+                                    transition,
+                                    minimizingTaskId,
+                                    MinimizeReason.TASK_LIMIT,
+                                )
+                            }
+                            // Also track the pending launching task.
+                            addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
+                        }
+                    }
+                runOnTransitStart?.invoke(transition)
                 desktopImmersiveController.exitImmersiveIfApplicable(
                     transition,
                     wct,
@@ -2716,11 +2738,20 @@ class DesktopTasksController(
         activateDesk(deskId, remoteTransition)
     }
 
-    /** Activates the given desk but without starting a transition. */
+    /**
+     * Applies the necessary [wct] changes to activate the given desk.
+     *
+     * When a task is being brought into a desk together with the activation, then [newTask] is not
+     * null and may be used to run other desktop policies, such as minimizing another task if the
+     * task limit has been exceeded.
+     */
     fun addDeskActivationChanges(
         deskId: Int,
         wct: WindowContainerTransaction,
-        newTask: RunningTaskInfo? = null,
+        newTask: TaskInfo? = null,
+        // TODO: b/362720497 - should this be true in other places? Can it be calculated locally
+        //  without having to specify the value?
+        addPendingLaunchTransition: Boolean = false,
     ): RunOnTransitStart? {
         logV("addDeskActivationChanges newTaskId=%d deskId=%d", newTask?.taskId, deskId)
         val newTaskIdInFront = newTask?.taskId
@@ -2734,6 +2765,9 @@ class DesktopTasksController(
                         taskIdToMinimize = minimizingTaskId,
                         minimizeReason = MinimizeReason.TASK_LIMIT,
                     )
+                }
+                if (newTask != null && addPendingLaunchTransition) {
+                    addPendingAppLaunchTransition(transition, newTask.taskId, taskIdToMinimize)
                 }
             }
         }
