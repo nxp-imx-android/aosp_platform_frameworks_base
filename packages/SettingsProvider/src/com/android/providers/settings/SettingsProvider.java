@@ -396,12 +396,15 @@ public class SettingsProvider extends ContentProvider {
 
     private volatile SystemConfigManager mSysConfigManager;
 
+    private PackageMonitor mPackageMonitor;
+
     @GuardedBy("mLock")
     private boolean mSyncConfigDisabledUntilReboot;
 
     @ChangeId
     @EnabledSince(targetSdkVersion=android.os.Build.VERSION_CODES.S)
     private static final long ENFORCE_READ_PERMISSION_FOR_MULTI_SIM_DATA_CALL = 172670679L;
+
 
     @Override
     public boolean onCreate() {
@@ -1036,7 +1039,7 @@ public class SettingsProvider extends ContentProvider {
             }
         }, userFilter);
 
-        PackageMonitor monitor = new PackageMonitor() {
+        mPackageMonitor = new PackageMonitor() {
             @Override
             public void onPackageRemoved(String packageName, int uid) {
                 synchronized (mLock) {
@@ -1062,7 +1065,7 @@ public class SettingsProvider extends ContentProvider {
         };
 
         // package changes
-        monitor.register(getContext(), BackgroundThread.getHandler().getLooper(),
+        mPackageMonitor.register(getContext(), BackgroundThread.getHandler().getLooper(),
                 UserHandle.ALL, true);
     }
 
