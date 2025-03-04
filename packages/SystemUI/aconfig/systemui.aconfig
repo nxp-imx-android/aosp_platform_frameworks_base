@@ -1390,6 +1390,16 @@ flag {
 }
 
 flag {
+    name: "media_controls_device_manager_background_execution"
+    namespace: "systemui"
+    description: "Sends some instances creation to background thread"
+    bug: "400200474"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "output_switcher_redesign"
   namespace: "systemui"
   description: "Enables visual update for Media Output Switcher"

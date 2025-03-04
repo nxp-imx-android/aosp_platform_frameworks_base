@@ -33,8 +33,8 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.LocalBluetoothLeBroadcast
 import com.android.settingslib.bluetooth.LocalBluetoothManager
@@ -77,6 +77,8 @@ import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.junit.MockitoJUnit
 import org.mockito.kotlin.eq
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 private const val KEY = "TEST_KEY"
 private const val KEY_OLD = "TEST_KEY_OLD"
@@ -89,12 +91,24 @@ private const val BROADCAST_APP_NAME = "BROADCAST_APP_NAME"
 private const val NORMAL_APP_NAME = "NORMAL_APP_NAME"
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @TestableLooper.RunWithLooper
-public class MediaDeviceManagerTest : SysuiTestCase() {
+public class MediaDeviceManagerTest(flags: FlagsParameterization) : SysuiTestCase() {
 
-    private companion object {
+    companion object {
         val OTHER_DEVICE_ICON_STUB = TestStubDrawable()
+
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.progressionOf(
+                com.android.systemui.Flags.FLAG_MEDIA_CONTROLS_DEVICE_MANAGER_BACKGROUND_EXECUTION
+            )
+        }
+    }
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
     }
 
     @get:Rule val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
@@ -187,6 +201,8 @@ public class MediaDeviceManagerTest : SysuiTestCase() {
     @Test
     fun loadMediaData() {
         manager.onMediaDataLoaded(KEY, null, mediaData)
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
         verify(lmmFactory).create(PACKAGE)
     }
 
@@ -195,6 +211,7 @@ public class MediaDeviceManagerTest : SysuiTestCase() {
         manager.onMediaDataLoaded(KEY, null, mediaData)
         manager.onMediaDataRemoved(KEY, false)
         fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
         verify(lmm).unregisterCallback(any())
         verify(muteAwaitManager).stopListening()
     }
@@ -406,6 +423,8 @@ public class MediaDeviceManagerTest : SysuiTestCase() {
         manager.onMediaDataLoaded(KEY, null, mediaData)
         // WHEN the notification is removed
         manager.onMediaDataRemoved(KEY, true)
+        fakeBgExecutor.runAllReady()
+        fakeFgExecutor.runAllReady()
         // THEN the listener receives key removed event
         verify(listener).onKeyRemoved(eq(KEY), eq(true))
     }
