@@ -169,6 +169,10 @@ class NotifPipeline @Inject constructor(
         mShadeListBuilder.setSectioners(sections)
     }
 
+    /**
+     * NotifBundler that is used to determine whether a notification should be bundled according to
+     * classification.
+     */
     fun setNotifBundler(bundler: NotifBundler) {
         mShadeListBuilder.setBundler(bundler)
     }
