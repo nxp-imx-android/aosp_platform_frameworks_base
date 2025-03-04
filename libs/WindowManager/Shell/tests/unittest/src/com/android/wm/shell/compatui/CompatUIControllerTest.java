@@ -59,6 +59,7 @@ import com.android.wm.shell.common.DockStateReader;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.compatui.api.CompatUIInfo;
+import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopRepository;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.sysui.ShellController;
@@ -736,6 +737,22 @@ public class CompatUIControllerTest extends ShellTestCase {
         mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
 
         verify(mController, never()).removeLayouts(taskInfo.taskId);
+    }
+
+    @Test
+    @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
+    public void testSendCompatUIRequest_createRestartDialog() {
+        TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ false);
+        doReturn(true).when(mMockRestartDialogLayout)
+                .needsToBeRecreated(any(TaskInfo.class),
+                        any(ShellTaskOrganizer.TaskListener.class));
+        doReturn(true).when(mCompatUIConfiguration).isRestartDialogEnabled();
+        doReturn(true).when(mCompatUIConfiguration).shouldShowRestartDialogAgain(eq(taskInfo));
+
+        mController.sendCompatUIRequest(new CompatUIRequests.DisplayCompatShowRestartDialog(
+                taskInfo, mMockTaskListener));
+        verify(mController).createRestartDialogWindowManager(any(), eq(taskInfo),
+                eq(mMockTaskListener));
     }
 
     private static TaskInfo createTaskInfo(int displayId, int taskId, boolean hasSizeCompat) {

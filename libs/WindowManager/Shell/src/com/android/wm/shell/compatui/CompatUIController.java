@@ -18,6 +18,8 @@ package com.android.wm.shell.compatui;
 
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 
+import static com.android.wm.shell.compatui.impl.CompatUIRequestsKt.DISPLAY_COMPAT_SHOW_RESTART_DIALOG;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.TaskInfo;
@@ -53,7 +55,9 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.compatui.api.CompatUIEvent;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.api.CompatUIInfo;
+import com.android.wm.shell.compatui.api.CompatUIRequest;
 import com.android.wm.shell.compatui.impl.CompatUIEvents.SizeCompatRestartButtonClicked;
+import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.sysui.KeyguardChangeListener;
@@ -245,6 +249,21 @@ public class CompatUIController implements OnDisplaysChangedListener,
         mCallback = callback;
     }
 
+    @Override
+    public void sendCompatUIRequest(CompatUIRequest compatUIRequest) {
+        switch(compatUIRequest.getRequestId()) {
+            case DISPLAY_COMPAT_SHOW_RESTART_DIALOG:
+                handleDisplayCompatShowRestartDialog(compatUIRequest.asType());
+                break;
+            default:
+        }
+    }
+
+    private void handleDisplayCompatShowRestartDialog(
+            CompatUIRequests.DisplayCompatShowRestartDialog request) {
+        onRestartButtonClicked(new Pair<>(request.getTaskInfo(), request.getTaskListener()));
+    }
+
     /**
      * Called when the Task info changed. Creates and updates the compat UI if there is an
      * activity in size compat, or removes the UI if there is no size compat activity.
@@ -254,13 +273,17 @@ public class CompatUIController implements OnDisplaysChangedListener,
     public void onCompatInfoChanged(@NonNull CompatUIInfo compatUIInfo) {
         final TaskInfo taskInfo = compatUIInfo.getTaskInfo();
         final ShellTaskOrganizer.TaskListener taskListener = compatUIInfo.getListener();
-        if (taskInfo != null && !taskInfo.appCompatTaskInfo.isTopActivityInSizeCompat()) {
+        final boolean isInDisplayCompatMode =
+                taskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove();
+        if (taskInfo != null && !taskInfo.appCompatTaskInfo.isTopActivityInSizeCompat()
+                && !isInDisplayCompatMode) {
             mSetOfTaskIdsShowingRestartDialog.remove(taskInfo.taskId);
         }
         mIsInDesktopMode = isInDesktopMode(taskInfo);
         // We close all the Compat UI educations in case TaskInfo has no configuration or
         // TaskListener or in desktop mode.
-        if (taskInfo.configuration == null || taskListener == null || mIsInDesktopMode) {
+        if (taskInfo.configuration == null || taskListener == null
+                || (mIsInDesktopMode && !isInDisplayCompatMode)) {
             // Null token means the current foreground activity is not in compatibility mode.
             removeLayouts(taskInfo.taskId);
             return;
@@ -552,8 +575,11 @@ public class CompatUIController implements OnDisplaysChangedListener,
             @Nullable ShellTaskOrganizer.TaskListener taskListener) {
         RestartDialogWindowManager layout =
                 mTaskIdToRestartDialogWindowManagerMap.get(taskInfo.taskId);
+        final boolean isInNonDisplayCompatDesktopMode = mIsInDesktopMode
+                && !taskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove();
         if (layout != null) {
-            if (layout.needsToBeRecreated(taskInfo, taskListener) || mIsInDesktopMode) {
+            if (layout.needsToBeRecreated(taskInfo, taskListener)
+                    || isInNonDisplayCompatDesktopMode) {
                 mTaskIdToRestartDialogWindowManagerMap.remove(taskInfo.taskId);
                 layout.release();
             } else {
@@ -568,8 +594,9 @@ public class CompatUIController implements OnDisplaysChangedListener,
                 return;
             }
         }
-        if (mIsInDesktopMode) {
-            // Return if in desktop mode.
+        if (isInNonDisplayCompatDesktopMode) {
+            // No restart dialog can be shown in desktop mode unless the task is in display compat
+            // mode.
             return;
         }
         // Create a new UI layout.
