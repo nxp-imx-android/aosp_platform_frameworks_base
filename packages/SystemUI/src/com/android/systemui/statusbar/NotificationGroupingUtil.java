@@ -22,6 +22,7 @@ import android.app.Flags;
 import android.app.Notification;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.Icon;
+import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -31,6 +32,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
+
 import com.android.internal.R;
 import com.android.internal.widget.CachingIconView;
 import com.android.internal.widget.ConversationLayout;
@@ -39,6 +42,7 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationContentView;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -214,7 +218,7 @@ public class NotificationGroupingUtil {
         }
         // in case no view is visible we make sure the time is visible
         int timeVisibility = !hasVisibleText
-                || row.getEntry().getSbn().getNotification().showsTime()
+                || showsTime(row)
                 ? View.VISIBLE : View.GONE;
         time.setVisibility(timeVisibility);
         View left = null;
@@ -241,6 +245,17 @@ public class NotificationGroupingUtil {
                 left = child;
             }
         }
+    }
+
+    @VisibleForTesting
+    boolean showsTime(ExpandableNotificationRow row) {
+        StatusBarNotification sbn;
+        if (NotificationBundleUi.isEnabled()) {
+            sbn = row.getEntryAdapter() != null ? row.getEntryAdapter().getSbn() : null;
+        } else {
+            sbn = row.getEntry().getSbn();
+        }
+        return (sbn != null && sbn.getNotification().showsTime());
     }
 
     /**
