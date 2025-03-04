@@ -17,9 +17,7 @@
 package com.android.wm.shell.shared.desktopmode;
 
 import static android.hardware.display.DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED;
-import static android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE;
 
-import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper.enableBubbleToFullscreen;
 
 import android.annotation.NonNull;
@@ -226,7 +224,7 @@ public class DesktopModeStatus {
     /**
      * Return {@code true} if the current device can host desktop sessions on its internal display.
      */
-    private static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
+    public static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
         return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
     }
 
@@ -268,29 +266,6 @@ public class DesktopModeStatus {
     private static boolean isDesktopModeEnabledByDevOption(@NonNull Context context) {
         return DesktopModeFlags.isDesktopModeForcedEnabled()
                 && canShowDesktopModeDevOption(context);
-    }
-
-    /**
-     * Check to see if a display should have desktop mode enabled or not. Internal
-     * and external displays have separate logic.
-     */
-    public static boolean isDesktopModeSupportedOnDisplay(Context context, Display display) {
-        if (!canEnterDesktopMode(context)) {
-            return false;
-        }
-        if (display.getType() == Display.TYPE_INTERNAL) {
-            return canInternalDisplayHostDesktops(context);
-        }
-
-        // TODO (b/395014779): Change this to use WM API
-        if ((display.getType() == Display.TYPE_EXTERNAL
-                || display.getType() == Display.TYPE_OVERLAY)
-                && enableDisplayContentModeManagement()) {
-            final WindowManager wm = context.getSystemService(WindowManager.class);
-            return wm != null && wm.shouldShowSystemDecors(display.getDisplayId());
-        }
-
-        return false;
     }
 
     /**
@@ -366,11 +341,8 @@ public class DesktopModeStatus {
         if (!enforceDeviceRestrictions()) {
             return true;
         }
-        // If projected display is enabled, #canInternalDisplayHostDesktops is no longer a
-        // requirement.
-        final boolean desktopModeSupported = ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue()
-                ? isDesktopModeSupported(context) : (isDesktopModeSupported(context)
-                && canInternalDisplayHostDesktops(context));
+        final boolean desktopModeSupported = isDesktopModeSupported(context)
+                && canInternalDisplayHostDesktops(context);
         final boolean desktopModeSupportedByDevOptions =
                 Flags.enableDesktopModeThroughDevOption()
                     && isDesktopModeDevOptionSupported(context);

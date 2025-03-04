@@ -17,7 +17,6 @@
 package com.android.server.wm;
 
 import static android.app.Flags.enableConnectedDisplaysWallpaper;
-import static android.window.DesktopExperienceFlags.ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE;
 
 import android.annotation.NonNull;
 import android.content.Context;
@@ -67,7 +66,7 @@ public final class DesktopModeHelper {
      * Return {@code true} if the current device can hosts desktop sessions on its internal display.
      */
     @VisibleForTesting
-    private static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
+    static boolean canInternalDisplayHostDesktops(@NonNull Context context) {
         return context.getResources().getBoolean(R.bool.config_canInternalDisplayHostDesktops);
     }
 
@@ -84,11 +83,8 @@ public final class DesktopModeHelper {
         if (!shouldEnforceDeviceRestrictions()) {
             return true;
         }
-        // If projected display is enabled, #canInternalDisplayHostDesktops is no longer a
-        // requirement.
-        final boolean desktopModeSupported = ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE.isTrue()
-                ? isDesktopModeSupported(context) : (isDesktopModeSupported(context)
-                && canInternalDisplayHostDesktops(context));
+        final boolean desktopModeSupported = isDesktopModeSupported(context)
+                && canInternalDisplayHostDesktops(context);
         final boolean desktopModeSupportedByDevOptions =
                 Flags.enableDesktopModeThroughDevOption()
                         && isDesktopModeDevOptionsSupported(context);
