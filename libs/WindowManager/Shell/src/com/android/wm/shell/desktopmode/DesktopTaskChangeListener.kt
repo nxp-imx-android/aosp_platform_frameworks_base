@@ -53,24 +53,12 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
         // Case 1: When the task change is from a task in the desktop repository which is now
         // fullscreen,
         // remove the task from the desktop repository since it is no longer a freeform task.
-        if (!isFreeformTask(taskInfo)) {
-            if (desktopRepository.isActiveTask(taskInfo.taskId)) {
-                desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
-            }
-        } else { // Task change is a freeform task
-            if (!desktopRepository.isActiveTask(taskInfo.taskId)) {
-                // Case 2: When the task change is a freeform visible task, but the task is not
-                // yet active in the desktop repository, adds task to desktop repository.
-                desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
-            } else {
-                // Case 3: When the task change is a freeform task which already exists as an active
-                // task in the desktop repository, updates the task state.
-                desktopRepository.updateTask(
-                    taskInfo.displayId,
-                    taskInfo.taskId,
-                    taskInfo.isVisible,
-                )
-            }
+        if (!isFreeformTask(taskInfo) && desktopRepository.isActiveTask(taskInfo.taskId)) {
+            desktopRepository.removeTask(taskInfo.displayId, taskInfo.taskId)
+        } else if (isFreeformTask(taskInfo)) {
+            // If the task is already active in the repository, then moves task to the front,
+            // else adds the task.
+            desktopRepository.addTask(taskInfo.displayId, taskInfo.taskId, taskInfo.isVisible)
         }
     }
 
