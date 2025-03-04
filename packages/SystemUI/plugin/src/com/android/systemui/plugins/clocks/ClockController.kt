@@ -42,9 +42,13 @@ interface ClockController {
         isDarkTheme: Boolean,
         dozeFraction: Float,
         foldFraction: Float,
-        onBoundsChanged: (RectF) -> Unit,
+        clockListener: ClockEventListener?,
     )
 
     /** Optional method for dumping debug information */
     fun dump(pw: PrintWriter)
+}
+
+interface ClockEventListener {
+    fun onBoundsChanged(bounds: RectF)
 }

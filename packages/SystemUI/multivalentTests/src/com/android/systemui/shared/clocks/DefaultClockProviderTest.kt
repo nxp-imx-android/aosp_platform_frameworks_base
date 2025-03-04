@@ -108,7 +108,7 @@ class DefaultClockProviderTest : SysuiTestCase() {
         verify(mockSmallClockView).setColors(DOZE_COLOR, Color.MAGENTA)
         verify(mockLargeClockView).setColors(DOZE_COLOR, Color.MAGENTA)
 
-        clock.initialize(true, 0f, 0f, {})
+        clock.initialize(true, 0f, 0f, null)
 
         val expectedColor = 0
         verify(mockSmallClockView).setColors(DOZE_COLOR, expectedColor)

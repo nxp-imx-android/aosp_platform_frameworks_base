@@ -56,6 +56,7 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.modes.shared.ModesUi
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockEventListener
 import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockTickRate
@@ -148,7 +149,7 @@ constructor(
         val clockStr = clock.toString()
         loggers.forEach { it.d({ "New Clock: $str1" }) { str1 = clockStr } }
 
-        clock.initialize(isDarkTheme(), dozeAmount.value, 0f, { onClockBoundsChanged.value = it })
+        clock.initialize(isDarkTheme(), dozeAmount.value, 0f, clockListener)
 
         if (!regionSamplingEnabled) {
             updateColors()
@@ -311,6 +312,13 @@ constructor(
     private var weatherData: WeatherData? = null
     private var zenData: ZenData? = null
     private var alarmData: AlarmData? = null
+
+    private val clockListener =
+        object : ClockEventListener {
+            override fun onBoundsChanged(bounds: RectF) {
+                onClockBoundsChanged.value = bounds
+            }
+        }
 
     private val configListener =
         object : ConfigurationController.ConfigurationListener {
