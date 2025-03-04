@@ -21,6 +21,7 @@ import com.android.systemui.communal.shared.log.communalSceneLogger
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.statusbar.policy.keyguardStateController
 
 val Kosmos.communalSceneInteractor: CommunalSceneInteractor by
     Kosmos.Fixture {
@@ -29,5 +30,6 @@ val Kosmos.communalSceneInteractor: CommunalSceneInteractor by
             repository = communalSceneRepository,
             logger = communalSceneLogger,
             sceneInteractor = sceneInteractor,
+            keyguardStateController = keyguardStateController,
         )
     }

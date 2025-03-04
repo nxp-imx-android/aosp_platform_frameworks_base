@@ -17,15 +17,21 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import com.android.systemui.common.ui.domain.interactor.configurationInteractor
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
+import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.keyguard.ui.glanceableHubBlurComponentFactory
 import com.android.systemui.keyguard.ui.keyguardTransitionAnimationFlow
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.applicationCoroutineScope
 
 val Kosmos.glanceableHubToLockscreenTransitionViewModel by Fixture {
     GlanceableHubToLockscreenTransitionViewModel(
+        applicationScope = applicationCoroutineScope,
         configurationInteractor = configurationInteractor,
         animationFlow = keyguardTransitionAnimationFlow,
+        communalSceneInteractor = communalSceneInteractor,
+        communalSettingsInteractor = communalSettingsInteractor,
         blurFactory = glanceableHubBlurComponentFactory,
     )
 }
