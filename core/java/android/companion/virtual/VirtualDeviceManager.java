@@ -103,26 +103,6 @@ public final class VirtualDeviceManager {
 
     private static final String TAG = "VirtualDeviceManager";
 
-    /**
-     * Broadcast Action: A Virtual Device was removed.
-     *
-     * <p class="note">This is a protected intent that can only be sent by the system.</p>
-     *
-     * @hide
-     */
-    @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
-    public static final String ACTION_VIRTUAL_DEVICE_REMOVED =
-            "android.companion.virtual.action.VIRTUAL_DEVICE_REMOVED";
-
-    /**
-     * Int intent extra to be used with {@link #ACTION_VIRTUAL_DEVICE_REMOVED}.
-     * Contains the identifier of the virtual device, which was removed.
-     *
-     * @hide
-     */
-    public static final String EXTRA_VIRTUAL_DEVICE_ID =
-            "android.companion.virtual.extra.VIRTUAL_DEVICE_ID";
-
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(

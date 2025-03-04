@@ -311,8 +311,7 @@ public class VirtualDeviceManagerService extends SystemService {
     }
 
     /**
-     * Remove the virtual device. Sends the
-     * {@link VirtualDeviceManager#ACTION_VIRTUAL_DEVICE_REMOVED} broadcast as a result.
+     * Removes the virtual device and notifies all registered listeners about this.
      *
      * @param deviceId deviceId to be removed
      * @return {@code true} if the device was removed, {@code false} if the operation was a no-op
@@ -336,15 +335,6 @@ public class VirtualDeviceManagerService extends SystemService {
             }
         });
 
-        Intent i = new Intent(VirtualDeviceManager.ACTION_VIRTUAL_DEVICE_REMOVED);
-        i.putExtra(VirtualDeviceManager.EXTRA_VIRTUAL_DEVICE_ID, deviceId);
-        i.setFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
-        final long identity = Binder.clearCallingIdentity();
-        try {
-            getContext().sendBroadcastAsUser(i, UserHandle.ALL);
-        } finally {
-            Binder.restoreCallingIdentity(identity);
-        }
         return true;
     }
 
