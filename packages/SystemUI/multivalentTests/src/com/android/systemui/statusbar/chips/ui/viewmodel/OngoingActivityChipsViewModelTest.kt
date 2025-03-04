@@ -16,18 +16,19 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.content.Context
 import android.content.DialogInterface
 import android.content.packageManager
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
+import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
@@ -181,7 +182,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
 
             val latest by collectLastValue(underTest.primaryChip)
 
-            assertIsCallChip(latest, notificationKey)
+            assertIsCallChip(latest, notificationKey, context)
         }
 
     @Test
@@ -196,7 +197,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
 
             val latest by collectLastValue(underTest.primaryChip)
 
-            assertIsCallChip(latest, callNotificationKey)
+            assertIsCallChip(latest, callNotificationKey, context)
 
             // WHEN the higher priority media projection chip is added
             mediaProjectionState.value =
@@ -241,7 +242,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             mediaProjectionState.value = MediaProjectionState.NotProjecting
 
             // THEN the lower priority call is used
-            assertIsCallChip(latest, callNotificationKey)
+            assertIsCallChip(latest, callNotificationKey, context)
         }
 
     /** Regression test for b/347726238. */
@@ -395,18 +396,29 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             assertThat(icon.res).isEqualTo(R.drawable.ic_present_to_all)
         }
 
-        fun assertIsCallChip(latest: OngoingActivityChipModel?, notificationKey: String) {
+        fun assertIsCallChip(
+            latest: OngoingActivityChipModel?,
+            notificationKey: String,
+            context: Context,
+        ) {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).key).isEqualTo(notificationKey)
 
             if (StatusBarConnectedDisplays.isEnabled) {
                 assertNotificationIcon(latest, notificationKey)
-                return
+            } else {
+                val contentDescription =
+                    if (latest.icon is OngoingActivityChipModel.ChipIcon.SingleColorIcon) {
+                        ((latest.icon) as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
+                            .impl
+                            .contentDescription
+                    } else {
+                        (latest.icon as OngoingActivityChipModel.ChipIcon.StatusBarView)
+                            .contentDescription
+                    }
+                assertThat(contentDescription.loadContentDescription(context))
+                    .contains(context.getString(R.string.ongoing_call_content_description))
             }
-            val icon =
-                ((latest.icon) as OngoingActivityChipModel.ChipIcon.SingleColorIcon).impl
-                    as Icon.Resource
-            assertThat(icon.res).isEqualTo(com.android.internal.R.drawable.ic_phone)
         }
 
         private fun assertNotificationIcon(

@@ -75,7 +75,12 @@ fun OngoingActivityChip(
             }
         }
         is OngoingActivityChipModel.ClickBehavior.ShowHeadsUpNotification -> {
-            ChipBody(model, iconViewStore, onClick = { clickBehavior.onClick() })
+            ChipBody(
+                model,
+                iconViewStore,
+                onClick = { clickBehavior.onClick() },
+                modifier = modifier,
+            )
         }
 
         is OngoingActivityChipModel.ClickBehavior.None -> {
