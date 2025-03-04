@@ -76,6 +76,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController.StateList
 import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
@@ -810,6 +811,10 @@ public class NotificationLockscreenUserManagerImpl implements
      *    lock time.
      */
     private boolean shouldShowSensitiveContentRedactedView(NotificationEntry ent) {
+        if (android.app.Flags.redactionOnLockscreenMetrics()) {
+            return shouldShowSensitiveContentRedactedViewWithLog(ent);
+        }
+
         if (!LockscreenOtpRedaction.isEnabled()) {
             return false;
         }
@@ -844,6 +849,71 @@ public class NotificationLockscreenUserManagerImpl implements
         }
 
         return true;
+    }
+
+    /*
+     * We show the sensitive content redaction view if
+     * 1. The feature is enabled
+     * 2. The notification has the `hasSensitiveContent` ranking variable set to true
+     * 3. The device is locked
+     * 4. The device is NOT connected to Wifi
+     * 5. The device has not connected to Wifi since receiving the notification
+     * 6. The notification arrived at least LOCK_TIME_FOR_SENSITIVE_REDACTION_MS after the last
+     *    lock time.
+     *
+     * This version of the method logs a metric about the request.
+     */
+    private boolean shouldShowSensitiveContentRedactedViewWithLog(NotificationEntry ent) {
+        if (!LockscreenOtpRedaction.isEnabled()) {
+            return false;
+        }
+
+        if (ent.getRanking() == null || !ent.getRanking().hasSensitiveContent()) {
+            return false;
+        }
+
+        long notificationWhen = ent.getSbn().getNotification().getWhen();
+        long notificationTime = getEarliestNotificationTime(ent);
+        boolean locked = mLocked.get();
+        long lockTime = mLastLockTime.get();
+        boolean wifiConnected = mConnectedToWifi.get();
+        long wifiConnectionTime = mLastWifiConnectionTime.get();
+
+        boolean shouldRedact = true;
+        if (!locked) {
+            shouldRedact = false;
+        }
+
+        if (!mRedactOtpOnWifi.get()) {
+            if (wifiConnected) {
+                shouldRedact = false;
+            }
+
+            // If the device has connected to wifi since receiving the notification, do not redact
+            if (notificationTime < wifiConnectionTime) {
+                shouldRedact = false;
+            }
+        }
+
+        // If the lock screen was not already locked for at least mOtpRedactionRequiredLockTimeMs
+        // when this notification arrived, do not redact
+        long latestTimeForRedaction = lockTime + mOtpRedactionRequiredLockTimeMs.get();
+
+        if (notificationTime < latestTimeForRedaction) {
+            shouldRedact = false;
+        }
+
+        int whenAndEarliestDiff = clampLongToIntRange(notificationWhen - notificationTime);
+        int earliestAndLockDiff = clampLongToIntRange(lockTime - notificationTime);
+        int earliestAndWifiDiff = clampLongToIntRange(wifiConnectionTime - notificationTime);
+        SysUiStatsLog.write(SysUiStatsLog.OTP_NOTIFICATION_DISPLAYED, shouldRedact,
+                whenAndEarliestDiff, locked, earliestAndLockDiff, wifiConnected,
+                earliestAndWifiDiff);
+        return shouldRedact;
+    }
+
+    private int clampLongToIntRange(long toConvert) {
+        return (int) Math.min(Integer.MAX_VALUE, Math.max(Integer.MIN_VALUE, toConvert));
     }
 
     // Get the earliest time the user might have seen this notification. This is either the
