@@ -109,6 +109,7 @@ import com.android.systemui.AutoReinflateContainer;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.EventLogTags;
+import com.android.systemui.Flags;
 import com.android.systemui.InitController;
 import com.android.systemui.Prefs;
 import com.android.systemui.accessibility.floatingmenu.AccessibilityFloatingMenuController;
@@ -3183,12 +3184,27 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             new ActivityTransitionAnimator.Listener() {
                 @Override
                 public void onTransitionAnimationStart() {
-                    mKeyguardViewMediator.setBlursDisabledForAppLaunch(true);
+                    if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) {
+                        mKeyguardViewMediator.setBlursDisabledForAppLaunch(true);
+                    }
+                }
+
+                @Override
+                public void onTransitionAnimationProgress(float linearProgress) {
+                    if (Flags.notificationShadeBlur() && Flags.moveTransitionAnimationLayer()) {
+                        mNotificationShadeDepthControllerLazy.get()
+                                .onTransitionAnimationProgress(linearProgress);
+                    }
                 }
 
                 @Override
                 public void onTransitionAnimationEnd() {
-                    mKeyguardViewMediator.setBlursDisabledForAppLaunch(false);
+                    if (Flags.notificationShadeBlur() && Flags.moveTransitionAnimationLayer()) {
+                        mNotificationShadeDepthControllerLazy.get()
+                                .onTransitionAnimationEnd();
+                    } else {
+                        mKeyguardViewMediator.setBlursDisabledForAppLaunch(false);
+                    }
                 }
             };
 
