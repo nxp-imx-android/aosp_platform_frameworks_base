@@ -220,17 +220,6 @@ class DisplayTopologyCoordinatorTest {
     }
 
     @Test
-    fun addDisplay_notInDefaultDisplayGroup() {
-        displayInfos[0].displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1
-
-        coordinator.onDisplayAdded(displayInfos[0])
-
-        verify(mockTopology, never()).addDisplay(anyInt(), anyFloat(), anyFloat())
-        verify(mockTopologyChangedCallback, never()).invoke(any())
-        verify(mockTopologyStore, never()).restoreTopology(any())
-    }
-
-    @Test
     fun updateDisplay() {
         whenever(mockTopology.updateDisplay(eq(displayInfos[0].displayId), anyFloat(), anyFloat()))
             .thenReturn(true)
@@ -346,17 +335,6 @@ class DisplayTopologyCoordinatorTest {
         verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
         verify(mockTopologyChangedCallback, never()).invoke(any())
         verify(mockTopologyStore, never()).restoreTopology(any())
-    }
-
-    @Test
-    fun updateDisplay_notInDefaultDisplayGroup() {
-        displayInfos[0].displayGroupId = Display.DEFAULT_DISPLAY_GROUP + 1
-
-        coordinator.onDisplayChanged(displayInfos[0])
-
-        verify(mockTopology, never()).updateDisplay(anyInt(), anyFloat(), anyFloat())
-        verify(mockTopologyCopy, never()).getGraph(any())
-        verify(mockTopologyChangedCallback, never()).invoke(any())
     }
 
     @Test

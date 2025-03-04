@@ -3914,6 +3914,7 @@ public class DisplayManagerServiceTest {
         DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerService.BinderService displayManagerBinderService =
                 displayManager.new BinderService();
+        DisplayManagerInternal localService = displayManager.new LocalService();
         Handler handler = displayManager.getDisplayHandler();
         waitForIdleHandler(handler);
 
@@ -3922,8 +3923,8 @@ public class DisplayManagerServiceTest {
                 INTERNAL_EVENT_FLAG_TOPOLOGY_UPDATED);
         waitForIdleHandler(handler);
 
-        var topology = initDisplayTopology(displayManager, displayManagerBinderService, callback,
-                handler, /*shouldEmitTopologyChangeEvent=*/ true);
+        var topology = initDisplayTopology(displayManager, displayManagerBinderService,
+                localService, callback, handler, /*shouldEmitTopologyChangeEvent=*/ true);
         callback.clear();
         callback.expectsEvent(TOPOLOGY_CHANGED_EVENT);
         displayManagerBinderService.setDisplayTopology(topology);
@@ -3938,6 +3939,7 @@ public class DisplayManagerServiceTest {
         DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);
         DisplayManagerService.BinderService displayManagerBinderService =
                 displayManager.new BinderService();
+        DisplayManagerInternal localService = displayManager.new LocalService();
         Handler handler = displayManager.getDisplayHandler();
         waitForIdleHandler(handler);
 
@@ -3947,8 +3949,8 @@ public class DisplayManagerServiceTest {
                 STANDARD_DISPLAY_EVENTS);
         waitForIdleHandler(handler);
 
-        var topology = initDisplayTopology(displayManager, displayManagerBinderService, callback,
-                handler, /*shouldEmitTopologyChangeEvent=*/ false);
+        var topology = initDisplayTopology(displayManager, displayManagerBinderService,
+                localService, callback, handler, /*shouldEmitTopologyChangeEvent=*/ false);
         callback.clear();
         callback.expectsEvent(TOPOLOGY_CHANGED_EVENT); // should not happen
         displayManagerBinderService.setDisplayTopology(topology);
@@ -4706,15 +4708,16 @@ public class DisplayManagerServiceTest {
 
     private DisplayTopology initDisplayTopology(DisplayManagerService displayManager,
             DisplayManagerService.BinderService displayManagerBinderService,
-            FakeDisplayManagerCallback callback,
+            DisplayManagerInternal localService, FakeDisplayManagerCallback callback,
             Handler handler, boolean shouldEmitTopologyChangeEvent) {
         Settings.Global.putInt(mContext.getContentResolver(),
                 DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS, 1);
         callback.expectsEvent(TOPOLOGY_CHANGED_EVENT);
         FakeDisplayDevice displayDevice0 =
-                createFakeDisplayDevice(displayManager, new float[]{60f}, Display.TYPE_INTERNAL);
+                createFakeDisplayDevice(displayManager, new float[]{60f}, Display.TYPE_EXTERNAL);
         int displayId0 = getDisplayIdForDisplayDevice(displayManager, displayManagerBinderService,
                 displayDevice0);
+        waitForIdleHandler(handler);
         if (shouldEmitTopologyChangeEvent) {
             callback.waitForExpectedEvent();
         } else {
@@ -4727,6 +4730,11 @@ public class DisplayManagerServiceTest {
                 new float[]{60f}, Display.TYPE_OVERLAY);
         int displayId1 = getDisplayIdForDisplayDevice(displayManager, displayManagerBinderService,
                 displayDevice1);
+        waitForIdleHandler(handler);
+        // Non-default display should not be added until onDisplayBelongToTopologyChanged is called
+        // with true
+        callback.waitForNonExpectedEvent();
+        localService.onDisplayBelongToTopologyChanged(displayId1, true);
         waitForIdleHandler(handler);
         if (shouldEmitTopologyChangeEvent) {
             callback.waitForExpectedEvent();

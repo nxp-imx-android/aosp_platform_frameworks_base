@@ -31,6 +31,7 @@ import static android.window.DisplayAreaOrganizer.FEATURE_VENDOR_FIRST;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 import static com.android.server.wm.ActivityRecord.State.FINISHING;
 import static com.android.server.wm.ActivityRecord.State.PAUSED;
 import static com.android.server.wm.ActivityRecord.State.PAUSING;
@@ -82,6 +83,7 @@ import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.Pair;
+import android.view.DisplayInfo;
 
 import androidx.test.filters.MediumTest;
 
@@ -1377,6 +1379,23 @@ public class RootWindowContainerTests extends WindowTestsBase {
         clearInvocations(controller);
         mWm.mRoot.lockAllProfileTasks(profileUserId);
         verify(controller, never()).notifyTaskProfileLocked(any(), anyInt());
+    }
+
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testOnDisplayBelongToTopologyChanged() {
+        final DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.copyFrom(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        final DisplayContent dc = createNewDisplay(displayInfo);
+        final int displayId = dc.getDisplayId();
+
+        doReturn(dc).when(mRootWindowContainer).getDisplayContentOrCreate(displayId);
+        doReturn(true).when(mWm.mDisplayWindowSettings).shouldShowSystemDecorsLocked(dc);
+
+        mRootWindowContainer.onDisplayAdded(displayId);
+        verify(mWm.mDisplayManagerInternal, times(1)).onDisplayBelongToTopologyChanged(anyInt(),
+                anyBoolean());
     }
 
     /**

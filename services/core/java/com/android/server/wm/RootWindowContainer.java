@@ -2772,11 +2772,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 return;
             }
 
-            if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
-                    && display.allowContentModeSwitch()) {
-                mWindowManager.mDisplayWindowSettings
-                        .setShouldShowSystemDecorsInternalLocked(display,
-                                display.mDisplay.canHostTasks());
+            if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                if (display.allowContentModeSwitch()) {
+                    mWindowManager.mDisplayWindowSettings
+                            .setShouldShowSystemDecorsInternalLocked(display,
+                                    display.mDisplay.canHostTasks());
+                }
+
+                final boolean inTopology = mWindowManager.mDisplayWindowSettings
+                        .shouldShowSystemDecorsLocked(display);
+                mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(displayId,
+                        inTopology);
             }
 
             startSystemDecorations(display, "displayAdded");
