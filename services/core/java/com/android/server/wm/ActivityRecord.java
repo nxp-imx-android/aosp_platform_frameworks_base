@@ -1716,6 +1716,7 @@ final class ActivityRecord extends WindowToken {
         }
 
         mAppCompatController.getLetterboxPolicy().onMovedToDisplay(mDisplayContent.getDisplayId());
+        mAppCompatController.getDisplayCompatModePolicy().onMovedToDisplay();
     }
 
     void layoutLetterboxIfNeeded(WindowState winHint) {
@@ -8966,6 +8967,7 @@ final class ActivityRecord extends WindowToken {
         // Reset the existing override configuration so it can be updated according to the latest
         // configuration.
         mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
+        mAppCompatController.getDisplayCompatModePolicy().onProcessRestarted();
 
         if (!attachedToProcess()) {
             return;

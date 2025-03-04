@@ -46,6 +46,8 @@ class AppCompatController {
     private final AppCompatSizeCompatModePolicy mSizeCompatModePolicy;
     @NonNull
     private final AppCompatSandboxingPolicy mSandboxingPolicy;
+    @NonNull
+    private final AppCompatDisplayCompatModePolicy mDisplayCompatModePolicy;
 
     AppCompatController(@NonNull WindowManagerService wmService,
                         @NonNull ActivityRecord activityRecord) {
@@ -69,6 +71,7 @@ class AppCompatController {
         mSizeCompatModePolicy = new AppCompatSizeCompatModePolicy(activityRecord,
                 mAppCompatOverrides);
         mSandboxingPolicy = new AppCompatSandboxingPolicy(activityRecord);
+        mDisplayCompatModePolicy = new AppCompatDisplayCompatModePolicy();
     }
 
     @NonNull
@@ -149,6 +152,11 @@ class AppCompatController {
     @NonNull
     AppCompatSandboxingPolicy getSandboxingPolicy() {
         return mSandboxingPolicy;
+    }
+
+    @NonNull
+    AppCompatDisplayCompatModePolicy getDisplayCompatModePolicy() {
+        return mDisplayCompatModePolicy;
     }
 
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
