@@ -162,8 +162,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         wakefulnessLifecycle.dispatchFinishedGoingToSleep()
         clearInvocations(launcherProxy)
 
-        wakefulnessLifecycle
-            .dispatchFinishedWakingUp()
+        wakefulnessLifecycle.dispatchFinishedWakingUp()
 
         verify(launcherProxy)
             .onSystemUiStateChanged(

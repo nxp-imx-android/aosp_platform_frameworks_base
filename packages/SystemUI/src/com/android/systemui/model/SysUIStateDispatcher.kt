@@ -55,7 +55,7 @@ class SysUIStateDispatcher @Inject constructor() {
 
     /** Called from each [SysUiState] to propagate new state changes. */
     fun dispatchSysUIStateChange(sysUiFlags: Long, displayId: Int) {
-        if (displayId != Display.DEFAULT_DISPLAY && !ShadeWindowGoesAround.isEnabled) return;
+        if (displayId != Display.DEFAULT_DISPLAY && !ShadeWindowGoesAround.isEnabled) return
         listeners.forEach { listener ->
             listener.onSystemUiStateChanged(sysUiFlags = sysUiFlags, displayId = displayId)
         }
