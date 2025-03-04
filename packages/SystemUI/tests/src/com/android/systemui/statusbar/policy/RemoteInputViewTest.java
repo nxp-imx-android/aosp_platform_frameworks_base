@@ -269,14 +269,14 @@ public class RemoteInputViewTest extends SysuiTestCase {
         when(viewRoot.getOnBackInvokedDispatcher()).thenReturn(backInvokedDispatcher);
         view.setViewRootImpl(viewRoot);
 
-        /* verify that predictive back callback registered when RemoteInputView becomes visible */
-        view.onVisibilityAggregated(true);
+        /* verify that predictive back callback registered when RemoteInputView gains focus */
+        view.focus();
         verify(backInvokedDispatcher).registerOnBackInvokedCallback(
                 eq(OnBackInvokedDispatcher.PRIORITY_OVERLAY),
                 onBackInvokedCallbackCaptor.capture());
 
-        /* verify that same callback unregistered when RemoteInputView becomes invisible */
-        view.onVisibilityAggregated(false);
+        /* verify that same callback unregistered when RemoteInputView loses focus */
+        view.onDefocus(false, false, null);
         verify(backInvokedDispatcher).unregisterOnBackInvokedCallback(
                 eq(onBackInvokedCallbackCaptor.getValue()));
     }
@@ -299,12 +299,11 @@ public class RemoteInputViewTest extends SysuiTestCase {
         view.onVisibilityAggregated(true);
         view.setEditTextReferenceToSelf();
 
+        view.focus();
         /* capture the callback during registration */
         verify(backInvokedDispatcher).registerOnBackInvokedCallback(
                 eq(OnBackInvokedDispatcher.PRIORITY_OVERLAY),
                 onBackInvokedCallbackCaptor.capture());
-
-        view.focus();
 
         /* invoke the captured callback */
         onBackInvokedCallbackCaptor.getValue().onBackInvoked();
