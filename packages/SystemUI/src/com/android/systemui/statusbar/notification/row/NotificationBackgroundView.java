@@ -39,7 +39,6 @@ import androidx.annotation.Nullable;
 import com.android.internal.graphics.ColorUtils;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.systemui.Dumpable;
-import com.android.systemui.common.shared.colors.SurfaceEffectColors;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
 import com.android.systemui.util.DrawableDumpKt;
@@ -154,14 +153,6 @@ public class NotificationBackgroundView extends View implements Dumpable,
      */
     public void setBgIsColorized(boolean b) {
         mBgIsColorized = b;
-    }
-
-    /** Sets if the background should be opaque. */
-    public void setForceOpaque(boolean forceOpaque) {
-        mForceOpaque = forceOpaque;
-        if (notificationRowTransparency()) {
-            updateBaseLayerColor();
-        }
     }
 
     private Path calculateDismissButtonCutoutPath(Rect backgroundBounds) {
@@ -327,10 +318,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
         // For colorized notifications, this uses a color that matches the tint color at 90% alpha.
         int color = isColorized()
                 ? ColorUtils.setAlphaComponent(mTintColor, (int) (MAX_ALPHA * 0.9f))
-                : SurfaceEffectColors.surfaceEffect1(getContext());
-        if (mForceOpaque) {
-            color = ColorUtils.setAlphaComponent(color, MAX_ALPHA);
-        }
+                : mNormalColor;
         getBaseBackgroundLayer().setColorFilter(
                 new PorterDuffColorFilter(
                         color,
