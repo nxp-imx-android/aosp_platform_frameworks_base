@@ -23,7 +23,6 @@ import static android.view.WindowManager.REMOVE_CONTENT_MODE_DESTROY;
 import static android.view.WindowManager.REMOVE_CONTENT_MODE_MOVE_TO_PRIMARY;
 import static android.view.WindowManager.REMOVE_CONTENT_MODE_UNDEFINED;
 
-import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.server.wm.DisplayContent.FORCE_SCALING_MODE_AUTO;
 import static com.android.server.wm.DisplayContent.FORCE_SCALING_MODE_DISABLED;
 
@@ -37,6 +36,7 @@ import android.view.IWindowManager;
 import android.view.Surface;
 import android.view.WindowManager;
 import android.view.WindowManager.DisplayImePolicy;
+import android.window.DesktopExperienceFlags;
 
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.DisplayContent.ForceScalingMode;
@@ -255,7 +255,7 @@ class DisplayWindowSettings {
         final boolean changed = (shouldShow != shouldShowSystemDecorsLocked(dc));
         setShouldShowSystemDecorsInternalLocked(dc, shouldShow);
 
-        if (enableDisplayContentModeManagement()) {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
             if (dc.isDefaultDisplay || dc.isPrivate() || !changed) {
                 return;
             }

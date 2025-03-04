@@ -67,7 +67,6 @@ import static android.window.DisplayAreaOrganizer.FEATURE_UNDEFINED;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
-import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.server.policy.PhoneWindowManager.TOAST_WINDOW_TIMEOUT;
 import static com.android.server.policy.WindowManagerPolicy.TRANSIT_PREVIEW_DONE;
 import static com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs.LID_ABSENT;
@@ -120,6 +119,7 @@ import android.view.WindowManager.LayoutParams;
 import android.view.WindowManagerGlobal;
 import android.view.accessibility.AccessibilityManager;
 import android.window.ClientWindowFrames;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.R;
@@ -748,7 +748,7 @@ public class DisplayPolicy {
     }
 
     void updateHasNavigationBarIfNeeded() {
-        if (!enableDisplayContentModeManagement()) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
             Slog.e(TAG, "mHasNavigationBar shouldn't be updated when the flag is off.");
         }
 
@@ -1876,7 +1876,7 @@ public class DisplayPolicy {
     }
 
     void notifyDisplayAddSystemDecorations() {
-        if (enableDisplayContentModeManagement()) {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
             final int displayId = getDisplayId();
             final boolean isSystemDecorationsSupported =
                     mDisplayContent.isSystemDecorationsSupported();
