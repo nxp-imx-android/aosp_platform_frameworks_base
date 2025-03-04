@@ -13,7 +13,6 @@
  */
 package com.android.systemui.plugins.clocks
 
-import android.content.Context
 import android.graphics.Rect
 import com.android.systemui.plugins.annotations.ProtectedInterface
 
@@ -61,12 +60,4 @@ data class ThemeConfig(
      * value denotes that we should use the seed color for the current system theme.
      */
     val seedColor: Int?,
-) {
-    fun getDefaultColor(context: Context): Int {
-        return when {
-            seedColor != null -> seedColor!!
-            isDarkTheme -> context.resources.getColor(android.R.color.system_accent1_100)
-            else -> context.resources.getColor(android.R.color.system_accent2_600)
-        }
-    }
-}
+)

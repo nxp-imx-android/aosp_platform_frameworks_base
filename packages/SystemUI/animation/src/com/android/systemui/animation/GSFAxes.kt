@@ -25,7 +25,6 @@ data class AxisDefinition(
 )
 
 object GSFAxes {
-    @JvmStatic
     val WEIGHT =
         AxisDefinition(
             tag = "wght",

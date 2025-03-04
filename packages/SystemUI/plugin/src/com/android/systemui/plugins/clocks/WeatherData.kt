@@ -24,8 +24,6 @@ data class WeatherData(
         @VisibleForTesting const val TEMPERATURE_KEY = "temperature"
         private const val INVALID_WEATHER_ICON_STATE = -1
 
-        @JvmStatic
-        @JvmOverloads
         fun fromBundle(extras: Bundle, touchAction: WeatherTouchAction? = null): WeatherData? {
             val description = extras.getString(DESCRIPTION_KEY)
             val state =
@@ -48,7 +46,7 @@ data class WeatherData(
                         state = state,
                         useCelsius = extras.getBoolean(USE_CELSIUS_KEY),
                         temperature = temperature,
-                        touchAction = touchAction,
+                        touchAction = touchAction
                     )
                 if (DEBUG) {
                     Log.i(TAG, "Weather data parsed $result from $extras")
@@ -89,53 +87,53 @@ data class WeatherData(
     }
 
     // Values for WeatherStateIcon must stay in sync with go/g3-WeatherStateIcon
-    enum class WeatherStateIcon(val id: Int, val icon: String) {
-        UNKNOWN_ICON(0, ""),
+    enum class WeatherStateIcon(val id: Int) {
+        UNKNOWN_ICON(0),
 
         // Clear, day & night.
-        SUNNY(1, "a"),
-        CLEAR_NIGHT(2, "f"),
+        SUNNY(1),
+        CLEAR_NIGHT(2),
 
         // Mostly clear, day & night.
-        MOSTLY_SUNNY(3, "b"),
-        MOSTLY_CLEAR_NIGHT(4, "n"),
+        MOSTLY_SUNNY(3),
+        MOSTLY_CLEAR_NIGHT(4),
 
         // Partly cloudy, day & night.
-        PARTLY_CLOUDY(5, "b"),
-        PARTLY_CLOUDY_NIGHT(6, "n"),
+        PARTLY_CLOUDY(5),
+        PARTLY_CLOUDY_NIGHT(6),
 
         // Mostly cloudy, day & night.
-        MOSTLY_CLOUDY_DAY(7, "e"),
-        MOSTLY_CLOUDY_NIGHT(8, "e"),
-        CLOUDY(9, "e"),
-        HAZE_FOG_DUST_SMOKE(10, "d"),
-        DRIZZLE(11, "c"),
-        HEAVY_RAIN(12, "c"),
-        SHOWERS_RAIN(13, "c"),
+        MOSTLY_CLOUDY_DAY(7),
+        MOSTLY_CLOUDY_NIGHT(8),
+        CLOUDY(9),
+        HAZE_FOG_DUST_SMOKE(10),
+        DRIZZLE(11),
+        HEAVY_RAIN(12),
+        SHOWERS_RAIN(13),
 
         // Scattered showers, day & night.
-        SCATTERED_SHOWERS_DAY(14, "c"),
-        SCATTERED_SHOWERS_NIGHT(15, "c"),
+        SCATTERED_SHOWERS_DAY(14),
+        SCATTERED_SHOWERS_NIGHT(15),
 
         // Isolated scattered thunderstorms, day & night.
-        ISOLATED_SCATTERED_TSTORMS_DAY(16, "i"),
-        ISOLATED_SCATTERED_TSTORMS_NIGHT(17, "i"),
-        STRONG_TSTORMS(18, "i"),
-        BLIZZARD(19, "j"),
-        BLOWING_SNOW(20, "j"),
-        FLURRIES(21, "h"),
-        HEAVY_SNOW(22, "j"),
+        ISOLATED_SCATTERED_TSTORMS_DAY(16),
+        ISOLATED_SCATTERED_TSTORMS_NIGHT(17),
+        STRONG_TSTORMS(18),
+        BLIZZARD(19),
+        BLOWING_SNOW(20),
+        FLURRIES(21),
+        HEAVY_SNOW(22),
 
         // Scattered snow showers, day & night.
-        SCATTERED_SNOW_SHOWERS_DAY(23, "h"),
-        SCATTERED_SNOW_SHOWERS_NIGHT(24, "h"),
-        SNOW_SHOWERS_SNOW(25, "g"),
-        MIXED_RAIN_HAIL_RAIN_SLEET(26, "h"),
-        SLEET_HAIL(27, "h"),
-        TORNADO(28, "l"),
-        TROPICAL_STORM_HURRICANE(29, "m"),
-        WINDY_BREEZY(30, "k"),
-        WINTRY_MIX_RAIN_SNOW(31, "h");
+        SCATTERED_SNOW_SHOWERS_DAY(23),
+        SCATTERED_SNOW_SHOWERS_NIGHT(24),
+        SNOW_SHOWERS_SNOW(25),
+        MIXED_RAIN_HAIL_RAIN_SLEET(26),
+        SLEET_HAIL(27),
+        TORNADO(28),
+        TROPICAL_STORM_HURRICANE(29),
+        WINDY_BREEZY(30),
+        WINTRY_MIX_RAIN_SNOW(31);
 
         companion object {
             fun fromInt(value: Int) = values().firstOrNull { it.id == value }

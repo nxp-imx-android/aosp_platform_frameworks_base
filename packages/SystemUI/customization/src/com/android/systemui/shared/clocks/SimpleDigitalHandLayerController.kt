@@ -229,7 +229,15 @@ open class SimpleDigitalHandLayerController(
             }
 
             override fun onThemeChanged(theme: ThemeConfig) {
-                view.updateColor(theme.getDefaultColor(clockCtx.context))
+                val color =
+                    when {
+                        theme.seedColor != null -> theme.seedColor!!
+                        theme.isDarkTheme ->
+                            clockCtx.resources.getColor(android.R.color.system_accent1_100)
+                        else -> clockCtx.resources.getColor(android.R.color.system_accent2_600)
+                    }
+
+                view.updateColor(color)
                 refreshTime()
             }
 

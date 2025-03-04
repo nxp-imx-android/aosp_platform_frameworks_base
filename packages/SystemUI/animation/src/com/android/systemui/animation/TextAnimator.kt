@@ -39,7 +39,6 @@ interface TypefaceVariantCache {
     fun getTypefaceForVariant(fvar: String?): Typeface?
 
     companion object {
-        @JvmStatic
         fun createVariantTypeface(baseTypeface: Typeface, fVar: String?): Typeface {
             if (fVar.isNullOrEmpty()) {
                 return baseTypeface
