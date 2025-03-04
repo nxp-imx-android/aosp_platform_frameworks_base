@@ -308,6 +308,12 @@ class Task extends TaskFragment {
      */
     boolean mIsEffectivelySystemApp;
 
+    /**
+     * Whether the new Tasks that are started from this Task should be a Bubble.
+     * Note: this should be migrated to a more hierarchical approach in the long-term.
+     */
+    boolean mLaunchNextToBubble;
+
     int mCurrentUser;
 
     String affinity;        // The affinity name for this task, or null; may change identity.
@@ -5913,6 +5919,9 @@ class Task extends TaskFragment {
                 pw.println(prefix + "  mOffsetXForInsets=" + mOffsetXForInsets
                         + " mOffsetYForInsets=" + mOffsetYForInsets);
             }
+        }
+        if (mLaunchNextToBubble) {
+            pw.println(prefix + "  mLaunchNextToBubble=true");
         }
         if (mLastNonFullscreenBounds != null) {
             pw.print(prefix); pw.print("  mLastNonFullscreenBounds=");

@@ -3414,6 +3414,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         if (!bounds.isEmpty()) {
             pw.println(prefix + "  mBounds=" + bounds);
         }
+        if (isForceHidden()) {
+            pw.println(prefix + "  mForceHiddenFlags=" + mForceHiddenFlags);
+        }
+        if (isAlwaysOnTop()) {
+            pw.println(prefix + "  isAlwaysOnTop");
+        }
         if (mIsRemovalRequested) {
             pw.println(prefix + "  mIsRemovalRequested=true");
         }

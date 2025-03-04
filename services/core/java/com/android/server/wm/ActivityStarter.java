@@ -1772,6 +1772,27 @@ class ActivityStarter {
             startedActivityRootTask.setAlwaysOnTop(true);
         }
 
+        // TODO(b/388651207): the state should be reset if the Task is no longer in bubble.
+        if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
+            // Sets the launch-next-to-bubble policy if requested
+            if (options != null && options.getLaunchNextToBubble()) {
+                startedActivityRootTask.mLaunchNextToBubble = true;
+            }
+
+            // Propagate the launch-next-to-bubble policy from the source Task if any
+            if (mSourceRecord != null && mSourceRecord.getTask().mLaunchNextToBubble) {
+                startedActivityRootTask.mLaunchNextToBubble = true;
+
+                // Also propagate the windowingMode and bounds if not set.
+                if (options == null || (options.getLaunchWindowingMode() == WINDOWING_MODE_UNDEFINED
+                        && options.getLaunchBounds() == null)) {
+                    final Task sourceTask = mSourceRecord.getTask();
+                    startedActivityRootTask.setWindowingMode(sourceTask.getWindowingMode());
+                    startedActivityRootTask.setBounds(sourceTask.getBounds());
+                }
+            }
+        }
+
         if (isIndependentLaunch && !mDoResume && avoidMoveToFront() && !mTransientLaunch
                 && !started.shouldBeVisible(true /* ignoringKeyguard */)) {
             Slog.i(TAG, "Abort " + transition + " of invisible launch " + started);
