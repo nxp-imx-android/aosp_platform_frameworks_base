@@ -149,14 +149,7 @@ class DefaultClockController(
                 override fun onThemeChanged(theme: ThemeConfig) {
                     this@DefaultClockFaceController.theme = theme
 
-                    val color =
-                        when {
-                            theme.seedColor != null -> theme.seedColor!!
-                            theme.isDarkTheme ->
-                                resources.getColor(android.R.color.system_accent1_100)
-                            else -> resources.getColor(android.R.color.system_accent2_600)
-                        }
-
+                    val color = theme.getDefaultColor(ctx)
                     if (currentColor == color) {
                         return
                     }
