@@ -24,11 +24,17 @@ import android.content.Intent
 import android.net.Uri
 import android.text.TextUtils
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
+import java.util.function.Consumer
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @SysUISingleton
-class ActionIntentCreator @Inject constructor() : IntentCreator {
+class ActionIntentCreator
+@Inject
+constructor(@Application private val applicationScope: CoroutineScope) : IntentCreator {
     override fun getTextEditorIntent(context: Context?) =
         Intent(context, EditTextActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -65,7 +71,7 @@ class ActionIntentCreator @Inject constructor() : IntentCreator {
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 
-    override fun getImageEditIntent(uri: Uri?, context: Context): Intent {
+    suspend fun getImageEditIntent(uri: Uri?, context: Context): Intent {
         val editorPackage = context.getString(R.string.config_screenshotEditor)
         return Intent(Intent.ACTION_EDIT).apply {
             if (!TextUtils.isEmpty(editorPackage)) {
@@ -76,6 +82,14 @@ class ActionIntentCreator @Inject constructor() : IntentCreator {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             putExtra(EXTRA_EDIT_SOURCE, EDIT_SOURCE_CLIPBOARD)
         }
+    }
+
+    override fun getImageEditIntentAsync(
+        uri: Uri?,
+        context: Context,
+        outputConsumer: Consumer<Intent>,
+    ) {
+        applicationScope.launch { outputConsumer.accept(getImageEditIntent(uri, context)) }
     }
 
     override fun getRemoteCopyIntent(clipData: ClipData?, context: Context): Intent {

@@ -34,6 +34,8 @@ import com.android.systemui.res.R;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class DefaultIntentCreatorTest extends SysuiTestCase {
@@ -73,12 +75,16 @@ public class DefaultIntentCreatorTest extends SysuiTestCase {
     }
 
     @Test
-    public void test_getImageEditIntent() {
+    public void test_getImageEditIntentAsync() {
         getContext().getOrCreateTestableResources().addOverride(R.string.config_screenshotEditor,
                 "");
         Uri fakeUri = Uri.parse("content://foo");
-        Intent intent = mIntentCreator.getImageEditIntent(fakeUri, getContext());
+        final AtomicReference<Intent> intentHolder = new AtomicReference<>(null);
+        mIntentCreator.getImageEditIntentAsync(fakeUri, getContext(), output -> {
+            intentHolder.set(output);
+        });
 
+        Intent intent = intentHolder.get();
         assertEquals(Intent.ACTION_EDIT, intent.getAction());
         assertEquals("image/*", intent.getType());
         assertEquals(null, intent.getComponent());
@@ -90,8 +96,10 @@ public class DefaultIntentCreatorTest extends SysuiTestCase {
                 "com.android.remotecopy.RemoteCopyActivity");
         getContext().getOrCreateTestableResources().addOverride(R.string.config_screenshotEditor,
                 fakeComponent.flattenToString());
-        intent = mIntentCreator.getImageEditIntent(fakeUri, getContext());
-        assertEquals(fakeComponent, intent.getComponent());
+        mIntentCreator.getImageEditIntentAsync(fakeUri, getContext(), output -> {
+            intentHolder.set(output);
+        });
+        assertEquals(fakeComponent, intentHolder.get().getComponent());
     }
 
     @Test
