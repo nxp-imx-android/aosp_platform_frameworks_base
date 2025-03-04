@@ -121,6 +121,13 @@ genrule {
     out: ["com/android/server/location/contexthub/ContextHubStatsLog.java"],
 }
 
+genrule {
+  name: "statslog-mediarouter-java-gen",
+  tools: ["stats-log-api-gen"],
+  cmd: "$(location stats-log-api-gen) --java $(out) --module mediarouter --javaPackage com.android.server.media --javaClass MediaRouterStatsLog",
+  out: ["com/android/server/media/MediaRouterStatsLog.java"],
+}
+
 java_library_static {
     name: "services.core.unboosted",
     defaults: [
@@ -136,6 +143,7 @@ java_library_static {
         ":android.hardware.tv.mediaquality-V1-java-source",
         ":statslog-art-java-gen",
         ":statslog-contexthub-java-gen",
+        ":statslog-mediarouter-java-gen",
         ":services.core-aidl-sources",
         ":services.core-sources",
         ":services.core.protologsrc",
