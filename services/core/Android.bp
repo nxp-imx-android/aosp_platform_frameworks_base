@@ -161,6 +161,7 @@ java_library_static {
         "error_prone_annotations",
         "framework-tethering.stubs.module_lib",
         "keepanno-annotations",
+        "monet",
         "service-art.stubs.system_server",
         "service-permission.stubs.system_server",
         "service-rkp.stubs.system_server",
@@ -294,7 +295,10 @@ java_genrule_combiner {
 
 java_library {
     name: "services.core",
-    static_libs: ["services.core.combined"],
+    static_libs: [
+        "services.core.combined",
+        "monet",
+    ],
 }
 
 java_library_host {
