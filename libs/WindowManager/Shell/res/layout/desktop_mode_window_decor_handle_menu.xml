@@ -53,15 +53,12 @@
 
         <com.android.wm.shell.windowdecor.HandleMenuImageButton
             android:id="@+id/collapse_menu_button"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="14dp"
+            android:padding="16dp"
             android:contentDescription="@string/collapse_menu_text"
-            android:src="@drawable/ic_baseline_expand_more_24"
+            android:src="@drawable/ic_baseline_expand_more_16"
             android:rotation="180"
             android:tint="@androidprv:color/materialColorOnSurface"
-            android:background="?android:selectableItemBackgroundBorderless"/>
+            style="@style/DesktopModeHandleMenuWindowingButton"/>
     </LinearLayout>
 
     <LinearLayout
