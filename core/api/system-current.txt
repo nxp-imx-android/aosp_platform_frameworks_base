@@ -4378,10 +4378,13 @@ package android.content.pm {
     ctor public PackageInstaller.VerificationUserConfirmationInfo();
     ctor public PackageInstaller.VerificationUserConfirmationInfo(int, int);
     method public int describeContents();
-    method public int getVerificationFailureReason();
     method public int getVerificationPolicy();
+    method public int getVerificationUserActionNeededReason();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PackageInstaller.VerificationUserConfirmationInfo> CREATOR;
+    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE = 1; // 0x1
+    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED = 2; // 0x2
+    field public static final int VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN = 0; // 0x0
   }
 
   public class PackageItemInfo {

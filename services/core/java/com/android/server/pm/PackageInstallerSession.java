@@ -37,6 +37,9 @@ import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_ERR
 import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
 import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_OK;
 import static android.content.pm.PackageInstaller.VERIFICATION_USER_RESPONSE_RETRY;
+import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
+import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED;
+import static android.content.pm.PackageInstaller.VerificationUserConfirmationInfo.VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
 import static android.content.pm.PackageItemInfo.MAX_SAFE_LABEL_LENGTH;
 import static android.content.pm.PackageManager.INSTALL_FAILED_ABORTED;
 import static android.content.pm.PackageManager.INSTALL_FAILED_INSUFFICIENT_STORAGE;
@@ -470,13 +473,14 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private Boolean mUserActionRequired;
 
     /** Used for tracking whether user was notified regarding an incomplete verification */
-    private boolean mVerificationUserActionRequired;
+    private boolean mVerificationUserActionNeeded;
 
     /**
-     * Indicates the reason why a verification failed. Used to verify whether a user can
+     * Indicates the reason why a verification needs user action. Used to check whether a user can
      * retry verification.
      */
-    private Integer mVerificationFailedReason = null;
+    private @VerificationUserConfirmationInfo.UserActionNeededReason int
+            mVerificationUserActionNeededReason = VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
 
     /**
      * Holds the message describing the reason of a failed verification.
@@ -1518,11 +1522,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
      * verification.
      */
     public VerificationUserConfirmationInfo generateVerificationInfo() {
-        if (!mVerificationUserActionRequired) {
+        if (!mVerificationUserActionNeeded) {
             return null;
         }
         return new VerificationUserConfirmationInfo(mCurrentVerificationPolicy.get(),
-                mVerificationFailedReason);
+                mVerificationUserActionNeededReason);
     }
 
     public boolean isPrepared() {
@@ -3183,24 +3187,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
 
-                mVerificationFailedReason = VERIFICATION_FAILED_REASON_UNKNOWN;
+                mVerificationUserActionNeededReason =
+                        VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
                 mVerificationFailedMessage = "A verifier agent is available on device but cannot "
                         + "be connected.";
-
-                Intent intent = getUserNotificationIntent();
-                if (shouldSendUserNotificationIntent(/* blockingFailure= */ false)) {
-                    mVerificationUserActionRequired = true;
-                    sendOnUserActionRequired(mContext, getRemoteStatusReceiver(), sessionId,
-                            intent);
-                } else {
-                    Bundle bundle = new Bundle();
-                    bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON, mVerificationFailedReason);
-                    bundle.putParcelable(Intent.EXTRA_INTENT, intent);
-                    setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage);
-                    onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage, bundle);
-                }
+                maybeSendUserActionForVerification(/* blockingFailure= */ false,
+                        /* extensionResponse= */ null);
             });
         }
 
@@ -3217,24 +3209,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
 
-                mVerificationFailedReason = VERIFICATION_FAILED_REASON_UNKNOWN;
+                mVerificationUserActionNeededReason =
+                        VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
                 mVerificationFailedMessage = "Verification timed out; missing a response from the "
                         + "verifier within the time limit";
-
-                Intent intent = getUserNotificationIntent();
-                if (shouldSendUserNotificationIntent(/* blockingFailure= */ false)) {
-                    mVerificationUserActionRequired = true;
-                    sendOnUserActionRequired(mContext, getRemoteStatusReceiver(), sessionId,
-                            intent);
-                } else {
-                    Bundle bundle = new Bundle();
-                    bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON, mVerificationFailedReason);
-                    bundle.putParcelable(Intent.EXTRA_INTENT, intent);
-                    setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage);
-                    onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage, bundle);
-                }
+                maybeSendUserActionForVerification(/* blockingFailure= */ false,
+                        /* extensionResponse= */ null);
             });
         }
 
@@ -3253,34 +3233,16 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
                 // Package is blocked.
-                mVerificationFailedReason = VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED;
+                mVerificationUserActionNeededReason =
+                        VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED;
 
                 StringBuilder sb = new StringBuilder("Verifier rejected the installation");
                 if (!TextUtils.isEmpty(statusReceived.getFailureMessage())) {
                     sb.append(" with message: ").append(statusReceived.getFailureMessage());
                 }
                 mVerificationFailedMessage = sb.toString();
-
-
-                Intent intent = getUserNotificationIntent();
-                if (shouldSendUserNotificationIntent(/* blockingFailure= */ true)) {
-                    mVerificationUserActionRequired = true;
-                    sendOnUserActionRequired(mContext, getRemoteStatusReceiver(), sessionId,
-                            intent);
-                } else {
-                    Bundle bundle = new Bundle();
-                    bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
-                            VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED);
-                    bundle.putParcelable(Intent.EXTRA_INTENT, intent);
-                    if (extensionResponse != null) {
-                        bundle.putParcelable(EXTRA_VERIFICATION_EXTENSION_RESPONSE,
-                                extensionResponse);
-                    }
-                    setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage);
-                    onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage, bundle);
-                }
+                maybeSendUserActionForVerification(/* blockingFailure= */ true,
+                        /* extensionResponse= */ extensionResponse);
             });
         }
 
@@ -3299,29 +3261,42 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 StringBuilder sb = new StringBuilder(
                         "Verification cannot be completed because of ");
                 if (incompleteReason == VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE) {
-                    mVerificationFailedReason = VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE;
+                    mVerificationUserActionNeededReason =
+                            VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
                     sb.append("unavailable network.");
                 } else {
-                    mVerificationFailedReason = VERIFICATION_FAILED_REASON_UNKNOWN;
+                    mVerificationUserActionNeededReason =
+                            VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
                     sb.append("unknown reasons.");
                 }
                 mVerificationFailedMessage = sb.toString();
-
-                Intent intent = getUserNotificationIntent();
-                if (shouldSendUserNotificationIntent(/* blockingFailure= */ false)) {
-                    mVerificationUserActionRequired = true;
-                    sendOnUserActionRequired(mContext, getRemoteStatusReceiver(), sessionId,
-                            intent);
-                } else {
-                    Bundle bundle = new Bundle();
-                    bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON, mVerificationFailedReason);
-                    bundle.putParcelable(Intent.EXTRA_INTENT, intent);
-                    setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage);
-                    onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
-                            mVerificationFailedMessage, bundle);
-                }
+                maybeSendUserActionForVerification(/* blockingFailure= */ false,
+                        /* extensionResponse= */ null);
             });
+        }
+
+        private void maybeSendUserActionForVerification(boolean blockingFailure,
+                @Nullable PersistableBundle extensionResponse) {
+            Intent intent = getUserNotificationIntent();
+            if (shouldSendUserNotificationIntent(blockingFailure)) {
+                mVerificationUserActionNeeded = true;
+                sendOnUserActionRequired(mContext, getRemoteStatusReceiver(), sessionId,
+                        intent);
+                return;
+            }
+            // Not sending user action. Directly return the failure to the installer.
+            Bundle bundle = new Bundle();
+            bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
+                    getVerificationFailureReason(mVerificationUserActionNeededReason));
+            bundle.putParcelable(Intent.EXTRA_INTENT, intent);
+            if (extensionResponse != null) {
+                bundle.putParcelable(EXTRA_VERIFICATION_EXTENSION_RESPONSE,
+                        extensionResponse);
+            }
+            setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE,
+                    mVerificationFailedMessage);
+            onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
+                    mVerificationFailedMessage, bundle);
         }
 
         /**
@@ -5004,7 +4979,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             Log.e(TAG, "Session " + sessionId + " already abandoned or marked as failed.");
             return;
         }
-        if (!mVerificationUserActionRequired) {
+        if (!mVerificationUserActionNeeded) {
             Log.e(TAG, "User action was not requested for this verification. "
                     + "SessionID: " + sessionId);
             return;
@@ -5014,7 +4989,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             case VERIFICATION_USER_RESPONSE_ERROR -> {
                 String errorMsg = "User could not be notified about the pending verification.";
                 Bundle bundle = new Bundle();
-                bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON, INSTALL_FAILED_ABORTED);
+                bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
+                        getVerificationFailureReason(mVerificationUserActionNeededReason));
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
@@ -5023,7 +4999,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             case VERIFICATION_USER_RESPONSE_CANCEL -> {
                 String errorMsg = "User denied proceeding with the pending verification.";
                 Bundle bundle = new Bundle();
-                bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON, INSTALL_FAILED_ABORTED);
+                bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
+                        getVerificationFailureReason(mVerificationUserActionNeededReason));
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
@@ -5031,7 +5008,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
             case VERIFICATION_USER_RESPONSE_OK -> {
                 Bundle bundle = new Bundle();
-                bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON, mVerificationFailedReason);
+                bundle.putInt(EXTRA_VERIFICATION_FAILURE_REASON,
+                        getVerificationFailureReason(mVerificationUserActionNeededReason));
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, mVerificationFailedMessage);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
@@ -5046,6 +5024,23 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             case VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY -> resumeVerify();
             default -> throw new IllegalArgumentException("Invalid user response " + userResponse);
         }
+    }
+
+    /**
+     * Translate user action code to verification failure code. When the user rejected the
+     * user action to bypass or retry the verification, or when the user intervention was not
+     * allowed, the verification failure reason code will be returned to the installer together with
+     * the failure status code.
+     */
+    private static @PackageInstaller.VerificationFailedReason int getVerificationFailureReason(
+            @VerificationUserConfirmationInfo.UserActionNeededReason int userActionNeededReason) {
+        return switch (userActionNeededReason) {
+            case VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE
+                    -> VERIFICATION_FAILED_REASON_NETWORK_UNAVAILABLE;
+            case VERIFICATION_USER_ACTION_NEEDED_REASON_PACKAGE_BLOCKED
+                    -> VERIFICATION_FAILED_REASON_PACKAGE_BLOCKED;
+            default -> VERIFICATION_FAILED_REASON_UNKNOWN;
+        };
     }
 
     public void open() throws IOException {
