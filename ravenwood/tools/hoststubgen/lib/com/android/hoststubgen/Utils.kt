@@ -15,6 +15,8 @@
  */
 package com.android.hoststubgen
 
+import java.io.PrintWriter
+
 /**
  * Name of this executable. Set it in the main method.
  */
@@ -95,4 +97,24 @@ class ParseException : Exception, UserErrorException {
  */
 fun csvEscape(value: String): String {
     return "\"" + value.replace("\"", "\"\"") + "\""
+}
+
+inline fun runMainWithBoilerplate(realMain: () -> Unit) {
+    var success = false
+
+    try {
+        realMain()
+
+        success = true
+    } catch (e: Throwable) {
+        log.e("$executableName: Error: ${e.message}")
+        if (e !is UserErrorException) {
+            e.printStackTrace(PrintWriter(log.getWriter(LogLevel.Error)))
+        }
+    } finally {
+        log.i("$executableName finished")
+        log.flush()
+    }
+
+    System.exit(if (success) 0 else 1 )
 }
