@@ -77,6 +77,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         doReturn(true).`when` { DesktopModeStatus.overridesShowAppHandle(any())}
         setUpCommon()
         whenever(mockDisplayController.getDisplay(anyInt())).thenReturn(mockDisplay)
+        setDisplayInTopology(true)
     }
 
     @Test
@@ -169,6 +170,21 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
     }
 
+    @Test
+    fun testAppHandleShowsOnlyOnDisplayInTopology() {
+        val task = createTask()
+        val taskSurface = SurfaceControl()
+        setUpMockDecorationForTask(task)
+        onTaskOpening(task, taskSurface)
+        assertTrue(windowDecorByTaskIdSpy.contains(task.taskId))
+
+
+        setDisplayInTopology(false)
+        setUpMockDecorationForTask(task)
+        onTaskChanging(task, taskSurface)
+        assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
+    }
+
     private fun createTask(
         displayId: Int = DEFAULT_DISPLAY,
         @WindowingMode windowingMode: Int = WINDOWING_MODE_FULLSCREEN,
@@ -186,5 +202,9 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     private fun setLargeScreen(large: Boolean) {
         val size: Float = if (large) 1000f else 100f
         whenever(mockDisplay.getMinSizeDimensionDp()).thenReturn(size)
+    }
+
+    private fun setDisplayInTopology(inTopology: Boolean) {
+        whenever(mockDisplayController.isDisplayInTopology(anyInt())).thenReturn(inTopology)
     }
 }

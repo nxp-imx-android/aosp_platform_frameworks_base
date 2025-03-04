@@ -112,6 +112,14 @@ public class DisplayController {
     }
 
     /**
+     * Returns true if the display with the given displayId is part of the topology.
+     */
+    public boolean isDisplayInTopology(int displayId) {
+        return mDisplayTopology != null
+                && mDisplayTopology.findDisplay(displayId, mDisplayTopology.getRoot()) != null;
+    }
+
+    /**
      * Gets the DisplayLayout associated with a display.
      */
     public @Nullable DisplayLayout getDisplayLayout(int displayId) {
