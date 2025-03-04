@@ -133,7 +133,7 @@ private fun MapTileDetailsContent(tileDetailsViewModel: TileDetailsViewModel) {
         is BluetoothDetailsViewModel ->
             BluetoothDetailsContent(tileDetailsViewModel.detailsContentViewModel)
         is ModesDetailsViewModel -> ModesDetailsContent(tileDetailsViewModel)
-        is CastDetailsViewModel -> CastDetailsContent()
+        is CastDetailsViewModel -> CastDetailsContent(tileDetailsViewModel)
     }
 }
 
