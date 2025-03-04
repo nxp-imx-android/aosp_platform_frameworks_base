@@ -145,6 +145,7 @@
             android:contentDescription="@string/screenshot_text"
             android:text="@string/screenshot_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_screenshot"
+            android:importantForAccessibility="no"
             style="@style/DesktopModeHandleMenuActionButton"/>
 
         <com.android.wm.shell.windowdecor.HandleMenuActionButton
@@ -152,6 +153,7 @@
             android:contentDescription="@string/new_window_text"
             android:text="@string/new_window_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_new_window"
+            android:importantForAccessibility="no"
             style="@style/DesktopModeHandleMenuActionButton"/>
 
         <com.android.wm.shell.windowdecor.HandleMenuActionButton
@@ -159,6 +161,7 @@
             android:contentDescription="@string/manage_windows_text"
             android:text="@string/manage_windows_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_manage_windows"
+            android:importantForAccessibility="no"
             style="@style/DesktopModeHandleMenuActionButton"/>
 
         <com.android.wm.shell.windowdecor.HandleMenuActionButton
@@ -166,6 +169,7 @@
             android:contentDescription="@string/change_aspect_ratio_text"
             android:text="@string/change_aspect_ratio_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_change_aspect_ratio"
+            android:importantForAccessibility="no"
             style="@style/DesktopModeHandleMenuActionButton"/>
     </LinearLayout>
 
@@ -185,6 +189,7 @@
             android:text="@string/open_in_browser_text"
             android:src="@drawable/desktop_mode_ic_handle_menu_open_in_browser"
             style="@style/DesktopModeHandleMenuActionButton"
+            android:importantForAccessibility="no"
             android:layout_width="0dp"
             android:layout_weight="1"/>
 
