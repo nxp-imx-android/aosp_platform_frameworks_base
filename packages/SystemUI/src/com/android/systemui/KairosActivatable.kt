@@ -19,23 +19,28 @@ package com.android.systemui
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.kairos.BuildScope
+import com.android.systemui.kairos.BuildSpec
 import com.android.systemui.kairos.Events
 import com.android.systemui.kairos.EventsLoop
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.Incremental
 import com.android.systemui.kairos.IncrementalLoop
 import com.android.systemui.kairos.KairosNetwork
+import com.android.systemui.kairos.RootKairosNetwork
 import com.android.systemui.kairos.State
 import com.android.systemui.kairos.StateLoop
+import com.android.systemui.kairos.TransactionScope
+import com.android.systemui.kairos.activateSpec
+import com.android.systemui.kairos.effect
 import com.android.systemui.kairos.launchKairosNetwork
 import com.android.systemui.kairos.launchScope
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 import dagger.multibindings.Multibinds
 import javax.inject.Inject
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -176,20 +181,39 @@ private class KairosBuilderImpl @Inject constructor() : KairosBuilder {
 @SysUISingleton
 @ExperimentalKairosApi
 class KairosCoreStartable
-@Inject
-constructor(
-    @Application private val appScope: CoroutineScope,
-    private val kairosNetwork: KairosNetwork,
+private constructor(
+    private val appScope: CoroutineScope,
     private val activatables: dagger.Lazy<Set<@JvmSuppressWildcards KairosActivatable>>,
-) : CoreStartable {
+    private val unwrappedNetwork: RootKairosNetwork,
+) : CoreStartable, KairosNetwork by unwrappedNetwork {
+
+    @Inject
+    constructor(
+        @Application appScope: CoroutineScope,
+        activatables: dagger.Lazy<Set<@JvmSuppressWildcards KairosActivatable>>,
+    ) : this(appScope, activatables, appScope.launchKairosNetwork())
+
+    private val started = CompletableDeferred<Unit>()
+
     override fun start() {
         appScope.launch {
-            kairosNetwork.activateSpec {
+            unwrappedNetwork.activateSpec {
                 for (activatable in activatables.get()) {
                     launchScope { activatable.run { activate() } }
                 }
+                effect { started.complete(Unit) }
             }
         }
+    }
+
+    override suspend fun activateSpec(spec: BuildSpec<*>) {
+        started.await()
+        unwrappedNetwork.activateSpec(spec)
+    }
+
+    override suspend fun <R> transact(block: TransactionScope.() -> R): R {
+        started.await()
+        return unwrappedNetwork.transact(block)
     }
 }
 
@@ -203,10 +227,5 @@ interface KairosCoreStartableModule {
 
     @Multibinds fun kairosActivatables(): Set<@JvmSuppressWildcards KairosActivatable>
 
-    companion object {
-        @Provides
-        @SysUISingleton
-        fun provideKairosNetwork(@Application scope: CoroutineScope): KairosNetwork =
-            scope.launchKairosNetwork()
-    }
+    @Binds fun bindKairosNetwork(impl: KairosCoreStartable): KairosNetwork
 }
