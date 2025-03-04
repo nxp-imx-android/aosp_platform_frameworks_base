@@ -109,7 +109,7 @@ class DesktopTaskChangeListener(private val desktopUserRepositories: DesktopUser
             desktopUserRepositories.getProfile(taskInfo.userId)
         if (!desktopRepository.isActiveTask(taskInfo.taskId)) return
         logD("onTaskMovingToBack for taskId=%d, displayId=%d", taskInfo.taskId, taskInfo.displayId)
-        // TODO: b/367268953 - Connect this with DesktopRepository.
+        desktopRepository.updateTask(taskInfo.displayId, taskInfo.taskId, /* isVisible= */ false)
     }
 
     override fun onTaskClosing(taskInfo: RunningTaskInfo) {
