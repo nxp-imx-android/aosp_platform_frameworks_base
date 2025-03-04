@@ -15,7 +15,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
-import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.TransitionInfo
@@ -785,7 +784,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         startTransaction: SurfaceControl.Transaction = mock(),
         finishTransaction: SurfaceControl.Transaction = mock(),
         homeChange: TransitionInfo.Change? = createHomeChange(),
-        transitionRootLeash: SurfaceControl? = null,
+        transitionRootLeash: SurfaceControl = mock(),
     ): IBinder {
         whenever(dragAnimator.position).thenReturn(PointF())
         // Simulate transition is started and is ready to animate.
@@ -887,7 +886,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         type: Int,
         draggedTask: RunningTaskInfo,
         homeChange: TransitionInfo.Change? = createHomeChange(),
-        rootLeash: SurfaceControl? = null,
+        rootLeash: SurfaceControl = mock(),
     ) =
         TransitionInfo(type, /* flags= */ 0).apply {
             homeChange?.let { addChange(it) }
@@ -904,9 +903,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     flags = flags or FLAG_IS_WALLPAPER
                 }
             )
-            if (rootLeash != null) {
-                addRootLeash(DEFAULT_DISPLAY, rootLeash, /* offsetLeft= */ 0, /* offsetTop= */ 0)
-            }
+            addRootLeash(draggedTask.displayId, rootLeash, /* offsetLeft= */ 0, /* offsetTop= */ 0)
         }
 
     private fun createHomeChange() =
