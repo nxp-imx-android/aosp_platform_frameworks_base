@@ -18,6 +18,7 @@
 
 package com.android.systemui.media.remedia.ui.compose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -33,6 +34,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.Interaction
@@ -48,6 +50,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,33 +66,45 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachIndexed
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformIconButton
 import com.android.compose.PlatformOutlinedButton
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.SceneKey
+import com.android.compose.animation.scene.SceneTransitionLayout
+import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
+import com.android.compose.animation.scene.transitions
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
@@ -97,11 +112,289 @@ import com.android.systemui.common.ui.compose.load
 import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCardGutsViewModel
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCardViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaOutputSwitcherChipViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSeekBarViewModel
 import kotlin.math.max
+
+/** Renders the UI of a single media card. */
+@Composable
+private fun Card(
+    viewModel: MediaCardViewModel,
+    presentationStyle: MediaPresentationStyle,
+    modifier: Modifier = Modifier,
+) {
+    val stlState =
+        rememberMutableSceneTransitionLayoutState(
+            initialScene = presentationStyle.toScene(),
+            transitions = Media.Transitions,
+        )
+
+    // Each time the presentation style changes, animate to the corresponding scene.
+    LaunchedEffect(presentationStyle) {
+        stlState.setTargetScene(targetScene = presentationStyle.toScene(), animationScope = this)
+    }
+
+    Box(modifier) {
+        if (stlState.currentScene != Media.Scenes.Compact) {
+            CardBackground(imageLoader = viewModel.artLoader, modifier = Modifier.matchParentSize())
+        }
+
+        key(stlState) {
+            SceneTransitionLayout(state = stlState) {
+                scene(Media.Scenes.Default) {
+                    CardForeground(viewModel = viewModel, threeRows = true, fillHeight = false)
+                }
+
+                scene(Media.Scenes.Compressed) {
+                    CardForeground(viewModel = viewModel, threeRows = false, fillHeight = false)
+                }
+
+                scene(Media.Scenes.Compact) { CompactCardForeground(viewModel = viewModel) }
+            }
+        }
+    }
+}
+
+/**
+ * Renders the foreground of a card, including all UI content and the internal "guts".
+ *
+ * If [threeRows] is `true`, the layout will be organized as three horizontal rows; if `false`, two
+ * rows will be used, resulting in a more compact layout.
+ *
+ * If [fillHeight] is `true`, the card will grow vertically to fill all available space in its
+ * parent. If not, it'll only be as tall as needed to show its UI.
+ */
+@Composable
+private fun ContentScope.CardForeground(
+    viewModel: MediaCardViewModel,
+    threeRows: Boolean,
+    fillHeight: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    // Can't use a Crossfade composable because of the custom layout logic below. Animate the alpha
+    // of the guts (and, indirectly, of the content) from here.
+    val gutsAlphaAnimatable = remember { Animatable(0f) }
+    val isGutsVisible = viewModel.guts.isVisible
+    LaunchedEffect(isGutsVisible) { gutsAlphaAnimatable.animateTo(if (isGutsVisible) 1f else 0f) }
+
+    // Use a custom layout to measure the content even if the content is being hidden because the
+    // internal guts are showing. This is needed because only the content knows the size the of the
+    // card and the guts are set to be the same size of the content.
+    Layout(
+        content = {
+            CardForegroundContent(
+                viewModel = viewModel,
+                threeRows = threeRows,
+                fillHeight = fillHeight,
+                modifier =
+                    Modifier.graphicsLayer {
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
+                        alpha = 1f - gutsAlphaAnimatable.value
+                    },
+            )
+
+            CardGuts(
+                viewModel = viewModel.guts,
+                modifier =
+                    Modifier.graphicsLayer {
+                        compositingStrategy = CompositingStrategy.ModulateAlpha
+                        alpha = gutsAlphaAnimatable.value
+                    },
+            )
+        },
+        modifier = modifier,
+    ) { measurables, constraints ->
+        check(measurables.size == 2)
+        val contentPlaceable = measurables[0].measure(constraints)
+        // Guts should always have the exact dimensions as the content, even if we don't show the
+        // content.
+        val gutsPlaceable =
+            measurables[1].measure(
+                Constraints.fixed(contentPlaceable.width, contentPlaceable.height)
+            )
+
+        layout(contentPlaceable.measuredWidth, contentPlaceable.measuredHeight) {
+            if (!viewModel.guts.isVisible || gutsAlphaAnimatable.isRunning) {
+                contentPlaceable.place(0, 0)
+            }
+            if (viewModel.guts.isVisible || gutsAlphaAnimatable.isRunning) {
+                gutsPlaceable.place(0, 0)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContentScope.CardForegroundContent(
+    viewModel: MediaCardViewModel,
+    threeRows: Boolean,
+    fillHeight: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier =
+            modifier
+                .combinedClickable(
+                    onClick = viewModel.onClick,
+                    onLongClick = viewModel.onLongClick,
+                    onClickLabel = viewModel.onClickLabel,
+                )
+                .padding(16.dp)
+    ) {
+        // Always add the first/top row, regardless of presentation style.
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Icon.
+            Icon(
+                icon = viewModel.icon,
+                tint = LocalAndroidColorScheme.current.primaryFixed,
+                modifier = Modifier.size(24.dp).clip(CircleShape),
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            viewModel.outputSwitcherChips.fastForEach { chip ->
+                OutputSwitcherChip(viewModel = chip, modifier = Modifier.padding(start = 8.dp))
+            }
+        }
+
+        // If the card is taller than necessary to show all the rows, this adds spacing
+        // between the top row and the rows below, anchoring the next rows to the bottom
+        // of the card.
+        if (fillHeight) {
+            Spacer(Modifier.weight(1f))
+        }
+
+        if (threeRows) {
+            // Three row presentation style.
+            //
+            // Second row.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 16.dp),
+            ) {
+                Metadata(
+                    title = viewModel.title,
+                    subtitle = viewModel.subtitle,
+                    color = Color.White,
+                    modifier = Modifier.weight(1f).padding(end = 8.dp),
+                )
+
+                AnimatedVisibility(visible = viewModel.playPauseAction.isVisible) {
+                    PlayPauseAction(
+                        viewModel = viewModel.playPauseAction,
+                        buttonWidth = 48.dp,
+                        buttonColor = LocalAndroidColorScheme.current.primaryFixed,
+                        iconColor = LocalAndroidColorScheme.current.onPrimaryFixed,
+                        buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
+                    )
+                }
+            }
+
+            // Third row.
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 24.dp),
+            ) {
+                Navigation(viewModel = viewModel.seekBar, isSeekBarVisible = true)
+                viewModel.additionalActions.fastForEachIndexed { index, action ->
+                    SecondaryAction(
+                        viewModel = action,
+                        element = Media.Elements.additionalActionButton(index),
+                    )
+                }
+            }
+        } else {
+            // Two row presentation style.
+            //
+            // Bottom row.
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 36.dp),
+            ) {
+                Metadata(
+                    title = viewModel.title,
+                    subtitle = viewModel.subtitle,
+                    color = Color.White,
+                    modifier = Modifier.weight(1f).padding(end = 8.dp),
+                )
+
+                Navigation(
+                    viewModel = viewModel.seekBar,
+                    isSeekBarVisible = false,
+                    modifier = Modifier.padding(end = 8.dp),
+                )
+
+                PlayPauseAction(
+                    viewModel = viewModel.playPauseAction,
+                    buttonWidth = 48.dp,
+                    buttonColor = LocalAndroidColorScheme.current.primaryFixed,
+                    iconColor = LocalAndroidColorScheme.current.onPrimaryFixed,
+                    buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Renders a simplified version of [CardForeground] that puts everything on a single row and doesn't
+ * support the guts.
+ */
+@Composable
+private fun ContentScope.CompactCardForeground(
+    viewModel: MediaCardViewModel,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+            modifier
+                .clickable(onClick = viewModel.onClick, onClickLabel = viewModel.onClickLabel)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .padding(16.dp),
+    ) {
+        Icon(
+            icon = viewModel.icon,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(24.dp),
+        )
+
+        Metadata(
+            title = viewModel.title,
+            subtitle = viewModel.subtitle,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+
+        SecondaryAction(
+            viewModel = viewModel.outputSwitcherChipButton,
+            element = Media.Elements.OutputSwitcherButton,
+            iconColor = MaterialTheme.colorScheme.onSurface,
+        )
+
+        val nextAction = (viewModel.seekBar as? MediaSeekBarViewModel.Showing)?.next
+        if (nextAction != null) {
+            SecondaryAction(
+                viewModel = nextAction,
+                element = Media.Elements.NextButton,
+                iconColor = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+
+        AnimatedVisibility(visible = viewModel.playPauseAction.isVisible) {
+            PlayPauseAction(
+                viewModel = viewModel.playPauseAction,
+                buttonWidth = 72.dp,
+                buttonColor = MaterialTheme.colorScheme.primaryContainer,
+                iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 24.dp },
+            )
+        }
+    }
+}
 
 /** Renders the background of a card, loading the artwork and showing an overlay on top of it. */
 @Composable
@@ -564,7 +857,41 @@ private fun SecondaryActionContent(
     )
 }
 
+/** Enumerates all supported media presentation styles. */
+enum class MediaPresentationStyle {
+    /** The "normal" 3-row carousel look. */
+    Default,
+    /** Similar to [Default] but not as tall (2-row carousel look). */
+    Compressed,
+    /** A special single-row treatment that fits nicely in quick settings. */
+    Compact,
+}
+
 private object Media {
+
+    /**
+     * Scenes.
+     *
+     * The implementation uses a [SceneTransitionLayout] to smoothly animate transitions between
+     * different card layouts. Each card layout is identified as its own "scene" and the STL
+     * framework takes care of animating the layouts and their elements as the card morphs between
+     * scenes.
+     */
+    object Scenes {
+        /** The "normal" 3-row carousel look. */
+        val Default = SceneKey("default")
+        /** Similar to [Default] but not as tall (2-row carousel look). */
+        val Compressed = SceneKey("compressed")
+        /** A special single-row treatment that fits nicely in quick settings. */
+        val Compact = SceneKey("compact")
+    }
+
+    /** Definitions of how scene changes are transition-animated. */
+    val Transitions = transitions {
+        from(Scenes.Default, to = Scenes.Compact) {}
+        from(Scenes.Default, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
+        from(Scenes.Compact, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
+    }
 
     /**
      * Element keys.
@@ -582,5 +909,18 @@ private object Media {
         val PrevButton = ElementKey("prev")
         val NextButton = ElementKey("next")
         val SeekBarSlider = ElementKey("seek_bar_slider")
+        val OutputSwitcherButton = ElementKey("output_switcher")
+
+        fun additionalActionButton(index: Int): ElementKey {
+            return ElementKey("additional_action_$index")
+        }
+    }
+}
+
+private fun MediaPresentationStyle.toScene(): SceneKey {
+    return when (this) {
+        MediaPresentationStyle.Default -> Media.Scenes.Default
+        MediaPresentationStyle.Compressed -> Media.Scenes.Compressed
+        MediaPresentationStyle.Compact -> Media.Scenes.Compact
     }
 }
