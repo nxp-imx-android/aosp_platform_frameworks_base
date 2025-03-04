@@ -32,7 +32,6 @@ import android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVI
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.back.BackAnimationController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.isExitDesktopModeTransition
@@ -107,7 +106,7 @@ class DesktopTasksTransitionObserver(
         info.changes.forEach { change ->
             change.taskInfo?.let { taskInfo ->
                 if (
-                    Flags.enableDesktopWindowingPip() &&
+                    DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
                         desktopRepository.isTaskMinimizedPipInDisplay(
                             taskInfo.displayId,
                             taskInfo.taskId,
