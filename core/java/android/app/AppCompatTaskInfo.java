@@ -104,6 +104,8 @@ public class AppCompatTaskInfo implements Parcelable {
     public static final int FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE = FLAG_BASE << 9;
     /** Top activity flag for whether restart menu is shown due to display move. */
     private static final int FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE = FLAG_BASE << 10;
+    /** Top activity flag for whether activity opted out of edge to edge. */
+    public static final int FLAG_OPT_OUT_EDGE_TO_EDGE = FLAG_BASE << 11;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {
@@ -118,7 +120,8 @@ public class AppCompatTaskInfo implements Parcelable {
             FLAG_FULLSCREEN_OVERRIDE_SYSTEM,
             FLAG_FULLSCREEN_OVERRIDE_USER,
             FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE,
-            FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE
+            FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE,
+            FLAG_OPT_OUT_EDGE_TO_EDGE
     })
     public @interface TopActivityFlag {}
 
@@ -132,7 +135,8 @@ public class AppCompatTaskInfo implements Parcelable {
     @TopActivityFlag
     private static final int FLAGS_ORGANIZER_INTERESTED = FLAG_IS_FROM_LETTERBOX_DOUBLE_TAP
             | FLAG_ELIGIBLE_FOR_USER_ASPECT_RATIO_BUTTON | FLAG_FULLSCREEN_OVERRIDE_SYSTEM
-            | FLAG_FULLSCREEN_OVERRIDE_USER | FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE;
+            | FLAG_FULLSCREEN_OVERRIDE_USER | FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE
+            | FLAG_OPT_OUT_EDGE_TO_EDGE;
 
     @TopActivityFlag
     private static final int FLAGS_COMPAT_UI_INTERESTED = FLAGS_ORGANIZER_INTERESTED
@@ -345,6 +349,20 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public void setHasMinAspectRatioOverride(boolean enable) {
         setTopActivityFlag(FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE, enable);
+    }
+
+    /**
+     * Sets the top activity flag for whether the activity has opted out of edge to edge.
+     */
+    public void setOptOutEdgeToEdge(boolean enable) {
+        setTopActivityFlag(FLAG_OPT_OUT_EDGE_TO_EDGE, enable);
+    }
+
+    /**
+     * @return {@code true} if the top activity has opted out of edge to edge.
+     */
+    public boolean hasOptOutEdgeToEdge() {
+        return isTopActivityFlagEnabled(FLAG_OPT_OUT_EDGE_TO_EDGE);
     }
 
     /** Clear all top activity flags and set to false. */
