@@ -184,8 +184,13 @@ constructor(
  * Provides an instance of a given class **only** for the default display, even if asked for another
  * display.
  *
- * This is useful in case of flag refactors: it can be provided instead of an instance of
+ * This is useful in case of **flag refactors**: it can be provided instead of an instance of
  * [PerDisplayInstanceRepositoryImpl] when a flag related to multi display refactoring is off.
+ *
+ * Note that this still requires all instances to be provided by a [PerDisplayInstanceProvider]. If
+ * you want to provide an existing instance instead for the default display, either implement it in
+ * a custom [PerDisplayInstanceProvider] (e.g. inject it in the constructor and return it if the
+ * displayId is zero), or use [SingleInstanceRepositoryImpl].
  */
 class DefaultDisplayOnlyInstanceRepositoryImpl<T>(
     override val debugName: String,
@@ -200,11 +205,12 @@ class DefaultDisplayOnlyInstanceRepositoryImpl<T>(
 }
 
 /**
- * Always returns only one instance.
+ * Always returns [instance] for any display.
  *
  * This can be used to provide a single instance based on a flag value during a refactor. Similar to
  * [DefaultDisplayOnlyInstanceRepositoryImpl], but also avoids creating the
- * [PerDisplayInstanceProvider].
+ * [PerDisplayInstanceProvider]. This is useful when you want to provide an existing instance only,
+ * without even instantiating a [PerDisplayInstanceProvider].
  */
 class SingleInstanceRepositoryImpl<T>(override val debugName: String, private val instance: T) :
     PerDisplayRepository<T> {
