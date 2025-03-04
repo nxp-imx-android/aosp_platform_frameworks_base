@@ -126,7 +126,7 @@ constructor(
         get() = perDisplayInstances.keys
 
     private suspend fun start() {
-        dumpManager.registerDumpable(this)
+        dumpManager.registerNormalDumpable("PerDisplayRepository-${debugName}", this)
         displayRepository.displayIds.collectLatest { displayIds ->
             val toRemove = perDisplayInstances.keys - displayIds
             toRemove.forEach { displayId ->
@@ -197,4 +197,18 @@ class DefaultDisplayOnlyInstanceRepositoryImpl<T>(
     override val displayIds: Set<Int> = setOf(Display.DEFAULT_DISPLAY)
 
     override fun get(displayId: Int): T? = lazyDefaultDisplayInstance
+}
+
+/**
+ * Always returns only one instance.
+ *
+ * This can be used to provide a single instance based on a flag value during a refactor. Similar to
+ * [DefaultDisplayOnlyInstanceRepositoryImpl], but also avoids creating the
+ * [PerDisplayInstanceProvider].
+ */
+class SingleInstanceRepositoryImpl<T>(override val debugName: String, private val instance: T) :
+    PerDisplayRepository<T> {
+    override val displayIds: Set<Int> = setOf(Display.DEFAULT_DISPLAY)
+
+    override fun get(displayId: Int): T? = instance
 }
