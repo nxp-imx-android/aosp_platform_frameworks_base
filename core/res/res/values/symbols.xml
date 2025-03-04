@@ -5974,4 +5974,6 @@
   <!-- Enable OEMs to support scale up anim across tasks.-->
   <java-symbol type="bool" name="config_enableCrossTaskScaleUpAnimation" />
 
+  <!-- Default height of desktop view header for freeform tasks on launch. -->
+  <java-symbol type="dimen" name="desktop_view_default_header_height" />
 </resources>

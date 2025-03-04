@@ -18,10 +18,8 @@
 
 package com.android.wm.shell.desktopmode
 
-import android.annotation.DimenRes
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskInfo
-import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -38,7 +36,6 @@ import android.graphics.Rect
 import android.os.SystemProperties
 import android.util.Size
 import android.window.DesktopModeFlags
-import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
@@ -264,13 +261,6 @@ fun isTaskWidthOrHeightEqual(taskBounds: Rect, stableBounds: Rect): Boolean {
 fun isTaskBoundsEqual(taskBounds: Rect, stableBounds: Rect): Boolean {
     return taskBounds == stableBounds
 }
-
-/** Returns the app header height in desktop mode in pixels. */
-fun getAppHeaderHeight(context: Context): Int =
-    context.resources.getDimensionPixelSize(getAppHeaderHeightId())
-
-/** Returns the resource id of the app header height in desktop mode. */
-@DimenRes fun getAppHeaderHeightId(): Int = R.dimen.desktop_mode_freeform_decor_caption_height
 
 /**
  * Returns the task bounds a launching task should inherit from an existing running instance.
