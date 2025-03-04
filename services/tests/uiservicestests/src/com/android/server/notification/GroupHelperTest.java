@@ -102,7 +102,9 @@ import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
 import platform.test.runner.parameterized.Parameters;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SmallTest
 @SuppressLint("GuardedBy") // It's ok for this test to access guarded methods from the class.
@@ -4442,5 +4444,98 @@ public class GroupHelperTest extends UiServiceTestCase {
 
         verify(mCallback).sendAppProvidedSummaryDeleteIntent(eq(pkg),
                 eq(deleteIntentofFirstSummary));
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testGroupSummaryAdded_hadUngroupedNotif_doesNotAutogroup() {
+        // Scenario:
+        //  * child notification posted before summary; added to ungrouped notifications
+        //  * summary posted, so now the child has a group summary and is no longer "ungrouped
+        //  * another ungrouped notification is posted
+        // Confirm that the first notification (that now has a summary) is not autogrouped.
+
+        // Bookkeeping items
+        List<NotificationRecord> notifList = new ArrayList<>();
+        Map<String, NotificationRecord> summaryByGroupKey = new HashMap<>();
+
+        // Setup: post AUTOGROUP_AT_COUNT - 2 notifications so that the next notification would not
+        // trigger autogrouping, but the one after that would
+        for (int i = 0; i < AUTOGROUP_AT_COUNT - 2; i++) {
+            NotificationRecord child = getNotificationRecord(mPkg, i, "", mUser, "group" + i, false,
+                    IMPORTANCE_DEFAULT);
+            notifList.add(child);
+            mGroupHelper.onNotificationPostedWithDelay(child, notifList, summaryByGroupKey);
+        }
+
+        // Group child: posted enough before its associated summary to be put in the "ungrouped"
+        // set of notifications
+        NotificationRecord groupChild = getNotificationRecord(mPkg, AUTOGROUP_AT_COUNT - 2, "",
+                mUser, "specialGroup", false, IMPORTANCE_DEFAULT);
+        notifList.add(groupChild);
+        mGroupHelper.onNotificationPostedWithDelay(groupChild, notifList, summaryByGroupKey);
+
+        // Group summary: posted after child 1
+        NotificationRecord groupSummary = getNotificationRecord(mPkg, AUTOGROUP_AT_COUNT - 1, "",
+                mUser, "specialGroup", true, IMPORTANCE_DEFAULT);
+        notifList.add(groupSummary);
+        summaryByGroupKey.put(groupSummary.getSbn().getGroupKey(), groupSummary);
+        mGroupHelper.onGroupSummaryAdded(groupSummary, notifList);
+        mGroupHelper.onNotificationPostedWithDelay(groupSummary, notifList, summaryByGroupKey);
+
+        // One more notification posted to the group; because its summary already exists, it should
+        // never be counted as an "ungrouped" notification
+        NotificationRecord groupChild2 = getNotificationRecord(mPkg, AUTOGROUP_AT_COUNT, "",
+                mUser, "specialGroup", false, IMPORTANCE_DEFAULT);
+        notifList.add(groupChild2);
+        mGroupHelper.onNotificationPostedWithDelay(groupChild2, notifList, summaryByGroupKey);
+
+        // Now one more ungrouped notification; this would have put the number of "ungrouped"
+        // notifications above the limit if the first groupChild notification were left ungrouped
+        NotificationRecord extra = getNotificationRecord(mPkg, AUTOGROUP_AT_COUNT + 1, "", mUser,
+                "yetAnotherGroup", false, IMPORTANCE_DEFAULT);
+        notifList.add(extra);
+        mGroupHelper.onNotificationPostedWithDelay(extra, notifList, summaryByGroupKey);
+
+        // no autogrouping should have occurred
+        verifyZeroInteractions(mCallback);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testGroupSummaryAdded_onlyUnrelatedGroupedNotifs() {
+        // If all of the existing ungrouped notifications have nothing to do with the summary
+        // they should still get grouped as needed.
+        List<NotificationRecord> notifList = new ArrayList<>();
+        Map<String, NotificationRecord> summaryByGroupKey = new HashMap<>();
+
+        // Post 1 fewer than the autogroupable notifications, each associated with a different
+        // group without a summary.
+        for (int i = 0; i < AUTOGROUP_AT_COUNT - 1; i++) {
+            NotificationRecord child = getNotificationRecord(mPkg, i, "", mUser, "group" + i, false,
+                    IMPORTANCE_DEFAULT);
+            notifList.add(child);
+            mGroupHelper.onNotificationPostedWithDelay(child, notifList, summaryByGroupKey);
+        }
+
+        // At this point we do not yet expect autogrouping.
+        // Add a group summary that is a summary associated with none of the above notifications.
+        // Because this gets considered a "summary without children", all of these notifications
+        // should now be autogrouped.
+        NotificationRecord summary = getNotificationRecord(mPkg, AUTOGROUP_AT_COUNT, "", mUser,
+                "summaryGroup", true, IMPORTANCE_DEFAULT);
+        notifList.add(summary);
+        summaryByGroupKey.put(summary.getSbn().getKey(), summary);
+        mGroupHelper.onGroupSummaryAdded(summary, notifList);
+        mGroupHelper.onNotificationPostedWithDelay(summary, notifList, summaryByGroupKey);
+
+        // all of the above posted notifications should be autogrouped
+        String expectedGroupKey = getExpectedAutogroupKey(
+                getNotificationRecord(mPkg, 0, String.valueOf(0), mUser));
+        verify(mCallback, times(1)).addAutoGroupSummary(
+                anyInt(), eq(mPkg), anyString(), eq(expectedGroupKey),
+                anyInt(), eq(getNotificationAttributes(BASE_FLAGS)));
+        verify(mCallback, times(AUTOGROUP_AT_COUNT)).addAutoGroup(anyString(),
+                eq(expectedGroupKey), anyBoolean());
     }
 }
