@@ -103,6 +103,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     private boolean mShowingAvatar = true;
     private CharSequence mSenderName;
     private boolean mSingleLine = false;
+    private boolean mIsCollapsed = false;
     private LinearLayout mContentContainer;
     private int mRequestedMaxDisplayedLines = Integer.MAX_VALUE;
     private int mSenderTextPaddingSingleLine;
@@ -451,7 +452,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     private void updateIconVisibility() {
         if (Flags.notificationsRedesignTemplates()) {
             // We don't show any icon (other than the app or person icon) in the collapsed form.
-            mMessagingIconContainer.setVisibility(mSingleLine ? GONE : VISIBLE);
+            mMessagingIconContainer.setVisibility(mIsCollapsed ? GONE : VISIBLE);
         }
     }
 
@@ -714,8 +715,16 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
             updateMaxDisplayedLines();
             updateClipRect();
             updateSenderVisibility();
-            updateIconVisibility();
         }
+    }
+
+    /**
+     * Sets whether this is in a collapsed layout or not. Certain elements like icons are not shown
+     * when the notification is collapsed.
+     */
+    public void setIsCollapsed(boolean isCollapsed) {
+        mIsCollapsed = isCollapsed;
+        updateIconVisibility();
     }
 
     public boolean isSingleLine() {
