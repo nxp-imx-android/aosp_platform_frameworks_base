@@ -1003,6 +1003,8 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Dodajte na <xliff:g id="POSITION">%1$d</xliff:g>. poziciju"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Pozicija je nevažeća."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"<xliff:g id="POSITION">%1$d</xliff:g>. pozicija"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Pločica je dodata"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Pločica je uklonjena"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Uređivač za Brza podešavanja."</string>
@@ -1571,6 +1573,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nepoznato"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Želite da resetujete sve pločice?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Sve pločice Brzih podešavanja će se resetovati na prvobitna podešavanja uređaja"</string>
-    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
-    <skip />
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g>కి కనెక్ట్ చేయబడింది."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g>కి కనెక్ట్ చేయబడింది."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"గ్రూప్‌ను విస్తరించండి."</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"గ్రూప్‌కి పరికరాన్ని జోడించండి."</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"గ్రూప్ నుండి పరికరాన్ని తీసివేయండి."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"యాప్‌ను తెరవండి."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"కనెక్ట్ చేయబడలేదు."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"రోమింగ్"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ఇన్‌పుట్"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"వినికిడి పరికరాలు"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ఆన్ చేస్తోంది…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"దీనిని టాప్ యాప్ కంట్రోల్ చేస్తోంది కనుక బ్రైట్‌నెస్‌ను సర్దుబాటు చేయడం సాధ్యం కాదు"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ఆటో-రొటేట్‌"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"స్క్రీన్ ఆటో-రొటేట్‌"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"లొకేషన్"</string>
@@ -1007,6 +1004,8 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"<xliff:g id="POSITION">%1$d</xliff:g> స్థానానికి జోడించండి"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"ప్రస్తుత పొజిషన్ చెల్లదు."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"స్థానం <xliff:g id="POSITION">%1$d</xliff:g>"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"టైల్ జోడించబడింది"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"టైల్ తీసివేయబడింది"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"శీఘ్ర సెట్టింగ్‌ల ఎడిటర్."</string>
@@ -1577,6 +1576,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"తెలియదు"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"టైల్స్ అన్ని రీసెట్ చేయాలా?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"అన్ని క్విక్ సెట్టింగ్‌ల టైల్స్, పరికరం తాలూకు ఒరిజినల్ సెట్టింగ్‌లకు రీసెట్ చేయబడతాయి"</string>
-    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
-    <skip />
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
