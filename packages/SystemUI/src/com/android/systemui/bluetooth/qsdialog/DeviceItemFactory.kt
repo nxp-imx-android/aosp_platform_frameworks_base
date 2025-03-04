@@ -21,7 +21,6 @@ import android.content.Context
 import com.android.settingslib.bluetooth.BluetoothUtils
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.settingslib.bluetooth.LocalBluetoothManager
-import com.android.settingslib.flags.Flags
 import com.android.systemui.res.R
 
 private val backgroundOn = R.drawable.settingslib_switch_bar_bg_on
@@ -222,12 +221,8 @@ internal class ConnectedDeviceItemFactory : DeviceItemFactory() {
         isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
-        return if (Flags.enableHideExclusivelyManagedBluetoothDevice()) {
-            !BluetoothUtils.isExclusivelyManagedBluetoothDevice(context, cachedDevice.device) &&
-                BluetoothUtils.isConnectedBluetoothDevice(cachedDevice, isOngoingCall)
-        } else {
+        return !BluetoothUtils.isExclusivelyManagedBluetoothDevice(context, cachedDevice.device) &&
             BluetoothUtils.isConnectedBluetoothDevice(cachedDevice, isOngoingCall)
-        }
     }
 
     override fun create(context: Context, cachedDevice: CachedBluetoothDevice): DeviceItem {
@@ -250,13 +245,9 @@ internal open class SavedDeviceItemFactory : DeviceItemFactory() {
         isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
-        return if (Flags.enableHideExclusivelyManagedBluetoothDevice()) {
-            !BluetoothUtils.isExclusivelyManagedBluetoothDevice(context, cachedDevice.device) &&
-                cachedDevice.bondState == BluetoothDevice.BOND_BONDED &&
-                !cachedDevice.isConnected
-        } else {
-            cachedDevice.bondState == BluetoothDevice.BOND_BONDED && !cachedDevice.isConnected
-        }
+        return !BluetoothUtils.isExclusivelyManagedBluetoothDevice(context, cachedDevice.device) &&
+            cachedDevice.bondState == BluetoothDevice.BOND_BONDED &&
+            !cachedDevice.isConnected
     }
 
     override fun create(context: Context, cachedDevice: CachedBluetoothDevice): DeviceItem {
@@ -279,18 +270,12 @@ internal class SavedHearingDeviceItemFactory : SavedDeviceItemFactory() {
         isOngoingCall: Boolean,
         audioSharingAvailable: Boolean,
     ): Boolean {
-        return if (Flags.enableHideExclusivelyManagedBluetoothDevice()) {
-            !BluetoothUtils.isExclusivelyManagedBluetoothDevice(
-                context,
-                cachedDevice.getDevice(),
-            ) &&
-                cachedDevice.isHearingAidDevice &&
-                cachedDevice.bondState == BluetoothDevice.BOND_BONDED &&
-                !cachedDevice.isConnected
-        } else {
+        return !BluetoothUtils.isExclusivelyManagedBluetoothDevice(
+            context,
+            cachedDevice.getDevice(),
+        ) &&
             cachedDevice.isHearingAidDevice &&
-                cachedDevice.bondState == BluetoothDevice.BOND_BONDED &&
-                !cachedDevice.isConnected
-        }
+            cachedDevice.bondState == BluetoothDevice.BOND_BONDED &&
+            !cachedDevice.isConnected
     }
 }

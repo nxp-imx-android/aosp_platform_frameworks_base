@@ -37,13 +37,6 @@ flag {
 }
 
 flag {
-    name: "enable_hide_exclusively_managed_bluetooth_device"
-    namespace: "dck_framework"
-    description: "Hide exclusively managed Bluetooth devices in BT settings menu."
-    bug: "324475542"
-}
-
-flag {
     name: "enable_set_preferred_transport_for_le_audio_device"
     namespace: "bluetooth"
     description: "Enable setting preferred transport for Le Audio device"
