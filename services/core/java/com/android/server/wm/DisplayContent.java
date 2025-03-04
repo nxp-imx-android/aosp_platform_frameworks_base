@@ -3280,6 +3280,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
      /**
+      * Whether the display is allowed to switch the content mode between extended and mirroring.
+      * If the content mode is extended, the display will start home activity and show system
+      * decorations, such as wallpapaer, status bar and navigation bar.
+      * If the content mode is mirroring, the display will not show home activity or system
+      * decorations.
+      * The content mode is switched when {@link Display#canHostTasks()} changes.
+      *
       * Note that we only allow displays that are able to show system decorations to use the content
       * mode switch; however, not all displays that are able to show system decorations are allowed
       * to use the content mode switch.
