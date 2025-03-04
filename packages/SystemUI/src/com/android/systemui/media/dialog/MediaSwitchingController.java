@@ -698,6 +698,27 @@ public class MediaSwitchingController
             List<MediaItem> finalMediaItems = targetMediaDevices.stream()
                     .map(MediaItem::createDeviceMediaItem)
                     .collect(Collectors.toList());
+
+            boolean shouldAddFirstSeenSelectedDevice =
+                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping();
+
+            if (shouldAddFirstSeenSelectedDevice) {
+                finalMediaItems.clear();
+                Set<String> selectedDevicesIds = getSelectedMediaDevice().stream()
+                        .map(MediaDevice::getId)
+                        .collect(Collectors.toSet());
+                for (MediaDevice targetMediaDevice : targetMediaDevices) {
+                    if (shouldAddFirstSeenSelectedDevice
+                            && selectedDevicesIds.contains(targetMediaDevice.getId())) {
+                        finalMediaItems.add(MediaItem.createDeviceMediaItem(
+                                targetMediaDevice, /* isFirstDeviceInGroup */ true));
+                        shouldAddFirstSeenSelectedDevice = false;
+                    } else {
+                        finalMediaItems.add(MediaItem.createDeviceMediaItem(
+                                targetMediaDevice, /* isFirstDeviceInGroup */ false));
+                    }
+                }
+            }
             dividerItems.forEach(finalMediaItems::add);
             attachConnectNewDeviceItemIfNeeded(finalMediaItems);
             return finalMediaItems;
