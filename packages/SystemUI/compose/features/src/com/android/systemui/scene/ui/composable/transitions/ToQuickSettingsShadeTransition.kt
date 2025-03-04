@@ -20,17 +20,19 @@ import androidx.compose.animation.core.tween
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
 import com.android.compose.animation.scene.reveal.verticalContainerReveal
+import com.android.mechanics.behavior.EdgeContainerExpansionSpec
 import com.android.systemui.qs.ui.composable.QuickSettingsShade
 import com.android.systemui.shade.ui.composable.OverlayShade
 import kotlin.time.Duration.Companion.milliseconds
 
 fun TransitionBuilder.toQuickSettingsShadeTransition(
     durationScale: Double = 1.0,
+    shadeExpansionMotion: EdgeContainerExpansionSpec,
     revealHaptics: ContainerRevealHaptics,
 ) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
 
-    verticalContainerReveal(QuickSettingsShade.Elements.Panel, revealHaptics)
+    verticalContainerReveal(QuickSettingsShade.Elements.Panel, shadeExpansionMotion, revealHaptics)
 
     fractionRange(end = .5f) { fade(OverlayShade.Elements.Scrim) }
     fractionRange(start = .5f) { fade(QuickSettingsShade.Elements.StatusBar) }

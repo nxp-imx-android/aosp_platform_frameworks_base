@@ -70,7 +70,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import platform.test.motion.compose.ComposeRecordingSpec
 import platform.test.motion.compose.MotionControl
-import platform.test.motion.compose.createComposeMotionTestRule
+import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRule
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.golden.DataPoint
@@ -86,7 +86,7 @@ class TransitionScopedMechanicsAdapterTest {
         createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
 
     private val testScope = TestScope()
-    @get:Rule val motionRule = createComposeMotionTestRule(goldenPaths, testScope)
+    @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths, testScope)
     private val composeRule = motionRule.toolkit.composeContentTestRule
 
     @Test

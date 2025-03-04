@@ -56,6 +56,7 @@ import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.ui.view.SceneJankMonitor
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
+import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.isFullWidthShade
 import javax.inject.Provider
 
@@ -100,9 +101,13 @@ fun SceneContainer(
         rememberActivated(traceName = "sceneJankMonitor") { sceneJankMonitorFactory.create() }
 
     val hapticFeedback = LocalHapticFeedback.current
+    val shadeExpansionMotion = OverlayShade.rememberShadeExpansionMotion()
     val sceneTransitions =
-        remember(hapticFeedback) {
-            transitionsBuilder.build(viewModel.hapticsViewModel.getRevealHaptics(hapticFeedback))
+        remember(hapticFeedback, shadeExpansionMotion) {
+            transitionsBuilder.build(
+                shadeExpansionMotion,
+                viewModel.hapticsViewModel.getRevealHaptics(hapticFeedback),
+            )
         }
 
     val state =
