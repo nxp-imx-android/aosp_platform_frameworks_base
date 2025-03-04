@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.chips.ui.model
 
+import android.annotation.CurrentTimeMillisLong
+import android.annotation.ElapsedRealtimeLong
 import android.view.View
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
@@ -102,7 +104,7 @@ sealed class OngoingActivityChipModel {
              * [ChipChronometer] is based off of elapsed realtime. See
              * [android.widget.Chronometer.setBase].
              */
-            val startTimeMs: Long,
+            @ElapsedRealtimeLong val startTimeMs: Long,
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
             override val isHidden: Boolean = false,
@@ -129,10 +131,15 @@ sealed class OngoingActivityChipModel {
             override val icon: ChipIcon,
             override val colors: ColorsModel,
             /**
-             * The time of the event that this chip represents, relative to
-             * [com.android.systemui.util.time.SystemClock.currentTimeMillis].
+             * The time of the event that this chip represents. Relative to
+             * [com.android.systemui.util.time.SystemClock.currentTimeMillis] because that's what's
+             * required by [android.widget.DateTimeView].
+             *
+             * TODO(b/372657935): When the Compose chips are launched, we should convert this to be
+             *   relative to [com.android.systemui.util.time.SystemClock.elapsedRealtime] so that
+             *   this model and the [Timer] model use the same units.
              */
-            val time: Long,
+            @CurrentTimeMillisLong val time: Long,
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
             override val isHidden: Boolean = false,
