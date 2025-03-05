@@ -620,6 +620,12 @@ public final class InputMethodManager {
     @GuardedBy("mH")
     private CompletionInfo[] mCompletions;
 
+    /**
+     * Tracks last pending {@link #startInputInner(int, IBinder, int, int, int)} sequenceId.
+     */
+    @GuardedBy("mH")
+    private int mLastPendingStartSeqId = INVALID_SEQ_ID;
+
     // Cursor position on the screen.
     @GuardedBy("mH")
     @UnsupportedAppUsage
@@ -651,6 +657,8 @@ public final class InputMethodManager {
             "cache_key.system_server.stylus_handwriting";
     private static final String CACHE_KEY_CONNECTIONLESS_STYLUS_HANDWRITING_PROPERTY =
             "cache_key.system_server.connectionless_stylus_handwriting";
+
+    static final int INVALID_SEQ_ID = -1;
 
     @GuardedBy("mH")
     private int mCursorSelStart;
@@ -1193,12 +1201,18 @@ public final class InputMethodManager {
                 case MSG_START_INPUT_RESULT: {
                     final InputBindResult res = (InputBindResult) msg.obj;
                     final int startInputSeq = msg.arg1;
-                    if (res == null) {
-                        // IMMS logs .wtf already.
-                        return;
-                    }
-                    if (DEBUG) Log.v(TAG, "Starting input: Bind result=" + res);
                     synchronized (mH) {
+                        if (mLastPendingStartSeqId == startInputSeq) {
+                            // last pending startInput has been completed. reset.
+                            mLastPendingStartSeqId = INVALID_SEQ_ID;
+                        }
+
+                        if (res == null) {
+                            // IMMS logs .wtf already.
+                            return;
+                        }
+
+                        if (DEBUG) Log.v(TAG, "Starting input: Bind result=" + res);
                         if (res.id != null) {
                             updateInputChannelLocked(res.channel);
                             mCurMethod = res.method; // for @UnsupportedAppUsage
@@ -2220,6 +2234,7 @@ public final class InputMethodManager {
             }
             mCompletions = null;
             mServedConnecting = false;
+            mLastPendingStartSeqId = INVALID_SEQ_ID;
             clearConnectionLocked();
         }
         mReportInputConnectionOpenedRunner = null;
@@ -3274,6 +3289,9 @@ public final class InputMethodManager {
      * @param view The view whose text has changed.
      */
     public void restartInput(View view) {
+        if (DEBUG) {
+            Log.d(TAG, "restartInput()");
+        }
         // Re-dispatch if there is a context mismatch.
         final InputMethodManager fallbackImm = getFallbackInputMethodManagerIfNecessary(view);
         if (fallbackImm != null) {
@@ -3351,6 +3369,9 @@ public final class InputMethodManager {
      */
     public void invalidateInput(@NonNull View view) {
         Objects.requireNonNull(view);
+        if (DEBUG) {
+            Log.d(TAG, "IMM#invaldateInput()");
+        }
 
         // Re-dispatch if there is a context mismatch.
         final InputMethodManager fallbackImm = getFallbackInputMethodManagerIfNecessary(view);
@@ -3363,7 +3384,8 @@ public final class InputMethodManager {
             if (mServedInputConnection == null || getServedViewLocked() != view) {
                 return;
             }
-            mServedInputConnection.scheduleInvalidateInput();
+            mServedInputConnection.scheduleInvalidateInput(
+                    mLastPendingStartSeqId != INVALID_SEQ_ID);
         }
     }
 
@@ -3532,7 +3554,7 @@ public final class InputMethodManager {
                     ? editorInfo.targetInputMethodUser.getIdentifier() : UserHandle.myUserId();
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMM.startInputOrWindowGainedFocus");
 
-            int startInputSeq = -1;
+            int startInputSeq = INVALID_SEQ_ID;
             if (Flags.useZeroJankProxy()) {
                 // async result delivered via MSG_START_INPUT_RESULT.
                 startInputSeq = IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocusAsync(
@@ -3557,6 +3579,9 @@ public final class InputMethodManager {
                 // initialized and ready for use.
                 if (ic != null) {
                     final int seqId = startInputSeq;
+                    if (Flags.invalidateInputCallsRestart()) {
+                        mLastPendingStartSeqId = seqId;
+                    }
                     mReportInputConnectionOpenedRunner =
                             new ReportInputConnectionOpenedRunner(startInputSeq) {
                                 @Override
@@ -5047,6 +5072,7 @@ public final class InputMethodManager {
         }
         p.println("  mServedInputConnection=" + mServedInputConnection);
         p.println("  mServedInputConnectionHandler=" + mServedInputConnectionHandler);
+        p.println("  mLastPendingStartSeqId=" + mLastPendingStartSeqId);
         p.println("  mCompletions=" + Arrays.toString(mCompletions));
         p.println("  mCursorRect=" + mCursorRect);
         p.println("  mCursorSelStart=" + mCursorSelStart
