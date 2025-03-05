@@ -216,7 +216,7 @@ public class SystemHealthManager {
     /**
      * Gets the maximum number of TIDs this device supports for getting CPU headroom.
      * <p>
-     * See {@link CpuHeadroomParams#setTids(int...)}.
+     * See {@link CpuHeadroomParams.Builder#setTids(int...)}.
      *
      * @return the maximum size of TIDs supported
      * @throws UnsupportedOperationException if the CPU headroom API is unsupported.
@@ -288,9 +288,7 @@ public class SystemHealthManager {
     /**
      * Gets the range of the calculation window size for CPU headroom.
      * <p>
-     * In API version 36, the range will be a superset of [50, 10000].
-     * <p>
-     * See {@link CpuHeadroomParams#setCalculationWindowMillis(int)}.
+     * See {@link CpuHeadroomParams.Builder#setCalculationWindowMillis(int)}.
      *
      * @return the range of the calculation window size supported in milliseconds.
      * @throws UnsupportedOperationException if the CPU headroom API is unsupported.
@@ -310,9 +308,7 @@ public class SystemHealthManager {
     /**
      * Gets the range of the calculation window size for GPU headroom.
      * <p>
-     * In API version 36, the range will be a superset of [50, 10000].
-     * <p>
-     * See {@link GpuHeadroomParams#setCalculationWindowMillis(int)}.
+     * See {@link GpuHeadroomParams.Builder#setCalculationWindowMillis(int)}.
      *
      * @return the range of the calculation window size supported in milliseconds.
      * @throws UnsupportedOperationException if the GPU headroom API is unsupported.
