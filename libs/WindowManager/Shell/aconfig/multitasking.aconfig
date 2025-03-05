@@ -194,3 +194,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_gsf"
+    namespace: "multitasking"
+    description: "Applies GSF font styles to multitasking."
+    bug: "400534660"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
