@@ -63,7 +63,7 @@ import com.android.systemui.accessibility.hearingaid.HearingDevicesListAdapter.H
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.bluetooth.qsdialog.ActiveHearingDeviceItemFactory;
 import com.android.systemui.bluetooth.qsdialog.AvailableHearingDeviceItemFactory;
-import com.android.systemui.bluetooth.qsdialog.ConnectedDeviceItemFactory;
+import com.android.systemui.bluetooth.qsdialog.ConnectedHearingDeviceItemFactory;
 import com.android.systemui.bluetooth.qsdialog.DeviceItem;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemFactory;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemType;
@@ -142,12 +142,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
     private final List<DeviceItemFactory> mHearingDeviceItemFactoryList = List.of(
             new ActiveHearingDeviceItemFactory(),
             new AvailableHearingDeviceItemFactory(),
-            // TODO(b/331305850): setHearingAidInfo() for connected but not connect to profile
-            // hearing device only called from
-            // settings/bluetooth/DeviceListPreferenceFragment#handleLeScanResult, so we don't know
-            // it is connected but not yet connect to profile hearing device in systemui.
-            // Show all connected but not connect to profile bluetooth device for now.
-            new ConnectedDeviceItemFactory(),
+            new ConnectedHearingDeviceItemFactory(),
             new SavedHearingDeviceItemFactory()
     );
 
