@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifCollection
@@ -423,6 +424,7 @@ constructor(
                             map[child.key] = GroupLocation.Child
                         }
                     }
+                    is BundleEntry -> map[topLevelEntry.key] = GroupLocation.Bundle
                     else -> error("unhandled type $topLevelEntry")
                 }
             }
@@ -945,6 +947,7 @@ private enum class GroupLocation {
     Isolated,
     Summary,
     Child,
+    Bundle,
 }
 
 private fun Map<String, GroupLocation>.getLocation(key: String): GroupLocation =
