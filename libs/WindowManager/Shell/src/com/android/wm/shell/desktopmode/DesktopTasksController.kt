@@ -1324,6 +1324,9 @@ class DesktopTasksController(
 
         val stageCoordinatorRootTaskToken =
             splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(DEFAULT_DISPLAY)
+        if (stageCoordinatorRootTaskToken == null) {
+            return
+        }
         wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
 
         val deactivationRunnable =
