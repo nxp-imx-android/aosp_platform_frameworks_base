@@ -94,6 +94,7 @@ class DragZoneFactoryScreenshotTest(private val param: Param) {
 
         private val splitScreenModeName =
             when (splitScreenMode) {
+                SplitScreenMode.UNSUPPORTED -> "_split_unsupported"
                 SplitScreenMode.NONE -> ""
                 SplitScreenMode.SPLIT_50_50 -> "_split_50_50"
                 SplitScreenMode.SPLIT_10_90 -> "_split_10_90"
