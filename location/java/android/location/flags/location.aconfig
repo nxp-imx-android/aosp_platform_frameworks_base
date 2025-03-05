@@ -179,3 +179,10 @@ flag {
     }
 }
 
+flag {
+    name: "gnss_location_provider_overlay_2025_devices"
+    namespace: "location"
+    description: "Flag for GNSS location provider overlay for 2025 devices"
+    bug: "398254728"
+    is_fixed_read_only: true
+}
