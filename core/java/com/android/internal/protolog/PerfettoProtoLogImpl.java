@@ -79,6 +79,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -862,6 +863,25 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             }
 
             throw new RuntimeException("Both mMessageString and mMessageHash should never be null");
+        }
+    }
+
+    /**
+     * This is only used by unit tests to wait until {@link #connectToConfigurationService} is
+     * done. Because unit tests are sensitive to concurrent accesses.
+     */
+    @VisibleForTesting
+    public static void waitForInitialization() {
+        final IProtoLog currentInstance = ProtoLog.getSingleInstance();
+        if (!(currentInstance instanceof PerfettoProtoLogImpl protoLog)) {
+            return;
+        }
+        try {
+            protoLog.mBackgroundLoggingService.submit(() -> {
+                Log.i(LOG_TAG, "Complete initialization");
+            }).get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.e(LOG_TAG, "Failed to wait for tracing service", e);
         }
     }
 }
