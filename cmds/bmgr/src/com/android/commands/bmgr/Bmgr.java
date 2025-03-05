@@ -1309,6 +1309,8 @@ public class Bmgr {
                 return "AGENT_FAILURE_DURING_RESTORE";
             case BackupManagerMonitor.LOG_EVENT_ID_FAILED_TO_READ_DATA_FROM_TRANSPORT:
                 return "FAILED_TO_READ_DATA_FROM_TRANSPORT";
+            case BackupManagerMonitor.LOG_EVENT_ID_FULL_BACKUP_AGENT_PIPE_BROKEN:
+                return "LOG_EVENT_ID_FULL_BACKUP_AGENT_PIPE_BROKEN";
             default:
                 return "UNKNOWN_ID";
         }
