@@ -60,6 +60,11 @@ public final class MediaQualityUtils {
     private static final String TAG = "MediaQualityUtils";
     public static final String SETTINGS = "settings";
 
+    public static final SoundProfileHandle SOUND_PROFILE_HANDLE_NONE = new SoundProfileHandle();
+    static {
+        SOUND_PROFILE_HANDLE_NONE.id = -10000;
+    }
+
     /**
      * Convert PictureParameter List to PersistableBundle.
      */
@@ -1022,7 +1027,7 @@ public final class MediaQualityUtils {
                 getInputId(cursor),
                 getPackageName(cursor),
                 jsonToPersistableBundle(getSettingsString(cursor)),
-                SoundProfileHandle.NONE
+                SOUND_PROFILE_HANDLE_NONE
         );
     }
 

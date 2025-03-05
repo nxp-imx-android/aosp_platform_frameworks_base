@@ -1,0 +1,39 @@
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "frameworks_base_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    default_applicable_licenses: ["frameworks_base_license"],
+}
+
+filegroup {
+    name: "framework-media-quality-sources-aidl",
+    srcs: [
+        "aidl/android/media/quality/*.aidl",
+    ],
+    path: "aidl",
+}
+
+aidl_interface {
+    name: "media_quality_aidl_interface",
+    unstable: true,
+    local_include_dir: "aidl",
+    backend: {
+        java: {
+            enabled: true,
+        },
+        cpp: {
+            enabled: false,
+        },
+        ndk: {
+            enabled: false,
+        },
+        rust: {
+            enabled: false,
+        },
+    },
+    srcs: [
+        ":framework-media-quality-sources-aidl",
+    ],
+}
