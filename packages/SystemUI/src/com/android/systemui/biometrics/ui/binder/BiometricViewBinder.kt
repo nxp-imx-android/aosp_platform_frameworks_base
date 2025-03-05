@@ -397,7 +397,7 @@ object BiometricViewBinder {
                 // Talkback directional guidance
                 udfpsGuidanceView.setOnHoverListener { _, event ->
                     launch {
-                        viewModel.onAnnounceAccessibilityHint(
+                        viewModel.onUpdateAccessibilityHint(
                             event,
                             accessibilityManager.isTouchExplorationEnabled,
                         )
@@ -406,7 +406,9 @@ object BiometricViewBinder {
                 }
                 launch {
                     viewModel.accessibilityHint.collect { message ->
-                        if (message.isNotBlank()) view.announceForAccessibility(message)
+                        if (message.isNotBlank()) {
+                            udfpsGuidanceView.contentDescription = message
+                        }
                     }
                 }
 
