@@ -384,6 +384,12 @@ public class AnimationHandler {
         });
     }
 
+    void removePendingEndAnimationCallback(Runnable notifyEndAnimation) {
+        if (mPendingEndAnimationListeners != null) {
+            mPendingEndAnimationListeners.remove(notifyEndAnimation);
+        }
+    }
+
     private void doAnimationFrame(long frameTime) {
         long currentTime = SystemClock.uptimeMillis();
         final int size = mAnimationCallbacks.size();
