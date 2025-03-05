@@ -763,7 +763,9 @@ class DesktopTasksController(
     fun minimizeTask(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
         val wct = WindowContainerTransaction()
 
-        val isMinimizingToPip = taskInfo.pictureInPictureParams?.isAutoEnterEnabled() ?: false
+        val isMinimizingToPip =
+            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
+                (taskInfo.pictureInPictureParams?.isAutoEnterEnabled() ?: false)
         // If task is going to PiP, start a PiP transition instead of a minimize transition
         if (isMinimizingToPip) {
             val requestInfo =
