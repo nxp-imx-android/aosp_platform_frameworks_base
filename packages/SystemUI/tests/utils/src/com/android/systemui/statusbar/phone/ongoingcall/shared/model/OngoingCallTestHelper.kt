@@ -38,6 +38,7 @@ fun inCallModel(
     notificationKey: String = "test",
     appName: String = "",
     promotedContent: PromotedNotificationContentModel? = null,
+    isAppVisible: Boolean = false,
 ) =
     OngoingCallModel.InCall(
         startTimeMs,
@@ -46,6 +47,7 @@ fun inCallModel(
         notificationKey,
         appName,
         promotedContent,
+        isAppVisible,
     )
 
 object OngoingCallTestHelper {

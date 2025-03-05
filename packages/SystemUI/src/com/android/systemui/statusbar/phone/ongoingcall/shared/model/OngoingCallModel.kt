@@ -26,25 +26,6 @@ sealed interface OngoingCallModel {
     data object NoCall : OngoingCallModel
 
     /**
-     * There is an ongoing call but the call app is currently visible, so we don't need to show the
-     * chip.
-     *
-     * @property startTimeMs see [InCall.startTimeMs].
-     * @property notificationIconView see [InCall.notificationIconView].
-     * @property intent see [InCall.intent].
-     * @property appName see [InCall.appName].
-     * @property promotedContent see [InCall.promotedContent].
-     */
-    data class InCallWithVisibleApp(
-        val startTimeMs: Long,
-        val notificationIconView: StatusBarIconView?,
-        val intent: PendingIntent?,
-        val notificationKey: String,
-        val appName: String,
-        val promotedContent: PromotedNotificationContentModel?,
-    ) : OngoingCallModel
-
-    /**
      * There *is* an ongoing call.
      *
      * @property startTimeMs the time that the phone call started, based on the notification's
@@ -58,6 +39,7 @@ sealed interface OngoingCallModel {
      * @property appName the user-readable name of the app that posted the call notification.
      * @property promotedContent if the call notification also meets promoted notification criteria,
      *   this field is filled in with the content related to promotion. Otherwise null.
+     * @property isAppVisible whether the app to which the call belongs is currently visible.
      */
     data class InCall(
         val startTimeMs: Long,
@@ -66,5 +48,6 @@ sealed interface OngoingCallModel {
         val notificationKey: String,
         val appName: String,
         val promotedContent: PromotedNotificationContentModel?,
+        val isAppVisible: Boolean,
     ) : OngoingCallModel
 }

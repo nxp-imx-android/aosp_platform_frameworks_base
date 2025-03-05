@@ -267,7 +267,8 @@ constructor(
                         if (StatusBarChipsModernization.isEnabled) {
                             ongoingProcessRequiresStatusBarVisible
                         } else {
-                            ongoingCallStateLegacy is OngoingCallModel.InCall
+                            ongoingCallStateLegacy is OngoingCallModel.InCall &&
+                                !ongoingCallStateLegacy.isAppVisible
                         }
                     val statusBarMode =
                         toBarMode(
