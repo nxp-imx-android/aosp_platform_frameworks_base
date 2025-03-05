@@ -25,7 +25,7 @@
 
     <include layout="@layout/notification_2025_template_header" />
 
-    <include layout="@layout/notification_template_right_icon" />
+    <include layout="@layout/notification_2025_right_icon" />
 
     <LinearLayout
         android:id="@+id/notification_action_list_margin_target"

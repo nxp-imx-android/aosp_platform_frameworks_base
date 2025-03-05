@@ -129,6 +129,16 @@ public class NotificationExpandButton extends FrameLayout {
         updateExpandedState();
     }
 
+    /**
+     * Adjust the padding at the start of the view based on the layout direction (RTL/LTR).
+     * This is needed because RemoteViews don't have an equivalent for
+     * {@link this#setPaddingRelative}.
+     */
+    @RemotableViewMethod
+    public void setStartPadding(int startPadding) {
+        setPaddingRelative(startPadding, getPaddingTop(), getPaddingEnd(), getPaddingBottom());
+    }
+
     private void updateExpandedState() {
         int drawableId;
         int contentDescriptionId;

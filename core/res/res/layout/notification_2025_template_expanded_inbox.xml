@@ -130,5 +130,5 @@
             android:layout_marginTop="@dimen/notification_content_margin" />
         <include layout="@layout/notification_material_action_list" />
     </LinearLayout>
-    <include layout="@layout/notification_template_right_icon" />
+    <include layout="@layout/notification_2025_right_icon" />
 </FrameLayout>
