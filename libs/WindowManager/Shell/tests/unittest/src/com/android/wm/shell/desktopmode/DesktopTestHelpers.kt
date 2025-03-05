@@ -41,6 +41,7 @@ object DesktopTestHelpers {
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_FREEFORM)
             .setLastActiveTime(100)
+            .setUserId(DEFAULT_USER_ID)
             .apply { bounds?.let { setBounds(it) } }
             .build()
 
@@ -50,6 +51,7 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+            .setUserId(DEFAULT_USER_ID)
             .setLastActiveTime(100)
 
     /** Create a task that has windowing mode set to [WINDOWING_MODE_FULLSCREEN] */
@@ -63,6 +65,7 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+            .setUserId(DEFAULT_USER_ID)
             .setLastActiveTime(100)
             .build()
 
@@ -72,6 +75,7 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_HOME)
             .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+            .setUserId(DEFAULT_USER_ID)
             .setLastActiveTime(100)
             .build()
 
@@ -91,4 +95,6 @@ object DesktopTestHelpers {
         createSystemModalTask().apply {
             baseActivity = ComponentName("com.test.dummypackage", "TestClass")
         }
+
+    const val DEFAULT_USER_ID = 10
 }
