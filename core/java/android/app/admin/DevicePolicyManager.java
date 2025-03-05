@@ -4025,9 +4025,13 @@ public class DevicePolicyManager {
     public static final int EXEMPT_FROM_SUSPENSION =  0;
 
     /**
-     * Prevent an app from dismissible notifications. Starting from Android U, notifications with
-     * the ongoing parameter can be dismissed by a user on an unlocked device. An app with
-     * this exemption can create non-dismissible notifications.
+     * Allows an app to create non-dismissible notifications. Starting from Android U, notifications
+     * with the {@link android.app.Notification.Builder#setOngoing(boolean)} parameter can be
+     * dismissed by a user on an unlocked device. An app with this exemption can create
+     * non-dismissible notifications.
+     *
+     * <p>In spite of the name, this exemption only affects non-dismissible notifications,
+     * and has no impact on dismissible notifications.
      *
      * @hide
      */
