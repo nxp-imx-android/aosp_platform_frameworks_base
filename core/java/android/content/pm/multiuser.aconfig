@@ -617,8 +617,8 @@ flag {
 }
 
 flag {
-     namespace: "multi_user"
      name: "logout_user_api"
+     namespace: "multiuser"
      description: "Add API to logout user"
      bug: "350045389"
 }
