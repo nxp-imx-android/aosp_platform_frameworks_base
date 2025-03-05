@@ -69,9 +69,9 @@ class DisplayTopologyCoordinator {
     private final SparseArray<String> mDisplayIdToUniqueIdMapping = new SparseArray<>();
 
     /**
-     * Check if extended displays are enabled. If not, a topology is not needed.
+     * Check if extended displays are allowed. If not, a topology is not needed.
      */
-    private final BooleanSupplier mIsExtendedDisplayEnabled;
+    private final BooleanSupplier mIsExtendedDisplayAllowed;
 
     /**
      * Callback used to send topology updates.
@@ -83,21 +83,21 @@ class DisplayTopologyCoordinator {
     private final DisplayManagerService.SyncRoot mSyncRoot;
     private final Runnable mTopologySavedCallback;
 
-    DisplayTopologyCoordinator(BooleanSupplier isExtendedDisplayEnabled,
+    DisplayTopologyCoordinator(BooleanSupplier isExtendedDisplayAllowed,
             Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> onTopologyChangedCallback,
             Executor topologyChangeExecutor, DisplayManagerService.SyncRoot syncRoot,
             Runnable topologySavedCallback) {
-        this(new Injector(), isExtendedDisplayEnabled, onTopologyChangedCallback,
+        this(new Injector(), isExtendedDisplayAllowed, onTopologyChangedCallback,
                 topologyChangeExecutor, syncRoot, topologySavedCallback);
     }
 
     @VisibleForTesting
-    DisplayTopologyCoordinator(Injector injector, BooleanSupplier isExtendedDisplayEnabled,
+    DisplayTopologyCoordinator(Injector injector, BooleanSupplier isExtendedDisplayAllowed,
             Consumer<Pair<DisplayTopology, DisplayTopologyGraph>> onTopologyChangedCallback,
             Executor topologyChangeExecutor, DisplayManagerService.SyncRoot syncRoot,
             Runnable topologySavedCallback) {
         mTopology = injector.getTopology();
-        mIsExtendedDisplayEnabled = isExtendedDisplayEnabled;
+        mIsExtendedDisplayAllowed = isExtendedDisplayAllowed;
         mOnTopologyChangedCallback = onTopologyChangedCallback;
         mTopologyChangeExecutor = topologyChangeExecutor;
         mSyncRoot = syncRoot;
@@ -262,9 +262,9 @@ class DisplayTopologyCoordinator {
             return false;
         }
         if ((info.type == Display.TYPE_EXTERNAL || info.type == Display.TYPE_OVERLAY)
-                && !mIsExtendedDisplayEnabled.getAsBoolean()) {
+                && !mIsExtendedDisplayAllowed.getAsBoolean()) {
             Slog.d(TAG, "Display " + info.displayId + " not allowed in topology because "
-                    + "type is EXTERNAL or OVERLAY and !mIsExtendedDisplayEnabled");
+                    + "type is EXTERNAL or OVERLAY and !mIsExtendedDisplayAllowed");
             return false;
         }
         return true;
