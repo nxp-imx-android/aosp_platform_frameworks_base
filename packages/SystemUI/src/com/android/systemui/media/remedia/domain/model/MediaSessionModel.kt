@@ -20,6 +20,7 @@ import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
+import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 
 /** Data model representing a media session. */
@@ -33,6 +34,8 @@ interface MediaSessionModel {
     val appIcon: Icon
 
     val background: ImageBitmap?
+
+    val colorScheme: MediaColorScheme
 
     val title: String
 

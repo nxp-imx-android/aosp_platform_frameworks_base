@@ -20,6 +20,7 @@ package com.android.systemui.media.remedia.ui.compose
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -66,6 +67,7 @@ import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
@@ -105,7 +107,6 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
-import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
@@ -114,6 +115,7 @@ import com.android.systemui.common.ui.compose.load
 import com.android.systemui.communal.ui.compose.extensions.detectLongPressGesture
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
+import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCardGutsViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaCardViewModel
@@ -275,6 +277,22 @@ private fun Card(
     }
 }
 
+@Composable
+private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme): AnimatedColorScheme {
+    val animatedPrimary by animateColorAsState(targetValue = colorScheme.primary)
+    val animatedOnPrimary by animateColorAsState(targetValue = colorScheme.onPrimary)
+
+    return remember {
+        object : AnimatedColorScheme {
+            override val primary: Color
+                get() = animatedPrimary
+
+            override val onPrimary: Color
+                get() = animatedOnPrimary
+        }
+    }
+}
+
 /**
  * Renders the foreground of a card, including all UI content and the internal "guts".
  *
@@ -297,6 +315,8 @@ private fun ContentScope.CardForeground(
     val isGutsVisible = viewModel.guts.isVisible
     LaunchedEffect(isGutsVisible) { gutsAlphaAnimatable.animateTo(if (isGutsVisible) 1f else 0f) }
 
+    val colorScheme = rememberAnimatedColorScheme(viewModel.colorScheme)
+
     // Use a custom layout to measure the content even if the content is being hidden because the
     // internal guts are showing. This is needed because only the content knows the size the of the
     // card and the guts are set to be the same size of the content.
@@ -306,6 +326,7 @@ private fun ContentScope.CardForeground(
                 viewModel = viewModel,
                 threeRows = threeRows,
                 fillHeight = fillHeight,
+                colorScheme = colorScheme,
                 modifier =
                     Modifier.graphicsLayer {
                         compositingStrategy = CompositingStrategy.ModulateAlpha
@@ -315,6 +336,7 @@ private fun ContentScope.CardForeground(
 
             CardGuts(
                 viewModel = viewModel.guts,
+                colorScheme = colorScheme,
                 modifier =
                     Modifier.graphicsLayer {
                         compositingStrategy = CompositingStrategy.ModulateAlpha
@@ -349,6 +371,7 @@ private fun ContentScope.CardForegroundContent(
     viewModel: MediaCardViewModel,
     threeRows: Boolean,
     fillHeight: Boolean,
+    colorScheme: AnimatedColorScheme,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -366,12 +389,16 @@ private fun ContentScope.CardForegroundContent(
             // Icon.
             Icon(
                 icon = viewModel.icon,
-                tint = LocalAndroidColorScheme.current.primaryFixed,
+                tint = colorScheme.primary,
                 modifier = Modifier.size(24.dp).clip(CircleShape),
             )
             Spacer(modifier = Modifier.weight(1f))
             viewModel.outputSwitcherChips.fastForEach { chip ->
-                OutputSwitcherChip(viewModel = chip, modifier = Modifier.padding(start = 8.dp))
+                OutputSwitcherChip(
+                    viewModel = chip,
+                    colorScheme = colorScheme,
+                    modifier = Modifier.padding(start = 8.dp),
+                )
             }
         }
 
@@ -402,8 +429,8 @@ private fun ContentScope.CardForegroundContent(
                         PlayPauseAction(
                             viewModel = checkNotNull(viewModel.playPauseAction),
                             buttonWidth = 48.dp,
-                            buttonColor = LocalAndroidColorScheme.current.primaryFixed,
-                            iconColor = LocalAndroidColorScheme.current.onPrimaryFixed,
+                            buttonColor = colorScheme.primary,
+                            iconColor = colorScheme.onPrimary,
                             buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
                         )
                     }
@@ -470,8 +497,8 @@ private fun ContentScope.CardForegroundContent(
                     PlayPauseAction(
                         viewModel = checkNotNull(viewModel.playPauseAction),
                         buttonWidth = 48.dp,
-                        buttonColor = LocalAndroidColorScheme.current.primaryFixed,
-                        iconColor = LocalAndroidColorScheme.current.onPrimaryFixed,
+                        buttonColor = colorScheme.primary,
+                        iconColor = colorScheme.onPrimary,
                         buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
                     )
                 }
@@ -787,7 +814,11 @@ private fun SeekBarTrack(
 
 /** Renders the internal "guts" of a card. */
 @Composable
-private fun CardGuts(viewModel: MediaCardGutsViewModel, modifier: Modifier = Modifier) {
+private fun CardGuts(
+    viewModel: MediaCardGutsViewModel,
+    colorScheme: AnimatedColorScheme,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier =
             modifier.pointerInput(Unit) { detectLongPressGesture { viewModel.onLongClick() } }
@@ -822,7 +853,7 @@ private fun CardGuts(viewModel: MediaCardGutsViewModel, modifier: Modifier = Mod
                 ) {
                     Text(
                         text = checkNotNull(viewModel.primaryAction.text),
-                        color = LocalAndroidColorScheme.current.onPrimaryFixed,
+                        color = colorScheme.onPrimary,
                     )
                 }
 
@@ -880,28 +911,22 @@ private fun ContentScope.Metadata(
 @Composable
 private fun OutputSwitcherChip(
     viewModel: MediaOutputSwitcherChipViewModel,
+    colorScheme: AnimatedColorScheme,
     modifier: Modifier = Modifier,
 ) {
     PlatformButton(
         onClick = viewModel.onClick,
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = LocalAndroidColorScheme.current.primaryFixed
-            ),
+        colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
         contentPadding = PaddingValues(start = 8.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
         modifier = modifier.height(24.dp),
     ) {
-        Icon(
-            icon = viewModel.icon,
-            tint = LocalAndroidColorScheme.current.onPrimaryFixed,
-            modifier = Modifier.size(16.dp),
-        )
+        Icon(icon = viewModel.icon, tint = colorScheme.onPrimary, modifier = Modifier.size(16.dp))
         viewModel.text?.let {
             Spacer(Modifier.size(4.dp))
             Text(
                 text = viewModel.text,
                 style = MaterialTheme.typography.bodySmall,
-                color = LocalAndroidColorScheme.current.onPrimaryFixed,
+                color = colorScheme.onPrimary,
             )
         }
     }
@@ -1029,6 +1054,12 @@ data class MediaUiBehavior(
     val carouselVisibility: MediaCarouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
     val isFalsingProtectionNeeded: Boolean = false,
 )
+
+@Stable
+private interface AnimatedColorScheme {
+    val primary: Color
+    val onPrimary: Color
+}
 
 private object Media {
 

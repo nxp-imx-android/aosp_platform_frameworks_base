@@ -29,6 +29,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.media.remedia.domain.interactor.MediaInteractor
 import com.android.systemui.media.remedia.domain.model.MediaActionModel
+import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
 import com.android.systemui.res.R
 import dagger.assisted.Assisted
@@ -65,6 +66,9 @@ constructor(
                 override val icon = session.appIcon
                 override val background: ImageBitmap?
                     get() = session.background
+
+                override val colorScheme: MediaColorScheme
+                    get() = session.colorScheme
 
                 override val title = session.title
                 override val subtitle = session.subtitle
