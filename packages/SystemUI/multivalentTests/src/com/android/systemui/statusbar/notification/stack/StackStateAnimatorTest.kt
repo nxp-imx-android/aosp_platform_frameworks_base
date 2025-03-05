@@ -219,7 +219,6 @@ class StackStateAnimatorTest : SysuiTestCase() {
             )
     }
 
-    @DisableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     @Test
     @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
     fun startAnimationForEvents_headsUpFromBottom_startsHeadsUpAppearAnim_flagOn() {
@@ -246,7 +245,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    @DisableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME, Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     fun startAnimationForEvents_startsHeadsUpDisappearAnim_flagOff() {
         val disappearDuration = ANIMATION_DURATION_HEADS_UP_DISAPPEAR.toLong()
         val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_DISAPPEAR)
@@ -277,6 +276,7 @@ class StackStateAnimatorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NotificationsHunSharedAnimationValues.FLAG_NAME)
+    @DisableFlags(Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     fun startAnimationForEvents_startsHeadsUpDisappearAnim_flagOn() {
         val disappearDuration = ANIMATION_DURATION_HEADS_UP_DISAPPEAR.toLong()
         val event = AnimationEvent(view, AnimationEvent.ANIMATION_TYPE_HEADS_UP_DISAPPEAR)
