@@ -11,9 +11,9 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
-package com.android.systemui.statusbar;
+package com.android.systemui.media;
 
 import static com.android.systemui.Flags.mediaControlsUserInitiatedDeleteintent;
 
@@ -40,6 +40,8 @@ import com.android.systemui.dump.DumpManager;
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager;
 import com.android.systemui.media.controls.shared.model.MediaData;
 import com.android.systemui.media.controls.shared.model.SmartspaceMediaData;
+import com.android.systemui.statusbar.NotificationPresenter;
+import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.dagger.CentralSurfacesModule;
 import com.android.systemui.statusbar.notification.collection.NotifCollection;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;

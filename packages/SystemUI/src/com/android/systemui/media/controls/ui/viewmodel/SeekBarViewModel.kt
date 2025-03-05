@@ -39,8 +39,8 @@ import androidx.lifecycle.MutableLiveData
 import com.android.systemui.Flags
 import com.android.systemui.classifier.Classifier.MEDIA_SEEKBAR
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.plugins.FalsingManager
-import com.android.systemui.statusbar.NotificationMediaManager
 import com.android.systemui.util.concurrency.RepeatableExecutor
 import java.util.Locale
 import javax.inject.Inject
