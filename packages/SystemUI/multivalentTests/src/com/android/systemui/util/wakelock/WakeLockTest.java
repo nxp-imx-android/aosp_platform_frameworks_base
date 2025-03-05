@@ -93,6 +93,6 @@ public class WakeLockTest extends SysuiTestCase {
     @Test
     public void prodBuild_wakeLock_releaseWithoutAcquire_noThrow() {
         // shouldn't throw an exception on production builds
-        LogAssertKt.assertLogsWtf(() -> mWakeLock.release(WHY));
+        LogAssertKt.assertRunnableLogsWtf(() -> mWakeLock.release(WHY));
     }
 }

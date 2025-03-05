@@ -142,7 +142,7 @@ public class PluginInstanceTest extends SysuiTestCase {
         mPluginInstanceFactory.create(
                 mContext, mAppInfo, wrongVersionTestPluginComponentName,
                 TestPlugin.class, mPluginListener);
-        LogAssertKt.assertLogsWtf(()-> {
+        LogAssertKt.assertRunnableLogsWtf(()-> {
             mPluginInstance.onCreate();
         });
         assertTrue(mPluginInstance.hasError());
@@ -195,7 +195,7 @@ public class PluginInstanceTest extends SysuiTestCase {
         mPluginInstance.onCreate();
         assertFalse(mPluginInstance.hasError());
 
-        LogAssertKt.assertLogsWtf(()-> {
+        LogAssertKt.assertRunnableLogsWtf(()-> {
             Object result = mPluginInstance.getPlugin().methodThrowsError();
             assertNotNull(result);  // Wrapper function should return non-null;
         });
