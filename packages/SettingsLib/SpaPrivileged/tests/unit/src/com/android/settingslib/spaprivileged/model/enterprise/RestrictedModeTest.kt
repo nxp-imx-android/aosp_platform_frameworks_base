@@ -77,8 +77,8 @@ class RestrictedModeTest {
             if (RestrictedLockUtilsInternal.isPolicyEnforcedByAdvancedProtection(context,
                     RESTRICTION, userId)) {
                 return when (advancedProtectionStringId) {
-                    R.string.enabled_by_advanced_protection -> ENABLED_BY_ADVANCED_PROTECTION
-                    R.string.disabled_by_advanced_protection -> DISABLED_BY_ADVANCED_PROTECTION
+                    com.android.settingslib.R.string.enabled -> ENABLED
+                    com.android.settingslib.R.string.disabled -> DISABLED
                     else -> ""
                 }
             }
@@ -129,7 +129,7 @@ class RestrictedModeTest {
 
         val summary = blockedByAdmin.getSummary(true)
 
-        assertThat(summary).isEqualTo(ENABLED_BY_ADVANCED_PROTECTION)
+        assertThat(summary).isEqualTo(ENABLED)
     }
 
     @RequiresFlagsEnabled(Flags.FLAG_AAPM_API)
@@ -148,7 +148,7 @@ class RestrictedModeTest {
 
         val summary = blockedByAdmin.getSummary(false)
 
-        assertThat(summary).isEqualTo(DISABLED_BY_ADVANCED_PROTECTION)
+        assertThat(summary).isEqualTo(DISABLED)
     }
 
     @RequiresFlagsEnabled(Flags.FLAG_AAPM_API)
@@ -202,7 +202,7 @@ class RestrictedModeTest {
 
         const val ENABLED_BY_ADMIN = "Enabled by admin"
         const val DISABLED_BY_ADMIN = "Disabled by admin"
-        const val ENABLED_BY_ADVANCED_PROTECTION = "Enabled by advanced protection"
-        const val DISABLED_BY_ADVANCED_PROTECTION = "Disabled by advanced protection"
+        const val ENABLED = "Enabled"
+        const val DISABLED = "Disabled"
     }
 }
