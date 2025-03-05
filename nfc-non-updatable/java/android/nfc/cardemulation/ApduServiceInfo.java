@@ -763,7 +763,6 @@ public final class ApduServiceInfo implements Parcelable {
      * Returns whether the NFC stack should default to observe mode when this service is preferred.
      * @return whether the NFC stack should default to observe mode when this service is preferred
      */
-    @FlaggedApi(Flags.FLAG_NFC_OBSERVE_MODE)
     public boolean shouldDefaultToObserveMode() {
         return mShouldDefaultToObserveMode;
     }
@@ -773,7 +772,6 @@ public final class ApduServiceInfo implements Parcelable {
      * @param shouldDefaultToObserveMode whether the NFC stack should default to observe mode when
      *                                  this service is preferred
      */
-    @FlaggedApi(Flags.FLAG_NFC_OBSERVE_MODE)
     public void setShouldDefaultToObserveMode(boolean shouldDefaultToObserveMode) {
         mShouldDefaultToObserveMode = shouldDefaultToObserveMode;
     }
