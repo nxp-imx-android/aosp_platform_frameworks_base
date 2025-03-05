@@ -301,6 +301,15 @@ flag {
   }
 }
 
+flag {
+    name: "notification_skip_silent_updates"
+    namespace: "systemui"
+    description: "Do not notify HeadsUpManager for silent updates."
+    bug: "401068530"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
 
 flag {
     name: "scene_container"
