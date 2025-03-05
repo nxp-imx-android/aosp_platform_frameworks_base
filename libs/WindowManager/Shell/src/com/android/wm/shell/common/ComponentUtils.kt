@@ -25,7 +25,8 @@ import com.android.wm.shell.ShellTaskOrganizer
 object ComponentUtils {
     /** Retrieves the package name from an [Intent].  */
     @JvmStatic
-    fun getPackageName(intent: Intent?): String? = intent?.component?.packageName
+    fun getPackageName(intent: Intent?): String? =
+        intent?.component?.packageName ?: intent?.`package`
 
     /** Retrieves the package name from a [PendingIntent].  */
     @JvmStatic
