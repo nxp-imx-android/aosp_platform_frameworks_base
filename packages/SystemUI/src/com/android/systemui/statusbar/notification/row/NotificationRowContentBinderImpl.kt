@@ -1293,6 +1293,7 @@ constructor(
                         runningInflations,
                         e,
                         row,
+                        entry,
                         callback,
                         logger,
                         "applying view synchronously",
@@ -1318,6 +1319,7 @@ constructor(
                                 runningInflations,
                                 InflationException(invalidReason),
                                 row,
+                                entry,
                                 callback,
                                 logger,
                                 "applied invalid view",
@@ -1377,6 +1379,7 @@ constructor(
                                 runningInflations,
                                 e,
                                 row,
+                                entry,
                                 callback,
                                 logger,
                                 "applying view",
@@ -1480,6 +1483,7 @@ constructor(
             runningInflations: HashMap<Int, CancellationSignal>,
             e: Exception,
             notification: ExpandableNotificationRow?,
+            entry: NotificationEntry,
             callback: InflationCallback?,
             logger: NotificationRowContentBinderLogger,
             logContext: String,
@@ -1487,7 +1491,7 @@ constructor(
             Assert.isMainThread()
             logger.logAsyncTaskException(notification?.loggingKey, logContext, e)
             runningInflations.values.forEach(Consumer { obj: CancellationSignal -> obj.cancel() })
-            callback?.handleInflationException(notification?.entry, e)
+            callback?.handleInflationException(entry, e)
         }
 
         /**
