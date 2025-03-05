@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
+import android.util.TypedValue
 import android.view.View
 import com.android.wm.shell.shared.R
 
@@ -37,13 +38,20 @@ class DropTargetView(context: Context) : View(context) {
     private val strokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = context.getColor(com.android.internal.R.color.materialColorPrimaryContainer)
         style = Paint.Style.STROKE
-        strokeWidth = context.resources.getDimensionPixelSize(R.dimen.drop_target_stroke).toFloat()
+        strokeWidth = 1.dpToPx()
     }
 
-    private val cornerRadius = context.resources.getDimensionPixelSize(
-        R.dimen.drop_target_radius).toFloat()
+    private val cornerRadius = 28.dpToPx()
 
     private val rect = RectF(0f, 0f, 0f, 0f)
+
+    // TODO b/396539130: Use shared xml resources once we can access them in launcher
+    private fun Int.dpToPx() =
+        TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                this.toFloat(),
+                context.resources.displayMetrics
+            )
 
     override fun onDraw(canvas: Canvas) {
         canvas.save()
