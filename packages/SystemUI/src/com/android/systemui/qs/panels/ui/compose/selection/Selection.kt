@@ -59,12 +59,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.size
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BADGE_ANGLE_RAD
+import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeIconSize
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeSize
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeXOffset
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeYOffset
@@ -149,16 +151,14 @@ fun InteractiveTileContainer(
                         onClick = onClick,
                     )
             ) {
+                val size = with(LocalDensity.current) { BadgeIconSize.toDp() }
                 Icon(
                     Icons.Default.Remove,
                     contentDescription = null,
                     modifier =
-                        Modifier.size(
-                                width = { decorationSize.width.roundToInt() },
-                                height = { decorationSize.height.roundToInt() },
-                            )
-                            .align(Alignment.Center)
-                            .graphicsLayer { this.alpha = badgeIconAlpha },
+                        Modifier.size(size).align(Alignment.Center).graphicsLayer {
+                            this.alpha = badgeIconAlpha
+                        },
                 )
             }
         }
@@ -219,12 +219,13 @@ fun StaticTileBadge(
                 }
         ) {
             val secondaryColor = MaterialTheme.colorScheme.secondary
+            val size = with(LocalDensity.current) { BadgeIconSize.toDp() }
             Icon(
                 icon,
                 contentDescription = contentDescription,
                 modifier =
-                    Modifier.size(BadgeSize).align(Alignment.Center).drawBehind {
-                        drawCircle(secondaryColor)
+                    Modifier.size(size).align(Alignment.Center).drawBehind {
+                        drawCircle(secondaryColor, radius = BadgeSize.toPx() / 2)
                     },
             )
         }
@@ -338,6 +339,7 @@ private fun offsetForAngle(angle: Float, radius: Float, center: Offset): Offset 
 private object SelectionDefaults {
     val SelectedBorderWidth = 2.dp
     val BadgeSize = 24.dp
+    val BadgeIconSize = 16.sp
     val BadgeXOffset = -4.dp
     val BadgeYOffset = 4.dp
     val ResizingPillWidth = 8.dp
