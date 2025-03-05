@@ -3374,14 +3374,13 @@ public class TelephonyManager {
                 return telephony.getDataNetworkTypeForSubscriber(subId, getOpPackageName(),
                         getAttributionTag());
             } else {
-                // This can happen when the ITelephony interface is not up yet.
+                Log.e(TAG, "getDataNetworkType: ITelephony interface is not up yet");
                 return NETWORK_TYPE_UNKNOWN;
             }
-        } catch(RemoteException ex) {
-            // This shouldn't happen in the normal case
-            return NETWORK_TYPE_UNKNOWN;
-        } catch (NullPointerException ex) {
-            // This could happen before phone restarts due to crashing
+        } catch (RemoteException // Shouldn't happen in the normal case
+                | NullPointerException ex // Could happen before phone restarts due to crashing
+        ) {
+            Log.e(TAG, "getDataNetworkType: " + ex.getMessage());
             return NETWORK_TYPE_UNKNOWN;
         }
     }
