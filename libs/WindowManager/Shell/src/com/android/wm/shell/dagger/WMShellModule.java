@@ -726,9 +726,11 @@ public abstract class WMShellModule {
     static DesksOrganizer provideDesksOrganizer(
             @NonNull ShellInit shellInit,
             @NonNull ShellCommandHandler shellCommandHandler,
-            @NonNull ShellTaskOrganizer shellTaskOrganizer
+            @NonNull ShellTaskOrganizer shellTaskOrganizer,
+            @NonNull LaunchAdjacentController launchAdjacentController
     ) {
-        return new RootTaskDesksOrganizer(shellInit, shellCommandHandler, shellTaskOrganizer);
+        return new RootTaskDesksOrganizer(shellInit, shellCommandHandler, shellTaskOrganizer,
+                launchAdjacentController);
     }
 
     @WMSingleton

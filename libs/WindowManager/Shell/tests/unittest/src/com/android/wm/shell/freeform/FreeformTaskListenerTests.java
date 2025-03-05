@@ -41,6 +41,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.dx.mockito.inline.extended.StaticMockitoSession;
+import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
@@ -198,6 +199,7 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void visibilityTaskChanged_visible_setLaunchAdjacentDisabled() {
         ActivityManager.RunningTaskInfo task =
                 new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();
@@ -209,6 +211,7 @@ public final class FreeformTaskListenerTests extends ShellTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void visibilityTaskChanged_notVisible_setLaunchAdjacentEnabled() {
         ActivityManager.RunningTaskInfo task =
                 new TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FREEFORM).build();

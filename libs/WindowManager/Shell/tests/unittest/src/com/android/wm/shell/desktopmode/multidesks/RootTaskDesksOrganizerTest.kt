@@ -31,6 +31,7 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskMinimizationRoot
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskRoot
@@ -60,13 +61,19 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     private val testShellInit = ShellInit(testExecutor)
     private val mockShellCommandHandler = mock<ShellCommandHandler>()
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val launchAdjacentController = LaunchAdjacentController(mock())
 
     private lateinit var organizer: RootTaskDesksOrganizer
 
     @Before
     fun setUp() {
         organizer =
-            RootTaskDesksOrganizer(testShellInit, mockShellCommandHandler, mockShellTaskOrganizer)
+            RootTaskDesksOrganizer(
+                testShellInit,
+                mockShellCommandHandler,
+                mockShellTaskOrganizer,
+                launchAdjacentController,
+            )
     }
 
     @Test
@@ -607,14 +614,101 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             .isNotNull()
     }
 
+    @Test
+    fun onTaskAppeared_visibleDesk_onlyDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskAppeared_invisibleDesk_onlyDesk_enablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = false
+
+        createDesk(visible = false)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isTrue()
+    }
+
+    @Test
+    fun onTaskAppeared_invisibleDesk_otherVisibleDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+        createDesk(visible = false)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskInfoChanged_deskBecomesVisible_onlyDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        val desk = createDesk(visible = false)
+        desk.deskRoot.taskInfo.isVisible = true
+        organizer.onTaskInfoChanged(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskInfoChanged_deskBecomesInvisible_onlyDesk_enablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = false
+
+        val desk = createDesk(visible = true)
+        desk.deskRoot.taskInfo.isVisible = false
+        organizer.onTaskInfoChanged(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isTrue()
+    }
+
+    @Test
+    fun onTaskInfoChanged_deskBecomesInvisible_otherVisibleDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+        val desk = createDesk(visible = true)
+        desk.deskRoot.taskInfo.isVisible = false
+        organizer.onTaskInfoChanged(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskVanished_visibleDeskDisappears_onlyDesk_enablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = false
+
+        val desk = createDesk(visible = true)
+        organizer.onTaskVanished(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isTrue()
+    }
+
+    @Test
+    fun onTaskVanished_visibleDeskDisappears_otherDeskVisible_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+        val desk = createDesk(visible = true)
+        organizer.onTaskVanished(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
     private data class DeskRoots(
         val deskRoot: DeskRoot,
         val minimizationRoot: DeskMinimizationRoot,
     )
 
-    private fun createDesk(): DeskRoots {
+    private fun createDesk(visible: Boolean = true): DeskRoots {
         organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
+        val freeformRoot =
+            createFreeformTask().apply {
+                parentTaskId = -1
+                isVisible = visible
+            }
         organizer.onTaskAppeared(freeformRoot, SurfaceControl())
         val minimizationRoot = createFreeformTask().apply { parentTaskId = -1 }
         organizer.onTaskAppeared(minimizationRoot, SurfaceControl())
