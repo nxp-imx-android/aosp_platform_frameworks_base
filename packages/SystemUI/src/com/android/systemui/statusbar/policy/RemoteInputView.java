@@ -461,6 +461,7 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
                 }
             }
         }
+        unregisterBackCallback();
 
         if (logClose) {
             mUiEventLogger.logWithInstanceId(
@@ -558,11 +559,6 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
 
     @Override
     public void onVisibilityAggregated(boolean isVisible) {
-        if (isVisible) {
-            registerBackCallback();
-        } else {
-            unregisterBackCallback();
-        }
         super.onVisibilityAggregated(isVisible);
         mEditText.setEnabled(isVisible && !mSending);
     }
@@ -623,6 +619,7 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
         setAttachment(mEntry.remoteInputAttachment);
 
         updateSendButton();
+        registerBackCallback();
     }
 
     public void onNotificationUpdateOrReset() {
