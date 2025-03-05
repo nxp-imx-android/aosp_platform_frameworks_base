@@ -6470,12 +6470,12 @@ public class Notification implements Parcelable
             contentView.setViewVisibility(R.id.notification_material_reply_text_3, View.GONE);
             contentView.setTextViewText(R.id.notification_material_reply_text_3, null);
 
-            // This may get erased by bindSnoozeAction
+            // This may get erased by bindSnoozeAction, or if we're showing the bubble icon
             contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                     RemoteViews.MARGIN_BOTTOM, R.dimen.notification_content_margin);
         }
 
-        private void bindSnoozeAction(RemoteViews contentView, StandardTemplateParams p) {
+        private boolean bindSnoozeAction(RemoteViews contentView, StandardTemplateParams p) {
             boolean hideSnoozeButton = mN.isFgsOrUij()
                     || mN.fullScreenIntent != null
                     || isBackgroundColorized(p)
@@ -6493,6 +6493,7 @@ public class Notification implements Parcelable
                 contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                         RemoteViews.MARGIN_BOTTOM, 0);
             }
+            return snoozeEnabled;
         }
 
         private boolean isSnoozeSettingEnabled() {
@@ -6530,13 +6531,11 @@ public class Notification implements Parcelable
             RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
 
             resetStandardTemplateWithActions(contentView);
-            bindSnoozeAction(contentView, p);
+            boolean snoozeEnabled = bindSnoozeAction(contentView, p);
             // color the snooze and bubble actions with the theme color
             ColorStateList actionColor = ColorStateList.valueOf(getStandardActionColor(p));
             contentView.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
             contentView.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
-
-            boolean validRemoteInput = false;
 
             // In the UI, contextual actions appear separately from the standard actions, so we
             // filter them out here.
@@ -6565,32 +6564,49 @@ public class Notification implements Parcelable
                     contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
                 }
             }
-            contentView.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
+            if (!notificationsRedesignTemplates()) {
+                contentView.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
+            }
+
+            boolean validRemoteInput = false;
             if (numActions > 0 && !p.mHideActions) {
                 contentView.setViewVisibility(R.id.actions_container, View.VISIBLE);
                 contentView.setViewVisibility(R.id.actions, View.VISIBLE);
                 contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                         RemoteViews.MARGIN_BOTTOM, 0);
-                for (int i = 0; i < numActions; i++) {
-                    Action action = nonContextualActions.get(i);
-
-                    boolean actionHasValidInput = hasValidRemoteInput(action);
-                    validRemoteInput |= actionHasValidInput;
-
-                    final RemoteViews button = generateActionButton(action, emphasizedMode, p);
-                    if (actionHasValidInput && !emphasizedMode) {
-                        // Clear the drawable
-                        button.setInt(R.id.action0, "setBackgroundResource", 0);
+                if (notificationsRedesignTemplates()) {
+                    // No need for additional space under smart replies/smart actions.
+                    contentView.setViewLayoutMarginDimen(R.id.smart_reply_container,
+                            RemoteViews.MARGIN_BOTTOM, 0);
+                    if (emphasizedMode) {
+                        // Emphasized actions look similar to smart replies, so let's use the same
+                        // margins.
+                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                                RemoteViews.MARGIN_TOP,
+                                R.dimen.notification_2025_smart_reply_container_margin);
+                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                                RemoteViews.MARGIN_BOTTOM,
+                                R.dimen.notification_2025_smart_reply_container_margin);
+                    } else {
+                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                                RemoteViews.MARGIN_TOP, 0);
+                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                                RemoteViews.MARGIN_BOTTOM,
+                                R.dimen.notification_2025_action_list_margin_bottom);
                     }
-                    if (emphasizedMode && i > 0) {
-                        // Clear start margin from non-first buttons to reduce the gap between them.
-                        //  (8dp remaining gap is from all buttons' standard 4dp inset).
-                        button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
-                    }
-                    contentView.addView(R.id.actions, button);
                 }
+                validRemoteInput = populateActionsContainer(contentView, p, nonContextualActions,
+                        numActions, emphasizedMode);
             } else {
                 contentView.setViewVisibility(R.id.actions_container, View.GONE);
+                if (notificationsRedesignTemplates() && !snoozeEnabled) {
+                    // Make sure smart replies & smart actions have enough space at the bottom
+                    // (if present) when there are no actions. This should be set to 0 if we're
+                    // showing the snooze or bubble buttons.
+                    contentView.setViewLayoutMarginDimen(R.id.smart_reply_container,
+                            RemoteViews.MARGIN_BOTTOM,
+                            R.dimen.notification_2025_smart_reply_container_margin);
+                }
             }
 
             RemoteInputHistoryItem[] replyText = getParcelableArrayFromBundle(
@@ -6634,6 +6650,30 @@ public class Notification implements Parcelable
             }
 
             return contentView;
+        }
+
+        private boolean populateActionsContainer(RemoteViews contentView, StandardTemplateParams p,
+                List<Action> nonContextualActions, int numActions, boolean emphasizedMode) {
+            boolean validRemoteInput = false;
+            for (int i = 0; i < numActions; i++) {
+                Action action = nonContextualActions.get(i);
+
+                boolean actionHasValidInput = hasValidRemoteInput(action);
+                validRemoteInput |= actionHasValidInput;
+
+                final RemoteViews button = generateActionButton(action, emphasizedMode, p);
+                if (actionHasValidInput && !emphasizedMode) {
+                    // Clear the drawable
+                    button.setInt(R.id.action0, "setBackgroundResource", 0);
+                }
+                if (emphasizedMode && i > 0) {
+                    // Clear start margin from non-first buttons to reduce the gap between them.
+                    //  (8dp remaining gap is from all buttons' standard 4dp inset).
+                    button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
+                }
+                contentView.addView(R.id.actions, button);
+            }
+            return validRemoteInput;
         }
 
         /**
