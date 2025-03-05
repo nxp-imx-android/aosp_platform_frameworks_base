@@ -82,7 +82,7 @@ public class MediaQualityContract {
         String PARAMETER_NAME = "_name";
         String PARAMETER_PACKAGE = "_package";
         String PARAMETER_INPUT_ID = "_input_id";
-
+        String VENDOR_PARAMETERS = "_vendor_parameters";
     }
 
     /**
