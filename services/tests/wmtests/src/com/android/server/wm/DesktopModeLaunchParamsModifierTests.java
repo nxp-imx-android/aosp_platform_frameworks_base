@@ -1450,6 +1450,24 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
     }
 
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
+    public void testFreeformWindowingModeAppliedIfSourceTaskExists() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).build();
+        final Task sourceTask = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setWindowingMode(WINDOWING_MODE_FULLSCREEN).build();
+        final ActivityRecord sourceActivity = new ActivityBuilder(task.mAtmService)
+                .setTask(sourceTask).build();
+
+        assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
+                .setSource(sourceActivity).calculate());
+        assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+    }
+
     private Task createTask(DisplayContent display, Boolean isResizeable) {
         final int resizeMode = isResizeable ? RESIZE_MODE_RESIZEABLE
                 : RESIZE_MODE_UNRESIZEABLE;

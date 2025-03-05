@@ -107,14 +107,23 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         // Copy over any values
         outParams.set(currentParams);
 
-        // In Proto2, trampoline task launches of an existing background task can result in the
-        // previous windowing mode to be restored even if the desktop mode state has changed.
-        // Let task launches inherit the windowing mode from the source task if available, which
-        // should have the desired windowing mode set by WM Shell. See b/286929122.
         if (source != null && source.getTask() != null) {
             final Task sourceTask = source.getTask();
-            outParams.mWindowingMode = sourceTask.getWindowingMode();
-            appendLog("inherit-from-source=" + outParams.mWindowingMode);
+            if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()
+                    && isEnteringDesktopMode(sourceTask, options, currentParams)) {
+                // If trampoline source is not freeform but we are entering or in desktop mode,
+                // ignore the source windowing mode and set the windowing mode to freeform
+                outParams.mWindowingMode = WINDOWING_MODE_FREEFORM;
+                appendLog("freeform window mode applied to task trampoline");
+            } else {
+                // In Proto2, trampoline task launches of an existing background task can result in
+                // the previous windowing mode to be restored even if the desktop mode state has
+                // changed. Let task launches inherit the windowing mode from the source task if
+                // available, which should have the desired windowing mode set by WM Shell.
+                // See b/286929122.
+                outParams.mWindowingMode = sourceTask.getWindowingMode();
+                appendLog("inherit-from-source=" + outParams.mWindowingMode);
+            }
         }
 
         if (phase == PHASE_WINDOWING_MODE) {
@@ -127,6 +136,11 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         }
 
         if ((options == null || options.getLaunchBounds() == null) && task.hasOverrideBounds()) {
+            if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()) {
+                // We are in desktop, return result done to prevent other modifiers from modifying
+                // exiting task bounds or resolved windowing mode.
+                return RESULT_DONE;
+            }
             appendLog("current task has bounds set, not overriding");
             return RESULT_SKIP;
         }
