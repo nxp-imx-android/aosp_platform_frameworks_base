@@ -1349,9 +1349,17 @@ public final class CompanionDeviceManager {
     }
 
     /**
-     * Register to receive callbacks whenever the associated device comes in and out of range.
+     * Register to receive callbacks whenever the associated device's presence changes.
+     * The presence could be:
+     * <ul>
+     *   <li>BLE range changes (in/out)</li>
+     *   <li>Bluetooth connection status changes (connected/disconnected)</li>
+     * </ul>
      *
-     * <p>The app doesn't need to remain running in order to receive its callbacks.</p>
+     * <p>Caller app must implement the {@link CompanionDeviceService} to receive callbacks via
+     * {@link CompanionDeviceService#onDevicePresenceEvent(DevicePresenceEvent)}.
+     * The system will bind to the implemented {@link CompanionDeviceService} to deliver the
+     * callbacks./p>
      *
      * <p>Calling app must check for feature presence of
      * {@link PackageManager#FEATURE_COMPANION_DEVICE_SETUP} before calling this API.</p>
