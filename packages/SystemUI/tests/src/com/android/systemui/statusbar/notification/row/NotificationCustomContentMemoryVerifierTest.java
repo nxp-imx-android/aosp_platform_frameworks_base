@@ -46,6 +46,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.server.notification.Flags;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.log.LogAssertKt;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 
@@ -173,8 +174,10 @@ public class NotificationCustomContentMemoryVerifierTest extends SysuiTestCase {
     public void satisfiesMemoryLimits_viewWithoutCustomNotificationRoot_returnsTrue() {
         NotificationEntry entry = new NotificationEntryBuilder().build();
         View view = new FrameLayout(mContext);
-        assertThat(NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry))
-                .isTrue();
+        LogAssertKt.assertRunnableLogsWtf(() -> {
+            assertThat(NotificationCustomContentMemoryVerifier.satisfiesMemoryLimits(view, entry))
+                    .isTrue();
+        });
     }
 
     @Test
