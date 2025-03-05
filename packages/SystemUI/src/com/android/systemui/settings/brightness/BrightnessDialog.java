@@ -164,16 +164,17 @@ public class BrightnessDialog extends Activity {
         container.setVisibility(View.VISIBLE);
         ViewGroup.MarginLayoutParams lp =
                 (ViewGroup.MarginLayoutParams) container.getLayoutParams();
-        int horizontalMargin =
-                getResources().getDimensionPixelSize(R.dimen.notification_side_paddings);
-        lp.leftMargin = horizontalMargin;
-        lp.rightMargin = horizontalMargin;
-
-        int verticalMargin =
-                getResources().getDimensionPixelSize(
-                        R.dimen.notification_guts_option_vertical_padding);
-
-        lp.topMargin = verticalMargin;
+        // Remove the margin. Have the container take all the space. Instead, insert padding.
+        // This allows for the background to be visible around the slider.
+        int margin = 0;
+        lp.topMargin = margin;
+        lp.bottomMargin = margin;
+        lp.leftMargin = margin;
+        lp.rightMargin = margin;
+        int padding = getResources().getDimensionPixelSize(
+                R.dimen.rounded_slider_background_padding
+        );
+        container.setPadding(padding, padding, padding, padding);
         // If in multi-window or freeform, increase the top margin so the brightness dialog
         // doesn't get cut off.
         final int windowingMode = configuration.windowConfiguration.getWindowingMode();
@@ -182,17 +183,15 @@ public class BrightnessDialog extends Activity {
             lp.topMargin += 50;
         }
 
-        lp.bottomMargin = verticalMargin;
-
         int orientation = configuration.orientation;
         int windowWidth = getWindowAvailableWidth();
 
         if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             boolean shouldBeFullWidth = getIntent()
                     .getBooleanExtra(EXTRA_BRIGHTNESS_DIALOG_IS_FULL_WIDTH, false);
-            lp.width = (shouldBeFullWidth ? windowWidth : windowWidth / 2) - horizontalMargin * 2;
+            lp.width = (shouldBeFullWidth ? windowWidth : windowWidth / 2) - margin * 2;
         } else if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            lp.width = windowWidth - horizontalMargin * 2;
+            lp.width = windowWidth - margin * 2;
         }
 
         container.setLayoutParams(lp);
@@ -202,7 +201,7 @@ public class BrightnessDialog extends Activity {
                     // Exclude this view (and its horizontal margins) from triggering gestures.
                     // This prevents back gesture from being triggered by dragging close to the
                     // edge of the slider (0% or 100%).
-                    bounds.set(-horizontalMargin, 0, right - left + horizontalMargin, bottom - top);
+                    bounds.set(-margin, 0, right - left + margin, bottom - top);
                     v.setSystemGestureExclusionRects(List.of(bounds));
                 });
     }
