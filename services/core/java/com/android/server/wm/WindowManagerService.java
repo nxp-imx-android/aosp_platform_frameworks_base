@@ -7614,6 +7614,26 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
+    public boolean isEligibleForDesktopMode(int displayId) {
+        if (!checkCallingPermission(INTERNAL_SYSTEM_WINDOW, "isEligibleForDesktopMode()")) {
+            throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
+        }
+
+        synchronized (mGlobalLock) {
+            final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
+            if (displayContent == null) {
+                ProtoLog.e(WM_ERROR, "Attempted to check isEligibleForDesktopMode() "
+                        + "for a display that does not exist: %d", displayId);
+                return false;
+            }
+            if (!displayContent.isSystemDecorationsSupported()) {
+                return false;
+            }
+            return displayContent.isDefaultDisplay || displayContent.allowContentModeSwitch();
+        }
+    }
+
+    @Override
     public void setShouldShowSystemDecors(int displayId, boolean shouldShow) {
         if (!checkCallingPermission(INTERNAL_SYSTEM_WINDOW, "setShouldShowSystemDecors()")) {
             throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
