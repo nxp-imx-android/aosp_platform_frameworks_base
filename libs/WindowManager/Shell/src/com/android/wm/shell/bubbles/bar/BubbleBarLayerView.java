@@ -55,6 +55,7 @@ import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.DragZone;
 import com.android.wm.shell.shared.bubbles.DragZoneFactory;
+import com.android.wm.shell.shared.bubbles.DraggedObject;
 import com.android.wm.shell.shared.bubbles.DropTargetManager;
 
 import kotlin.Unit;
@@ -168,8 +169,8 @@ public class BubbleBarLayerView extends FrameLayout
                         }
 
                         @Override
-                        public void onDragZoneChanged(@NonNull DragZone from,
-                                @NonNull DragZone to) {
+                        public void onDragZoneChanged(@NonNull DraggedObject draggedObject,
+                                @NonNull DragZone from, @NonNull DragZone to) {
                             final boolean isBubbleLeft = to instanceof DragZone.Bubble.Left;
                             final boolean isBubbleRight = to instanceof DragZone.Bubble.Right;
                             if ((isBubbleLeft || isBubbleRight)
