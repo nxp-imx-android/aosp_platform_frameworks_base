@@ -73,6 +73,7 @@ aconfig_declarations_group {
         "android.service.dreams.flags-aconfig-java",
         "android.service.notification.flags-aconfig-java",
         "android.service.quickaccesswallet.flags-aconfig-java",
+        "android.service.selinux.flags-aconfig-java",
         "android.service.voice.flags-aconfig-java",
         "android.speech.flags-aconfig-java",
         "android.systemserver.flags-aconfig-java",
@@ -1941,5 +1942,21 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.service.quickaccesswallet.flags-aconfig-java",
     aconfig_declarations: "android.service.quickaccesswallet.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+// SELinux log collector
+aconfig_declarations {
+    name: "android.service.selinux.flags-aconfig",
+    package: "com.android.server.selinux.flags",
+    container: "system",
+    srcs: [
+        "services/core/java/com/android/server/selinux/*.aconfig",
+    ],
+}
+
+java_aconfig_library {
+    name: "android.service.selinux.flags-aconfig-java",
+    aconfig_declarations: "android.service.selinux.flags-aconfig",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }

@@ -72,14 +72,20 @@ class SelinuxAuditLogsCollector {
     }
 
     SelinuxAuditLogsCollector(RateLimiter rateLimiter, QuotaLimiter quotaLimiter) {
-        this(
-                () ->
-                        DeviceConfig.getString(
-                                DeviceConfig.NAMESPACE_ADSERVICES,
-                                CONFIG_SELINUX_AUDIT_DOMAIN,
-                                DEFAULT_SELINUX_AUDIT_DOMAIN),
-                rateLimiter,
-                quotaLimiter);
+        this(new DefaultDomainSupplier(), rateLimiter, quotaLimiter);
+    }
+
+    private static class DefaultDomainSupplier implements Supplier<String> {
+        @Override
+        public String get() {
+            if (SelinuxAuditLogsService.enabledForAllDomains()) {
+                return "\\w+";
+            }
+            return DeviceConfig.getString(
+                    DeviceConfig.NAMESPACE_ADSERVICES,
+                    CONFIG_SELINUX_AUDIT_DOMAIN,
+                    DEFAULT_SELINUX_AUDIT_DOMAIN);
+        }
     }
 
     public void setStopRequested(boolean stopRequested) {
