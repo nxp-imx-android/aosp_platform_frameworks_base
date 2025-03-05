@@ -40,7 +40,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -93,13 +92,10 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private ImageView mAppResourceIcon;
     private ImageView mBroadcastIcon;
     private RecyclerView mDevicesRecyclerView;
-    private LinearLayout mDeviceListLayout;
+    private ViewGroup mDeviceListLayout;
     private LinearLayout mMediaMetadataSectionLayout;
     private Button mDoneButton;
     private Button mStopButton;
-    private int mListMaxHeight;
-    private int mItemHeight;
-    private int mListPaddingTop;
     private WallpaperColors mWallpaperColors;
     private boolean mShouldLaunchLeBroadcastDialog;
     private boolean mIsLeBroadcastCallbackRegistered;
@@ -109,17 +105,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
 
     protected Executor mExecutor;
 
-    private final ViewTreeObserver.OnGlobalLayoutListener mDeviceListLayoutListener = () -> {
-        ViewGroup.LayoutParams params = mDeviceListLayout.getLayoutParams();
-        int totalItemsHeight = mAdapter.getItemCount() * mItemHeight
-                + mListPaddingTop;
-        int correctHeight = Math.min(totalItemsHeight, mListMaxHeight);
-        // Set max height for list
-        if (correctHeight != params.height) {
-            params.height = correctHeight;
-            mDeviceListLayout.setLayoutParams(params);
-        }
-    };
 
     private final BluetoothLeBroadcast.Callback mBroadcastCallback =
             new BluetoothLeBroadcast.Callback() {
@@ -220,12 +205,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mBroadcastSender = broadcastSender;
         mMediaSwitchingController = mediaSwitchingController;
         mLayoutManager = new LayoutManagerWrapper(mContext);
-        mListMaxHeight = context.getResources().getDimensionPixelSize(
-                R.dimen.media_output_dialog_list_max_height);
-        mItemHeight = context.getResources().getDimensionPixelSize(
-                R.dimen.media_output_dialog_list_item_height);
-        mListPaddingTop = mContext.getResources().getDimensionPixelSize(
-                R.dimen.media_output_dialog_list_padding_top);
         mExecutor = Executors.newSingleThreadExecutor();
         mIncludePlaybackAndAppMetadata = includePlaybackAndAppMetadata;
     }
@@ -258,8 +237,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
         mAppResourceIcon = mDialogView.requireViewById(R.id.app_source_icon);
         mBroadcastIcon = mDialogView.requireViewById(R.id.broadcast_icon);
 
-        mDeviceListLayout.getViewTreeObserver().addOnGlobalLayoutListener(
-                mDeviceListLayoutListener);
         // Init device list
         mLayoutManager.setAutoMeasureEnabled(true);
         mDevicesRecyclerView.setLayoutManager(mLayoutManager);
@@ -370,12 +347,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             } else {
                 mAppResourceIcon.setVisibility(View.GONE);
             }
-        }
-        if (mHeaderIcon.getVisibility() == View.VISIBLE) {
-            final int size = getHeaderIconSize();
-            final int padding = mContext.getResources().getDimensionPixelSize(
-                    R.dimen.media_output_dialog_header_icon_padding);
-            mHeaderIcon.setLayoutParams(new LinearLayout.LayoutParams(size + padding, size));
         }
 
         if (!mIncludePlaybackAndAppMetadata) {
@@ -522,8 +493,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     abstract int getHeaderIconRes();
 
     abstract IconCompat getHeaderIcon();
-
-    abstract int getHeaderIconSize();
 
     abstract CharSequence getHeaderText();
 

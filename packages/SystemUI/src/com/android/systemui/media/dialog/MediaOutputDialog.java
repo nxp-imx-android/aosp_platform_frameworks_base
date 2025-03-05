@@ -81,12 +81,6 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
     }
 
     @Override
-    int getHeaderIconSize() {
-        return mContext.getResources().getDimensionPixelSize(
-                R.dimen.media_output_dialog_header_album_icon_size);
-    }
-
-    @Override
     CharSequence getHeaderText() {
         return mMediaSwitchingController.getHeaderTitle();
     }

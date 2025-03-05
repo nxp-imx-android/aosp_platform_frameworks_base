@@ -406,11 +406,6 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
         }
 
         @Override
-        int getHeaderIconSize() {
-            return 10;
-        }
-
-        @Override
         CharSequence getHeaderText() {
             return mHeaderTitle;
         }
