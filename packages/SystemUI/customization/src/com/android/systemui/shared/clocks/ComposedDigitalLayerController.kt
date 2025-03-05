@@ -161,15 +161,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
             }
 
             override fun onThemeChanged(theme: ThemeConfig) {
-                val color =
-                    when {
-                        theme.seedColor != null -> theme.seedColor!!
-                        theme.isDarkTheme ->
-                            clockCtx.resources.getColor(android.R.color.system_accent1_100)
-                        else -> clockCtx.resources.getColor(android.R.color.system_accent2_600)
-                    }
-
-                view.updateColor(color)
+                view.updateColor(theme.getDefaultColor(clockCtx.context))
             }
 
             override fun onFontSettingChanged(fontSizePx: Float) {

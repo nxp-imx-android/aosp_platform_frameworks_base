@@ -45,6 +45,7 @@ import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 import com.android.systemui.plugins.clocks.ClockFontAxisSetting.Companion.replace
 import com.android.systemui.plugins.clocks.ClockFontAxisSetting.Companion.toFVar
 import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.shared.clocks.CanvasUtil.translate
 import com.android.systemui.shared.clocks.CanvasUtil.use
 import com.android.systemui.shared.clocks.ClockContext
@@ -330,7 +331,7 @@ open class SimpleDigitalClockTextView(
         textAnimator.setTextStyle(
             TextAnimator.Style(
                 fVar = if (isDozing) aodFontVariation else lsFontVariation,
-                color = if (isDozing) AOD_COLOR else lockscreenColor,
+                color = if (isDozing && !ambientAod()) AOD_COLOR else lockscreenColor,
                 textSize = if (isDozing) aodFontSizePx else lockScreenPaint.textSize,
             ),
             TextAnimator.Animation(
