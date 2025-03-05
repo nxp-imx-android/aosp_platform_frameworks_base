@@ -20,6 +20,7 @@ import static android.hardware.SensorManager.SENSOR_DELAY_FASTEST;
 import static android.hardware.devicestate.DeviceState.PROPERTY_POLICY_UNSUPPORTED_WHEN_POWER_SAVE_MODE;
 import static android.hardware.devicestate.DeviceState.PROPERTY_POLICY_UNSUPPORTED_WHEN_THERMAL_STATUS_CRITICAL;
 import static android.hardware.devicestate.DeviceStateManager.INVALID_DEVICE_STATE_IDENTIFIER;
+import static android.os.Trace.TRACE_TAG_SYSTEM_SERVER;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.TYPE_EXTERNAL;
 
@@ -324,6 +325,11 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             }
 
             if (newState != INVALID_DEVICE_STATE_IDENTIFIER && newState != mLastReportedState) {
+                if (Trace.isTagEnabled(TRACE_TAG_SYSTEM_SERVER)) {
+                    Trace.instant(TRACE_TAG_SYSTEM_SERVER,
+                            "[Device state changed] Last hinge sensor event timestamp: "
+                                    + mLastHingeAngleSensorEvent.timestamp);
+                }
                 mLastReportedState = newState;
                 stateToReport = newState;
             }
