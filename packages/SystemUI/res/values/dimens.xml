@@ -2166,7 +2166,7 @@
     <dimen name="volume_dialog_background_top_margin">-28dp</dimen>
 
     <dimen name="volume_dialog_window_margin">14dp</dimen>
-    <dimen name="volume_dialog_components_spacing">8dp</dimen>
+    <dimen name="volume_dialog_components_spacing">10dp</dimen>
     <dimen name="volume_dialog_floating_sliders_spacing">8dp</dimen>
     <dimen name="volume_dialog_floating_sliders_vertical_padding">10dp</dimen>
     <dimen name="volume_dialog_floating_sliders_vertical_padding_negative">
