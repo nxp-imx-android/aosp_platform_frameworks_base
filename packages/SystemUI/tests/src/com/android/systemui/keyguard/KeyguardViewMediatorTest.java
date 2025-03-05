@@ -283,7 +283,6 @@ public class KeyguardViewMediatorTest extends SysuiTestCase {
                 () -> mSelectedUserInteractor,
                 mock(UserTracker.class),
                 mKosmos.getNotificationShadeWindowModel(),
-                mSecureSettings,
                 mKosmos::getCommunalInteractor,
                 mKosmos.getShadeLayoutParams());
         mFeatureFlags = new FakeFeatureFlags();

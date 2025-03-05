@@ -33,6 +33,8 @@ import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -54,8 +56,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 
 import android.app.ActivityManager;
 import android.app.IActivityManager;
@@ -136,7 +136,6 @@ import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
-import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
@@ -166,7 +165,6 @@ import com.android.systemui.statusbar.policy.data.repository.FakeDeviceProvision
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.FakeEventLog;
 import com.android.systemui.util.settings.FakeGlobalSettings;
-import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.settings.SystemSettings;
 import com.android.systemui.util.time.SystemClock;
 import com.android.wm.shell.Flags;
@@ -451,7 +449,6 @@ public class BubblesTest extends SysuiTestCase {
                 () -> mSelectedUserInteractor,
                 mUserTracker,
                 mNotificationShadeWindowModel,
-                new FakeSettings(),
                 mKosmos::getCommunalInteractor,
                 mKosmos.getShadeLayoutParams()
         );
