@@ -629,3 +629,10 @@ flag {
     description: "Enable moving content into the Private Space"
     bug: "360066001"
 }
+
+flag {
+    name: "allow_supervising_profile"
+    namespace: "supervision"
+    description: "Enables support for new supervising user type"
+    bug: "389712089"
+}

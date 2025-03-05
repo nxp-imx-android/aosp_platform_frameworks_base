@@ -6710,6 +6710,8 @@ ul.</string>
     <string name="profile_label_test">Test</string>
     <!-- Communal profile label on a screen. This can be used as a tab label for this profile in tabbed views and can be used to represent the profile in sharing surfaces, etc. [CHAR LIMIT=20] -->
     <string name="profile_label_communal">Communal</string>
+    <!-- Supervising profile label on a screen. This can be used as a tab label for this profile in tabbed views and can be used to represent the profile in sharing surfaces, etc. [CHAR LIMIT=20] -->
+    <string name="profile_label_supervising">Supervising</string>
 
     <!-- Accessibility label for managed profile user type [CHAR LIMIT=30] -->
     <string name="accessibility_label_managed_profile">Work profile</string>

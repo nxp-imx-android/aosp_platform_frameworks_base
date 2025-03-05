@@ -11725,6 +11725,7 @@ package android.os {
     field public static final String USER_TYPE_FULL_GUEST = "android.os.usertype.full.GUEST";
     field public static final String USER_TYPE_FULL_SECONDARY = "android.os.usertype.full.SECONDARY";
     field public static final String USER_TYPE_FULL_SYSTEM = "android.os.usertype.full.SYSTEM";
+    field @FlaggedApi("android.multiuser.allow_supervising_profile") public static final String USER_TYPE_PROFILE_SUPERVISING = "android.os.usertype.profile.SUPERVISING";
     field public static final String USER_TYPE_SYSTEM_HEADLESS = "android.os.usertype.system.HEADLESS";
   }
 
