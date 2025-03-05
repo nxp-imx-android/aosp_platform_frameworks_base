@@ -46,7 +46,6 @@ import static android.view.Display.FLAG_PRIVATE;
 import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.Display.STATE_UNKNOWN;
-import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.Display.isSuspendedState;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.Surface.ROTATION_0;
@@ -432,9 +431,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /**
      * Ratio between overridden display density for current user and the initial display density,
-     * used only for external displays.
+     * used for updating the base density when resolution change happens to preserve display size.
      */
-    float mExternalDisplayForcedDensityRatio = 0.0f;
+    float mForcedDisplayDensityRatio = 0.0f;
     boolean mIsDensityForced = false;
 
     /**
@@ -3119,6 +3118,12 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mBaseRoundedCorners = loadRoundedCorners(baseWidth, baseHeight);
         }
 
+        // Update the base density if there is a forced density ratio.
+        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
+                && mForcedDisplayDensityRatio != 0.0f) {
+            mBaseDisplayDensity = getBaseDensityFromRatio();
+        }
+
         if (mMaxUiWidth > 0 && mBaseDisplayWidth > mMaxUiWidth) {
             final float ratio = mMaxUiWidth / (float) mBaseDisplayWidth;
             mBaseDisplayHeight = (int) (mBaseDisplayHeight * ratio);
@@ -3136,15 +3141,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                         + mBaseDisplayHeight + " on display:" + getDisplayId());
             }
         }
-        // Update the base density if there is a forced density ratio.
-        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
-                && mIsDensityForced && mExternalDisplayForcedDensityRatio != 0.0f) {
-            mBaseDisplayDensity = (int)
-                    (mInitialDisplayDensity * mExternalDisplayForcedDensityRatio + 0.5);
-        }
         if (mDisplayReady && !mDisplayPolicy.shouldKeepCurrentDecorInsets()) {
             mDisplayPolicy.mDecorInsets.invalidate();
         }
+    }
+
+    /**
+     * Returns the forced density from forcedDensityRatio if the ratio is valid by rounding the
+     * density down to an even number. Returns the initial density if the ratio is 0.
+     */
+    private int getBaseDensityFromRatio() {
+        return (mForcedDisplayDensityRatio != 0.0f)
+                ? ((int) (mInitialDisplayDensity * mForcedDisplayDensityRatio)) & ~1
+                : mInitialDisplayDensity;
     }
 
     /**
@@ -3171,15 +3180,19 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (density == getInitialDisplayDensity()) {
             density = 0;
         }
-        // Save the new density ratio to settings for external displays.
-        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
-                && mDisplayInfo.type == TYPE_EXTERNAL) {
-            mExternalDisplayForcedDensityRatio = (float)
-                    mBaseDisplayDensity / getInitialDisplayDensity();
-            mWmService.mDisplayWindowSettings.setForcedDensityRatio(getDisplayInfo(),
-                    mExternalDisplayForcedDensityRatio);
-        }
         mWmService.mDisplayWindowSettings.setForcedDensity(getDisplayInfo(), density, userId);
+    }
+
+    void setForcedDensityRatio(float ratio, int userId) {
+        // Save the new density ratio to settings and update forced density with the ratio.
+        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()) {
+            mForcedDisplayDensityRatio = ratio;
+            mWmService.mDisplayWindowSettings.setForcedDensityRatio(getDisplayInfo(),
+                    mForcedDisplayDensityRatio);
+
+            // Set forced density from ratio.
+            setForcedDensity(getBaseDensityFromRatio(), userId);
+        }
     }
 
     /** @param mode {@link #FORCE_SCALING_MODE_AUTO} or {@link #FORCE_SCALING_MODE_DISABLED}. */

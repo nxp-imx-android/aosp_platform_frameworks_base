@@ -2925,7 +2925,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
-    public void testForcedDensityRatioSetForExternalDisplays_persistDensityScaleFlagEnabled() {
+    public void testForcedDensityRatioSet_persistDensityScaleFlagEnabled() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
         displayInfo.type = Display.TYPE_EXTERNAL;
@@ -2943,19 +2943,20 @@ public class DisplayContentTests extends WindowTestsBase {
                 baseYDpi);
 
         final int forcedDensity = 640;
-
-        // Verify that forcing the density is honored and the size doesn't change.
-        displayContent.setForcedDensity(forcedDensity, 0 /* userId */);
-        verifySizes(displayContent, baseWidth, baseHeight, forcedDensity);
+        displayContent.setForcedDensityRatio(
+                (float) forcedDensity / baseDensity, 0 /* userId */);
 
         // Verify that density ratio is set correctly.
         assertEquals((float) forcedDensity / baseDensity,
-                displayContent.mExternalDisplayForcedDensityRatio, 0.01);
+                displayContent.mForcedDisplayDensityRatio, 0.01);
+        // Verify that density is set correctly.
+        assertEquals(forcedDensity,
+                displayContent.mBaseDisplayDensity);
     }
 
     @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
-    public void testForcedDensityUpdateForExternalDisplays_persistDensityScaleFlagEnabled() {
+    public void testForcedDensityUpdateWithRatio_persistDensityScaleFlagEnabled() {
         final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
         displayInfo.displayId = DEFAULT_DISPLAY + 1;
         displayInfo.type = Display.TYPE_EXTERNAL;
@@ -2973,14 +2974,12 @@ public class DisplayContentTests extends WindowTestsBase {
                 baseYDpi);
 
         final int forcedDensity = 640;
-
-        // Verify that forcing the density is honored and the size doesn't change.
-        displayContent.setForcedDensity(forcedDensity, 0 /* userId */);
-        verifySizes(displayContent, baseWidth, baseHeight, forcedDensity);
+        displayContent.setForcedDensityRatio(
+                (float) forcedDensity / baseDensity, 0 /* userId */);
 
         // Verify that density ratio is set correctly.
-        assertEquals((float) 2.0f,
-                displayContent.mExternalDisplayForcedDensityRatio, 0.001);
+        assertEquals(2.0f,
+                displayContent.mForcedDisplayDensityRatio, 0.001);
 
 
         displayContent.mInitialDisplayDensity = 160;

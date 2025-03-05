@@ -100,6 +100,8 @@ import android.provider.Settings;
 import android.util.ArraySet;
 import android.util.MergedConfiguration;
 import android.view.ContentRecordingSession;
+import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.IWindow;
 import android.view.InputChannel;
 import android.view.InputDevice;
@@ -1598,6 +1600,60 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         assertThrows(IllegalStateException.class, () -> {
             mWm.setConfigurationChangeSettingsForUser(settings, UserHandle.USER_CURRENT);
         });
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
+    public void setForcedDisplayDensityRatio_forExternalDisplay_setsRatio() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.type = Display.TYPE_EXTERNAL;
+        displayInfo.logicalDensityDpi = 100;
+        mDisplayContent = createNewDisplay(displayInfo);
+        final int currentUserId = ActivityManager.getCurrentUser();
+        final float forcedDensityRatio = 2f;
+
+        mWm.setForcedDisplayDensityRatio(displayInfo.displayId, forcedDensityRatio,
+                currentUserId);
+
+        verify(mDisplayContent).setForcedDensityRatio(forcedDensityRatio,
+                currentUserId);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
+    public void setForcedDisplayDensityRatio_forInternalDisplay_setsRatio() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.type = Display.TYPE_INTERNAL;
+        mDisplayContent = createNewDisplay(displayInfo);
+        final int currentUserId = ActivityManager.getCurrentUser();
+        final float forcedDensityRatio = 2f;
+
+        mWm.setForcedDisplayDensityRatio(displayInfo.displayId, forcedDensityRatio,
+                currentUserId);
+
+        verify(mDisplayContent).setForcedDensityRatio(forcedDensityRatio,
+                currentUserId);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
+    public void clearForcedDisplayDensityRatio_clearsRatioAndDensity() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.type = Display.TYPE_INTERNAL;
+        mDisplayContent = createNewDisplay(displayInfo);
+        final int currentUserId = ActivityManager.getCurrentUser();
+
+        mWm.clearForcedDisplayDensityForUser(displayInfo.displayId, currentUserId);
+
+        verify(mDisplayContent).setForcedDensityRatio(0.0f,
+                currentUserId);
+
+        assertEquals(mDisplayContent.mBaseDisplayDensity,
+                mDisplayContent.getInitialDisplayDensity());
+        assertEquals(mDisplayContent.mForcedDisplayDensityRatio, 0.0f, 0.001);
     }
 
     /**
