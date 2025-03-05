@@ -101,6 +101,7 @@ import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
@@ -275,6 +276,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private lateinit var testScope: CoroutineScope
     private lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
     private lateinit var spyContext: TestableContext
+    private lateinit var homeIntentProvider: HomeIntentProvider
 
     private val shellExecutor = TestShellExecutor()
     private val bgExecutor = TestShellExecutor()
@@ -330,6 +332,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 mockHandler,
             )
         desktopModeCompatPolicy = spy(DesktopModeCompatPolicy(spyContext))
+        homeIntentProvider = HomeIntentProvider(context)
 
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenAnswer { runningTasks }
         whenever(transitions.startTransition(anyInt(), any(), anyOrNull())).thenAnswer { Binder() }
@@ -449,6 +452,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             desktopModeCompatPolicy,
             dragToDisplayTransitionHandler,
             moveToDisplayTransitionHandler,
+            homeIntentProvider,
         )
 
     @After
