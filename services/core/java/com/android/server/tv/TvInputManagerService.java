@@ -183,7 +183,7 @@ public final class TvInputManagerService extends SystemService {
     private final Map<String, SessionState> mSessionIdToSessionStateMap = new HashMap<>();
 
     private final MessageHandler mMessageHandler;
-
+    private final MyPackageMonitor mPackageMonitor;
     private final ActivityManager mActivityManager;
 
     private boolean mExternalInputLoggingDisplayNameFilterEnabled = false;
@@ -200,6 +200,7 @@ public final class TvInputManagerService extends SystemService {
         mMessageHandler =
                 new MessageHandler(mContext.getContentResolver(), IoThread.get().getLooper());
         mTvInputHardwareManager = new TvInputHardwareManager(context, new HardwareListener());
+        mPackageMonitor = new MyPackageMonitor(/* supportsPackageRestartQuery */ true);
 
         mActivityManager =
                 (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
@@ -298,74 +299,79 @@ public final class TvInputManagerService extends SystemService {
         mExternalInputLoggingDeviceBrandNames.addAll(Arrays.asList(deviceBrandNames));
     }
 
+    private class MyPackageMonitor extends PackageMonitor {
+        MyPackageMonitor(boolean supportsPackageRestartQuery) {
+            super(supportsPackageRestartQuery);
+        }
+
+        private void buildTvInputList(String[] packages) {
+            int userId = getChangingUserId();
+            synchronized (mLock) {
+                if (mCurrentUserId == userId || mRunningProfiles.contains(userId)) {
+                    buildTvInputListLocked(userId, packages);
+                    buildTvContentRatingSystemListLocked(userId);
+                }
+            }
+        }
+
+        @Override
+        public void onPackageUpdateFinished(String packageName, int uid) {
+            if (DEBUG) Slog.d(TAG, "onPackageUpdateFinished(packageName=" + packageName + ")");
+            // This callback is invoked when the TV input is reinstalled.
+            // In this case, isReplacing() always returns true.
+            buildTvInputList(new String[] { packageName });
+        }
+
+        @Override
+        public void onPackagesAvailable(String[] packages) {
+            if (DEBUG) {
+                Slog.d(TAG, "onPackagesAvailable(packages=" + Arrays.toString(packages) + ")");
+            }
+            // This callback is invoked when the media on which some packages exist become
+            // available.
+            if (isReplacing()) {
+                buildTvInputList(packages);
+            }
+        }
+
+        @Override
+        public void onPackagesUnavailable(String[] packages) {
+            // This callback is invoked when the media on which some packages exist become
+            // unavailable.
+            if (DEBUG)  {
+                Slog.d(TAG, "onPackagesUnavailable(packages=" + Arrays.toString(packages)
+                        + ")");
+            }
+            if (isReplacing()) {
+                buildTvInputList(packages);
+            }
+        }
+
+        @Override
+        public void onSomePackagesChanged() {
+            // TODO: Use finer-grained methods(e.g. onPackageAdded, onPackageRemoved) to manage
+            // the TV inputs.
+            if (DEBUG) Slog.d(TAG, "onSomePackagesChanged()");
+            if (isReplacing()) {
+                if (DEBUG) Slog.d(TAG, "Skipped building TV input list due to replacing");
+                // When the package is updated, buildTvInputListLocked is called in other
+                // methods instead.
+                return;
+            }
+            buildTvInputList(null);
+        }
+
+        @Override
+        public boolean onPackageChanged(String packageName, int uid, String[] components) {
+            // The input list needs to be updated in any cases, regardless of whether
+            // it happened to the whole package or a specific component. Returning true so that
+            // the update can be handled in {@link #onSomePackagesChanged}.
+            return true;
+        }
+    }
+
     private void registerBroadcastReceivers() {
-        PackageMonitor monitor = new PackageMonitor(/* supportsPackageRestartQuery */ true) {
-            private void buildTvInputList(String[] packages) {
-                int userId = getChangingUserId();
-                synchronized (mLock) {
-                    if (mCurrentUserId == userId || mRunningProfiles.contains(userId)) {
-                        buildTvInputListLocked(userId, packages);
-                        buildTvContentRatingSystemListLocked(userId);
-                    }
-                }
-            }
-
-            @Override
-            public void onPackageUpdateFinished(String packageName, int uid) {
-                if (DEBUG) Slog.d(TAG, "onPackageUpdateFinished(packageName=" + packageName + ")");
-                // This callback is invoked when the TV input is reinstalled.
-                // In this case, isReplacing() always returns true.
-                buildTvInputList(new String[] { packageName });
-            }
-
-            @Override
-            public void onPackagesAvailable(String[] packages) {
-                if (DEBUG) {
-                    Slog.d(TAG, "onPackagesAvailable(packages=" + Arrays.toString(packages) + ")");
-                }
-                // This callback is invoked when the media on which some packages exist become
-                // available.
-                if (isReplacing()) {
-                    buildTvInputList(packages);
-                }
-            }
-
-            @Override
-            public void onPackagesUnavailable(String[] packages) {
-                // This callback is invoked when the media on which some packages exist become
-                // unavailable.
-                if (DEBUG)  {
-                    Slog.d(TAG, "onPackagesUnavailable(packages=" + Arrays.toString(packages)
-                            + ")");
-                }
-                if (isReplacing()) {
-                    buildTvInputList(packages);
-                }
-            }
-
-            @Override
-            public void onSomePackagesChanged() {
-                // TODO: Use finer-grained methods(e.g. onPackageAdded, onPackageRemoved) to manage
-                // the TV inputs.
-                if (DEBUG) Slog.d(TAG, "onSomePackagesChanged()");
-                if (isReplacing()) {
-                    if (DEBUG) Slog.d(TAG, "Skipped building TV input list due to replacing");
-                    // When the package is updated, buildTvInputListLocked is called in other
-                    // methods instead.
-                    return;
-                }
-                buildTvInputList(null);
-            }
-
-            @Override
-            public boolean onPackageChanged(String packageName, int uid, String[] components) {
-                // The input list needs to be updated in any cases, regardless of whether
-                // it happened to the whole package or a specific component. Returning true so that
-                // the update can be handled in {@link #onSomePackagesChanged}.
-                return true;
-            }
-        };
-        monitor.register(mContext, null, UserHandle.ALL, true);
+        mPackageMonitor.register(mContext, null, UserHandle.ALL, true);
 
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(Intent.ACTION_USER_SWITCHED);
