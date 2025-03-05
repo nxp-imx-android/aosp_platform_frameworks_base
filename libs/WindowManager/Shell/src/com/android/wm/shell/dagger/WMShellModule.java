@@ -1235,7 +1235,7 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             @NonNull DesksOrganizer desksOrganizer
     ) {
-        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+        if (DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.of(
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer));
         }
