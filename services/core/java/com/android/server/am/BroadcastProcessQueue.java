@@ -810,7 +810,7 @@ class BroadcastProcessQueue {
      * Return the broadcast being actively dispatched in this process.
      */
     public @NonNull BroadcastRecord getActive() {
-        return Objects.requireNonNull(mActive);
+        return Objects.requireNonNull(mActive, toString());
     }
 
     /**
@@ -818,7 +818,7 @@ class BroadcastProcessQueue {
      * being actively dispatched in this process.
      */
     public int getActiveIndex() {
-        Objects.requireNonNull(mActive);
+        Objects.requireNonNull(mActive, toString());
         return mActiveIndex;
     }
 
