@@ -74,25 +74,30 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
     val textMeasurer = rememberTextMeasurer()
     when (viewModel) {
         is OngoingActivityChipModel.Active.Timer -> {
-            val timerState = rememberChronometerState(startTimeMillis = viewModel.startTimeMs)
-            val text = timerState.currentTimeText
-            Text(
-                text = text,
-                style = textStyle,
-                color = textColor,
-                softWrap = false,
-                modifier =
-                    modifier
-                        .hideTextIfDoesNotFit(
-                            text = text,
-                            textStyle = textStyle,
-                            textMeasurer = textMeasurer,
-                            maxTextWidth = maxTextWidth,
-                            startPadding = startPadding,
-                            endPadding = endPadding,
-                        )
-                        .neverDecreaseWidth(density),
-            )
+            val timerState =
+                rememberChronometerState(
+                    eventTimeMillis = viewModel.startTimeMs,
+                    isCountDown = viewModel.isEventInFuture,
+                )
+            timerState.currentTimeText?.let { text ->
+                Text(
+                    text = text,
+                    style = textStyle,
+                    color = textColor,
+                    softWrap = false,
+                    modifier =
+                        modifier
+                            .hideTextIfDoesNotFit(
+                                text = text,
+                                textStyle = textStyle,
+                                textMeasurer = textMeasurer,
+                                maxTextWidth = maxTextWidth,
+                                startPadding = startPadding,
+                                endPadding = endPadding,
+                            )
+                            .neverDecreaseWidth(density),
+                )
+            }
         }
 
         is OngoingActivityChipModel.Active.Countdown -> {
