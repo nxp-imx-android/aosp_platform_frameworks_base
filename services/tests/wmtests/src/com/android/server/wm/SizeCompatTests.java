@@ -572,8 +572,8 @@ public class SizeCompatTests extends WindowTestsBase {
                 new TestDisplayContent.Builder(mAtm, 1000, 2000).build();
         final InputDevice device = new InputDevice.Builder()
                 .setAssociatedDisplayId(newDisplay.mDisplayId)
-                .setSources(InputDevice.SOURCE_TOUCHSCREEN | InputDevice.SOURCE_TRACKBALL
-                        | InputDevice.KEYBOARD_TYPE_ALPHABETIC)
+                .setKeyboardType(InputDevice.KEYBOARD_TYPE_ALPHABETIC)
+                .setSources(InputDevice.SOURCE_TOUCHSCREEN | InputDevice.SOURCE_TRACKBALL)
                 .build();
         final InputDevice[] devices = {device};
         doReturn(true).when(newDisplay.mWmService.mInputManager)
@@ -596,6 +596,7 @@ public class SizeCompatTests extends WindowTestsBase {
         assertEquals(originalTouchscreen, newConfiguration.touchscreen);
         assertEquals(originalNavigation, newConfiguration.navigation);
         assertEquals(originalKeyboard, newConfiguration.keyboard);
+        // TODO(b/399749909): assert keyboardHidden, hardkeyboardHidden, and navigationHidden too.
     }
 
     @Test
