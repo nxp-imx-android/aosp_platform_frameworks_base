@@ -45,6 +45,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
+import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -270,6 +271,12 @@ public class RankingCoordinatorTest extends SysuiTestCase {
         // THEN entry is in the silent section
         assertFalse(mAlertingSectioner.isInSection(mEntry));
         assertTrue(mSilentSectioner.isInSection(mEntry));
+    }
+
+    @Test
+    public void testSilentSectioner_acceptsBundle() {
+        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        assertTrue(mSilentSectioner.isInSection(bundleEntry));
     }
 
     @Test
