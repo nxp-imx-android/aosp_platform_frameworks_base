@@ -979,6 +979,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private boolean mIsCustomHeaderGesture;
         private boolean mIsResizeGesture;
         private boolean mIsDragging;
+        private boolean mDragInterrupted;
         private boolean mLongClickDisabled;
         private int mDragPointerId = -1;
         private MotionEvent mMotionEvent;
@@ -1216,7 +1217,12 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 View v, MotionEvent e) {
             final int id = v.getId();
             if (id == R.id.caption_handle) {
-                handleCaptionThroughStatusBar(e, decoration);
+                handleCaptionThroughStatusBar(e, decoration,
+                        /* interruptDragCallback= */
+                        () -> {
+                            mDragInterrupted = true;
+                            setIsDragging(decoration, /* isDragging= */ false);
+                        });
                 final boolean wasDragging = mIsDragging;
                 updateDragStatus(decoration, e);
                 final boolean upOrCancel = e.getActionMasked() == ACTION_UP
@@ -1333,11 +1339,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 case MotionEvent.ACTION_DOWN:
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL: {
+                    mDragInterrupted = false;
                     setIsDragging(decor, false /* isDragging */);
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    setIsDragging(decor, true /* isDragging */);
+                    if (!mDragInterrupted) {
+                        setIsDragging(decor, true /* isDragging */);
+                    }
                     break;
                 }
             }
@@ -1458,7 +1467,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             if (!mInImmersiveMode && (relevantDecor == null
                     || relevantDecor.mTaskInfo.getWindowingMode() != WINDOWING_MODE_FREEFORM
                     || mTransitionDragActive)) {
-                handleCaptionThroughStatusBar(ev, relevantDecor);
+                handleCaptionThroughStatusBar(ev, relevantDecor,
+                        /* interruptDragCallback= */ () -> {});
             }
         }
         handleEventOutsideCaption(ev, relevantDecor);
@@ -1498,7 +1508,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
      * Turn on desktop mode if handle is dragged below status bar.
      */
     private void handleCaptionThroughStatusBar(MotionEvent ev,
-            DesktopModeWindowDecoration relevantDecor) {
+            DesktopModeWindowDecoration relevantDecor, Runnable interruptDragCallback) {
         if (relevantDecor == null) {
             if (ev.getActionMasked() == ACTION_UP) {
                 mMoveToDesktopAnimator = null;
@@ -1599,7 +1609,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                                     mContext, mDragToDesktopAnimationStartBounds,
                                     relevantDecor.mTaskInfo, relevantDecor.mTaskSurface);
                             mDesktopTasksController.startDragToDesktop(relevantDecor.mTaskInfo,
-                                    mMoveToDesktopAnimator, relevantDecor.mTaskSurface);
+                                    mMoveToDesktopAnimator, relevantDecor.mTaskSurface,
+                                    /* dragInterruptedCallback= */ () -> {
+                                        // Don't call into DesktopTasksController to cancel the
+                                        // transition here - the transition handler already handles
+                                        // that (including removing the visual indicator).
+                                        mTransitionDragActive = false;
+                                        mMoveToDesktopAnimator = null;
+                                        relevantDecor.handleDragInterrupted();
+                                        interruptDragCallback.run();
+                                    });
                         }
                     }
                     if (mMoveToDesktopAnimator != null) {

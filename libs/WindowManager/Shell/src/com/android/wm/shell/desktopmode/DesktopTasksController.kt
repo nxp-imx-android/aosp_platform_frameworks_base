@@ -32,8 +32,6 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -652,6 +650,7 @@ class DesktopTasksController(
         taskInfo: RunningTaskInfo,
         dragToDesktopValueAnimator: MoveToDesktopAnimator,
         taskSurface: SurfaceControl,
+        dragInterruptedCallback: Runnable,
     ) {
         logV("startDragToDesktop taskId=%d", taskInfo.taskId)
         val jankConfigBuilder =
@@ -667,6 +666,7 @@ class DesktopTasksController(
             taskInfo,
             dragToDesktopValueAnimator,
             visualIndicator,
+            dragInterruptedCallback,
         )
     }
 
