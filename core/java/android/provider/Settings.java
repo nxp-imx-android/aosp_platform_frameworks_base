@@ -6484,6 +6484,14 @@ public final class Settings {
         public static final String SCREEN_FLASH_NOTIFICATION = "screen_flash_notification";
 
         /**
+         * Setting to enable CV (proprietary)
+         *
+         * @hide
+         */
+        public static final String CV_ENABLED =
+                "cv_enabled";
+
+        /**
          * Integer property that specifes the color for screen flash notification as a
          * packed 32-bit color.
          *
