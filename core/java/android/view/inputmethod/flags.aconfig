@@ -214,3 +214,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+  name: "invalidate_input_calls_restart"
+  namespace: "input_method"
+  description: "Feature flag to fix the race between invalidateInput and restartInput"
+  bug: "396066692"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
