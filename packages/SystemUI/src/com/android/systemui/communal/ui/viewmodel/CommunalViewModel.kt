@@ -377,12 +377,15 @@ constructor(
                 MutableStateFlow(false)
             }
 
-        val inAllowedKeyguardState =
-            keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
-                it.to == KeyguardState.LOCKSCREEN || it.to == KeyguardState.GLANCEABLE_HUB
-            }
-
-        allOf(inAllowedDeviceState, inAllowedKeyguardState)
+        if (v2FlagEnabled()) {
+            val inAllowedKeyguardState =
+                keyguardTransitionInteractor.startedKeyguardTransitionStep.map {
+                    it.to == KeyguardState.LOCKSCREEN || it.to == KeyguardState.GLANCEABLE_HUB
+                }
+            allOf(inAllowedDeviceState, inAllowedKeyguardState)
+        } else {
+            inAllowedDeviceState
+        }
     }
 
     companion object {
