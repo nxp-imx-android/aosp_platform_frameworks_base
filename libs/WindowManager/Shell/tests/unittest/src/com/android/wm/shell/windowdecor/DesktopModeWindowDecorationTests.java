@@ -167,6 +167,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private static final boolean DEFAULT_IS_STATUSBAR_VISIBLE = true;
     private static final boolean DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED = false;
     private static final boolean DEFAULT_IS_IN_FULL_IMMERSIVE_MODE = false;
+    private static final boolean DEFAULT_IS_DRAGGING = false;
     private static final boolean DEFAULT_HAS_GLOBAL_FOCUS = true;
     private static final boolean DEFAULT_SHOULD_IGNORE_CORNER_RADIUS = false;
     private static final boolean DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS = false;
@@ -415,6 +416,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -616,6 +618,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -650,6 +653,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -728,6 +732,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 /* inFullImmersiveMode */ true,
+                DEFAULT_IS_DRAGGING,
                 insetsState,
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -755,6 +760,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 /* inFullImmersiveMode */ true,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -781,6 +787,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 /* isStatusBarVisible */ false,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -807,6 +814,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 /* isStatusBarVisible */ true,
                 /* isKeyguardVisibleAndOccluded */ false,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -832,6 +840,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 /* isStatusBarVisible */ false,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -857,6 +866,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 /* isKeyguardVisibleAndOccluded */ true,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -883,6 +893,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 /* isStatusBarVisible */ true,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 /* inFullImmersiveMode */ true,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -901,6 +912,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 /* isStatusBarVisible */ false,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 /* inFullImmersiveMode */ true,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -908,6 +920,33 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
 
         assertThat(relayoutParams.mIsCaptionVisible).isFalse();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX)
+    public void updateRelayoutParams_header_fullyImmersive_captionVisDuringDrag() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        final RelayoutParams relayoutParams = new RelayoutParams();
+
+        DesktopModeWindowDecoration.updateRelayoutParams(
+                relayoutParams,
+                mTestableContext,
+                taskInfo,
+                mMockSplitScreenController,
+                DEFAULT_APPLY_START_TRANSACTION_ON_DRAW,
+                DEFAULT_SHOULD_SET_TASK_POSITIONING_AND_CROP,
+                /* isStatusBarVisible */ false,
+                DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
+                /* inFullImmersiveMode */ true,
+                /* isDragging */ true,
+                new InsetsState(),
+                DEFAULT_HAS_GLOBAL_FOCUS,
+                mExclusionRegion,
+                DEFAULT_SHOULD_IGNORE_CORNER_RADIUS,
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS);
+
+        assertThat(relayoutParams.mIsCaptionVisible).isTrue();
     }
 
     @Test
@@ -927,6 +966,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 /* isKeyguardVisibleAndOccluded */ true,
                 /* inFullImmersiveMode */ true,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
@@ -1588,6 +1628,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_STATUSBAR_VISIBLE,
                 DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
                 DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
                 new InsetsState(),
                 DEFAULT_HAS_GLOBAL_FOCUS,
                 mExclusionRegion,
