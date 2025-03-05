@@ -17,7 +17,6 @@ package com.android.systemui.statusbar.notification.shared
 
 import android.app.PendingIntent
 import android.graphics.drawable.Icon
-import android.util.Log
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
@@ -86,14 +85,6 @@ data class ActiveNotificationModel(
      */
     val promotedContent: PromotedNotificationContentModel?,
 ) : ActiveNotificationEntryModel() {
-    init {
-        if (!PromotedNotificationContentModel.featureFlagEnabled()) {
-            if (promotedContent != null) {
-                Log.wtf(TAG, "passing non-null promoted content without feature flag enabled")
-            }
-        }
-    }
-
     companion object {
         private const val TAG = "ActiveNotificationEntryModel"
     }
