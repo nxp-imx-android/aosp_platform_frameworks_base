@@ -778,6 +778,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -799,6 +801,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -820,6 +824,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -841,6 +847,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -862,6 +870,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -883,6 +893,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_DISABLED_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
