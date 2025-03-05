@@ -16,7 +16,6 @@
 
 package com.android.systemui.media.remedia.domain.interactor
 
-import android.graphics.Bitmap
 import com.android.systemui.media.remedia.domain.model.MediaSessionModel
 
 /**
@@ -27,14 +26,6 @@ interface MediaInteractor {
 
     /** The list of sessions. Needs to be backed by a compose snapshot state. */
     val sessions: List<MediaSessionModel>
-
-    /**
-     * Loads, on a background thread, the media art for a session with the given [sessionToken].
-     *
-     * This will be called on the main thread. It's the responsibility of the implementation to move
-     * its work off the main thread.
-     */
-    suspend fun loadArt(sessionToken: Any): Bitmap
 
     /** Seek to [to], in milliseconds on the media session with the given [sessionKey]. */
     fun seek(sessionKey: Any, to: Long)

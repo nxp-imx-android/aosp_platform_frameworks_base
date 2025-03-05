@@ -32,12 +32,7 @@ interface MediaCardViewModel {
 
     val icon: Icon
 
-    /**
-     * A callback to load the artwork for the media shown on this card. This callback will be
-     * invoked on the main thread, it's up to the implementation to move the loading off the main
-     * thread.
-     */
-    val artLoader: suspend () -> ImageBitmap
+    val background: ImageBitmap?
 
     val title: String
 

@@ -23,7 +23,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.ImageBitmap
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -63,7 +63,9 @@ constructor(
             object : MediaCardViewModel {
                 override val key = session.key
                 override val icon = session.appIcon
-                override val artLoader = suspend { interactor.loadArt(session.key).asImageBitmap() }
+                override val background: ImageBitmap?
+                    get() = session.background
+
                 override val title = session.title
                 override val subtitle = session.subtitle
                 override val actionButtonLayout = session.actionButtonLayout

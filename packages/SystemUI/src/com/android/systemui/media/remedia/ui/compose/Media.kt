@@ -46,6 +46,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -68,9 +69,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -257,7 +256,7 @@ private fun Card(
 
     Box(modifier) {
         if (stlState.currentScene != Media.Scenes.Compact) {
-            CardBackground(imageLoader = viewModel.artLoader, modifier = Modifier.matchParentSize())
+            CardBackground(image = viewModel.background, modifier = Modifier.matchParentSize())
         }
 
         key(stlState) {
@@ -541,47 +540,38 @@ private fun ContentScope.CompactCardForeground(
 
 /** Renders the background of a card, loading the artwork and showing an overlay on top of it. */
 @Composable
-private fun CardBackground(imageLoader: suspend () -> ImageBitmap, modifier: Modifier = Modifier) {
-    var image: ImageBitmap? by remember { mutableStateOf(null) }
-    LaunchedEffect(imageLoader) {
-        image = null
-        image = imageLoader()
-    }
-
-    val gradientBaseColor = MaterialTheme.colorScheme.onSurface
-    Box(
-        modifier =
-            modifier.drawWithContent {
-                // Draw the content of the box (loaded art or placeholder).
-                drawContent()
-
-                if (image != null) {
-                    // Then draw the overlay.
-                    drawRect(
-                        brush =
-                            Brush.radialGradient(
-                                0f to gradientBaseColor.copy(alpha = 0.65f),
-                                1f to gradientBaseColor.copy(alpha = 0.75f),
-                                center = size.center,
-                                radius = max(size.width, size.height) / 2,
-                            )
-                    )
-                }
-            }
-    ) {
-        image?.let { loadedImage ->
+private fun CardBackground(image: ImageBitmap?, modifier: Modifier = Modifier) {
+    Crossfade(targetState = image, modifier = modifier) { imageOrNull ->
+        if (imageOrNull != null) {
             // Loaded art.
+            val gradientBaseColor = MaterialTheme.colorScheme.onSurface
             Image(
-                bitmap = loadedImage,
+                bitmap = imageOrNull,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize(),
+                modifier =
+                    Modifier.fillMaxSize().drawWithContent {
+                        // Draw the content (loaded art).
+                        drawContent()
+
+                        if (image != null) {
+                            // Then draw the overlay.
+                            drawRect(
+                                brush =
+                                    Brush.radialGradient(
+                                        0f to gradientBaseColor.copy(alpha = 0.65f),
+                                        1f to gradientBaseColor.copy(alpha = 0.75f),
+                                        center = size.center,
+                                        radius = max(size.width, size.height) / 2,
+                                    )
+                            )
+                        }
+                    },
             )
+        } else {
+            // Placeholder.
+            Box(Modifier.background(MaterialTheme.colorScheme.onSurface).fillMaxSize())
         }
-            ?: run {
-                // Placeholder.
-                Box(Modifier.background(MaterialTheme.colorScheme.onSurface).matchParentSize())
-            }
     }
 }
 
