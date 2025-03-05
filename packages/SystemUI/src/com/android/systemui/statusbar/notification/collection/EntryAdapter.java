@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.systemui.statusbar.notification.icon.IconPack;
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 
 import kotlinx.coroutines.flow.StateFlow;
@@ -131,6 +132,8 @@ public interface EntryAdapter {
     int getSectionBucket();
 
     boolean isAmbient();
+
+    @PeopleNotificationIdentifier.Companion.PeopleNotificationType int getPeopleNotificationType();
 
     /**
      * Returns whether this row represents promoted ongoing notification.

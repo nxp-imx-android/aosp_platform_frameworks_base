@@ -30,6 +30,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.mockNotificationActivityStarter
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_FULL_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
@@ -331,6 +332,16 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
         underTest = factory.create(entry) as NotificationEntryAdapter
         assertThat(underTest.isAmbient).isTrue()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getPeopleNotificationType() {
+        val entry = kosmos.msgStyleBubbleableFullPerson
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        assertThat(underTest.peopleNotificationType).isEqualTo(TYPE_FULL_PERSON)
     }
 
     @Test

@@ -28,9 +28,9 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.core.StatusBarRootModernization
-import com.android.systemui.statusbar.notification.buildNotificationEntry
-import com.android.systemui.statusbar.notification.buildOngoingCallEntry
-import com.android.systemui.statusbar.notification.buildPromotedOngoingEntry
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.buildOngoingCallEntry
+import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
