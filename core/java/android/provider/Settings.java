@@ -10617,6 +10617,57 @@ public final class Settings {
         public static final String GLANCEABLE_HUB_ENABLED = "glanceable_hub_enabled";
 
         /**
+         * Indicates that glanceable hub should never be started automatically.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_NEVER = 0;
+
+        /**
+         * Indicates that glanceable hub should be started when charging.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_CHARGING = 1;
+
+        /**
+         * Indicates that glanceable hub should be started when charging and upright.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_CHARGING_UPRIGHT = 2;
+
+        /**
+         * Indicates that glanceable hub should be started when docked.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_DOCKED = 3;
+
+        /** @hide */
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef({
+                GLANCEABLE_HUB_START_NEVER,
+                GLANCEABLE_HUB_START_CHARGING,
+                GLANCEABLE_HUB_START_CHARGING_UPRIGHT,
+                GLANCEABLE_HUB_START_DOCKED,
+        })
+        public @interface WhenToStartGlanceableHub {
+        }
+
+        /**
+         * Indicates when to start glanceable hub. Possible values are:
+         * 0: Never
+         * 1: While charging always
+         * 2: While upright and charging
+         * 3: While docked
+         *
+         * @hide
+         */
+        public static final String WHEN_TO_START_GLANCEABLE_HUB =
+                "when_to_start_glanceable_hub";
+
+        /**
          * Whether home controls are enabled to be shown over the screensaver by the user.
          *
          * @hide
