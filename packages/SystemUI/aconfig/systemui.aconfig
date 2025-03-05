@@ -292,6 +292,17 @@ flag {
 }
 
 flag {
+  name: "notification_row_accessibility_expanded"
+  namespace: "systemui"
+  description: "Prepare ExpandableNotificationRow for new A11y expansion APIs."
+  bug: "380027122"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+
+flag {
     name: "scene_container"
     namespace: "systemui"
     description: "Enables the scene container framework go/flexiglass."
