@@ -143,6 +143,7 @@ import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.security.KeyChain;
 import android.security.keystore.AttestationUtils;
+import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyManager;
 import android.telephony.data.ApnSetting;
 import android.test.MoreAsserts;
@@ -8713,6 +8714,47 @@ public class DevicePolicyManagerTest extends DpmTestBase {
         for (int i = 0; i < 1024; i++) {
             assertThat(configOut.getString("key-" + i, null)).isEqualTo(kilobyteString);
         }
+    }
+
+    @RequiresFlagsEnabled(Flags.FLAG_REMOVE_MANAGED_ESIM_ON_WORK_PROFILE_DELETION)
+    @Test
+    public void testManagedProfileDeleted_managedEmbeddedSubscriptionDeleted() throws Exception {
+        // Setup PO mode.
+        setupProfileOwner();
+        // Mock SubscriptionManager to return a subscription managed by the profile owner package.
+        int managedSubscriptionId = 42;
+        SubscriptionInfo managedSubscription = new SubscriptionInfo.Builder().setCardId(1).setId(
+                managedSubscriptionId).setGroupOwner(admin1.getPackageName()).build();
+        when(getServices().subscriptionManager.getAvailableSubscriptionInfoList()).thenReturn(
+                List.of(managedSubscription));
+
+        // Send a ACTION_MANAGED_PROFILE_REMOVED broadcast to emulate a managed profile being
+        // removed.
+        sendBroadcastWithUser(dpms, Intent.ACTION_MANAGED_PROFILE_REMOVED, CALLER_USER_HANDLE);
+
+        // Verify that EuiccManager was called to delete the subscription.
+        verify(getServices().euiccManager).deleteSubscription(eq(managedSubscriptionId), any());
+    }
+
+    @RequiresFlagsDisabled(Flags.FLAG_REMOVE_MANAGED_ESIM_ON_WORK_PROFILE_DELETION)
+    @Test
+    public void testManagedProfileDeleted_flagDisabled_managedEmbeddedSubscriptionDeleted()
+            throws Exception {
+        // Set up PO mode.
+        setupProfileOwner();
+        // Mock SubscriptionManager to return a subscription managed by the profile owner package.
+        int managedSubscriptionId = 42;
+        SubscriptionInfo managedSubscription = new SubscriptionInfo.Builder().setCardId(1).setId(
+                managedSubscriptionId).setGroupOwner(admin1.getPackageName()).build();
+        when(getServices().subscriptionManager.getAvailableSubscriptionInfoList()).thenReturn(
+                List.of(managedSubscription));
+
+        // Send a ACTION_MANAGED_PROFILE_REMOVED broadcast to emulate a managed profile being
+        // removed.
+        sendBroadcastWithUser(dpms, Intent.ACTION_MANAGED_PROFILE_REMOVED, CALLER_USER_HANDLE);
+
+        // Verify that EuiccManager was not called to delete the subscription.
+        verifyZeroInteractions(getServices().euiccManager);
     }
 
     private void setupVpnAuthorization(String userVpnPackage, int userVpnUid) {
