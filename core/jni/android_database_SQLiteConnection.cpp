@@ -231,12 +231,6 @@ static void nativeClose(JNIEnv* env, jclass clazz, jlong connectionPtr, jboolean
     }
 }
 
-// This method is deprecated and should be removed when it is no longer needed by the
-// robolectric tests.
-static void nativeClose(JNIEnv* env, jclass clazz, jlong connectionPtr) {
-    nativeClose(env, clazz, connectionPtr, false);
-}
-
 static void sqliteCustomScalarFunctionCallback(sqlite3_context *context,
         int argc, sqlite3_value **argv) {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
@@ -974,8 +968,6 @@ static const JNINativeMethod sMethods[] =
             (void*)nativeOpen },
     { "nativeClose", "(JZ)V",
       (void*) static_cast<void(*)(JNIEnv*,jclass,jlong,jboolean)>(nativeClose) },
-    { "nativeClose", "(J)V",
-      (void*) static_cast<void(*)(JNIEnv*,jclass,jlong)>(nativeClose) },
     { "nativeRegisterCustomScalarFunction", "(JLjava/lang/String;Ljava/util/function/UnaryOperator;)V",
             (void*)nativeRegisterCustomScalarFunction },
     { "nativeRegisterCustomAggregateFunction", "(JLjava/lang/String;Ljava/util/function/BinaryOperator;)V",
