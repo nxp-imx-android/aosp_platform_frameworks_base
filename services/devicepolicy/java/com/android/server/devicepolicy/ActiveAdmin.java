@@ -50,6 +50,7 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
+import android.util.PrintWriterPrinter;
 
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.XmlUtils;
@@ -1483,6 +1484,13 @@ class ActiveAdmin {
         if (Flags.provisioningContextParameter()) {
             pw.print("mProvisioningContext=");
             pw.println(mProvisioningContext);
+        }
+
+        if (info != null) {
+            pw.println("DeviceAdminInfo:");
+            pw.increaseIndent();
+            info.dump(new PrintWriterPrinter(pw), "");
+            pw.decreaseIndent();
         }
     }
 }

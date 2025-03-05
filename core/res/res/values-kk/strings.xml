@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Бір қолмен басқару режимі"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Экранды қарайту"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Есту аппараттары"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"Автоматты басу"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Ажыратылды"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Қосылды"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Белсенді"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Босату алдында бекітпесін ашу өрнегін сұрау"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Босату алдында құпия сөзді сұрау"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Әкімшіңіз орнатты.\nБерілген рұқсаттарды көру үшін параметрлерге өтіңіз."</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"Әкімші жаңартқан"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Әкімші жойған"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Жарайды"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>

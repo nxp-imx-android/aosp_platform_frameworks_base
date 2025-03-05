@@ -830,7 +830,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private void notifySystemUiStateFlags(@SystemUiStateFlags long flags, int displayId) {
         if (SysUiState.DEBUG) {
             Log.d(TAG_OPS, "Notifying sysui state change to launcher service: proxy="
-                    + mLauncherProxy + " flags=" + flags + " displayId=" + displayId);
+                    + mLauncherProxy + " display=" + displayId + " flags="
+                    + QuickStepContract.getSystemUiStateString(flags) + " displayId=" + displayId);
         }
         try {
             if (mLauncherProxy != null) {

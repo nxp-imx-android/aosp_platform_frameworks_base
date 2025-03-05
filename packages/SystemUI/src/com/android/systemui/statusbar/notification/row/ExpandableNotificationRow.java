@@ -111,6 +111,8 @@ import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.NotificationEntryAdapter;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
@@ -121,6 +123,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationCompactMessagingTemplateViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationAddXOnHoverToDismiss;
@@ -428,7 +431,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 onExpansionChanged(true /* userAction */, wasExpanded);
             }
         } else if (mEnableNonGroupedNotificationExpand) {
-            if (v.isAccessibilityFocused()) {
+            if (v != null && v.isAccessibilityFocused()) {
                 mPrivateLayout.setFocusOnVisibilityChange();
             }
             boolean nowExpanded;
@@ -1682,13 +1685,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
         if (notificationRowTransparency() && mBackgroundNormal != null) {
             if (NotificationBundleUi.isEnabled() && mEntryAdapter != null) {
-                mBackgroundNormal.setBgIsColorized(
-                        usesTransparentBackground() && mEntryAdapter.isColorized());
+                mBackgroundNormal.setBgIsColorized(mEntryAdapter.isColorized());
             } else {
                 if (mEntry != null) {
                     mBackgroundNormal.setBgIsColorized(
-                            usesTransparentBackground()
-                                    && mEntry.getSbn().getNotification().isColorized());
+                            mEntry.getSbn().getNotification().isColorized());
                 }
             }
         }
@@ -1816,6 +1817,22 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 /* headerViewLowPriority= */ headerView,
                 /* onClickListener= */ mExpandClickListener
         );
+    }
+
+    /**
+     * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
+     * This can only be init once and not in conjunction with any other header view.
+     */
+    public void initBundleHeader(@NonNull BundleHeaderViewModelImpl bundleHeaderViewModel) {
+        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
+        NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
+        bundleHeaderViewModel.setOnExpandClickListener(mExpandClickListener);
+
+        childrenContainer.initBundleHeader(bundleHeaderViewModel);
+
+        if (TransparentHeaderFix.isEnabled()) {
+            updateBackgroundForGroupState();
+        }
     }
 
     public void setHeadsUpAnimatingAway(boolean headsUpAnimatingAway) {
@@ -2124,7 +2141,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      * Initialize row.
      */
     public void initialize(
-            NotificationEntry entry,
+            EntryAdapter entryAdapter,
+            PipelineEntry entry,
             RemoteInputViewSubcomponent.Factory rivSubcomponentFactory,
             String appName,
             @NonNull String notificationKey,
@@ -2152,11 +2170,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             NotificationRebindingTracker notificationRebindingTracker) {
 
         if (NotificationBundleUi.isEnabled()) {
+            mEntryAdapter = entryAdapter;
             // TODO (b/395857098): remove when all usages are migrated
-            mEntryAdapter = entry.getEntryAdapter();
-            mEntry = entry;
+            mEntry = (NotificationEntry) entry;
         } else {
-            mEntry = entry;
+            mEntry = (NotificationEntry) entry;
         }
         mAppName = appName;
         mRebindingTracker = notificationRebindingTracker;

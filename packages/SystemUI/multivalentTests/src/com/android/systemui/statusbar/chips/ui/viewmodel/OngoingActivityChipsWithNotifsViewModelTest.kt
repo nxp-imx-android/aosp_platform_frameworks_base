@@ -254,7 +254,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val unused by collectLastValue(underTest.chips)
 
             assertIsScreenRecordChip(latest!!.primary)
-            assertIsCallChip(latest!!.secondary, callNotificationKey)
+            assertIsCallChip(latest!!.secondary, callNotificationKey, context)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
@@ -285,7 +285,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             assertThat(latest!!.active.size).isEqualTo(2)
             assertIsScreenRecordChip(latest!!.active[0])
-            assertIsCallChip(latest!!.active[1], callNotificationKey)
+            assertIsCallChip(latest!!.active[1], callNotificationKey, context)
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(2)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
@@ -617,7 +617,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val unused by collectLastValue(underTest.chips)
 
             assertIsShareToAppChip(latest!!.primary)
-            assertIsCallChip(latest!!.secondary, callNotificationKey)
+            assertIsCallChip(latest!!.secondary, callNotificationKey, context)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
@@ -636,7 +636,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             assertThat(latest!!.active.size).isEqualTo(2)
             assertIsShareToAppChip(latest!!.active[0])
-            assertIsCallChip(latest!!.active[1], callNotificationKey)
+            assertIsCallChip(latest!!.active[1], callNotificationKey, context)
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(2)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
@@ -654,7 +654,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             val latest by collectLastValue(underTest.primaryChip)
 
-            assertIsCallChip(latest, callNotificationKey)
+            assertIsCallChip(latest, callNotificationKey, context)
         }
 
     @DisableChipsModernization
@@ -671,7 +671,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chipsLegacy)
             val unused by collectLastValue(underTest.chips)
 
-            assertIsCallChip(latest!!.primary, callNotificationKey)
+            assertIsCallChip(latest!!.primary, callNotificationKey, context)
             assertThat(latest!!.secondary)
                 .isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
@@ -691,7 +691,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val unused by collectLastValue(underTest.chipsLegacy)
 
             assertThat(latest!!.active.size).isEqualTo(1)
-            assertIsCallChip(latest!!.active[0], callNotificationKey)
+            assertIsCallChip(latest!!.active[0], callNotificationKey, context)
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(3)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
@@ -950,7 +950,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 )
             )
 
-            assertIsCallChip(latest!!.primary, callNotificationKey)
+            assertIsCallChip(latest!!.primary, callNotificationKey, context)
             assertIsNotifChip(latest!!.secondary, context, firstIcon, "firstNotif")
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
@@ -984,7 +984,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest!!.active.size).isEqualTo(2)
-            assertIsCallChip(latest!!.active[0], callNotificationKey)
+            assertIsCallChip(latest!!.active[0], callNotificationKey, context)
             assertIsNotifChip(latest!!.active[1], context, firstIcon, "firstNotif")
             assertThat(latest!!.overflow.size).isEqualTo(1)
             assertIsNotifChip(latest!!.overflow[0], context, secondIcon, "secondNotif")
@@ -1011,7 +1011,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             )
 
             assertIsScreenRecordChip(latest!!.primary)
-            assertIsCallChip(latest!!.secondary, callNotificationKey)
+            assertIsCallChip(latest!!.secondary, callNotificationKey, context)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
         }
 
@@ -1057,7 +1057,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             assertThat(latest!!.active.size).isEqualTo(2)
             assertIsScreenRecordChip(latest!!.active[0])
-            assertIsCallChip(latest!!.active[1], callNotificationKey)
+            assertIsCallChip(latest!!.active[1], callNotificationKey, context)
             assertThat(latest!!.overflow.size).isEqualTo(1)
             assertIsNotifChip(latest!!.overflow[0], context, notifIcon, "notif")
             assertThat(latest!!.inactive.size).isEqualTo(2)
@@ -1092,7 +1092,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             addOngoingCallState(callNotificationKey)
 
             // THEN the higher priority call chip is used
-            assertIsCallChip(latest, callNotificationKey)
+            assertIsCallChip(latest, callNotificationKey, context)
 
             // WHEN the higher priority media projection chip is added
             mediaProjectionState.value =
@@ -1145,7 +1145,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             mediaProjectionState.value = MediaProjectionState.NotProjecting
 
             // THEN the lower priority call is used
-            assertIsCallChip(latest, callNotificationKey)
+            assertIsCallChip(latest, callNotificationKey, context)
 
             // WHEN the higher priority call is removed
             removeOngoingCallState(key = callNotificationKey)
@@ -1186,7 +1186,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             // THEN the higher priority call chip is used as primary and notif is demoted to
             // secondary
-            assertIsCallChip(latest!!.primary, callNotificationKey)
+            assertIsCallChip(latest!!.primary, callNotificationKey, context)
             assertIsNotifChip(latest!!.secondary, context, notifIcon, "notif")
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
 
@@ -1201,7 +1201,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             // THEN the higher priority media projection chip is used as primary and call is demoted
             // to secondary (and notif is dropped altogether)
             assertIsShareToAppChip(latest!!.primary)
-            assertIsCallChip(latest!!.secondary, callNotificationKey)
+            assertIsCallChip(latest!!.secondary, callNotificationKey, context)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
 
             // WHEN the higher priority screen record chip is added
@@ -1264,7 +1264,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
             // THEN the higher priority call chip and notif are active in that order
             assertThat(latest!!.active.size).isEqualTo(2)
-            assertIsCallChip(latest!!.active[0], callNotificationKey)
+            assertIsCallChip(latest!!.active[0], callNotificationKey, context)
             assertIsNotifChip(latest!!.active[1], context, notifIcon, "notif")
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(3)
@@ -1282,7 +1282,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             // notif is demoted to overflow
             assertThat(latest!!.active.size).isEqualTo(2)
             assertIsShareToAppChip(latest!!.active[0])
-            assertIsCallChip(latest!!.active[1], callNotificationKey)
+            assertIsCallChip(latest!!.active[1], callNotificationKey, context)
             assertThat(latest!!.overflow.size).isEqualTo(1)
             assertIsNotifChip(latest!!.overflow[0], context, notifIcon, "notif")
             assertThat(latest!!.inactive.size).isEqualTo(2)
@@ -1295,7 +1295,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             // media projection and notif are demoted in overflow
             assertThat(latest!!.active.size).isEqualTo(2)
             assertIsScreenRecordChip(latest!!.active[0])
-            assertIsCallChip(latest!!.active[1], callNotificationKey)
+            assertIsCallChip(latest!!.active[1], callNotificationKey, context)
             assertThat(latest!!.overflow.size).isEqualTo(2)
             assertIsShareToAppChip(latest!!.overflow[0])
             assertIsNotifChip(latest!!.overflow[1], context, notifIcon, "notif")

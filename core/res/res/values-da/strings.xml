@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Enhåndstilstand"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Ekstra dæmpet belysning"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Høreapparater"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"Autoklik"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Ikke forbundet"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Forbundet"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Aktiv"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Bed om oplåsningsmønster ved deaktivering"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Bed om adgangskode inden frigørelse"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Installeret af din administrator.\nGå til Indstillinger for at se de tilladelser, der er blevet givet"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"Opdateret af din administrator"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Slettet af din administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Batterisparefunktionen aktiverer Mørkt tema og begrænser eller deaktiverer aktivitet i baggrunden og visse visuelle effekter, funktioner og netværksforbindelser."</string>

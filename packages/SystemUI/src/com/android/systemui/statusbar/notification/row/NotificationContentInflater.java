@@ -57,7 +57,6 @@ import com.android.systemui.statusbar.notification.ConversationNotificationProce
 import com.android.systemui.statusbar.notification.InflationException;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationUtils;
-import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
@@ -441,8 +440,12 @@ public class NotificationContentInflater implements NotificationRowContentBinder
             NotificationRowContentBinderLogger logger) {
         return TraceUtils.trace("NotificationContentInflater.createRemoteViews", () -> {
             InflationProgress result = new InflationProgress();
+
+            // inflating the contracted view is the legacy invalidation trigger
+            boolean reinflating = (reInflateFlags & FLAG_CONTENT_VIEW_CONTRACTED) != 0;
             // create an image inflater
-            result.mRowImageInflater = RowImageInflater.newInstance(row.mImageModelIndex);
+            result.mRowImageInflater = RowImageInflater.newInstance(row.mImageModelIndex,
+                    reinflating);
 
             if ((reInflateFlags & FLAG_CONTENT_VIEW_CONTRACTED) != 0) {
                 logger.logAsyncTaskProgress(row.getLoggingKey(), "creating contracted remote view");

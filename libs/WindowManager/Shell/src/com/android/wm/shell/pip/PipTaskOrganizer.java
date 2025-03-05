@@ -70,6 +70,7 @@ import android.view.Choreographer;
 import android.view.Display;
 import android.view.Surface;
 import android.view.SurfaceControl;
+import android.window.DesktopModeFlags;
 import android.window.DisplayAreaInfo;
 import android.window.TaskOrganizer;
 import android.window.TaskSnapshot;
@@ -78,7 +79,6 @@ import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -781,7 +781,7 @@ public class PipTaskOrganizer implements ShellTaskOrganizer.TaskListener,
     // TODO(b/377581840): Update this check to include non-minimized cases, e.g. split to PiP etc.
     private boolean isPipExitingToDesktopMode() {
         DesktopRepository currentRepo = getCurrentRepo();
-        return Flags.enableDesktopWindowingPip() && currentRepo != null
+        return DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue() && currentRepo != null
                 && (currentRepo.isAnyDeskActive(mTaskInfo.displayId)
                     || isDisplayInFreeform());
     }

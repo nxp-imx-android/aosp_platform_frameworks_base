@@ -69,7 +69,7 @@ class ShadePrimaryDisplayCommandTest : SysuiTestCase() {
     @Test
     fun commandShadeDisplayOverride_resetsDisplayId() =
         testScope.runTest {
-            val displayId by collectLastValue(shadeDisplaysRepository.displayId)
+            val displayId by collectLastValue(shadeDisplaysRepository.pendingDisplayId)
             assertThat(displayId).isEqualTo(Display.DEFAULT_DISPLAY)
 
             val newDisplayId = 2
@@ -87,7 +87,7 @@ class ShadePrimaryDisplayCommandTest : SysuiTestCase() {
     @Test
     fun commandShadeDisplayOverride_anyExternalDisplay_notOnDefaultAnymore() =
         testScope.runTest {
-            val displayId by collectLastValue(shadeDisplaysRepository.displayId)
+            val displayId by collectLastValue(shadeDisplaysRepository.pendingDisplayId)
             assertThat(displayId).isEqualTo(Display.DEFAULT_DISPLAY)
             val newDisplayId = 2
             displayRepository.addDisplay(displayId = newDisplayId)

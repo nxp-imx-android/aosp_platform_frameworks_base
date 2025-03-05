@@ -1290,7 +1290,9 @@ public class NotificationStackScrollLayout
     @Override
     public void setHeadsUpBottom(float headsUpBottom) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (mAmbientState.getHeadsUpBottom() != headsUpBottom) {
+        if (NotificationsHunSharedAnimationValues.isEnabled()) {
+            mHeadsUpAnimator.setHeadsUpAppearHeightBottom(Math.round(headsUpBottom));
+        } else if (mAmbientState.getHeadsUpBottom() != headsUpBottom) {
             mAmbientState.setHeadsUpBottom(headsUpBottom);
             mStateAnimator.setHeadsUpAppearHeightBottom(Math.round(headsUpBottom));
         }

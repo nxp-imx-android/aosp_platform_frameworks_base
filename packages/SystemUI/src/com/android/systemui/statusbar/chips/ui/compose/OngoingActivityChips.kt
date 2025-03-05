@@ -25,6 +25,7 @@ import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
@@ -47,7 +48,13 @@ fun OngoingActivityChips(
         chips.active
             .filter { !it.isHidden }
             .forEach {
-                key(it.key) { OngoingActivityChip(model = it, iconViewStore = iconViewStore) }
+                key(it.key) {
+                    OngoingActivityChip(
+                        model = it,
+                        iconViewStore = iconViewStore,
+                        modifier = Modifier.sysuiResTag(it.key),
+                    )
+                }
             }
     }
 }

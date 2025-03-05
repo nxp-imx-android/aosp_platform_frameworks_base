@@ -37,9 +37,12 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.statusbar.SbnBuilder
 import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
+import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.EntryAdapter
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider
 import com.android.systemui.statusbar.notification.collection.render.FakeNodeController
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager
@@ -47,6 +50,7 @@ import com.android.systemui.statusbar.notification.collection.render.GroupMember
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRowController.BUBBLES_SETTING_URI
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
@@ -112,6 +116,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
     private val uiEventLogger: UiEventLogger = mock()
     private val msdlPlayer: MSDLPlayer = mock()
     private val rebindingTracker: NotificationRebindingTracker = mock()
+    private val entryAdapterFactory: EntryAdapterFactory = mock()
     private lateinit var controller: ExpandableNotificationRowController
 
     @Before
@@ -154,6 +159,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
                 uiEventLogger,
                 msdlPlayer,
                 rebindingTracker,
+                entryAdapterFactory,
             )
         whenever(view.childrenContainer).thenReturn(childrenContainer)
 
@@ -277,8 +283,10 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
         whenever(view.privateLayout).thenReturn(childView)
         val entryAdapter = mock(EntryAdapter::class.java)
         val sbn =
-            SbnBuilder().setNotification(Notification.Builder(mContext).build())
-                .setUser(UserHandle.of(view.entry.sbn.userId)).build()
+            SbnBuilder()
+                .setNotification(Notification.Builder(mContext).build())
+                .setUser(UserHandle.of(view.entry.sbn.userId))
+                .build()
         whenever(entryAdapter.sbn).thenReturn(sbn)
         whenever(view.entryAdapter).thenReturn(entryAdapter)
 

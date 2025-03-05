@@ -190,6 +190,7 @@ public class AccountManagerService
     }
 
     final Context mContext;
+    final PackageMonitor mPackageMonitor;
 
     private static final int[] INTERESTING_APP_OPS = new int[] {
         AppOpsManager.OP_GET_ACCOUNTS,
@@ -373,7 +374,7 @@ public class AccountManagerService
         }, UserHandle.ALL, userFilter, null, null);
 
         // Need to cancel account request notifications if the update/install can access the account
-        new PackageMonitor() {
+        mPackageMonitor = new PackageMonitor() {
             @Override
             public void onPackageAdded(String packageName, int uid) {
                 // Called on a handler, and running as the system
@@ -397,7 +398,8 @@ public class AccountManagerService
                     return;
                 }
             }
-        }.register(mContext, mHandler.getLooper(), UserHandle.ALL, true);
+        };
+        mPackageMonitor.register(mContext, mHandler.getLooper(), UserHandle.ALL, true);
 
         // Cancel account request notification if an app op was preventing the account access
         for (int i = 0; i < INTERESTING_APP_OPS.length; ++i) {

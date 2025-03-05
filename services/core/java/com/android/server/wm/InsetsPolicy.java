@@ -229,6 +229,7 @@ class InsetsPolicy {
             state = originalState;
         }
         state = adjustVisibilityForIme(target, state, state == originalState);
+        state = mPolicy.replaceInsetsSourcesIfNeeded(state, state == originalState);
         return adjustInsetsForRoundedCorners(target.mToken, state, state == originalState);
     }
 

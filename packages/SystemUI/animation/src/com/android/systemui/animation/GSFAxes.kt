@@ -91,8 +91,8 @@ object GSFAxes {
 
     private val AXIS_MAP =
         listOf(WEIGHT, WIDTH, SLANT, ROUND, GRADE, OPTICAL_SIZE, ITALIC)
-            .map { def -> def.tag.toLowerCase() to def }
+            .map { def -> def.tag.lowercase() to def }
             .toMap()
 
-    fun getAxis(axis: String): AxisDefinition? = AXIS_MAP[axis.toLowerCase()]
+    fun getAxis(axis: String): AxisDefinition? = AXIS_MAP[axis.lowercase()]
 }

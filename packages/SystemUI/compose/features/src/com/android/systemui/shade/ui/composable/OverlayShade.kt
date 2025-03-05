@@ -37,24 +37,26 @@ import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.overscroll
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
+import com.android.mechanics.behavior.EdgeContainerExpansionSpec
+import com.android.mechanics.behavior.edgeContainerExpansionBackground
 import com.android.systemui.res.R
-import androidx.compose.ui.unit.Dp
+import com.android.systemui.shade.ui.composable.OverlayShade.rememberShadeExpansionMotion
 
 /** Renders a lightweight shade UI container, as an overlay. */
 @Composable
@@ -110,23 +112,15 @@ private fun ContentScope.Panel(
 ) {
     Box(
         modifier =
-            modifier.clip(OverlayShade.Shapes.RoundedCornerPanel).disableSwipesWhenScrolling()
+            modifier
+                .disableSwipesWhenScrolling()
+                .edgeContainerExpansionBackground(
+                    OverlayShade.Colors.PanelBackground,
+                    rememberShadeExpansionMotion(),
+                )
     ) {
-        Spacer(
-            modifier =
-                Modifier.element(OverlayShade.Elements.PanelBackground)
-                    .matchParentSize()
-                    .background(
-                        color = OverlayShade.Colors.PanelBackground,
-                        shape = OverlayShade.Shapes.RoundedCornerPanel,
-                    )
-        )
-
         Column {
             header?.invoke()
-
-            // This content is intentionally rendered as a separate element from the background in
-            // order to allow for more flexibility when defining transitions.
             content()
         }
     }
@@ -192,8 +186,6 @@ object OverlayShade {
                 contentPicker = LowestZIndexContentPicker,
                 placeAllCopies = true,
             )
-        val PanelBackground =
-            ElementKey("OverlayShadePanelBackground", contentPicker = LowestZIndexContentPicker)
     }
 
     object Colors {
@@ -205,13 +197,13 @@ object OverlayShade {
     object Dimensions {
         val PanelCornerRadius: Dp
             @Composable
-            @ReadOnlyComposable get() =
-                dimensionResource(R.dimen.overlay_shade_panel_shape_radius)
+            @ReadOnlyComposable
+            get() = dimensionResource(R.dimen.overlay_shade_panel_shape_radius)
     }
 
-    object Shapes {
-        val RoundedCornerPanel: RoundedCornerShape
-            @Composable
-            @ReadOnlyComposable get() = RoundedCornerShape(Dimensions.PanelCornerRadius)
+    @Composable
+    fun rememberShadeExpansionMotion(): EdgeContainerExpansionSpec {
+        val radius = Dimensions.PanelCornerRadius
+        return remember(radius) { EdgeContainerExpansionSpec(radius = radius) }
     }
 }

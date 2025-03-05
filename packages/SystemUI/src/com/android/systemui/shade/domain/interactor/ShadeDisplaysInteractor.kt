@@ -32,6 +32,7 @@ import com.android.systemui.shade.ShadeDisplayChangeLatencyTracker
 import com.android.systemui.shade.ShadeTraceLogger.logMoveShadeWindowTo
 import com.android.systemui.shade.ShadeTraceLogger.t
 import com.android.systemui.shade.ShadeTraceLogger.traceReparenting
+import com.android.systemui.shade.data.repository.MutableShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.display.ShadeExpansionIntent
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
@@ -44,6 +45,7 @@ import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
@@ -55,7 +57,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 class ShadeDisplaysInteractor
 @Inject
 constructor(
-    private val shadePositionRepository: ShadeDisplaysRepository,
+    private val shadePositionRepository: MutableShadeDisplaysRepository,
     @ShadeDisplayAware private val shadeContext: WindowContext,
     @ShadeDisplayAware private val configurationRepository: ConfigurationRepository,
     @Background private val bgScope: CoroutineScope,
@@ -72,11 +74,14 @@ constructor(
     private val hasActiveNotifications: Boolean
         get() = activeNotificationsInteractor.areAnyNotificationsPresentValue
 
+    /** Current display id of the shade window. */
+    val displayId: StateFlow<Int> = shadePositionRepository.displayId
+
     override fun start() {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         listenForWindowContextConfigChanges()
         bgScope.launchTraced(TAG) {
-            shadePositionRepository.displayId.collectLatest { displayId ->
+            shadePositionRepository.pendingDisplayId.collectLatest { displayId ->
                 moveShadeWindowTo(displayId)
             }
         }
@@ -119,6 +124,7 @@ constructor(
                         reparentToDisplayId(id = destinationId)
                     }
                     checkContextDisplayMatchesExpected(destinationId)
+                    shadePositionRepository.onDisplayChangedSucceeded(destinationId)
                 }
             }
         } catch (e: IllegalStateException) {

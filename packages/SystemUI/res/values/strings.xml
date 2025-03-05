@@ -1042,6 +1042,8 @@
     <string name="hearing_devices_tools_label">Tools</string>
     <!-- QuickSettings: Tool name for hearing devices dialog related tools [CHAR LIMIT=40] [BACKUP_MESSAGE_ID=8916875614623730005]-->
     <string name="quick_settings_hearing_devices_live_caption_title">Live Caption</string>
+    <!-- QuickSettings: Label for button to go to hearing devices settings page [CHAR_LIMIT=20] -->
+    <string name="hearing_devices_settings_button">Settings</string>
 
     <!-- QuickSettings: Notes tile. The label of a quick settings tile for launching the default notes taking app. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_notes_label">Note</string>

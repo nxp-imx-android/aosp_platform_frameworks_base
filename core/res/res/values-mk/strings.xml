@@ -1531,7 +1531,7 @@
     <string name="ext_media_status_unmounted" msgid="8145812017295835941">"Исфрлено"</string>
     <string name="ext_media_status_checking" msgid="159013362442090347">"Се проверува..."</string>
     <string name="ext_media_status_mounted" msgid="3459448555811203459">"Подготвено"</string>
-    <string name="ext_media_status_mounted_ro" msgid="1974809199760086956">"Само за читање"</string>
+    <string name="ext_media_status_mounted_ro" msgid="1974809199760086956">"Само за преглед"</string>
     <string name="ext_media_status_bad_removal" msgid="508448566481406245">"Отстранет небезбедно"</string>
     <string name="ext_media_status_unmountable" msgid="7043574843541087748">"Оштетено"</string>
     <string name="ext_media_status_unsupported" msgid="5460509911660539317">"Неподдржано"</string>
@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Режим со една рака"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Дополнително затемнување"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Слушни помагала"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"Автоматско кликнување"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Не е поврзано"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Поврзано"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Активно"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Побарај шема за откл. пред откачување"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Побарај лозинка пред откачување"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Инсталирано од администраторот.\nОдете во „Поставки“ за да ги прегледате доделените дозволи"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"Ажурирано од администраторот"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Избришано од администраторот"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Во ред"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"„Штедачот на батерија“ вклучува „Темна тема“ и ограничува или исклучува активност во заднина, некои визуелни ефекти, одредени функции и некои мрежни врски."</string>

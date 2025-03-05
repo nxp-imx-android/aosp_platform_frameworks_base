@@ -1965,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ଅନପିନ୍‌ କରିବା ପୂର୍ବରୁ ଲକ୍‌ ଖୋଲିବା ପାଟର୍ନ ପଚାରନ୍ତୁ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ଅନପିନ୍‌ କରିବା ପୂର୍ବରୁ ପାସ୍‌ୱର୍ଡ ପଚାରନ୍ତୁ"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"ଆପଣଙ୍କ ଆଡମିନଙ୍କ ଦ୍ୱାରା ଇନଷ୍ଟଲ କରାଯାଇଛି।\nଅନୁମୋଦିତ ଅମୁମତିଗୁଡ଼ିକ ଭ୍ୟୁ କରିବା ପାଇଁ ସେଟିଂସକୁ ଯାଆନ୍ତୁ"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"ଆପଣଙ୍କ ଆଡମିନ୍‌‌ ଅପଡେଟ୍‍ କରିଛନ୍ତି"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ଆପଣଙ୍କ ଆଡମିନ୍‌‌ ଡିଲିଟ୍‍ କରିଛନ୍ତି"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ଠିକ ଅଛି"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ବେଟେରୀ ସେଭର ଗାଢ଼ା ଥିମକୁ ଚାଲୁ କରେ ଏବଂ ପୃଷ୍ଠପଟ କାର୍ଯ୍ୟକଳାପ, କିଛି ଭିଜୁଆଲ ଇଫେକ୍ଟ, କିଛି ଫିଚର ଏବଂ କିଛି ନେଟୱାର୍କ ସଂଯୋଗକୁ ସୀମିତ କିମ୍ବା ବନ୍ଦ କରେ।"</string>

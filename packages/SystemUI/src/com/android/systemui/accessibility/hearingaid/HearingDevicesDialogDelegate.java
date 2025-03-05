@@ -19,6 +19,8 @@ package com.android.systemui.accessibility.hearingaid;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 
+import static com.android.internal.accessibility.AccessibilityShortcutController.ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME;
+
 import static java.util.Collections.emptyList;
 
 import android.bluetooth.BluetoothHapClient;
@@ -263,6 +265,20 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
         dialog.setTitle(R.string.quick_settings_hearing_devices_dialog_title);
         dialog.setView(LayoutInflater.from(dialog.getContext()).inflate(
                 R.layout.hearing_devices_tile_dialog, null));
+        dialog.setNegativeButton(
+                R.string.hearing_devices_settings_button,
+                (dialogInterface, which) -> {
+                    mUiEventLogger.log(HearingDevicesUiEvent.HEARING_DEVICES_SETTINGS_CLICK,
+                            mLaunchSourceId);
+                    final Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_DETAILS_SETTINGS)
+                            .putExtra(Intent.EXTRA_COMPONENT_NAME,
+                                    ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME.flattenToString());
+                    mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
+                            mDialogTransitionAnimator.createActivityTransitionController(
+                                    dialog));
+                },
+                /* dismissOnClick = */ true
+        );
         dialog.setPositiveButton(
                 R.string.quick_settings_done,
                 /* onClick = */ null,

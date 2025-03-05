@@ -294,19 +294,6 @@ final class AccessibilityController {
         }
     }
 
-    void onAppWindowTransition(int displayId, int transition) {
-        if (mAccessibilityTracing.isTracingEnabled(FLAGS_MAGNIFICATION_CALLBACK)) {
-            mAccessibilityTracing.logTrace(TAG + ".onAppWindowTransition",
-                    FLAGS_MAGNIFICATION_CALLBACK,
-                    "displayId=" + displayId + "; transition=" + transition);
-        }
-        final DisplayMagnifier displayMagnifier = mDisplayMagnifiers.get(displayId);
-        if (displayMagnifier != null) {
-            displayMagnifier.onAppWindowTransition(displayId, transition);
-        }
-        // Not relevant for the window observer.
-    }
-
     void onWMTransition(int displayId, @TransitionType int type, @TransitionFlags int flags) {
         if (mAccessibilityTracing.isTracingEnabled(FLAGS_MAGNIFICATION_CALLBACK)) {
             mAccessibilityTracing.logTrace(TAG + ".onWMTransition",
@@ -670,34 +657,6 @@ final class AccessibilityController {
             mHandler.sendEmptyMessage(MyHandler.MESSAGE_NOTIFY_DISPLAY_SIZE_CHANGED);
         }
 
-        void onAppWindowTransition(int displayId, int transition) {
-            if (mAccessibilityTracing.isTracingEnabled(FLAGS_MAGNIFICATION_CALLBACK)) {
-                mAccessibilityTracing.logTrace(LOG_TAG + ".onAppWindowTransition",
-                        FLAGS_MAGNIFICATION_CALLBACK,
-                        "displayId=" + displayId + "; transition=" + transition);
-            }
-            if (DEBUG_WINDOW_TRANSITIONS) {
-                Slog.i(LOG_TAG, "Window transition: "
-                        + AppTransition.appTransitionOldToString(transition)
-                        + " displayId: " + displayId);
-            }
-            final boolean isMagnifierActivated = isFullscreenMagnificationActivated();
-            if (!isMagnifierActivated) {
-                return;
-            }
-            switch (transition) {
-                case WindowManager.TRANSIT_OLD_ACTIVITY_OPEN:
-                case WindowManager.TRANSIT_OLD_TASK_FRAGMENT_OPEN:
-                case WindowManager.TRANSIT_OLD_TASK_OPEN:
-                case WindowManager.TRANSIT_OLD_TASK_TO_FRONT:
-                case WindowManager.TRANSIT_OLD_WALLPAPER_OPEN:
-                case WindowManager.TRANSIT_OLD_WALLPAPER_CLOSE:
-                case WindowManager.TRANSIT_OLD_WALLPAPER_INTRA_OPEN: {
-                    mUserContextChangedNotifier.onAppWindowTransition(transition);
-                }
-            }
-        }
-
         void onWMTransition(int displayId, @TransitionType int type, @TransitionFlags int flags) {
             if (mAccessibilityTracing.isTracingEnabled(FLAGS_MAGNIFICATION_CALLBACK)) {
                 mAccessibilityTracing.logTrace(LOG_TAG + ".onWMTransition",
@@ -734,7 +693,7 @@ final class AccessibilityController {
             }
             if (DEBUG_WINDOW_TRANSITIONS) {
                 Slog.i(LOG_TAG, "Window transition: "
-                        + AppTransition.appTransitionOldToString(transition)
+                        + WindowManager.transitTypeToString(transition)
                         + " displayId: " + windowState.getDisplayId());
             }
             final boolean isMagnifierActivated = isFullscreenMagnificationActivated();

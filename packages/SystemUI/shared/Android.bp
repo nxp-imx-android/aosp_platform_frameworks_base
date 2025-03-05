@@ -51,6 +51,7 @@ android_library {
         ":wm_shell-shared-aidls",
     ],
     static_libs: [
+        "com.android.systemui.dagger-api",
         "BiometricsSharedLib",
         "PlatformAnimationLib",
         "PluginCoreLib",

@@ -41,7 +41,6 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTIO
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
-import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.FakePromotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
@@ -204,7 +203,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
         val result =
             NotificationRowContentBinderImpl.InflationProgress(
                 packageContext = mContext,
-                rowImageInflater = RowImageInflater.newInstance(null),
+                rowImageInflater = RowImageInflater.newInstance(null, reinflating = false),
                 remoteViews = NewRemoteViews(),
                 contentModel = NotificationContentModel(headsUpStatusBarModel),
                 promotedContent = null,

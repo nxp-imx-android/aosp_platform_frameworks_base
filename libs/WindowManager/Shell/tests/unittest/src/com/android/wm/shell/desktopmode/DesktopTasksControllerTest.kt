@@ -263,6 +263,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var mockDisplayContext: Context
     @Mock private lateinit var dragToDisplayTransitionHandler: DragToDisplayTransitionHandler
+    @Mock
+    private lateinit var moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler
 
     private lateinit var controller: DesktopTasksController
     private lateinit var shellInit: ShellInit
@@ -445,6 +447,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             userProfileContexts,
             desktopModeCompatPolicy,
             dragToDisplayTransitionHandler,
+            moveToDisplayTransitionHandler,
         )
 
     @After
@@ -2521,7 +2524,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(rootTaskDisplayAreaOrganizer.displayIds).thenReturn(intArrayOf(DEFAULT_DISPLAY))
         val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
         controller.moveToNextDisplay(task.taskId)
-        verifyWCTNotExecuted()
+        verify(transitions, never()).startTransition(anyInt(), any(), anyOrNull())
     }
 
     @Test
@@ -2539,9 +2542,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveToNextDisplay(task.taskId)
 
         val taskChange =
-            getLatestWct(type = TRANSIT_CHANGE).hierarchyOps.find {
-                it.container == task.token.asBinder() && it.isReparent
-            }
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .hierarchyOps
+                .find { it.container == task.token.asBinder() && it.isReparent }
         assertNotNull(taskChange)
         assertThat(taskChange.newParent).isEqualTo(secondDisplayArea.token.asBinder())
         assertThat(taskChange.toTop).isTrue()
@@ -2562,9 +2568,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveToNextDisplay(task.taskId)
 
         val taskChange =
-            getLatestWct(type = TRANSIT_CHANGE).hierarchyOps.find {
-                it.container == task.token.asBinder() && it.isReparent
-            }
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .hierarchyOps
+                .find { it.container == task.token.asBinder() && it.isReparent }
         assertNotNull(taskChange)
         assertThat(taskChange.newParent).isEqualTo(defaultDisplayArea.token.asBinder())
         assertThat(taskChange.toTop).isTrue()
@@ -2589,7 +2598,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.moveToNextDisplay(task.taskId)
 
-        with(getLatestWct(type = TRANSIT_CHANGE)) {
+        with(
+            getLatestWct(
+                type = TRANSIT_CHANGE,
+                handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+            )
+        ) {
             val wallpaperChange =
                 hierarchyOps.find { op -> op.container == wallpaperToken.asBinder() }
             assertNotNull(wallpaperChange)
@@ -2615,9 +2629,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveToNextDisplay(task.taskId)
 
         val wallpaperChange =
-            getLatestWct(type = TRANSIT_CHANGE).hierarchyOps.find { op ->
-                op.container == wallpaperToken.asBinder()
-            }
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .hierarchyOps
+                .find { op -> op.container == wallpaperToken.asBinder() }
         assertNotNull(wallpaperChange)
         assertThat(wallpaperChange.type).isEqualTo(HIERARCHY_OP_TYPE_REMOVE_TASK)
     }
@@ -2649,7 +2666,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.moveToNextDisplay(task.taskId)
 
-        val taskChange = getLatestWct(type = TRANSIT_CHANGE).changes[task.token.asBinder()]
+        val taskChange =
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .changes[task.token.asBinder()]
         assertNotNull(taskChange)
         // To preserve DP size, pixel size is changed to 320x240. The ratio of the left margin
         // to the right margin and the ratio of the top margin to bottom margin are also
@@ -2686,7 +2708,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.moveToNextDisplay(task.taskId)
 
-        val taskChange = getLatestWct(type = TRANSIT_CHANGE).changes[task.token.asBinder()]
+        val taskChange =
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .changes[task.token.asBinder()]
         assertNotNull(taskChange)
         assertThat(taskChange.configuration.windowConfiguration.bounds)
             .isEqualTo(Rect(960, 480, 1280, 720))
@@ -2717,7 +2744,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.moveToNextDisplay(task.taskId)
 
-        val taskChange = getLatestWct(type = TRANSIT_CHANGE).changes[task.token.asBinder()]
+        val taskChange =
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .changes[task.token.asBinder()]
         assertNotNull(taskChange)
         // DP size is preserved. The window is centered in the destination display.
         assertThat(taskChange.configuration.windowConfiguration.bounds)
@@ -2755,7 +2787,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         controller.moveToNextDisplay(task.taskId)
 
-        val taskChange = getLatestWct(type = TRANSIT_CHANGE).changes[task.token.asBinder()]
+        val taskChange =
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .changes[task.token.asBinder()]
         assertNotNull(taskChange)
         assertThat(taskChange.configuration.windowConfiguration.bounds.left).isAtLeast(0)
         assertThat(taskChange.configuration.windowConfiguration.bounds.top).isAtLeast(0)
@@ -2782,9 +2819,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveToNextDisplay(task.taskId)
 
         val taskChange =
-            getLatestWct(type = TRANSIT_CHANGE).hierarchyOps.find {
-                it.container == task.token.asBinder() && it.type == HIERARCHY_OP_TYPE_REORDER
-            }
+            getLatestWct(
+                    type = TRANSIT_CHANGE,
+                    handlerClass = DesktopModeMoveToDisplayTransitionHandler::class.java,
+                )
+                .hierarchyOps
+                .find {
+                    it.container == task.token.asBinder() && it.type == HIERARCHY_OP_TYPE_REORDER
+                }
         assertNotNull(taskChange)
         assertThat(taskChange.toTop).isTrue()
         assertThat(taskChange.includingParents()).isTrue()
@@ -3524,9 +3566,15 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
 
         // Make sure we reorder the new task to top, and the back task to the bottom
-        assertThat(wct!!.hierarchyOps.size).isEqualTo(9)
+        assertThat(wct!!.hierarchyOps.size).isEqualTo(8)
         wct.assertReorderAt(0, fullscreenTask, toTop = true)
-        wct.assertReorderAt(8, freeformTasks[0], toTop = false)
+        // Oldest task that needs to minimized is never reordered to top over Home.
+        val taskToMinimize = freeformTasks[0]
+        wct.assertWithoutHop { hop ->
+            hop.container == taskToMinimize.token &&
+                hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                hop.toTop == true
+        }
     }
 
     @Test
@@ -3541,12 +3589,18 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
         val wct = controller.handleRequest(Binder(), createTransition(fullscreenTask))
 
-        assertThat(wct!!.hierarchyOps.size).isEqualTo(10)
+        assertThat(wct!!.hierarchyOps.size).isEqualTo(9)
         wct.assertReorderAt(0, fullscreenTask, toTop = true)
         // Make sure we reorder the home task to the top, desktop tasks to top of them and minimized
         // task is under the home task.
         wct.assertReorderAt(1, homeTask, toTop = true)
-        wct.assertReorderAt(9, freeformTasks[0], toTop = false)
+        // Oldest task that needs to minimized is never reordered to top over Home.
+        val taskToMinimize = freeformTasks[0]
+        wct.assertWithoutHop { hop ->
+            hop.container == taskToMinimize.token &&
+                hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                hop.toTop == true
+        }
     }
 
     @Test

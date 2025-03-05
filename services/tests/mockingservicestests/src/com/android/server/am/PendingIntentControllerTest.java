@@ -32,7 +32,6 @@ import static com.android.server.am.PendingIntentRecord.CANCEL_REASON_SUPERSEDED
 import static com.android.server.am.PendingIntentRecord.CANCEL_REASON_USER_STOPPED;
 import static com.android.server.am.PendingIntentRecord.FLAG_ACTIVITY_SENDER;
 import static com.android.server.am.PendingIntentRecord.cancelReasonToString;
-import static com.android.window.flags.Flags.balClearAllowlistDuration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -216,9 +215,7 @@ public class PendingIntentControllerTest {
                 pir.getAllowlistDurationLocked(token);
         assertNotNull(allowlistDurationLockedAfterClear);
         assertEquals(1000, allowlistDurationLockedAfterClear.duration);
-        assertEquals(balClearAllowlistDuration()
-                        ? TEMPORARY_ALLOWLIST_TYPE_FOREGROUND_SERVICE_NOT_ALLOWED
-                        : TEMPORARY_ALLOWLIST_TYPE_FOREGROUND_SERVICE_ALLOWED,
+        assertEquals(TEMPORARY_ALLOWLIST_TYPE_FOREGROUND_SERVICE_NOT_ALLOWED,
                 allowlistDurationLocked.type);
     }
 

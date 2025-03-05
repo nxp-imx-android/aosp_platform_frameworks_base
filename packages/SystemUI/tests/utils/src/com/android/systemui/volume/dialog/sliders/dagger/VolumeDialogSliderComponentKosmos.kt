@@ -33,6 +33,8 @@ import com.android.systemui.volume.dialog.sliders.domain.model.VolumeDialogSlide
 import com.android.systemui.volume.dialog.sliders.domain.model.volumeDialogSliderType
 import com.android.systemui.volume.dialog.sliders.ui.VolumeDialogOverscrollViewBinder
 import com.android.systemui.volume.dialog.sliders.ui.VolumeDialogSliderViewBinder
+import com.android.systemui.volume.dialog.sliders.ui.viewmodel.VolumeDialogSliderViewModel
+import com.android.systemui.volume.dialog.sliders.ui.viewmodel.volumeDialogSliderViewModel
 import com.android.systemui.volume.dialog.sliders.ui.volumeDialogOverscrollViewBinder
 import com.android.systemui.volume.dialog.sliders.ui.volumeDialogSliderViewBinder
 import com.android.systemui.volume.mediaControllerRepository
@@ -59,6 +61,9 @@ fun Kosmos.volumeDialogSliderComponent(type: VolumeDialogSliderType): VolumeDial
                         it.setupVolumeDialogSliderComponent(this@volumeDialogSliderComponent, type)
                     }
                 }
+
+        override fun sliderViewModel(): VolumeDialogSliderViewModel =
+            localKosmos.volumeDialogSliderViewModel
 
         override fun sliderViewBinder(): VolumeDialogSliderViewBinder =
             localKosmos.volumeDialogSliderViewBinder

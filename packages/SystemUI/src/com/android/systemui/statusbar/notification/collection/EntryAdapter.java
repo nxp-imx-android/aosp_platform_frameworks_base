@@ -50,7 +50,7 @@ public interface EntryAdapter {
     /**
      * Gets the view that this entry is backing.
      */
-    @NonNull
+    @Nullable
     ExpandableNotificationRow getRow();
 
     /**
@@ -135,5 +135,10 @@ public interface EntryAdapter {
     default boolean isFullScreenCapable() {
         return false;
     }
+
+    /**
+     * Process a click on a notification bubble icon
+     */
+    void onNotificationBubbleIconClicked();
 }
 

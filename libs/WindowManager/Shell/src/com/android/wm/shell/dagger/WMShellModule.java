@@ -36,6 +36,7 @@ import android.os.Handler;
 import android.os.UserManager;
 import android.view.Choreographer;
 import android.view.IWindowManager;
+import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.DesktopModeFlags;
 
@@ -93,6 +94,7 @@ import com.android.wm.shell.desktopmode.DesktopModeDragAndDropTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeKeyGestureHandler;
 import com.android.wm.shell.desktopmode.DesktopModeLoggerTransitionObserver;
+import com.android.wm.shell.desktopmode.DesktopModeMoveToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopTaskChangeListener;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
@@ -167,6 +169,7 @@ import com.android.wm.shell.windowdecor.CaptionWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
+import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.common.viewhost.PooledWindowDecorViewHostSupplier;
@@ -772,7 +775,8 @@ public abstract class WMShellModule {
             DesksTransitionObserver desksTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
-            DragToDisplayTransitionHandler dragToDisplayTransitionHandler) {
+            DragToDisplayTransitionHandler dragToDisplayTransitionHandler,
+            DesktopModeMoveToDisplayTransitionHandler moveToDisplayTransitionHandler) {
         return new DesktopTasksController(
                 context,
                 shellInit,
@@ -812,7 +816,8 @@ public abstract class WMShellModule {
                 desksTransitionObserver,
                 userProfileContexts,
                 desktopModeCompatPolicy,
-                dragToDisplayTransitionHandler);
+                dragToDisplayTransitionHandler,
+                moveToDisplayTransitionHandler);
     }
 
     @WMSingleton
@@ -873,8 +878,7 @@ public abstract class WMShellModule {
             @ShellMainThread Handler handler) {
         int maxTaskLimit = DesktopModeStatus.getMaxTaskLimit(context);
         if (!DesktopModeStatus.canEnterDesktopMode(context)
-                || !ENABLE_DESKTOP_WINDOWING_TASK_LIMIT.isTrue()
-                || maxTaskLimit <= 0) {
+                || !ENABLE_DESKTOP_WINDOWING_TASK_LIMIT.isTrue()) {
             return Optional.empty();
         }
         return Optional.of(
@@ -882,7 +886,7 @@ public abstract class WMShellModule {
                         transitions,
                         desktopUserRepositories,
                         shellTaskOrganizer,
-                        maxTaskLimit,
+                        maxTaskLimit <= 0 ? null : maxTaskLimit,
                         interactionJankMonitor,
                         context,
                         handler));
@@ -950,6 +954,12 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
+    static DesktopModeMoveToDisplayTransitionHandler provideMoveToDisplayTransitionHandler() {
+        return new DesktopModeMoveToDisplayTransitionHandler(new SurfaceControl.Transaction());
+    }
+
+    @WMSingleton
+    @Provides
     static Optional<DesktopModeKeyGestureHandler> provideDesktopModeKeyGestureHandler(
             Context context,
             Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
@@ -1002,6 +1012,7 @@ public abstract class WMShellModule {
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
+            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
@@ -1025,10 +1036,10 @@ public abstract class WMShellModule {
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 assistContentRequester, windowDecorViewHostSupplier, multiInstanceHelper,
                 desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
-                windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
-                focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
-                taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy,
-                desktopTilingDecorViewModel,
+                appHandleAndHeaderVisibilityHelper, windowDecorCaptionHandleRepository,
+                activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
+                desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
+                desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController));
     }
 
@@ -1052,6 +1063,16 @@ public abstract class WMShellModule {
     static MultiDisplayDragMoveIndicatorSurface.Factory
             providesMultiDisplayDragMoveIndicatorSurfaceFactory(Context context) {
         return new MultiDisplayDragMoveIndicatorSurface.Factory(context);
+    }
+
+    @WMSingleton
+    @Provides
+    static AppHandleAndHeaderVisibilityHelper provideAppHandleAndHeaderVisibilityHelper(
+            @NonNull Context context,
+            @NonNull DisplayController displayController,
+            @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy) {
+        return new AppHandleAndHeaderVisibilityHelper(context, displayController,
+                desktopModeCompatPolicy);
     }
 
     @WMSingleton

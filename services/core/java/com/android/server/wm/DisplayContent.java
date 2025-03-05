@@ -99,7 +99,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.internal.util.LatencyTracker.ACTION_ROTATE_SCREEN;
-import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_ANIM;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_CONFIG;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_LAYOUT;
@@ -247,6 +246,7 @@ import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
 import com.android.internal.util.function.pooled.PooledLambda;
@@ -364,7 +364,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private boolean mTmpInitial;
     private int mMaxUiWidth = 0;
 
-    final AppTransition mAppTransition;
+    // TODO(b/400335290): extract the needed methods and remove this field.
+    final TransitionAnimation mTransitionAnimation;
 
     final UnknownAppVisibilityController mUnknownAppVisibilityController;
 
@@ -1179,7 +1180,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mHoldScreenWakeLock.setReferenceCounted(false);
 
         mFixedRotationTransitionListener = new FixedRotationTransitionListener(mDisplayId);
-        mAppTransition = new AppTransition(mWmService.mContext, mWmService, this);
+        mTransitionAnimation = new TransitionAnimation(mWmService.mContext, false /* debug */, TAG);
         mTransitionController.registerLegacyListener(mFixedRotationTransitionListener);
         mUnknownAppVisibilityController = new UnknownAppVisibilityController(mWmService, this);
         mRemoteDisplayChangeController = new RemoteDisplayChangeController(this);
@@ -3257,16 +3258,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     void onDisplayInfoChangeApplied() {
-        if (!enableDisplayContentModeManagement()) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
             Slog.e(TAG, "ShouldShowSystemDecors shouldn't be updated when the flag is off.");
         }
 
-        final boolean shouldShowContent;
         if (!allowContentModeSwitch()) {
             return;
         }
-        shouldShowContent = mDisplay.canHostTasks();
 
+        final boolean shouldShowContent = mDisplay.canHostTasks();
         if (shouldShowContent == mWmService.mDisplayWindowSettings
                 .shouldShowSystemDecorsLocked(this)) {
             return;
@@ -3276,9 +3276,21 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (!shouldShowContent) {
             clearAllTasksOnDisplay(null /* clearTasksCallback */, false /* isRemovingDisplay */);
         }
+
+        // If the display is allowed to show content, then it belongs to the display topology;
+        // vice versa.
+        mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(mDisplayId,
+                /* inTopology= */ shouldShowContent);
     }
 
      /**
+      * Whether the display is allowed to switch the content mode between extended and mirroring.
+      * If the content mode is extended, the display will start home activity and show system
+      * decorations, such as wallpapaer, status bar and navigation bar.
+      * If the content mode is mirroring, the display will not show home activity or system
+      * decorations.
+      * The content mode is switched when {@link Display#canHostTasks()} changes.
+      *
       * Note that we only allow displays that are able to show system decorations to use the content
       * mode switch; however, not all displays that are able to show system decorations are allowed
       * to use the content mode switch.
@@ -3291,6 +3303,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         // Private display should never show system decorations.
         if (isPrivate()) {
+            return false;
+        }
+
+        if (shouldNeverShowSystemDecorations()) {
             return false;
         }
 
@@ -5658,16 +5674,23 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return type == TRANSIT_OPEN || type == TRANSIT_TO_FRONT;
     }
 
+    private boolean shouldNeverShowSystemDecorations() {
+        if (mDisplayId == mWmService.mVr2dDisplayId) {
+            // VR virtual display will be used to run and render 2D app within a VR experience.
+            return true;
+        }
+        if (!isTrusted()) {
+            // Do not show system decorations on untrusted virtual display.
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @see Display#FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS
      */
     boolean isSystemDecorationsSupported() {
-        if (mDisplayId == mWmService.mVr2dDisplayId) {
-            // VR virtual display will be used to run and render 2D app within a VR experience.
-            return false;
-        }
-        if (!isTrusted()) {
-            // Do not show system decorations on untrusted virtual display.
+        if (shouldNeverShowSystemDecorations()) {
             return false;
         }
         if (mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(this)

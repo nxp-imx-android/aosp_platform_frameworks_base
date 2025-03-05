@@ -67,7 +67,7 @@ class ShadeDisplaysRepositoryTest : SysuiTestCase() {
     fun policy_changing_propagatedFromTheLatestPolicy() =
         testScope.runTest {
             val underTest = createUnderTest()
-            val displayIds by collectValues(underTest.displayId)
+            val displayIds by collectValues(underTest.pendingDisplayId)
 
             assertThat(displayIds).containsExactly(0)
 
@@ -98,7 +98,7 @@ class ShadeDisplaysRepositoryTest : SysuiTestCase() {
                 DEVELOPMENT_SHADE_DISPLAY_AWARENESS,
                 FakeShadeDisplayPolicy.name,
             )
-            val displayId by collectLastValue(underTest.displayId)
+            val displayId by collectLastValue(underTest.pendingDisplayId)
 
             displayRepository.addDisplay(displayId = 1)
 
@@ -161,7 +161,7 @@ class ShadeDisplaysRepositoryTest : SysuiTestCase() {
                 FakeShadeDisplayPolicy.name,
             )
 
-            val displayId by collectLastValue(underTest.displayId)
+            val displayId by collectLastValue(underTest.pendingDisplayId)
 
             displayRepository.addDisplays(display(id = 2, type = TYPE_EXTERNAL))
             FakeShadeDisplayPolicy.setDisplayId(2)
@@ -175,5 +175,18 @@ class ShadeDisplaysRepositoryTest : SysuiTestCase() {
             keyguardRepository.setKeyguardShowing(false)
 
             assertThat(displayId).isEqualTo(2)
+        }
+
+    @Test
+    fun onDisplayChangedSucceeded_displayIdChanges() =
+        testScope.runTest {
+            val underTest = createUnderTest()
+            val displayId by collectLastValue(underTest.displayId)
+
+            assertThat(displayId).isEqualTo(Display.DEFAULT_DISPLAY)
+
+            underTest.onDisplayChangedSucceeded(1)
+
+            assertThat(displayId).isEqualTo(1)
         }
 }

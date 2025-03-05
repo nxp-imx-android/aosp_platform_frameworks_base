@@ -16,6 +16,7 @@
 package com.android.systemui.model
 
 import android.util.Log
+import android.view.Display
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.PerDisplayInstanceProviderWithTeardown
@@ -74,6 +75,9 @@ interface SysUiState : Dumpable {
      */
     fun destroy()
 
+    /** Initializes the state after construction. */
+    fun start()
+
     /** The display ID this instances is associated with */
     val displayId: Int
 
@@ -84,7 +88,7 @@ interface SysUiState : Dumpable {
 
 private const val TAG = "SysUIState"
 
-class SysUiStateImpl
+open class SysUiStateImpl
 @AssistedInject
 constructor(
     @Assisted override val displayId: Int,
@@ -93,9 +97,10 @@ constructor(
     private val stateDispatcher: SysUIStateDispatcher,
 ) : SysUiState {
 
-    private val debugName = "SysUiStateImpl-ForDisplay=$displayId"
+    private val debugName
+        get() = "SysUiStateImpl-ForDisplay=$displayId"
 
-    init {
+    override fun start() {
         dumpManager.registerNormalDumpable(debugName, this)
     }
 
@@ -222,10 +227,19 @@ fun flagWithOptionalOverrides(
 
 /** Creates and destroy instances of [SysUiState] */
 @SysUISingleton
-class SysUIStateInstanceProvider @Inject constructor(private val factory: SysUiStateImpl.Factory) :
-    PerDisplayInstanceProviderWithTeardown<SysUiState> {
+class SysUIStateInstanceProvider
+@Inject
+constructor(
+    private val factory: SysUiStateImpl.Factory,
+    private val overrideFactory: SysUIStateOverride.Factory,
+) : PerDisplayInstanceProviderWithTeardown<SysUiState> {
     override fun createInstance(displayId: Int): SysUiState {
-        return factory.create(displayId)
+        return if (displayId == Display.DEFAULT_DISPLAY) {
+                factory.create(displayId)
+            } else {
+                overrideFactory.create(displayId)
+            }
+            .apply { start() }
     }
 
     override fun destroyInstance(instance: SysUiState) {

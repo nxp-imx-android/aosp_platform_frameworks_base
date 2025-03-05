@@ -193,6 +193,8 @@ public abstract class AbstractMasterSystemService<M extends AbstractMasterSystem
     @Nullable
     private UserManagerInternal mUm;
 
+    private final MyPackageMonitor mPackageMonitor;
+
     /**
      * Default constructor.
      *
@@ -289,6 +291,7 @@ public abstract class AbstractMasterSystemService<M extends AbstractMasterSystem
                 }
             });
         }
+        mPackageMonitor = new MyPackageMonitor(/* supportsPackageRestartQuery */ true);
         startTrackingPackageChanges();
     }
 
@@ -986,260 +989,264 @@ public abstract class AbstractMasterSystemService<M extends AbstractMasterSystem
         }
     }
 
-    private void startTrackingPackageChanges() {
-        final PackageMonitor monitor = new PackageMonitor(true) {
+    private class MyPackageMonitor extends PackageMonitor {
+        MyPackageMonitor(boolean supportsPackageRestartQuery) {
+            super(supportsPackageRestartQuery);
+        }
 
-            @Override
-            public void onPackageUpdateStarted(@NonNull String packageName, int uid) {
-                if (verbose) Slog.v(mTag, "onPackageUpdateStarted(): " + packageName);
+        @Override
+        public void onPackageUpdateStarted(@NonNull String packageName, int uid) {
+            if (verbose) Slog.v(mTag, "onPackageUpdateStarted(): " + packageName);
+            synchronized (mLock) {
                 final String activePackageName = getActiveServicePackageNameLocked();
                 if (!packageName.equals(activePackageName)) return;
 
                 final int userId = getChangingUserId();
-                synchronized (mLock) {
-                    if (mUpdatingPackageNames == null) {
-                        mUpdatingPackageNames = new SparseArray<String>(mServicesCacheList.size());
-                    }
-                    mUpdatingPackageNames.put(userId, packageName);
-                    onServicePackageUpdatingLocked(userId);
-                    if ((mServicePackagePolicyFlags & PACKAGE_UPDATE_POLICY_NO_REFRESH) != 0) {
-                        if (debug) {
-                            Slog.d(mTag, "Holding service for user " + userId + " while package "
-                                    + activePackageName + " is being updated");
-                        }
-                    } else {
-                        if (debug) {
-                            Slog.d(mTag, "Removing service for user " + userId
-                                    + " because package " + activePackageName
-                                    + " is being updated");
-                        }
-                        removeCachedServiceListLocked(userId);
 
-                        if ((mServicePackagePolicyFlags & PACKAGE_UPDATE_POLICY_REFRESH_EAGER)
-                                != 0) {
-                            if (debug) {
-                                Slog.d(mTag, "Eagerly recreating service for user "
-                                        + userId);
-                            }
-                            getServiceForUserLocked(userId);
-                        }
-                    }
+                if (mUpdatingPackageNames == null) {
+                    mUpdatingPackageNames = new SparseArray<String>(mServicesCacheList.size());
                 }
-            }
-
-            @Override
-            public void onPackageUpdateFinished(@NonNull String packageName, int uid) {
-                if (verbose) Slog.v(mTag, "onPackageUpdateFinished(): " + packageName);
-                final int userId = getChangingUserId();
-                synchronized (mLock) {
-                    final String activePackageName = mUpdatingPackageNames == null ? null
-                            : mUpdatingPackageNames.get(userId);
-                    if (packageName.equals(activePackageName)) {
-                        if (mUpdatingPackageNames != null) {
-                            mUpdatingPackageNames.remove(userId);
-                            if (mUpdatingPackageNames.size() == 0) {
-                                mUpdatingPackageNames = null;
-                            }
-                        }
-                        onServicePackageUpdatedLocked(userId);
-                    } else {
-                        handlePackageUpdateLocked(packageName);
-                    }
-                }
-            }
-
-            @Override
-            public void onPackageRemoved(String packageName, int uid) {
-                if (mServiceNameResolver != null
-                        && mServiceNameResolver.isConfiguredInMultipleMode()) {
-                    final int userId = getChangingUserId();
-                    synchronized (mLock) {
-                        handlePackageRemovedMultiModeLocked(packageName, userId);
-                    }
-                    return;
-                }
-
-                synchronized (mLock) {
-                    final int userId = getChangingUserId();
-                    final S service = peekServiceForUserLocked(userId);
-                    if (service != null) {
-                        final ComponentName componentName = service.getServiceComponentName();
-                        if (componentName != null) {
-                            if (packageName.equals(componentName.getPackageName())) {
-                                handleActiveServiceRemoved(userId);
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public boolean onHandleForceStop(Intent intent, String[] packages,
-                    int uid, boolean doit) {
-                synchronized (mLock) {
-                    final String activePackageName = getActiveServicePackageNameLocked();
-                    for (String pkg : packages) {
-                        if (pkg.equals(activePackageName)) {
-                            if (!doit) {
-                                return true;
-                            }
-                            final String action = intent.getAction();
-                            final int userId = getChangingUserId();
-                            if (Intent.ACTION_PACKAGE_RESTARTED.equals(action)) {
-                                handleActiveServiceRestartedLocked(activePackageName, userId);
-                            } else {
-                                removeCachedServiceListLocked(userId);
-                            }
-                        } else {
-                            handlePackageUpdateLocked(pkg);
-                        }
-                    }
-                }
-                return false;
-            }
-
-            @Override
-            public void onPackageDataCleared(String packageName, int uid) {
-                if (verbose) Slog.v(mTag, "onPackageDataCleared(): " + packageName);
-                final int userId = getChangingUserId();
-
-                if (mServiceNameResolver != null
-                        && mServiceNameResolver.isConfiguredInMultipleMode()) {
-                    synchronized (mLock) {
-                        onServicePackageDataClearedMultiModeLocked(packageName, userId);
-                    }
-                    return;
-                }
-
-                synchronized (mLock) {
-                    final S service = peekServiceForUserLocked(userId);
-                    if (service != null) {
-                        final ComponentName componentName = service.getServiceComponentName();
-                        if (componentName != null) {
-                            if (packageName.equals(componentName.getPackageName())) {
-                                onServicePackageDataClearedLocked(userId);
-                            }
-                        }
-                    }
-                }
-            }
-
-            private void handleActiveServiceRemoved(@UserIdInt int userId) {
-                synchronized (mLock) {
-                    removeCachedServiceListLocked(userId);
-                }
-                final String serviceSettingsProperty = getServiceSettingsProperty();
-                if (serviceSettingsProperty != null) {
-                    Settings.Secure.putStringForUser(getContext().getContentResolver(),
-                            serviceSettingsProperty, null, userId);
-                }
-            }
-
-            @GuardedBy("mLock")
-            private void handleActiveServiceRestartedLocked(String activePackageName,
-                    @UserIdInt int userId) {
-                if ((mServicePackagePolicyFlags & PACKAGE_RESTART_POLICY_NO_REFRESH) != 0) {
+                mUpdatingPackageNames.put(userId, packageName);
+                onServicePackageUpdatingLocked(userId);
+                if ((mServicePackagePolicyFlags & PACKAGE_UPDATE_POLICY_NO_REFRESH) != 0) {
                     if (debug) {
                         Slog.d(mTag, "Holding service for user " + userId + " while package "
-                                + activePackageName + " is being restarted");
+                                + activePackageName + " is being updated");
                     }
                 } else {
                     if (debug) {
                         Slog.d(mTag, "Removing service for user " + userId
                                 + " because package " + activePackageName
-                                + " is being restarted");
+                                + " is being updated");
                     }
                     removeCachedServiceListLocked(userId);
 
-                    if ((mServicePackagePolicyFlags & PACKAGE_RESTART_POLICY_REFRESH_EAGER) != 0) {
+                    if ((mServicePackagePolicyFlags & PACKAGE_UPDATE_POLICY_REFRESH_EAGER)
+                            != 0) {
                         if (debug) {
-                            Slog.d(mTag, "Eagerly recreating service for user " + userId);
+                            Slog.d(mTag, "Eagerly recreating service for user "
+                                    + userId);
                         }
-                        updateCachedServiceLocked(userId);
+                        getServiceForUserLocked(userId);
                     }
                 }
-                onServicePackageRestartedLocked(userId);
             }
+        }
 
-            @Override
-            public void onPackageModified(String packageName) {
+        @Override
+        public void onPackageUpdateFinished(@NonNull String packageName, int uid) {
+            if (verbose) Slog.v(mTag, "onPackageUpdateFinished(): " + packageName);
+            final int userId = getChangingUserId();
+            synchronized (mLock) {
+                final String activePackageName = mUpdatingPackageNames == null ? null
+                        : mUpdatingPackageNames.get(userId);
+                if (packageName.equals(activePackageName)) {
+                    if (mUpdatingPackageNames != null) {
+                        mUpdatingPackageNames.remove(userId);
+                        if (mUpdatingPackageNames.size() == 0) {
+                            mUpdatingPackageNames = null;
+                        }
+                    }
+                    onServicePackageUpdatedLocked(userId);
+                } else {
+                    handlePackageUpdateLocked(packageName);
+                }
+            }
+        }
+
+        @Override
+        public void onPackageRemoved(String packageName, int uid) {
+            if (mServiceNameResolver != null
+                    && mServiceNameResolver.isConfiguredInMultipleMode()) {
+                final int userId = getChangingUserId();
                 synchronized (mLock) {
-                    if (verbose) Slog.v(mTag, "onPackageModified(): " + packageName);
-
-                    if (mServiceNameResolver == null) {
-                        return;
-                    }
-
-                    final int userId = getChangingUserId();
-                    final String[] serviceNames = mServiceNameResolver.getDefaultServiceNameList(
-                            userId);
-                    if (serviceNames != null) {
-                        if (Flags.packageUpdateFixEnabled()) {
-                            if (mServiceNameResolver.isConfiguredInMultipleMode()) {
-                                // Remove any service that is in the cache but is no longer valid
-                                // after this modification for this particular package
-                                removeInvalidCachedServicesLocked(serviceNames, packageName,
-                                        userId);
-                            }
-                        }
-
-                        // Update services that are still valid
-                        for (int i = 0; i < serviceNames.length; i++) {
-                            peekAndUpdateCachedServiceLocked(packageName, userId,
-                                    serviceNames[i]);
-                        }
-                    }
+                    handlePackageRemovedMultiModeLocked(packageName, userId);
                 }
+                return;
             }
 
-            @GuardedBy("mLock")
-            private void peekAndUpdateCachedServiceLocked(String packageName, int userId,
-                    String serviceName) {
-                if (serviceName == null) {
-                    return;
-                }
-
-                final ComponentName serviceComponentName =
-                        ComponentName.unflattenFromString(serviceName);
-                if (serviceComponentName == null
-                        || !serviceComponentName.getPackageName().equals(packageName)) {
-                    return;
-                }
-
-                // The default service package has changed, update the cached if the service
-                // exists but no active component.
+            synchronized (mLock) {
+                final int userId = getChangingUserId();
                 final S service = peekServiceForUserLocked(userId);
                 if (service != null) {
                     final ComponentName componentName = service.getServiceComponentName();
-                    if (componentName == null) {
-                        if (verbose) Slog.v(mTag, "update cached");
-                        updateCachedServiceLocked(userId);
+                    if (componentName != null) {
+                        if (packageName.equals(componentName.getPackageName())) {
+                            handleActiveServiceRemoved(userId);
+                        }
                     }
                 }
             }
+        }
 
-            @GuardedBy("mLock")
-            private String getActiveServicePackageNameLocked() {
-                final int userId = getChangingUserId();
+        @Override
+        public boolean onHandleForceStop(Intent intent, String[] packages,
+                int uid, boolean doit) {
+            synchronized (mLock) {
+                final String activePackageName = getActiveServicePackageNameLocked();
+                for (String pkg : packages) {
+                    if (pkg.equals(activePackageName)) {
+                        if (!doit) {
+                            return true;
+                        }
+                        final String action = intent.getAction();
+                        final int userId = getChangingUserId();
+                        if (Intent.ACTION_PACKAGE_RESTARTED.equals(action)) {
+                            handleActiveServiceRestartedLocked(activePackageName, userId);
+                        } else {
+                            removeCachedServiceListLocked(userId);
+                        }
+                    } else {
+                        handlePackageUpdateLocked(pkg);
+                    }
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public void onPackageDataCleared(String packageName, int uid) {
+            if (verbose) Slog.v(mTag, "onPackageDataCleared(): " + packageName);
+            final int userId = getChangingUserId();
+
+            if (mServiceNameResolver != null
+                    && mServiceNameResolver.isConfiguredInMultipleMode()) {
+                synchronized (mLock) {
+                    onServicePackageDataClearedMultiModeLocked(packageName, userId);
+                }
+                return;
+            }
+
+            synchronized (mLock) {
                 final S service = peekServiceForUserLocked(userId);
-                if (service == null) {
-                    return null;
+                if (service != null) {
+                    final ComponentName componentName = service.getServiceComponentName();
+                    if (componentName != null) {
+                        if (packageName.equals(componentName.getPackageName())) {
+                            onServicePackageDataClearedLocked(userId);
+                        }
+                    }
                 }
-                final ComponentName serviceComponent = service.getServiceComponentName();
-                if (serviceComponent == null) {
-                    return null;
+            }
+        }
+
+        private void handleActiveServiceRemoved(@UserIdInt int userId) {
+            synchronized (mLock) {
+                removeCachedServiceListLocked(userId);
+            }
+            final String serviceSettingsProperty = getServiceSettingsProperty();
+            if (serviceSettingsProperty != null) {
+                Settings.Secure.putStringForUser(getContext().getContentResolver(),
+                        serviceSettingsProperty, null, userId);
+            }
+        }
+
+        @GuardedBy("mLock")
+        private void handleActiveServiceRestartedLocked(String activePackageName,
+                @UserIdInt int userId) {
+            if ((mServicePackagePolicyFlags & PACKAGE_RESTART_POLICY_NO_REFRESH) != 0) {
+                if (debug) {
+                    Slog.d(mTag, "Holding service for user " + userId + " while package "
+                            + activePackageName + " is being restarted");
                 }
-                return serviceComponent.getPackageName();
+            } else {
+                if (debug) {
+                    Slog.d(mTag, "Removing service for user " + userId
+                            + " because package " + activePackageName
+                            + " is being restarted");
+                }
+                removeCachedServiceListLocked(userId);
+
+                if ((mServicePackagePolicyFlags & PACKAGE_RESTART_POLICY_REFRESH_EAGER) != 0) {
+                    if (debug) {
+                        Slog.d(mTag, "Eagerly recreating service for user " + userId);
+                    }
+                    updateCachedServiceLocked(userId);
+                }
+            }
+            onServicePackageRestartedLocked(userId);
+        }
+
+        @Override
+        public void onPackageModified(String packageName) {
+            synchronized (mLock) {
+                if (verbose) Slog.v(mTag, "onPackageModified(): " + packageName);
+
+                if (mServiceNameResolver == null) {
+                    return;
+                }
+
+                final int userId = getChangingUserId();
+                final String[] serviceNames = mServiceNameResolver.getDefaultServiceNameList(
+                        userId);
+                if (serviceNames != null) {
+                    if (Flags.packageUpdateFixEnabled()) {
+                        if (mServiceNameResolver.isConfiguredInMultipleMode()) {
+                            // Remove any service that is in the cache but is no longer valid
+                            // after this modification for this particular package
+                            removeInvalidCachedServicesLocked(serviceNames, packageName,
+                                    userId);
+                        }
+                    }
+
+                    // Update services that are still valid
+                    for (int i = 0; i < serviceNames.length; i++) {
+                        peekAndUpdateCachedServiceLocked(packageName, userId,
+                                serviceNames[i]);
+                    }
+                }
+            }
+        }
+
+        @GuardedBy("mLock")
+        private void peekAndUpdateCachedServiceLocked(String packageName, int userId,
+                String serviceName) {
+            if (serviceName == null) {
+                return;
             }
 
-            @GuardedBy("mLock")
-            private void handlePackageUpdateLocked(String packageName) {
-                visitServicesLocked((s) -> s.handlePackageUpdateLocked(packageName));
+            final ComponentName serviceComponentName =
+                    ComponentName.unflattenFromString(serviceName);
+            if (serviceComponentName == null
+                    || !serviceComponentName.getPackageName().equals(packageName)) {
+                return;
             }
-        };
 
+            // The default service package has changed, update the cached if the service
+            // exists but no active component.
+            final S service = peekServiceForUserLocked(userId);
+            if (service != null) {
+                final ComponentName componentName = service.getServiceComponentName();
+                if (componentName == null) {
+                    if (verbose) Slog.v(mTag, "update cached");
+                    updateCachedServiceLocked(userId);
+                }
+            }
+        }
+
+        @GuardedBy("mLock")
+        private String getActiveServicePackageNameLocked() {
+            final int userId = getChangingUserId();
+            final S service = peekServiceForUserLocked(userId);
+            if (service == null) {
+                return null;
+            }
+            final ComponentName serviceComponent = service.getServiceComponentName();
+            if (serviceComponent == null) {
+                return null;
+            }
+            return serviceComponent.getPackageName();
+        }
+
+        @GuardedBy("mLock")
+        private void handlePackageUpdateLocked(String packageName) {
+            visitServicesLocked((s) -> s.handlePackageUpdateLocked(packageName));
+        }
+    }
+
+    private void startTrackingPackageChanges() {
         // package changes
-        monitor.register(getContext(), null, UserHandle.ALL, true);
+        mPackageMonitor.register(getContext(), null, UserHandle.ALL, true);
     }
 
     @GuardedBy("mLock")

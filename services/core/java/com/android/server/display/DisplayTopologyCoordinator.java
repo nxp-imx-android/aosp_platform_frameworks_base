@@ -267,11 +267,6 @@ class DisplayTopologyCoordinator {
                     + "type is EXTERNAL or OVERLAY and !mIsExtendedDisplayEnabled");
             return false;
         }
-        if (info.displayGroupId != Display.DEFAULT_DISPLAY_GROUP) {
-            Slog.d(TAG, "Display " + info.displayId + " not allowed in topology because "
-                    + "it is not in the default display group");
-            return false;
-        }
         return true;
     }
 

@@ -509,6 +509,7 @@ open class WifiUtils {
                     val intent = AdvancedProtectionManager.createSupportIntent(
                         AdvancedProtectionManager.FEATURE_ID_DISALLOW_WEP,
                         AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION)
+                    intent.putExtra(DIALOG_WINDOW_TYPE, dialogWindowType)
                     onStartActivity(intent)
                 } else if (wifiManager.isWepSupported == true && wifiManager.queryWepAllowed()) {
                     onAllowed()

@@ -45,8 +45,6 @@ import kotlinx.coroutines.flow.StateFlowKt;
  */
 public class BundleEntry extends PipelineEntry {
 
-    private final BundleEntryAdapter mEntryAdapter;
-
     // TODO(b/394483200): move NotificationEntry's implementation to PipelineEntry?
     private final MutableStateFlow<Boolean> mSensitive = StateFlowKt.MutableStateFlow(false);
 
@@ -55,7 +53,6 @@ public class BundleEntry extends PipelineEntry {
 
     public BundleEntry(String key) {
         super(key);
-        mEntryAdapter = new BundleEntryAdapter();
     }
 
     @Nullable
@@ -86,126 +83,9 @@ public class BundleEntry extends PipelineEntry {
         return false;
     }
 
-    @VisibleForTesting
-    public BundleEntryAdapter getEntryAdapter() {
-        return mEntryAdapter;
-    }
-
-    public class BundleEntryAdapter implements EntryAdapter {
-
-        /**
-         * TODO (b/394483200): convert to PipelineEntry.ROOT_ENTRY when pipeline is migrated?
-         */
-        @Override
-        public GroupEntry getParent() {
-            return GroupEntry.ROOT_ENTRY;
-        }
-
-        @Override
-        public boolean isTopLevelEntry() {
-            return true;
-        }
-
-        @NonNull
-        @Override
-        public String getKey() {
-            return mKey;
-        }
-
-        @Override
-        @Nullable
-        public ExpandableNotificationRow getRow() {
-            return mRow;
-        }
-
-        @Override
-        public boolean isGroupRoot() {
-            return true;
-        }
-
-        @Override
-        public StateFlow<Boolean> isSensitive() {
-            return BundleEntry.this.mSensitive;
-        }
-
-        @Override
-        public boolean isClearable() {
-            // TODO(b/394483200): check whether all of the children are clearable, when implemented
-            return true;
-        }
-
-        @Override
-        public int getTargetSdk() {
-            return Build.VERSION_CODES.CUR_DEVELOPMENT;
-        }
-
-        @Override
-        public String getSummarization() {
-            return null;
-        }
-
-        @Override
-        public int getContrastedColor(Context context, boolean isLowPriority, int backgroundColor) {
-            return Notification.COLOR_DEFAULT;
-        }
-
-        @Override
-        public boolean canPeek() {
-            return false;
-        }
-
-        @Override
-        public long getWhen() {
-            return 0;
-        }
-
-        @Override
-        public IconPack getIcons() {
-            // TODO(b/396446620): implement bundle icons
-            return null;
-        }
-
-        @Override
-        public boolean isColorized() {
-            return false;
-        }
-
-        @Override
-        @Nullable
-        public StatusBarNotification getSbn() {
-            return null;
-        }
-
-        @Override
-        public boolean canDragAndDrop() {
-            return false;
-        }
-
-        @Override
-        public boolean isBubbleCapable() {
-            return false;
-        }
-
-        @Override
-        @Nullable
-        public String getStyle() {
-            return null;
-        }
-
-        @Override
-        public int getSectionBucket() {
-            return mBucket;
-        }
-
-        @Override
-        public boolean isAmbient() {
-            return false;
-        }
-
-        @Override
-        public boolean isFullScreenCapable() {
-            return false;
-        }
+    @Nullable
+    public ExpandableNotificationRow getRow() {
+        return mRow;
     }
 
     public static final List<BundleEntry> ROOT_BUNDLES = List.of(
@@ -213,4 +93,8 @@ public class BundleEntry extends PipelineEntry {
             new BundleEntry(SOCIAL_MEDIA_ID),
             new BundleEntry(NEWS_ID),
             new BundleEntry(RECS_ID));
+
+    public MutableStateFlow<Boolean> isSensitive() {
+        return mSensitive;
+    }
 }

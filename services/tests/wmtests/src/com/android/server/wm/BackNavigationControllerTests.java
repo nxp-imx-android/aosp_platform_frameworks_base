@@ -225,10 +225,10 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         CrossActivityTestCase testCase = createTopTaskWithTwoActivities();
         IOnBackInvokedCallback callback = withSystemCallback(testCase.task);
         testCase.windowFront.mAttrs.windowAnimations = 0x10;
-        spyOn(mDisplayContent.mAppTransition.mTransitionAnimation);
-        doReturn(0xffff00AB).when(mDisplayContent.mAppTransition.mTransitionAnimation)
+        spyOn(mDisplayContent.mTransitionAnimation);
+        doReturn(0xffff00AB).when(mDisplayContent.mTransitionAnimation)
                 .getAnimationResId(any(), anyInt(), anyInt());
-        doReturn(0xffff00CD).when(mDisplayContent.mAppTransition.mTransitionAnimation)
+        doReturn(0xffff00CD).when(mDisplayContent.mTransitionAnimation)
                 .getDefaultAnimationResId(anyInt(), anyInt());
 
         BackNavigationInfo backNavigationInfo = startBackNavigation();

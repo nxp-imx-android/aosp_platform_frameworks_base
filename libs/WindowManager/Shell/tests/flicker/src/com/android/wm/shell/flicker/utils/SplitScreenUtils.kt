@@ -17,12 +17,14 @@
 package com.android.wm.shell.flicker.utils
 
 import android.app.Instrumentation
+import android.content.Context
 import android.graphics.Point
 import android.os.SystemClock
 import android.tools.Rotation
 import android.tools.device.apphelpers.IStandardAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
+import android.tools.helpers.WindowUtils
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.component.IComponentNameMatcher
@@ -392,5 +394,25 @@ object SplitScreenUtils {
         if (!textView.text.contentEquals(editText.text)) {
             error("Fail to copy content in split")
         }
+    }
+
+    fun isLeftRightSplit(context: Context, rotation: Rotation, displaySizeDp: Point): Boolean {
+        val allowLeftRightSplit = context.resources.getBoolean(
+            com.android.internal.R.bool.config_leftRightSplitInPortrait)
+        val displayBounds = WindowUtils.getDisplayBounds(rotation)
+        val isLandscape = displayBounds.width() > displayBounds.height()
+        if (allowLeftRightSplit && isTablet(displaySizeDp)) {
+            // Certain devices allow left/right split in portrait, so they end up with top/bottom
+            // split in landscape
+            return !isLandscape
+        } else {
+            return isLandscape
+        }
+    }
+
+    fun isTablet(displaySizeDp: Point): Boolean {
+        val LARGE_SCREEN_DP_THRESHOLD = 600
+        return displaySizeDp.x >= LARGE_SCREEN_DP_THRESHOLD
+                && displaySizeDp.y >= LARGE_SCREEN_DP_THRESHOLD
     }
 }

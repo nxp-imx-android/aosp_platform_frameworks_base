@@ -140,6 +140,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.brightness.data.repository.BrightnessMirrorShowingRepository;
 import com.android.systemui.settings.brightness.domain.interactor.BrightnessMirrorShowingInteractor;
 import com.android.systemui.shade.data.repository.FlingInfo;
+import com.android.systemui.shade.data.repository.ShadeDisplaysRepository;
 import com.android.systemui.shade.data.repository.ShadeRepository;
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
@@ -204,6 +205,7 @@ import dalvik.annotation.optimization.NeverCompile;
 import com.google.android.msdl.data.model.MSDLToken;
 import com.google.android.msdl.domain.MSDLPlayer;
 
+import dagger.Lazy;
 import kotlin.Unit;
 
 import kotlinx.coroutines.CoroutineDispatcher;
@@ -394,7 +396,7 @@ public final class NotificationPanelViewController implements
     /** Whether the notifications are displayed full width (no margins on the side). */
     private boolean mIsFullWidth;
     private boolean mBlockingExpansionForCurrentTouch;
-     // Following variables maintain state of events when input focus transfer may occur.
+    // Following variables maintain state of events when input focus transfer may occur.
     private boolean mExpectingSynthesizedDown;
     private boolean mLastEventSynthesizedDown;
 
@@ -456,6 +458,7 @@ public final class NotificationPanelViewController implements
     @Deprecated // Use SysUIStateInteractor instead
     private final SysUiState mSysUiState;
     private final SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
+    private final Lazy<ShadeDisplaysRepository> mShadeDisplaysRepository;
     private final NotificationShadeDepthController mDepthController;
     private final NavigationBarController mNavigationBarController;
     private final int mDisplayId;
@@ -637,7 +640,8 @@ public final class NotificationPanelViewController implements
             KeyguardClockPositionAlgorithm keyguardClockPositionAlgorithm,
             MSDLPlayer msdlPlayer,
             BrightnessMirrorShowingRepository brightnessMirrorShowingRepository,
-            BlurConfig blurConfig) {
+            BlurConfig blurConfig,
+            Lazy<ShadeDisplaysRepository> shadeDisplaysRepository) {
         mBlurConfig = blurConfig;
         SceneContainerFlag.assertInLegacyMode();
         keyguardStateController.addCallback(new KeyguardStateController.Callback() {
@@ -745,6 +749,7 @@ public final class NotificationPanelViewController implements
         mTapAgainViewController = tapAgainViewController;
         mSysUiState = sysUiState;
         mSysUIStateDisplaysInteractor = sysUIStateDisplaysInteractor;
+        mShadeDisplaysRepository = shadeDisplaysRepository;
         mKeyguardBypassController = bypassController;
         mUpdateMonitor = keyguardUpdateMonitor;
         mLockscreenShadeTransitionController = lockscreenShadeTransitionController;
@@ -2716,8 +2721,17 @@ public final class NotificationPanelViewController implements
     }
 
     private int getShadeDisplayId() {
-        if (mView != null && mView.getDisplay() != null) return mView.getDisplay().getDisplayId();
-        return Display.DEFAULT_DISPLAY;
+        if (ShadeWindowGoesAround.isEnabled()) {
+            var pendingDisplayId =
+                    mShadeDisplaysRepository.get().getPendingDisplayId().getValue();
+            // Use the pendingDisplayId from the repository, *not* the Shade's context.
+            // This ensures correct UI state updates also if this method is called just *before*
+            // the Shade window moves to another display.
+            // The pendingDisplayId is guaranteed to be updated before this method is called.
+            return pendingDisplayId;
+        } else {
+            return Display.DEFAULT_DISPLAY;
+        }
     }
 
     private void setPerDisplaySysUIStateFlags() {

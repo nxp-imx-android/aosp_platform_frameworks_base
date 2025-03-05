@@ -20,6 +20,7 @@ import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
@@ -29,6 +30,9 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
@@ -98,6 +102,11 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
             assertThat(fakePerDisplayInstanceProviderWithTeardown.destroyed).isEmpty()
         }
+
+    @Test
+    fun start_registersDumpable() {
+        verify(kosmos.dumpManager).registerNormalDumpable(anyString(), eq(underTest))
+    }
 
     private fun createDisplay(displayId: Int): Display =
         display(type = Display.TYPE_INTERNAL, id = displayId)

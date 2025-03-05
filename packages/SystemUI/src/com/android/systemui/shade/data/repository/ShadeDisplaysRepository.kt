@@ -29,6 +29,7 @@ import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -40,10 +41,28 @@ import kotlinx.coroutines.flow.stateIn
 
 /** Source of truth for the display currently holding the shade. */
 interface ShadeDisplaysRepository {
-    /** ID of the display which currently hosts the shade */
+    /** ID of the display which currently hosts the shade. */
     val displayId: StateFlow<Int>
     /** The current policy set. */
     val currentPolicy: ShadeDisplayPolicy
+
+    /**
+     * Id of the display that should host the shade.
+     *
+     * If this differs from [displayId], it means there is a shade movement in progress. Classes
+     * that rely on the shade being already moved (and its context/resources updated) should rely on
+     * [displayId]. Classes that need to do work associated with the shade move, should listen at
+     * this.
+     */
+    val pendingDisplayId: StateFlow<Int>
+}
+
+/** Provides a way to set whether the display changed succeeded. */
+interface MutableShadeDisplaysRepository : ShadeDisplaysRepository {
+    /**
+     * To be called when the shade changed window, and its resources have been completely updated.
+     */
+    fun onDisplayChangedSucceeded(displayId: Int)
 }
 
 /**
@@ -63,7 +82,7 @@ constructor(
     @ShadeOnDefaultDisplayWhenLocked private val shadeOnDefaultDisplayWhenLocked: Boolean,
     keyguardRepository: KeyguardRepository,
     displayRepository: DisplayRepository,
-) : ShadeDisplaysRepository {
+) : MutableShadeDisplaysRepository {
 
     private val policy: StateFlow<ShadeDisplayPolicy> =
         globalSettings
@@ -105,10 +124,16 @@ constructor(
     override val currentPolicy: ShadeDisplayPolicy
         get() = policy.value
 
-    override val displayId: StateFlow<Int> =
+    override val pendingDisplayId: StateFlow<Int> =
         keyguardAwareDisplayPolicy.stateIn(
             bgScope,
             SharingStarted.WhileSubscribed(),
             Display.DEFAULT_DISPLAY,
         )
+    private val _committedDisplayId = MutableStateFlow(Display.DEFAULT_DISPLAY)
+    override val displayId: StateFlow<Int> = _committedDisplayId
+
+    override fun onDisplayChangedSucceeded(displayId: Int) {
+        _committedDisplayId.value = displayId
+    }
 }

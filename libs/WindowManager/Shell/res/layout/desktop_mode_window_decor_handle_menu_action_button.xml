@@ -34,5 +34,6 @@
 
     <com.android.wm.shell.windowdecor.MarqueedTextView
         android:id="@+id/label"
+        android:importantForAccessibility="no"
         style="@style/DesktopModeHandleMenuActionButtonTextView"/>
 </LinearLayout>

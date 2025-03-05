@@ -1006,6 +1006,8 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"જગ્યા પર <xliff:g id="POSITION">%1$d</xliff:g> ઉમેરો"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"સ્થિતિ અમાન્ય છે."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"જગ્યા <xliff:g id="POSITION">%1$d</xliff:g>"</string>
+    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"ટાઇલ ઉમેરી"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"ટાઇલ કાઢી નાખી"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"ઝડપી સેટિંગ એડિટર."</string>
@@ -1574,6 +1576,5 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"અજાણ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"તમામ ટાઇલ રીસેટ કરીએ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"તમામ ઝડપી સેટિંગ ટાઇલને ડિવાઇસના ઑરિજિનલ સેટિંગ પર રીસેટ કરવામાં આવશે"</string>
-    <!-- no translation found for volume_slider_disabled_message_template (1305088816797803460) -->
-    <skip />
+    <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

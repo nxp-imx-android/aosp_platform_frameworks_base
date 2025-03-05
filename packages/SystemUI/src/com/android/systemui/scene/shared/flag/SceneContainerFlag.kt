@@ -83,7 +83,9 @@ object SceneContainerFlag {
      * testing.
      */
     @JvmStatic
-    inline fun unsafeAssertInNewMode() = RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, DESCRIPTION)
+    @Deprecated("Avoid crashing.", ReplaceWith("if (this.isUnexpectedlyInLegacyMode()) return"))
+    inline fun unsafeAssertInNewMode() =
+        RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, DESCRIPTION)
 
     /** Returns a developer-readable string that describes the current requirement list. */
     @JvmStatic

@@ -551,6 +551,7 @@ public class MessagingLayout extends FrameLayout
             }
             newGroup.setSingleLine(mIsCollapsed && TextUtils.isEmpty(mSummarizedContent));
             newGroup.setShowingAvatar(!mIsCollapsed);
+            newGroup.setIsCollapsed(mIsCollapsed);
             newGroup.setSender(sender, nameOverride);
             newGroup.setSending(groupIndex == (groups.size() - 1) && showSpinner);
             mGroups.add(newGroup);

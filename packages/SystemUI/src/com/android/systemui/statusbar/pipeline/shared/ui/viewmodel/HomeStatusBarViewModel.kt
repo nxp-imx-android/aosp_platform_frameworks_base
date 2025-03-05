@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.pipeline.shared.ui.viewmodel
 
 import android.annotation.ColorInt
 import android.graphics.Rect
+import android.view.Display
 import android.view.View
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -41,7 +42,9 @@ import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.ShadeDisplaysInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaProjectionStopDialogModel
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.ShareToAppChipViewModel
@@ -73,6 +76,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
@@ -142,13 +146,12 @@ interface HomeStatusBarViewModel : Activatable {
     val popupChips: List<PopupChipModel.Shown>
 
     /**
-     * True if the current scene can show the home status bar (aka this status bar), and false if
-     * the current scene should never show the home status bar.
+     * True if the status bar should be visible.
      *
      * TODO(b/364360986): Once the is<SomeChildView>Visible flows are fully enabled, we shouldn't
      *   need this flow anymore.
      */
-    val isHomeStatusBarAllowedByScene: StateFlow<Boolean>
+    val isHomeStatusBarAllowed: StateFlow<Boolean>
 
     /** True if the home status bar is showing, and there is no HUN happening */
     val canShowOngoingActivityChips: Flow<Boolean>
@@ -222,6 +225,7 @@ constructor(
     statusBarContentInsetsViewModelStore: StatusBarContentInsetsViewModelStore,
     @Background bgScope: CoroutineScope,
     @Background bgDispatcher: CoroutineDispatcher,
+    shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
 ) : HomeStatusBarViewModel, ExclusiveActivatable() {
 
     private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")
@@ -258,12 +262,44 @@ constructor(
     override val popupChips
         get() = statusBarPopupChips.shownPopupChips
 
-    override val isHomeStatusBarAllowedByScene: StateFlow<Boolean> =
+    /**
+     * Whether the display of this statusbar has the shade window (that is hosting shade container
+     * and lockscreen, among other things).
+     */
+    private val isShadeWindowOnThisDisplay =
+        if (ShadeWindowGoesAround.isEnabled) {
+            shadeDisplaysInteractor.get().displayId.map { shadeDisplayId ->
+                thisDisplayId == shadeDisplayId
+            }
+        } else {
+            // Shade doesn't move anywhere, it is always on the default display.
+            flowOf(thisDisplayId == Display.DEFAULT_DISPLAY)
+        }
+
+    private val isShadeVisibleOnAnyDisplay =
+        if (SceneContainerFlag.isEnabled) {
+            sceneInteractor.currentOverlays.map { currentOverlays ->
+                (Overlays.NotificationsShade in currentOverlays ||
+                    Overlays.QuickSettingsShade in currentOverlays)
+            }
+        } else {
+            shadeInteractor.isAnyFullyExpanded
+        }
+
+    private val isShadeVisibleOnThisDisplay: Flow<Boolean> =
+        combine(isShadeWindowOnThisDisplay, isShadeVisibleOnAnyDisplay) {
+            hasShade,
+            isShadeVisibleOnAnyDisplay ->
+            hasShade && isShadeVisibleOnAnyDisplay
+        }
+
+    private val isHomeStatusBarAllowedByScene: Flow<Boolean> =
         combine(
                 sceneInteractor.currentScene,
-                sceneInteractor.currentOverlays,
+                isShadeVisibleOnThisDisplay,
                 sceneContainerOcclusionInteractor.invisibleDueToOcclusion,
-            ) { currentScene, currentOverlays, isOccluded ->
+            ) { currentScene, isShadeVisible, isOccluded ->
+
                 // All scenes have their own status bars, so we should only show the home status bar
                 // if we're not in a scene. There are two exceptions:
                 // 1) The shade (notifications or quick settings) is shown, because it has its own
@@ -271,9 +307,7 @@ constructor(
                 // 2) If the scene is occluded, then the occluding app needs to show the status bar.
                 // (Fullscreen apps actually won't show the status bar but that's handled with the
                 // rest of our fullscreen app logic, which lives elsewhere.)
-                (currentScene == Scenes.Gone &&
-                    Overlays.NotificationsShade !in currentOverlays &&
-                    Overlays.QuickSettingsShade !in currentOverlays) || isOccluded
+                (currentScene == Scenes.Gone && !isShadeVisible) || isOccluded
             }
             .distinctUntilChanged()
             .logDiffsForTable(
@@ -281,7 +315,6 @@ constructor(
                 columnName = COL_ALLOWED_BY_SCENE,
                 initialValue = false,
             )
-            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     override val areNotificationsLightsOut: Flow<Boolean> =
         if (NotificationsLiveDataStoreRefactor.isUnexpectedlyInLegacyMode()) {
@@ -330,20 +363,28 @@ constructor(
      * if we shouldn't be showing any part of the home status bar.
      */
     private val isHomeScreenStatusBarAllowedLegacy: Flow<Boolean> =
-        combine(
-            keyguardTransitionInteractor.currentKeyguardState,
-            shadeInteractor.isAnyFullyExpanded,
-        ) { currentKeyguardState, isShadeExpanded ->
-            (currentKeyguardState == GONE || currentKeyguardState == OCCLUDED) && !isShadeExpanded
+        combine(keyguardTransitionInteractor.currentKeyguardState, isShadeVisibleOnThisDisplay) {
+            currentKeyguardState,
+            isShadeVisibleOnThisDisplay ->
+            (currentKeyguardState == GONE || currentKeyguardState == OCCLUDED) &&
+                !isShadeVisibleOnThisDisplay
             // TODO(b/364360986): Add edge cases, like secure camera launch.
         }
 
-    private val isHomeStatusBarAllowed: Flow<Boolean> =
+    // "Compat" to cover both legacy and Scene container case in one flow.
+    private val isHomeStatusBarAllowedCompat =
         if (SceneContainerFlag.isEnabled) {
             isHomeStatusBarAllowedByScene
         } else {
             isHomeScreenStatusBarAllowedLegacy
         }
+
+    override val isHomeStatusBarAllowed =
+        isHomeStatusBarAllowedCompat.stateIn(
+            bgScope,
+            SharingStarted.WhileSubscribed(),
+            initialValue = false,
+        )
 
     private val shouldHomeStatusBarBeVisible =
         combine(

@@ -217,7 +217,7 @@ class AppCompatLetterboxPolicy {
         }
 
         final boolean shouldShowLetterboxUi =
-                (mActivityRecord.isInLetterboxAnimation() || mActivityRecord.isVisible()
+                (mActivityRecord.isVisible()
                         || mActivityRecord.isVisibleRequested())
                         && mainWindow.areAppWindowBoundsLetterboxed()
                         // Check for FLAG_SHOW_WALLPAPER explicitly instead of using
@@ -360,8 +360,7 @@ class AppCompatLetterboxPolicy {
                         .mAppCompatController.getReachabilityPolicy();
                 mLetterbox = new Letterbox(() -> mActivityRecord.makeChildSurface(null),
                         mActivityRecord.mWmService.mTransactionFactory,
-                        reachabilityPolicy, letterboxOverrides,
-                        this::getLetterboxParentSurface);
+                        reachabilityPolicy, letterboxOverrides);
                 mActivityRecord.mAppCompatController.getReachabilityPolicy()
                         .setLetterboxInnerBoundsSupplier(mLetterbox::getInnerFrame);
             }
@@ -469,15 +468,6 @@ class AppCompatLetterboxPolicy {
         public boolean isFullyTransparentBarAllowed(@NonNull Rect rect) {
             return !isRunning() || mLetterbox.notIntersectsOrFullyContains(rect);
         }
-
-        @Nullable
-        private SurfaceControl getLetterboxParentSurface() {
-            if (mActivityRecord.isInLetterboxAnimation()) {
-                return mActivityRecord.getTask().getSurfaceControl();
-            }
-            return mActivityRecord.getSurfaceControl();
-        }
-
     }
 
     /**

@@ -81,6 +81,16 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
+    name: "activity_embedding_delay_task_fragment_finish_for_activity_launch"
+    description: "Fixes a race condition that we finish the TaskFragment too early when there is a pending activity launch."
+    bug: "390452023"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    namespace: "windowing_sdk"
     name: "wlinfo_oncreate"
     description: "Makes WindowLayoutInfo accessible without racing in the Activity#onCreate()"
     bug: "337820752"
@@ -120,17 +130,6 @@ flag {
     name: "condense_configuration_change_for_simple_mode"
     description: "Condense configuration change for simple mode"
     bug: "356738240"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
-    name: "use_self_sync_transaction_for_layer"
-    description: "Always use this.getSyncTransaction for assignLayer"
-    bug: "388127825"
-    is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX
     }

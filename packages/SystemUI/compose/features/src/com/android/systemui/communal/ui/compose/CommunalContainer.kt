@@ -182,7 +182,7 @@ fun CommunalContainer(
         viewModel.communalBackground.collectAsStateWithLifecycle(
             initialValue = CommunalBackgroundType.ANIMATED
         )
-    val swipeToHubEnabled by viewModel.swipeToHubEnabled.collectAsStateWithLifecycle()
+    val swipeToHubEnabled by viewModel.swipeToHubEnabled.collectAsStateWithLifecycle(false)
     val state: MutableSceneTransitionLayoutState =
         rememberMutableSceneTransitionLayoutState(
             initialScene = currentSceneKey,

@@ -57,6 +57,7 @@ import java.util.concurrent.Executor;
 @SystemService(Context.ADVANCED_PROTECTION_SERVICE)
 public final class AdvancedProtectionManager {
     private static final String TAG = "AdvancedProtectionMgr";
+    private static final String PKG_SETTINGS = "com.android.settings";
 
     //TODO(b/378931989): Switch to android.app.admin.DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY
     //when the appropriate flag is launched.
@@ -343,6 +344,7 @@ public final class AdvancedProtectionManager {
         }
 
         Intent intent = new Intent(ACTION_SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG);
+        intent.setPackage(PKG_SETTINGS);
         intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(EXTRA_SUPPORT_DIALOG_FEATURE, featureId);
         intent.putExtra(EXTRA_SUPPORT_DIALOG_TYPE, type);

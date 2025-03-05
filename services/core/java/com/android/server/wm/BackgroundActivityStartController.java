@@ -288,9 +288,10 @@ public class BackgroundActivityStartController {
     }
 
     private boolean isHomeApp(int uid, @Nullable String packageName) {
-        if (getService().mHomeProcess != null) {
-            // Fast check
-            return uid == getService().mHomeProcess.mUid;
+        WindowProcessController homeProcess = getService().mHomeProcess;
+        if (homeProcess != null && (homeProcess.mUid != SYSTEM_UID || packageName == null)) {
+            // Fast check (skip if sharing system UID and we have a package name)
+            return uid == homeProcess.mUid;
         }
         if (packageName == null) {
             return false;

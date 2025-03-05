@@ -51,10 +51,8 @@
     <string name="consent_no" msgid="2640796915611404382">"허용 안함"</string>
     <string name="consent_cancel" msgid="5655005528379285841">"취소"</string>
     <string name="consent_back" msgid="2560683030046918882">"뒤로"</string>
-    <!-- no translation found for downward_arrow_action (2327165938832076333) -->
-    <skip />
-    <!-- no translation found for downward_arrow (2292427714411156088) -->
-    <skip />
+    <string name="downward_arrow_action" msgid="2327165938832076333">"목록을 아래로 스크롤"</string>
+    <string name="downward_arrow" msgid="2292427714411156088">"아래쪽 화살표"</string>
     <string name="permission_expand" msgid="893185038020887411">"<xliff:g id="PERMISSION_TYPE">%1$s</xliff:g> 펼치기"</string>
     <string name="permission_collapse" msgid="3320833884220844084">"<xliff:g id="PERMISSION_TYPE">%1$s</xliff:g> 접기"</string>
     <string name="permission_sync_confirmation_title" msgid="4409622174437248702">"&lt;strong&gt;<xliff:g id="COMPANION_DEVICE_NAME">%1$s</xliff:g>&lt;/strong&gt;에 설치된 앱에 &lt;strong&gt;<xliff:g id="PRIMARY_DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;에 설치된 앱과 동일한 권한을 부여하시겠습니까?"</string>

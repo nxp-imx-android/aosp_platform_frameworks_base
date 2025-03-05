@@ -287,7 +287,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
     public static final int INVALID_SERVICE_ID = -1;
 
-    // Each service has an ID. Also provide one for magnification gesture handling
+    // Each service has an ID. Also provide one for magnification gesture handling.
+    // This ID is also used for mouse event handling.
     public static final int MAGNIFICATION_GESTURE_HANDLER_ID = 0;
 
     private static int sIdCounter = MAGNIFICATION_GESTURE_HANDLER_ID + 1;
