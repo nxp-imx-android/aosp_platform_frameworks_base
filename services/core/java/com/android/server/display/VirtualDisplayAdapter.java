@@ -103,10 +103,10 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
             Context context, Handler handler, Listener listener, DisplayManagerFlags featureFlags) {
         this(syncRoot, context, handler, listener, new SurfaceControlDisplayFactory() {
             @Override
-            public IBinder createDisplay(String name, boolean secure, String uniqueId,
-                                         float requestedRefreshRate) {
-                return DisplayControl.createVirtualDisplay(name, secure, uniqueId,
-                                                           requestedRefreshRate);
+            public IBinder createDisplay(String name, boolean secure, boolean optimizeForPower,
+                    String uniqueId, float requestedRefreshRate) {
+                return DisplayControl.createVirtualDisplay(name, secure, optimizeForPower, uniqueId,
+                        requestedRefreshRate);
             }
 
             @Override
@@ -182,9 +182,13 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
 
         String name = virtualDisplayConfig.getName();
         boolean secure = (flags & VIRTUAL_DISPLAY_FLAG_SECURE) != 0;
+        boolean neverBlank = isNeverBlank(flags);
 
-        IBinder displayToken = mSurfaceControlDisplayFactory.createDisplay(name, secure, uniqueId,
-                virtualDisplayConfig.getRequestedRefreshRate());
+        // Never-blank displays are considered to be dependent on another display to be rendered.
+        // As a result, such displays should optimize for power instead of performance when it is
+        // powered on.
+        IBinder displayToken = mSurfaceControlDisplayFactory.createDisplay(name, secure, neverBlank,
+                uniqueId, virtualDisplayConfig.getRequestedRefreshRate());
         MediaProjectionCallback mediaProjectionCallback =  null;
         if (projection != null) {
             mediaProjectionCallback = new MediaProjectionCallback(appToken);
@@ -318,6 +322,12 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
         return mVirtualDisplayDevices.remove(appToken);
     }
 
+    private static boolean isNeverBlank(int flags) {
+        // Private non-mirror displays are never blank and always on.
+        return (flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) == 0
+                && (flags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0;
+    }
+
     private final class VirtualDisplayDevice extends DisplayDevice implements DeathRecipient {
         private static final int PENDING_SURFACE_CHANGE = 0x01;
         private static final int PENDING_RESIZE = 0x02;
@@ -377,9 +387,7 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
             mCallback = callback;
             mProjection = projection;
             mMediaProjectionCallback = mediaProjectionCallback;
-            // Private non-mirror displays are never blank and always on.
-            mNeverBlank = (flags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) == 0
-                    && (flags & VIRTUAL_DISPLAY_FLAG_PUBLIC) == 0;
+            mNeverBlank = isNeverBlank(flags);
             if (android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()
                     && !mNeverBlank) {
                 // The display's power state depends on the power state of the state of its
@@ -782,6 +790,10 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
          *
          * @param name The name of the display.
          * @param secure Whether this display is secure.
+         * @param optimizeForPower Whether SurfaceFlinger should optimize for power (instead of
+         *                         performance). Such displays will depend on another display for
+         *                         it to be shown and rendered, and that display will optimize for
+         *                         performance when it is on.
          * @param uniqueId The unique ID for the display.
          * @param requestedRefreshRate
          *     The refresh rate, frames per second, to request on the virtual display.
@@ -791,8 +803,8 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
          *     the refresh rate of the leader physical display.
          * @return The token reference for the display in SurfaceFlinger.
          */
-        IBinder createDisplay(String name, boolean secure, String uniqueId,
-                              float requestedRefreshRate);
+        IBinder createDisplay(String name, boolean secure, boolean optimizeForPower,
+                String uniqueId, float requestedRefreshRate);
 
         /**
          * Destroy a display in SurfaceFlinger.
