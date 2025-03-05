@@ -9,8 +9,11 @@ flag {
 }
 
 flag {
-    name: "predictive_back_delay_transition"
+    name: "predictive_back_delay_wm_transition"
     namespace: "systemui"
     description: "Slightly delays the back transition start"
     bug: "301195601"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
