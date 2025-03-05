@@ -22,6 +22,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_BACK
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
@@ -31,6 +32,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.UserChangeListener
@@ -48,6 +50,7 @@ class DesktopTasksLimiter(
     transitions: Transitions,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val shellTaskOrganizer: ShellTaskOrganizer,
+    private val desksOrganizer: DesksOrganizer,
     private val maxTasksLimit: Int?,
     private val interactionJankMonitor: InteractionJankMonitor,
     private val context: Context,
@@ -258,7 +261,7 @@ class DesktopTasksLimiter(
      * returning the task to minimize.
      */
     fun addAndGetMinimizeTaskChanges(
-        displayId: Int,
+        deskId: Int,
         wct: WindowContainerTransaction,
         newFrontTaskId: Int?,
         launchingNewIntent: Boolean = false,
@@ -267,15 +270,19 @@ class DesktopTasksLimiter(
         val taskRepository = desktopUserRepositories.current
         val taskIdToMinimize =
             getTaskIdToMinimize(
-                taskRepository.getExpandedTasksOrdered(displayId),
+                taskRepository.getExpandedTasksIdsInDeskOrdered(deskId),
                 newFrontTaskId,
                 launchingNewIntent,
             )
-        // If it's a running task, reorder it to back.
         taskIdToMinimize
             ?.let { shellTaskOrganizer.getRunningTaskInfo(it) }
-            // TODO: b/391485148 - this won't really work with multi-desks enabled.
-            ?.let { wct.reorder(it.token, /* onTop= */ false) }
+            ?.let { task ->
+                if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    wct.reorder(task.token, /* onTop= */ false)
+                } else {
+                    desksOrganizer.minimizeTask(wct, deskId, task)
+                }
+            }
         return taskIdToMinimize
     }
 

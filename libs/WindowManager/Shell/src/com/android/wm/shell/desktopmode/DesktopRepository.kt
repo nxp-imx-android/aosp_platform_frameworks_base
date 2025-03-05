@@ -235,6 +235,10 @@ class DesktopRepository(
     /** Returns the default desk in the given display. */
     private fun getDefaultDesk(displayId: Int): Desk? = desktopData.getDefaultDesk(displayId)
 
+    /** Returns whether the given desk is active in its display. */
+    fun isDeskActive(deskId: Int): Boolean =
+        desktopData.getAllActiveDesks().any { desk -> desk.deskId == deskId }
+
     /** Sets the given desk as the active one in the given display. */
     fun setActiveDesk(displayId: Int, deskId: Int) {
         logD("setActiveDesk for displayId=%d and deskId=%d", displayId, deskId)
@@ -485,7 +489,7 @@ class DesktopRepository(
     fun getExpandedTasksOrdered(displayId: Int): List<Int> =
         getFreeformTasksInZOrder(displayId).filter { !isMinimizedTask(it) }
 
-    @VisibleForTesting
+    /** Returns all active non-minimized tasks for [deskId] ordered from top to bottom. */
     fun getExpandedTasksIdsInDeskOrdered(deskId: Int): List<Int> =
         getFreeformTasksIdsInDeskInZOrder(deskId).filter { !isMinimizedTask(it) }
 

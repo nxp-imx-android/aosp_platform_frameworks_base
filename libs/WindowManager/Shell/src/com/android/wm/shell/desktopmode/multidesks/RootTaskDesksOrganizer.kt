@@ -110,7 +110,31 @@ class RootTaskDesksOrganizer(
         wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
     }
 
+    override fun reorderTaskToFront(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: RunningTaskInfo,
+    ) {
+        logV("reorderTaskToFront task=${task.taskId} desk=$deskId")
+        val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
+        if (task.taskId in root.children) {
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+            return
+        }
+        val minimizationRoot =
+            checkNotNull(deskMinimizationRootsByDeskId[deskId]) {
+                "Minimization root not found for desk: $deskId"
+            }
+        if (task.taskId in minimizationRoot.children) {
+            unminimizeTask(wct, deskId, task)
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+            return
+        }
+        logE("Attempted to reorder task=${task.taskId} in desk=$deskId but it was not a child")
+    }
+
     override fun minimizeTask(wct: WindowContainerTransaction, deskId: Int, task: RunningTaskInfo) {
+        logV("minimizeTask task=${task.taskId} desk=$deskId")
         val deskRoot =
             checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         val minimizationRoot =
@@ -127,6 +151,30 @@ class RootTaskDesksOrganizer(
             return
         }
         wct.reparent(task.token, minimizationRoot.token, /* onTop= */ true)
+    }
+
+    override fun unminimizeTask(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: RunningTaskInfo,
+    ) {
+        val taskId = task.taskId
+        logV("unminimizeTask task=$taskId desk=$deskId")
+        val deskRoot =
+            checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        val minimizationRoot =
+            checkNotNull(deskMinimizationRootsByDeskId[deskId]) {
+                "Minimization root not found for desk: $deskId"
+            }
+        if (taskId in deskRoot.children) {
+            logV("Task #$taskId is already unminimized in desk=$deskId")
+            return
+        }
+        if (taskId !in minimizationRoot.children) {
+            logE("Attempted to unminimize task=$taskId in desk=$deskId but it was not a child")
+            return
+        }
+        wct.reparent(task.token, deskRoot.token, /* onTop= */ true)
     }
 
     override fun isDeskChange(change: TransitionInfo.Change, deskId: Int): Boolean =

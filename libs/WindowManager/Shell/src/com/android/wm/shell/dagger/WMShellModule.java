@@ -451,7 +451,8 @@ public abstract class WMShellModule {
             Optional<DesktopImmersiveController> desktopImmersiveController,
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
-            FocusTransitionObserver focusTransitionObserver) {
+            FocusTransitionObserver focusTransitionObserver,
+            Optional<DesksTransitionObserver> desksTransitionObserver) {
         return new FreeformTaskTransitionObserver(
                 context,
                 shellInit,
@@ -459,7 +460,8 @@ public abstract class WMShellModule {
                 desktopImmersiveController,
                 windowDecorViewModel,
                 taskChangeListener,
-                focusTransitionObserver);
+                focusTransitionObserver,
+                desksTransitionObserver);
     }
 
     @WMSingleton
@@ -772,7 +774,7 @@ public abstract class WMShellModule {
             Optional<BubbleController> bubbleController,
             OverviewToDesktopTransitionObserver overviewToDesktopTransitionObserver,
             DesksOrganizer desksOrganizer,
-            DesksTransitionObserver desksTransitionObserver,
+            Optional<DesksTransitionObserver> desksTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DragToDisplayTransitionHandler dragToDisplayTransitionHandler,
@@ -813,7 +815,7 @@ public abstract class WMShellModule {
                 bubbleController,
                 overviewToDesktopTransitionObserver,
                 desksOrganizer,
-                desksTransitionObserver,
+                desksTransitionObserver.get(),
                 userProfileContexts,
                 desktopModeCompatPolicy,
                 dragToDisplayTransitionHandler,
@@ -874,6 +876,7 @@ public abstract class WMShellModule {
             Transitions transitions,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             ShellTaskOrganizer shellTaskOrganizer,
+            DesksOrganizer desksOrganizer,
             InteractionJankMonitor interactionJankMonitor,
             @ShellMainThread Handler handler) {
         int maxTaskLimit = DesktopModeStatus.getMaxTaskLimit(context);
@@ -886,6 +889,7 @@ public abstract class WMShellModule {
                         transitions,
                         desktopUserRepositories,
                         shellTaskOrganizer,
+                        desksOrganizer,
                         maxTaskLimit <= 0 ? null : maxTaskLimit,
                         interactionJankMonitor,
                         context,
@@ -1215,7 +1219,6 @@ public abstract class WMShellModule {
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
             Optional<BackAnimationController> backAnimationController,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
-            @NonNull DesksTransitionObserver desksTransitionObserver,
             ShellInit shellInit) {
         return desktopUserRepositories.flatMap(
                 repository ->
@@ -1228,17 +1231,21 @@ public abstract class WMShellModule {
                                         desktopMixedTransitionHandler.get(),
                                         backAnimationController.get(),
                                         desktopWallpaperActivityTokenProvider,
-                                        desksTransitionObserver,
                                         shellInit)));
     }
 
     @WMSingleton
     @Provides
-    static DesksTransitionObserver provideDesksTransitionObserver(
-            @NonNull @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+    static Optional<DesksTransitionObserver> provideDesksTransitionObserver(
+            Context context,
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             @NonNull DesksOrganizer desksOrganizer
     ) {
-        return new DesksTransitionObserver(desktopUserRepositories, desksOrganizer);
+        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+            return Optional.of(
+                    new DesksTransitionObserver(desktopUserRepositories, desksOrganizer));
+        }
+        return Optional.empty();
     }
 
     @WMSingleton
