@@ -748,6 +748,9 @@
     <!-- The accessibility autoclick panel divider height -->
     <dimen name="accessibility_autoclick_type_panel_divider_height">24dp</dimen>
 
+    <!-- The accessibility autoclick scroll panel button width and height -->
+    <dimen name="accessibility_autoclick_scroll_panel_button_size">36dp</dimen>
+
     <!-- Margin around the various security views -->
     <dimen name="keyguard_muliuser_selector_margin">8dp</dimen>
 

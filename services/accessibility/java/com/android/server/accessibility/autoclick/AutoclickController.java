@@ -25,6 +25,7 @@ import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_M
 import static com.android.server.accessibility.autoclick.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AutoclickType;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.ClickPanelControllerInterface;
 
@@ -87,6 +88,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
     @VisibleForTesting AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
     @VisibleForTesting AutoclickIndicatorView mAutoclickIndicatorView;
     @VisibleForTesting AutoclickTypePanel mAutoclickTypePanel;
+    @VisibleForTesting AutoclickScrollPanel mAutoclickScrollPanel;
     private WindowManager mWindowManager;
 
     // Default click type is left-click.
@@ -98,6 +100,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 @Override
                 public void handleAutoclickTypeChange(@AutoclickType int clickType) {
                     mActiveClickType = clickType;
+
+                    // Hide scroll panel when type is not scroll.
+                    if (clickType != AUTOCLICK_TYPE_SCROLL && mAutoclickScrollPanel != null) {
+                        mAutoclickScrollPanel.hide();
+                    }
                 }
 
                 @Override
@@ -161,6 +168,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         mWindowManager = mContext.getSystemService(WindowManager.class);
         mAutoclickTypePanel =
                 new AutoclickTypePanel(mContext, mWindowManager, mUserId, clickPanelController);
+        mAutoclickScrollPanel = new AutoclickScrollPanel(mContext, mWindowManager);
 
         mAutoclickTypePanel.show();
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
@@ -189,6 +197,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mClickScheduler.cancel();
         }
 
+        if (mAutoclickScrollPanel != null) {
+            mAutoclickScrollPanel.hide();
+        }
+
         super.clearEvents(inputSource);
     }
 
@@ -208,6 +220,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mAutoclickIndicatorScheduler = null;
             mWindowManager.removeView(mAutoclickIndicatorView);
             mAutoclickTypePanel.hide();
+        }
+
+        if (mAutoclickScrollPanel != null) {
+            mAutoclickScrollPanel.hide();
+            mAutoclickScrollPanel = null;
         }
     }
 
@@ -684,6 +701,14 @@ public class AutoclickController extends BaseEventStreamTransformation {
          */
         private void sendClick() {
             if (mLastMotionEvent == null || getNext() == null) {
+                return;
+            }
+
+            // Handle scroll type specially, show scroll panel instead of sending click events.
+            if (mActiveClickType == AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL) {
+                if (mAutoclickScrollPanel != null) {
+                    mAutoclickScrollPanel.show();
+                }
                 return;
             }
 
