@@ -20,7 +20,6 @@ import android.animation.ValueAnimator
 import android.util.Log
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -60,7 +59,6 @@ constructor(
     private val wakeToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
-    private val communalInteractor: CommunalInteractor,
 ) :
     TransitionInteractor(
         fromState = KeyguardState.AOD,
@@ -110,7 +108,7 @@ constructor(
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val biometricUnlockMode = keyguardInteractor.biometricUnlockState.value.mode
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
-                    val shouldShowCommunal = communalInteractor.shouldShowCommunal.value
+                    val shouldShowCommunal = communalSettingsInteractor.autoOpenEnabled.value
 
                     if (!maybeHandleInsecurePowerGesture()) {
                         val shouldTransitionToLockscreen =

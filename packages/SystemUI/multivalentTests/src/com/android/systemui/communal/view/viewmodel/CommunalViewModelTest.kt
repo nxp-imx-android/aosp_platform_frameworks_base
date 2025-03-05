@@ -32,9 +32,9 @@ import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_DIRECT_EDIT_MODE
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
-import com.android.systemui.common.data.repository.batteryRepository
-import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.model.CommunalSmartspaceTimer
+import com.android.systemui.communal.data.model.FEATURE_MANUAL_OPEN
+import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.FakeCommunalMediaRepository
 import com.android.systemui.communal.data.repository.FakeCommunalSceneRepository
 import com.android.systemui.communal.data.repository.FakeCommunalSmartspaceRepository
@@ -50,6 +50,7 @@ import com.android.systemui.communal.domain.interactor.communalInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.communal.domain.interactor.communalTutorialInteractor
+import com.android.systemui.communal.domain.interactor.setCommunalEnabled
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.shared.log.CommunalMetricsLogger
@@ -101,7 +102,6 @@ import com.android.systemui.statusbar.KeyguardIndicationController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.fakeUserRepository
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
@@ -128,7 +128,9 @@ import platform.test.runner.parameterized.Parameters
 @RunWith(ParameterizedAndroidJunit4::class)
 class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Mock private lateinit var mediaHost: MediaHost
+
     @Mock private lateinit var mediaCarouselScrollHandler: MediaCarouselScrollHandler
+
     @Mock private lateinit var metricsLogger: CommunalMetricsLogger
 
     private val kosmos = testKosmos()
@@ -212,11 +214,8 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     @Test
     fun tutorial_tutorialNotCompletedAndKeyguardVisible_showTutorialContent() =
         testScope.runTest {
-            // Keyguard showing, storage unlocked, main user, and tutorial not started.
             keyguardRepository.setKeyguardShowing(true)
-            keyguardRepository.setKeyguardOccluded(false)
-            userRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
-            setIsMainUser(true)
+            kosmos.setCommunalEnabled(true)
             tutorialRepository.setTutorialSettingState(
                 Settings.Secure.HUB_MODE_TUTORIAL_NOT_STARTED
             )
@@ -951,21 +950,16 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun swipeToCommunal() =
         kosmos.runTest {
             setCommunalV2ConfigEnabled(true)
-            val mainUser = fakeUserRepository.asMainUser()
-            fakeKeyguardRepository.setKeyguardShowing(true)
-            fakeUserRepository.setUserUnlocked(mainUser.id, true)
-            fakeUserTracker.set(userInfos = listOf(mainUser), selectedUserIndex = 0)
-            fakeSettings.putIntForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                1,
-                mainUser.id,
+            // Suppress manual opening
+            communalSettingsInteractor.setSuppressionReasons(
+                listOf(SuppressionReason.ReasonUnknown(FEATURE_MANUAL_OPEN))
             )
 
             val viewModel = createViewModel()
             val swipeToHubEnabled by collectLastValue(viewModel.swipeToHubEnabled)
             assertThat(swipeToHubEnabled).isFalse()
 
-            batteryRepository.fake.setDevicePluggedIn(true)
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
             assertThat(swipeToHubEnabled).isTrue()
 
             keyguardTransitionRepository.sendTransitionStep(

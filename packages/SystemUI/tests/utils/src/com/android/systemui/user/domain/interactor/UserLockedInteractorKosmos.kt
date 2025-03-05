@@ -22,5 +22,9 @@ import com.android.systemui.user.data.repository.userRepository
 
 val Kosmos.userLockedInteractor by
     Kosmos.Fixture {
-        UserLockedInteractor(backgroundDispatcher = testDispatcher, userRepository = userRepository)
+        UserLockedInteractor(
+            backgroundDispatcher = testDispatcher,
+            userRepository = userRepository,
+            selectedUserInteractor = selectedUserInteractor,
+        )
     }

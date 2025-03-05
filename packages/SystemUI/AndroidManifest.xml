@@ -312,6 +312,9 @@
     <!-- Permission necessary to change car audio volume through CarAudioManager -->
     <uses-permission android:name="android.car.permission.CAR_CONTROL_AUDIO_VOLUME" />
 
+    <!-- To detect when projecting to Android Auto -->
+    <uses-permission android:name="android.permission.READ_PROJECTION_STATE" />
+
     <!-- Permission to control Android Debug Bridge (ADB) -->
     <uses-permission android:name="android.permission.MANAGE_DEBUGGING" />
 

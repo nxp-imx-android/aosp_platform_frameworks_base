@@ -33,7 +33,7 @@ import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepositor
 import com.android.systemui.communal.domain.interactor.CommunalSceneTransitionInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSceneTransitionInteractor
-import com.android.systemui.communal.domain.interactor.setCommunalAvailable
+import com.android.systemui.communal.domain.interactor.setCommunalV2Available
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
 import com.android.systemui.communal.domain.interactor.setCommunalV2Enabled
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -1004,14 +1004,13 @@ class KeyguardTransitionScenariosTest(flags: FlagsParameterization?) : SysuiTest
     @BrokenWithSceneContainer(339465026)
     fun occludedToGlanceableHub_communalKtfRefactor() =
         testScope.runTest {
-            // GIVEN a device on lockscreen and communal is available
-            keyguardRepository.setKeyguardShowing(true)
-            kosmos.setCommunalAvailable(true)
-            runCurrent()
-
             // GIVEN a prior transition has run to OCCLUDED from GLANCEABLE_HUB
             runTransitionAndSetWakefulness(KeyguardState.GLANCEABLE_HUB, KeyguardState.OCCLUDED)
             keyguardRepository.setKeyguardOccluded(true)
+            runCurrent()
+
+            // GIVEN a device on lockscreen and communal is available
+            kosmos.setCommunalV2Available(true)
             runCurrent()
 
             // WHEN occlusion ends

@@ -153,7 +153,7 @@ constructor(
                 .filterRelevantKeyguardStateAnd { isAwake -> isAwake }
                 .sample(
                     communalInteractor.isCommunalAvailable,
-                    communalInteractor.shouldShowCommunal,
+                    communalSettingsInteractor.autoOpenEnabled,
                 )
                 .collect { (_, isCommunalAvailable, shouldShowCommunal) ->
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
@@ -209,7 +209,7 @@ constructor(
             powerInteractor.detailedWakefulness
                 .filterRelevantKeyguardStateAnd { it.isAwake() }
                 .sample(
-                    communalInteractor.shouldShowCommunal,
+                    communalSettingsInteractor.autoOpenEnabled,
                     communalInteractor.isCommunalAvailable,
                     keyguardInteractor.biometricUnlockState,
                     wakeToGoneInteractor.canWakeDirectlyToGone,

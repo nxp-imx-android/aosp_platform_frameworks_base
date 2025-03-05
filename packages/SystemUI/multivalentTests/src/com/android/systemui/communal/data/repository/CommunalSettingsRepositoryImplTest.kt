@@ -34,9 +34,7 @@ import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_BLURRED_BACKGROUND
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
-import com.android.systemui.communal.data.model.DisabledReason
 import com.android.systemui.communal.data.repository.CommunalSettingsRepositoryImpl.Companion.GLANCEABLE_HUB_BACKGROUND_SETTING
-import com.android.systemui.communal.domain.interactor.setCommunalV2Enabled
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.communal.shared.model.WhenToDream
 import com.android.systemui.flags.Flags.COMMUNAL_SERVICE_ENABLED
@@ -202,63 +200,6 @@ class CommunalSettingsRepositoryImplTest(flags: FlagsParameterization?) : SysuiT
 
     @EnableFlags(FLAG_COMMUNAL_HUB)
     @Test
-    fun secondaryUserIsInvalid() =
-        kosmos.runTest {
-            val enabledState by collectLastValue(underTest.getEnabledState(SECONDARY_USER))
-
-            assertThat(enabledState?.enabled).isFalse()
-            assertThat(enabledState).containsExactly(DisabledReason.DISABLED_REASON_INVALID_USER)
-        }
-
-    @EnableFlags(FLAG_COMMUNAL_HUB, FLAG_GLANCEABLE_HUB_V2)
-    @Test
-    fun classicFlagIsDisabled() =
-        kosmos.runTest {
-            setCommunalV2Enabled(false)
-            val enabledState by collectLastValue(underTest.getEnabledState(PRIMARY_USER))
-            assertThat(enabledState?.enabled).isFalse()
-            assertThat(enabledState).containsExactly(DisabledReason.DISABLED_REASON_FLAG)
-        }
-
-    @DisableFlags(FLAG_COMMUNAL_HUB, FLAG_GLANCEABLE_HUB_V2)
-    @Test
-    fun communalHubFlagIsDisabled() =
-        kosmos.runTest {
-            val enabledState by collectLastValue(underTest.getEnabledState(PRIMARY_USER))
-            assertThat(enabledState?.enabled).isFalse()
-            assertThat(enabledState).containsExactly(DisabledReason.DISABLED_REASON_FLAG)
-        }
-
-    @EnableFlags(FLAG_COMMUNAL_HUB)
-    @Test
-    fun hubIsDisabledByUser() =
-        kosmos.runTest {
-            fakeSettings.putIntForUser(Settings.Secure.GLANCEABLE_HUB_ENABLED, 0, PRIMARY_USER.id)
-            val enabledState by collectLastValue(underTest.getEnabledState(PRIMARY_USER))
-            assertThat(enabledState?.enabled).isFalse()
-            assertThat(enabledState).containsExactly(DisabledReason.DISABLED_REASON_USER_SETTING)
-
-            fakeSettings.putIntForUser(Settings.Secure.GLANCEABLE_HUB_ENABLED, 1, SECONDARY_USER.id)
-            assertThat(enabledState?.enabled).isFalse()
-
-            fakeSettings.putIntForUser(Settings.Secure.GLANCEABLE_HUB_ENABLED, 1, PRIMARY_USER.id)
-            assertThat(enabledState?.enabled).isTrue()
-        }
-
-    @EnableFlags(FLAG_COMMUNAL_HUB)
-    @Test
-    fun hubIsDisabledByDevicePolicy() =
-        kosmos.runTest {
-            val enabledState by collectLastValue(underTest.getEnabledState(PRIMARY_USER))
-            assertThat(enabledState?.enabled).isTrue()
-
-            setKeyguardFeaturesDisabled(PRIMARY_USER, KEYGUARD_DISABLE_WIDGETS_ALL)
-            assertThat(enabledState?.enabled).isFalse()
-            assertThat(enabledState).containsExactly(DisabledReason.DISABLED_REASON_DEVICE_POLICY)
-        }
-
-    @EnableFlags(FLAG_COMMUNAL_HUB)
-    @Test
     fun widgetsAllowedForWorkProfile_isFalse_whenDisallowedByDevicePolicy() =
         kosmos.runTest {
             val widgetsAllowedForWorkProfile by
@@ -267,36 +208,6 @@ class CommunalSettingsRepositoryImplTest(flags: FlagsParameterization?) : SysuiT
 
             setKeyguardFeaturesDisabled(WORK_PROFILE, KEYGUARD_DISABLE_WIDGETS_ALL)
             assertThat(widgetsAllowedForWorkProfile).isFalse()
-        }
-
-    @EnableFlags(FLAG_COMMUNAL_HUB)
-    @Test
-    fun hubIsEnabled_whenDisallowedByDevicePolicyForWorkProfile() =
-        kosmos.runTest {
-            val enabledStateForPrimaryUser by
-                collectLastValue(underTest.getEnabledState(PRIMARY_USER))
-            assertThat(enabledStateForPrimaryUser?.enabled).isTrue()
-
-            setKeyguardFeaturesDisabled(WORK_PROFILE, KEYGUARD_DISABLE_WIDGETS_ALL)
-            assertThat(enabledStateForPrimaryUser?.enabled).isTrue()
-        }
-
-    @EnableFlags(FLAG_COMMUNAL_HUB)
-    @Test
-    fun hubIsDisabledByUserAndDevicePolicy() =
-        kosmos.runTest {
-            val enabledState by collectLastValue(underTest.getEnabledState(PRIMARY_USER))
-            assertThat(enabledState?.enabled).isTrue()
-
-            fakeSettings.putIntForUser(Settings.Secure.GLANCEABLE_HUB_ENABLED, 0, PRIMARY_USER.id)
-            setKeyguardFeaturesDisabled(PRIMARY_USER, KEYGUARD_DISABLE_WIDGETS_ALL)
-
-            assertThat(enabledState?.enabled).isFalse()
-            assertThat(enabledState)
-                .containsExactly(
-                    DisabledReason.DISABLED_REASON_DEVICE_POLICY,
-                    DisabledReason.DISABLED_REASON_USER_SETTING,
-                )
         }
 
     @Test
@@ -324,26 +235,6 @@ class CommunalSettingsRepositoryImplTest(flags: FlagsParameterization?) : SysuiT
                     .that(backgroundType)
                     .isEqualTo(type)
             }
-        }
-
-    @Test
-    fun screensaverDisabledByUser() =
-        kosmos.runTest {
-            val enabledState by collectLastValue(underTest.getScreensaverEnabledState(PRIMARY_USER))
-
-            fakeSettings.putIntForUser(Settings.Secure.SCREENSAVER_ENABLED, 0, PRIMARY_USER.id)
-
-            assertThat(enabledState).isFalse()
-        }
-
-    @Test
-    fun screensaverEnabledByUser() =
-        kosmos.runTest {
-            val enabledState by collectLastValue(underTest.getScreensaverEnabledState(PRIMARY_USER))
-
-            fakeSettings.putIntForUser(Settings.Secure.SCREENSAVER_ENABLED, 1, PRIMARY_USER.id)
-
-            assertThat(enabledState).isTrue()
         }
 
     @Test
