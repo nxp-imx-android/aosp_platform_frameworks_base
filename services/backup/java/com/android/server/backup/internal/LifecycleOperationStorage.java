@@ -24,6 +24,7 @@ import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.backup.BackupRestoreTask;
+import com.android.server.backup.BackupRestoreTask.CancellationReason;
 import com.android.server.backup.OperationStorage;
 
 import com.google.android.collect.Sets;
@@ -296,20 +297,18 @@ public class LifecycleOperationStorage implements OperationStorage {
     }
 
     /**
-     * Cancel the operation associated with {@code token}.  Cancellation may be
-     * propagated to the operation's callback (a {@link BackupRestoreTask}) if
-     * the operation has one, and the cancellation is due to the operation
-     * timing out.
+     * Cancel the operation associated with {@code token}. Cancellation may be propagated to the
+     * operation's callback (a {@link BackupRestoreTask}) if the operation has one, and the
+     * cancellation is due to the operation timing out.
      *
      * @param token the operation token specified when registering the operation
-     * @param cancelAll this is passed on when propagating the cancellation
-     * @param operationTimedOutCallback a lambda that is invoked with the
-     *                                  operation type where the operation is
-     *                                  cancelled due to timeout, allowing the
-     *                                  caller to do type-specific clean-ups.
+     * @param operationTimedOutCallback a lambda that is invoked with the operation type where the
+     *     operation is cancelled due to timeout, allowing the caller to do type-specific clean-ups.
      */
     public void cancelOperation(
-            int token, boolean cancelAll, IntConsumer operationTimedOutCallback) {
+            int token,
+            IntConsumer operationTimedOutCallback,
+            @CancellationReason int cancellationReason) {
         // Notify any synchronous waiters
         Operation op = null;
         synchronized (mOperationsLock) {
@@ -343,7 +342,7 @@ public class LifecycleOperationStorage implements OperationStorage {
             if (DEBUG) {
                 Slog.v(TAG, "[UserID:" + mUserId + "   Invoking cancel on " + op.callback);
             }
-            op.callback.handleCancel(cancelAll);
+            op.callback.handleCancel(cancellationReason);
         }
     }
 }

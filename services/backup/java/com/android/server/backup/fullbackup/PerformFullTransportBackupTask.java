@@ -162,7 +162,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
 
     // This is true when a backup operation for some package is in progress.
     private volatile boolean mIsDoingBackup;
-    private volatile boolean mCancelAll;
+    private volatile boolean mCancelled;
     private final int mCurrentOpToken;
     private final BackupAgentTimeoutParameters mAgentTimeoutParameters;
     private final BackupEligibilityRules mBackupEligibilityRules;
@@ -199,7 +199,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
 
         if (backupManagerService.isBackupOperationInProgress()) {
             Slog.d(TAG, "Skipping full backup. A backup is already in progress.");
-            mCancelAll = true;
+            mCancelled = true;
             return;
         }
 
@@ -287,25 +287,23 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
     }
 
     @Override
-    public void handleCancel(boolean cancelAll) {
+    public void handleCancel(@CancellationReason int cancellationReason) {
         synchronized (mCancelLock) {
-            // We only support 'cancelAll = true' case for this task. Cancelling of a single package
-
-            // due to timeout is handled by SinglePackageBackupRunner and
+            // This callback is only used for cancelling the entire backup operation. Cancelling of
+            // a single package due to timeout is handled by SinglePackageBackupRunner and
             // SinglePackageBackupPreflight.
-
-            if (!cancelAll) {
-                Slog.wtf(TAG, "Expected cancelAll to be true.");
+            if (cancellationReason == CancellationReason.TIMEOUT) {
+                Slog.wtf(TAG, "This task cannot time out");
             }
 
-            if (mCancelAll) {
+            if (mCancelled) {
                 Slog.d(TAG, "Ignoring duplicate cancel call.");
                 return;
             }
 
-            mCancelAll = true;
+            mCancelled = true;
             if (mIsDoingBackup) {
-                mUserBackupManagerService.handleCancel(mBackupRunnerOpToken, cancelAll);
+                mUserBackupManagerService.handleCancel(mBackupRunnerOpToken, cancellationReason);
                 try {
                     // If we're running a backup we should be connected to a transport
                     BackupTransportClient transport =
@@ -410,7 +408,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                 int backupPackageStatus;
                 long quota = Long.MAX_VALUE;
                 synchronized (mCancelLock) {
-                    if (mCancelAll) {
+                    if (mCancelled) {
                         break;
                     }
                     backupPackageStatus = transport.performFullBackup(currentPackage,
@@ -478,7 +476,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                             if (nRead > 0) {
                                 out.write(buffer, 0, nRead);
                                 synchronized (mCancelLock) {
-                                    if (!mCancelAll) {
+                                    if (!mCancelled) {
                                         backupPackageStatus = transport.sendBackupData(nRead);
                                     }
                                 }
@@ -509,7 +507,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                     synchronized (mCancelLock) {
                         mIsDoingBackup = false;
                         // If mCancelCurrent is true, we have already called cancelFullBackup().
-                        if (!mCancelAll) {
+                        if (!mCancelled) {
                             if (backupRunnerResult == BackupTransport.TRANSPORT_OK) {
                                 // If we were otherwise in a good state, now interpret the final
                                 // result based on what finishBackup() returns.  If we're in a
@@ -607,7 +605,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                             .sendBackupOnPackageResult(mBackupObserver, packageName,
                                     BackupManager.ERROR_BACKUP_CANCELLED);
                     Slog.w(TAG, "Backup cancelled. package=" + packageName +
-                            ", cancelAll=" + mCancelAll);
+                            ", entire session cancelled=" + mCancelled);
                     EventLog.writeEvent(EventLogTags.FULL_BACKUP_CANCELLED, packageName);
                     mUserBackupManagerService.getBackupAgentConnectionManager().unbindAgent(
                             currentPackage.applicationInfo, /* allowKill= */ true);
@@ -654,7 +652,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
 
         } finally {
 
-            if (mCancelAll) {
+            if (mCancelled) {
                 backupRunStatus = BackupManager.ERROR_BACKUP_CANCELLED;
             }
 
@@ -820,7 +818,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
         }
 
         @Override
-        public void handleCancel(boolean cancelAll) {
+        public void handleCancel(@CancellationReason int cancellationReason) {
             if (DEBUG) {
                 Slog.i(TAG, "Preflight cancelled; failing");
             }
@@ -974,7 +972,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
         public void operationComplete(long result) { /* intentionally empty */ }
 
         @Override
-        public void handleCancel(boolean cancelAll) {
+        public void handleCancel(@CancellationReason int cancellationReason) {
             Slog.w(TAG, "Full backup cancel of " + mTarget.packageName);
 
             mBackupManagerMonitorEventSender.monitorEvent(
@@ -984,7 +982,7 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
                     /* extras= */ null);
             mIsCancelled = true;
             // Cancel tasks spun off by this task.
-            mUserBackupManagerService.handleCancel(mEphemeralToken, cancelAll);
+            mUserBackupManagerService.handleCancel(mEphemeralToken, cancellationReason);
             mUserBackupManagerService.getBackupAgentConnectionManager().unbindAgent(
                     mTarget.applicationInfo, /* allowKill= */ true);
             // Free up everyone waiting on this task and its children.

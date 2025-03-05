@@ -109,6 +109,7 @@ import com.android.server.EventLogTags;
 import com.android.server.LocalServices;
 import com.android.server.backup.BackupAgentConnectionManager;
 import com.android.server.backup.BackupRestoreTask;
+import com.android.server.backup.BackupRestoreTask.CancellationReason;
 import com.android.server.backup.BackupWakeLock;
 import com.android.server.backup.DataChangedJournal;
 import com.android.server.backup.KeyValueBackupJob;
@@ -2412,7 +2413,7 @@ public class KeyValueBackupTaskTest  {
         KeyValueBackupTask task = spy(createKeyValueBackupTask(transportMock, PACKAGE_1));
         doNothing().when(task).waitCancel();
 
-        task.handleCancel(true);
+        task.handleCancel(CancellationReason.EXTERNAL);
 
         InOrder inOrder = inOrder(task);
         inOrder.verify(task).markCancel();
@@ -2420,12 +2421,14 @@ public class KeyValueBackupTaskTest  {
     }
 
     @Test
-    public void testHandleCancel_whenCancelAllFalse_throws() throws Exception {
+    public void testHandleCancel_timeout_throws() throws Exception {
         TransportMock transportMock = setUpInitializedTransport(mTransport);
         setUpAgentWithData(PACKAGE_1);
         KeyValueBackupTask task = createKeyValueBackupTask(transportMock, PACKAGE_1);
 
-        expectThrows(IllegalArgumentException.class, () -> task.handleCancel(false));
+        expectThrows(
+                IllegalArgumentException.class,
+                () -> task.handleCancel(CancellationReason.TIMEOUT));
     }
 
     /** Do not update backup token if no data was moved. */
