@@ -1075,6 +1075,7 @@ public class NotificationManagerService extends SystemService {
                         summary.getSbn().getNotification().getGroupAlertBehavior();
 
         if (notificationForceGrouping()) {
+            summary.getNotification().flags |= Notification.FLAG_SILENT;
             if (!summary.getChannel().getId().equals(summaryAttr.channelId)) {
                 NotificationChannel newChannel = mPreferencesHelper.getNotificationChannel(pkg,
                         summary.getUid(), summaryAttr.channelId, false);
@@ -7450,6 +7451,7 @@ public class NotificationManagerService extends SystemService {
                     // Override group key early for forced grouped notifications
                     r.setOverrideGroupKey(groupName);
                 }
+                r.getNotification().flags |= Notification.FLAG_SILENT;
             }
 
             addAutoGroupAdjustment(r, groupName);
