@@ -323,7 +323,7 @@ open class SimpleDigitalClockTextView(
 
     fun animateDoze(isDozing: Boolean, isAnimated: Boolean) {
         if (!this::textAnimator.isInitialized) return
-        logger.animateDoze()
+        logger.animateDoze(isDozing, isAnimated)
         textAnimator.setTextStyle(
             TextAnimator.Style(
                 fVar = if (isDozing) aodFontVariation else lsFontVariation,

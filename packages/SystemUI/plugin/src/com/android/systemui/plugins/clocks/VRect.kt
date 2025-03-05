@@ -41,7 +41,7 @@ private fun pack(left: Short, top: Short, right: Short, bottom: Short): ULong {
 }
 
 @JvmInline
-value class VRectF(private val data: ULong) {
+value class VRectF(val data: ULong) {
     val left: Float
         get() = fromBits(unpackLeft(data))
 
@@ -109,7 +109,7 @@ value class VRectF(private val data: ULong) {
 }
 
 @JvmInline
-value class VRect(private val data: ULong) {
+value class VRect(val data: ULong) {
     val left: Int
         get() = unpackLeft(data).toInt()
 
@@ -135,6 +135,18 @@ value class VRect(private val data: ULong) {
         top = rect.top.toShort(),
         right = rect.right.toShort(),
         bottom = rect.bottom.toShort(),
+    )
+
+    constructor(
+        left: Int,
+        top: Int,
+        right: Int,
+        bottom: Int,
+    ) : this(
+        left = left.toShort(),
+        top = top.toShort(),
+        right = right.toShort(),
+        bottom = bottom.toShort(),
     )
 
     constructor(

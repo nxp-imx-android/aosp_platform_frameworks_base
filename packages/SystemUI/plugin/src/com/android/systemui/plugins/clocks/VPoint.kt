@@ -37,7 +37,7 @@ private fun pack(x: Int, y: Int): ULong {
 }
 
 @JvmInline
-value class VPointF(private val data: ULong) {
+value class VPointF(val data: ULong) {
     val x: Float
         get() = Float.fromBits(unpackX(data))
 
@@ -137,7 +137,7 @@ value class VPointF(private val data: ULong) {
 }
 
 @JvmInline
-value class VPoint(private val data: ULong) {
+value class VPoint(val data: ULong) {
     val x: Int
         get() = unpackX(data)
 
