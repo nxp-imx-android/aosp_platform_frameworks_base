@@ -142,14 +142,6 @@ public class VirtualDeviceManagerService extends SystemService {
     @GuardedBy("mVirtualDeviceManagerLock")
     private ArrayMap<String, AssociationInfo> mActiveAssociations = new ArrayMap<>();
 
-    private final CompanionDeviceManager.OnAssociationsChangedListener mCdmAssociationListener =
-            new CompanionDeviceManager.OnAssociationsChangedListener() {
-                @Override
-                public void onAssociationsChanged(@NonNull List<AssociationInfo> associations) {
-                    syncVirtualDevicesToCdmAssociations(associations);
-                }
-            };
-
     private class StrongAuthTracker extends LockPatternUtils.StrongAuthTracker {
         final Set<Integer> mUsersInLockdown = new ArraySet<>();
 
@@ -346,33 +338,6 @@ public class VirtualDeviceManagerService extends SystemService {
             Binder.restoreCallingIdentity(identity);
         }
         return true;
-    }
-
-    private void syncVirtualDevicesToCdmAssociations(List<AssociationInfo> associations) {
-        Set<VirtualDeviceImpl> virtualDevicesToRemove = new HashSet<>();
-        synchronized (mVirtualDeviceManagerLock) {
-            if (mVirtualDevices.size() == 0) {
-                return;
-            }
-
-            Set<Integer> activeAssociationIds = new HashSet<>(associations.size());
-            for (AssociationInfo association : associations) {
-                activeAssociationIds.add(association.getId());
-            }
-
-            for (int i = 0; i < mVirtualDevices.size(); i++) {
-                VirtualDeviceImpl virtualDevice = mVirtualDevices.valueAt(i);
-                int deviceAssociationId = virtualDevice.getAssociationId();
-                if (deviceAssociationId != CDM_ASSOCIATION_ID_NONE
-                        && !activeAssociationIds.contains(deviceAssociationId)) {
-                    virtualDevicesToRemove.add(virtualDevice);
-                }
-            }
-        }
-
-        for (VirtualDeviceImpl virtualDevice : virtualDevicesToRemove) {
-            virtualDevice.close();
-        }
     }
 
     void onCdmAssociationsChanged(List<AssociationInfo> associations) {
