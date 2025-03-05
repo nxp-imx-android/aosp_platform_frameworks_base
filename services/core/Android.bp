@@ -122,10 +122,10 @@ genrule {
 }
 
 genrule {
-  name: "statslog-mediarouter-java-gen",
-  tools: ["stats-log-api-gen"],
-  cmd: "$(location stats-log-api-gen) --java $(out) --module mediarouter --javaPackage com.android.server.media --javaClass MediaRouterStatsLog",
-  out: ["com/android/server/media/MediaRouterStatsLog.java"],
+    name: "statslog-mediarouter-java-gen",
+    tools: ["stats-log-api-gen"],
+    cmd: "$(location stats-log-api-gen) --java $(out) --module mediarouter --javaPackage com.android.server.media --javaClass MediaRouterStatsLog",
+    out: ["com/android/server/media/MediaRouterStatsLog.java"],
 }
 
 java_library_static {
@@ -138,6 +138,7 @@ java_library_static {
         "ondeviceintelligence_conditionally",
     ],
     srcs: [
+        ":android.hardware.audio.effect-V1-java-source",
         ":android.hardware.tv.hdmi.connection-V1-java-source",
         ":android.hardware.tv.hdmi.earc-V1-java-source",
         ":android.hardware.tv.mediaquality-V1-java-source",
