@@ -478,13 +478,13 @@ class HandleMenu(
             R.dimen.desktop_mode_handle_menu_icon_button_ripple_inset_base)
         private val iconButtonRippleRadius = context.resources.getDimensionPixelSize(
             R.dimen.desktop_mode_handle_menu_icon_button_ripple_radius)
-        private val iconButtonDrawableInsetsBase = DrawableInsets(t=iconButtondrawableBaseInset,
-            b=iconButtondrawableBaseInset, l=iconButtondrawableBaseInset,
-            r=iconButtondrawableBaseInset)
-        private val iconButtonDrawableInsetsLeft = DrawableInsets(t=iconButtondrawableBaseInset,
-            b=iconButtondrawableBaseInset, l=iconButtondrawableShiftInset, r=0)
-        private val iconButtonDrawableInsetsRight = DrawableInsets(t=iconButtondrawableBaseInset,
-            b=iconButtondrawableBaseInset, l=0, r=iconButtondrawableShiftInset)
+        private val iconButtonDrawableInsetsBase = DrawableInsets(t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = iconButtondrawableBaseInset,
+            r = iconButtondrawableBaseInset)
+        private val iconButtonDrawableInsetsLeft = DrawableInsets(t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = iconButtondrawableShiftInset, r = 0)
+        private val iconButtonDrawableInsetsRight = DrawableInsets(t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = 0, r = iconButtondrawableShiftInset)
 
         // App Info Pill.
         private val appInfoPill = rootView.requireViewById<View>(R.id.app_info_pill)
