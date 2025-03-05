@@ -687,7 +687,7 @@ constructor(
                 if (!isDeviceEntered) {
                     coroutineScope {
                         launch {
-                            deviceEntryHapticsInteractor.playSuccessHaptic
+                            deviceEntryHapticsInteractor.playSuccessHapticOnDeviceEntry
                                 .sample(sceneInteractor.currentScene)
                                 .collect { currentScene ->
                                     if (Flags.msdlFeedback()) {
