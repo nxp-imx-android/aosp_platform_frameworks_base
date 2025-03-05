@@ -290,6 +290,15 @@ private class DragControllerImpl(
     val isDrivingTransition: Boolean
         get() = layoutState.transitionState == swipeAnimation.contentTransition
 
+    override val isReadyToDrag: Boolean
+        get() {
+            return !layoutState.deferTransitionProgress ||
+                with(draggableHandler.layoutImpl.elementStateScope) {
+                    swipeAnimation.fromContent.targetSize() != null &&
+                        swipeAnimation.toContent.targetSize() != null
+                }
+        }
+
     init {
         check(!isDrivingTransition) { "Multiple controllers with the same SwipeTransition" }
     }

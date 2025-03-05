@@ -20,6 +20,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.runtime.withFrameNanos
 import com.android.compose.animation.scene.content.state.TransitionState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -47,6 +48,11 @@ internal fun CoroutineScope.animateContent(
                 oneOffAnimation.animatable = it
             }
 
+        if (layoutState.deferTransitionProgress) {
+            // Defer the animation by one frame so that the transition progress is changed only when
+            // the expensive first composition frame is done.
+            withFrameNanos {}
+        }
         animatable.animateTo(targetProgress, animationSpec, initialVelocity)
     }
 
