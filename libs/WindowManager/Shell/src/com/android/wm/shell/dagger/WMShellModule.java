@@ -169,7 +169,6 @@ import com.android.wm.shell.windowdecor.CaptionWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
-import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.common.viewhost.PooledWindowDecorViewHostSupplier;
@@ -1016,7 +1015,6 @@ public abstract class WMShellModule {
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
-            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
@@ -1040,10 +1038,10 @@ public abstract class WMShellModule {
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 assistContentRequester, windowDecorViewHostSupplier, multiInstanceHelper,
                 desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
-                appHandleAndHeaderVisibilityHelper, windowDecorCaptionHandleRepository,
-                activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
-                desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
-                desktopModeCompatPolicy, desktopTilingDecorViewModel,
+                windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
+                focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
+                taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy,
+                desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController));
     }
 
@@ -1067,16 +1065,6 @@ public abstract class WMShellModule {
     static MultiDisplayDragMoveIndicatorSurface.Factory
             providesMultiDisplayDragMoveIndicatorSurfaceFactory(Context context) {
         return new MultiDisplayDragMoveIndicatorSurface.Factory(context);
-    }
-
-    @WMSingleton
-    @Provides
-    static AppHandleAndHeaderVisibilityHelper provideAppHandleAndHeaderVisibilityHelper(
-            @NonNull Context context,
-            @NonNull DisplayController displayController,
-            @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy) {
-        return new AppHandleAndHeaderVisibilityHelper(context, displayController,
-                desktopModeCompatPolicy);
     }
 
     @WMSingleton
