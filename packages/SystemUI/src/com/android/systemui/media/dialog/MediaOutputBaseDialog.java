@@ -342,7 +342,8 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
                 WallpaperColors wallpaperColors = WallpaperColors.fromBitmap(icon.getBitmap());
                 colorSetUpdated = !wallpaperColors.equals(mWallpaperColors);
                 if (colorSetUpdated) {
-                    mMediaSwitchingController.setCurrentColorScheme(wallpaperColors, isDarkThemeOn);
+                    mMediaSwitchingController.updateCurrentColorScheme(wallpaperColors,
+                            isDarkThemeOn);
                     updateButtonBackgroundColorFilter();
                     updateDialogBackgroundColor();
                 }
@@ -359,7 +360,8 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
             mAppResourceIcon.setVisibility(View.GONE);
         } else if (appSourceIcon != null) {
             Icon appIcon = appSourceIcon.toIcon(mContext);
-            mAppResourceIcon.setColorFilter(mMediaSwitchingController.getColorItemContent());
+            mAppResourceIcon.setColorFilter(
+                    mMediaSwitchingController.getColorSchemeLegacy().getColorItemContent());
             mAppResourceIcon.setImageIcon(appIcon);
         } else {
             Drawable appIconDrawable = mMediaSwitchingController.getAppSourceIconFromPackage();
@@ -419,18 +421,19 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     private void updateButtonBackgroundColorFilter() {
         ColorFilter buttonColorFilter =
                 new PorterDuffColorFilter(
-                        mMediaSwitchingController.getColorButtonBackground(),
+                        mMediaSwitchingController.getColorSchemeLegacy().getColorButtonBackground(),
                         PorterDuff.Mode.SRC_IN);
         mDoneButton.getBackground().setColorFilter(buttonColorFilter);
         mStopButton.getBackground().setColorFilter(buttonColorFilter);
-        mDoneButton.setTextColor(mMediaSwitchingController.getColorPositiveButtonText());
+        mDoneButton.setTextColor(
+                mMediaSwitchingController.getColorSchemeLegacy().getColorPositiveButtonText());
     }
 
     private void updateDialogBackgroundColor() {
-        getDialogView()
-                .getBackground()
-                .setTint(mMediaSwitchingController.getColorDialogBackground());
-        mDeviceListLayout.setBackgroundColor(mMediaSwitchingController.getColorDialogBackground());
+        getDialogView().getBackground().setTint(
+                mMediaSwitchingController.getColorSchemeLegacy().getColorDialogBackground());
+        mDeviceListLayout.setBackgroundColor(
+                mMediaSwitchingController.getColorSchemeLegacy().getColorDialogBackground());
     }
 
     public void handleLeBroadcastStarted() {

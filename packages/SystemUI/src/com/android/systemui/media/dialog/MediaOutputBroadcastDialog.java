@@ -52,6 +52,8 @@ import com.android.systemui.statusbar.phone.SystemUIDialog;
 
 import com.google.zxing.WriterException;
 
+import java.util.concurrent.Executor;
+
 /**
  * Dialog for media output broadcast.
  */
@@ -239,13 +241,16 @@ public class MediaOutputBroadcastDialog extends MediaOutputBaseDialog {
             Context context,
             boolean aboveStatusbar,
             BroadcastSender broadcastSender,
-            MediaSwitchingController mediaSwitchingController) {
+            MediaSwitchingController mediaSwitchingController,
+            Executor mainExecutor,
+            Executor backgroundExecutor) {
         super(
                 context,
                 broadcastSender,
                 mediaSwitchingController, /* includePlaybackAndAppMetadata */
                 true);
-        mAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mainExecutor,
+                backgroundExecutor);
         // TODO(b/226710953): Move the part to MediaOutputBaseDialog for every class
         //  that extends MediaOutputBaseDialog
         if (!aboveStatusbar) {
