@@ -385,6 +385,15 @@ flag {
 }
 
 flag {
+    name: "record_all_runtime_appops_sqlite"
+    is_fixed_read_only: true
+    is_exported: true
+    namespace: "permissions"
+    description: "Enables recording of all runtime app ops into SQlite"
+    bug: "377584611"
+}
+
+flag {
     name: "ranging_permission_enabled"
     is_fixed_read_only: true
     is_exported: true
