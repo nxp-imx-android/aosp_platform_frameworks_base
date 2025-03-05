@@ -1237,6 +1237,10 @@ public abstract class Connection extends Conferenceable {
             builder.append(isLong ? " PROPERTY_IS_DOWNGRADED_CONFERENCE" : " dngrd_conf");
         }
 
+        if ((properties & PROPERTY_CROSS_SIM) == PROPERTY_CROSS_SIM) {
+            builder.append(isLong ? " PROPERTY_CROSS_SIM" : " xsim");
+        }
+
         builder.append("]");
         return builder.toString();
     }
