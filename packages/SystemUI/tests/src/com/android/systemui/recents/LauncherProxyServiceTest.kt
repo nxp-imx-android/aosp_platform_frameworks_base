@@ -36,6 +36,7 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.ui.view.InWindowLauncherUnlockAnimationManager
+import com.android.systemui.log.assertLogsWtf
 import com.android.systemui.model.sysUiState
 import com.android.systemui.navigationbar.NavigationBarController
 import com.android.systemui.navigationbar.NavigationModeController
@@ -162,8 +163,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         wakefulnessLifecycle.dispatchFinishedGoingToSleep()
         clearInvocations(launcherProxy)
 
-        wakefulnessLifecycle
-            .dispatchFinishedWakingUp()
+        wakefulnessLifecycle.dispatchFinishedWakingUp()
 
         verify(launcherProxy)
             .onSystemUiStateChanged(
@@ -222,7 +222,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         `when`(processWrapper.isSystemUser).thenReturn(false)
         `when`(userManager.isVisibleBackgroundUsersSupported()).thenReturn(false)
         val spyContext = spy(context)
-        val ops = createLauncherProxyService(spyContext)
+        val ops = assertLogsWtf { createLauncherProxyService(spyContext) }.result
         ops.startConnectionToCurrentUser()
         verify(spyContext, times(0)).bindServiceAsUser(any(), any(), anyInt(), any())
     }
