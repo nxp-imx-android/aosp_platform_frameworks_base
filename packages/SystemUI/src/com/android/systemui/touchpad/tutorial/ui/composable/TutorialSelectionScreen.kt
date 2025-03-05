@@ -84,7 +84,7 @@ fun TutorialSelectionScreen(
                 ),
     ) {
         val isCompactWindow = hasCompactWindowSize()
-        val padding = if (isCompactWindow) 24.dp else 60.dp
+        val padding = if (isCompactWindow) 24.dp else 48.dp
         val configuration = LocalConfiguration.current
         when (configuration.orientation) {
             Configuration.ORIENTATION_LANDSCAPE -> {
@@ -121,7 +121,7 @@ fun TutorialSelectionScreen(
         // because other composables have weight 1, Done button will be positioned first
         DoneButton(
             onDoneButtonClicked = onDoneButtonClicked,
-            modifier = Modifier.padding(horizontal = padding),
+            modifier = Modifier.padding(start = padding, top = 0.dp, end = padding, bottom = 32.dp),
         )
     }
 }
