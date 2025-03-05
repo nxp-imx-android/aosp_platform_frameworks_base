@@ -34,11 +34,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Switch
 import android.widget.TextView
 import com.android.settingslib.Utils
 import com.android.systemui.res.R
 import com.android.systemui.util.Assert
+import com.google.android.material.materialswitch.MaterialSwitch
 
 /** Half-shelf for notification channel controls */
 class ChannelEditorListView(c: Context, attrs: AttributeSet) : LinearLayout(c, attrs) {
@@ -139,12 +139,12 @@ class ChannelEditorListView(c: Context, attrs: AttributeSet) : LinearLayout(c, a
 class AppControlView(c: Context, attrs: AttributeSet) : LinearLayout(c, attrs) {
     lateinit var iconView: ImageView
     lateinit var channelName: TextView
-    lateinit var switch: Switch
+    lateinit var switch: MaterialSwitch
 
     override fun onFinishInflate() {
         iconView = requireViewById(R.id.icon)
         channelName = requireViewById(R.id.app_name)
-        switch = requireViewById(R.id.toggle)
+        switch = requireViewById(R.id.material_toggle)
 
         setOnClickListener { switch.toggle() }
     }
@@ -155,7 +155,7 @@ class ChannelRow(c: Context, attrs: AttributeSet) : LinearLayout(c, attrs) {
     lateinit var controller: ChannelEditorDialogController
     private lateinit var channelName: TextView
     private lateinit var channelDescription: TextView
-    private lateinit var switch: Switch
+    private lateinit var switch: MaterialSwitch
     private val highlightColor: Int
     var gentle = false
 
@@ -175,7 +175,7 @@ class ChannelRow(c: Context, attrs: AttributeSet) : LinearLayout(c, attrs) {
         super.onFinishInflate()
         channelName = requireViewById(R.id.channel_name)
         channelDescription = requireViewById(R.id.channel_description)
-        switch = requireViewById(R.id.toggle)
+        switch = requireViewById(R.id.material_toggle)
         switch.setOnCheckedChangeListener { _, b ->
             channel?.let {
                 controller.proposeEditForChannel(
