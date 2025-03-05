@@ -1417,7 +1417,36 @@ public class PropertyInvalidatedCache<Query, Result> {
     }
 
     /**
-     * Enable or disable testing.  The protocol requires that the mode toggle: for instance, it is
+     * Throw if the current process is not allowed to use test APIs.
+     */
+    @android.ravenwood.annotation.RavenwoodReplace
+    private static void throwIfNotTest() {
+        final ActivityThread activityThread = ActivityThread.currentActivityThread();
+        if (activityThread == null) {
+            // Only tests can reach here.
+            return;
+        }
+        final Instrumentation instrumentation = activityThread.getInstrumentation();
+        if (instrumentation == null) {
+            // Only tests can reach here.
+            return;
+        }
+        if (instrumentation.isInstrumenting()) {
+            return;
+        }
+        if (Flags.enforcePicTestmodeProtocol()) {
+            throw new IllegalStateException("Test-only API called not from a test.");
+        }
+    }
+
+    /**
+     * Do not throw if running under ravenwood.
+     */
+    private static void throwIfNotTest$ravenwood() {
+    }
+
+    /**
+     * Enable or disable test mode.  The protocol requires that the mode toggle: for instance, it is
      * illegal to clear the test mode if the test mode is already off.  Enabling test mode puts
      * all caches in the process into test mode; all nonces are initialized to UNSET and
      * subsequent reads and writes are to process memory.  This has the effect of disabling all
@@ -1425,10 +1454,12 @@ public class PropertyInvalidatedCache<Query, Result> {
      * operation.
      * @param mode The desired test mode.
      * @throws IllegalStateException if the supplied mode is already set.
+     * @throws IllegalStateException if the process is not running an instrumentation test.
      * @hide
      */
     @VisibleForTesting
     public static void setTestMode(boolean mode) {
+        throwIfNotTest();
         synchronized (sGlobalLock) {
             if (sTestMode == mode) {
                 final String msg = "cannot set test mode redundantly: mode=" + mode;
@@ -1464,9 +1495,11 @@ public class PropertyInvalidatedCache<Query, Result> {
      * for which it would not otherwise have permission.  Caches in test mode do NOT write their
      * values to the system properties.  The effect is local to the current process.  Test mode
      * must be true when this method is called.
+     * @throws IllegalStateException if the process is not running an instrumentation test.
      * @hide
      */
     public void testPropertyName() {
+        throwIfNotTest();
         synchronized (sGlobalLock) {
             if (sTestMode == false) {
                 throw new IllegalStateException("cannot test property name with test mode off");
@@ -1777,10 +1810,12 @@ public class PropertyInvalidatedCache<Query, Result> {
      * When multiple caches share a single property value, using an instance method on one of
      * the cache objects to invalidate all of the cache objects becomes confusing and you should
      * just use the static version of this function.
+     * @throws IllegalStateException if the process is not running an instrumentation test.
      * @hide
      */
     @VisibleForTesting
     public void disableSystemWide() {
+        throwIfNotTest();
         disableSystemWide(mPropertyName);
     }
 

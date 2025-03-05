@@ -227,6 +227,14 @@ flag {
 }
 
 flag {
+     name: "ipc_data_cache_test_apis"
+     namespace: "system_performance"
+     description: "Expose IpcDataCache test apis to mainline modules."
+     bug: "396173886"
+     is_exported: true
+}
+
+flag {
      name: "mainline_vcn_platform_api"
      namespace: "vcn"
      description: "Expose platform APIs to mainline VCN"
