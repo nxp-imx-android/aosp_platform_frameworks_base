@@ -541,7 +541,7 @@ constructor(
             val ident: String = (sbn.packageName + "/0x" + Integer.toHexString(sbn.id))
             Log.e(TAG, "couldn't inflate view for notification $ident", e)
             callback?.handleInflationException(
-                if (NotificationBundleUi.isEnabled) entry else row.entry,
+                if (NotificationBundleUi.isEnabled) entry else row.entryLegacy,
                 InflationException("Couldn't inflate contentViews$e"),
             )
 

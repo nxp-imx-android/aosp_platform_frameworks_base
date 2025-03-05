@@ -1039,10 +1039,10 @@ public class NotificationStackScrollLayout
                 }
                 int bucket = NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getSectionBucket()
-                        : row.getEntry().getBucket();
+                        : row.getEntryLegacy().getBucket();
                 boolean isAmbient = NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().isAmbient()
-                        : row.getEntry().isAmbient();
+                        : row.getEntryLegacy().isAmbient();
                 currentIndex++;
                 boolean beforeSpeedBump;
                 if (mHighPriorityBeforeSpeedBump) {
@@ -1847,7 +1847,7 @@ public class NotificationStackScrollLayout
         } else {
             if (row.isChildInGroup()) {
                 final NotificationEntry groupSummary =
-                        mGroupMembershipManager.getGroupSummary(row.getEntry());
+                        mGroupMembershipManager.getGroupSummary(row.getEntryLegacy());
                 if (groupSummary != null) {
                     row = groupSummary.getRow();
                 }
@@ -2000,16 +2000,16 @@ public class NotificationStackScrollLayout
             if ((bottom - top >= mMinInteractionHeight || !requireMinHeight)
                     && touchY >= top && touchY <= bottom && touchX >= left && touchX <= right) {
                 if (slidingChild instanceof ExpandableNotificationRow row) {
-                    NotificationEntry entry = row.getEntry();
                     boolean isEntrySummaryForTopHun;
                     if (NotificationBundleUi.isEnabled()) {
                         isEntrySummaryForTopHun = Objects.equals(
                                 ((ExpandableNotificationRow) slidingChild).getNotificationParent(),
                                 mTopHeadsUpRow);
                     } else {
+                        NotificationEntry entry = row.getEntryLegacy();
                         isEntrySummaryForTopHun = mTopHeadsUpRow != null &&
-                                mGroupMembershipManager.getGroupSummary(mTopHeadsUpRow.getEntry())
-                                == entry;
+                                mGroupMembershipManager.getGroupSummary(
+                                        mTopHeadsUpRow.getEntryLegacy()) == entry;
                     }
                     if (!mIsExpanded && row.isHeadsUp() && row.isPinned()
                             && mTopHeadsUpRow != row
@@ -3009,7 +3009,7 @@ public class NotificationStackScrollLayout
             ExpandableNotificationRow childRow = (ExpandableNotificationRow) child;
             return NotificationBundleUi.isEnabled()
                     ? mGroupMembershipManager.isChildInGroup(childRow.getEntryAdapter())
-                    : mGroupMembershipManager.isChildInGroup(childRow.getEntry());
+                    : mGroupMembershipManager.isChildInGroup(childRow.getEntryLegacy());
         }
         return false;
     }
@@ -6473,7 +6473,7 @@ public class NotificationStackScrollLayout
             @SelectedRows int selection) {
         int bucket = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getSectionBucket()
-                : row.getEntry().getBucket();
+                : row.getEntryLegacy().getBucket();
         switch (selection) {
             case ROWS_ALL:
                 return true;

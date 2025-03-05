@@ -675,7 +675,7 @@ public class NotificationShelf extends ActivatableNotificationView {
         }
         StatusBarIconView icon = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getIcons().getShelfIcon()
-                : row.getEntry().getIcons().getShelfIcon();
+                : row.getEntryLegacy().getIcons().getShelfIcon();
         float shelfIconPosition = getTranslationY() + icon.getTop() + icon.getTranslationY();
         if (shelfIconPosition < maxTop && !mAmbientState.isFullyHidden()) {
             int top = (int) (maxTop - shelfIconPosition);
@@ -689,7 +689,7 @@ public class NotificationShelf extends ActivatableNotificationView {
     private void updateContinuousClipping(final ExpandableNotificationRow row) {
         StatusBarIconView icon = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getIcons().getShelfIcon()
-                : row.getEntry().getIcons().getShelfIcon();
+                : row.getEntryLegacy().getIcons().getShelfIcon();
         boolean needsContinuousClipping = ViewState.isAnimatingY(icon) && !mAmbientState.isDozing();
         boolean isContinuousClipping = icon.getTag(TAG_CONTINUOUS_CLIPPING) != null;
         if (needsContinuousClipping && !isContinuousClipping) {

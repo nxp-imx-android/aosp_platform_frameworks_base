@@ -894,8 +894,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                 if (NotificationBundleUi.isEnabled()) {
                     return enr.getEntryAdapter().canDragAndDrop();
                 } else {
-                    boolean canBubble = enr.getEntry().canBubble();
-                    Notification notif = enr.getEntry().getSbn().getNotification();
+                    boolean canBubble = enr.getEntryLegacy().canBubble();
+                    Notification notif = enr.getEntryLegacy().getSbn().getNotification();
                     PendingIntent dragIntent = notif.contentIntent != null ? notif.contentIntent
                             : notif.fullScreenIntent;
                     if (dragIntent != null && dragIntent.isActivity() && !canBubble) {

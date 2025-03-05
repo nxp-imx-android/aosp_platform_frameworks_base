@@ -225,7 +225,7 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
         super.onContentUpdated(row);
         mIsLowPriority = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().isAmbient()
-                : row.getEntry().isAmbient();
+                : row.getEntryLegacy().isAmbient();
         mTransformLowPriorityTitle = !row.isChildInGroup() && !row.isSummaryWithChildren();
         ArraySet<View> previousViews = mTransformationHelper.getAllTransformingViews();
 
@@ -236,7 +236,7 @@ public class NotificationHeaderViewWrapper extends NotificationViewWrapper imple
         updateCropToPaddingForImageViews();
         Notification n = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getSbn().getNotification()
-                : row.getEntry().getSbn().getNotification();
+                : row.getEntryLegacy().getSbn().getNotification();
         mIcon.setTag(ImageTransformState.ICON_TAG, n.getSmallIcon());
 
         // We need to reset all views that are no longer transforming in case a view was previously

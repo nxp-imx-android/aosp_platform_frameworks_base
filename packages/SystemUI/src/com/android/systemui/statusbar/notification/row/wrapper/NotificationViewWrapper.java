@@ -83,7 +83,7 @@ public abstract class NotificationViewWrapper implements TransformableView {
             if (NotificationBundleUi.isEnabled()
                     ? row.getEntryAdapter().getSbn().getNotification().isStyle(
                     Notification.DecoratedCustomViewStyle.class)
-                    : row.getEntry().getSbn().getNotification().isStyle(
+                    : row.getEntryLegacy().getSbn().getNotification().isStyle(
                     Notification.DecoratedCustomViewStyle.class)) {
                 return new NotificationDecoratedCustomViewWrapper(ctx, v, row);
             }
@@ -141,7 +141,7 @@ public abstract class NotificationViewWrapper implements TransformableView {
         // Apps targeting Q should fix their dark mode bugs.
         int targetSdk = NotificationBundleUi.isEnabled()
                 ? mRow.getEntryAdapter().getTargetSdk()
-                : mRow.getEntry().targetSdk;
+                : mRow.getEntryLegacy().targetSdk;
         if (targetSdk >= Build.VERSION_CODES.Q) {
             return false;
         }

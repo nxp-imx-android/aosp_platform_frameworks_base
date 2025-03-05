@@ -227,7 +227,7 @@ public class NotificationRemoteInputManagerTest extends SysuiTestCase {
         if (NotificationBundleUi.isEnabled()) {
             return row.getEntryAdapter().getSbn().getNotification();
         } else {
-            return row.getEntry().getSbn().getNotification();
+            return row.getEntryLegacy().getSbn().getNotification();
         }
     }
 

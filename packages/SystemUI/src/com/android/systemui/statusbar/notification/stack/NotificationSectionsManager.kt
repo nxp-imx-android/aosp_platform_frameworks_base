@@ -167,7 +167,7 @@ internal constructor(
             view === promoHeaderView -> BUCKET_PROMO
             view is ExpandableNotificationRow ->
                 if (NotificationBundleUi.isEnabled) view.entryAdapter?.sectionBucket
-                else view.entry.bucket
+                else view.entryLegacy.bucket
             else -> null
         }
 
