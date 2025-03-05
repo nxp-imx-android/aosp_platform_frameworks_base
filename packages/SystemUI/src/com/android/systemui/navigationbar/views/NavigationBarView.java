@@ -19,7 +19,6 @@ package com.android.systemui.navigationbar.views;
 import static android.app.StatusBarManager.NAVBAR_BACK_DISMISS_IME;
 import static android.app.StatusBarManager.NAVBAR_IME_SWITCHER_BUTTON_VISIBLE;
 import static android.app.StatusBarManager.NAVBAR_IME_VISIBLE;
-import static android.inputmethodservice.InputMethodService.canImeRenderGesturalNavButtons;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_GESTURAL;
 
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_HOME_DISABLED;
@@ -170,16 +169,6 @@ public class NavigationBarView extends FrameLayout {
     private ScreenPinningNotify mScreenPinningNotify;
     private boolean mScreenPinningActive = false;
 
-    /**
-     * {@code true} if the IME can render the back button and the IME switcher button.
-     *
-     * <p>The value must be used when and only when
-     * {@link com.android.systemui.shared.system.QuickStepContract#isGesturalMode(int)} returns
-     * {@code true}</p>
-     *
-     * <p>Cache the value here for better performance.</p>
-     */
-    private final boolean mImeCanRenderGesturalNavButtons = canImeRenderGesturalNavButtons();
     private Gefingerpoken mTouchHandler;
     private boolean mLauncherProxyEnabled;
     private boolean mShowSwipeUpUi;
@@ -674,8 +663,7 @@ public class NavigationBarView extends FrameLayout {
      * Returns whether the IME is currently visible and drawing the nav buttons.
      */
     boolean isImeRenderingNavButtons() {
-        return mImeDrawsImeNavBar && mImeCanRenderGesturalNavButtons
-                && (mNavbarFlags & NAVBAR_IME_VISIBLE) != 0;
+        return mImeDrawsImeNavBar && (mNavbarFlags & NAVBAR_IME_VISIBLE) != 0;
     }
 
     @VisibleForTesting
