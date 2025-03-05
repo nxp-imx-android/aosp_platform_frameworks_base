@@ -31,23 +31,15 @@ import static android.app.AppOpsManager.OP_MONITOR_HIGH_POWER_LOCATION;
 import static android.app.AppOpsManager.OP_MONITOR_LOCATION;
 import static android.app.AppOpsManager.OP_PHONE_CALL_CAMERA;
 import static android.app.AppOpsManager.OP_PHONE_CALL_MICROPHONE;
-import static android.app.AppOpsManager.OP_PROCESS_OUTGOING_CALLS;
 import static android.app.AppOpsManager.OP_READ_DEVICE_IDENTIFIERS;
 import static android.app.AppOpsManager.OP_READ_HEART_RATE;
-import static android.app.AppOpsManager.OP_READ_ICC_SMS;
 import static android.app.AppOpsManager.OP_READ_OXYGEN_SATURATION;
 import static android.app.AppOpsManager.OP_READ_SKIN_TEMPERATURE;
-import static android.app.AppOpsManager.OP_READ_SMS;
 import static android.app.AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO;
 import static android.app.AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO;
 import static android.app.AppOpsManager.OP_RECORD_AUDIO;
 import static android.app.AppOpsManager.OP_RESERVED_FOR_TESTING;
 import static android.app.AppOpsManager.OP_RUN_IN_BACKGROUND;
-import static android.app.AppOpsManager.OP_SEND_SMS;
-import static android.app.AppOpsManager.OP_SMS_FINANCIAL_TRANSACTIONS;
-import static android.app.AppOpsManager.OP_SYSTEM_ALERT_WINDOW;
-import static android.app.AppOpsManager.OP_WRITE_ICC_SMS;
-import static android.app.AppOpsManager.OP_WRITE_SMS;
 
 import static java.lang.Long.min;
 import static java.lang.Math.max;
@@ -133,15 +125,6 @@ abstract class DiscreteOpsRegistry {
             + OP_RECEIVE_AMBIENT_TRIGGER_AUDIO + "," + OP_RECEIVE_SANDBOX_TRIGGER_AUDIO
             + "," + OP_READ_HEART_RATE + "," + OP_READ_OXYGEN_SATURATION + ","
             + OP_READ_SKIN_TEMPERATURE + "," + OP_RESERVED_FOR_TESTING;
-
-    static final int[] sDiscreteOpsToLog =
-            new int[]{OP_FINE_LOCATION, OP_COARSE_LOCATION, OP_EMERGENCY_LOCATION, OP_CAMERA,
-                    OP_RECORD_AUDIO, OP_PHONE_CALL_MICROPHONE, OP_PHONE_CALL_CAMERA,
-                    OP_RECEIVE_AMBIENT_TRIGGER_AUDIO, OP_RECEIVE_SANDBOX_TRIGGER_AUDIO, OP_READ_SMS,
-                    OP_WRITE_SMS, OP_SEND_SMS, OP_READ_ICC_SMS, OP_WRITE_ICC_SMS,
-                    OP_SMS_FINANCIAL_TRANSACTIONS, OP_SYSTEM_ALERT_WINDOW, OP_MONITOR_LOCATION,
-                    OP_MONITOR_HIGH_POWER_LOCATION, OP_PROCESS_OUTGOING_CALLS,
-            };
 
     static final long DEFAULT_DISCRETE_HISTORY_CUTOFF = Duration.ofDays(7).toMillis();
     static final long MAXIMUM_DISCRETE_HISTORY_CUTOFF = Duration.ofDays(30).toMillis();
