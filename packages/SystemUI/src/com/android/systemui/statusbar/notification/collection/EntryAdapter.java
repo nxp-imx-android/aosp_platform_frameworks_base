@@ -125,7 +125,7 @@ public interface EntryAdapter {
 
     boolean canDragAndDrop();
 
-    boolean isBubbleCapable();
+    boolean isBubble();
 
     @Nullable String getStyle();
 

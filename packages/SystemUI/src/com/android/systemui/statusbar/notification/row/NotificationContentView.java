@@ -1605,7 +1605,7 @@ public class NotificationContentView extends FrameLayout implements Notification
 
         if (shouldShowBubbleButton(entry)) {
             boolean isBubble = NotificationBundleUi.isEnabled()
-                    ? mContainingNotification.getEntryAdapter().isBubbleCapable()
+                    ? mContainingNotification.getEntryAdapter().isBubble()
                     : entry.isBubble();
             // explicitly resolve drawable resource using SystemUI's theme
             Drawable d = mContext.getDrawable(isBubble

@@ -81,7 +81,6 @@ public final class NotificationClicker implements View.OnClickListener {
         mPowerInteractor.wakeUpIfDozing("NOTIFICATION_CLICK", PowerManager.WAKE_REASON_GESTURE);
 
         final ExpandableNotificationRow row = (ExpandableNotificationRow) v;
-        final NotificationEntry entry = row.getEntry();
         mLogger.logOnClick(row.getLoggingKey());
 
         // Check if the notification is displaying the menu, if so slide notification back
@@ -109,16 +108,16 @@ public final class NotificationClicker implements View.OnClickListener {
         DejankUtils.postAfterTraversal(() -> row.setJustClicked(false));
 
         if (NotificationBundleUi.isEnabled()) {
-            if (!row.getEntryAdapter().isBubbleCapable() && mBubblesOptional.isPresent()) {
+            if (!row.getEntryAdapter().isBubble() && mBubblesOptional.isPresent()) {
                 mBubblesOptional.get().collapseStack();
             }
+            row.getEntryAdapter().onEntryClicked(row);
         } else {
             if (!row.getEntryLegacy().isBubble() && mBubblesOptional.isPresent()) {
                 mBubblesOptional.get().collapseStack();
             }
+            mNotificationActivityStarter.onNotificationClicked(row.getEntryLegacy(), row);
         }
-
-        mNotificationActivityStarter.onNotificationClicked(entry, row);
     }
 
     private boolean isMenuVisible(ExpandableNotificationRow row) {
@@ -129,9 +128,12 @@ public final class NotificationClicker implements View.OnClickListener {
      * Attaches the click listener to the row if appropriate.
      */
     public void register(ExpandableNotificationRow row, StatusBarNotification sbn) {
+        boolean isBubble = NotificationBundleUi.isEnabled()
+                ? row.getEntryAdapter().isBubble()
+                : row.getEntryLegacy().isBubble();
         Notification notification = sbn.getNotification();
         if (notification.contentIntent != null || notification.fullScreenIntent != null
-                || row.getEntry().isBubble()) {
+                || isBubble) {
             if (NotificationBundleUi.isEnabled()) {
                 row.setBubbleClickListener(
                         v -> row.getEntryAdapter().onNotificationBubbleIconClicked());
