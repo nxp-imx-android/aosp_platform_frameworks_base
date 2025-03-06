@@ -930,7 +930,8 @@ public class AudioService extends IAudioService.Stub
     private final Object mAbsoluteVolumeDeviceInfoMapLock = new Object();
     // Devices where the framework sends a full scale audio signal, and controls the volume of
     // the external audio system separately.
-    // For possible volume behaviors, see {@link AudioManager.AbsoluteDeviceVolumeBehavior}.
+    // For possible volume behaviors, see
+    // {@link AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior}.
     @GuardedBy("mAbsoluteVolumeDeviceInfoMapLock")
     Map<Integer, AbsoluteVolumeDeviceInfo> mAbsoluteVolumeDeviceInfoMap = new ArrayMap<>();
 
@@ -943,7 +944,7 @@ public class AudioService extends IAudioService.Stub
         private final List<VolumeInfo> mVolumeInfos;
         private final IAudioDeviceVolumeDispatcher mCallback;
         private final boolean mHandlesVolumeAdjustment;
-        private @AudioManager.AbsoluteDeviceVolumeBehavior int mDeviceVolumeBehavior;
+        private @AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior int mDeviceVolumeBehavior;
 
         private AbsoluteVolumeDeviceInfo(
                 AudioService parent,
@@ -951,7 +952,7 @@ public class AudioService extends IAudioService.Stub
                 List<VolumeInfo> volumeInfos,
                 IAudioDeviceVolumeDispatcher callback,
                 boolean handlesVolumeAdjustment,
-                @AudioManager.AbsoluteDeviceVolumeBehavior int behavior) {
+                @AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior int behavior) {
             this.mParent = parent;
             this.mDevice = device;
             this.mVolumeInfos = volumeInfos;
@@ -8160,7 +8161,7 @@ public class AudioService extends IAudioService.Stub
             IAudioDeviceVolumeDispatcher cb, String packageName,
             AudioDeviceAttributes device, List<VolumeInfo> volumes,
             boolean handlesVolumeAdjustment,
-            @AudioManager.AbsoluteDeviceVolumeBehavior int deviceVolumeBehavior) {
+            @AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior int deviceVolumeBehavior) {
         // verify permissions
         if (mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_ROUTING)
                 != PackageManager.PERMISSION_GRANTED
@@ -8227,12 +8228,13 @@ public class AudioService extends IAudioService.Stub
     @android.annotation.EnforcePermission(anyOf = {
             MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
     public void setDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device,
-            @AudioManager.DeviceVolumeBehavior int deviceVolumeBehavior, @Nullable String pkgName) {
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior,
+            @Nullable String pkgName) {
         // verify permissions
         super.setDeviceVolumeBehavior_enforcePermission();
         // verify arguments
         Objects.requireNonNull(device);
-        AudioManager.enforceValidVolumeBehavior(deviceVolumeBehavior);
+        AudioDeviceVolumeManager.enforceValidVolumeBehavior(deviceVolumeBehavior);
 
         device = retrieveBluetoothAddress(device);
 
@@ -8255,7 +8257,8 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void setDeviceVolumeBehaviorInternal(@NonNull AudioDeviceAttributes device,
-            @AudioManager.DeviceVolumeBehavior int deviceVolumeBehavior, @NonNull String caller) {
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior,
+            @NonNull String caller) {
         int audioSystemDeviceOut = device.getInternalType();
         boolean volumeBehaviorChanged = false;
         // update device masks based on volume behavior
@@ -8310,7 +8313,7 @@ public class AudioService extends IAudioService.Stub
     @android.annotation.EnforcePermission(anyOf = {
             MODIFY_AUDIO_ROUTING, QUERY_AUDIO_STATE,  MODIFY_AUDIO_SETTINGS_PRIVILEGED
     })
-    public @AudioManager.DeviceVolumeBehavior
+    public @AudioDeviceVolumeManager.DeviceVolumeBehavior
     int getDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device) {
         // verify permissions
         super.getDeviceVolumeBehavior_enforcePermission();
@@ -8322,7 +8325,7 @@ public class AudioService extends IAudioService.Stub
         return getDeviceVolumeBehaviorInt(device);
     }
 
-    private @AudioManager.DeviceVolumeBehavior
+    private @AudioDeviceVolumeManager.DeviceVolumeBehavior
             int getDeviceVolumeBehaviorInt(@NonNull AudioDeviceAttributes device) {
         // Get the internal type set by the AudioDeviceAttributes constructor which is always more
         // exact (avoids double conversions) than a conversion from SDK type via
@@ -15306,7 +15309,8 @@ public class AudioService extends IAudioService.Stub
 
     /**
      * Returns whether the input device uses absolute volume behavior, including its variants.
-     * For included volume behaviors, see {@link AudioManager.AbsoluteDeviceVolumeBehavior}.
+     * For included volume behaviors, see
+     * {@link AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior}.
      * <p>This is distinct from Bluetooth A2DP absolute volume behavior
      * ({@link #isA2dpAbsoluteVolumeDevice}).
      */
@@ -15333,7 +15337,7 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void persistDeviceVolumeBehavior(int deviceType,
-            @AudioManager.DeviceVolumeBehavior int deviceVolumeBehavior) {
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior) {
         if (DEBUG_VOL) {
             Log.d(TAG, "Persisting Volume Behavior for DeviceType: " + deviceType);
         }
@@ -15348,7 +15352,7 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
-    @AudioManager.DeviceVolumeBehaviorState
+    @AudioDeviceVolumeManager.DeviceVolumeBehaviorState
     private int retrieveStoredDeviceVolumeBehavior(int deviceType) {
         return mSettings.getSystemIntForUser(mContentResolver,
                 getSettingsNameForDeviceVolumeBehavior(deviceType),
