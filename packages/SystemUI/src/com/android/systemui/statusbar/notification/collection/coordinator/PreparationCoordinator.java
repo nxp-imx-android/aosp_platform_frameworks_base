@@ -34,6 +34,7 @@ import androidx.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
@@ -54,6 +55,7 @@ import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -306,7 +308,9 @@ public class PreparationCoordinator implements Coordinator {
     private void inflateAllRequiredViews(List<PipelineEntry> entries) {
         for (int i = 0, size = entries.size(); i < size; i++) {
             PipelineEntry entry = entries.get(i);
-            if (entry instanceof GroupEntry) {
+            if (NotificationBundleUi.isEnabled() && entry instanceof BundleEntry) {
+                // TODO(b/399738511) Inflate bundle views.
+            } else if (entry instanceof GroupEntry) {
                 GroupEntry groupEntry = (GroupEntry) entry;
                 inflateRequiredGroupViews(groupEntry);
             } else {
