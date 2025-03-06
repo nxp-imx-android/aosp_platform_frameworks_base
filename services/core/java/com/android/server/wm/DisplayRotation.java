@@ -168,19 +168,6 @@ public class DisplayRotation {
     private int mDeferredRotationPauseCount;
 
     /**
-     * A count of the windows which are 'seamlessly rotated', e.g. a surface at an old orientation
-     * is being transformed. We freeze orientation updates while any windows are seamlessly rotated,
-     * so we need to track when this hits zero so we can apply deferred orientation updates.
-     */
-    private int mSeamlessRotationCount;
-
-    /**
-     * True in the interval from starting seamless rotation until the last rotated window draws in
-     * the new orientation.
-     */
-    private boolean mRotatingSeamlessly;
-
-    /**
      * Behavior of rotation suggestions.
      *
      * @see Settings.Secure#SHOW_ROTATION_SUGGESTIONS
@@ -630,15 +617,6 @@ public class DisplayRotation {
             return true;
         }
 
-        if (shouldRotateSeamlessly(oldRotation, rotation, forceUpdate)) {
-            // The screen rotation animation uses a screenshot to freeze the screen while windows
-            // resize underneath. When we are rotating seamlessly, we allow the elements to
-            // transition to their rotated state independently and without a freeze required.
-            prepareSeamlessRotation();
-        } else {
-            cancelSeamlessRotation();
-        }
-
         // Give a remote handler (system ui) some time to reposition things.
         startRemoteRotation(oldRotation, mRotation);
 
@@ -675,42 +653,6 @@ public class DisplayRotation {
         } finally {
             mService.mAtmService.continueWindowLayout();
         }
-    }
-
-    /**
-     * This ensures that normal rotation animation is used. E.g. {@link #mRotatingSeamlessly} was
-     * set by previous {@link #updateRotationUnchecked}, but another orientation change happens
-     * before calling {@link DisplayContent#sendNewConfiguration} (remote rotation hasn't finished)
-     * and it doesn't choose seamless rotation.
-     */
-    void cancelSeamlessRotation() {
-        if (!mRotatingSeamlessly) {
-            return;
-        }
-        mDisplayContent.forAllWindows(w -> {
-            if (w.mSeamlesslyRotated) {
-                w.cancelSeamlessRotation();
-                w.mSeamlesslyRotated = false;
-            }
-        }, true /* traverseTopToBottom */);
-        mSeamlessRotationCount = 0;
-        mRotatingSeamlessly = false;
-        mDisplayContent.finishAsyncRotationIfPossible();
-    }
-
-    private void prepareSeamlessRotation() {
-        // We are careful to reset this in case a window was removed before it finished
-        // seamless rotation.
-        mSeamlessRotationCount = 0;
-        mRotatingSeamlessly = true;
-    }
-
-    boolean isRotatingSeamlessly() {
-        return mRotatingSeamlessly;
-    }
-
-    boolean hasSeamlessRotatingWindow() {
-        return mSeamlessRotationCount > 0;
     }
 
     @VisibleForTesting
@@ -750,13 +692,6 @@ public class DisplayRotation {
             return false;
         }
 
-        // We can't rotate (seamlessly or not) while waiting for the last seamless rotation to
-        // complete (that is, waiting for windows to redraw). It's tempting to check
-        // mSeamlessRotationCount but that could be incorrect in the case of window-removal.
-        if (!forceUpdate && mDisplayContent.getWindow(win -> win.mSeamlesslyRotated) != null) {
-            return false;
-        }
-
         return true;
     }
 
@@ -772,28 +707,6 @@ public class DisplayRotation {
         // will not enter the reverse portrait orientation, so actually the orientation won't change
         // at all.
         return oldRotation != Surface.ROTATION_180 && newRotation != Surface.ROTATION_180;
-    }
-
-    void markForSeamlessRotation(WindowState w, boolean seamlesslyRotated) {
-        if (seamlesslyRotated == w.mSeamlesslyRotated || w.mForceSeamlesslyRotate) {
-            return;
-        }
-
-        w.mSeamlesslyRotated = seamlesslyRotated;
-        if (seamlesslyRotated) {
-            mSeamlessRotationCount++;
-        } else {
-            mSeamlessRotationCount--;
-        }
-        if (mSeamlessRotationCount == 0) {
-            ProtoLog.i(WM_DEBUG_ORIENTATION,
-                    "Performing post-rotate rotation after seamless rotation");
-            // Finish seamless rotation.
-            mRotatingSeamlessly = false;
-            mDisplayContent.finishAsyncRotationIfPossible();
-
-            updateRotationAndSendNewConfigIfChanged();
-        }
     }
 
     void restoreSettings(int userRotationMode, int userRotation, int fixedToUserRotation) {

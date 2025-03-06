@@ -1706,8 +1706,6 @@ public class DisplayContentTests extends WindowTestsBase {
         app.setVisible(true);
         doReturn(false).when(app).inTransition();
         mDisplayContent.mFixedRotationTransitionListener.onAppTransitionFinishedLocked(app.token);
-        mStatusBarWindow.finishSeamlessRotation(t);
-        mNavBarWindow.finishSeamlessRotation(t);
 
         // The fixed rotation should be cleared and the new rotation is applied to display.
         assertFalse(app.hasFixedRotationTransform());

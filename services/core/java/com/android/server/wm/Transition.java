@@ -1249,7 +1249,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 // Skip dispatching the change for PiP task to avoid its activity drawing for the
                 // intermediate state which will cause flickering. The final PiP bounds in new
                 // rotation will be applied by PipTransition.
-                ar.mDisplayContent.mPinnedTaskController.setEnterPipTransaction(null);
+                ar.mDisplayContent.mPinnedTaskController.setEnterPipWithRotatedTransientLaunch();
             }
             return inPip;
         }

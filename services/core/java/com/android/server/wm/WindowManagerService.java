@@ -2132,7 +2132,6 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         final DisplayContent dc = win.getDisplayContent();
-        dc.getDisplayRotation().markForSeamlessRotation(win, false /* seamlesslyRotated */);
 
         win.resetAppOpsState();
 
