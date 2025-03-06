@@ -60,6 +60,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.os.Handler;
+import android.os.LocaleList;
 import android.testing.AndroidTestingRunner;
 import android.util.DisplayMetrics;
 import android.view.AttachedSurfaceControl;
@@ -97,6 +98,7 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
@@ -472,6 +474,50 @@ public class WindowDecorationTests extends ShellTestCase {
         verify(mMockSurfaceControlAddWindowT).setWindowCrop(additionalWindowSurface, width, height);
         verify(mMockSurfaceControlAddWindowT).show(additionalWindowSurface);
         verify(mMockSurfaceControlViewHostFactory).create(any(), eq(defaultDisplay), any());
+    }
+
+    @Test
+    public void testReinflateViewsOnLocaleListChange() {
+        final Display defaultDisplay = mock(Display.class);
+        doReturn(defaultDisplay).when(mMockDisplayController)
+                .getDisplay(Display.DEFAULT_DISPLAY);
+
+        final ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder()
+                .setVisible(true)
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .build();
+        taskInfo.configuration.setLocales(new LocaleList(Locale.FRANCE, Locale.US));
+        final TestWindowDecoration windowDecor = spy(createWindowDecoration(taskInfo));
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */, Region.obtain());
+        clearInvocations(windowDecor);
+
+        final ActivityManager.RunningTaskInfo taskInfo2 = new TestRunningTaskInfoBuilder()
+                .setVisible(true)
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .build();
+        taskInfo2.configuration.setLocales(new LocaleList(Locale.US, Locale.FRANCE));
+        windowDecor.relayout(taskInfo2, true /* hasGlobalFocus */, Region.obtain());
+        // WindowDecoration#releaseViews should be called since the locale list has changed.
+        verify(windowDecor, times(1)).releaseViews(any());
+    }
+
+    @Test
+    public void testViewNotReinflatedWhenLocaleListNotChanged() {
+        final Display defaultDisplay = mock(Display.class);
+        doReturn(defaultDisplay).when(mMockDisplayController)
+                .getDisplay(Display.DEFAULT_DISPLAY);
+
+        final ActivityManager.RunningTaskInfo taskInfo = new TestRunningTaskInfoBuilder()
+                .setVisible(true)
+                .setDisplayId(Display.DEFAULT_DISPLAY)
+                .build();
+        taskInfo.configuration.setLocales(new LocaleList(Locale.FRANCE, Locale.US));
+        final TestWindowDecoration windowDecor = spy(createWindowDecoration(taskInfo));
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */, Region.obtain());
+        clearInvocations(windowDecor);
+        windowDecor.relayout(taskInfo, true /* hasGlobalFocus */, Region.obtain());
+        // WindowDecoration#releaseViews should not be called since nothing has changed.
+        verify(windowDecor, never()).releaseViews(any());
     }
 
     @Test
