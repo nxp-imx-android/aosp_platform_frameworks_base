@@ -2006,8 +2006,13 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return getActivity(r -> !r.finishing, true /* traverseTopToBottom */);
     }
 
-    ActivityRecord getTopMostVisibleFreeformActivity() {
+    ActivityRecord getTopMostFreeformActivity() {
         return getActivity(r -> r.isVisibleRequested() && r.inFreeformWindowingMode(),
+                true /* traverseTopToBottom */);
+    }
+
+    ActivityRecord getTopMostVisibleFreeformActivity() {
+        return getActivity(r -> r.isVisible() && r.inFreeformWindowingMode(),
                 true /* traverseTopToBottom */);
     }
 
