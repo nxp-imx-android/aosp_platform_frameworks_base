@@ -41,6 +41,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 
 @SmallTest
@@ -379,5 +380,37 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         underTest = factory.create(entry) as NotificationEntryAdapter
         underTest.onNotificationActionClicked()
         verify(kosmos.mockNotificationActionClickManager).onNotificationActionClicked(entry)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getDismissState() {
+        val notification: Notification =
+            Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        entry.dismissState = NotificationEntry.DismissState.PARENT_DISMISSED
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        assertThat(underTest.dismissState).isEqualTo(entry.dismissState)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun onEntryClicked() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(mock(Notification.Action::class.java))
+                .build()
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        val row = mock(ExpandableNotificationRow::class.java)
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+
+        underTest.onEntryClicked(row)
+        verify(kosmos.mockNotificationActivityStarter).onNotificationClicked(entry, row)
     }
 }

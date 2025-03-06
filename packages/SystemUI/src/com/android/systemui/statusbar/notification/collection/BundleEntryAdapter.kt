@@ -130,6 +130,16 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
         // do nothing. these have no actions
         Log.wtf(TAG, "onNotificationActionClicked() called")
     }
+
+    override fun getDismissState(): NotificationEntry.DismissState {
+        // TODO(b/394483200): setDismissState is only called in NotifCollection so it does not
+        // work on bundles yet
+        return NotificationEntry.DismissState.NOT_DISMISSED
+    }
+
+    override fun onEntryClicked(row: ExpandableNotificationRow) {
+        // TODO(b/396446620): should anything happen when you click on a bundle?
+    }
 }
 
 private const val TAG = "BundleEntryAdapter"

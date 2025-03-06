@@ -152,4 +152,12 @@ class NotificationEntryAdapter(
     override fun onNotificationActionClicked() {
         notificationActionClickManager.onNotificationActionClicked(entry)
     }
+
+    override fun getDismissState(): NotificationEntry.DismissState {
+        return entry.dismissState
+    }
+
+    override fun onEntryClicked(row: ExpandableNotificationRow) {
+        notificationActivityStarter.onNotificationClicked(entry, row)
+    }
 }
