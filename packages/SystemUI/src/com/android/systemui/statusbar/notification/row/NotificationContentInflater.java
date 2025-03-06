@@ -59,7 +59,6 @@ import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
@@ -1004,10 +1003,6 @@ public class NotificationContentInflater implements NotificationRowContentBinder
 
         if (PromotedNotificationContentModel.featureFlagEnabled()) {
             entry.setPromotedNotificationContentModel(result.mPromotedContent);
-        }
-
-        if (PromotedNotificationUiForceExpanded.isEnabled()) {
-            row.setPromotedOngoing(entry.isOngoingPromoted());
         }
 
         boolean setRepliesAndActions = true;

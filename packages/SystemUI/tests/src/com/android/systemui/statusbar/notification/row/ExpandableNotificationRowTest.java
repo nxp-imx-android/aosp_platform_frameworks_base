@@ -73,6 +73,7 @@ import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.ExpandableView.OnHeightChangedListener;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
@@ -936,11 +937,13 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUiForceExpanded.FLAG_NAME)
+    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
     public void isExpanded_sensitivePromotedNotification_notExpanded() throws Exception {
         // GIVEN
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
-        row.setPromotedOngoing(true);
+        NotificationEntry entry = mock(NotificationEntry.class);
+        when(entry.isPromotedOngoing()).thenReturn(true);
+        row.setEntry(entry);
         row.setSensitive(/* sensitive= */true, /* hideSensitive= */false);
         row.setHideSensitiveForIntrinsicHeight(/* hideSensitive= */true);
 
@@ -949,11 +952,13 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUiForceExpanded.FLAG_NAME)
+    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
     public void isExpanded_promotedNotificationNotOnKeyguard_expanded() throws Exception {
         // GIVEN
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
-        row.setPromotedOngoing(true);
+        NotificationEntry entry = mock(NotificationEntry.class);
+        when(entry.isPromotedOngoing()).thenReturn(true);
+        row.setEntry(entry);
         row.setOnKeyguard(false);
 
         // THEN
@@ -961,11 +966,13 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUiForceExpanded.FLAG_NAME)
+    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
     public void isExpanded_promotedNotificationAllowOnKeyguard_expanded() throws Exception {
         // GIVEN
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
-        row.setPromotedOngoing(true);
+        NotificationEntry entry = mock(NotificationEntry.class);
+        when(entry.isPromotedOngoing()).thenReturn(true);
+        row.setEntry(entry);
         row.setOnKeyguard(true);
 
         // THEN
@@ -973,12 +980,14 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUiForceExpanded.FLAG_NAME)
+    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
     public void isExpanded_promotedNotificationIgnoreLockscreenConstraints_expanded()
             throws Exception {
         // GIVEN
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
-        row.setPromotedOngoing(true);
+        NotificationEntry entry = mock(NotificationEntry.class);
+        when(entry.isPromotedOngoing()).thenReturn(true);
+        row.setEntry(entry);
         row.setOnKeyguard(true);
         row.setIgnoreLockscreenConstraints(true);
 
@@ -987,12 +996,14 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUiForceExpanded.FLAG_NAME)
+    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
     public void isExpanded_promotedNotificationSaveSpaceOnLockScreen_notExpanded()
             throws Exception {
         // GIVEN
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
-        row.setPromotedOngoing(true);
+        NotificationEntry entry = mock(NotificationEntry.class);
+        when(entry.isPromotedOngoing()).thenReturn(true);
+        row.setEntry(entry);
         row.setOnKeyguard(true);
         row.setSaveSpaceOnLockscreen(true);
 
@@ -1001,12 +1012,14 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUiForceExpanded.FLAG_NAME)
+    @EnableFlags({PromotedNotificationUi.FLAG_NAME, PromotedNotificationUiForceExpanded.FLAG_NAME})
     public void isExpanded_promotedNotificationNotSaveSpaceOnLockScreen_expanded()
             throws Exception {
         // GIVEN
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
-        row.setPromotedOngoing(true);
+        NotificationEntry entry = mock(NotificationEntry.class);
+        when(entry.isPromotedOngoing()).thenReturn(true);
+        row.setEntry(entry);
         row.setOnKeyguard(true);
         row.setSaveSpaceOnLockscreen(false);
 
