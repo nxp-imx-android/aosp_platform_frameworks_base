@@ -84,6 +84,7 @@ val Kosmos.keyguardRootViewModel by Fixture {
         occludedToAodTransitionViewModel = occludedToAodTransitionViewModel,
         occludedToDozingTransitionViewModel = occludedToDozingTransitionViewModel,
         occludedToLockscreenTransitionViewModel = occludedToLockscreenTransitionViewModel,
+        occludedToPrimaryBouncerTransitionViewModel = occludedToPrimaryBouncerTransitionViewModel,
         offToLockscreenTransitionViewModel = offToLockscreenTransitionViewModel,
         primaryBouncerToAodTransitionViewModel = primaryBouncerToAodTransitionViewModel,
         primaryBouncerToGoneTransitionViewModel = primaryBouncerToGoneTransitionViewModel,
