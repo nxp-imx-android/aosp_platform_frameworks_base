@@ -141,6 +141,8 @@ public interface EntryAdapter {
         return false;
     }
 
+    void onDragSuccess();
+
     /**
      * Process a click on a notification bubble icon
      */

@@ -145,6 +145,10 @@ class NotificationEntryAdapter(
         return entry.sbn.notification.fullScreenIntent != null
     }
 
+    override fun onDragSuccess() {
+        notificationActivityStarter.onDragSuccess(entry)
+    }
+
     override fun onNotificationBubbleIconClicked() {
         notificationActivityStarter.onNotificationBubbleIconClicked(entry)
     }

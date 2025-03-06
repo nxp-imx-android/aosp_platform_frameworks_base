@@ -23,6 +23,7 @@ import android.view.View;
 
 import com.android.systemui.DejankUtils;
 import com.android.systemui.power.domain.interactor.PowerInteractor;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -44,13 +45,20 @@ public final class NotificationClicker implements View.OnClickListener {
     private final Optional<Bubbles> mBubblesOptional;
     private final NotificationActivityStarter mNotificationActivityStarter;
 
-    private ExpandableNotificationRow.OnDragSuccessListener mOnDragSuccessListener =
-            new ExpandableNotificationRow.OnDragSuccessListener() {
-                @Override
-                public void onDragSuccess(NotificationEntry entry) {
-                    mNotificationActivityStarter.onDragSuccess(entry);
-                }
-            };
+    private ExpandableNotificationRow.OnDragSuccessListener mOnDragSuccessListener
+            = new ExpandableNotificationRow.OnDragSuccessListener() {
+        @Override
+        public void onDragSuccess(NotificationEntry entry) {
+            NotificationBundleUi.assertInLegacyMode();
+            mNotificationActivityStarter.onDragSuccess(entry);
+        }
+
+        @Override
+        public void onDragSuccess(EntryAdapter entryAdapter) {
+            NotificationBundleUi.isUnexpectedlyInLegacyMode();
+            entryAdapter.onDragSuccess();
+        }
+    };
 
     private NotificationClicker(
             NotificationClickerLogger logger,
