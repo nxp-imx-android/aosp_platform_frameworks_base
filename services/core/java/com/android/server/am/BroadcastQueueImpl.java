@@ -534,6 +534,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                 // skip to look for another warm process
                 if (mRunningColdStart == null) {
                     mRunningColdStart = queue;
+                    mRunningColdStart.clearProcessStartInitiatedTimestampMillis();
                 } else if (isPendingColdStartValid()) {
                     // Move to considering next runnable queue
                     queue = nextQueue;
@@ -542,6 +543,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     // Pending cold start is not valid, so clear it and move on.
                     clearInvalidPendingColdStart();
                     mRunningColdStart = queue;
+                    mRunningColdStart.clearProcessStartInitiatedTimestampMillis();
                 }
             }
 
@@ -588,7 +590,9 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
     @GuardedBy("mService")
     private boolean isPendingColdStartValid() {
-        if (mRunningColdStart.app.getPid() > 0) {
+        if (mRunningColdStart.hasProcessStartInitiationTimedout()) {
+            return false;
+        } else if (mRunningColdStart.app.getPid() > 0) {
             // If the process has already started, check if it wasn't killed.
             return !mRunningColdStart.app.isKilled();
         } else {
@@ -672,6 +676,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
         if ((mRunningColdStart != null) && (mRunningColdStart == queue)) {
             // We've been waiting for this app to cold start, and it's ready
             // now; dispatch its next broadcast and clear the slot
+            mRunningColdStart.clearProcessStartInitiatedTimestampMillis();
             mRunningColdStart = null;
 
             // Now that we're running warm, we can finally request that OOM
@@ -755,6 +760,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
         // We've been waiting for this app to cold start, and it had
         // trouble; clear the slot and fail delivery below
+        mRunningColdStart.clearProcessStartInitiatedTimestampMillis();
         mRunningColdStart = null;
 
         // We might be willing to kick off another cold start
@@ -1035,6 +1041,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
                     "startProcessLocked failed");
             return true;
         }
+        queue.setProcessStartInitiatedTimestampMillis(SystemClock.uptimeMillis());
         // TODO: b/335420031 - cache receiver intent to avoid multiple calls to getReceiverIntent.
         mService.mProcessList.getAppStartInfoTracker().handleProcessBroadcastStart(
                 startTimeNs, queue.app, r.getReceiverIntent(receiver), r.alarm /* isAlarm */);
@@ -1981,6 +1988,32 @@ class BroadcastQueueImpl extends BroadcastQueue {
         if (mRunningColdStart != null) {
             checkState(getRunningIndexOf(mRunningColdStart) >= 0,
                     "isOrphaned " + mRunningColdStart);
+
+            final BroadcastProcessQueue queue = getProcessQueue(mRunningColdStart.processName,
+                    mRunningColdStart.uid);
+            checkState(queue == mRunningColdStart, "Conflicting " + mRunningColdStart
+                    + " with queue " + queue
+                    + ";\n mRunningColdStart.app: " + mRunningColdStart.app.toDetailedString()
+                    + ";\n queue.app: " + queue.app.toDetailedString());
+
+            checkState(mRunningColdStart.app != null, "Empty cold start queue "
+                    + mRunningColdStart);
+
+            if (mRunningColdStart.isProcessStartInitiationTimeoutExpected()) {
+                final StringBuilder sb = new StringBuilder();
+                sb.append("Process start timeout expected for app ");
+                sb.append(mRunningColdStart.app);
+                sb.append(" in queue ");
+                sb.append(mRunningColdStart);
+                sb.append("; startUpTime: ");
+                final long startupTimeMs =
+                        mRunningColdStart.getProcessStartInitiatedTimestampMillis();
+                sb.append(startupTimeMs == 0 ? "<none>"
+                        : TimeUtils.formatDuration(startupTimeMs - SystemClock.uptimeMillis()));
+                sb.append(";\n app: ");
+                sb.append(mRunningColdStart.app.toDetailedString());
+                checkState(false, sb.toString());
+            }
         }
 
         // Verify health of all known process queues
@@ -2080,7 +2113,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     private void notifyStartedRunning(@NonNull BroadcastProcessQueue queue) {
         if (queue.app != null) {
-            queue.app.mReceivers.incrementCurReceivers();
+            queue.incrementCurAppReceivers();
 
             // Don't bump its LRU position if it's in the background restricted.
             if (mService.mInternal.getRestrictionLevel(
@@ -2105,7 +2138,7 @@ class BroadcastQueueImpl extends BroadcastQueue {
     @GuardedBy("mService")
     private void notifyStoppedRunning(@NonNull BroadcastProcessQueue queue) {
         if (queue.app != null) {
-            queue.app.mReceivers.decrementCurReceivers();
+            queue.decrementCurAppReceivers();
 
             if (queue.runningOomAdjusted) {
                 mService.enqueueOomAdjTargetLocked(queue.app);

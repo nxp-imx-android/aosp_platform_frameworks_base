@@ -41,6 +41,7 @@ import dalvik.annotation.optimization.NeverCompile;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tunable parameters for broadcast dispatch policy
@@ -286,6 +287,17 @@ public class BroadcastConstants {
             "max_frozen_outgoing_broadcasts";
     private static final int DEFAULT_MAX_FROZEN_OUTGOING_BROADCASTS = 32;
 
+    /**
+     * For {@link BroadcastQueueImpl}: Indicates how long after a process start was initiated,
+     * it should be considered abandoned and discarded.
+     */
+    public long PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS =
+            DEFAULT_PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS * Build.HW_TIMEOUT_MULTIPLIER;
+    private static final String KEY_PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS =
+            "pending_cold_start_abandon_timeout_millis";
+    private static final long DEFAULT_PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS =
+            TimeUnit.MINUTES.toMillis(5);
+
     // Settings override tracking for this instance
     private String mSettingsKey;
     private SettingsObserver mSettingsObserver;
@@ -434,6 +446,10 @@ public class BroadcastConstants {
             MAX_FROZEN_OUTGOING_BROADCASTS = getDeviceConfigInt(
                     KEY_MAX_FROZEN_OUTGOING_BROADCASTS,
                     DEFAULT_MAX_FROZEN_OUTGOING_BROADCASTS);
+            PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS = getDeviceConfigLong(
+                    KEY_PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS,
+                    DEFAULT_PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS)
+                            * Build.HW_TIMEOUT_MULTIPLIER;
         }
 
         // TODO: migrate BroadcastRecord to accept a BroadcastConstants
@@ -491,6 +507,8 @@ public class BroadcastConstants {
                     PENDING_COLD_START_CHECK_INTERVAL_MILLIS).println();
             pw.print(KEY_MAX_FROZEN_OUTGOING_BROADCASTS,
                     MAX_FROZEN_OUTGOING_BROADCASTS).println();
+            pw.print(KEY_PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS,
+                    PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS).println();
             pw.decreaseIndent();
             pw.println();
         }
