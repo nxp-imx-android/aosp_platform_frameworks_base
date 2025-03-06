@@ -447,9 +447,9 @@ public class BubbleBarLayerView extends FrameLayout
             bubble.cleanupViews(!inTransition);
             endAction.run();
         };
-        if (mBubbleData.getBubbles().isEmpty()) {
-            // we're removing the last bubble. collapse the expanded view and cleanup bubble views
-            // at the end.
+        if (mBubbleData.getBubbles().isEmpty() || inTransition) {
+            // If we are removing the last bubble or removing the current bubble via transition,
+            // collapse the expanded view and clean up bubbles at the end.
             collapse(cleanUp);
         } else {
             cleanUp.run();
