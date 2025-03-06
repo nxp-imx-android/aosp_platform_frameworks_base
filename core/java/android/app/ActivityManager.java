@@ -55,9 +55,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.Icon;
-import android.hardware.HardwareBuffer;
 import android.os.BatteryStats;
 import android.os.Binder;
 import android.os.Build;
@@ -86,7 +84,6 @@ import android.util.Log;
 import android.util.Singleton;
 import android.util.Size;
 import android.view.WindowInsetsController.Appearance;
-import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.LocalePicker;
@@ -3102,7 +3099,8 @@ public class ActivityManager {
     /**
      * Flag for {@link #moveTaskToFront(int, int)}: also move the "home"
      * activity along with the task, so it is positioned immediately behind
-     * the task.
+     * the task. This flag is ignored if the task's windowing mode is
+     * {@link WindowConfiguration#WINDOWING_MODE_MULTI_WINDOW}.
      */
     public static final int MOVE_TASK_WITH_HOME = 0x00000001;
 
