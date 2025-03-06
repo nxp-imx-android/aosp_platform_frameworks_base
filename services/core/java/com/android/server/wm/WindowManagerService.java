@@ -120,8 +120,6 @@ import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_BACKGROUND_
 import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_BACKGROUND_APP_COLOR_BACKGROUND_FLOATING;
 import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_BACKGROUND_SOLID_COLOR;
 import static com.android.server.wm.AppCompatConfiguration.LETTERBOX_BACKGROUND_WALLPAPER;
-import static com.android.server.wm.DisplayContent.IME_TARGET_CONTROL;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.RootWindowContainer.MATCH_ATTACHED_TASK_OR_RECENT_TASKS;
 import static com.android.server.wm.SensitiveContentPackages.PackageInfo;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
@@ -6923,9 +6921,9 @@ public class WindowManagerService extends IWindowManager.Stub
         mRoot.dumpTopFocusedDisplayId(pw);
         mRoot.forAllDisplays(dc -> {
             final int displayId = dc.getDisplayId();
-            final InsetsControlTarget imeLayeringTarget = dc.getImeTarget(IME_TARGET_LAYERING);
+            final WindowState imeLayeringTarget = dc.getImeLayeringTarget();
             final InputTarget imeInputTarget = dc.getImeInputTarget();
-            final InsetsControlTarget imeControlTarget = dc.getImeTarget(IME_TARGET_CONTROL);
+            final InsetsControlTarget imeControlTarget = dc.getImeControlTarget();
             if (imeLayeringTarget != null) {
                 pw.print("  imeLayeringTarget in display# "); pw.print(displayId);
                 pw.print(' '); pw.println(imeLayeringTarget);
@@ -8328,12 +8326,12 @@ public class WindowManagerService extends IWindowManager.Stub
                     // requested to be hidden.
                     dc.getInsetsStateController().getImeSourceProvider().abortShowImePostLayout();
                 }
-                if (dc != null && dc.getImeTarget(IME_TARGET_CONTROL) != null) {
+                if (dc != null && dc.getImeControlTarget() != null) {
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_WM_HAS_IME_INSETS_CONTROL_TARGET);
                     ProtoLog.d(WM_DEBUG_IME, "hideIme imeControlTarget: %s",
-                            dc.getImeTarget(IME_TARGET_CONTROL));
-                    dc.getImeTarget(IME_TARGET_CONTROL).hideInsets(WindowInsets.Type.ime(),
+                            dc.getImeControlTarget());
+                    dc.getImeControlTarget().hideInsets(WindowInsets.Type.ime(),
                             true /* fromIme */, statsToken);
                 } else {
                     ImeTracker.forLogging().onFailed(statsToken,
@@ -8534,16 +8532,16 @@ public class WindowManagerService extends IWindowManager.Stub
                 requestWindowName = requestWin != null ? requestWin.getName() : "null";
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc != null) {
-                    final InsetsControlTarget controlTarget = dc.getImeTarget(IME_TARGET_CONTROL);
+                    final InsetsControlTarget controlTarget = dc.getImeControlTarget();
                     if (controlTarget != null) {
                         final WindowState w = InsetsControlTarget.asWindowOrNull(controlTarget);
                         imeControlTargetName = w != null ? w.getName() : controlTarget.toString();
                     } else {
                         imeControlTargetName = "null";
                     }
-                    final InsetsControlTarget layeringTarget = dc.getImeTarget(IME_TARGET_LAYERING);
-                    imeLayeringTargetName = layeringTarget != null
-                            ? layeringTarget.getWindow().getName() : "null";
+                    final WindowState layeringTarget = dc.getImeLayeringTarget();
+                    imeLayeringTargetName = layeringTarget != null ? layeringTarget.getName()
+                            : "null";
                     final SurfaceControl imeParent = dc.mInputMethodSurfaceParent;
                     imeSurfaceParentName = imeParent != null ? imeParent.toString() : "null";
                     if (show) {

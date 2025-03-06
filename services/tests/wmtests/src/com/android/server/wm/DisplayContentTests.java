@@ -81,7 +81,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.reset;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.server.wm.ActivityTaskSupervisor.ON_TOP;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_TOKEN_TRANSFORM;
 import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
@@ -657,9 +656,8 @@ public class DisplayContentTests extends WindowTestsBase {
         assertFalse("matchesRootDisplayAreaBounds() should return false",
                 ws.matchesDisplayAreaBounds());
 
-        assertTrue("IME shouldn't be attached to app",
-                dc.computeImeParent().getSurfaceControl() != dc.getImeTarget(
-                        IME_TARGET_LAYERING).getWindow().mActivityRecord.getSurfaceControl());
+        assertTrue("IME shouldn't be attached to app", dc.computeImeParent().getSurfaceControl()
+                != dc.getImeLayeringTarget().mActivityRecord.getSurfaceControl());
         assertEquals("IME should be attached to display",
                 dc.getImeContainer().getParent().getSurfaceControl(),
                 dc.computeImeParent().getSurfaceControl());
@@ -1039,18 +1037,16 @@ public class DisplayContentTests extends WindowTestsBase {
         mDisplayContent.setInputMethodWindowLocked(mImeWindow);
         newDisplay.setInputMethodWindowLocked(null);
         assertEquals("appWin should be IME layering target",
-                appWin, mDisplayContent.getImeTarget(IME_TARGET_LAYERING));
-        assertNull("newDisplay IME layering target: ",
-                newDisplay.getImeTarget(IME_TARGET_LAYERING));
+                appWin, mDisplayContent.getImeLayeringTarget());
+        assertNull("newDisplay IME layering target: ", newDisplay.getImeLayeringTarget());
 
         // Switch input method window on new display & make sure the IME layering target also
         // switched as expected.
         newDisplay.setInputMethodWindowLocked(mImeWindow);
         mDisplayContent.setInputMethodWindowLocked(null);
         assertEquals("appWin1 should be IME layering target", appWin1,
-                newDisplay.getImeTarget(IME_TARGET_LAYERING));
-        assertNull("default display IME layering target: ",
-                mDisplayContent.getImeTarget(IME_TARGET_LAYERING));
+                newDisplay.getImeLayeringTarget());
+        assertNull("default display IME layering target: ", mDisplayContent.getImeLayeringTarget());
     }
 
     @Test
@@ -1234,22 +1230,20 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testComputeImeParent_app() throws Exception {
+    public void testComputeImeParent_app() {
         final DisplayContent dc = createNewDisplay();
         dc.setImeLayeringTarget(newWindowBuilder("app", TYPE_BASE_APPLICATION).build());
-        dc.setImeInputTarget(dc.getImeTarget(IME_TARGET_LAYERING).getWindow());
-        assertEquals(dc.getImeTarget(
-                        IME_TARGET_LAYERING).getWindow().mActivityRecord.getSurfaceControl(),
+        dc.setImeInputTarget(dc.getImeLayeringTarget());
+        assertEquals(dc.getImeLayeringTarget().mActivityRecord.getSurfaceControl(),
                 dc.computeImeParent().getSurfaceControl());
     }
 
     @Test
-    public void testComputeImeParent_app_notFullscreen() throws Exception {
+    public void testComputeImeParent_app_notFullscreen() {
         final DisplayContent dc = createNewDisplay();
         dc.setImeLayeringTarget(newWindowBuilder("app", TYPE_STATUS_BAR).build());
-        dc.getImeTarget(IME_TARGET_LAYERING).getWindow().setWindowingMode(
-                WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
-        dc.setImeInputTarget(dc.getImeTarget(IME_TARGET_LAYERING).getWindow());
+        dc.getImeLayeringTarget().setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
+        dc.setImeInputTarget(dc.getImeLayeringTarget());
         assertEquals(dc.getImeContainer().getParentSurfaceControl(),
                 dc.computeImeParent().getSurfaceControl());
     }
@@ -1266,10 +1260,10 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testComputeImeParent_noApp() throws Exception {
+    public void testComputeImeParent_noApp() {
         final DisplayContent dc = createNewDisplay();
         dc.setImeLayeringTarget(newWindowBuilder("statusBar", TYPE_STATUS_BAR).build());
-        dc.setImeInputTarget(dc.getImeTarget(IME_TARGET_LAYERING).getWindow());
+        dc.setImeInputTarget(dc.getImeLayeringTarget());
         assertEquals(dc.getImeContainer().getParentSurfaceControl(),
                 dc.computeImeParent().getSurfaceControl());
     }
@@ -1313,7 +1307,7 @@ public class DisplayContentTests extends WindowTestsBase {
         dc.setImeLayeringTarget(app1);
         dc.setImeInputTarget(app2);
         dc.setRemoteInsetsController(createDisplayWindowInsetsController());
-        dc.getImeTarget(IME_TARGET_LAYERING).getWindow().setWindowingMode(
+        dc.getImeLayeringTarget().setWindowingMode(
                 WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
         dc.getImeInputTarget().getWindowState().setWindowingMode(
                 WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW);
@@ -1323,7 +1317,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // ImeLayeringTarget and ImeInputTarget are updated to the same.
         dc.setImeInputTarget(app1);
-        assertEquals(dc.getImeTarget(IME_TARGET_LAYERING), dc.getImeInputTarget());
+        assertEquals(dc.getImeLayeringTarget(), dc.getImeInputTarget());
 
         // The ImeParent should be the display.
         assertEquals(dc.getImeContainer().getParent().getSurfaceControl(),
@@ -1331,7 +1325,7 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testImeInputTarget_isClearedWhenWindowStateIsRemoved() throws Exception {
+    public void testImeInputTarget_isClearedWhenWindowStateIsRemoved() {
         final DisplayContent dc = createNewDisplay();
 
         WindowState app = newWindowBuilder("app", TYPE_BASE_APPLICATION).setDisplay(dc).build();
@@ -1346,7 +1340,7 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testComputeImeControlTarget() throws Exception {
+    public void testComputeImeControlTarget() {
         final DisplayContent dc = createNewDisplay();
         dc.setRemoteInsetsController(createDisplayWindowInsetsController());
         dc.mCurrentFocus = newWindowBuilder("app", TYPE_BASE_APPLICATION).build();
@@ -1363,7 +1357,7 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
-    public void testComputeImeControlTarget_splitscreen() throws Exception {
+    public void testComputeImeControlTarget_splitscreen() {
         final DisplayContent dc = createNewDisplay();
         dc.setImeInputTarget(newWindowBuilder("app", TYPE_BASE_APPLICATION).build());
         dc.getImeInputTarget().getWindowState().setWindowingMode(
@@ -1389,7 +1383,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
     @SetupWindows(addWindows = W_ACTIVITY)
     @Test
-    public void testComputeImeControlTarget_notMatchParentBounds() throws Exception {
+    public void testComputeImeControlTarget_notMatchParentBounds() {
         spyOn(mAppWindow.mActivityRecord);
         doReturn(false).when(mAppWindow.mActivityRecord).matchParentBounds();
         mDisplayContent.setImeInputTarget(mAppWindow);
@@ -2348,7 +2342,7 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // Test step 1: appWin1 is the current IME layering target and soft-keyboard is visible.
         mDisplayContent.computeImeLayeringTarget(true /* update */);
-        assertEquals(appWin1, mDisplayContent.getImeTarget(IME_TARGET_LAYERING));
+        assertEquals(appWin1, mDisplayContent.getImeLayeringTarget());
         mDisplayContent.setImeInputTarget(appWin1);
         spyOn(mDisplayContent.mInputMethodWindow);
         doReturn(true).when(mDisplayContent.mInputMethodWindow).isVisible();
@@ -2365,7 +2359,7 @@ public class DisplayContentTests extends WindowTestsBase {
         // Test step 3: Verify appWin2 will be the next IME layering target and the IME snapshot
         // surface will be attached and shown on the display at this time.
         mDisplayContent.computeImeLayeringTarget(true /* update */);
-        assertEquals(appWin2, mDisplayContent.getImeTarget(IME_TARGET_LAYERING));
+        assertEquals(appWin2, mDisplayContent.getImeLayeringTarget());
         assertTrue(mDisplayContent.shouldImeAttachedToApp());
 
         verify(mDisplayContent, atLeast(1)).showImeScreenshot();

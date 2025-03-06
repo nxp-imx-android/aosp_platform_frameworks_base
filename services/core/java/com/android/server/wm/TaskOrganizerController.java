@@ -23,7 +23,6 @@ import static android.window.StartingWindowRemovalInfo.DEFER_MODE_ROTATION;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_ORGANIZER;
 import static com.android.server.wm.ActivityTaskManagerService.enforceTaskPermission;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_STARTING_REVEAL;
 import static com.android.server.wm.WindowOrganizerController.configurationsAreEqualForOrganizer;
 
@@ -985,13 +984,13 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
                     return null;
                 }
 
-                final InsetsControlTarget imeLayeringTarget = dc.getImeTarget(IME_TARGET_LAYERING);
-                if (imeLayeringTarget == null || imeLayeringTarget.getWindow() == null) {
+                final WindowState imeLayeringTarget = dc.getImeLayeringTarget();
+                if (imeLayeringTarget == null) {
                     return null;
                 }
 
                 // Avoid WindowState#getRootTask() so we don't attribute system windows to a task.
-                final Task task = imeLayeringTarget.getWindow().getTask();
+                final Task task = imeLayeringTarget.getTask();
                 if (task == null) {
                     return null;
                 }

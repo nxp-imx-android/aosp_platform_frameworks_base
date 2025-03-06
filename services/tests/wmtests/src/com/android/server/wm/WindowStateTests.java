@@ -53,8 +53,6 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-import static com.android.server.wm.DisplayContent.IME_TARGET_CONTROL;
-import static com.android.server.wm.DisplayContent.IME_TARGET_LAYERING;
 import static com.android.server.wm.WindowContainer.SYNC_STATE_WAITING_FOR_DRAW;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -1281,7 +1279,7 @@ public class WindowStateTests extends WindowTestsBase {
         // Expect updateImeParent will be invoked when the configuration of the IME control
         // target has changed.
         verify(app.getDisplayContent()).updateImeControlTarget(eq(true) /* forceUpdateImeParent */);
-        assertEquals(mAppWindow, mDisplayContent.getImeTarget(IME_TARGET_CONTROL).getWindow());
+        assertEquals(mAppWindow, mDisplayContent.getImeControlTarget().getWindow());
     }
 
     @SetupWindows(addWindows = { W_ACTIVITY, W_INPUT_METHOD, W_NOTIFICATION_SHADE })
@@ -1302,7 +1300,7 @@ public class WindowStateTests extends WindowTestsBase {
                 .setWindowContainer(mImeWindow, null, null);
 
         mDisplayContent.computeImeLayeringTarget(true /* update */);
-        assertEquals(mNotificationShadeWindow, mDisplayContent.getImeTarget(IME_TARGET_LAYERING));
+        assertEquals(mNotificationShadeWindow, mDisplayContent.getImeLayeringTarget());
         mDisplayContent.getInsetsStateController().getRawInsetsState()
                 .setSourceVisible(ID_IME, true);
 
