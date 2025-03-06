@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.desktopmode.multidesks
 
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.testing.AndroidTestingRunner
 import android.view.Display
@@ -29,6 +30,7 @@ import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_R
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.ShellTaskOrganizer.TaskListener
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.LaunchAdjacentController
@@ -39,14 +41,17 @@ import com.android.wm.shell.sysui.ShellCommandHandler
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.assertNotNull
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 
 /**
  * Tests for [RootTaskDesksOrganizer].
@@ -76,48 +81,17 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             )
     }
 
-    @Test
-    fun testCreateDesk_callsBack() {
-        val callback = FakeOnCreateCallback()
-        organizer.createDesk(Display.DEFAULT_DISPLAY, callback)
-
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-
-        assertThat(callback.created).isTrue()
-        assertEquals(freeformRoot.taskId, callback.deskId)
-    }
+    @Test fun testCreateDesk_createsDeskAndMinimizationRoots() = runTest { createDesk() }
 
     @Test
-    fun testCreateDesk_createsMinimizationRoot() {
-        val callback = FakeOnCreateCallback()
-        organizer.createDesk(Display.DEFAULT_DISPLAY, callback)
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-
-        val minimizationRootTask = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(minimizationRootTask, SurfaceControl())
-
-        val minimizationRoot = organizer.deskMinimizationRootsByDeskId[freeformRoot.taskId]
-        assertNotNull(minimizationRoot)
-        assertThat(minimizationRoot.deskId).isEqualTo(freeformRoot.taskId)
-        assertThat(minimizationRoot.rootId).isEqualTo(minimizationRootTask.taskId)
-    }
-
-    @Test
-    fun testCreateMinimizationRoot_marksHidden() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-
-        val minimizationRootTask = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(minimizationRootTask, SurfaceControl())
+    fun testCreateMinimizationRoot_marksHidden() = runTest {
+        val desk = createDesk()
 
         verify(mockShellTaskOrganizer)
             .applyTransaction(
                 argThat { wct ->
                     wct.changes.any { change ->
-                        change.key == minimizationRootTask.token.asBinder() &&
+                        change.key == desk.minimizationRoot.token.asBinder() &&
                             (change.value.changeMask and Change.CHANGE_HIDDEN != 0) &&
                             change.value.hidden
                     }
@@ -126,7 +100,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testOnTaskAppeared_withoutRequest_throws() {
+    fun testOnTaskAppeared_withoutRequest_throws() = runTest {
         val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
 
         assertThrows(Exception::class.java) {
@@ -135,41 +109,25 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testOnTaskAppeared_withRequestOnlyInAnotherDisplay_throws() {
-        organizer.createDesk(displayId = 2, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask(Display.DEFAULT_DISPLAY).apply { parentTaskId = -1 }
+    fun testOnTaskAppeared_duplicateRoot_throws() = runTest {
+        val desk = createDesk()
 
         assertThrows(Exception::class.java) {
-            organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+            organizer.onTaskAppeared(desk.deskRoot.taskInfo, SurfaceControl())
         }
     }
 
     @Test
-    fun testOnTaskAppeared_duplicateRoot_throws() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+    fun testOnTaskAppeared_duplicateMinimizedRoot_throws() = runTest {
+        val desk = createDesk()
 
         assertThrows(Exception::class.java) {
-            organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+            organizer.onTaskAppeared(desk.minimizationRoot.taskInfo, SurfaceControl())
         }
     }
 
     @Test
-    fun testOnTaskAppeared_duplicateMinimizedRoot_throws() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        val minimizationRootTask = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-        organizer.onTaskAppeared(minimizationRootTask, SurfaceControl())
-
-        assertThrows(Exception::class.java) {
-            organizer.onTaskAppeared(minimizationRootTask, SurfaceControl())
-        }
-    }
-
-    @Test
-    fun testOnTaskVanished_removesRoot() {
+    fun testOnTaskVanished_removesRoot() = runTest {
         val desk = createDesk()
 
         organizer.onTaskVanished(desk.deskRoot.taskInfo)
@@ -178,7 +136,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testOnTaskVanished_removesMinimizedRoot() {
+    fun testOnTaskVanished_removesMinimizedRoot() = runTest {
         val desk = createDesk()
 
         organizer.onTaskVanished(desk.deskRoot.taskInfo)
@@ -188,7 +146,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testDesktopWindowAppearsInDesk() {
+    fun testDesktopWindowAppearsInDesk() = runTest {
         val desk = createDesk()
         val child = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
 
@@ -198,7 +156,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testDesktopWindowAppearsInDeskMinimizationRoot() {
+    fun testDesktopWindowAppearsInDeskMinimizationRoot() = runTest {
         val desk = createDesk()
         val child = createFreeformTask().apply { parentTaskId = desk.minimizationRoot.rootId }
 
@@ -208,7 +166,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testDesktopWindowMovesToMinimizationRoot() {
+    fun testDesktopWindowMovesToMinimizationRoot() = runTest {
         val desk = createDesk()
         val child = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
         organizer.onTaskAppeared(child, SurfaceControl())
@@ -221,7 +179,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testDesktopWindowDisappearsFromDesk() {
+    fun testDesktopWindowDisappearsFromDesk() = runTest {
         val desk = createDesk()
         val child = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
 
@@ -232,7 +190,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testDesktopWindowDisappearsFromDeskMinimizationRoot() {
+    fun testDesktopWindowDisappearsFromDeskMinimizationRoot() = runTest {
         val desk = createDesk()
         val child = createFreeformTask().apply { parentTaskId = desk.minimizationRoot.rootId }
 
@@ -243,7 +201,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testRemoveDesk_removesDeskRoot() {
+    fun testRemoveDesk_removesDeskRoot() = runTest {
         val desk = createDesk()
 
         val wct = WindowContainerTransaction()
@@ -259,7 +217,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testRemoveDesk_removesMinimizationRoot() {
+    fun testRemoveDesk_removesMinimizationRoot() = runTest {
         val desk = createDesk()
 
         val wct = WindowContainerTransaction()
@@ -275,7 +233,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testActivateDesk() {
+    fun testActivateDesk() = runTest {
         val desk = createDesk()
 
         val wct = WindowContainerTransaction()
@@ -299,7 +257,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testActivateDesk_didNotExist_throws() {
+    fun testActivateDesk_didNotExist_throws() = runTest {
         val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
 
         val wct = WindowContainerTransaction()
@@ -307,7 +265,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testMoveTaskToDesk() {
+    fun testMoveTaskToDesk() = runTest {
         val desk = createDesk()
 
         val desktopTask = createFreeformTask().apply { parentTaskId = -1 }
@@ -333,7 +291,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testMoveTaskToDesk_didNotExist_throws() {
+    fun testMoveTaskToDesk_didNotExist_throws() = runTest {
         val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
 
         val desktopTask = createFreeformTask().apply { parentTaskId = -1 }
@@ -344,7 +302,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testGetDeskAtEnd() {
+    fun testGetDeskAtEnd() = runTest {
         val desk = createDesk()
 
         val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
@@ -357,7 +315,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testGetDeskAtEnd_inMinimizationRoot() {
+    fun testGetDeskAtEnd_inMinimizationRoot() = runTest {
         val desk = createDesk()
 
         val task = createFreeformTask().apply { parentTaskId = desk.minimizationRoot.rootId }
@@ -370,27 +328,24 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun testIsDeskActiveAtEnd() {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
-        freeformRoot.isVisibleRequested = true
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
+    fun testIsDeskActiveAtEnd() = runTest {
+        val desk = createDesk()
 
         val isActive =
             organizer.isDeskActiveAtEnd(
                 change =
-                    TransitionInfo.Change(freeformRoot.token, SurfaceControl()).apply {
-                        taskInfo = freeformRoot
+                    TransitionInfo.Change(desk.deskRoot.token, SurfaceControl()).apply {
+                        taskInfo = desk.deskRoot.taskInfo
                         mode = TRANSIT_TO_FRONT
                     },
-                deskId = freeformRoot.taskId,
+                deskId = desk.deskRoot.deskId,
             )
 
         assertThat(isActive).isTrue()
     }
 
     @Test
-    fun deactivateDesk_clearsLaunchRoot() {
+    fun deactivateDesk_clearsLaunchRoot() = runTest {
         val wct = WindowContainerTransaction()
         val desk = createDesk()
         organizer.activateDesk(wct, desk.deskRoot.deskId)
@@ -409,7 +364,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun isDeskChange_forDeskId() {
+    fun isDeskChange_forDeskId() = runTest {
         val desk = createDesk()
 
         assertThat(
@@ -424,7 +379,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun isDeskChange_forDeskId_inMinimizationRoot() {
+    fun isDeskChange_forDeskId_inMinimizationRoot() = runTest {
         val desk = createDesk()
 
         assertThat(
@@ -442,7 +397,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun isDeskChange_anyDesk() {
+    fun isDeskChange_anyDesk() = runTest {
         val desk = createDesk()
 
         assertThat(
@@ -456,7 +411,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun isDeskChange_anyDesk_inMinimizationRoot() {
+    fun isDeskChange_anyDesk_inMinimizationRoot() = runTest {
         val desk = createDesk()
 
         assertThat(
@@ -473,7 +428,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun minimizeTask() {
+    fun minimizeTask() = runTest {
         val desk = createDesk()
         val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
         val wct = WindowContainerTransaction()
@@ -486,7 +441,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun minimizeTask_alreadyMinimized_noOp() {
+    fun minimizeTask_alreadyMinimized_noOp() = runTest {
         val desk = createDesk()
         val task = createFreeformTask().apply { parentTaskId = desk.minimizationRoot.rootId }
         val wct = WindowContainerTransaction()
@@ -498,7 +453,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun minimizeTask_inDifferentDesk_noOp() {
+    fun minimizeTask_inDifferentDesk_noOp() = runTest {
         val desk = createDesk()
         val otherDesk = createDesk()
         val task = createFreeformTask().apply { parentTaskId = otherDesk.deskRoot.deskId }
@@ -511,7 +466,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun unminimizeTask() {
+    fun unminimizeTask() = runTest {
         val desk = createDesk()
         val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
         val wct = WindowContainerTransaction()
@@ -528,7 +483,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun unminimizeTask_alreadyUnminimized_noOp() {
+    fun unminimizeTask_alreadyUnminimized_noOp() = runTest {
         val desk = createDesk()
         val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
         val wct = WindowContainerTransaction()
@@ -542,7 +497,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun unminimizeTask_notInDesk_noOp() {
+    fun unminimizeTask_notInDesk_noOp() = runTest {
         val desk = createDesk()
         val task = createFreeformTask()
         val wct = WindowContainerTransaction()
@@ -553,7 +508,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun reorderTaskToFront() {
+    fun reorderTaskToFront() = runTest {
         val desk = createDesk()
         val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
         val wct = WindowContainerTransaction()
@@ -573,7 +528,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun reorderTaskToFront_notInDesk_noOp() {
+    fun reorderTaskToFront_notInDesk_noOp() = runTest {
         val desk = createDesk()
         val task = createFreeformTask()
         val wct = WindowContainerTransaction()
@@ -592,7 +547,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun reorderTaskToFront_minimized_unminimizesAndReorders() {
+    fun reorderTaskToFront_minimized_unminimizesAndReorders() = runTest {
         val desk = createDesk()
         val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
         val wct = WindowContainerTransaction()
@@ -615,7 +570,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskAppeared_visibleDesk_onlyDesk_disablesLaunchAdjacent() {
+    fun onTaskAppeared_visibleDesk_onlyDesk_disablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = true
 
         createDesk(visible = true)
@@ -624,7 +579,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskAppeared_invisibleDesk_onlyDesk_enablesLaunchAdjacent() {
+    fun onTaskAppeared_invisibleDesk_onlyDesk_enablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = false
 
         createDesk(visible = false)
@@ -633,7 +588,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskAppeared_invisibleDesk_otherVisibleDesk_disablesLaunchAdjacent() {
+    fun onTaskAppeared_invisibleDesk_otherVisibleDesk_disablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = true
 
         createDesk(visible = true)
@@ -643,7 +598,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskInfoChanged_deskBecomesVisible_onlyDesk_disablesLaunchAdjacent() {
+    fun onTaskInfoChanged_deskBecomesVisible_onlyDesk_disablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = true
 
         val desk = createDesk(visible = false)
@@ -654,7 +609,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskInfoChanged_deskBecomesInvisible_onlyDesk_enablesLaunchAdjacent() {
+    fun onTaskInfoChanged_deskBecomesInvisible_onlyDesk_enablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = false
 
         val desk = createDesk(visible = true)
@@ -665,7 +620,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskInfoChanged_deskBecomesInvisible_otherVisibleDesk_disablesLaunchAdjacent() {
+    fun onTaskInfoChanged_deskBecomesInvisible_otherVisibleDesk_disablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = true
 
         createDesk(visible = true)
@@ -677,7 +632,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskVanished_visibleDeskDisappears_onlyDesk_enablesLaunchAdjacent() {
+    fun onTaskVanished_visibleDeskDisappears_onlyDesk_enablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = false
 
         val desk = createDesk(visible = true)
@@ -687,7 +642,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     }
 
     @Test
-    fun onTaskVanished_visibleDeskDisappears_otherDeskVisible_disablesLaunchAdjacent() {
+    fun onTaskVanished_visibleDeskDisappears_otherDeskVisible_disablesLaunchAdjacent() = runTest {
         launchAdjacentController.launchAdjacentEnabled = true
 
         createDesk(visible = true)
@@ -702,20 +657,39 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         val minimizationRoot: DeskMinimizationRoot,
     )
 
-    private fun createDesk(visible: Boolean = true): DeskRoots {
-        organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot =
+    private suspend fun createDesk(visible: Boolean = true): DeskRoots {
+        val freeformRootTask =
             createFreeformTask().apply {
                 parentTaskId = -1
                 isVisible = visible
+                isVisibleRequested = visible
             }
-        organizer.onTaskAppeared(freeformRoot, SurfaceControl())
-        val minimizationRoot = createFreeformTask().apply { parentTaskId = -1 }
-        organizer.onTaskAppeared(minimizationRoot, SurfaceControl())
-        return DeskRoots(
-            organizer.deskRootsByDeskId[freeformRoot.taskId],
-            checkNotNull(organizer.deskMinimizationRootsByDeskId[freeformRoot.taskId]),
-        )
+        val minimizationRootTask = createFreeformTask().apply { parentTaskId = -1 }
+        Mockito.reset(mockShellTaskOrganizer)
+        whenever(
+                mockShellTaskOrganizer.createRootTask(
+                    Display.DEFAULT_DISPLAY,
+                    WINDOWING_MODE_FREEFORM,
+                    organizer,
+                    true,
+                )
+            )
+            .thenAnswer { invocation ->
+                val listener = (invocation.arguments[2] as TaskListener)
+                listener.onTaskAppeared(freeformRootTask, SurfaceControl())
+            }
+            .thenAnswer { invocation ->
+                val listener = (invocation.arguments[2] as TaskListener)
+                listener.onTaskAppeared(minimizationRootTask, SurfaceControl())
+            }
+        val deskId = organizer.createDesk(Display.DEFAULT_DISPLAY)
+        assertEquals(freeformRootTask.taskId, deskId)
+        val deskRoot = assertNotNull(organizer.deskRootsByDeskId.get(freeformRootTask.taskId))
+        val minimizationRoot =
+            assertNotNull(organizer.deskMinimizationRootsByDeskId[freeformRootTask.taskId])
+        assertThat(minimizationRoot.deskId).isEqualTo(freeformRootTask.taskId)
+        assertThat(minimizationRoot.rootId).isEqualTo(minimizationRootTask.taskId)
+        return DeskRoots(deskRoot, minimizationRoot)
     }
 
     private fun WindowContainerTransaction.hasMinimizationHops(
@@ -738,14 +712,4 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 hop.newParent == desk.deskRoot.token.asBinder() &&
                 hop.toTop
         }
-
-    private class FakeOnCreateCallback : DesksOrganizer.OnCreateCallback {
-        var deskId: Int? = null
-        val created: Boolean
-            get() = deskId != null
-
-        override fun onCreated(deskId: Int) {
-            this.deskId = deskId
-        }
-    }
 }

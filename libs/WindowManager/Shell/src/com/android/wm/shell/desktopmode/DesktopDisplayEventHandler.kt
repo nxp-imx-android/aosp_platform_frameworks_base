@@ -23,15 +23,21 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.sysui.ShellInit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 /** Handles display events in desktop mode */
 class DesktopDisplayEventHandler(
     private val context: Context,
     shellInit: ShellInit,
+    private val mainScope: CoroutineScope,
     private val displayController: DisplayController,
+    private val desktopRepositoryInitializer: DesktopRepositoryInitializer,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desktopTasksController: DesktopTasksController,
     private val desktopDisplayModeController: DesktopDisplayModeController,
@@ -61,15 +67,19 @@ class DesktopDisplayEventHandler(
             logV("Display #$displayId does not support desks")
             return
         }
-        logV("Creating new desk in new display#$displayId")
-        // TODO: b/362720497 - when SystemUI crashes with a freeform task open for any reason, the
-        //  task is recreated and received in [FreeformTaskListener] before this display callback
-        //  is invoked, which results in the repository trying to add the task to a desk before the
-        //  desk has been recreated here, which may result in a crash-loop if the repository is
-        //  checking that the desk exists before adding a task to it. See b/391984373.
-        desktopTasksController.createDesk(displayId)
-        // TODO: b/393978539 - consider activating the desk on creation when applicable, such as
-        //  for connected displays.
+
+        mainScope.launch {
+            desktopRepositoryInitializer.isInitialized.collect { initialized ->
+                if (!initialized) return@collect
+                if (desktopRepository.getNumberOfDesks(displayId) == 0) {
+                    logV("Creating new desk in new display#$displayId")
+                    // TODO: b/393978539 - consider activating the desk on creation when
+                    //  applicable, such as for connected displays.
+                    desktopTasksController.createDesk(displayId)
+                }
+                cancel()
+            }
+        }
     }
 
     override fun onDisplayRemoved(displayId: Int) {

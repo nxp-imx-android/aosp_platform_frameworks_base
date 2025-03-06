@@ -115,6 +115,9 @@ import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
+import com.android.wm.shell.desktopmode.multidesks.createDesk
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -194,6 +197,7 @@ class DesktopTasksController(
     private val dragToDesktopTransitionHandler: DragToDesktopTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
     private val userRepositories: DesktopUserRepositories,
+    desktopRepositoryInitializer: DesktopRepositoryInitializer,
     private val recentsTransitionHandler: RecentsTransitionHandler,
     private val multiInstanceHelper: MultiInstanceHelper,
     @ShellMainThread private val mainExecutor: ShellExecutor,
@@ -276,6 +280,19 @@ class DesktopTasksController(
         }
         userId = ActivityManager.getCurrentUser()
         taskRepository = userRepositories.getProfile(userId)
+
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desktopRepositoryInitializer.deskRecreationFactory =
+                DeskRecreationFactory { deskUserId, destinationDisplayId, deskId ->
+                    if (deskUserId != userId) {
+                        // TODO: b/400984250 - add multi-user support for multi-desk restoration.
+                        logW("Tried to recreated desk of another user.")
+                        deskId
+                    } else {
+                        desksOrganizer.createDesk(destinationDisplayId)
+                    }
+                }
+        }
     }
 
     private fun onInit() {
@@ -1718,15 +1735,7 @@ class DesktopTasksController(
                     wct.reorder(runningTaskInfo.token, /* onTop= */ true)
                 } else if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
                     // Task is not running, start it
-                    wct.startTask(
-                        taskId,
-                        ActivityOptions.makeBasic()
-                            .apply {
-                                launchWindowingMode = WINDOWING_MODE_FREEFORM
-                                splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
-                            }
-                            .toBundle(),
-                    )
+                    wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
                 }
             }
 
@@ -2826,9 +2835,6 @@ class DesktopTasksController(
         }
         prepareForDeskActivation(displayId, wct)
         desksOrganizer.activateDesk(wct, deskId)
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            // TODO: 362720497 - do non-running tasks need to be restarted with |wct#startTask|?
-        }
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId)
         )
@@ -2845,6 +2851,19 @@ class DesktopTasksController(
             if (taskToMinimize != null) {
                 desksOrganizer.minimizeTask(wct, deskId, taskToMinimize)
             }
+        }
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            expandedTasksOrderedFrontToBack
+                .filter { taskId -> taskId != taskIdToMinimize }
+                .reversed()
+                .forEach { taskId ->
+                    val runningTaskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId)
+                    if (runningTaskInfo == null) {
+                        wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
+                    } else {
+                        desksOrganizer.reorderTaskToFront(wct, deskId, runningTaskInfo)
+                    }
+                }
         }
         return { transition ->
             val activateDeskTransition =
@@ -3494,6 +3513,13 @@ class DesktopTasksController(
                 taskInfo,
                 DesktopImmersiveController.ExitReason.APP_NOT_IMMERSIVE,
             )
+        }
+    }
+
+    private fun createActivityOptionsForStartTask(): ActivityOptions {
+        return ActivityOptions.makeBasic().apply {
+            launchWindowingMode = WINDOWING_MODE_FREEFORM
+            splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
         }
     }
 

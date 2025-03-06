@@ -17,8 +17,22 @@
 package com.android.wm.shell.desktopmode.persistence
 
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import kotlinx.coroutines.flow.StateFlow
 
 /** Interface for initializing the [DesktopUserRepositories]. */
-fun interface DesktopRepositoryInitializer {
+interface DesktopRepositoryInitializer {
+    /** A factory used to recreate a desk from persistence. */
+    var deskRecreationFactory: DeskRecreationFactory
+
+    /** A flow that emits true when the repository has been initialized. */
+    val isInitialized: StateFlow<Boolean>
+
+    /** Initialize the user repositories from a persistent data store. */
     fun initialize(userRepositories: DesktopUserRepositories)
+
+    /** A factory for recreating desks. */
+    fun interface DeskRecreationFactory {
+        /** Recreates a restored desk and returns the new desk id. */
+        suspend fun recreateDesk(userId: Int, destinationDisplayId: Int, deskId: Int): Int
+    }
 }
