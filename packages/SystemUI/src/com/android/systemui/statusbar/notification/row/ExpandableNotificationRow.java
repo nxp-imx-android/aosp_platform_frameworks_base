@@ -3240,12 +3240,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             return false;
         }
 
-        final NotificationEntry entry = mEntry;
-        if (entry == null) {
-            return false;
+        if (NotificationBundleUi.isEnabled()) {
+            final EntryAdapter entryAdapter = mEntryAdapter;
+            if (entryAdapter == null) {
+                return false;
+            }
+            return entryAdapter.isPromotedOngoing();
+        } else {
+            final NotificationEntry entry = mEntry;
+            if (entry == null) {
+                return false;
+            }
+            return entry.isPromotedOngoing();
         }
-
-        return entry.isPromotedOngoing();
     }
 
     private boolean isPromotedNotificationExpanded(boolean allowOnKeyguard) {

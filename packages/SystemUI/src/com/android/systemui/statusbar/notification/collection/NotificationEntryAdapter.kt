@@ -137,6 +137,10 @@ class NotificationEntryAdapter(
         return entry.ranking.isAmbient
     }
 
+    override fun isPromotedOngoing(): Boolean {
+        return entry.isPromotedOngoing
+    }
+
     override fun isFullScreenCapable(): Boolean {
         return entry.sbn.notification.fullScreenIntent != null
     }
