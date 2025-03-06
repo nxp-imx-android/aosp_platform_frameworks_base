@@ -467,6 +467,11 @@ public class BubbleExpandedView extends LinearLayout {
                         new BubbleTaskViewListener.Callback() {
                             @Override
                             public void onTaskCreated() {
+                                // The taskId is saved to use for removeTask,
+                                // preventing appearance in recent tasks.
+                                mTaskId = ((BubbleTaskViewListener) mCurrentTaskViewListener)
+                                    .getTaskId();
+
                                 setContentVisibility(true);
                             }
 
