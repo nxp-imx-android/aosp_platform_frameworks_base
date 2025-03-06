@@ -58,7 +58,7 @@ import kotlinx.coroutines.flow.stateIn
  * An interactor that performs business logic related to the status and configuration of Zen Mode
  * (or Do Not Disturb/DND Mode).
  */
- @SysUISingleton
+@SysUISingleton
 class ZenModeInteractor
 @Inject
 constructor(
@@ -140,6 +140,18 @@ constructor(
             ModesUi.assertInNewMode()
             return field
         }
+
+    /**
+     * Returns the current state of the special "manual DND" mode.
+     *
+     * This should only be used when there is a strong reason to handle DND specifically (such as
+     * legacy UI pieces that haven't been updated to use modes more generally, or if the user
+     * explicitly wants a shortcut to DND). Please prefer using [modes] or [activeModes] in all
+     * other scenarios.
+     */
+    fun getDndMode(): ZenMode {
+        return zenModeRepository.getModes().single { it.isManualDnd }
+    }
 
     /** Flow returning the currently active mode(s), if any. */
     val activeModes: Flow<ActiveZenModes> =
