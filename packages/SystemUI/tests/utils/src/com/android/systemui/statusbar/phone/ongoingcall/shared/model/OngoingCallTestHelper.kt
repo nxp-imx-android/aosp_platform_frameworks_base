@@ -17,6 +17,8 @@
 package com.android.systemui.statusbar.phone.ongoingcall.shared.model
 
 import android.app.PendingIntent
+import com.android.systemui.activity.data.repository.activityManagerRepository
+import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -79,8 +81,10 @@ object OngoingCallTestHelper {
         contentIntent: PendingIntent? = null,
         uid: Int = DEFAULT_UID,
         appName: String = "Fake name",
+        isAppVisible: Boolean = false,
     ) {
         if (StatusBarChipsModernization.isEnabled) {
+            activityManagerRepository.fake.startingIsAppVisibleValue = isAppVisible
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
                     key = key,
@@ -102,6 +106,7 @@ object OngoingCallTestHelper {
                     notificationKey = key,
                     appName = appName,
                     promotedContent = promotedContent,
+                    isAppVisible = isAppVisible,
                 )
             )
         }
