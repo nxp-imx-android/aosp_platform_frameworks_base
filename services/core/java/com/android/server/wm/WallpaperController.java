@@ -57,7 +57,8 @@ import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
-import com.android.server.wallpaper.WallpaperCropper.WallpaperCropUtils;
+import com.android.server.wallpaper.WallpaperCropper;
+import com.android.server.wallpaper.WallpaperDefaultDisplayInfo;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -71,7 +72,6 @@ import java.util.function.Consumer;
 class WallpaperController {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "WallpaperController" : TAG_WM;
     private WindowManagerService mService;
-    private WallpaperCropUtils mWallpaperCropUtils = null;
     private DisplayContent mDisplayContent;
 
     // Larger index has higher z-order.
@@ -115,6 +115,10 @@ class WallpaperController {
     private final FindWallpaperTargetResult mFindResults = new FindWallpaperTargetResult();
 
     private boolean mShouldOffsetWallpaperCenter;
+
+    // This is for WallpaperCropper, which has cropping logic for the default display only.
+    // TODO(b/400685784) make the WallpaperCropper operate on every display independently
+    private final WallpaperDefaultDisplayInfo mDefaultDisplayInfo;
 
     private final ToBooleanFunction<WindowState> mFindWallpaperTargetFunction = w -> {
         final ActivityRecord ar = w.mActivityRecord;
@@ -198,12 +202,14 @@ class WallpaperController {
     WallpaperController(WindowManagerService service, DisplayContent displayContent) {
         mService = service;
         mDisplayContent = displayContent;
+        WindowManager windowManager = service.mContext.getSystemService(WindowManager.class);
         Resources resources = service.mContext.getResources();
         mMinWallpaperScale =
                 resources.getFloat(com.android.internal.R.dimen.config_wallpaperMinScale);
         mMaxWallpaperScale = resources.getFloat(R.dimen.config_wallpaperMaxScale);
         mShouldOffsetWallpaperCenter = resources.getBoolean(
                 com.android.internal.R.bool.config_offsetWallpaperToCenterOfLargestDisplay);
+        mDefaultDisplayInfo = new WallpaperDefaultDisplayInfo(windowManager, resources);
     }
 
     void resetLargestDisplay(Display display) {
@@ -244,10 +250,6 @@ class WallpaperController {
             }
         }
         return largestDisplaySize;
-    }
-
-    void setWallpaperCropUtils(WallpaperCropUtils wallpaperCropUtils) {
-        mWallpaperCropUtils = wallpaperCropUtils;
     }
 
     WindowState getWallpaperTarget() {
@@ -352,16 +354,12 @@ class WallpaperController {
         int offsetY;
 
         if (multiCrop()) {
-            if (mWallpaperCropUtils == null) {
-                Slog.e(TAG, "Update wallpaper offsets before the system is ready. Aborting");
-                return false;
-            }
             Point bitmapSize = new Point(
                     wallpaperWin.mRequestedWidth, wallpaperWin.mRequestedHeight);
             SparseArray<Rect> cropHints = token.getCropHints();
             wallpaperFrame = bitmapSize.x <= 0 || bitmapSize.y <= 0 ? wallpaperWin.getFrame()
-                    : mWallpaperCropUtils.getCrop(screenSize, bitmapSize, cropHints,
-                            wallpaperWin.isRtl());
+                    : WallpaperCropper.getCrop(screenSize, mDefaultDisplayInfo, bitmapSize,
+                            cropHints, wallpaperWin.isRtl());
             int frameWidth = wallpaperFrame.width();
             int frameHeight = wallpaperFrame.height();
             float frameRatio = (float) frameWidth / frameHeight;

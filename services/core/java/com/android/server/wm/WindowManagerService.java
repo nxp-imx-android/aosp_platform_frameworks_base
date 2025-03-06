@@ -356,7 +356,6 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.power.ShutdownThread;
 import com.android.server.utils.PriorityDump;
-import com.android.server.wallpaper.WallpaperCropper.WallpaperCropUtils;
 import com.android.window.flags.Flags;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -8097,12 +8096,6 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 token.asWallpaperToken().setCropHints(cropHints);
             }
-        }
-
-        @Override
-        public void setWallpaperCropUtils(WallpaperCropUtils wallpaperCropUtils) {
-            mRoot.getDisplayContent(DEFAULT_DISPLAY).mWallpaperController
-                    .setWallpaperCropUtils(wallpaperCropUtils);
         }
 
         @Override
