@@ -28,6 +28,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.hardware.audio.effect.DefaultExtension;
 import android.hardware.tv.mediaquality.AmbientBacklightColorFormat;
 import android.hardware.tv.mediaquality.IMediaQuality;
 import android.hardware.tv.mediaquality.IPictureProfileAdjustmentListener;
@@ -57,6 +58,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
@@ -365,13 +367,21 @@ public class MediaQualityService extends SystemService {
 
             try {
                 if (mMediaQuality != null) {
+                    PictureParameters pp = new PictureParameters();
                     PictureParameter[] pictureParameters = MediaQualityUtils
                             .convertPersistableBundleToPictureParameterList(params);
 
-                    PictureParameters pp = new PictureParameters();
+                    PersistableBundle vendorPictureParameters = params
+                            .getPersistableBundle(BaseParameters.VENDOR_PARAMETERS);
+                    Parcel parcel = Parcel.obtain();
+                    if (vendorPictureParameters != null) {
+                        setVendorPictureParameters(pp, parcel, vendorPictureParameters);
+                    }
+
                     pp.pictureParameters = pictureParameters;
 
                     mMediaQuality.sendDefaultPictureParameters(pp);
+                    parcel.recycle();
                     return true;
                 }
             } catch (RemoteException e) {
@@ -1419,11 +1429,19 @@ public class MediaQualityService extends SystemService {
                     MediaQualityUtils.convertPersistableBundleToPictureParameterList(
                             params);
 
+            PersistableBundle vendorPictureParameters = params
+                    .getPersistableBundle(BaseParameters.VENDOR_PARAMETERS);
+            Parcel parcel = Parcel.obtain();
+            if (vendorPictureParameters != null) {
+                setVendorPictureParameters(pictureParameters, parcel, vendorPictureParameters);
+            }
+
             android.hardware.tv.mediaquality.PictureProfile toReturn =
                     new android.hardware.tv.mediaquality.PictureProfile();
             toReturn.pictureProfileId = id;
             toReturn.parameters = pictureParameters;
 
+            parcel.recycle();
             return toReturn;
         }
 
@@ -1728,5 +1746,17 @@ public class MediaQualityService extends SystemService {
         public int getInterfaceVersion() throws android.os.RemoteException {
             return android.hardware.tv.mediaquality.IMediaQualityCallback.Stub.VERSION;
         }
+    }
+
+    private void setVendorPictureParameters(
+            PictureParameters pictureParameters,
+            Parcel parcel,
+            PersistableBundle vendorPictureParameters) {
+        vendorPictureParameters.writeToParcel(parcel, 0);
+        byte[] vendorBundleToByteArray = parcel.marshall();
+        DefaultExtension defaultExtension = new DefaultExtension();
+        defaultExtension.bytes = Arrays.copyOf(
+                vendorBundleToByteArray, vendorBundleToByteArray.length);
+        pictureParameters.vendorPictureParameters.setParcelable(defaultExtension);
     }
 }
