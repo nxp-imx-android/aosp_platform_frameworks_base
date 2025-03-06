@@ -68,6 +68,7 @@ import com.android.systemui.monet.ColorScheme
 import com.android.systemui.monet.Style
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
+import com.android.systemui.plugins.clocks.ContextExt.getId
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.res.R
@@ -126,6 +127,7 @@ constructor(
 
     private val displayId = bundle.getInt(KEY_DISPLAY_ID, DEFAULT_DISPLAY)
     private val display: Display? = displayManager.getDisplay(displayId)
+
     /**
      * Returns a key that should make the KeyguardPreviewRenderer unique and if two of them have the
      * same key they will be treated as the same KeyguardPreviewRenderer. Primary this is used to
@@ -144,6 +146,8 @@ constructor(
         get() = checkNotNull(host.surfacePackage)
 
     private var smartSpaceView: View? = null
+    private var largeDateView: View? = null
+    private var smallDateView: View? = null
 
     private val disposables = DisposableHandles()
     private var isDestroyed = false
@@ -181,7 +185,7 @@ constructor(
                     ContextThemeWrapper(context.createDisplayContext(it), context.getTheme())
                 } ?: context
 
-            val rootView = FrameLayout(previewContext)
+            val rootView = ConstraintLayout(previewContext)
 
             setupKeyguardRootView(previewContext, rootView)
 
@@ -252,6 +256,24 @@ constructor(
 
     fun onClockSizeSelected(clockSize: ClockSizeSetting) {
         smartspaceViewModel.setOverrideClockSize(clockSize)
+        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+            when (clockSize) {
+                ClockSizeSetting.DYNAMIC -> {
+                    largeDateView?.post {
+                        smallDateView?.visibility = View.GONE
+                        largeDateView?.visibility = View.VISIBLE
+                    }
+                }
+
+                ClockSizeSetting.SMALL -> {
+                    largeDateView?.post {
+                        smallDateView?.visibility = View.VISIBLE
+                        largeDateView?.visibility = View.GONE
+                    }
+                }
+            }
+            smartSpaceView?.post { smartSpaceView?.visibility = View.GONE }
+        }
     }
 
     fun destroy() {
@@ -280,7 +302,7 @@ constructor(
      *
      * The end padding is as follows: Below clock padding end
      */
-    private fun setUpSmartspace(previewContext: Context, parentView: ViewGroup) {
+    private fun setUpSmartspace(previewContext: Context, parentView: ConstraintLayout) {
         if (
             !lockscreenSmartspaceController.isEnabled ||
                 !lockscreenSmartspaceController.isDateWeatherDecoupled
@@ -292,40 +314,90 @@ constructor(
             parentView.removeView(smartSpaceView)
         }
 
-        smartSpaceView =
-            lockscreenSmartspaceController.buildAndConnectDateView(
-                parent = parentView,
-                isLargeClock = false,
-            )
-
-        val topPadding: Int =
-            smartspaceViewModel.getLargeClockSmartspaceTopPadding(
-                ClockPreviewConfig(
-                    previewContext,
-                    getPreviewShadeLayoutWide(display!!),
-                    SceneContainerFlag.isEnabled,
+        if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+            val cs = ConstraintSet()
+            cs.clone(parentView)
+            cs.apply {
+                val largeClockViewId = previewContext.getId("lockscreen_clock_view_large")
+                val smallClockViewId = previewContext.getId("lockscreen_clock_view")
+                largeDateView =
+                    lockscreenSmartspaceController
+                        .buildAndConnectDateView(parentView, true)
+                        ?.also { view ->
+                            constrainWidth(view.id, ConstraintSet.WRAP_CONTENT)
+                            constrainHeight(view.id, ConstraintSet.WRAP_CONTENT)
+                            connect(view.id, START, largeClockViewId, START)
+                            connect(view.id, ConstraintSet.END, largeClockViewId, ConstraintSet.END)
+                            connect(
+                                view.id,
+                                TOP,
+                                largeClockViewId,
+                                ConstraintSet.BOTTOM,
+                                smartspaceViewModel.getDateWeatherEndPadding(previewContext),
+                            )
+                        }
+                smallDateView =
+                    lockscreenSmartspaceController
+                        .buildAndConnectDateView(parentView, false)
+                        ?.also { view ->
+                            constrainWidth(view.id, ConstraintSet.WRAP_CONTENT)
+                            constrainHeight(view.id, ConstraintSet.WRAP_CONTENT)
+                            connect(
+                                view.id,
+                                START,
+                                smallClockViewId,
+                                ConstraintSet.END,
+                                context.resources.getDimensionPixelSize(
+                                    R.dimen.smartspace_padding_horizontal
+                                ),
+                            )
+                            connect(view.id, TOP, smallClockViewId, TOP)
+                            connect(
+                                view.id,
+                                ConstraintSet.BOTTOM,
+                                smallClockViewId,
+                                ConstraintSet.BOTTOM,
+                            )
+                        }
+                parentView.addView(largeDateView)
+                parentView.addView(smallDateView)
+            }
+            cs.applyTo(parentView)
+        } else {
+            smartSpaceView =
+                lockscreenSmartspaceController.buildAndConnectDateView(
+                    parent = parentView,
+                    isLargeClock = false,
                 )
-            )
-        val startPadding: Int = smartspaceViewModel.getDateWeatherStartPadding(previewContext)
-        val endPadding: Int = smartspaceViewModel.getDateWeatherEndPadding(previewContext)
 
-        smartSpaceView?.let {
-            it.setPaddingRelative(startPadding, topPadding, endPadding, 0)
-            it.isClickable = false
-            it.isInvisible = true
-            parentView.addView(
-                it,
-                FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.MATCH_PARENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                ),
-            )
+            val topPadding: Int =
+                smartspaceViewModel.getLargeClockSmartspaceTopPadding(
+                    ClockPreviewConfig(
+                        previewContext,
+                        getPreviewShadeLayoutWide(display!!),
+                        SceneContainerFlag.isEnabled,
+                    )
+                )
+            val startPadding: Int = smartspaceViewModel.getDateWeatherStartPadding(previewContext)
+            val endPadding: Int = smartspaceViewModel.getDateWeatherEndPadding(previewContext)
+
+            smartSpaceView?.let {
+                it.setPaddingRelative(startPadding, topPadding, endPadding, 0)
+                it.isClickable = false
+                it.isInvisible = true
+                parentView.addView(
+                    it,
+                    FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                    ),
+                )
+            }
+            smartSpaceView?.alpha = if (shouldHighlightSelectedAffordance) DIM_ALPHA else 1.0f
         }
-
-        smartSpaceView?.alpha = if (shouldHighlightSelectedAffordance) DIM_ALPHA else 1.0f
     }
 
-    private fun setupKeyguardRootView(previewContext: Context, rootView: FrameLayout) {
+    private fun setupKeyguardRootView(previewContext: Context, rootView: ConstraintLayout) {
         val keyguardRootView = KeyguardRootView(previewContext, null)
         rootView.addView(
             keyguardRootView,
@@ -341,6 +413,13 @@ constructor(
 
         if (!shouldHideClock) {
             setUpClock(previewContext, rootView)
+            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                setUpSmartspace(previewContext, keyguardRootView)
+                KeyguardPreviewSmartspaceViewBinder.bind(
+                    keyguardRootView,
+                    smartspaceViewModel,
+                )
+            }
             KeyguardPreviewClockViewBinder.bind(
                 keyguardRootView,
                 clockViewModel,
@@ -354,19 +433,22 @@ constructor(
             )
         }
 
-        setUpSmartspace(previewContext, rootView)
-
-        smartSpaceView?.let {
-            KeyguardPreviewSmartspaceViewBinder.bind(
-                it,
-                smartspaceViewModel,
-                clockPreviewConfig =
-                    ClockPreviewConfig(
-                        previewContext,
-                        getPreviewShadeLayoutWide(display!!),
-                        SceneContainerFlag.isEnabled,
-                    ),
-            )
+        if (!com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+            setUpSmartspace(previewContext, keyguardRootView)
+            smartSpaceView?.let {
+                KeyguardPreviewSmartspaceViewBinder.bind(
+                    it,
+                    smartspaceViewModel,
+                    clockPreviewConfig =
+                        ClockPreviewConfig(
+                            previewContext,
+                            getPreviewShadeLayoutWide(display!!),
+                            SceneContainerFlag.isEnabled,
+                            lockId = null,
+                            udfpsTop = null,
+                        ),
+                )
+            }
         }
     }
 
