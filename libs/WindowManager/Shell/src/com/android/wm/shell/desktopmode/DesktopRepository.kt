@@ -716,12 +716,15 @@ class DesktopRepository(
     }
 
     /**
-     * Returns the top transparent fullscreen task id for a given display's active desk, or null.
+     * Returns the top transparent fullscreen task id for a given display, or null.
      *
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
     fun getTopTransparentFullscreenTaskId(displayId: Int): Int? =
-        desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId
+        desktopData
+            .desksSequence(displayId)
+            .mapNotNull { it.topTransparentFullscreenTaskId }
+            .firstOrNull()
 
     /**
      * Clears the top transparent fullscreen task id info for a given display's active desk.
