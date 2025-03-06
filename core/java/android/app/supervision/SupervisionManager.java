@@ -97,6 +97,8 @@ public class SupervisionManager {
      *
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SUPERVISION_MANAGER_APIS)
     @RequiresPermission(anyOf = {MANAGE_USERS, QUERY_USERS})
     @Nullable
     public Intent createConfirmSupervisionCredentialsIntent() {
