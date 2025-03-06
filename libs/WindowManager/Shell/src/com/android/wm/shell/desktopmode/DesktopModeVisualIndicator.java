@@ -32,6 +32,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.view.Display;
 import android.view.SurfaceControl;
 import android.window.DesktopModeFlags;
 
@@ -114,6 +115,7 @@ public class DesktopModeVisualIndicator {
     private final Context mContext;
     private final DisplayController mDisplayController;
     private final ActivityManager.RunningTaskInfo mTaskInfo;
+    private final Display mDisplay;
 
     private IndicatorType mCurrentType;
     private final DragStartState mDragStartState;
@@ -145,9 +147,10 @@ public class DesktopModeVisualIndicator {
         mCurrentType = NO_INDICATOR;
         mDragStartState = dragStartState;
         mSnapEventHandler = snapEventHandler;
+        mDisplay = mDisplayController.getDisplay(mTaskInfo.displayId);
         mVisualIndicatorViewContainer.createView(
                 mContext,
-                mDisplayController.getDisplay(mTaskInfo.displayId),
+                mDisplay,
                 mDisplayController.getDisplayLayout(mTaskInfo.displayId),
                 mTaskInfo,
                 taskSurface
@@ -193,7 +196,7 @@ public class DesktopModeVisualIndicator {
         if (inputCoordinates.x > layout.width()) return TO_SPLIT_RIGHT_INDICATOR;
         IndicatorType result;
         if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
-                && !DesktopModeStatus.canEnterDesktopMode(mContext)) {
+                && !DesktopModeStatus.isDesktopModeSupportedOnDisplay(mContext, mDisplay)) {
             // If desktop is not available, default to "no indicator"
             result = NO_INDICATOR;
         } else {
