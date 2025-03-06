@@ -421,7 +421,7 @@ constructor(
     }
 
     override fun isCustomizing(): Boolean {
-        return viewModel.containerViewModel.editModeViewModel.isEditing.value
+        return viewModel.isEditing
     }
 
     override fun closeCustomizer() {
@@ -657,7 +657,8 @@ constructor(
                                  */
                                 !alwaysCompose ||
                                     (viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                        viewModel.expansionState.progress < 1f)
+                                        viewModel.expansionState.progress < 1f &&
+                                        !viewModel.isEditing)
                             },
                         )
                     }
@@ -784,7 +785,8 @@ constructor(
                                              */
                                             !alwaysCompose ||
                                                 (viewModel.isQsVisibleAndAnyShadeExpanded &&
-                                                    viewModel.expansionState.progress > 0f)
+                                                    viewModel.expansionState.progress > 0f &&
+                                                    !viewModel.isEditing)
                                         },
                                     )
                                 }
