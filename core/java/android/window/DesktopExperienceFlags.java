@@ -50,6 +50,8 @@ public enum DesktopExperienceFlags {
     ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY(Flags::enableBugFixesForSecondaryDisplay, true),
     ENABLE_CONNECTED_DISPLAYS_DND(Flags::enableConnectedDisplaysDnd, false),
     ENABLE_CONNECTED_DISPLAYS_PIP(Flags::enableConnectedDisplaysPip, false),
+    ENABLE_CONNECTED_DISPLAYS_WALLPAPER(
+            android.app.Flags::enableConnectedDisplaysWallpaper, false),
     ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG(Flags::enableConnectedDisplaysWindowDrag, true),
     ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT(
             com.android.server.display.feature.flags.Flags::enableDisplayContentModeManagement,
