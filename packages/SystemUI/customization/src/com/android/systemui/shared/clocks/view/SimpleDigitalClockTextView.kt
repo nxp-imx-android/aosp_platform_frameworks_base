@@ -337,6 +337,11 @@ open class SimpleDigitalClockTextView(
             ),
         )
         updateTextBoundsForTextAnimator()
+
+        if (!isAnimated) {
+            requestLayout()
+            (parent as? FlexClockView)?.requestLayout()
+        }
     }
 
     fun animateCharge() {
