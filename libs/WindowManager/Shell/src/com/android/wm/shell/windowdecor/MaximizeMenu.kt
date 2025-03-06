@@ -26,7 +26,7 @@ import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Paint
 import android.graphics.PixelFormat
-import android.graphics.PointF
+import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -90,7 +90,7 @@ class MaximizeMenu(
         private val displayController: DisplayController,
         private val taskInfo: RunningTaskInfo,
         private val decorWindowContext: Context,
-        private val positionSupplier: (Int, Int) -> PointF,
+        private val positionSupplier: (Int, Int) -> Point,
         private val transactionSupplier: Supplier<Transaction> = Supplier { Transaction() }
 ) {
     private var maximizeMenu: AdditionalViewHostViewContainer? = null
@@ -100,14 +100,14 @@ class MaximizeMenu(
     private val cornerRadius = loadDimensionPixelSize(
             R.dimen.desktop_mode_maximize_menu_corner_radius
     ).toFloat()
-    private lateinit var menuPosition: PointF
+    private lateinit var menuPosition: Point
     private val menuPadding = loadDimensionPixelSize(R.dimen.desktop_mode_menu_padding)
 
     /** Position the menu relative to the caption's position. */
     fun positionMenu(t: Transaction) {
         menuPosition = positionSupplier(maximizeMenuView?.measureWidth() ?: 0,
                                         maximizeMenuView?.measureHeight() ?: 0)
-        t.setPosition(leash, menuPosition.x, menuPosition.y)
+        t.setPosition(leash, menuPosition.x.toFloat(), menuPosition.y.toFloat())
     }
 
     /** Creates and shows the maximize window. */
@@ -208,8 +208,8 @@ class MaximizeMenu(
             val menuHeight = menuView.measureHeight()
             menuPosition = positionSupplier(menuWidth, menuHeight)
             val lp = WindowManager.LayoutParams(
-                    menuWidth.toInt(),
-                    menuHeight.toInt(),
+                    menuWidth,
+                    menuHeight,
                     WindowManager.LayoutParams.TYPE_APPLICATION,
                     WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                             or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
@@ -222,7 +222,7 @@ class MaximizeMenu(
 
         // Bring menu to front when open
         t.setLayer(leash, TaskConstants.TASK_CHILD_LAYER_FLOATING_MENU)
-                .setPosition(leash, menuPosition.x, menuPosition.y)
+                .setPosition(leash, menuPosition.x.toFloat(), menuPosition.y.toFloat())
                 .setCornerRadius(leash, cornerRadius)
                 .show(leash)
         maximizeMenu =
@@ -1047,7 +1047,7 @@ interface MaximizeMenuFactory {
         displayController: DisplayController,
         taskInfo: RunningTaskInfo,
         decorWindowContext: Context,
-        positionSupplier: (Int, Int) -> PointF,
+        positionSupplier: (Int, Int) -> Point,
         transactionSupplier: Supplier<Transaction>
     ): MaximizeMenu
 }
@@ -1060,7 +1060,7 @@ object DefaultMaximizeMenuFactory : MaximizeMenuFactory {
         displayController: DisplayController,
         taskInfo: RunningTaskInfo,
         decorWindowContext: Context,
-        positionSupplier: (Int, Int) -> PointF,
+        positionSupplier: (Int, Int) -> Point,
         transactionSupplier: Supplier<Transaction>
     ): MaximizeMenu {
         return MaximizeMenu(

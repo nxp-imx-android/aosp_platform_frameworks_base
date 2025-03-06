@@ -60,7 +60,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.TypedArray;
-import android.graphics.PointF;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.net.Uri;
@@ -1805,7 +1805,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 @NonNull DisplayController displayController,
                 @NonNull ActivityManager.RunningTaskInfo taskInfo,
                 @NonNull Context decorWindowContext,
-                @NonNull Function2<? super Integer,? super Integer,? extends PointF>
+                @NonNull Function2<? super Integer,? super Integer,? extends Point>
                     positionSupplier,
                 @NonNull Supplier<SurfaceControl.Transaction> transactionSupplier) {
             return mMaximizeMenu;
