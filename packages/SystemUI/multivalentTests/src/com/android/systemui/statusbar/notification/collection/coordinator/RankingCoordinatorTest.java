@@ -280,6 +280,12 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
+    public void testMinimizedSectioner_rejectsBundle() {
+        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        assertFalse(mMinimizedSectioner.isInSection(bundleEntry));
+    }
+
+    @Test
     public void testMinSection() {
         when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(false);
         setRankingAmbient(true);
