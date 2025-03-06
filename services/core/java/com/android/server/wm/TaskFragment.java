@@ -235,11 +235,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     /** This task fragment will be removed when the cleanup of its children are done. */
     private boolean mIsRemovalRequested;
 
-    /** @deprecated b/373709676 replace with {@link #mAdjacentTaskFragments} */
-    @Deprecated
-    @Nullable
-    private TaskFragment mAdjacentTaskFragment;
-
     /**
      * The TaskFragments that are adjacent to each other, including this TaskFragment.
      * All TaskFragments in this set share the same set instance.
@@ -455,22 +450,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return service.mWindowOrganizerController.getTaskFragment(token);
     }
 
-    /** @deprecated b/373709676 replace with {@link #setAdjacentTaskFragments}. */
-    @Deprecated
-    void setAdjacentTaskFragment(@NonNull TaskFragment taskFragment) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            if (mAdjacentTaskFragment == taskFragment) {
-                return;
-            }
-            resetAdjacentTaskFragment();
-            mAdjacentTaskFragment = taskFragment;
-            taskFragment.setAdjacentTaskFragment(this);
-            return;
-        }
-
-        setAdjacentTaskFragments(new AdjacentSet(this, taskFragment));
-    }
-
     void setAdjacentTaskFragments(@NonNull AdjacentSet adjacentTaskFragments) {
         adjacentTaskFragments.setAsAdjacent();
     }
@@ -483,54 +462,16 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return mCompanionTaskFragment;
     }
 
-    /** @deprecated b/373709676 replace with {@link #clearAdjacentTaskFragments()}. */
-    @Deprecated
-    private void resetAdjacentTaskFragment() {
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalStateException("resetAdjacentTaskFragment shouldn't be called when"
-                    + " allowMultipleAdjacentTaskFragments is enabled. Use either"
-                    + " #clearAdjacentTaskFragments or #removeFromAdjacentTaskFragments");
-        }
-        // Reset the adjacent TaskFragment if its adjacent TaskFragment is also this TaskFragment.
-        if (mAdjacentTaskFragment != null && mAdjacentTaskFragment.mAdjacentTaskFragment == this) {
-            mAdjacentTaskFragment.mAdjacentTaskFragment = null;
-            mAdjacentTaskFragment.mDelayLastActivityRemoval = false;
-        }
-        mAdjacentTaskFragment = null;
-        mDelayLastActivityRemoval = false;
-    }
-
     void clearAdjacentTaskFragments() {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            resetAdjacentTaskFragment();
-            return;
-        }
-
         if (mAdjacentTaskFragments != null) {
             mAdjacentTaskFragments.clear();
         }
     }
 
     void removeFromAdjacentTaskFragments() {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            resetAdjacentTaskFragment();
-            return;
-        }
-
         if (mAdjacentTaskFragments != null) {
             mAdjacentTaskFragments.remove(this);
         }
-    }
-
-    /** @deprecated b/373709676 replace with {@link #getAdjacentTaskFragments()}. */
-    @Deprecated
-    @Nullable
-    TaskFragment getAdjacentTaskFragment() {
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalStateException("allowMultipleAdjacentTaskFragments is enabled. "
-                    + "Use #getAdjacentTaskFragments instead");
-        }
-        return mAdjacentTaskFragment;
     }
 
     @Nullable
@@ -561,16 +502,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     boolean hasAdjacentTaskFragment() {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            return mAdjacentTaskFragment != null;
-        }
         return mAdjacentTaskFragments != null;
     }
 
     boolean isAdjacentTo(@NonNull TaskFragment other) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            return mAdjacentTaskFragment == other;
-        }
         return other != this
                 && mAdjacentTaskFragments != null
                 && mAdjacentTaskFragments.contains(other);
@@ -1377,21 +1312,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                         if (taskFragment.isAdjacentTo(this)) {
                             continue;
                         }
-                        if (Flags.allowMultipleAdjacentTaskFragments()) {
-                            final boolean isOccluding = mTmpRect.intersect(taskFragment.getBounds())
-                                    || taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
-                                        return mTmpRect.intersect(adjacentTf.getBounds());
-                                    });
-                            if (isOccluding) {
-                                return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                            }
-                        } else {
-                            final TaskFragment adjacentTaskFragment =
-                                    taskFragment.mAdjacentTaskFragment;
-                            if (mTmpRect.intersect(taskFragment.getBounds())
-                                    || mTmpRect.intersect(adjacentTaskFragment.getBounds())) {
-                                return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                            }
+                        final boolean isOccluding = mTmpRect.intersect(taskFragment.getBounds())
+                                || taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
+                                    return mTmpRect.intersect(adjacentTf.getBounds());
+                                });
+                        if (isOccluding) {
+                            return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
                         }
                     }
                 }
@@ -1427,37 +1353,22 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 // 2. Adjacent TaskFragments do not overlap, so that if this TaskFragment is behind
                 // any translucent TaskFragment in the adjacent set, then this TaskFragment is
                 // visible behind translucent.
-                if (Flags.allowMultipleAdjacentTaskFragments()) {
-                    final boolean hasTraversedAdj = otherTaskFrag.forOtherAdjacentTaskFragments(
-                            adjacentTaskFragments::contains);
-                    if (hasTraversedAdj) {
-                        final boolean isTranslucent =
-                                isBehindTransparentTaskFragment(otherTaskFrag, starting)
-                                || otherTaskFrag.forOtherAdjacentTaskFragments(
-                                        (Predicate<TaskFragment>) tf ->
-                                                isBehindTransparentTaskFragment(tf, starting));
-                        if (isTranslucent) {
-                            // Can be visible behind a translucent adjacent TaskFragments.
-                            gotTranslucentFullscreen = true;
-                            gotTranslucentAdjacent = true;
-                            continue;
-                        }
-                        // Can not be visible behind adjacent TaskFragments.
-                        return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
+                final boolean hasTraversedAdj = otherTaskFrag.forOtherAdjacentTaskFragments(
+                        adjacentTaskFragments::contains);
+                if (hasTraversedAdj) {
+                    final boolean isTranslucent =
+                            isBehindTransparentTaskFragment(otherTaskFrag, starting)
+                                    || otherTaskFrag.forOtherAdjacentTaskFragments(
+                                    (Predicate<TaskFragment>) tf ->
+                                            isBehindTransparentTaskFragment(tf, starting));
+                    if (isTranslucent) {
+                        // Can be visible behind a translucent adjacent TaskFragments.
+                        gotTranslucentFullscreen = true;
+                        gotTranslucentAdjacent = true;
+                        continue;
                     }
-                } else {
-                    if (adjacentTaskFragments.contains(otherTaskFrag.mAdjacentTaskFragment)) {
-                        if (isBehindTransparentTaskFragment(otherTaskFrag, starting)
-                                || isBehindTransparentTaskFragment(
-                                        otherTaskFrag.mAdjacentTaskFragment, starting)) {
-                            // Can be visible behind a translucent adjacent TaskFragments.
-                            gotTranslucentFullscreen = true;
-                            gotTranslucentAdjacent = true;
-                            continue;
-                        }
-                        // Can not be visible behind adjacent TaskFragments.
-                        return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                    }
+                    // Can not be visible behind adjacent TaskFragments.
+                    return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
                 }
                 adjacentTaskFragments.add(otherTaskFrag);
             }
@@ -3299,40 +3210,23 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
         final ArrayList<WindowContainer> siblings = getParent().mChildren;
         final int zOrder = siblings.indexOf(this);
-
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            if (siblings.indexOf(getAdjacentTaskFragment()) < zOrder) {
-                // early return if this TF already has higher z-ordering.
-                return false;
-            }
-        } else {
-            final boolean hasAdjacentOnTop = forOtherAdjacentTaskFragments(
-                    tf -> siblings.indexOf(tf) > zOrder);
-            if (!hasAdjacentOnTop) {
-                // early return if this TF already has higher z-ordering.
-                return false;
-            }
+        final boolean hasAdjacentOnTop = forOtherAdjacentTaskFragments(
+                tf -> siblings.indexOf(tf) > zOrder);
+        if (!hasAdjacentOnTop) {
+            // early return if this TF already has higher z-ordering.
+            return false;
         }
 
         final ToBooleanFunction<WindowState> getDimBehindWindow =
                 (w) -> (w.mAttrs.flags & FLAG_DIM_BEHIND) != 0 && w.mActivityRecord != null
                         && w.mActivityRecord.isEmbedded() && (w.mActivityRecord.isVisibleRequested()
                         || w.mActivityRecord.isVisible());
-
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final TaskFragment adjacentTf = getAdjacentTaskFragment();
-            if (adjacentTf.forAllWindows(getDimBehindWindow, true)) {
-                // early return if the adjacent Tf has a dimming window.
-                return false;
-            }
-        } else {
-            final boolean adjacentHasDimmingWindow = forOtherAdjacentTaskFragments(tf -> {
-                return tf.forAllWindows(getDimBehindWindow, true);
-            });
-            if (adjacentHasDimmingWindow) {
-                // early return if the adjacent Tf has a dimming window.
-                return false;
-            }
+        final boolean adjacentHasDimmingWindow = forOtherAdjacentTaskFragments(tf -> {
+            return tf.forAllWindows(getDimBehindWindow, true);
+        });
+        if (adjacentHasDimmingWindow) {
+            // early return if the adjacent Tf has a dimming window.
+            return false;
         }
 
         // boost if there's an Activity window that has FLAG_DIM_BEHIND flag.
@@ -3456,16 +3350,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             sb.append(" organizerProc=");
             sb.append(mTaskFragmentOrganizerProcessName);
         }
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            if (mAdjacentTaskFragments != null) {
-                sb.append(" adjacent=");
-                sb.append(mAdjacentTaskFragments);
-            }
-        } else {
-            if (mAdjacentTaskFragment != null) {
-                sb.append(" adjacent=");
-                sb.append(mAdjacentTaskFragment);
-            }
+        if (mAdjacentTaskFragments != null) {
+            sb.append(" adjacent=");
+            sb.append(mAdjacentTaskFragments);
         }
         sb.append('}');
         return sb.toString();
@@ -3591,10 +3478,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         }
 
         AdjacentSet(@NonNull ArraySet<TaskFragment> taskFragments) {
-            if (!Flags.allowMultipleAdjacentTaskFragments()) {
-                throw new IllegalStateException("allowMultipleAdjacentTaskFragments must be"
-                        + " enabled to set more than two TaskFragments adjacent to each other.");
-            }
             final int size = taskFragments.size();
             if (size < 2) {
                 throw new IllegalArgumentException("Adjacent TaskFragments must contain at least"

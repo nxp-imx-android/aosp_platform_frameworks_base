@@ -49,8 +49,8 @@ import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskS
 import static com.android.window.flags.Flags.balImprovedMetrics;
 import static com.android.window.flags.Flags.balRequireOptInByPendingIntentCreator;
 import static com.android.window.flags.Flags.balShowToastsBlocked;
-import static com.android.window.flags.Flags.balStrictModeRo;
 import static com.android.window.flags.Flags.balStrictModeGracePeriod;
+import static com.android.window.flags.Flags.balStrictModeRo;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.util.Objects.requireNonNull;
@@ -91,7 +91,6 @@ import com.android.internal.util.Preconditions;
 import com.android.server.UiThread;
 import com.android.server.am.PendingIntentRecord;
 import com.android.server.wm.BackgroundLaunchProcessController.BalCheckConfiguration;
-import com.android.window.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.util.ArrayList;
@@ -1687,14 +1686,6 @@ public class BackgroundActivityStartController {
         }
 
         // Check the adjacent fragment.
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            TaskFragment adjacentTaskFragment = taskFragment.getAdjacentTaskFragment();
-            topActivity = adjacentTaskFragment.getActivity(topOfStackPredicate);
-            if (topActivity == null) {
-                return bas;
-            }
-            return checkCrossUidActivitySwitchFromBelow(topActivity, uid, bas);
-        }
         final BlockActivityStart[] out = { bas };
         taskFragment.forOtherAdjacentTaskFragments(adjacentTaskFragment -> {
             final ActivityRecord top = adjacentTaskFragment.getActivity(topOfStackPredicate);

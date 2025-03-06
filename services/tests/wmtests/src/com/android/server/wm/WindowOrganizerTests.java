@@ -929,7 +929,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
         assertEquals(dc.getDefaultTaskDisplayArea().mLaunchAdjacentFlagRootTask, null);
     }
 
-    @EnableFlags(Flags.FLAG_ALLOW_MULTIPLE_ADJACENT_TASK_FRAGMENTS)
     @Test
     public void testSetAdjacentLaunchRootSet() {
         final DisplayContent dc = mWm.mRoot.getDisplayContent(Display.DEFAULT_DISPLAY);

@@ -784,7 +784,8 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
                 .setFragmentToken(fragmentToken2)
                 .build();
         mWindowOrganizerController.mLaunchTaskFragments.put(fragmentToken2, taskFragment2);
-        mTaskFragment.setAdjacentTaskFragment(taskFragment2);
+        mTaskFragment.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(mTaskFragment, taskFragment2));
 
         mTransaction.clearAdjacentTaskFragments(mFragmentToken);
         mOrganizer.applyTransaction(mTransaction, TASK_FRAGMENT_TRANSIT_CHANGE,
@@ -1267,7 +1268,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
     }
 
     @Test
-    public void testTaskFragmentInPip_setAdjacentTaskFragment() {
+    public void testTaskFragmentInPip_setAdjacentTaskFragments() {
         setupTaskFragmentInPip();
         spyOn(mWindowOrganizerController);
 
@@ -1279,7 +1280,7 @@ public class TaskFragmentOrganizerControllerTest extends WindowTestsBase {
         verify(mWindowOrganizerController).sendTaskFragmentOperationFailure(eq(mIOrganizer),
                 eq(mErrorToken), eq(mTaskFragment), eq(OP_TYPE_SET_ADJACENT_TASK_FRAGMENTS),
                 any(IllegalArgumentException.class));
-        verify(mTaskFragment, never()).setAdjacentTaskFragment(any());
+        verify(mTaskFragment, never()).setAdjacentTaskFragments(any());
     }
 
     @Test

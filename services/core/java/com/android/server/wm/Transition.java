@@ -2589,9 +2589,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         }
         // When the TaskFragment has an adjacent TaskFragment, sibling behind them should be
         // hidden unless any of them are translucent.
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            return taskFragment.getAdjacentTaskFragment().isTranslucentForTransition();
-        }
         return taskFragment.forOtherAdjacentTaskFragments(TaskFragment::isTranslucentForTransition);
     }
 
