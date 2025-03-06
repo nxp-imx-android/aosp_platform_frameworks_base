@@ -238,6 +238,10 @@ class DesktopTasksController(
                 removeVisualIndicator()
             }
 
+            override fun onTransitionInterrupted() {
+                removeVisualIndicator()
+            }
+
             private fun removeVisualIndicator() {
                 visualIndicator?.fadeOutIndicator { releaseVisualIndicator() }
             }
