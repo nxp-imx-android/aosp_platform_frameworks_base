@@ -17,6 +17,7 @@
 package com.android.systemui.shade
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.PowerManager
 import android.os.SystemClock
@@ -25,11 +26,13 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowInsets
 import android.widget.FrameLayout
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.activity.setViewTreeOnBackPressedDispatcherOwner
 import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.updateMargins
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleObserver
@@ -101,7 +104,10 @@ constructor(
 ) : LifecycleOwner {
     private val logger = Logger(logBuffer, TAG)
 
-    private class CommunalWrapper(context: Context) : FrameLayout(context) {
+    private class CommunalWrapper(
+        context: Context,
+        private val communalSettingsInteractor: CommunalSettingsInteractor,
+    ) : FrameLayout(context) {
         private val consumers: MutableSet<Consumer<Boolean>> = ArraySet()
 
         override fun requestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {
@@ -120,6 +126,24 @@ constructor(
             } finally {
                 consumers.clear()
             }
+        }
+
+        override fun onApplyWindowInsets(windowInsets: WindowInsets): WindowInsets {
+            if (
+                !communalSettingsInteractor.isV2FlagEnabled() ||
+                    resources.configuration.orientation != Configuration.ORIENTATION_LANDSCAPE
+            ) {
+                return super.onApplyWindowInsets(windowInsets)
+            }
+            val type = WindowInsets.Type.displayCutout()
+            val insets = windowInsets.getInsets(type)
+
+            // Reset horizontal margins added by window insets, so hub can be edge to edge.
+            if (insets.left > 0 || insets.right > 0) {
+                val lp = layoutParams as LayoutParams
+                lp.updateMargins(0, lp.topMargin, 0, lp.bottomMargin)
+            }
+            return WindowInsets.CONSUMED
         }
     }
 
@@ -443,7 +467,8 @@ constructor(
         collectFlow(containerView, keyguardInteractor.isDreaming, { isDreaming = it })
         collectFlow(containerView, communalViewModel.swipeToHubEnabled, { swipeToHubEnabled = it })
 
-        communalContainerWrapper = CommunalWrapper(containerView.context)
+        communalContainerWrapper =
+            CommunalWrapper(containerView.context, communalSettingsInteractor)
         communalContainerWrapper?.addView(communalContainerView)
         logger.d("Hub container initialized")
         return communalContainerWrapper!!
