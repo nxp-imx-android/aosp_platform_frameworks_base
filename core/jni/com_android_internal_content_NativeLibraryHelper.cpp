@@ -640,7 +640,17 @@ com_android_internal_content_NativeLibraryHelper_openApkFd(JNIEnv *env, jclass,
 
 static jint checkLoadSegmentAlignment(const char* fileName, off64_t offset) {
     std::vector<Elf64_Phdr> programHeaders;
-    if (!getLoadSegmentPhdrs(fileName, offset, programHeaders)) {
+    read_elf_status_t status = getLoadSegmentPhdrs(fileName, offset, programHeaders);
+    // Ignore the ELFs which are not 64 bit.
+    if (status == ELF_IS_NOT_64_BIT) {
+        ALOGW("ELF file is not 64 Bit");
+        // PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED is equivalent of skipping the current file.
+        // on return, flag is OR'ed with flags from other ELF files. If some app has 32 bit ELF in
+        // 64 bit directory, alignment of that ELF will be ignored.
+        return PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED;
+    }
+
+    if (status == ELF_READ_ERROR) {
         ALOGE("Failed to read program headers from ELF file.");
         return PAGE_SIZE_APP_COMPAT_FLAG_ERROR;
     }
