@@ -15,6 +15,7 @@
  */
 package com.android.systemui;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -50,11 +51,13 @@ import com.android.systemui.log.LogWtfHandlerRule;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -208,6 +211,7 @@ public abstract class SysuiTestCase {
 
     @Before
     public void SysuiSetup() throws Exception {
+        assertTempFilesAreCreatable();
         ProtoLog.REQUIRE_PROTOLOGTOOL = false;
         mSysuiDependency = new SysuiTestDependency(mContext, shouldFailOnLeakedReceiver());
         mDependency = mSysuiDependency.install();
@@ -226,6 +230,28 @@ public abstract class SysuiTestCase {
                         "Tests should use SysuiTestCase#getContext or SysuiTestCase#mContext");
             });
             InstrumentationRegistry.registerInstance(inst, InstrumentationRegistry.getArguments());
+        }
+    }
+
+    private static Boolean sCanCreateTempFiles = null;
+
+    private static void assertTempFilesAreCreatable() {
+        // TODO(b/391948934): hopefully remove this hack
+        if (sCanCreateTempFiles == null) {
+            try {
+                File tempFile = File.createTempFile("confirm_temp_file_createable", "txt");
+                sCanCreateTempFiles = true;
+                assertTrue(tempFile.delete());
+            } catch (IOException e) {
+                sCanCreateTempFiles = false;
+                throw new RuntimeException(e);
+            }
+        }
+        if (!sCanCreateTempFiles) {
+            Assert.fail(
+                    "Cannot create temp files, so mockito will probably fail (b/391948934).  Temp"
+                            + " folder should be: "
+                            + System.getProperty("java.io.tmpdir"));
         }
     }
 
