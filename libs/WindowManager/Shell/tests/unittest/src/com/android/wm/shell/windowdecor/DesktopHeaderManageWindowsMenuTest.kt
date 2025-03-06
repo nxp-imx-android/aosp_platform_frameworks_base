@@ -22,6 +22,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
 import android.view.SurfaceControl
+import android.window.TaskSnapshot
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
@@ -33,6 +34,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.google.common.truth.Truth.assertThat
 import org.junit.After
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -84,7 +86,29 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
         assertThat(menu.menuViewContainer).isInstanceOf(AdditionalSystemViewContainer::class.java)
     }
 
-    private fun createMenu(task: RunningTaskInfo) = DesktopHeaderManageWindowsMenu(
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FULLY_IMMERSIVE_IN_DESKTOP)
+    fun testShow_nullSnapshotDoesNotCauseNPE() {
+        val task = createFreeformTask()
+        val snapshotList = listOf(Pair(/* index = */ 1, /* snapshot = */ null))
+        // Set as immersive so that menu is created as system view container (simpler of the
+        // options)
+        userRepositories.getProfile(DEFAULT_USER_ID).setTaskInFullImmersiveState(
+            displayId = task.displayId,
+            taskId = task.taskId,
+            immersive = true
+        )
+        try {
+            menu = createMenu(task, snapshotList)
+        } catch (e: NullPointerException) {
+            fail("Null snapshot should not have thrown null pointer exception")
+        }
+    }
+
+    private fun createMenu(
+        task: RunningTaskInfo,
+        snapshotList: List<Pair<Int, TaskSnapshot?>> = emptyList()
+    ) = DesktopHeaderManageWindowsMenu(
         callerTaskInfo = task,
         x = 0,
         y = 0,
@@ -94,7 +118,7 @@ class DesktopHeaderManageWindowsMenuTest : ShellTestCase() {
         desktopUserRepositories = userRepositories,
         surfaceControlBuilderSupplier = { SurfaceControl.Builder() },
         surfaceControlTransactionSupplier = { SurfaceControl.Transaction() },
-        snapshotList = emptyList(),
+        snapshotList = snapshotList,
         onIconClickListener = {},
         onOutsideClickListener = {},
     )
