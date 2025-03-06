@@ -21,8 +21,7 @@ import com.android.systemui.media.remedia.shared.model.MediaSessionState
 
 /** Models UI state for the play/pause action button within media controls. */
 data class MediaPlayPauseActionViewModel(
-    val isVisible: Boolean,
     val state: MediaSessionState,
-    val icon: Icon.Resource?,
-    val onClick: () -> Unit,
+    val icon: Icon?,
+    val onClick: (() -> Unit)?,
 )
