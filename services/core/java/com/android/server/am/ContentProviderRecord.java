@@ -16,6 +16,9 @@
 
 package com.android.server.am;
 
+import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT;
+import static android.app.ActivityManager.PROCESS_STATE_PERSISTENT_UI;
+
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 
 import android.app.ContentProviderHolder;
@@ -92,6 +95,17 @@ final class ContentProviderRecord implements ComponentName.WithComponentName {
         holder.noReleaseNeeded = noReleaseNeeded;
         holder.connection = conn;
         holder.mLocal = local;
+
+        if (android.app.Flags.skipRefContentProvider()) {
+            if (conn == null || conn.provider == null || conn.provider.proc == null) {
+                return holder;
+            }
+            final int procState = conn.provider.proc.getCurProcState();
+            if (procState == PROCESS_STATE_PERSISTENT || procState == PROCESS_STATE_PERSISTENT_UI) {
+                holder.noReleaseNeededIfUnstable = true;
+            }
+        }
+
         return holder;
     }
 
