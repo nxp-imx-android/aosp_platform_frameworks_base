@@ -64,10 +64,10 @@ class KeyEventInteractorTest : SysuiTestCase() {
             val isPowerButtonLongPressed by collectLastValue(
                 underTest.isPowerButtonLongPressed)
 
-            repository.setPowerButtonBeingLongPressed(false)
+            repository.setPowerButtonLongPressed(false)
             assertThat(isPowerButtonLongPressed).isFalse()
 
-            repository.setPowerButtonBeingLongPressed(true)
+            repository.setPowerButtonLongPressed(true)
             assertThat(isPowerButtonLongPressed).isTrue()
         }
 }
