@@ -30,6 +30,8 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.media.utils.MediaConstants
 import com.android.systemui.Flags
+import com.android.systemui.media.NotificationMediaManager.isConnectingState
+import com.android.systemui.media.NotificationMediaManager.isPlayingState
 import com.android.systemui.media.controls.domain.pipeline.LegacyMediaDataManagerImpl.Companion.MAX_COMPACT_ACTIONS
 import com.android.systemui.media.controls.domain.pipeline.LegacyMediaDataManagerImpl.Companion.MAX_NOTIFICATION_ACTIONS
 import com.android.systemui.media.controls.shared.MediaControlDrawables
@@ -38,8 +40,6 @@ import com.android.systemui.media.controls.shared.model.MediaButton
 import com.android.systemui.media.controls.shared.model.MediaNotificationAction
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.NotificationMediaManager.isConnectingState
-import com.android.systemui.statusbar.NotificationMediaManager.isPlayingState
 import com.android.systemui.util.kotlin.logI
 
 private const val TAG = "MediaActions"
