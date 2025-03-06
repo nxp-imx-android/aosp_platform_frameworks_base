@@ -52,6 +52,7 @@ import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
+import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
@@ -259,7 +260,7 @@ fun ContentScope.QuickSettingsLayout(
 
             BrightnessSliderContainer(
                 viewModel = viewModel.brightnessSliderViewModel,
-                containerColor = OverlayShade.Colors.PanelBackground,
+                containerColors = ContainerColors.singleColor(OverlayShade.Colors.PanelBackground),
                 modifier =
                     Modifier.systemGestureExclusionInShade(
                             enabled = { layoutState.transitionState is TransitionState.Idle }
