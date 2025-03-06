@@ -967,8 +967,11 @@ public final class Choreographer {
             DisplayEventReceiver.VsyncEventData vsyncEventData) {
         final long startNanos;
         final long frameIntervalNanos = vsyncEventData.frameInterval;
-        boolean resynced = false;
+        // Original intended vsync time that is not adjusted by jitter
+        // or buffer stuffing recovery. Reported for jank tracking.
+        final long intendedFrameTimeNanos = frameTimeNanos;
         long offsetFrameTimeNanos = frameTimeNanos;
+        boolean resynced = false;
 
         // Evaluate if buffer stuffing recovery needs to start or end, and
         // what actions need to be taken for recovery.
@@ -1012,7 +1015,6 @@ public final class Choreographer {
                             + ((offsetFrameTimeNanos - mLastFrameTimeNanos) * 0.000001f) + " ms");
                 }
 
-                long intendedFrameTimeNanos = offsetFrameTimeNanos;
                 startNanos = System.nanoTime();
                 // Calculating jitter involves using the original frame time without
                 // adjustments from buffer stuffing
