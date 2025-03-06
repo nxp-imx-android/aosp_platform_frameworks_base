@@ -12584,6 +12584,48 @@ public final class Settings {
                 "accessibility_magnification_always_on_enabled";
 
         /**
+         * Controls how the magnification follows the cursor.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE =
+                "accessibility_magnification_cursor_following_mode";
+
+        /**
+         * Magnification cursor following mode value for the continuous mode.
+         *
+         * @hide
+         */
+        public static final int ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS = 0;
+
+        /**
+         * Magnification cursor following mode value for the center mode.
+         *
+         * @hide
+         */
+        public static final int ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER = 1;
+
+        /**
+         * Magnification cursor following mode value for the edge mode.
+         *
+         * @hide
+         */
+        public static final int ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE = 2;
+
+        /**
+         * Different cursor following settings that can be used as values with
+         * {@link #ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE}.
+         * @hide
+         */
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef(prefix = { "ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_" },
+                value = {
+                        ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS,
+                        ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER,
+                        ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE})
+        public @interface AccessibilityMagnificationCursorFollowingMode {}
+
+        /**
          * Whether the following typing focus feature for magnification is enabled.
          * @hide
          */
