@@ -262,7 +262,7 @@ sk_sp<Bitmap> Bitmap::createFrom(AHardwareBuffer* hardwareBuffer, const SkImageI
 #endif
 
 sk_sp<Bitmap> Bitmap::createFrom(const SkImageInfo& info, size_t rowBytes, int fd, void* addr,
-                                 size_t size, bool readOnly, int64_t id) {
+                                 size_t size, bool readOnly) {
 #ifdef _WIN32 // ashmem not implemented on Windows
      return nullptr;
 #else
@@ -281,7 +281,7 @@ sk_sp<Bitmap> Bitmap::createFrom(const SkImageInfo& info, size_t rowBytes, int f
         }
     }
 
-    sk_sp<Bitmap> bitmap(new Bitmap(addr, fd, size, info, rowBytes, id));
+    sk_sp<Bitmap> bitmap(new Bitmap(addr, fd, size, info, rowBytes));
     if (readOnly) {
         bitmap->setImmutable();
     }
