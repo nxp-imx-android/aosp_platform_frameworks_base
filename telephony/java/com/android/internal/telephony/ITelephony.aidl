@@ -3641,4 +3641,19 @@ interface ITelephony {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
                       + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
     List<String> getSatelliteDataOptimizedApps();
+
+    /**
+     * Method to return the current satellite data service policy supported mode for the
+     * subscriptionId based on subscription id. Note: Iif any error or invalid sub id
+     * {@Link SatelliteDataSupportMode#SATELLITE_DATA_SUPPORT_UNKNOWN} will be returned.
+     *
+     * @param subId current subscription id.
+     *
+     * @return Supported modes {@link SatelliteDataSupportMode}
+     * @throws IllegalArgumentException if the subscription is invalid.
+     * @hide
+     */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                      + "android.Manifest.permission.SATELLITE_COMMUNICATION)")
+    int getSatelliteDataSupportMode(in int subId);
 }

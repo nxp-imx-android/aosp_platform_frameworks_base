@@ -700,6 +700,56 @@ public final class SatelliteManager {
     public @interface DisplayMode {}
 
     /**
+     * Unknown or unsupported value for data mode on satellite.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    public static final int SATELLITE_DATA_SUPPORT_UNKNOWN = -1;
+
+    /**
+     * Support only restricted data usecases like carrier messaging using RCS.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    public static final int SATELLITE_DATA_SUPPORT_RESTRICTED = 0;
+
+    /**
+     * Support constrained internet which would enable internet only for applications that are
+     * modified.
+     *
+     * <p>
+     * To get internet access, applications need to be modified to use the satellite data
+     * optimized network. This can be done by setting the {@link #PROPERTY_SATELLITE_DATA_OPTIMIZED}
+     * property to {@code true} in the manifest.
+     * </p>
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    public static final int SATELLITE_DATA_SUPPORT_CONSTRAINED = 1;
+
+    /**
+     * Support default internet on satellite without any restrictions on any apps.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    public static final int SATELLITE_DATA_SUPPORT_UNCONSTRAINED = 2;
+
+    /** @hide */
+    @IntDef(prefix = {"SATELLITE_DATA_SUPPORT_"}, value = {
+        SATELLITE_DATA_SUPPORT_UNKNOWN,
+        SATELLITE_DATA_SUPPORT_RESTRICTED,
+        SATELLITE_DATA_SUPPORT_CONSTRAINED,
+        SATELLITE_DATA_SUPPORT_UNCONSTRAINED,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SatelliteDataSupportMode {}
+
+    /**
      * The emergency call is handed over to oem-enabled satellite SOS messaging. SOS messages are
      * sent to SOS providers, which will then forward the messages to emergency providers.
      * @hide
@@ -3786,6 +3836,39 @@ public final class SatelliteManager {
         }
 
         return appsNames;
+    }
+
+    /**
+     * Method to return the current satellite data service policy supported mode for the
+     * subscriptionId based on carrier config.
+     *
+     * @param subId current subscription id.
+     *
+     * @return Supported modes {@link SatelliteDataSupportMode}
+     * @throws IllegalArgumentException if the subscription is invalid.
+     *
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(Manifest.permission.SATELLITE_COMMUNICATION)
+    @FlaggedApi(Flags.FLAG_SATELLITE_25Q4_APIS)
+    @SatelliteDataSupportMode
+    public int getSatelliteDataSupportMode(int subId) {
+        int satelliteMode = SATELLITE_DATA_SUPPORT_UNKNOWN;
+
+        try {
+            ITelephony telephony = getITelephony();
+            if (telephony != null) {
+                satelliteMode = telephony.getSatelliteDataSupportMode(subId);
+            } else {
+                throw new IllegalStateException("telephony service is null.");
+            }
+        } catch (RemoteException ex) {
+            loge("getSatelliteDataSupportMode() RemoteException:" + ex);
+            ex.rethrowAsRuntimeException();
+        }
+
+        return satelliteMode;
     }
 
     @Nullable
