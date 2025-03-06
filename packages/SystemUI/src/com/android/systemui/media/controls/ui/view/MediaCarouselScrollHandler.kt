@@ -128,6 +128,9 @@ class MediaCarouselScrollHandler(
             scrollView.relativeScrollX = newRelativeScroll
         }
 
+    /** Is scrolling disabled for the carousel */
+    var scrollingDisabled: Boolean = false
+
     /** Does the dismiss currently show the setting cog? */
     var showsSettingsButton: Boolean = false
 
@@ -271,6 +274,10 @@ class MediaCarouselScrollHandler(
     }
 
     private fun onTouch(motionEvent: MotionEvent): Boolean {
+        if (scrollingDisabled) {
+            return false
+        }
+
         val isUp = motionEvent.action == MotionEvent.ACTION_UP
         if (gestureDetector.onTouchEvent(motionEvent)) {
             if (isUp) {
@@ -350,6 +357,10 @@ class MediaCarouselScrollHandler(
     }
 
     fun onScroll(down: MotionEvent, lastMotion: MotionEvent, distanceX: Float): Boolean {
+        if (scrollingDisabled) {
+            return false
+        }
+
         val totalX = lastMotion.x - down.x
         val currentTranslation = scrollView.getContentTranslation()
         if (currentTranslation != 0.0f || !scrollView.canScrollHorizontally((-totalX).toInt())) {
@@ -406,6 +417,10 @@ class MediaCarouselScrollHandler(
     }
 
     private fun onFling(vX: Float, vY: Float): Boolean {
+        if (scrollingDisabled) {
+            return false
+        }
+
         if (vX * vX < 0.5 * vY * vY) {
             return false
         }
@@ -577,6 +592,9 @@ class MediaCarouselScrollHandler(
      * @param destIndex destination index to indicate where the scroll should end.
      */
     fun scrollToPlayer(sourceIndex: Int = -1, destIndex: Int) {
+        if (scrollingDisabled) {
+            return
+        }
         if (sourceIndex >= 0 && sourceIndex < mediaContent.childCount) {
             scrollView.relativeScrollX = sourceIndex * playerWidthPlusPadding
         }
@@ -598,6 +616,9 @@ class MediaCarouselScrollHandler(
      * @param step A positive number means next, and negative means previous.
      */
     fun scrollByStep(step: Int) {
+        if (scrollingDisabled) {
+            return
+        }
         val destIndex = visibleMediaIndex + step
         if (destIndex >= mediaContent.childCount || destIndex < 0) {
             if (!showsSettingsButton) return

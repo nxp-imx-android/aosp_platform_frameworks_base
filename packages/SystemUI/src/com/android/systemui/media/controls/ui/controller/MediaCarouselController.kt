@@ -171,8 +171,8 @@ constructor(
     /** Is the player currently visible (at the end of the transformation */
     private var playersVisible: Boolean = false
 
-    /** Are we currently disabling pagination only allowing one media session to show */
-    private var currentlyDisablePagination: Boolean = false
+    /** Are we currently disabling scolling, only allowing the first media session to show */
+    private var currentlyDisableScrolling: Boolean = false
 
     /**
      * The desired location where we'll be at the end of the transformation. Usually this matches
@@ -1434,21 +1434,22 @@ constructor(
         val endShowsActive = hostStates[currentEndLocation]?.showsOnlyActiveMedia ?: true
         val startShowsActive =
             hostStates[currentStartLocation]?.showsOnlyActiveMedia ?: endShowsActive
-        val startDisablePagination = hostStates[currentStartLocation]?.disablePagination ?: false
-        val endDisablePagination = hostStates[currentEndLocation]?.disablePagination ?: false
+        val startDisableScrolling = hostStates[currentStartLocation]?.disableScrolling ?: false
+        val endDisableScrolling = hostStates[currentEndLocation]?.disableScrolling ?: false
 
         if (
             currentlyShowingOnlyActive != endShowsActive ||
-                currentlyDisablePagination != endDisablePagination ||
+                currentlyDisableScrolling != endDisableScrolling ||
                 ((currentTransitionProgress != 1.0f && currentTransitionProgress != 0.0f) &&
                     (startShowsActive != endShowsActive ||
-                        startDisablePagination != endDisablePagination))
+                        startDisableScrolling != endDisableScrolling))
         ) {
             // Whenever we're transitioning from between differing states or the endstate differs
             // we reset the translation
             currentlyShowingOnlyActive = endShowsActive
-            currentlyDisablePagination = endDisablePagination
+            currentlyDisableScrolling = endDisableScrolling
             mediaCarouselScrollHandler.resetTranslation(animate = true)
+            mediaCarouselScrollHandler.scrollingDisabled = currentlyDisableScrolling
         }
     }
 

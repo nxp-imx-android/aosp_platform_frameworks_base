@@ -237,6 +237,19 @@ class MediaCarouselScrollHandlerTest : SysuiTestCase() {
         verify(mediaCarousel, never()).animationTargetX = anyFloat()
     }
 
+    @Test
+    fun testScrollingDisabled_noScroll_notDismissible() {
+        setupMediaContainer(visibleIndex = 1, showsSettingsButton = false)
+
+        mediaCarouselScrollHandler.scrollingDisabled = true
+
+        clock.advanceTime(DISMISS_DELAY)
+        executor.runAllReady()
+
+        verify(mediaCarousel, never()).smoothScrollTo(anyInt(), anyInt())
+        verify(mediaCarousel, never()).animationTargetX = anyFloat()
+    }
+
     private fun setupMediaContainer(visibleIndex: Int, showsSettingsButton: Boolean = true) {
         whenever(contentContainer.childCount).thenReturn(2)
         val child1: View = mock()
