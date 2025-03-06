@@ -22,15 +22,10 @@ import static android.security.advancedprotection.AdvancedProtectionManager.FEAT
 import android.annotation.NonNull;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.UserManager;
 import android.security.advancedprotection.AdvancedProtectionFeature;
-import android.telephony.SubscriptionInfo;
-import android.telephony.SubscriptionManager;
-import android.telephony.TelephonyManager;
 import android.util.Slog;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /** @hide */
 public final class DisallowCellular2GAdvancedProtectionHook extends AdvancedProtectionHook {
@@ -39,14 +34,12 @@ public final class DisallowCellular2GAdvancedProtectionHook extends AdvancedProt
     private final AdvancedProtectionFeature mFeature =
             new AdvancedProtectionFeature(FEATURE_ID_DISALLOW_CELLULAR_2G);
     private final DevicePolicyManager mDevicePolicyManager;
-    private final TelephonyManager mTelephonyManager;
-    private final SubscriptionManager mSubscriptionManager;
+    private final PackageManager mPackageManager;
 
     public DisallowCellular2GAdvancedProtectionHook(@NonNull Context context, boolean enabled) {
         super(context, enabled);
         mDevicePolicyManager = context.getSystemService(DevicePolicyManager.class);
-        mTelephonyManager = context.getSystemService(TelephonyManager.class);
-        mSubscriptionManager = context.getSystemService(SubscriptionManager.class);
+        mPackageManager = context.getPackageManager();
 
         onAdvancedProtectionChanged(enabled);
     }
@@ -57,40 +50,9 @@ public final class DisallowCellular2GAdvancedProtectionHook extends AdvancedProt
         return mFeature;
     }
 
-    private static boolean isEmbeddedSubscriptionVisible(SubscriptionInfo subInfo) {
-        if (subInfo.isEmbedded()
-                && (subInfo.getProfileClass() == SubscriptionManager.PROFILE_CLASS_PROVISIONING
-                        || subInfo.isOnlyNonTerrestrialNetwork())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private List<TelephonyManager> getActiveTelephonyManagers() {
-        List<TelephonyManager> telephonyManagers = new ArrayList<>();
-
-        for (SubscriptionInfo subInfo : mSubscriptionManager.getActiveSubscriptionInfoList()) {
-            if (isEmbeddedSubscriptionVisible(subInfo)) {
-                telephonyManagers.add(
-                        mTelephonyManager.createForSubscriptionId(subInfo.getSubscriptionId()));
-            }
-        }
-
-        return telephonyManagers;
-    }
-
     @Override
     public boolean isAvailable() {
-        for (TelephonyManager telephonyManager : getActiveTelephonyManagers()) {
-            if (telephonyManager.isDataCapable()
-                    && telephonyManager.isRadioInterfaceCapabilitySupported(
-                            mTelephonyManager.CAPABILITY_USES_ALLOWED_NETWORK_TYPES_BITMASK)) {
-                return true;
-            }
-        }
-
-        return false;
+        return mPackageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY);
     }
 
     @Override
