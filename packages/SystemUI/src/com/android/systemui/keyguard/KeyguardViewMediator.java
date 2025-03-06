@@ -140,6 +140,7 @@ import com.android.systemui.animation.TransitionAnimator;
 import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
+import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor;
 import com.android.systemui.communal.ui.viewmodel.CommunalTransitionViewModel;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.qualifiers.UiBackground;
@@ -364,6 +365,7 @@ public class KeyguardViewMediator implements CoreStartable,
     private final Lazy<NotificationShadeDepthController> mNotificationShadeDepthController;
     private final Lazy<ShadeController> mShadeController;
     private final Lazy<CommunalSceneInteractor> mCommunalSceneInteractor;
+    private final Lazy<CommunalSettingsInteractor> mCommunalSettingsInteractor;
     /*
      * Records the user id on request to go away, for validation when WM calls back to start the
      * exit animation.
@@ -1567,6 +1569,7 @@ public class KeyguardViewMediator implements CoreStartable,
             KeyguardInteractor keyguardInteractor,
             KeyguardTransitionBootInteractor transitionBootInteractor,
             Lazy<CommunalSceneInteractor> communalSceneInteractor,
+            Lazy<CommunalSettingsInteractor> communalSettingsInteractor,
             WindowManagerOcclusionManager wmOcclusionManager) {
         mContext = context;
         mUserTracker = userTracker;
@@ -1609,6 +1612,7 @@ public class KeyguardViewMediator implements CoreStartable,
         mKeyguardInteractor = keyguardInteractor;
         mTransitionBootInteractor = transitionBootInteractor;
         mCommunalSceneInteractor = communalSceneInteractor;
+        mCommunalSettingsInteractor = communalSettingsInteractor;
 
         mStatusBarStateController = statusBarStateController;
         statusBarStateController.addCallback(this);
@@ -2426,9 +2430,18 @@ public class KeyguardViewMediator implements CoreStartable,
     private void doKeyguardLocked(Bundle options) {
         // If the power button behavior requests to open the glanceable hub.
         if (options != null && options.getBoolean(EXTRA_TRIGGER_HUB)) {
-            // Set the hub to show immediately when the SysUI window shows, then continue to lock
-            // the device.
-            mCommunalSceneInteractor.get().showHubFromPowerButton();
+            if (mCommunalSettingsInteractor.get().getAutoOpenEnabled().getValue()) {
+                // Set the hub to show immediately when the SysUI window shows, then continue to
+                // lock the device.
+                mCommunalSceneInteractor.get().showHubFromPowerButton();
+            } else {
+                // If the hub is not available, go to sleep instead of locking. This can happen
+                // because the power button behavior does not check all possible reasons the hub
+                // might be disabled.
+                mPM.goToSleep(android.os.SystemClock.uptimeMillis(),
+                        PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
+                return;
+            }
         }
 
         int currentUserId = mSelectedUserInteractor.getSelectedUserId();
