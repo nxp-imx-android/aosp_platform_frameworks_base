@@ -2802,7 +2802,7 @@ public class OomAdjuster {
         // we check the final procstate, and remove it if the procsate is below BFGS.
         capability |= getBfslCapabilityFromClient(client);
 
-        capability |= getCpuCapabilityFromClient(client);
+        capability |= getCpuCapabilityFromClient(cr, client);
 
         if (cr.notHasFlag(Context.BIND_WAIVE_PRIORITY)) {
             if (cr.hasFlag(Context.BIND_INCLUDE_CAPABILITIES)) {
@@ -3259,7 +3259,7 @@ public class OomAdjuster {
         // we check the final procstate, and remove it if the procsate is below BFGS.
         capability |= getBfslCapabilityFromClient(client);
 
-        capability |= getCpuCapabilityFromClient(client);
+        capability |= getCpuCapabilityFromClient(conn, client);
 
         if (clientProcState >= PROCESS_STATE_CACHED_ACTIVITY) {
             // If the other app is cached for any reason, for purposes here
@@ -3502,10 +3502,13 @@ public class OomAdjuster {
     /**
      * @return the CPU capability from a client (of a service binding or provider).
      */
-    private static int getCpuCapabilityFromClient(ProcessRecord client) {
-        // Just grant CPU capability every time
-        // TODO(b/370817323): Populate with reasons to not propagate cpu capability across bindings.
-        return client.mState.getCurCapability() & PROCESS_CAPABILITY_CPU_TIME;
+    private static int getCpuCapabilityFromClient(OomAdjusterModernImpl.Connection conn,
+            ProcessRecord client) {
+        if (conn == null || conn.transmitsCpuTime()) {
+            return client.mState.getCurCapability() & PROCESS_CAPABILITY_CPU_TIME;
+        } else {
+            return 0;
+        }
     }
 
     /**
