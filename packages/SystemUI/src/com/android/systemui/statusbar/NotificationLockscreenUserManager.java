@@ -34,7 +34,7 @@ public interface NotificationLockscreenUserManager {
             value = {
                     REDACTION_TYPE_NONE,
                     REDACTION_TYPE_PUBLIC,
-                    REDACTION_TYPE_SENSITIVE_CONTENT})
+                    REDACTION_TYPE_OTP})
     @interface RedactionType {}
 
     /**
@@ -52,7 +52,7 @@ public interface NotificationLockscreenUserManager {
      * Indicates that a notification should have its main content redacted, due to detected
      * sensitive content, such as a One-Time Password
      */
-    int REDACTION_TYPE_SENSITIVE_CONTENT = 1 << 1;
+    int REDACTION_TYPE_OTP = 1 << 1;
 
     /**
      * @param userId user Id
