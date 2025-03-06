@@ -15,5 +15,10 @@ java_binary_host {
         "hoststubgen-lib",
         "ravenwood-junit-for-ravenizer",
     ],
+    java_resources: [
+        ":ravenizer-standard-options",
+        ":ravenwood-standard-annotations",
+        ":ravenwood-common-policies",
+    ],
     visibility: ["//visibility:public"],
 }

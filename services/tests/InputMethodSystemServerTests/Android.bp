@@ -73,10 +73,7 @@ android_ravenwood_test {
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.rules",
-        "framework",
-        "ravenwood-runtime",
-        "ravenwood-utils",
-        "services",
+        "services.core",
     ],
     libs: [
         "android.test.base.stubs.system",

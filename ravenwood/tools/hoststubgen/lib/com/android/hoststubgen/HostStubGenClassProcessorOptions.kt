@@ -18,6 +18,7 @@ package com.android.hoststubgen
 import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.utils.ArgIterator
 import com.android.hoststubgen.utils.BaseOptions
+import com.android.hoststubgen.utils.FileOrResource
 import com.android.hoststubgen.utils.SetOnce
 
 private fun parsePackageRedirect(fromColonTo: String): Pair<String, String> {
@@ -53,7 +54,7 @@ open class HostStubGenClassProcessorOptions(
     var defaultClassLoadHook: SetOnce<String?> = SetOnce(null),
     var defaultMethodCallHook: SetOnce<String?> = SetOnce(null),
 
-    var policyOverrideFiles: MutableList<String> = mutableListOf(),
+    var policyOverrideFiles: MutableList<FileOrResource> = mutableListOf(),
 
     var defaultPolicy: SetOnce<FilterPolicy> = SetOnce(FilterPolicy.Remove),
 
@@ -73,15 +74,14 @@ open class HostStubGenClassProcessorOptions(
         return name
     }
 
-    override fun parseOption(option: String, ai: ArgIterator): Boolean {
+    override fun parseOption(option: String, args: ArgIterator): Boolean {
         // Define some shorthands...
-        fun nextArg(): String = ai.nextArgRequired(option)
+        fun nextArg(): String = args.nextArgRequired(option)
         fun MutableSet<String>.addUniqueAnnotationArg(): String =
             nextArg().also { this += ensureUniqueAnnotation(it) }
 
         when (option) {
-            "--policy-override-file" ->
-                policyOverrideFiles.add(nextArg().ensureFileExists())
+            "--policy-override-file" -> policyOverrideFiles.add(FileOrResource(nextArg()))
 
             "--default-remove" -> defaultPolicy.set(FilterPolicy.Remove)
             "--default-throw" -> defaultPolicy.set(FilterPolicy.Throw)

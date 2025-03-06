@@ -16,7 +16,6 @@
 package com.android.hoststubgen.filters
 
 import com.android.hoststubgen.HostStubGenErrors
-import com.android.hoststubgen.HostStubGenInternalException
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_DESC
 import com.android.hoststubgen.asm.CLASS_INITIALIZER_NAME
 import com.android.hoststubgen.asm.ClassNodes
@@ -37,18 +36,14 @@ import org.objectweb.asm.tree.ClassNode
  * TODO: Do we need a way to make anonymous class methods and lambdas "throw"?
  */
 class ImplicitOutputFilter(
-        private val errors: HostStubGenErrors,
-        private val classes: ClassNodes,
-        fallback: OutputFilter
+    private val errors: HostStubGenErrors,
+    private val classes: ClassNodes,
+    fallback: OutputFilter
 ) : DelegatingFilter(fallback) {
-    private fun getClassImplicitPolicy(className: String, cn: ClassNode): FilterPolicyWithReason? {
+    private fun getClassImplicitPolicy(cn: ClassNode): FilterPolicyWithReason? {
         if (isAnonymousInnerClass(cn)) {
             log.forDebug {
 //                log.d("  anon-inner class: ${className} outer: ${cn.outerClass}  ")
-            }
-            if (cn.outerClass == null) {
-                throw HostStubGenInternalException(
-                        "outerClass is null for anonymous inner class")
             }
             // If the outer class needs to be in impl, it should be in impl too.
             val outerPolicy = outermostFilter.getPolicyForClass(cn.outerClass)
@@ -65,15 +60,15 @@ class ImplicitOutputFilter(
         val cn = classes.getClass(className)
 
         // Use the implicit policy, if any.
-        getClassImplicitPolicy(className, cn)?.let { return it }
+        getClassImplicitPolicy(cn)?.let { return it }
 
         return fallback
     }
 
     override fun getPolicyForMethod(
-            className: String,
-            methodName: String,
-            descriptor: String
+        className: String,
+        methodName: String,
+        descriptor: String
     ): FilterPolicyWithReason {
         val fallback = super.getPolicyForMethod(className, methodName, descriptor)
         val classPolicy = outermostFilter.getPolicyForClass(className)
@@ -84,12 +79,14 @@ class ImplicitOutputFilter(
         // "keep" instead.
         // Unless it's an enum -- in that case, the below code would handle it.
         if (!cn.isEnum() &&
-                fallback.policy == FilterPolicy.Throw &&
-                methodName == CLASS_INITIALIZER_NAME && descriptor == CLASS_INITIALIZER_DESC) {
+            fallback.policy == FilterPolicy.Throw &&
+            methodName == CLASS_INITIALIZER_NAME && descriptor == CLASS_INITIALIZER_DESC
+        ) {
             // TODO Maybe show a warning?? But that'd be too noisy with --default-throw.
             return FilterPolicy.Ignore.withReason(
                 "'throw' on static initializer is handled as 'ignore'" +
-                        " [original throw reason: ${fallback.reason}]")
+                        " [original throw reason: ${fallback.reason}]"
+            )
         }
 
         log.d("Class ${cn.name} Class policy: $classPolicy")
@@ -120,7 +117,8 @@ class ImplicitOutputFilter(
                     // For synthetic methods (such as lambdas), let's just inherit the class's
                     // policy.
                     return memberPolicy.withReason(classPolicy.reason).wrapReason(
-                            "is-synthetic-method")
+                        "is-synthetic-method"
+                    )
                 }
             }
         }
@@ -129,8 +127,8 @@ class ImplicitOutputFilter(
     }
 
     override fun getPolicyForField(
-            className: String,
-            fieldName: String
+        className: String,
+        fieldName: String
     ): FilterPolicyWithReason {
         val fallback = super.getPolicyForField(className, fieldName)
 

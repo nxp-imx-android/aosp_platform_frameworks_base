@@ -16,10 +16,10 @@
 package com.android.platform.test.ravenwood.ravenizer
 
 import com.android.hoststubgen.ArgumentsException
-import com.android.hoststubgen.ensureFileExists
+import com.android.hoststubgen.HostStubGenClassProcessorOptions
 import com.android.hoststubgen.utils.ArgIterator
-import com.android.hoststubgen.utils.BaseOptions
 import com.android.hoststubgen.utils.SetOnce
+import com.android.hoststubgen.utils.ensureFileExists
 
 class RavenizerOptions(
     /** Input jar file*/
@@ -36,10 +36,10 @@ class RavenizerOptions(
 
     /** Whether to remove mockito and dexmaker classes. */
     var stripMockito: SetOnce<Boolean> = SetOnce(false),
-) : BaseOptions() {
+) : HostStubGenClassProcessorOptions() {
 
-    override fun parseOption(option: String, ai: ArgIterator): Boolean {
-        fun nextArg(): String = ai.nextArgRequired(option)
+    override fun parseOption(option: String, args: ArgIterator): Boolean {
+        fun nextArg(): String = args.nextArgRequired(option)
 
         when (option) {
             // TODO: Write help
@@ -57,7 +57,7 @@ class RavenizerOptions(
             "--strip-mockito" -> stripMockito.set(true)
             "--no-strip-mockito" -> stripMockito.set(false)
 
-            else -> return false
+            else -> return super.parseOption(option, args)
         }
 
         return true
@@ -79,6 +79,6 @@ class RavenizerOptions(
             enableValidation=$enableValidation,
             fatalValidation=$fatalValidation,
             stripMockito=$stripMockito,
-        """.trimIndent()
+        """.trimIndent() + '\n' + super.dumpFields()
     }
 }
