@@ -24,6 +24,7 @@ import com.android.systemui.statusbar.notification.collection.coordinator.Visual
 import com.android.systemui.statusbar.notification.icon.IconPack
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import kotlinx.coroutines.flow.StateFlow
 
@@ -33,6 +34,7 @@ class NotificationEntryAdapter(
     private val peopleNotificationIdentifier: PeopleNotificationIdentifier,
     private val iconStyleProvider: NotificationIconStyleProvider,
     private val visualStabilityCoordinator: VisualStabilityCoordinator,
+    private val notificationActionClickManager: NotificationActionClickManager,
     private val entry: NotificationEntry,
 ) : EntryAdapter {
 
@@ -141,5 +143,9 @@ class NotificationEntryAdapter(
 
     override fun onNotificationBubbleIconClicked() {
         notificationActivityStarter.onNotificationBubbleIconClicked(entry)
+    }
+
+    override fun onNotificationActionClicked() {
+        notificationActionClickManager.onNotificationActionClicked(entry)
     }
 }

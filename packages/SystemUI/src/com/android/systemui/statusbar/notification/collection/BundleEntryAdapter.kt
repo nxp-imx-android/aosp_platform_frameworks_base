@@ -20,6 +20,7 @@ import android.app.Notification
 import android.content.Context
 import android.os.Build
 import android.service.notification.StatusBarNotification
+import android.util.Log
 import com.android.systemui.statusbar.notification.icon.IconPack
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import kotlinx.coroutines.flow.StateFlow
@@ -118,5 +119,13 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
 
     override fun onNotificationBubbleIconClicked() {
         // do nothing. these cannot be a bubble
+        Log.wtf(TAG, "onNotificationBubbleIconClicked() called")
+    }
+
+    override fun onNotificationActionClicked() {
+        // do nothing. these have no actions
+        Log.wtf(TAG, "onNotificationActionClicked() called")
     }
 }
+
+private const val TAG = "BundleEntryAdapter"

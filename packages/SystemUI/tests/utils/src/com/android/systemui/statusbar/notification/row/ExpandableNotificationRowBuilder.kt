@@ -375,6 +375,7 @@ class ExpandableNotificationRowBuilder(
                     Mockito.mock(PeopleNotificationIdentifier::class.java),
                     Mockito.mock(NotificationIconStyleProvider::class.java),
                     Mockito.mock(VisualStabilityCoordinator::class.java),
+                    Mockito.mock(NotificationActionClickManager::class.java),
                 )
                 .create(entry)
 

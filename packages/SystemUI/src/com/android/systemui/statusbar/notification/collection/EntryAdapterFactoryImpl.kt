@@ -16,11 +16,11 @@
 
 package com.android.systemui.statusbar.notification.collection
 
-import androidx.annotation.VisibleForTesting
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import javax.inject.Inject
 
@@ -33,6 +33,7 @@ constructor(
     private val peopleNotificationIdentifier: PeopleNotificationIdentifier,
     private val iconStyleProvider: NotificationIconStyleProvider,
     private val visualStabilityCoordinator: VisualStabilityCoordinator,
+    private val notificationActionClickManager: NotificationActionClickManager,
 ) : EntryAdapterFactory {
     override fun create(entry: PipelineEntry): EntryAdapter {
         return if (entry is NotificationEntry) {
@@ -42,15 +43,11 @@ constructor(
                 peopleNotificationIdentifier,
                 iconStyleProvider,
                 visualStabilityCoordinator,
+                notificationActionClickManager,
                 entry,
             )
         } else {
             BundleEntryAdapter((entry as BundleEntry))
         }
-    }
-
-    @VisibleForTesting
-    fun getNotificationActivityStarter() : NotificationActivityStarter {
-        return notificationActivityStarter
     }
 }

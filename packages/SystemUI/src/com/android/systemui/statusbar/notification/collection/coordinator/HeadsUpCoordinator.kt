@@ -48,7 +48,9 @@ import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.interruption.HeadsUpViewBinder
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
 import com.android.systemui.statusbar.notification.logKey
+import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.BUCKET_HEADS_UP
 import com.android.systemui.util.concurrency.DelayableExecutor
 import com.android.systemui.util.time.SystemClock
@@ -83,6 +85,7 @@ constructor(
     private val mHeadsUpViewBinder: HeadsUpViewBinder,
     private val mVisualInterruptionDecisionProvider: VisualInterruptionDecisionProvider,
     private val mRemoteInputManager: NotificationRemoteInputManager,
+    private val notificationActionClickManager: NotificationActionClickManager,
     private val mLaunchFullScreenIntentProvider: LaunchFullScreenIntentProvider,
     private val mFlags: NotifPipelineFlags,
     private val statusBarNotificationChipsInteractor: StatusBarNotificationChipsInteractor,
@@ -108,7 +111,11 @@ constructor(
         pipeline.addOnBeforeFinalizeFilterListener(::onBeforeFinalizeFilter)
         pipeline.addPromoter(mNotifPromoter)
         pipeline.addNotificationLifetimeExtender(mLifetimeExtender)
-        mRemoteInputManager.addActionPressListener(mActionPressListener)
+        if (NotificationBundleUi.isEnabled) {
+            notificationActionClickManager.addActionClickListener(mActionPressListener)
+        } else {
+            mRemoteInputManager.addActionPressListener(mActionPressListener)
+        }
 
         if (StatusBarNotifChips.isEnabled) {
             applicationScope.launch {
@@ -783,7 +790,7 @@ constructor(
      */
     private val mActionPressListener =
         Consumer<NotificationEntry> { entry ->
-            mHeadsUpManager.setUserActionMayIndirectlyRemove(entry)
+            mHeadsUpManager.setUserActionMayIndirectlyRemove(entry.key)
             mExecutor.execute { endNotifLifetimeExtensionIfExtended(entry) }
         }
 
