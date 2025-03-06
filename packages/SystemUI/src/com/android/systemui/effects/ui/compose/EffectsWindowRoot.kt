@@ -45,6 +45,6 @@ class EffectsWindowRoot : AbstractComposeView {
 
     @Composable
     override fun Content() {
-
+        SqueezeEffect()
     }
 }
