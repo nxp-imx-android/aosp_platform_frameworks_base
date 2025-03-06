@@ -244,6 +244,17 @@ public abstract class RemoteAnimationRunnerCompat extends IRemoteAnimationRunner
                 runner.onAnimationCancelled();
                 finishRunnable.run();
             }
+
+            @Override
+            public void onTransitionConsumed(IBinder transition, boolean aborted)
+                    throws RemoteException {
+                // Notify the remote runner that the transition has been canceled if the transition
+                // was merged into another transition or aborted
+                synchronized (mFinishRunnables) {
+                    mFinishRunnables.remove(transition);
+                }
+                runner.onAnimationCancelled();
+            }
         };
     }
 
