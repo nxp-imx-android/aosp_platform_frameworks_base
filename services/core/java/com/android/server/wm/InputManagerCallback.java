@@ -343,6 +343,13 @@ final class InputManagerCallback implements InputManagerService.WindowManagerCal
         }
     }
 
+    @Override
+    public boolean isKeyguardLocked(int displayId) {
+        synchronized (mService.mGlobalLock) {
+            return mService.mAtmService.mKeyguardController.isKeyguardLocked(displayId);
+        }
+    }
+
     /** Waits until the built-in input devices have been configured. */
     public boolean waitForInputDevicesReady(long timeoutMillis) {
         synchronized (mInputDevicesReadyMonitor) {

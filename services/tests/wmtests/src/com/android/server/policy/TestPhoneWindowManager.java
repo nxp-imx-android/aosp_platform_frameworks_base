@@ -750,11 +750,6 @@ class TestPhoneWindowManager {
         verify(mAccessibilityShortcutController).performAccessibilityShortcut();
     }
 
-    void assertAccessibilityKeychordNotCalled() {
-        mTestLooper.dispatchAll();
-        verify(mAccessibilityShortcutController, never()).performAccessibilityShortcut();
-    }
-
     void assertCloseAllDialogs() {
         verify(mContext).closeSystemDialogs();
     }

@@ -4240,66 +4240,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (!useKeyGestureEventHandler()) {
             return;
         }
-        mInputManager.registerKeyGestureEventHandler(new InputManager.KeyGestureEventHandler() {
-            @Override
-            public boolean handleKeyGestureEvent(@NonNull KeyGestureEvent event,
-                    @Nullable IBinder focusedToken) {
-                boolean handled = PhoneWindowManager.this.handleKeyGestureEvent(event,
-                        focusedToken);
-                if (handled && !event.isCancelled() && Arrays.stream(event.getKeycodes()).anyMatch(
-                        (keycode) -> keycode == KeyEvent.KEYCODE_POWER)) {
-                    mPowerKeyHandled = true;
-                }
-                return handled;
+        mInputManager.registerKeyGestureEventHandler((event, focusedToken) -> {
+            boolean handled = PhoneWindowManager.this.handleKeyGestureEvent(event,
+                    focusedToken);
+            if (handled && !event.isCancelled() && Arrays.stream(event.getKeycodes()).anyMatch(
+                    (keycode) -> keycode == KeyEvent.KEYCODE_POWER)) {
+                mPowerKeyHandled = true;
             }
-
-            @Override
-            public boolean isKeyGestureSupported(int gestureType) {
-                switch (gestureType) {
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_HOME:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_BACK:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
-                        return true;
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
-                        return mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
-                                isKeyguardLocked());
-                    case KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD:
-                        return mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
-                                false);
-                    default:
-                        return false;
-                }
-            }
+            return handled;
         });
     }
 
@@ -4457,13 +4405,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     cancelPendingScreenshotChordAction();
                 }
                 return true;
-            case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD:
-                if (start) {
-                    interceptAccessibilityShortcutChord();
-                } else {
-                    cancelPendingAccessibilityShortcutAction();
-                }
-                return true;
             case KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD:
                 if (start) {
                     interceptRingerToggleChord();
@@ -4479,14 +4420,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     showGlobalActions();
                 } else {
                     cancelGlobalActionsAction();
-                }
-                return true;
-                // TODO (b/358569822): Consolidate TV and non-TV gestures into same KeyGestureEvent
-            case KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD:
-                if (start) {
-                    interceptAccessibilityGestureTv();
-                } else {
-                    cancelAccessibilityGestureTv();
                 }
                 return true;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT:

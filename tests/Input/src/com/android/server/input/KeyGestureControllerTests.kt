@@ -32,6 +32,7 @@ import android.hardware.input.InputGestureData
 import android.hardware.input.InputManager
 import android.hardware.input.InputManagerGlobal
 import android.hardware.input.KeyGestureEvent
+import android.os.Handler
 import android.os.IBinder
 import android.os.Process
 import android.os.SystemClock
@@ -48,9 +49,11 @@ import android.view.WindowManagerPolicyConstants.FLAG_INTERACTIVE
 import androidx.test.core.app.ApplicationProvider
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.internal.R
+import com.android.internal.accessibility.AccessibilityShortcutController
 import com.android.internal.annotations.Keep
 import com.android.internal.util.FrameworkStatsLog
 import com.android.modules.utils.testing.ExtendedMockitoRule
+import com.android.server.input.InputManagerService.WindowManagerCallbacks
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -67,6 +70,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito
+import org.mockito.kotlin.never
+import org.mockito.kotlin.times
 
 /**
  * Tests for {@link KeyGestureController}.
@@ -102,6 +107,7 @@ class KeyGestureControllerTests {
         const val SETTINGS_KEY_BEHAVIOR_SETTINGS_ACTIVITY = 0
         const val SETTINGS_KEY_BEHAVIOR_NOTIFICATION_PANEL = 1
         const val SETTINGS_KEY_BEHAVIOR_NOTHING = 2
+        const val TEST_PID = 10
     }
 
     @JvmField
@@ -116,11 +122,10 @@ class KeyGestureControllerTests {
     @Rule
     val rule = SetFlagsRule()
 
-    @Mock
-    private lateinit var iInputManager: IInputManager
-
-    @Mock
-    private lateinit var packageManager: PackageManager
+    @Mock private lateinit var iInputManager: IInputManager
+    @Mock private lateinit var packageManager: PackageManager
+    @Mock private lateinit var wmCallbacks: WindowManagerCallbacks
+    @Mock private lateinit var accessibilityShortcutController: AccessibilityShortcutController
 
     private var currentPid = 0
     private lateinit var context: Context
@@ -207,8 +212,34 @@ class KeyGestureControllerTests {
 
     private fun setupKeyGestureController() {
         keyGestureController =
-            KeyGestureController(context, testLooper.looper, testLooper.looper, inputDataStore)
-        Mockito.`when`(iInputManager.getAppLaunchBookmarks())
+            KeyGestureController(
+                context,
+                testLooper.looper,
+                testLooper.looper,
+                inputDataStore,
+                object : KeyGestureController.Injector() {
+                    override fun getAccessibilityShortcutController(
+                        context: Context?,
+                        handler: Handler?
+                    ): AccessibilityShortcutController {
+                        return accessibilityShortcutController
+                    }
+                })
+        Mockito.`when`(iInputManager.registerKeyGestureHandler(Mockito.any()))
+            .thenAnswer {
+                val args = it.arguments
+                if (args[0] != null) {
+                    keyGestureController.registerKeyGestureHandler(
+                        args[0] as IKeyGestureHandler,
+                        TEST_PID
+                    )
+                }
+        }
+        keyGestureController.setWindowManagerCallbacks(wmCallbacks)
+        Mockito.`when`(wmCallbacks.isKeyguardLocked(Mockito.anyInt())).thenReturn(false)
+        Mockito.`when`(accessibilityShortcutController
+            .isAccessibilityShortcutAvailable(Mockito.anyBoolean())).thenReturn(true)
+        Mockito.`when`(iInputManager.appLaunchBookmarks)
             .thenReturn(keyGestureController.appLaunchBookmarks)
         keyGestureController.systemRunning()
         testLooper.dispatchAll()
@@ -1270,9 +1301,9 @@ class KeyGestureControllerTests {
                 )
             ),
             TestData(
-                "BACK + DPAD_DOWN -> TV Accessibility Chord",
+                "BACK + DPAD_DOWN -> Accessibility Chord(for TV)",
                 intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
-                KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD,
+                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD,
                 intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
                 0,
                 intArrayOf(
@@ -1622,6 +1653,52 @@ class KeyGestureControllerTests {
         )
     }
 
+    @Test
+    fun testAccessibilityShortcutChordPressed() {
+        setupKeyGestureController()
+
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN),
+            // Assuming this value is always greater than the accessibility shortcut timeout, which
+            // currently defaults to 3000ms
+            timeDelayMs = 10000
+        )
+        Mockito.verify(accessibilityShortcutController, times(1)).performAccessibilityShortcut()
+    }
+
+    @Test
+    fun testAccessibilityTvShortcutChordPressed() {
+        setupKeyGestureController()
+
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
+            timeDelayMs = 10000
+        )
+        Mockito.verify(accessibilityShortcutController, times(1)).performAccessibilityShortcut()
+    }
+
+    @Test
+    fun testAccessibilityShortcutChordPressedForLessThanTimeout() {
+        setupKeyGestureController()
+
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN),
+            timeDelayMs = 0
+        )
+        Mockito.verify(accessibilityShortcutController, never()).performAccessibilityShortcut()
+    }
+
+    @Test
+    fun testAccessibilityTvShortcutChordPressedForLessThanTimeout() {
+        setupKeyGestureController()
+
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
+            timeDelayMs = 0
+        )
+        Mockito.verify(accessibilityShortcutController, never()).performAccessibilityShortcut()
+    }
+
     private fun testKeyGestureInternal(test: TestData) {
         val handledEvents = mutableListOf<KeyGestureEvent>()
         val handler = KeyGestureHandler { event, _ ->
@@ -1683,7 +1760,11 @@ class KeyGestureControllerTests {
         assertEquals("Test: $testName should not produce Key gesture", 0, handledEvents.size)
     }
 
-    private fun sendKeys(testKeys: IntArray, assertNotSentToApps: Boolean = false) {
+    private fun sendKeys(
+        testKeys: IntArray,
+        assertNotSentToApps: Boolean = false,
+        timeDelayMs: Long = 0
+    ) {
         var metaState = 0
         val now = SystemClock.uptimeMillis()
         for (key in testKeys) {
@@ -1696,6 +1777,11 @@ class KeyGestureControllerTests {
             metaState = metaState or MODIFIER.getOrDefault(key, 0)
 
             downEvent.recycle()
+            testLooper.dispatchAll()
+        }
+
+        if (timeDelayMs > 0) {
+            testLooper.moveTimeForward(timeDelayMs)
             testLooper.dispatchAll()
         }
 
@@ -1741,10 +1827,6 @@ class KeyGestureControllerTests {
     ) : IKeyGestureHandler.Stub() {
         override fun handleKeyGesture(event: AidlKeyGestureEvent, token: IBinder?): Boolean {
             return handler(event, token)
-        }
-
-        override fun isKeyGestureSupported(gestureType: Int): Boolean {
-            return true
         }
     }
 }
