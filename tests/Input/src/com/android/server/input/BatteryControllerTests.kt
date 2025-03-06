@@ -184,6 +184,8 @@ class BatteryControllerTests {
     @get:Rule
     val rule = MockitoJUnit.rule()!!
     @get:Rule
+    val context = TestableContext(ApplicationProvider.getApplicationContext())
+    @get:Rule
     val inputManagerRule = MockInputManagerRule()
 
     @Mock
@@ -194,7 +196,6 @@ class BatteryControllerTests {
     private lateinit var bluetoothBatteryManager: BluetoothBatteryManager
 
     private lateinit var batteryController: BatteryController
-    private lateinit var context: TestableContext
     private lateinit var testLooper: TestLooper
     private lateinit var devicesChangedListener: IInputDevicesChangedListener
     private lateinit var inputManagerGlobalSession: InputManagerGlobal.TestSession
@@ -202,7 +203,6 @@ class BatteryControllerTests {
 
     @Before
     fun setup() {
-        context = TestableContext(ApplicationProvider.getApplicationContext())
         testLooper = TestLooper()
         val inputManager = InputManager(context)
         context.addMockSystemService(InputManager::class.java, inputManager)
