@@ -43,6 +43,7 @@ import android.annotation.StyleRes;
 import android.annotation.StyleableRes;
 import android.annotation.XmlRes;
 import android.app.Application;
+import android.app.LocaleConfig;
 import android.app.ResourcesManager;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
@@ -374,6 +375,12 @@ public class Resources {
         if (impl == mResourcesImpl) {
             return;
         }
+        // This can be done as part of constructing the Resources object in which case the impl may
+        // not be set yet. However, if there is an impl it is possible the locale config has already
+        // been set on it and we need to make sure it is carried over to the new impl.
+        if (mResourcesImpl != null) {
+            impl.setLocaleConfig(mResourcesImpl.getLocaleConfig());
+        }
 
         mBaseApkAssetsSize = ArrayUtils.size(impl.getAssets().getApkAssets());
         mResourcesImpl = impl;
@@ -389,6 +396,14 @@ public class Resources {
                 }
             }
         }
+    }
+
+    /**
+     * Sets the locale config that should be used for resource resolution.
+     * @hide
+     */
+    public void setLocaleConfig(@NonNull LocaleConfig localeConfig) {
+        mResourcesImpl.setLocaleConfig(localeConfig);
     }
 
     /** @hide */

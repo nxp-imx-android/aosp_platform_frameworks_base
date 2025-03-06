@@ -177,7 +177,8 @@
     <application
         android:theme="@style/Theme"
         android:supportsRtl="true"
-        android:enableOnBackInvokedCallback="true">
+        android:enableOnBackInvokedCallback="true"
+        android:localeConfig="@xml/locales_config">
         <uses-library android:name="android.test.runner" />
         <uses-library android:name="org.apache.http.legacy" android:required="false" />
         <meta-data

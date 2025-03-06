@@ -37,7 +37,6 @@ import android.content.res.ResourcesKey;
 import android.content.res.loader.ResourcesLoader;
 import android.hardware.display.DisplayManagerGlobal;
 import android.os.IBinder;
-import android.os.LocaleList;
 import android.os.Process;
 import android.os.Trace;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
@@ -135,11 +134,6 @@ public class ResourcesManager {
      */
     private final ArrayList<WeakReference<Resources>> mAllResourceReferences = new ArrayList<>();
     private final ReferenceQueue<Resources> mAllResourceReferencesQueue = new ReferenceQueue<>();
-
-    /**
-     * The localeConfig of the app.
-     */
-    private LocaleConfig mLocaleConfig = new LocaleConfig(LocaleList.getEmptyLocaleList());
 
     private final ArrayMap<String, SharedLibraryAssets> mSharedLibAssetsMap =
             new ArrayMap<>();
@@ -1916,23 +1910,6 @@ public class ResourcesManager {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * Returns the LocaleConfig current set
-     */
-    public LocaleConfig getLocaleConfig() {
-        return mLocaleConfig;
-    }
-
-    /**
-     * Sets the LocaleConfig of the app
-     */
-    public void setLocaleConfig(LocaleConfig localeConfig) {
-        if ((localeConfig != null) && (localeConfig.getSupportedLocales() != null)
-                && !localeConfig.getSupportedLocales().isEmpty()) {
-            mLocaleConfig = localeConfig;
         }
     }
 
