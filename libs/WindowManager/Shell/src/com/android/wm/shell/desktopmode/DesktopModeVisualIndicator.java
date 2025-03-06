@@ -178,6 +178,7 @@ public class DesktopModeVisualIndicator {
 
     /** Start the fade-in animation. */
     void fadeInIndicator() {
+        if (mCurrentType == NO_INDICATOR) return;
         mVisualIndicatorViewContainer.fadeInIndicator(
                 mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType,
                 mTaskInfo.displayId);
