@@ -580,7 +580,23 @@ public class MediaSwitchingController
         synchronized (mMediaDevicesLock) {
             if (!mLocalMediaManager.isPreferenceRouteListingExist()) {
                 attachRangeInfo(devices);
-                Collections.sort(devices, Comparator.naturalOrder());
+                if (Flags.enableOutputSwitcherDeviceGrouping()) {
+                    List<MediaDevice> selectedDevices = new ArrayList<>();
+                    Set<String> selectedDeviceIds =
+                            getSelectedMediaDevice().stream()
+                                    .map(MediaDevice::getId)
+                                    .collect(Collectors.toSet());
+                    for (MediaDevice device : devices) {
+                        if (selectedDeviceIds.contains(device.getId())) {
+                            selectedDevices.add(device);
+                        }
+                    }
+                    devices.removeAll(selectedDevices);
+                    Collections.sort(devices, Comparator.naturalOrder());
+                    devices.addAll(0, selectedDevices);
+                } else {
+                    Collections.sort(devices, Comparator.naturalOrder());
+                }
             }
             if (Flags.fixOutputMediaItemListIndexOutOfBoundsException()) {
                 // For the first time building list, to make sure the top device is the connected
