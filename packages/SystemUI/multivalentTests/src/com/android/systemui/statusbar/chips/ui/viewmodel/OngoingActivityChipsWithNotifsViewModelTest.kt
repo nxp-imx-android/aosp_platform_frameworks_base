@@ -913,7 +913,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                     ),
                     activeNotificationModel(
                         key = "fourthNotif",
-                        statusBarChipIcon = thirdIcon,
+                        statusBarChipIcon = fourthIcon,
                         promotedContent =
                             PromotedNotificationContentModel.Builder("fourthNotif").build(),
                     ),
