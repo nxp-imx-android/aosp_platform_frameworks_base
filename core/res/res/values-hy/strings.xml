@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Հարցնել ապակողպող նախշը"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Հարցնել գաղտնաբառը"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Տեղադրվել է ադմինիստրատորի կողմից։\nԱնցեք կարգավորումներ՝ տրամադրված թույլտվությունները դիտելու համար"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Թարմացվել է ձեր ադմինիստրատորի կողմից։\nԱնցեք կարգավորումներ՝ տրամադրված թույլտվությունները դիտելու համար"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Ջնջվել է ձեր ադմինիստրատորի կողմից"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Եղավ"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"«Մարտկոցի տնտեսում» գործառույթը միացնում է մուգ թեման և անջատում կամ սահմանափակում է աշխատանքը ֆոնային ռեժիմում, որոշ վիզուալ էֆեկտներ, ցանցային միացումներ և այլ գործառույթներ։"</string>
@@ -2274,6 +2273,18 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Ոլորել"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Դադարեցնել"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Դիրքը"</string>
+    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
+    <skip />
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> փաթեթը գցվեց ՍԱՀՄԱՆԱՓԱԿՎԱԾ զամբյուղի մեջ"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>՝"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"օգտատերը պատկեր է ուղարկել"</string>
@@ -2481,6 +2492,8 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"Աշխատանքային 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"Փորձնական"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"Ընդհանուր"</string>
+    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
+    <skip />
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"Աշխատանքային պրոֆիլ"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"Մասնավոր տարածք"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Կլոն"</string>

@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ಅನ್‌ಪಿನ್ ಮಾಡಲು ಅನ್‌ಲಾಕ್ ಪ್ಯಾಟರ್ನ್ ಕೇಳಿ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ಅನ್‌ಪಿನ್ ಮಾಡಲು ಪಾಸ್‌ವರ್ಡ್ ಕೇಳು"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿದ್ದಾರೆ.\nನೀಡಲಾದ ಅನುಮತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಪ್‌ಡೇಟ್ ಮಾಡಿದ್ದಾರೆ.\nನೀಡಲಾದ ಅನುಮತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಅಳಿಸಿದ್ದಾರೆ"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ಸರಿ"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ಬ್ಯಾಟರಿ ಸೇವರ್, ಡಾರ್ಕ್ ಥೀಮ್ ಅನ್ನು ಆನ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ಹಿನ್ನೆಲೆ ಚಟುವಟಿಕೆ, ಕೆಲವು ವಿಷುವಲ್ ಎಫೆಕ್ಟ್‌ಗಳು, ಕೆಲವು ಫೀಚರ್‌ಗಳು ಮತ್ತು ಇತರ ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳನ್ನು ಮಿತಿಗೊಳಿಸುತ್ತದೆ ಅಥವಾ ಆಫ್ ಮಾಡುತ್ತದೆ."</string>
@@ -2274,6 +2273,18 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ಸ್ಕ್ರಾಲ್ ಮಾಡಿ"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ವಿರಾಮಗೊಳಿಸಿ"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ಸ್ಥಾನ"</string>
+    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
+    <skip />
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ಅನ್ನು ನಿರ್ಬಂಧಿತ ಬಕೆಟ್‌ಗೆ ಹಾಕಲಾಗಿದೆ"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"ಚಿತ್ರವನ್ನು ಕಳುಹಿಸಲಾಗಿದೆ"</string>
@@ -2481,6 +2492,8 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"ಕೆಲಸ 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"ಪರೀಕ್ಷೆ"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"ಸಮುದಾಯ"</string>
+    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
+    <skip />
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"ಉದ್ಯೋಗ ಪ್ರೊಫೈಲ್"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"ಪ್ರೈವೆಟ್ ಸ್ಪೇಸ್"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"ಕ್ಲೋನ್"</string>
