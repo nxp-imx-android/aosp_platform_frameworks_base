@@ -340,16 +340,16 @@ class UserController implements Handler.Callback {
     private volatile ArraySet<String> mCurWaitingUserSwitchCallbacks;
 
     /**
-     * Messages for switching from {@link android.os.UserHandle#SYSTEM}.
+     * Message shown when switching from a user.
      */
     @GuardedBy("mLock")
-    private String mSwitchingFromSystemUserMessage;
+    private final SparseArray<String> mSwitchingFromUserMessage = new SparseArray<>();
 
     /**
-     * Messages for switching to {@link android.os.UserHandle#SYSTEM}.
+     * Message shown when switching to a user.
      */
     @GuardedBy("mLock")
-    private String mSwitchingToSystemUserMessage;
+    private final SparseArray<String> mSwitchingToUserMessage = new SparseArray<>();
 
     /**
      * Callbacks that are still active after {@link #getUserSwitchTimeoutMs}
@@ -2271,8 +2271,8 @@ class UserController implements Handler.Callback {
     private void showUserSwitchDialog(Pair<UserInfo, UserInfo> fromToUserPair) {
         // The dialog will show and then initiate the user switch by calling startUserInForeground
         mInjector.showUserSwitchingDialog(fromToUserPair.first, fromToUserPair.second,
-                getSwitchingFromSystemUserMessageUnchecked(),
-                getSwitchingToSystemUserMessageUnchecked(),
+                getSwitchingFromUserMessageUnchecked(fromToUserPair.first.id),
+                getSwitchingToUserMessageUnchecked(fromToUserPair.second.id),
                 /* onShown= */ () -> sendStartUserSwitchFgMessage(fromToUserPair.second.id));
     }
 
@@ -3388,41 +3388,45 @@ class UserController implements Handler.Callback {
         return mLockPatternUtils.isLockScreenDisabled(userId);
     }
 
-    void setSwitchingFromSystemUserMessage(String switchingFromSystemUserMessage) {
+    void setSwitchingFromUserMessage(@UserIdInt int user, @Nullable String message) {
         synchronized (mLock) {
-            mSwitchingFromSystemUserMessage = switchingFromSystemUserMessage;
+            mSwitchingFromUserMessage.put(user, message);
         }
     }
 
-    void setSwitchingToSystemUserMessage(String switchingToSystemUserMessage) {
+    void setSwitchingToUserMessage(@UserIdInt int user, @Nullable String message) {
         synchronized (mLock) {
-            mSwitchingToSystemUserMessage = switchingToSystemUserMessage;
+            mSwitchingToUserMessage.put(user, message);
         }
     }
 
     // Called by AMS, must check permission
-    String getSwitchingFromSystemUserMessage() {
-        checkHasManageUsersPermission("getSwitchingFromSystemUserMessage()");
+    @Nullable
+    String getSwitchingFromUserMessage(@UserIdInt int userId) {
+        checkHasManageUsersPermission("getSwitchingFromUserMessage()");
 
-        return getSwitchingFromSystemUserMessageUnchecked();
+        return getSwitchingFromUserMessageUnchecked(userId);
     }
 
     // Called by AMS, must check permission
-    String getSwitchingToSystemUserMessage() {
-        checkHasManageUsersPermission("getSwitchingToSystemUserMessage()");
+    @Nullable
+    String getSwitchingToUserMessage(@UserIdInt int userId) {
+        checkHasManageUsersPermission("getSwitchingToUserMessage()");
 
-        return getSwitchingToSystemUserMessageUnchecked();
+        return getSwitchingToUserMessageUnchecked(userId);
     }
 
-    private String getSwitchingFromSystemUserMessageUnchecked() {
+    @Nullable
+    private String getSwitchingFromUserMessageUnchecked(@UserIdInt int userId) {
         synchronized (mLock) {
-            return mSwitchingFromSystemUserMessage;
+            return mSwitchingFromUserMessage.get(userId);
         }
     }
 
-    private String getSwitchingToSystemUserMessageUnchecked() {
+    @Nullable
+    private String getSwitchingToUserMessageUnchecked(@UserIdInt int userId) {
         synchronized (mLock) {
-            return mSwitchingToSystemUserMessage;
+            return mSwitchingToUserMessage.get(userId);
         }
     }
 
@@ -3518,12 +3522,8 @@ class UserController implements Handler.Callback {
                     + mIsBroadcastSentForSystemUserStarted);
             pw.println("  mIsBroadcastSentForSystemUserStarting:"
                     + mIsBroadcastSentForSystemUserStarting);
-            if (mSwitchingFromSystemUserMessage != null) {
-                pw.println("  mSwitchingFromSystemUserMessage: " + mSwitchingFromSystemUserMessage);
-            }
-            if (mSwitchingToSystemUserMessage != null) {
-                pw.println("  mSwitchingToSystemUserMessage: " + mSwitchingToSystemUserMessage);
-            }
+            pw.println("  mSwitchingFromUserMessage:" + mSwitchingFromUserMessage);
+            pw.println("  mSwitchingToUserMessage:" + mSwitchingToUserMessage);
             pw.println("  mLastUserUnlockingUptime: " + mLastUserUnlockingUptime);
         }
     }
@@ -4046,7 +4046,7 @@ class UserController implements Handler.Callback {
         }
 
         void showUserSwitchingDialog(UserInfo fromUser, UserInfo toUser,
-                String switchingFromSystemUserMessage, String switchingToSystemUserMessage,
+                @Nullable String switchingFromUserMessage, @Nullable String switchingToUserMessage,
                 @NonNull Runnable onShown) {
             if (mService.mContext.getPackageManager()
                     .hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE)) {
@@ -4059,7 +4059,7 @@ class UserController implements Handler.Callback {
             synchronized (mUserSwitchingDialogLock) {
                 dismissUserSwitchingDialog(null);
                 mUserSwitchingDialog = new UserSwitchingDialog(mService.mContext, fromUser, toUser,
-                        mHandler, switchingFromSystemUserMessage, switchingToSystemUserMessage);
+                        mHandler, switchingFromUserMessage, switchingToUserMessage);
                 mUserSwitchingDialog.show(onShown);
             }
         }

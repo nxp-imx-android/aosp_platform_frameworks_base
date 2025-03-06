@@ -52,6 +52,7 @@ import com.android.internal.R;
 import com.android.internal.util.ObjectUtils;
 import com.android.internal.util.UserIcons;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -75,21 +76,23 @@ class UserSwitchingDialog extends Dialog {
 
     protected final UserInfo mOldUser;
     protected final UserInfo mNewUser;
-    private final String mSwitchingFromSystemUserMessage;
-    private final String mSwitchingToSystemUserMessage;
+    @Nullable
+    private final String mSwitchingFromUserMessage;
+    @Nullable
+    private final String mSwitchingToUserMessage;
     protected final Context mContext;
     private final int mTraceCookie;
 
     UserSwitchingDialog(Context context, UserInfo oldUser, UserInfo newUser, Handler handler,
-            String switchingFromSystemUserMessage, String switchingToSystemUserMessage) {
+            @Nullable String switchingFromUserMessage, @Nullable String switchingToUserMessage) {
         super(context, R.style.Theme_Material_NoActionBar_Fullscreen);
 
         mContext = context;
         mOldUser = oldUser;
         mNewUser = newUser;
         mHandler = handler;
-        mSwitchingFromSystemUserMessage = switchingFromSystemUserMessage;
-        mSwitchingToSystemUserMessage = switchingToSystemUserMessage;
+        mSwitchingFromUserMessage = switchingFromUserMessage;
+        mSwitchingToUserMessage = switchingToUserMessage;
         mDisableAnimations = SystemProperties.getBoolean(
                 "debug.usercontroller.disable_user_switching_dialog_animations", false);
         mTraceCookie = UserHandle.MAX_SECONDARY_USER_ID * oldUser.id + newUser.id;
@@ -166,14 +169,14 @@ class UserSwitchingDialog extends Dialog {
                     : R.string.demo_starting_message);
         }
 
-        final String message =
-                mOldUser.id == UserHandle.USER_SYSTEM ? mSwitchingFromSystemUserMessage
-                : mNewUser.id == UserHandle.USER_SYSTEM ? mSwitchingToSystemUserMessage : null;
+        if (mSwitchingFromUserMessage != null || mSwitchingToUserMessage != null) {
+            if (mSwitchingFromUserMessage != null && mSwitchingToUserMessage != null) {
+                return mSwitchingFromUserMessage + " " + mSwitchingToUserMessage;
+            }
+            return Objects.requireNonNullElse(mSwitchingFromUserMessage, mSwitchingToUserMessage);
+        }
 
-        return message != null ? message
-                // If switchingFromSystemUserMessage or switchingToSystemUserMessage is null,
-                // fallback to system message.
-                : res.getString(R.string.user_switching_message, mNewUser.name);
+        return res.getString(R.string.user_switching_message, mNewUser.name);
     }
 
     @Override
