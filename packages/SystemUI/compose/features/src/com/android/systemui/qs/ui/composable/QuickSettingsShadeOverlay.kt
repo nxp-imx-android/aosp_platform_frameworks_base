@@ -258,15 +258,18 @@ fun ContentScope.QuickSettingsLayout(
                 modifier = Modifier.padding(horizontal = QuickSettingsShade.Dimensions.Padding),
             )
 
-            BrightnessSliderContainer(
-                viewModel = viewModel.brightnessSliderViewModel,
-                containerColors = ContainerColors.singleColor(OverlayShade.Colors.PanelBackground),
-                modifier =
-                    Modifier.systemGestureExclusionInShade(
-                            enabled = { layoutState.transitionState is TransitionState.Idle }
-                        )
-                        .fillMaxWidth(),
-            )
+            Box(
+                Modifier.systemGestureExclusionInShade(
+                    enabled = { layoutState.transitionState is TransitionState.Idle }
+                )
+            ) {
+                BrightnessSliderContainer(
+                    viewModel = viewModel.brightnessSliderViewModel,
+                    containerColors =
+                        ContainerColors.singleColor(OverlayShade.Colors.PanelBackground),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             Box {
                 GridAnchor()

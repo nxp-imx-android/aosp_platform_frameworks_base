@@ -747,22 +747,24 @@ constructor(
                         val BrightnessSlider =
                             @Composable {
                                 AlwaysDarkMode {
-                                    BrightnessSliderContainer(
-                                        viewModel = containerViewModel.brightnessSliderViewModel,
-                                        containerColors =
-                                            ContainerColors(
-                                                Color.Transparent,
-                                                ContainerColors.defaultContainerColor,
-                                            ),
-                                        modifier =
-                                            Modifier.systemGestureExclusionInShade(
-                                                    enabled = {
-                                                        layoutState.transitionState is
-                                                            TransitionState.Idle
-                                                    }
-                                                )
-                                                .fillMaxWidth(),
-                                    )
+                                    Box(
+                                        Modifier.systemGestureExclusionInShade(
+                                            enabled = {
+                                                layoutState.transitionState is TransitionState.Idle
+                                            }
+                                        )
+                                    ) {
+                                        BrightnessSliderContainer(
+                                            viewModel =
+                                                containerViewModel.brightnessSliderViewModel,
+                                            containerColors =
+                                                ContainerColors(
+                                                    Color.Transparent,
+                                                    ContainerColors.defaultContainerColor,
+                                                ),
+                                            modifier = Modifier.fillMaxWidth(),
+                                        )
+                                    }
                                 }
                             }
                         val TileGrid =
