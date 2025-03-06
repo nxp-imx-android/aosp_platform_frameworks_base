@@ -58287,7 +58287,9 @@ package android.view.inspector {
   }
 
   public final class WindowInspector {
+    method @FlaggedApi("android.view.flags.root_view_changed_listener") public static void addGlobalWindowViewsListener(@NonNull java.util.concurrent.Executor, @NonNull java.util.function.Consumer<java.util.List<android.view.View>>);
     method @NonNull public static java.util.List<android.view.View> getGlobalWindowViews();
+    method @FlaggedApi("android.view.flags.root_view_changed_listener") public static void removeGlobalWindowViewsListener(@NonNull java.util.function.Consumer<java.util.List<android.view.View>>);
   }
 
 }

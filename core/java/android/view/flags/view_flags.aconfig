@@ -159,3 +159,11 @@ flag {
     bug: "364653005"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "root_view_changed_listener"
+    namespace: "windowing_sdk"
+    description: "Implement listener pattern for WindowInspector#getGlobalWindowViews."
+    bug: "394397033"
+    is_fixed_read_only: false
+}
