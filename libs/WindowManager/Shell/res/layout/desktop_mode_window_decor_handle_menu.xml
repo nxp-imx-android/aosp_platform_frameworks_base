@@ -22,8 +22,8 @@
     android:layout_height="wrap_content"
     android:clipChildren="false"
     android:clipToPadding="false"
-    android:paddingBottom="@dimen/desktop_mode_handle_menu_pill_elevation"
-    android:paddingEnd="@dimen/desktop_mode_handle_menu_pill_elevation"
+    android:paddingBottom="@dimen/desktop_mode_handle_menu_pill_elevation_padding"
+    android:paddingEnd="@dimen/desktop_mode_handle_menu_pill_elevation_padding"
     android:orientation="vertical">
 
     <LinearLayout

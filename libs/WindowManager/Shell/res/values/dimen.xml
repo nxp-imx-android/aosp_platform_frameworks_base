@@ -528,16 +528,20 @@
     <!-- The radius of the Maximize menu shadow. -->
     <dimen name="desktop_mode_maximize_menu_shadow_radius">8dp</dimen>
 
-    <!-- The width of the handle menu in desktop mode.  -->
-    <dimen name="desktop_mode_handle_menu_width">216dp</dimen>
+    <!-- The width of the handle menu in desktop mode plus the 2dp added for padding to account for
+         pill elevation. -->
+    <dimen name="desktop_mode_handle_menu_width">218dp</dimen>
 
-    <!-- The maximum height of the handle menu in desktop mode. Three pills at 52dp each,
-         additional actions pill 208dp, plus 2dp spacing between them plus 4dp top padding.
-         52*3 + 52*4 + (4-1)*2 + 4 = 374 -->
-    <dimen name="desktop_mode_handle_menu_height">374dp</dimen>
+    <!-- The maximum height of the handle menu in desktop mode. Three pills at 52dp each plus
+         additional actions pill 208dp plus 2dp spacing between them plus 4dp top padding
+         plus 2dp bottom padding: 52*3 + 52*4 + (4-1)*2 + 4 + 2 = 376 -->
+    <dimen name="desktop_mode_handle_menu_height">376dp</dimen>
 
     <!-- The elevation set on the handle menu pills. -->
     <dimen name="desktop_mode_handle_menu_pill_elevation">1dp</dimen>
+
+    <!-- The padding added to account for the handle menu's pills' elevation. -->
+    <dimen name="desktop_mode_handle_menu_pill_elevation_padding">2dp</dimen>
 
     <!-- The height of the handle menu's "App Info" pill in desktop mode. -->
     <dimen name="desktop_mode_handle_menu_app_info_pill_height">52dp</dimen>
