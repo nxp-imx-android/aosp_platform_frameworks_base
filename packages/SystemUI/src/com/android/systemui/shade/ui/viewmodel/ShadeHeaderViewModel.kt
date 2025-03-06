@@ -26,6 +26,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.compose.animation.scene.OverlayKey
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -86,6 +87,22 @@ constructor(
         (ViewGroup, StatusBarLocation) -> BatteryMeterViewController =
         batteryMeterViewControllerFactory::create
 
+    val showClock: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "showClock",
+            initialValue =
+                shouldShowClock(
+                    isShadeLayoutWide = shadeInteractor.isShadeLayoutWide.value,
+                    overlays = sceneInteractor.currentOverlays.value,
+                ),
+            source =
+                combine(
+                    shadeInteractor.isShadeLayoutWide,
+                    sceneInteractor.currentOverlays,
+                    ::shouldShowClock,
+                ),
+        )
+
     val notificationsChipHighlight: HeaderChipHighlight by
         hydrator.hydratedStateOf(
             traceName = "notificationsChipHighlight",
@@ -112,13 +129,6 @@ constructor(
                         else -> HeaderChipHighlight.None
                     }
                 },
-        )
-
-    val isShadeLayoutWide: Boolean by
-        hydrator.hydratedStateOf(
-            traceName = "isShadeLayoutWide",
-            initialValue = shadeInteractor.isShadeLayoutWide.value,
-            source = shadeInteractor.isShadeLayoutWide,
         )
 
     /** True if there is exactly one mobile connection. */
@@ -269,6 +279,11 @@ constructor(
 
             override fun foregroundColor(colorScheme: ColorScheme): Color = colorScheme.onSecondary
         }
+    }
+
+    private fun shouldShowClock(isShadeLayoutWide: Boolean, overlays: Set<OverlayKey>): Boolean {
+        // Notifications shade on narrow layout renders its own clock. Hide the header clock.
+        return isShadeLayoutWide || Overlays.NotificationsShade !in overlays
     }
 
     private fun getFormatFromPattern(pattern: String?): DateFormat {

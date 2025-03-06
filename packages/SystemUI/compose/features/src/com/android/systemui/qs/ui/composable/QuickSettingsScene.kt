@@ -356,7 +356,8 @@ private fun ContentScope.QuickSettingsScene(
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                 )
                             }
-                        else -> CollapsedShadeHeader(viewModel = headerViewModel)
+                        else ->
+                            CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                     // This view has its own horizontal padding
