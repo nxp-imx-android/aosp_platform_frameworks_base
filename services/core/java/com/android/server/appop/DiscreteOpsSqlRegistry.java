@@ -180,7 +180,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                 ChronoUnit.MILLIS).toEpochMilli());
         List<DiscreteOp> discreteOps = mDiscreteOpsDbHelper.getDiscreteOps(filter, uidFilter,
                 packageNameFilter, attributionTagFilter, opCodes, opFlagsFilter, beginTimeMillis,
-                endTimeMillis, -1, null);
+                endTimeMillis, -1, null, false);
 
         LongSparseArray<AttributionChain> attributionChains = null;
         if (assembleChains) {
@@ -213,14 +213,15 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
             @AppOpsManager.HistoricalOpsRequestFilter int filter, int dumpOp,
             @NonNull SimpleDateFormat sdf, @NonNull Date date, @NonNull String prefix,
             int nDiscreteOps) {
-        writeAndClearOldAccessHistory();
+        // flush the cache into database before dump.
+        mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.getAllEventsAndClear());
         IntArray opCodes = new IntArray();
         if (dumpOp != AppOpsManager.OP_NONE) {
             opCodes.add(dumpOp);
         }
         List<DiscreteOp> discreteOps = mDiscreteOpsDbHelper.getDiscreteOps(filter, uidFilter,
                 packageNameFilter, attributionTagFilter, opCodes, 0, -1,
-                -1, nDiscreteOps, DiscreteOpsTable.Columns.ACCESS_TIME);
+                -1, nDiscreteOps, DiscreteOpsTable.Columns.ACCESS_TIME, false);
 
         pw.print(prefix);
         pw.print("Largest chain id: ");
