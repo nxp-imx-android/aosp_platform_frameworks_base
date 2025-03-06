@@ -2357,8 +2357,8 @@
     <string name="system_multitasking_lhs">Use split screen with app on the left</string>
     <!-- User visible title for the keyboard shortcut that switches from split screen to full screen [CHAR LIMIT=70] -->
     <string name="system_multitasking_full_screen">Use full screen</string>
-    <!-- User visible title for the keyboard shortcut that switches to desktop view [CHAR LIMIT=70] -->
-    <string name="system_multitasking_desktop_view">Use desktop view</string>
+    <!-- User visible title for the keyboard shortcut that switches to desktop windowing [CHAR LIMIT=70] -->
+    <string name="system_multitasking_desktop_view">Use desktop windowing</string>
     <!-- User visible title for the keyboard shortcut that switches to app on right or below while using split screen [CHAR LIMIT=70] -->
     <string name="system_multitasking_splitscreen_focus_rhs">Switch to app on right or below while using split screen</string>
     <!-- User visible title for the keyboard shortcut that switches to app on left or above while using split screen [CHAR LIMIT=70] -->
