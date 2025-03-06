@@ -464,6 +464,10 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         if (mIsAnimatable) {
             // TODO(b/397340540): list out pages having illustration without a content description.
             if (TextUtils.isEmpty(mContentDescription)) {
+                // Default content description will be attached if there's no content description.
+                illustrationView.setContentDescription(
+                        getContext().getString(
+                                R.string.settingslib_illustration_content_description));
                 Log.w(TAG, "Illustration should have a content description. preference key = "
                         + getKey());
             }
@@ -483,8 +487,6 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
     }
 
     private void updateAccessibilityAction(ViewGroup container) {
-        // Setting the state of animation
-        container.setStateDescription(getStateDescriptionForAnimation());
         container.setAccessibilityDelegate(new View.AccessibilityDelegate() {
             @Override
             public void onInitializeAccessibilityNodeInfo(View host, AccessibilityNodeInfo info) {
@@ -502,14 +504,6 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
             return getContext().getString(R.string.settingslib_action_label_resume);
         } else {
             return getContext().getString(R.string.settingslib_action_label_pause);
-        }
-    }
-
-    private String getStateDescriptionForAnimation() {
-        if (mIsAnimationPaused) {
-            return getContext().getString(R.string.settingslib_state_animation_paused);
-        } else {
-            return getContext().getString(R.string.settingslib_state_animation_playing);
         }
     }
 
