@@ -71,6 +71,7 @@ import com.android.systemui.bluetooth.qsdialog.DeviceItem;
 import com.android.systemui.bluetooth.qsdialog.DeviceItemType;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.plugins.ActivityStarter;
+import com.android.systemui.qs.shared.QSSettingsPackageRepository;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.statusbar.phone.SystemUIDialogManager;
@@ -108,6 +109,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     private static final String TEST_LABEL = "label";
     private static final int TEST_PRESET_INDEX = 1;
     private static final String TEST_PRESET_NAME = "test_preset";
+    private static final String SETTINGS_PACKAGE_NAME = "com.android.settings";
     private final FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
 
     @Mock
@@ -137,6 +139,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     @Mock
     private HearingDevicesUiEventLogger mUiEventLogger;
     @Mock
+    private QSSettingsPackageRepository mQSSettingsPackageRepository;
+    @Mock
     private CachedBluetoothDevice mCachedDevice;
     @Mock
     private BluetoothDevice mDevice;
@@ -164,6 +168,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
         when(mCachedDeviceManager.getCachedDevicesCopy()).thenReturn(List.of(mCachedDevice));
         when(mLocalBluetoothManager.getEventManager()).thenReturn(mBluetoothEventManager);
         when(mSysUiState.setFlag(anyLong(), anyBoolean())).thenReturn(mSysUiState);
+        when(mQSSettingsPackageRepository.getSettingsPackageName())
+                .thenReturn(SETTINGS_PACKAGE_NAME);
         when(mDevice.getBondState()).thenReturn(BOND_BONDED);
         when(mDevice.isConnected()).thenReturn(true);
         when(mCachedDevice.getDevice()).thenReturn(mDevice);
@@ -195,6 +201,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 anyInt(), any());
         assertThat(intentCaptor.getValue().getAction()).isEqualTo(
                 Settings.ACTION_HEARING_DEVICE_PAIRING_SETTINGS);
+        assertThat(intentCaptor.getValue().getPackage()).isEqualTo(SETTINGS_PACKAGE_NAME);
         verify(mUiEventLogger).log(HearingDevicesUiEvent.HEARING_DEVICES_PAIR,
                 TEST_LAUNCH_SOURCE_ID);
     }
@@ -210,6 +217,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 anyInt(), any());
         assertThat(intentCaptor.getValue().getAction()).isEqualTo(
                 HearingDevicesDialogDelegate.ACTION_BLUETOOTH_DEVICE_DETAILS);
+        assertThat(intentCaptor.getValue().getPackage()).isEqualTo(SETTINGS_PACKAGE_NAME);
         verify(mUiEventLogger).log(HearingDevicesUiEvent.HEARING_DEVICES_GEAR_CLICK,
                 TEST_LAUNCH_SOURCE_ID);
     }
@@ -392,7 +400,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 mExecutor,
                 mExecutor,
                 mAudioManager,
-                mUiEventLogger
+                mUiEventLogger,
+                mQSSettingsPackageRepository
         );
         mDialog = mDialogDelegate.createDialog();
     }
