@@ -203,7 +203,7 @@ class GroupedTaskInfoTest : ShellTestCase() {
         assertThat(taskInfoFromParcel.taskInfoList).hasSize(3)
         // Only compare task ids
         val taskIdComparator = Correspondence.transforming<TaskInfo, Int>(
-            { it?.taskId }, "has taskId of"
+            { it.taskId }, "has taskId of"
         )
         assertThat(taskInfoFromParcel.taskInfoList).comparingElementsUsing(taskIdComparator)
             .containsExactly(1, 2, 3).inOrder()
