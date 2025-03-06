@@ -68,6 +68,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewStub;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.Chronometer;
@@ -4035,10 +4036,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void notifyAccessibilityContentExpansionChanged() {
-        AccessibilityEvent event = AccessibilityEvent.obtain(TYPE_WINDOW_CONTENT_CHANGED);
-        onPopulateAccessibilityEvent(event);
-        event.setContentChangeTypes(CONTENT_CHANGE_TYPE_EXPANDED);
-        sendAccessibilityEventUnchecked(event);
+        if (AccessibilityManager.getInstance(mContext).isEnabled()) {
+            AccessibilityEvent event = AccessibilityEvent.obtain();
+            event.setEventType(TYPE_WINDOW_CONTENT_CHANGED);
+            event.setContentChangeTypes(CONTENT_CHANGE_TYPE_EXPANDED);
+            sendAccessibilityEventUnchecked(event);
+        }
     }
 
     public void setOnExpansionChangedListener(@Nullable OnExpansionChangedListener listener) {
