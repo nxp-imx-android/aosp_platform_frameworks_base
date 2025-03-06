@@ -252,8 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> سے منسلک ہیں۔"</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> سے منسلک ہے۔"</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"گروپ کو پھیلائیں۔"</string>
-    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"آلہ کو گروپ شامل کریں۔"</string>
-    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"آلہ کو گروپ سے ہٹائیں"</string>
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"آلہ کو گروپ میں شامل کریں۔"</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"آلہ کو گروپ سے ہٹائیں۔"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ایپلیکیشن کھولیں۔"</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"مربوط نہیں ہے۔"</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"رومنگ"</string>
@@ -435,6 +435,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"اطراف کی آواز چالو کریں"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"ٹولز"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"لائیو کیپشن"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"نوٹ"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"آلے کا مائیکروفون غیر مسدود کریں؟"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"آلے کا کیمرا غیر مسدود کریں؟"</string>
@@ -907,7 +909,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"بائیں جانب ایپ کے ساتھ اسپلٹ اسکرین کا استعمال کریں"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"دائیں جانب ایپ کے ساتھ اسپلٹ اسکرین کا استعمال کریں"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"فُل اسکرین استعمال کریں"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ڈیسک ٹاپ منظر استعمال کریں"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"اسپلٹ اسکرین کا استعمال کرتے ہوئے دائیں یا نیچے ایپ پر سوئچ کریں"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"اسپلٹ اسکرین کا استعمال کرتے ہوئے بائیں یا اوپر ایپ پر سوئچ کریں"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"اسپلٹ اسکرین کے دوران: ایک ایپ کو دوسرے سے تبدیل کریں"</string>
@@ -1003,8 +1006,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"پوزیشن <xliff:g id="POSITION">%1$d</xliff:g> میں شامل کریں"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"پوزیشن غلط ہے۔"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"پوزیشن <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"ٹائل پہلے ہی شامل کر دیا گیا ہے"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"ٹائل کو شامل کیا گیا"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"ٹائل کو ہٹا دیا گیا"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"فوری ترتیبات کا ایڈیٹر۔"</string>

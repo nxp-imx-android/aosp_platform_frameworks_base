@@ -437,6 +437,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Poista ympäristön mykistys"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Työkalut"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Livetekstitys"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Muistiinpano"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Kumotaanko laitteen mikrofonin esto?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Kumotaanko laitteen kameran esto?"</string>
@@ -909,7 +911,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Käytä jaettua näyttöä niin, että sovellus on oikealla"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Käytä jaettua näyttöä niin, että sovellus on vasemmalla"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Käytä koko näytön tilaa"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Käytä tietokonenäkymää"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Vaihda sovellukseen oikealla tai alapuolella jaetussa näytössä"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Vaihda sovellukseen vasemmalla tai yläpuolella jaetussa näytössä"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Jaetun näytön aikana: korvaa sovellus toisella"</string>

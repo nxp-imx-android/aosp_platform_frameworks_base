@@ -423,18 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"周囲の音"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"左"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"右"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"周囲の音"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"周囲の音（左）"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"周囲の音（右）"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"開く - 左右それぞれで制御する"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"閉じる - まとめて制御する"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"周囲の音をミュート"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"周囲の音のミュートを解除"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"ツール"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"自動字幕起こし"</string>
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"設定"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"注"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"デバイスのマイクのブロックを解除しますか？"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"デバイスのカメラのブロックを解除しますか？"</string>
@@ -907,7 +905,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"分割画面の使用（アプリを右側に表示）"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"分割画面の使用（アプリを左側に表示）"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"全画面表示に切り替える"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"デスクトップ ビューを使用する"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"分割画面の使用時に右側または下部のアプリに切り替える"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"分割画面の使用時に左側または上部のアプリに切り替える"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"分割画面中: アプリを順に置換する"</string>
@@ -1003,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"ポジション <xliff:g id="POSITION">%1$d</xliff:g> に追加"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"位置が無効です。"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"位置: <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"タイルはすでに追加されています"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"タイルを追加しました"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"タイルを削除しました"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"クイック設定エディタ"</string>

@@ -423,18 +423,17 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Entorn"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Esquerra"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Dreta"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Entorn"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Entorn esquerre"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Entorn dret"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Desplega els controls separats d\'esquerra i dreta"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Replega per unificar el control"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Silencia l\'entorn"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Deixa de silenciar l\'entorn"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Eines"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Subtítols instantanis"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Nota"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Vols desbloquejar el micròfon del dispositiu?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Vols desbloquejar la càmera del dispositiu?"</string>
@@ -907,7 +906,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utilitzar la pantalla dividida amb l\'aplicació a la dreta"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utilitzar la pantalla dividida amb l\'aplicació a l\'esquerra"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Utilitza la pantalla completa"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Utilitza la visualització per a ordinadors"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Canvia a l\'aplicació de la dreta o de sota amb la pantalla dividida"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Canvia a l\'aplicació de l\'esquerra o de dalt amb la pantalla dividida"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Durant el mode de pantalla dividida: substitueix una app per una altra"</string>
