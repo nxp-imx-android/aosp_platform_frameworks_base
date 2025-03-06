@@ -19,9 +19,9 @@ package com.android.hoststubgen.filters
  * Base class for an [OutputFilter] that uses another filter as a fallback.
  */
 abstract class DelegatingFilter(
-        // fallback shouldn't be used by subclasses directly, so make it private.
-        // They should instead be calling into `super` or `outermostFilter`.
-        private val fallback: OutputFilter
+    // fallback shouldn't be used by subclasses directly, so make it private.
+    // They should instead be calling into `super` or `outermostFilter`.
+    private val fallback: OutputFilter
 ) : OutputFilter() {
     init {
         fallback.outermostFilter = this
@@ -50,24 +50,24 @@ abstract class DelegatingFilter(
     }
 
     override fun getPolicyForField(
-            className: String,
-            fieldName: String
+        className: String,
+        fieldName: String
     ): FilterPolicyWithReason {
         return fallback.getPolicyForField(className, fieldName)
     }
 
     override fun getPolicyForMethod(
-            className: String,
-            methodName: String,
-            descriptor: String
+        className: String,
+        methodName: String,
+        descriptor: String
     ): FilterPolicyWithReason {
         return fallback.getPolicyForMethod(className, methodName, descriptor)
     }
 
     override fun getRenameTo(
-            className: String,
-            methodName: String,
-            descriptor: String
+        className: String,
+        methodName: String,
+        descriptor: String
     ): String? {
         return fallback.getRenameTo(className, methodName, descriptor)
     }
@@ -97,13 +97,12 @@ abstract class DelegatingFilter(
     }
 
     override fun getMethodCallReplaceTo(
-        callerClassName: String,
-        callerMethodName: String,
         className: String,
         methodName: String,
         descriptor: String,
     ): MethodReplaceTarget? {
         return fallback.getMethodCallReplaceTo(
-            callerClassName, callerMethodName, className, methodName, descriptor)
+            className, methodName, descriptor
+        )
     }
 }

@@ -396,7 +396,7 @@ class ImplGeneratingAdapter(
             }
 
             val to = filter.getMethodCallReplaceTo(
-                currentClassName, callerMethodName, owner, name, descriptor
+                owner, name, descriptor
             )
 
             if (to == null
