@@ -107,6 +107,9 @@ interface NotificationScrollView {
     /** sets the current expand fraction */
     fun setExpandFraction(expandFraction: Float)
 
+    /** Sets the fraction of the LockScreen -> Shade transition. */
+    fun setFractionToShade(fraction: Float)
+
     /** sets the current QS expand fraction */
     fun setQsExpandFraction(expandFraction: Float)
 
