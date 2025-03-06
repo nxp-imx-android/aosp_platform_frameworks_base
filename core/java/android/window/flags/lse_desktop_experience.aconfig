@@ -938,3 +938,10 @@ flag {
     description: "Enables the desktop-first mode switching logic based on its form factor."
     bug: "394736817"
 }
+
+flag {
+    name: "enable_restart_menu_for_connected_displays"
+    namespace: "lse_desktop_experience"
+    description: "Enable restart menu UI, which is shown when an app moves between displays."
+    bug: "397804287"
+}
