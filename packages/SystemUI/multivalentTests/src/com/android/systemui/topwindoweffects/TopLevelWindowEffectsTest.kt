@@ -23,6 +23,10 @@ import androidx.test.filters.SmallTest
 import com.android.app.viewcapture.ViewCapture
 import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.keyevent.data.repository.fakeKeyEventRepository
+import com.android.systemui.keyevent.data.repository.keyEventRepository
+import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
+import com.android.systemui.keyevent.domain.interactor.keyEventInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -31,6 +35,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.topwindoweffects.data.repository.fakeSqueezeEffectRepository
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
+import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,6 +60,9 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     @Mock
     private lateinit var viewCapture: Lazy<ViewCapture>
 
+    @Mock
+    private lateinit var viewModelFactory: SqueezeEffectViewModel.Factory
+
     private val Kosmos.underTest by Kosmos.Fixture {
         TopLevelWindowEffects(
             context = mContext,
@@ -64,6 +72,8 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 lazyViewCapture = viewCapture,
                 isViewCaptureEnabled = false
             ),
+            keyEventInteractor = keyEventInteractor,
+            viewModelFactory = viewModelFactory,
             squeezeEffectInteractor = SqueezeEffectInteractor(
                 squeezeEffectRepository = fakeSqueezeEffectRepository
             )
@@ -93,6 +103,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     fun addViewToWindowWhenSqueezeEffectEnabled() =
         kosmos.runTest {
             fakeSqueezeEffectRepository.isSqueezeEffectEnabled.value = true
+            fakeKeyEventRepository.setPowerButtonDown(true)
 
             underTest.start()
 

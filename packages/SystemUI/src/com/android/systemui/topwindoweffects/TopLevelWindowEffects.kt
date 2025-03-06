@@ -25,8 +25,10 @@ import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.keyevent.domain.interactor.KeyEventInteractor
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.compose.EffectsWindowRoot
+import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -37,7 +39,9 @@ class TopLevelWindowEffects @Inject constructor(
     @Application private val context: Context,
     @Application private val applicationScope: CoroutineScope,
     private val windowManager: ViewCaptureAwareWindowManager,
-    private val squeezeEffectInteractor: SqueezeEffectInteractor
+    private val squeezeEffectInteractor: SqueezeEffectInteractor,
+    private val keyEventInteractor: KeyEventInteractor,
+    private val viewModelFactory: SqueezeEffectViewModel.Factory
 ) : CoreStartable {
 
     override fun start() {
@@ -45,12 +49,25 @@ class TopLevelWindowEffects @Inject constructor(
             var root: EffectsWindowRoot? = null
             squeezeEffectInteractor.isSqueezeEffectEnabled.collectLatest { enabled ->
                 // TODO: move window ops to a separate UI thread
-                if (enabled && root == null) {
-                    root = EffectsWindowRoot(context)
-                    root?.let { windowManager.addView(it, getWindowManagerLayoutParams()) }
-                } else if (root?.isAttachedToWindow == true) {
-                    windowManager.removeView(root)
-                    root = null
+                if (enabled) {
+                    keyEventInteractor.isPowerButtonDown.collectLatest { down ->
+                        // TODO: ignore new window creation when ignoring short power press duration
+                        if (down && root == null) {
+                            root = EffectsWindowRoot(
+                                context = context,
+                                viewModelFactory = viewModelFactory,
+                                onEffectFinished = {
+                                    if (root?.isAttachedToWindow == true) {
+                                        windowManager.removeView(root)
+                                        root = null
+                                    }
+                                }
+                            )
+                            root?.let {
+                                windowManager.addView(it, getWindowManagerLayoutParams())
+                            }
+                        }
+                    }
                 }
             }
         }
