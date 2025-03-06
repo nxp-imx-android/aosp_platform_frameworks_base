@@ -691,11 +691,11 @@ class CurrentTilesInteractorImplTest : SysuiTestCase() {
                 var currentModel: TileDetailsViewModel? = null
                 val setCurrentModel = { model: TileDetailsViewModel? -> currentModel = model }
                 tiles!![0].tile.getDetailsViewModel(setCurrentModel)
-                assertThat(currentModel?.getTitle()).isEqualTo("a")
+                assertThat(currentModel?.title).isEqualTo("a")
 
                 currentModel = null
                 tiles!![1].tile.getDetailsViewModel(setCurrentModel)
-                assertThat(currentModel?.getTitle()).isEqualTo("b")
+                assertThat(currentModel?.title).isEqualTo("b")
 
                 currentModel = null
                 tiles!![2].tile.getDetailsViewModel(setCurrentModel)

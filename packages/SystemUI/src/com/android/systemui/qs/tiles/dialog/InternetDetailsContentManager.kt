@@ -43,6 +43,9 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.annotation.MainThread
 import androidx.annotation.WorkerThread
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -79,8 +82,6 @@ constructor(
     private val internetDetailsContentController: InternetDetailsContentController,
     @Assisted(CAN_CONFIG_MOBILE_DATA) private val canConfigMobileData: Boolean,
     @Assisted(CAN_CONFIG_WIFI) private val canConfigWifi: Boolean,
-    @Assisted private val coroutineScope: CoroutineScope,
-    @Assisted private var context: Context,
     private val uiEventLogger: UiEventLogger,
     @Main private val handler: Handler,
     @Background private val backgroundExecutor: Executor,
@@ -121,26 +122,29 @@ constructor(
     private lateinit var shareWifiButton: Button
     private lateinit var airplaneModeButton: Button
     private var alertDialog: AlertDialog? = null
-
-    private val canChangeWifiState =
-        WifiEnterpriseRestrictionUtils.isChangeWifiStateAllowed(context)
+    private var canChangeWifiState = false
     private var wifiNetworkHeight = 0
     private var backgroundOn: Drawable? = null
     private var backgroundOff: Drawable? = null
     private var clickJob: Job? = null
     private var defaultDataSubId = internetDetailsContentController.defaultDataSubscriptionId
-    @VisibleForTesting
-    internal var adapter = InternetAdapter(internetDetailsContentController, coroutineScope)
+    @VisibleForTesting internal lateinit var adapter: InternetAdapter
     @VisibleForTesting internal var wifiEntriesCount: Int = 0
     @VisibleForTesting internal var hasMoreWifiEntries: Boolean = false
+    private lateinit var context: Context
+    private lateinit var coroutineScope: CoroutineScope
+
+    var title by mutableStateOf("")
+        private set
+
+    var subTitle by mutableStateOf("")
+        private set
 
     @AssistedFactory
     interface Factory {
         fun create(
             @Assisted(CAN_CONFIG_MOBILE_DATA) canConfigMobileData: Boolean,
             @Assisted(CAN_CONFIG_WIFI) canConfigWifi: Boolean,
-            coroutineScope: CoroutineScope,
-            context: Context,
         ): InternetDetailsContentManager
     }
 
@@ -152,12 +156,16 @@ constructor(
      *
      * @param contentView The view to which the content manager should be bound.
      */
-    fun bind(contentView: View) {
+    fun bind(contentView: View, coroutineScope: CoroutineScope) {
         if (DEBUG) {
             Log.d(TAG, "Bind InternetDetailsContentManager")
         }
 
         this.contentView = contentView
+        context = contentView.context
+        this.coroutineScope = coroutineScope
+        adapter = InternetAdapter(internetDetailsContentController, coroutineScope)
+        canChangeWifiState = WifiEnterpriseRestrictionUtils.isChangeWifiStateAllowed(context)
 
         initializeLifecycle()
         initializeViews()
@@ -323,11 +331,11 @@ constructor(
         }
     }
 
-    fun getTitleText(): String {
+    private fun getTitleText(): String {
         return internetDetailsContentController.getDialogTitleText().toString()
     }
 
-    fun getSubtitleText(): String {
+    private fun getSubtitleText(): String {
         return internetDetailsContentController.getSubtitleText(isProgressBarVisible).toString()
     }
 
@@ -335,6 +343,13 @@ constructor(
         if (DEBUG) {
             Log.d(TAG, "updateDetailsUI ")
         }
+
+        if (!::context.isInitialized) {
+            return
+        }
+
+        title = getTitleText()
+        subTitle = getSubtitleText()
 
         airplaneModeButton.visibility =
             if (internetContent.isAirplaneModeEnabled) View.VISIBLE else View.GONE

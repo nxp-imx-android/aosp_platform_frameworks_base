@@ -61,6 +61,9 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
 
     DisposableEffect(Unit) { onDispose { detailsViewModel.closeDetailedView() } }
 
+    val title = tileDetailedViewModel.title
+    val subTitle = tileDetailedViewModel.subTitle
+
     Column(
         modifier =
             modifier
@@ -90,7 +93,7 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                     )
                 }
                 Text(
-                    text = tileDetailedViewModel.getTitle(),
+                    text = title,
                     modifier = Modifier.align(Alignment.CenterVertically),
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.titleLarge,
@@ -110,7 +113,7 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
                 }
             }
             Text(
-                text = tileDetailedViewModel.getSubTitle(),
+                text = subTitle,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleSmall,

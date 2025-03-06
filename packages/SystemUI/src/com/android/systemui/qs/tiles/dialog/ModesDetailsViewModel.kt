@@ -23,18 +23,14 @@ import com.android.systemui.statusbar.policy.ui.dialog.viewmodel.ModesDialogView
 class ModesDetailsViewModel(
     private val onSettingsClick: () -> Unit,
     val viewModel: ModesDialogViewModel,
-) : TileDetailsViewModel() {
+) : TileDetailsViewModel {
     override fun clickOnSettingsButton() {
         onSettingsClick()
     }
 
-    override fun getTitle(): String {
-        // TODO(b/388321032): Replace this string with a string in a translatable xml file.
-        return "Modes"
-    }
+    // TODO(b/388321032): Replace this string with a string in a translatable xml file.
+    override val title = "Modes"
 
-    override fun getSubTitle(): String {
-        // TODO(b/388321032): Replace this string with a string in a translatable xml file.
-        return "Silences interruptions from people and apps in different circumstances"
-    }
+    // TODO(b/388321032): Replace this string with a string in a translatable xml file.
+    override val subTitle = "Silences interruptions from people and apps in different circumstances"
 }
