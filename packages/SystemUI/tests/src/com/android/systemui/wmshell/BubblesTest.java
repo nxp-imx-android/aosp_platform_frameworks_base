@@ -602,6 +602,9 @@ public class BubblesTest extends SysuiTestCase {
         // Get a reference to KeyguardStateController.Callback
         verify(mKeyguardStateController, atLeastOnce())
                 .addCallback(mKeyguardStateControllerCallbackCaptor.capture());
+
+        // Make sure mocks are set up for current user
+        switchUser(ActivityManager.getCurrentUser());
     }
 
     @After
