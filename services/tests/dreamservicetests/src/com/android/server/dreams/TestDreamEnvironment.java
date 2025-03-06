@@ -328,7 +328,6 @@ public class TestDreamEnvironment {
                 case DREAM_STATE_STARTED -> startDream();
                 case DREAM_STATE_WOKEN -> wakeDream();
             }
-            mTestableLooper.processAllMessages();
         } while (mCurrentDreamState < state);
 
         return true;
