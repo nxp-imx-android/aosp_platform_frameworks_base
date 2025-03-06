@@ -20,6 +20,8 @@ import static android.content.Intent.ACTION_SCREEN_OFF;
 import static android.content.Intent.ACTION_USER_PRESENT;
 import static android.hardware.usb.UsbManager.ACTION_USB_PORT_CHANGED;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB;
+import static android.hardware.usb.UsbPortStatus.DATA_ROLE_NONE;
+import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -33,15 +35,18 @@ import android.hardware.usb.ParcelableUsbPort;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbManager;
+import android.hardware.usb.IUsbManagerInternal;
 import android.hardware.usb.UsbPort;
 import android.hardware.usb.UsbPortStatus;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Slog;
 
+import com.android.server.LocalServices;
 import java.lang.Runnable;
 
 import java.util.function.Consumer;
@@ -52,6 +57,7 @@ import android.security.advancedprotection.AdvancedProtectionFeature;
 import com.android.internal.R;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * AAPM Feature for managing and protecting USB data signal from attacks.
@@ -65,11 +71,13 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private static final String CHANNEL_NAME = "BackgroundInstallUiNotificationChannel";
     private static final int APM_USB_FEATURE_CHANNEL_ID = 1;
     private static final int DELAY_DISABLE_MS = 1000;
+    private static final int OS_USB_DISABLE_REASON_LOCKDOWN_MODE = 1;
 
     private final Context mContext;
     private final Handler mDelayedDisableHandler = new Handler(Looper.getMainLooper());
 
     private UsbManager mUsbManager;
+    private IUsbManagerInternal mUsbManagerInternal;
     private BroadcastReceiver mUsbProtectionBroadcastReceiver;
     private KeyguardManager mKeyguardManager;
     private NotificationManager mNotificationManager;
@@ -85,6 +93,8 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         super(context, enabled);
         mContext = context;
         mUsbManager = mContext.getSystemService(UsbManager.class);
+        mUsbManagerInternal = Objects.requireNonNull(
+            LocalServices.getService(IUsbManagerInternal.class));
         onAdvancedProtectionChanged(enabled);
     }
 
@@ -117,9 +127,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             if (mBroadcastReceiverIsRegistered) {
                 unregisterReceiver();
             }
-            if (!mUsbManager.enableUsbDataSignal(true)) {
-                Slog.e(TAG, "USB Data protection toggle failed");
-            }
+            setUsbDataSignalIfPossible(true);
         }
     }
 
@@ -134,23 +142,41 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                             if (ACTION_USER_PRESENT.equals(intent.getAction())
                                     && !mKeyguardManager.isKeyguardLocked()) {
                                 mDelayedDisableHandler.removeCallbacksAndMessages(null);
-                                setUsbDataSignalIfNoConnectedDevices(true);
+                                setUsbDataSignalIfPossible(true);
+
                             } else if (ACTION_SCREEN_OFF.equals(intent.getAction())
                                     && mKeyguardManager.isKeyguardLocked()) {
-                                setUsbDataSignalIfNoConnectedDevices(false);
+                                setUsbDataSignalIfPossible(false);
+
                             } else if (ACTION_USB_PORT_CHANGED.equals(intent.getAction())) {
                                 if (Build.IS_DEBUGGABLE) {
                                     dumpUsbDevices();
                                 }
-                                setDelayedDisableTaskIfDisconnectedAndLocked(intent);
+                                if(mKeyguardManager.isKeyguardLocked()) {
+                                    updateDelayedDisableTask(intent);
+                                }
                                 sendNotificationIfDeviceLocked(intent);
+
                             }
                         } catch (Exception e) {
                             Slog.e(TAG, "USB Data protection failed with: " + e.getMessage());
                         }
                     }
 
-                    private boolean getUsbPortStatusIsConnectedAndDataEnabled(Intent intent) {
+                    private void updateDelayedDisableTask(Intent intent) {
+                        // For recovered intermittent/unreliable USB connections
+                        if(usbPortIsConnectedAndDataEnabled(intent)) {
+                            mDelayedDisableHandler.removeCallbacksAndMessages(null);
+                        } else if(!mDelayedDisableHandler.hasMessagesOrCallbacks()) {
+                            mDelayedDisableHandler.postDelayed(() -> {
+                                if (mKeyguardManager.isKeyguardLocked()) {
+                                    setUsbDataSignalIfPossible(false);
+                                }
+                            }, DELAY_DISABLE_MS);
+                        }
+                    }
+
+                    private boolean usbPortIsConnectedAndDataEnabled(Intent intent) {
                         UsbPortStatus portStatus =
                                 intent.getParcelableExtra(
                                         UsbManager.EXTRA_PORT_STATUS, UsbPortStatus.class);
@@ -160,40 +186,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                                         != UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
                     }
 
-                    private void setDelayedDisableTaskIfDisconnectedAndLocked(Intent intent) {
-                        if(mKeyguardManager.isKeyguardLocked()) {
-                            if(getUsbPortStatusIsConnectedAndDataEnabled(intent)) {
-                                mDelayedDisableHandler.removeCallbacksAndMessages(null);
-                            } else if(!mDelayedDisableHandler.hasMessagesOrCallbacks()) {
-                                mDelayedDisableHandler.postDelayed(() -> {
-                                    disableChangedUsbPortIfDisconnected(intent);
-                                }, DELAY_DISABLE_MS);
-                            }
-                        }
-                    }
-
-                    private void disableChangedUsbPortIfDisconnected(Intent intent) {
-                        UsbPortStatus portStatus =
-                                intent.getParcelableExtra(
-                                        UsbManager.EXTRA_PORT_STATUS, UsbPortStatus.class);
-                        if (Build.IS_DEBUGGABLE) {
-                            Slog.i(
-                                    TAG,
-                                    "disableChangedUsbPortIfDisconnected: " + portStatus == null
-                                            ? "null"
-                                            : portStatus.toString());
-                        }
-
-                        if (mKeyguardManager.isKeyguardLocked()
-                                && portStatus != null && !portStatus.isConnected()
-                        ) {
-                            intent.getParcelableExtra(
-                                            UsbManager.EXTRA_PORT, ParcelableUsbPort.class)
-                                    .getUsbPort(mUsbManager)
-                                    .enableUsbData(false);
-                        }
-                    }
-
+                    // TODO: b/401540215 Remove this as part of pre-release cleanup
                     private void dumpUsbDevices() {
                         Slog.d(TAG, "dumpUsbDevices: ");
                         Map<String, UsbDevice> portStatusMap = mUsbManager.getDeviceList();
@@ -238,9 +231,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             UsbPortStatus portStatus =
                     intent.getParcelableExtra(UsbManager.EXTRA_PORT_STATUS, UsbPortStatus.class);
             if (mKeyguardManager.isKeyguardLocked()
-                    && portStatus != null
-                    && portStatus.isConnected()
-                    && portStatus.getUsbDataStatus() == UsbPortStatus.DATA_STATUS_DISABLED_FORCE) {
+                    && usbPortIsConnectedWithDataDisabled(portStatus)) {
                 sendNotification(
                         mContext.getString(
                                 R.string.usb_apm_usb_plugged_in_when_locked_notification_title),
@@ -251,39 +242,46 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         }
     }
 
-    private void setUsbDataSignalIfNoConnectedDevices(boolean status) {
-        // disable all ports that don't have an active data connection
-        if (!status) {
-            for (UsbPort usbPort : mUsbManager.getPorts()) {
-                if (Build.IS_DEBUGGABLE) {
-                    Slog.i(
-                            TAG,
-                            "setUsbDataSignal: false " + usbPort.getStatus() == null
-                                    ? "null"
-                                    : usbPort.getStatus().toString());
-                }
-                if (usbPort.getStatus() == null
-                        || !usbPort.getStatus().isConnected()
-                        || usbPort.getStatus().getCurrentDataRole()
-                                == UsbPortStatus.DATA_ROLE_NONE) {
-                    usbPort.enableUsbData(false);
-                }
-            }
+    private boolean usbPortIsConnectedWithDataDisabled(UsbPortStatus portStatus) {
+        return portStatus != null
+                && portStatus.isConnected()
+                && portStatus.getUsbDataStatus() == DATA_STATUS_DISABLED_FORCE;
+    }
+
+    private void setUsbDataSignalIfPossible(boolean status) {
+        if (!status && deviceHaveUsbDataConnection()) {
+            return;
         }
-        // Always re-enable all if true
-        else {
-            if (!mUsbManager.enableUsbDataSignal(status)) {
+        try {
+            if (!mUsbManagerInternal.enableUsbDataSignal(status,
+                    OS_USB_DISABLE_REASON_LOCKDOWN_MODE)) {
                 Slog.e(TAG, "USB Data protection toggle failed");
             }
-            for (UsbPort usbPort : mUsbManager.getPorts()) {
-                usbPort.resetUsbPort(mContext.getMainExecutor(),
-                new Consumer<Integer>() {
-                    public void accept(Integer status) {
-                        Slog.i(TAG, "Consumer status: " + status);
-                    }
-                });
+        } catch (RemoteException e) {
+            Slog.e(TAG, "RemoteException thrown when calling enableUsbDataSignal", e);
+        }
+    }
+
+    private boolean deviceHaveUsbDataConnection() {
+        for (UsbPort usbPort : mUsbManager.getPorts()) {
+            if (Build.IS_DEBUGGABLE) {
+                Slog.i(
+                        TAG,
+                        "setUsbDataSignal: false, Port status: " + usbPort.getStatus() == null
+                                ? "null"
+                                : usbPort.getStatus().toString());
+            }
+            if (usbPortIsConnectedWithDataEnabled(usbPort)) {
+                return true;
             }
         }
+        return false;
+    }
+
+    private boolean usbPortIsConnectedWithDataEnabled(UsbPort usbPort) {
+        return usbPort.getStatus() != null
+                && usbPort.getStatus().isConnected()
+                && usbPort.getStatus().getCurrentDataRole() != DATA_ROLE_NONE;
     }
 
     private void registerReceiver() {
