@@ -58,13 +58,16 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.UserHandle;
+import android.util.ArraySet;
 import android.util.Slog;
 
 import com.android.internal.R;
 import com.android.server.companion.CompanionDeviceManagerService;
 import com.android.server.companion.utils.PackageUtils;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Class responsible for handling incoming {@link AssociationRequest}s.
@@ -130,6 +133,12 @@ public class AssociationRequestsProcessor {
     private static final int ASSOCIATE_WITHOUT_PROMPT_MAX_PER_TIME_WINDOW = 5;
     private static final long ASSOCIATE_WITHOUT_PROMPT_WINDOW_MS = 60 * 60 * 1000; // 60 min;
 
+    // Set of profiles for which the association dialog cannot be skipped.
+    private static final Set<String> DEVICE_PROFILES_WITH_REQUIRED_CONFIRMATION = new ArraySet<>(
+            Arrays.asList(
+                    AssociationRequest.DEVICE_PROFILE_APP_STREAMING,
+                    AssociationRequest.DEVICE_PROFILE_NEARBY_DEVICE_STREAMING));
+
     private final @NonNull Context mContext;
     private final @NonNull PackageManagerInternal mPackageManagerInternal;
     private final @NonNull AssociationStore mAssociationStore;
@@ -174,6 +183,7 @@ public class AssociationRequestsProcessor {
         // 2a. Check if association can be created without launching UI (i.e. CDM needs NEITHER
         // to perform discovery NOR to collect user consent).
         if (request.isSelfManaged() && !request.isForceConfirmation()
+                && !DEVICE_PROFILES_WITH_REQUIRED_CONFIRMATION.contains(request.getDeviceProfile())
                 && !willAddRoleHolder(request, packageName, userId)) {
             // 2a.1. Create association right away.
             createAssociationAndNotifyApplication(request, packageName, userId,
