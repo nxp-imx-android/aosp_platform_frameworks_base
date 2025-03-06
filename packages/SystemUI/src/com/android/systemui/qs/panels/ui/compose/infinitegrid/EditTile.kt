@@ -152,7 +152,6 @@ import com.android.systemui.qs.panels.ui.model.AvailableTileGridCell
 import com.android.systemui.qs.panels.ui.model.GridCell
 import com.android.systemui.qs.panels.ui.model.SpacerGridCell
 import com.android.systemui.qs.panels.ui.model.TileGridCell
-import com.android.systemui.qs.panels.ui.viewmodel.AvailableEditActions
 import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
@@ -272,29 +271,23 @@ fun DefaultEditTileGrid(
                         .padding(top = innerPadding.calculateTopPadding())
                         .clipScrollableContainer(Orientation.Vertical)
                         .verticalScroll(scrollState)
-                        .dragAndDropRemoveZone(listState, onRemoveTile),
-            ) {
-                AnimatedContent(
-                    targetState = listState.dragInProgress || selectionState.selected,
-                    label = "QSEditHeader",
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                ) { showRemoveTarget ->
-                    EditGridHeader {
-                        if (showRemoveTarget) {
-                            RemoveTileTarget {
-                                selectionState.selection?.let {
-                                    selectionState.unSelect()
-                                    onRemoveTile(it)
-                                }
+                        .dragAndDropRemoveZone(listState) { spec, removalEnabled ->
+                            if (removalEnabled) {
+                                // If removal is enabled, remove the tile
+                                onRemoveTile(spec)
+                            } else {
+                                // Otherwise submit the new tile ordering
+                                onSetTiles(listState.tileSpecs())
+                                selectionState.select(spec)
                             }
-                        } else {
-                            EditGridCenteredText(
-                                text = stringResource(id = R.string.drag_to_rearrange_tiles)
-                            )
-                        }
-                    }
-                }
+                        },
+            ) {
+                CurrentTilesGridHeader(
+                    listState,
+                    selectionState,
+                    onRemoveTile,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                )
 
                 CurrentTilesGrid(
                     listState,
@@ -394,6 +387,36 @@ private fun AutoScrollGrid(
                 animationSpec =
                     tween(durationMillis = distance * AUTO_SCROLL_SPEED, easing = LinearEasing),
             )
+        }
+    }
+}
+
+@Composable
+private fun CurrentTilesGridHeader(
+    listState: EditTileListState,
+    selectionState: MutableSelectionState,
+    onRemoveTile: (TileSpec) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedContent(
+        targetState =
+            listState.isDraggedCellRemovable ||
+                selectionState.selection?.let { listState.isRemovable(it) } ?: false,
+        label = "QSEditHeader",
+        contentAlignment = Alignment.Center,
+        modifier = modifier,
+    ) { showRemoveTarget ->
+        EditGridHeader {
+            if (showRemoveTarget) {
+                RemoveTileTarget {
+                    selectionState.selection?.let {
+                        selectionState.unSelect()
+                        onRemoveTile(it)
+                    }
+                }
+            } else {
+                EditGridCenteredText(text = stringResource(id = R.string.drag_to_rearrange_tiles))
+            }
         }
     }
 }
@@ -646,7 +669,7 @@ private fun TileGridCell(
     modifier: Modifier = Modifier,
 ) {
     val stateDescription = stringResource(id = R.string.accessibility_qs_edit_position, index + 1)
-    val canShowRemovalBadge = cell.tile.availableEditActions.contains(AvailableEditActions.REMOVE)
+    val canShowRemovalBadge = cell.tile.isRemovable
     var tileState by remember { mutableStateOf(TileState.None) }
 
     LaunchedEffect(selectionState.selection, canShowRemovalBadge) {

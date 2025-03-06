@@ -44,6 +44,7 @@ import com.android.systemui.qs.pipeline.shared.TileSpec
 /** Holds the [TileSpec] of the tile being moved and receives drag and drop events. */
 interface DragAndDropState {
     val draggedCell: SizedTile<EditTileViewModel>?
+    val isDraggedCellRemovable: Boolean
     val draggedPosition: Offset
     val dragInProgress: Boolean
     val dragType: DragType?
@@ -76,7 +77,7 @@ enum class DragType {
 @Composable
 fun Modifier.dragAndDropRemoveZone(
     dragAndDropState: DragAndDropState,
-    onDrop: (TileSpec) -> Unit,
+    onDrop: (TileSpec, removalEnabled: Boolean) -> Unit,
 ): Modifier {
     val target =
         remember(dragAndDropState) {
@@ -87,13 +88,15 @@ fun Modifier.dragAndDropRemoveZone(
 
                 override fun onDrop(event: DragAndDropEvent): Boolean {
                     return dragAndDropState.draggedCell?.let {
-                        onDrop(it.tile.tileSpec)
+                        onDrop(it.tile.tileSpec, dragAndDropState.isDraggedCellRemovable)
                         dragAndDropState.onDrop()
                         true
                     } ?: false
                 }
 
                 override fun onEntered(event: DragAndDropEvent) {
+                    if (!dragAndDropState.isDraggedCellRemovable) return
+
                     dragAndDropState.movedOutOfBounds()
                 }
             }

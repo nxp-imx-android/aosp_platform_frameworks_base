@@ -40,6 +40,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.qs.panels.shared.model.SizedTile
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGrid
+import com.android.systemui.qs.panels.ui.viewmodel.AvailableEditActions
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
@@ -53,8 +54,8 @@ class EditModeTest : SysuiTestCase() {
     @get:Rule val composeRule = createComposeRule()
 
     @Composable
-    private fun EditTileGridUnderTest() {
-        var tiles by remember { mutableStateOf(TestEditTiles) }
+    private fun EditTileGridUnderTest(sizedTiles: List<SizedTile<EditTileViewModel>>) {
+        var tiles by remember { mutableStateOf(sizedTiles) }
         val (currentTiles, otherTiles) = tiles.partition { it.tile.isCurrent }
         val listState = EditTileListState(currentTiles, columns = 4, largeTilesSpan = 2)
 
@@ -77,7 +78,7 @@ class EditModeTest : SysuiTestCase() {
 
     @Test
     fun clickAvailableTile_shouldAdd() {
-        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.setContent { EditTileGridUnderTest(TestEditTiles) }
         composeRule.waitForIdle()
 
         composeRule.onNodeWithContentDescription("tileF").performClick() // Tap to add
@@ -93,7 +94,7 @@ class EditModeTest : SysuiTestCase() {
 
     @Test
     fun clickRemoveTarget_shouldRemoveSelection() {
-        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.setContent { EditTileGridUnderTest(TestEditTiles) }
         composeRule.waitForIdle()
 
         // Selects first "tileA", i.e. the one in the current grid
@@ -108,6 +109,19 @@ class EditModeTest : SysuiTestCase() {
         composeRule.assertAvailableTilesGridContainsExactly(
             TestEditTiles.map { it.tile.tileSpec.spec }
         )
+    }
+
+    @Test
+    fun selectNonRemovableTile_removeTargetShouldHide() {
+        val nonRemovableTile = createEditTile("tileA", isRemovable = false)
+        composeRule.setContent { EditTileGridUnderTest(listOf(nonRemovableTile)) }
+        composeRule.waitForIdle()
+
+        // Selects first "tileA", i.e. the one in the current grid
+        composeRule.onAllNodesWithText("tileA").onFirst().performClick()
+
+        // Assert the remove target isn't shown
+        composeRule.onNodeWithText("Remove").assertDoesNotExist()
     }
 
     private fun ComposeContentTestRule.assertCurrentTilesGridContainsExactly(specs: List<String>) =
@@ -148,6 +162,7 @@ class EditModeTest : SysuiTestCase() {
         private fun createEditTile(
             tileSpec: String,
             isCurrent: Boolean = true,
+            isRemovable: Boolean = true,
         ): SizedTile<EditTileViewModel> {
             return SizedTileImpl(
                 EditTileViewModel(
@@ -160,7 +175,8 @@ class EditModeTest : SysuiTestCase() {
                     label = AnnotatedString(tileSpec),
                     appName = null,
                     isCurrent = isCurrent,
-                    availableEditActions = emptySet(),
+                    availableEditActions =
+                        if (isRemovable) setOf(AvailableEditActions.REMOVE) else emptySet(),
                     category = TileCategory.UNKNOWN,
                 ),
                 getWidth(tileSpec),

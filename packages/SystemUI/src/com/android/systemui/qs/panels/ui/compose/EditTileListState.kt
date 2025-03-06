@@ -60,6 +60,11 @@ class EditTileListState(
     override var dragType by mutableStateOf<DragType?>(null)
         private set
 
+    // A dragged cell can be removed if it was added in the drag movement OR if it's marked as
+    // removable
+    override val isDraggedCellRemovable: Boolean
+        get() = dragType == DragType.Add || draggedCell?.tile?.isRemovable ?: false
+
     override val dragInProgress: Boolean
         get() = draggedCell != null
 
@@ -74,6 +79,12 @@ class EditTileListState(
 
     private fun indexOf(tileSpec: TileSpec): Int {
         return _tiles.indexOfFirst { it is TileGridCell && it.tile.tileSpec == tileSpec }
+    }
+
+    fun isRemovable(tileSpec: TileSpec): Boolean {
+        return _tiles.find {
+            it is TileGridCell && it.tile.tileSpec == tileSpec && it.tile.isRemovable
+        } != null
     }
 
     /** Resize the tile corresponding to the [TileSpec] to [toIcon] */
