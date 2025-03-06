@@ -29,6 +29,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.hardware.input.InputManager;
 import android.telephony.PinResult;
 import android.telephony.SubscriptionInfo;
 import android.telephony.SubscriptionManager;
@@ -97,11 +98,13 @@ public class KeyguardSimPinViewController
             SelectedUserInteractor selectedUserInteractor,
             KeyguardKeyboardInteractor keyguardKeyboardInteractor,
             BouncerHapticPlayer bouncerHapticPlayer,
-            UserActivityNotifier userActivityNotifier) {
+            UserActivityNotifier userActivityNotifier,
+            InputManager inputManager) {
         super(view, keyguardUpdateMonitor, securityMode, lockPatternUtils, keyguardSecurityCallback,
                 messageAreaControllerFactory, latencyTracker,
                 emergencyButtonController, falsingCollector, featureFlags, selectedUserInteractor,
-                keyguardKeyboardInteractor, bouncerHapticPlayer, userActivityNotifier);
+                keyguardKeyboardInteractor, bouncerHapticPlayer, userActivityNotifier, inputManager
+        );
         mKeyguardUpdateMonitor = keyguardUpdateMonitor;
         mTelephonyManager = telephonyManager;
         mSimImageView = mView.findViewById(R.id.keyguard_sim);

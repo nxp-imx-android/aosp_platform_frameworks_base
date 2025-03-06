@@ -16,6 +16,7 @@
 
 package com.android.keyguard
 
+import android.hardware.input.InputManager
 import android.telephony.PinResult
 import android.telephony.TelephonyManager
 import android.testing.TestableLooper
@@ -65,6 +66,7 @@ class KeyguardSimPukViewControllerTest : SysuiTestCase() {
     private lateinit var keyguardMessageAreaController:
         KeyguardMessageAreaController<BouncerKeyguardMessageArea>
     @Mock private lateinit var mUserActivityNotifier: UserActivityNotifier
+    @Mock private lateinit var inputManager: InputManager
 
     private val kosmos = testKosmos()
 
@@ -102,6 +104,7 @@ class KeyguardSimPukViewControllerTest : SysuiTestCase() {
                 keyguardKeyboardInteractor,
                 kosmos.bouncerHapticPlayer,
                 mUserActivityNotifier,
+                inputManager,
             )
         underTest.init()
     }
