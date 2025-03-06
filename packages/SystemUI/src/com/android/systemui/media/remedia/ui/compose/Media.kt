@@ -37,6 +37,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.DragInteraction
 import androidx.compose.foundation.interaction.Interaction
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -44,7 +45,6 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,6 +65,7 @@ import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults.colors
 import androidx.compose.material3.SliderState
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -376,29 +377,32 @@ private fun ContentScope.CardForegroundContent(
 ) {
     Column(
         modifier =
-            modifier
-                .combinedClickable(
-                    onClick = viewModel.onClick,
-                    onLongClick = viewModel.onLongClick,
-                    onClickLabel = viewModel.onClickLabel,
-                )
-                .padding(16.dp)
+            modifier.combinedClickable(
+                onClick = viewModel.onClick,
+                onLongClick = viewModel.onLongClick,
+                onClickLabel = viewModel.onClickLabel,
+            )
     ) {
         // Always add the first/top row, regardless of presentation style.
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             // Icon.
             Icon(
                 icon = viewModel.icon,
                 tint = colorScheme.primary,
-                modifier = Modifier.size(24.dp).clip(CircleShape),
+                modifier =
+                    Modifier.align(Alignment.TopStart)
+                        .padding(top = 16.dp, start = 16.dp)
+                        .size(24.dp)
+                        .clip(CircleShape),
             )
-            Spacer(modifier = Modifier.weight(1f))
-            viewModel.outputSwitcherChips.fastForEach { chip ->
-                OutputSwitcherChip(
-                    viewModel = chip,
-                    colorScheme = colorScheme,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.align(Alignment.TopEnd),
+            ) {
+                viewModel.outputSwitcherChips.fastForEach { chip ->
+                    OutputSwitcherChip(viewModel = chip, colorScheme = colorScheme)
+                }
             }
         }
 
@@ -415,7 +419,7 @@ private fun ContentScope.CardForegroundContent(
             // Second row.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 16.dp),
+                modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp),
             ) {
                 Metadata(
                     title = viewModel.title,
@@ -441,7 +445,7 @@ private fun ContentScope.CardForegroundContent(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 24.dp),
+                modifier = Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 16.dp),
             ) {
                 Navigation(
                     viewModel = viewModel.navigation,
@@ -464,7 +468,7 @@ private fun ContentScope.CardForegroundContent(
             // Bottom row.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 36.dp),
+                modifier = Modifier.padding(start = 16.dp, top = 36.dp, end = 16.dp, bottom = 16.dp),
             ) {
                 Metadata(
                     title = viewModel.title,
@@ -914,20 +918,48 @@ private fun OutputSwitcherChip(
     colorScheme: AnimatedColorScheme,
     modifier: Modifier = Modifier,
 ) {
-    PlatformButton(
-        onClick = viewModel.onClick,
-        colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
-        contentPadding = PaddingValues(start = 8.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
-        modifier = modifier.height(24.dp),
+    // For accessibility reasons, the touch area for the chip needs to be at least 48dp in height.
+    // At the same time, the rounded corner chip should only be as tall as it needs to be to contain
+    // its contents and look like a nice design; also, the ripple effect should only be shown within
+    // the bounds of the chip.
+    //
+    // This is achieved by sharing this InteractionSource between the outer and inner composables.
+    //
+    // The outer composable hosts that clickable that writes user events into the InteractionSource.
+    // The inner composable consumes the user events from the InteractionSource and feeds them into
+    // its indication.
+    val clickInteractionSource = remember { MutableInteractionSource() }
+    Box(
+        modifier =
+            modifier
+                .height(48.dp)
+                .clickable(interactionSource = clickInteractionSource, indication = null) {
+                    viewModel.onClick()
+                }
+                .padding(top = 16.dp, end = 16.dp, bottom = 8.dp)
     ) {
-        Icon(icon = viewModel.icon, tint = colorScheme.onPrimary, modifier = Modifier.size(16.dp))
-        viewModel.text?.let {
-            Spacer(Modifier.size(4.dp))
-            Text(
-                text = viewModel.text,
-                style = MaterialTheme.typography.bodySmall,
-                color = colorScheme.onPrimary,
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            modifier =
+                Modifier.clip(RoundedCornerShape(12.dp))
+                    .background(colorScheme.primary)
+                    .indication(clickInteractionSource, ripple())
+                    .padding(start = 8.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+        ) {
+            Icon(
+                icon = viewModel.icon,
+                tint = colorScheme.onPrimary,
+                modifier = Modifier.size(16.dp),
             )
+
+            viewModel.text?.let {
+                Text(
+                    text = viewModel.text,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colorScheme.onPrimary,
+                )
+            }
         }
     }
 }
