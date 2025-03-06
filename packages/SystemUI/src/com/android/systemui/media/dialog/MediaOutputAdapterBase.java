@@ -351,8 +351,9 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         @VisibleForTesting
         void showCustomEndSessionDialog(MediaDevice device) {
             MediaSessionReleaseDialog mediaSessionReleaseDialog = new MediaSessionReleaseDialog(
-                    mContext, () -> transferOutput(device), mController.getColorButtonBackground(),
-                    mController.getColorItemContent());
+                    mContext, () -> transferOutput(device),
+                    mController.getColorSchemeLegacy().getColorButtonBackground(),
+                    mController.getColorSchemeLegacy().getColorItemContent());
             mediaSessionReleaseDialog.show();
         }
 
