@@ -32,9 +32,6 @@ class FakePerDisplayRepository<T> : PerDisplayRepository<T> {
         return instances[displayId]
     }
 
-    override val displayIds: Set<Int>
-        get() = instances.keys
-
     override val debugName: String
         get() = "FakePerDisplayRepository"
 }
