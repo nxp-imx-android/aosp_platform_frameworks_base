@@ -28,38 +28,27 @@ class InternetDetailsViewModel
 @AssistedInject
 constructor(
     private val accessPointController: AccessPointController,
-    val contentManagerFactory: InternetDetailsContentManager.Factory,
+    private val contentManagerFactory: InternetDetailsContentManager.Factory,
     private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler,
-) : TileDetailsViewModel() {
+) : TileDetailsViewModel {
+    val internetDetailsContentManager by lazy {
+        contentManagerFactory.create(
+            canConfigMobileData = accessPointController.canConfigMobileData(),
+            canConfigWifi = accessPointController.canConfigWifi(),
+        )
+    }
+
+    override val title: String
+        get() = internetDetailsContentManager.title
+
+    override val subTitle: String
+        get() = internetDetailsContentManager.subTitle
+
     override fun clickOnSettingsButton() {
         qsTileIntentUserActionHandler.handle(
             /* expandable= */ null,
             Intent(Settings.ACTION_WIFI_SETTINGS),
         )
-    }
-
-    override fun getTitle(): String {
-        // TODO: b/377388104 make title and sub title mutable states of string
-        // by internetDetailsContentManager.getTitleText()
-        // TODO: test title change between airplane mode and not airplane mode
-        // TODO: b/377388104 Update the placeholder text
-        return "Internet"
-    }
-
-    override fun getSubTitle(): String {
-        // TODO: b/377388104 make title and sub title mutable states of string
-        // by internetDetailsContentManager.getSubtitleText()
-        // TODO: test subtitle change between airplane mode and not airplane mode
-        // TODO: b/377388104 Update the placeholder text
-        return "Tab a network to connect"
-    }
-
-    fun getCanConfigMobileData(): Boolean {
-        return accessPointController.canConfigMobileData()
-    }
-
-    fun getCanConfigWifi(): Boolean {
-        return accessPointController.canConfigWifi()
     }
 
     @AssistedFactory
