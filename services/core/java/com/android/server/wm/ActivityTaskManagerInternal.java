@@ -124,8 +124,9 @@ public abstract class ActivityTaskManagerInternal {
     public static final String ASSIST_KEY_RECEIVER_EXTRAS = "receiverExtras";
 
     public interface ScreenObserver {
-        void onAwakeStateChanged(boolean isAwake);
-        void onKeyguardStateChanged(boolean isShowing);
+        default void onAwakeStateChanged(boolean isAwake) {}
+        default void onKeyguardStateChanged(boolean isShowing) {}
+        default void onKeyguardGoingAway() {}
     }
 
     /**

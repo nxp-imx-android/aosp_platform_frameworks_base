@@ -24,6 +24,16 @@ flag {
 }
 
 flag {
+  name: "notify_keyguard_events"
+  namespace: "systemui"
+  description: "Send keyguard showing/hiding/going-away events to wallpaper as wallpaper commands (guarded by permission)"
+  bug: "395897130"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "accurate_wallpaper_downsampling"
   namespace: "systemui"
   description: "Accurate downsampling of wallpaper bitmap for high resolution images"
