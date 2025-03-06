@@ -36,7 +36,6 @@ import android.util.IntArray;
 import android.util.LongSparseArray;
 import android.util.Slog;
 
-import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.ServiceThread;
 
 import java.io.File;
@@ -97,15 +96,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
     void recordDiscreteAccess(int uid, String packageName,
             @NonNull String deviceId, int op,
             @Nullable String attributionTag, int flags, int uidState,
-            long accessTime, long accessDuration, int attributionFlags, int attributionChainId,
-            int accessType) {
-        if (shouldLogAccess(op)) {
-            FrameworkStatsLog.write(FrameworkStatsLog.APP_OP_ACCESS_TRACKED, uid, op, accessType,
-                    uidState, flags, attributionFlags,
-                    getAttributionTag(attributionTag, packageName),
-                    attributionChainId);
-        }
-
+            long accessTime, long accessDuration, int attributionFlags, int attributionChainId) {
         if (!isDiscreteOp(op, flags)) {
             return;
         }

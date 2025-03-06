@@ -181,7 +181,6 @@ public class DesktopModeHelperTest {
         assertThat(DesktopModeHelper.isDeviceEligibleForDesktopMode(mMockContext)).isTrue();
     }
 
-    @DisableFlags(Flags.FLAG_ENABLE_PROJECTED_DISPLAY_DESKTOP_MODE)
     @Test
     public void isDeviceEligibleForDesktopMode_configDEModeOffAndIntDispHostsDesktop_returnsFalse() {
         doReturn(true).when(mMockResources).getBoolean(eq(R.bool.config_isDesktopModeSupported));

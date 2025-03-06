@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.kotlin.MatchersKt.eq;
 import static org.mockito.kotlin.VerificationKt.clearInvocations;
@@ -35,7 +36,9 @@ import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.app.PictureInPictureParams;
 import android.app.RemoteAction;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
@@ -48,8 +51,10 @@ import androidx.test.filters.SmallTest;
 
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.common.pip.PhoneSizeSpecSource;
 import com.android.wm.shell.common.pip.PipBoundsAlgorithm;
 import com.android.wm.shell.common.pip.PipBoundsState;
+import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.pip2.animation.PipResizeAnimator;
 
 import org.junit.Before;
@@ -104,6 +109,16 @@ public class PipTaskListenerTest {
                 mMockPipBoundsAlgorithm, mMockShellExecutor);
 
         verify(mMockPipTransitionState).addPipTransitionStateChangedListener(eq(mPipTaskListener));
+    }
+
+    @Test
+    public void constructor_addOnPipComponentChangedListener() {
+        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+                mMockPipTransitionState, mMockPipScheduler, mMockPipBoundsState,
+                mMockPipBoundsAlgorithm, mMockShellExecutor);
+
+        verify(mMockPipBoundsState).addOnPipComponentChangedListener(
+                any(PipBoundsState.OnPipComponentChangedListener.class));
     }
 
     @Test
@@ -357,6 +372,26 @@ public class PipTaskListenerTest {
                 extras);
 
         verify(mMockPipResizeAnimator, times(0)).start();
+    }
+
+    @Test
+    public void onPipComponentChanged_clearPictureInPictureParams() {
+        when(mMockContext.getResources()).thenReturn(mock(Resources.class));
+        PipBoundsState pipBoundsState = new PipBoundsState(mMockContext,
+                mock(PhoneSizeSpecSource.class), mock(PipDisplayLayoutState.class));
+        pipBoundsState.setLastPipComponentName(new ComponentName("org.test", "test1"));
+
+        mPipTaskListener = new PipTaskListener(mMockContext, mMockShellTaskOrganizer,
+                mMockPipTransitionState, mMockPipScheduler, pipBoundsState,
+                mMockPipBoundsAlgorithm, mMockShellExecutor);
+        Rational aspectRatio = new Rational(4, 3);
+        String action1 = "action1";
+        mPipTaskListener.setPictureInPictureParams(getPictureInPictureParams(
+                aspectRatio, action1));
+
+        pipBoundsState.setLastPipComponentName(new ComponentName("org.test", "test2"));
+
+        assertTrue(mPipTaskListener.getPictureInPictureParams().empty());
     }
 
     private PictureInPictureParams getPictureInPictureParams(Rational aspectRatio,

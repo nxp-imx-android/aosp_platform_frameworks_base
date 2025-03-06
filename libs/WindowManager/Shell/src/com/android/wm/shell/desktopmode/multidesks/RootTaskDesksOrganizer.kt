@@ -33,6 +33,7 @@ import androidx.core.util.forEach
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer.OnCreateCallback
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.sysui.ShellCommandHandler
@@ -44,6 +45,7 @@ class RootTaskDesksOrganizer(
     shellInit: ShellInit,
     shellCommandHandler: ShellCommandHandler,
     private val shellTaskOrganizer: ShellTaskOrganizer,
+    private val launchAdjacentController: LaunchAdjacentController,
 ) : DesksOrganizer, ShellTaskOrganizer.TaskListener {
 
     private val createDeskRootRequests = mutableListOf<CreateDeskRequest>()
@@ -110,7 +112,31 @@ class RootTaskDesksOrganizer(
         wct.reparent(task.token, root.taskInfo.token, /* onTop= */ true)
     }
 
+    override fun reorderTaskToFront(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: RunningTaskInfo,
+    ) {
+        logV("reorderTaskToFront task=${task.taskId} desk=$deskId")
+        val root = deskRootsByDeskId[deskId] ?: error("Root not found for desk: $deskId")
+        if (task.taskId in root.children) {
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+            return
+        }
+        val minimizationRoot =
+            checkNotNull(deskMinimizationRootsByDeskId[deskId]) {
+                "Minimization root not found for desk: $deskId"
+            }
+        if (task.taskId in minimizationRoot.children) {
+            unminimizeTask(wct, deskId, task)
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+            return
+        }
+        logE("Attempted to reorder task=${task.taskId} in desk=$deskId but it was not a child")
+    }
+
     override fun minimizeTask(wct: WindowContainerTransaction, deskId: Int, task: RunningTaskInfo) {
+        logV("minimizeTask task=${task.taskId} desk=$deskId")
         val deskRoot =
             checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         val minimizationRoot =
@@ -127,6 +153,30 @@ class RootTaskDesksOrganizer(
             return
         }
         wct.reparent(task.token, minimizationRoot.token, /* onTop= */ true)
+    }
+
+    override fun unminimizeTask(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: RunningTaskInfo,
+    ) {
+        val taskId = task.taskId
+        logV("unminimizeTask task=$taskId desk=$deskId")
+        val deskRoot =
+            checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
+        val minimizationRoot =
+            checkNotNull(deskMinimizationRootsByDeskId[deskId]) {
+                "Minimization root not found for desk: $deskId"
+            }
+        if (taskId in deskRoot.children) {
+            logV("Task #$taskId is already unminimized in desk=$deskId")
+            return
+        }
+        if (taskId !in minimizationRoot.children) {
+            logE("Attempted to unminimize task=$taskId in desk=$deskId but it was not a child")
+            return
+        }
+        wct.reparent(task.token, deskRoot.token, /* onTop= */ true)
     }
 
     override fun isDeskChange(change: TransitionInfo.Change, deskId: Int): Boolean =
@@ -164,6 +214,21 @@ class RootTaskDesksOrganizer(
             change.mode == TRANSIT_TO_FRONT
 
     override fun onTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {
+        handleTaskAppeared(taskInfo, leash)
+        updateLaunchAdjacentController()
+    }
+
+    override fun onTaskInfoChanged(taskInfo: RunningTaskInfo) {
+        handleTaskInfoChanged(taskInfo)
+        updateLaunchAdjacentController()
+    }
+
+    override fun onTaskVanished(taskInfo: RunningTaskInfo) {
+        handleTaskVanished(taskInfo)
+        updateLaunchAdjacentController()
+    }
+
+    private fun handleTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {
         // Check whether this task is appearing inside a desk.
         if (taskInfo.parentTaskId in deskRootsByDeskId) {
             val deskId = taskInfo.parentTaskId
@@ -216,7 +281,7 @@ class RootTaskDesksOrganizer(
         hideMinimizationRoot(deskMinimizationRoot)
     }
 
-    override fun onTaskInfoChanged(taskInfo: RunningTaskInfo) {
+    private fun handleTaskInfoChanged(taskInfo: RunningTaskInfo) {
         if (deskRootsByDeskId.contains(taskInfo.taskId)) {
             val deskId = taskInfo.taskId
             deskRootsByDeskId[deskId] = deskRootsByDeskId[deskId].copy(taskInfo = taskInfo)
@@ -254,7 +319,7 @@ class RootTaskDesksOrganizer(
         logE("onTaskInfoChanged: unknown task: ${taskInfo.taskId}")
     }
 
-    override fun onTaskVanished(taskInfo: RunningTaskInfo) {
+    private fun handleTaskVanished(taskInfo: RunningTaskInfo) {
         if (deskRootsByDeskId.contains(taskInfo.taskId)) {
             val deskId = taskInfo.taskId
             val deskRoot = deskRootsByDeskId[deskId]
@@ -336,6 +401,18 @@ class RootTaskDesksOrganizer(
         deskRootsByDeskId.forEach { _, deskRoot -> deskRoot.children -= taskId }
     }
 
+    private fun updateLaunchAdjacentController() {
+        deskRootsByDeskId.forEach { deskId, root ->
+            if (root.taskInfo.isVisible) {
+                // Disable launch adjacent handling if any desk is active, otherwise the split
+                // launch root and the desk root will both be eligible to take launching tasks.
+                launchAdjacentController.launchAdjacentEnabled = false
+                return
+            }
+        }
+        launchAdjacentController.launchAdjacentEnabled = true
+    }
+
     @VisibleForTesting
     data class DeskRoot(
         val deskId: Int,
@@ -377,6 +454,9 @@ class RootTaskDesksOrganizer(
     override fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix  "
         pw.println("$prefix$TAG")
+        pw.println(
+            "${innerPrefix}launchAdjacentEnabled=" + launchAdjacentController.launchAdjacentEnabled
+        )
         pw.println("${innerPrefix}Desk Roots:")
         deskRootsByDeskId.forEach { deskId, root ->
             val minimizationRoot = deskMinimizationRootsByDeskId[deskId]

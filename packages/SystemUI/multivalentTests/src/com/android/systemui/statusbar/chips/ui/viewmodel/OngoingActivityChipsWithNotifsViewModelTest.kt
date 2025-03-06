@@ -62,6 +62,7 @@ import com.android.systemui.statusbar.notification.data.repository.ActiveNotific
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.data.repository.addNotifs
+import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -346,6 +347,36 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(latest!!.active[0])
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
             assertThat(latest!!.active[1])
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+        }
+
+    @EnableChipsModernization
+    @Test
+    fun chips_threeChips_isSmallPortrait_allSquished() =
+        kosmos.runTest {
+            screenRecordState.value = ScreenRecordModel.Recording
+            addOngoingCallState(key = "call")
+
+            val promotedContentBuilder =
+                PromotedNotificationContentModel.Builder("notif").apply {
+                    this.shortCriticalText = "Some text here"
+                }
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif",
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = promotedContentBuilder.build(),
+                )
+            )
+
+            val latest by collectLastValue(underTest.chips)
+
+            // Squished chips are icon only
+            assertThat(latest!!.active[0])
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[1])
+                .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat(latest!!.active[2])
                 .isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
         }
 
@@ -851,7 +882,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @EnableChipsModernization
     @Test
-    fun chips_threePromotedNotifs_topTwoActiveThirdInOverflow() =
+    fun chips_fourPromotedNotifs_topThreeActiveFourthInOverflow() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
             val unused by collectLastValue(underTest.chipsLegacy)
@@ -859,6 +890,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val firstIcon = createStatusBarIconViewOrNull()
             val secondIcon = createStatusBarIconViewOrNull()
             val thirdIcon = createStatusBarIconViewOrNull()
+            val fourthIcon = createStatusBarIconViewOrNull()
             setNotifs(
                 listOf(
                     activeNotificationModel(
@@ -879,20 +911,27 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         promotedContent =
                             PromotedNotificationContentModel.Builder("thirdNotif").build(),
                     ),
+                    activeNotificationModel(
+                        key = "fourthNotif",
+                        statusBarChipIcon = thirdIcon,
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("fourthNotif").build(),
+                    ),
                 )
             )
 
-            assertThat(latest!!.active.size).isEqualTo(2)
+            assertThat(latest!!.active.size).isEqualTo(3)
             assertIsNotifChip(latest!!.active[0], context, firstIcon, "firstNotif")
             assertIsNotifChip(latest!!.active[1], context, secondIcon, "secondNotif")
+            assertIsNotifChip(latest!!.active[2], context, thirdIcon, "thirdNotif")
             assertThat(latest!!.overflow.size).isEqualTo(1)
-            assertIsNotifChip(latest!!.overflow[0], context, thirdIcon, "thirdNotif")
+            assertIsNotifChip(latest!!.overflow[0], context, fourthIcon, "fourthNotif")
             assertThat(latest!!.inactive.size).isEqualTo(4)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
     @Test
-    fun visibleChipKeys_threePromotedNotifs_topTwoInList() =
+    fun visibleChipKeys_fourPromotedNotifs_topThreeInList() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.visibleChipKeys)
 
@@ -916,10 +955,16 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         promotedContent =
                             PromotedNotificationContentModel.Builder("thirdNotif").build(),
                     ),
+                    activeNotificationModel(
+                        key = "fourthNotif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("fourthNotif").build(),
+                    ),
                 )
             )
 
-            assertThat(latest).containsExactly("firstNotif", "secondNotif").inOrder()
+            assertThat(latest).containsExactly("firstNotif", "secondNotif", "thirdNotif").inOrder()
         }
 
     @DisableChipsModernization
@@ -957,7 +1002,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
 
     @EnableChipsModernization
     @Test
-    fun chips_callAndPromotedNotifs_callAndFirstNotifActiveSecondNotifInOverflow() =
+    fun chips_callAndPromotedNotifs_callAndFirstTwoNotifsActive_thirdNotifInOverflow() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
             val unused by collectLastValue(underTest.chipsLegacy)
@@ -965,6 +1010,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val callNotificationKey = "call"
             val firstIcon = createStatusBarIconViewOrNull()
             val secondIcon = createStatusBarIconViewOrNull()
+            val thirdIcon = createStatusBarIconViewOrNull()
             addOngoingCallState(key = callNotificationKey)
             activeNotificationListRepository.addNotifs(
                 listOf(
@@ -980,21 +1026,28 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                         promotedContent =
                             PromotedNotificationContentModel.Builder("secondNotif").build(),
                     ),
+                    activeNotificationModel(
+                        key = "thirdNotif",
+                        statusBarChipIcon = thirdIcon,
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("thirdNotif").build(),
+                    ),
                 )
             )
 
-            assertThat(latest!!.active.size).isEqualTo(2)
+            assertThat(latest!!.active.size).isEqualTo(3)
             assertIsCallChip(latest!!.active[0], callNotificationKey, context)
             assertIsNotifChip(latest!!.active[1], context, firstIcon, "firstNotif")
+            assertIsNotifChip(latest!!.active[2], context, secondIcon, "secondNotif")
             assertThat(latest!!.overflow.size).isEqualTo(1)
-            assertIsNotifChip(latest!!.overflow[0], context, secondIcon, "secondNotif")
+            assertIsNotifChip(latest!!.overflow[0], context, thirdIcon, "thirdNotif")
             assertThat(latest!!.inactive.size).isEqualTo(3)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
 
     @DisableChipsModernization
     @Test
-    fun chipsLegacy_screenRecordAndCallAndPromotedNotifs_notifsNotShown() =
+    fun chipsLegacy_screenRecordAndCallAndPromotedNotif_notifNotShown() =
         kosmos.runTest {
             val callNotificationKey = "call"
             val latest by collectLastValue(underTest.chipsLegacy)
@@ -1016,7 +1069,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun visibleChipKeys_screenRecordAndCallAndPromotedNotifs_topTwoInList() =
+    fun visibleChipKeys_screenRecordAndCallAndPromotedNotifs_topThreeInList() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.visibleChipKeys)
 
@@ -1025,20 +1078,27 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             screenRecordState.value = ScreenRecordModel.Recording
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
-                    key = "notif",
+                    key = "notif1",
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                    promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                )
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif2",
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
                 )
             )
 
             assertThat(latest)
-                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey)
+                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey, "notif1")
                 .inOrder()
         }
 
     @EnableChipsModernization
     @Test
-    fun chips_screenRecordAndCallAndPromotedNotif_notifInOverflow() =
+    fun chips_screenRecordAndCallAndPromotedNotifs_secondNotifInOverflow() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.chips)
             val unused by collectLastValue(underTest.chipsLegacy)
@@ -1055,11 +1115,22 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             )
             addOngoingCallState(key = callNotificationKey)
 
-            assertThat(latest!!.active.size).isEqualTo(2)
+            // This is the overflow notif
+            val notifIcon2 = createStatusBarIconViewOrNull()
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif2",
+                    statusBarChipIcon = notifIcon2,
+                    promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
+                )
+            )
+
+            assertThat(latest!!.active.size).isEqualTo(3)
             assertIsScreenRecordChip(latest!!.active[0])
             assertIsCallChip(latest!!.active[1], callNotificationKey, context)
+            assertIsNotifChip(latest!!.active[2], context, notifIcon, "notif")
             assertThat(latest!!.overflow.size).isEqualTo(1)
-            assertIsNotifChip(latest!!.overflow[0], context, notifIcon, "notif")
+            assertIsNotifChip(latest!!.overflow[0], context, notifIcon2, "notif2")
             assertThat(latest!!.inactive.size).isEqualTo(2)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
         }
@@ -1234,15 +1305,16 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     @Test
     fun chips_movesChipsAroundAccordingToPriority() =
         kosmos.runTest {
+            systemClock.setCurrentTimeMillis(10_000)
             val callNotificationKey = "call"
             // Start with just the lowest priority chip active
-            val notifIcon = createStatusBarIconViewOrNull()
+            val notif1Icon = createStatusBarIconViewOrNull()
             setNotifs(
                 listOf(
                     activeNotificationModel(
-                        key = "notif",
-                        statusBarChipIcon = notifIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        key = "notif1",
+                        statusBarChipIcon = notif1Icon,
+                        promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
                     )
                 )
             )
@@ -1254,7 +1326,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val unused by collectLastValue(underTest.chipsLegacy)
 
             assertThat(latest!!.active.size).isEqualTo(1)
-            assertIsNotifChip(latest!!.active[0], context, notifIcon, "notif")
+            assertIsNotifChip(latest!!.active[0], context, notif1Icon, "notif1")
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(4)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
@@ -1262,10 +1334,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             // WHEN the higher priority call chip is added
             addOngoingCallState(key = callNotificationKey)
 
-            // THEN the higher priority call chip and notif are active in that order
+            // THEN the higher priority call chip and notif1 are active in that order
             assertThat(latest!!.active.size).isEqualTo(2)
             assertIsCallChip(latest!!.active[0], callNotificationKey, context)
-            assertIsNotifChip(latest!!.active[1], context, notifIcon, "notif")
+            assertIsNotifChip(latest!!.active[1], context, notif1Icon, "notif1")
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(3)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
@@ -1278,56 +1350,63 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                     createTask(taskId = 1),
                 )
 
-            // THEN the higher priority media projection chip and call are active in that order, and
-            // notif is demoted to overflow
-            assertThat(latest!!.active.size).isEqualTo(2)
+            // THEN media projection, then call, then notif1 are active
+            assertThat(latest!!.active.size).isEqualTo(3)
             assertIsShareToAppChip(latest!!.active[0])
             assertIsCallChip(latest!!.active[1], callNotificationKey, context)
-            assertThat(latest!!.overflow.size).isEqualTo(1)
-            assertIsNotifChip(latest!!.overflow[0], context, notifIcon, "notif")
+            assertIsNotifChip(latest!!.active[2], context, notif1Icon, "notif1")
+            assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(2)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
 
-            // WHEN the higher priority screen record chip is added
+            // WHEN the screen record chip is added, which replaces media projection
             screenRecordState.value = ScreenRecordModel.Recording
-
-            // THEN the higher priority screen record chip and call are active in that order, and
-            // media projection and notif are demoted in overflow
-            assertThat(latest!!.active.size).isEqualTo(2)
-            assertIsScreenRecordChip(latest!!.active[0])
-            assertIsCallChip(latest!!.active[1], callNotificationKey, context)
-            assertThat(latest!!.overflow.size).isEqualTo(2)
-            assertIsShareToAppChip(latest!!.overflow[0])
-            assertIsNotifChip(latest!!.overflow[1], context, notifIcon, "notif")
-            assertThat(latest!!.inactive.size).isEqualTo(1)
-            assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
-
-            // WHEN screen record and call is dropped
-            screenRecordState.value = ScreenRecordModel.DoingNothing
-            setNotifs(
-                listOf(
-                    activeNotificationModel(
-                        key = "notif",
-                        statusBarChipIcon = notifIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
-                    )
+            // AND another notification is added
+            systemClock.advanceTime(2_000)
+            val notif2Icon = createStatusBarIconViewOrNull()
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif2",
+                    statusBarChipIcon = notif2Icon,
+                    promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
                 )
             )
 
-            // THEN media projection and notif remain
-            assertThat(latest!!.active.size).isEqualTo(2)
+            // THEN screen record, then call, then notif2 are active
+            assertThat(latest!!.active.size).isEqualTo(3)
+            assertIsScreenRecordChip(latest!!.active[0])
+            assertIsCallChip(latest!!.active[1], callNotificationKey, context)
+            assertIsNotifChip(latest!!.active[2], context, notif2Icon, "notif2")
+
+            // AND notif1 and media projection is demoted in overflow
+            assertThat(latest!!.overflow.size).isEqualTo(2)
+            assertIsShareToAppChip(latest!!.overflow[0])
+            assertIsNotifChip(latest!!.overflow[1], context, notif1Icon, "notif1")
+            assertThat(latest!!.inactive.size).isEqualTo(1)
+            assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
+
+            // WHEN screen record and call are dropped
+            screenRecordState.value = ScreenRecordModel.DoingNothing
+            removeOngoingCallState(callNotificationKey)
+
+            // THEN media projection, notif2, and notif1 remain
+            assertThat(latest!!.active.size).isEqualTo(3)
             assertIsShareToAppChip(latest!!.active[0])
-            assertIsNotifChip(latest!!.active[1], context, notifIcon, "notif")
+            assertIsNotifChip(latest!!.active[1], context, notif2Icon, "notif2")
+            assertIsNotifChip(latest!!.active[2], context, notif1Icon, "notif1")
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(3)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())
 
             // WHEN media projection is dropped
             mediaProjectionState.value = MediaProjectionState.NotProjecting
+            // AND notif2 is dropped
+            systemClock.advanceTime(2_000)
+            activeNotificationListRepository.removeNotif("notif2")
 
-            // THEN only notif is active
+            // THEN only notif1 is active
             assertThat(latest!!.active.size).isEqualTo(1)
-            assertIsNotifChip(latest!!.active[0], context, notifIcon, "notif")
+            assertIsNotifChip(latest!!.active[0], context, notif1Icon, "notif1")
             assertThat(latest!!.overflow).isEmpty()
             assertThat(latest!!.inactive.size).isEqualTo(4)
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModelLegacy())

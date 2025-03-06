@@ -138,10 +138,14 @@ public enum DesktopModeFlags {
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, false),
     EXCLUDE_CAPTION_FROM_APP_BOUNDS(Flags::excludeCaptionFromAppBounds, false),
+    FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK(
+            Flags::forceCloseTopTransparentFullscreenTask, false),
     IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(
             Flags::ignoreAspectRatioRestrictionsForResizeableFreeformActivities, true),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
-            Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true)
+            Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
+    INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES(
+            Flags::inheritTaskBoundsForTrampolineTaskLaunches, false),
     // go/keep-sorted end
     ;
 

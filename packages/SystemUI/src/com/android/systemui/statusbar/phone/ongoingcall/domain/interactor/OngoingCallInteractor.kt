@@ -51,9 +51,7 @@ import kotlinx.coroutines.flow.stateIn
  * This class monitors call notifications and the visibility of call apps to determine the
  * appropriate chip state. It emits:
  * * - [OngoingCallModel.NoCall] when there is no call notification
- * * - [OngoingCallModel.InCallWithVisibleApp] when there is a call notification but the call app is
- *   visible
- * * - [OngoingCallModel.InCall] when there is a call notification and the call app is not visible
+ * * - [OngoingCallModel.InCall] when there is a call notification
  */
 @SysUISingleton
 class OngoingCallInteractor
@@ -85,12 +83,14 @@ constructor(
                 initialValue = OngoingCallModel.NoCall,
             )
 
+    // TODO(b/400720280): maybe put this inside [OngoingCallModel].
     @VisibleForTesting
     val isStatusBarRequiredForOngoingCall =
         combine(ongoingCallState, isChipSwipedAway) { callState, chipSwipedAway ->
-            callState is OngoingCallModel.InCall && !chipSwipedAway
+            callState.willCallChipBeVisible() && !chipSwipedAway
         }
 
+    // TODO(b/400720280): maybe put this inside [OngoingCallModel].
     @VisibleForTesting
     val isGestureListeningEnabled =
         combine(
@@ -98,8 +98,11 @@ constructor(
             statusBarModeRepositoryStore.defaultDisplay.isInFullscreenMode,
             isChipSwipedAway,
         ) { callState, isFullscreen, chipSwipedAway ->
-            callState is OngoingCallModel.InCall && !chipSwipedAway && isFullscreen
+            callState.willCallChipBeVisible() && !chipSwipedAway && isFullscreen
         }
+
+    private fun OngoingCallModel.willCallChipBeVisible() =
+        this is OngoingCallModel.InCall && !isAppVisible
 
     private fun createOngoingCallStateFlow(
         notification: ActiveNotificationModel?
@@ -147,34 +150,23 @@ constructor(
         model: ActiveNotificationModel,
         isVisible: Boolean,
     ): OngoingCallModel {
-        return when {
-            isVisible -> {
-                logger.d({ "Call app is visible: uid=$int1" }) { int1 = model.uid }
-                OngoingCallModel.InCallWithVisibleApp(
-                    startTimeMs = model.whenTime,
-                    notificationIconView = model.statusBarChipIconView,
-                    intent = model.contentIntent,
-                    notificationKey = model.key,
-                    appName = model.appName,
-                    promotedContent = model.promotedContent,
-                )
-            }
-
-            else -> {
-                logger.d({ "Active call detected: startTime=$long1 hasIcon=$bool1" }) {
-                    long1 = model.whenTime
-                    bool1 = model.statusBarChipIconView != null
-                }
-                OngoingCallModel.InCall(
-                    startTimeMs = model.whenTime,
-                    notificationIconView = model.statusBarChipIconView,
-                    intent = model.contentIntent,
-                    notificationKey = model.key,
-                    appName = model.appName,
-                    promotedContent = model.promotedContent,
-                )
-            }
+        logger.d({
+            "Active call detected: uid=$int1 startTime=$long1 hasIcon=$bool1 isAppVisible=$bool2"
+        }) {
+            int1 = model.uid
+            long1 = model.whenTime
+            bool1 = model.statusBarChipIconView != null
+            bool2 = isVisible
         }
+        return OngoingCallModel.InCall(
+            startTimeMs = model.whenTime,
+            notificationIconView = model.statusBarChipIconView,
+            intent = model.contentIntent,
+            notificationKey = model.key,
+            appName = model.appName,
+            promotedContent = model.promotedContent,
+            isAppVisible = isVisible,
+        )
     }
 
     private fun setStatusBarRequiredForOngoingCall(statusBarRequired: Boolean) {

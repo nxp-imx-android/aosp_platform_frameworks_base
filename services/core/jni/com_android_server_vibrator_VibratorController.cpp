@@ -19,7 +19,6 @@
 #include <aidl/android/hardware/vibrator/IVibrator.h>
 #include <android/binder_parcel.h>
 #include <android/binder_parcel_jni.h>
-#include <android/hardware/vibrator/1.3/IVibrator.h>
 #include <android/persistable_bundle_aidl.h>
 #include <android_os_vibrator.h>
 #include <nativehelper/JNIHelp.h>
@@ -32,8 +31,6 @@
 #include "core_jni_helpers.h"
 #include "jni.h"
 
-namespace V1_0 = android::hardware::vibrator::V1_0;
-namespace V1_3 = android::hardware::vibrator::V1_3;
 namespace Aidl = aidl::android::hardware::vibrator;
 
 using aidl::android::os::PersistableBundle;
@@ -79,31 +76,6 @@ static struct {
     jfieldID frequencyHz;
     jfieldID timeMillis;
 } sPwlePointClassInfo;
-
-static_assert(static_cast<uint8_t>(V1_0::EffectStrength::LIGHT) ==
-              static_cast<uint8_t>(Aidl::EffectStrength::LIGHT));
-static_assert(static_cast<uint8_t>(V1_0::EffectStrength::MEDIUM) ==
-              static_cast<uint8_t>(Aidl::EffectStrength::MEDIUM));
-static_assert(static_cast<uint8_t>(V1_0::EffectStrength::STRONG) ==
-              static_cast<uint8_t>(Aidl::EffectStrength::STRONG));
-
-static_assert(static_cast<uint8_t>(V1_3::Effect::CLICK) ==
-              static_cast<uint8_t>(Aidl::Effect::CLICK));
-static_assert(static_cast<uint8_t>(V1_3::Effect::DOUBLE_CLICK) ==
-              static_cast<uint8_t>(Aidl::Effect::DOUBLE_CLICK));
-static_assert(static_cast<uint8_t>(V1_3::Effect::TICK) == static_cast<uint8_t>(Aidl::Effect::TICK));
-static_assert(static_cast<uint8_t>(V1_3::Effect::THUD) == static_cast<uint8_t>(Aidl::Effect::THUD));
-static_assert(static_cast<uint8_t>(V1_3::Effect::POP) == static_cast<uint8_t>(Aidl::Effect::POP));
-static_assert(static_cast<uint8_t>(V1_3::Effect::HEAVY_CLICK) ==
-              static_cast<uint8_t>(Aidl::Effect::HEAVY_CLICK));
-static_assert(static_cast<uint8_t>(V1_3::Effect::RINGTONE_1) ==
-              static_cast<uint8_t>(Aidl::Effect::RINGTONE_1));
-static_assert(static_cast<uint8_t>(V1_3::Effect::RINGTONE_2) ==
-              static_cast<uint8_t>(Aidl::Effect::RINGTONE_2));
-static_assert(static_cast<uint8_t>(V1_3::Effect::RINGTONE_15) ==
-              static_cast<uint8_t>(Aidl::Effect::RINGTONE_15));
-static_assert(static_cast<uint8_t>(V1_3::Effect::TEXTURE_TICK) ==
-              static_cast<uint8_t>(Aidl::Effect::TEXTURE_TICK));
 
 static std::shared_ptr<vibrator::HalController> findVibrator(int32_t vibratorId) {
     vibrator::ManagerHalController* manager =

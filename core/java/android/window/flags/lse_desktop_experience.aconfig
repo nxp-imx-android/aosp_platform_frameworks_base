@@ -27,6 +27,17 @@ flag {
 }
 
 flag {
+    name: "inherit_task_bounds_for_trampoline_task_launches"
+    namespace: "lse_desktop_experience"
+    description: "Forces trampoline task launches to inherit the bounds of the previous instance /n"
+                 "before is closes to prevent each task from cascading."
+    bug: "392815318"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"
@@ -44,6 +55,17 @@ flag {
                  "initial bounds in desktop launch params while respecting cascading position /n"
                  "passed by Shell."
     bug: "396075922"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "force_close_top_transparent_fullscreen_task"
+    namespace: "lse_desktop_experience"
+    description: "If a top transparent fullscreen task is on top of desktop mode, force it to /n"
+                 "close if another task is opened or brought to front."
+    bug: "395041610"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

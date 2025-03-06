@@ -86,6 +86,14 @@ flag {
 }
 
 flag {
+  name: "action_mode_edge_to_edge"
+  namespace: "windowing_frontend"
+  description: "Make contextual action bar edge-to-edge"
+  bug: "379783298"
+  is_fixed_read_only: true
+}
+
+flag {
   name: "keyguard_going_away_timeout"
   namespace: "windowing_frontend"
   description: "Allow a maximum of 10 seconds with keyguardGoingAway=true before force-resetting"
@@ -500,6 +508,17 @@ flag {
     namespace: "windowing_frontend"
     description: "Sets Launch powermode for activity launches earlier"
     bug: "399380676"
+    is_fixed_read_only: true
+        metadata {
+            purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "scramble_snapshot_file_name"
+    namespace: "windowing_frontend"
+    description: "Scramble the file name of task snapshot."
+    bug: "293139053"
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX

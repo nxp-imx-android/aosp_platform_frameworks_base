@@ -11885,6 +11885,7 @@ com.android.internal.os.ZygoteServer$UsapPoolRefillAction
 com.android.internal.os.ZygoteServer
 com.android.internal.os.logging.MetricsLoggerWrapper
 com.android.internal.pm.RoSystemFeatures
+com.android.internal.pm.SystemFeaturesMetadata
 com.android.internal.pm.parsing.PackageParser2$Callback
 com.android.internal.pm.parsing.PackageParserException
 com.android.internal.pm.pkg.component.flags.FeatureFlags

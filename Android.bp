@@ -415,6 +415,7 @@ java_defaults {
         "mimemap",
         "av-types-aidl-java",
         "tv_tuner_resource_manager_aidl_interface-java",
+        "media_quality_aidl_interface-java",
         "soundtrigger_middleware-aidl-java",
         "modules-utils-binary-xml",
         "modules-utils-build",

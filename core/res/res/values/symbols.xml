@@ -1129,6 +1129,7 @@
   <java-symbol type="string" name="profile_label_work_3" />
   <java-symbol type="string" name="profile_label_test" />
   <java-symbol type="string" name="profile_label_communal" />
+  <java-symbol type="string" name="profile_label_supervising" />
   <java-symbol type="string" name="accessibility_label_managed_profile" />
   <java-symbol type="string" name="accessibility_label_private_profile" />
   <java-symbol type="string" name="accessibility_label_clone_profile" />
@@ -3267,6 +3268,8 @@
   <java-symbol type="dimen" name="notification_2025_content_margin_start" />
   <java-symbol type="dimen" name="notification_2025_expand_button_horizontal_icon_padding" />
   <java-symbol type="dimen" name="notification_2025_expand_button_reduced_end_padding" />
+  <java-symbol type="dimen" name="notification_2025_expand_button_right_icon_spacing" />
+  <java-symbol type="dimen" name="notification_2025_right_icon_expanded_margin_end" />
   <java-symbol type="dimen" name="notification_progress_margin_horizontal" />
   <java-symbol type="dimen" name="notification_header_background_height" />
   <java-symbol type="dimen" name="notification_header_touchable_height" />
@@ -3957,6 +3960,7 @@
   <java-symbol type="dimen" name="notification_big_picture_max_width"/>
   <java-symbol type="dimen" name="notification_right_icon_size"/>
   <java-symbol type="dimen" name="notification_right_icon_content_margin"/>
+  <java-symbol type="dimen" name="notification_2025_right_icon_content_margin"/>
   <java-symbol type="dimen" name="notification_actions_icon_drawable_size"/>
   <java-symbol type="dimen" name="notification_custom_view_max_image_height"/>
   <java-symbol type="dimen" name="notification_custom_view_max_image_width"/>
@@ -4441,6 +4445,11 @@
 
   <!-- For Attention Service -->
   <java-symbol type="integer" name="config_attentionMaximumExtension" />
+
+  <java-symbol type="bool" name="config_defaultPreventScreenTimeoutEnabled" />
+  <java-symbol type="integer" name="config_defaultPreventScreenTimeoutForMillis" />
+  <java-symbol type="integer" name="config_defaultMaxDurationBetweenUndimsMillis" />
+  <java-symbol type="integer" name="config_defaultUndimsRequired" />
 
   <java-symbol type="string" name="config_incidentReportApproverPackage" />
   <java-symbol type="array" name="config_restrictedImagesServices" />
@@ -5665,6 +5674,32 @@
   <java-symbol type="drawable" name="accessibility_autoclick_pause" />
   <java-symbol type="drawable" name="accessibility_autoclick_resume" />
   <java-symbol type="drawable" name="ic_accessibility_autoclick" />
+
+  <!-- Accessibility autoclick scroll panel related -->
+  <java-symbol type="layout" name="accessibility_autoclick_scroll_panel" />
+  <java-symbol type="dimen" name="accessibility_autoclick_scroll_panel_button_size" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_up" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_down" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_left" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_right" />
+  <java-symbol type="drawable" name="accessibility_autoclick_scroll_exit" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_up" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_down" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_left" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_right" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_exit" />
+  <java-symbol type="string" name="accessibility_autoclick_scroll_panel_title" />
+  <java-symbol type="id" name="accessibility_autoclick_scroll_panel" />
+  <java-symbol type="id" name="scroll_up_layout" />
+  <java-symbol type="id" name="scroll_down_layout" />
+  <java-symbol type="id" name="scroll_left_layout" />
+  <java-symbol type="id" name="scroll_right_layout" />
+  <java-symbol type="id" name="scroll_exit_layout" />
+  <java-symbol type="id" name="scroll_up" />
+  <java-symbol type="id" name="scroll_down" />
+  <java-symbol type="id" name="scroll_left" />
+  <java-symbol type="id" name="scroll_right" />
+  <java-symbol type="id" name="scroll_exit" />
 
   <!-- For HapticFeedbackConstants configurability defined at HapticFeedbackCustomization -->
   <java-symbol type="string" name="config_hapticFeedbackCustomizationFile" />

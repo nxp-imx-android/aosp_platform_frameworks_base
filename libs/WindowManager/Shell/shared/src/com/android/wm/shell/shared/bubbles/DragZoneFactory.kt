@@ -303,6 +303,7 @@ class DragZoneFactory(
         val isVerticalSplit = deviceConfig.isSmallTablet == deviceConfig.isLandscape
         return if (isVerticalSplit) {
             when (splitScreenModeChecker.getSplitScreenMode()) {
+                SplitScreenMode.UNSUPPORTED -> emptyList()
                 SplitScreenMode.SPLIT_50_50,
                 SplitScreenMode.NONE ->
                     listOf(
@@ -360,6 +361,7 @@ class DragZoneFactory(
             }
         } else {
             when (splitScreenModeChecker.getSplitScreenMode()) {
+                SplitScreenMode.UNSUPPORTED -> emptyList()
                 SplitScreenMode.SPLIT_50_50,
                 SplitScreenMode.NONE ->
                     listOf(
@@ -453,6 +455,7 @@ class DragZoneFactory(
             // vertical split drag zones are aligned with the full screen drag zone width
             val splitZoneLeft = windowBounds.right / 2 - fullScreenDragZoneWidth / 2
             when (splitScreenModeChecker.getSplitScreenMode()) {
+                SplitScreenMode.UNSUPPORTED -> emptyList()
                 SplitScreenMode.SPLIT_50_50,
                 SplitScreenMode.NONE ->
                     listOf(
@@ -560,7 +563,8 @@ class DragZoneFactory(
             NONE,
             SPLIT_50_50,
             SPLIT_10_90,
-            SPLIT_90_10
+            SPLIT_90_10,
+            UNSUPPORTED
         }
 
         fun getSplitScreenMode(): SplitScreenMode

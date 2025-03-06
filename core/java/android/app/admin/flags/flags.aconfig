@@ -402,3 +402,13 @@ flag {
   description: "Add new API for secondary lockscreen"
   bug: "336297680"
 }
+
+flag {
+  name: "remove_managed_esim_on_work_profile_deletion"
+  namespace: "enterprise"
+  description: "Remove managed eSIM when work profile is deleted"
+  bug: "347925470"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

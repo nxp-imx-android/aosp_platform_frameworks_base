@@ -28,7 +28,7 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
-import static com.android.systemui.Flags.predictiveBackDelayTransition;
+import static com.android.systemui.Flags.predictiveBackDelayWmTransition;
 import static com.android.window.flags.Flags.unifyBackNavigationTransition;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
@@ -433,7 +433,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
     public void onThresholdCrossed() {
         mThresholdCrossed = true;
         BackTouchTracker activeTracker = getActiveTracker();
-        if (predictiveBackDelayTransition() && activeTracker != null && mActiveCallback == null
+        if (predictiveBackDelayWmTransition() && activeTracker != null && mActiveCallback == null
                 && mBackGestureStarted) {
             startBackNavigation(activeTracker);
         }
@@ -494,12 +494,12 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 if (swipeEdge == EDGE_NONE) {
                     // start animation immediately for non-gestural sources (without ACTION_MOVE
                     // events)
-                    if (!predictiveBackDelayTransition()) {
+                    if (!predictiveBackDelayWmTransition()) {
                         mThresholdCrossed = true;
                     }
                     mPointersPilfered = true;
                     onGestureStarted(touchX, touchY, swipeEdge);
-                    if (predictiveBackDelayTransition()) {
+                    if (predictiveBackDelayWmTransition()) {
                         onThresholdCrossed();
                     }
                     mShouldStartOnNextMoveEvent = false;
@@ -555,7 +555,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             mPostCommitAnimationInProgress = false;
             mShellExecutor.removeCallbacks(mAnimationTimeoutRunnable);
             startSystemAnimation();
-        } else if (!predictiveBackDelayTransition()) {
+        } else if (!predictiveBackDelayWmTransition()) {
             startBackNavigation(touchTracker);
         }
     }

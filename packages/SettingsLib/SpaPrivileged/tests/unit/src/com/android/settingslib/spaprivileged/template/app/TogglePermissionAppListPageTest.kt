@@ -175,13 +175,7 @@ class TogglePermissionAppListPageTest {
 
         val summary = getSummary(listModel)
 
-        assertThat(summary)
-            .isEqualTo(
-                context.getString(
-                    com.android.settingslib.widget.restricted.R.string
-                        .disabled_by_advanced_protection
-                )
-            )
+        assertThat(summary).isEqualTo(context.getString(com.android.settingslib.R.string.disabled))
     }
 
     @RequiresFlagsEnabled(Flags.FLAG_AAPM_API)

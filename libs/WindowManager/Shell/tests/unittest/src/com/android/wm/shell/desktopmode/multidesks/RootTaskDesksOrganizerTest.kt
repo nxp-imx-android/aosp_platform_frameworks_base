@@ -21,14 +21,17 @@ import android.view.Display
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
+import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.Change
 import android.window.WindowContainerTransaction.HierarchyOp
+import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestShellExecutor
+import com.android.wm.shell.common.LaunchAdjacentController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskMinimizationRoot
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer.DeskRoot
@@ -58,13 +61,19 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     private val testShellInit = ShellInit(testExecutor)
     private val mockShellCommandHandler = mock<ShellCommandHandler>()
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
+    private val launchAdjacentController = LaunchAdjacentController(mock())
 
     private lateinit var organizer: RootTaskDesksOrganizer
 
     @Before
     fun setUp() {
         organizer =
-            RootTaskDesksOrganizer(testShellInit, mockShellCommandHandler, mockShellTaskOrganizer)
+            RootTaskDesksOrganizer(
+                testShellInit,
+                mockShellCommandHandler,
+                mockShellTaskOrganizer,
+                launchAdjacentController,
+            )
     }
 
     @Test
@@ -473,14 +482,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
 
         organizer.minimizeTask(wct, deskId = desk.deskRoot.deskId, task)
 
-        assertThat(
-                wct.hierarchyOps.any { hop ->
-                    hop.isReparent &&
-                        hop.container == task.token.asBinder() &&
-                        hop.newParent == desk.minimizationRoot.token.asBinder()
-                }
-            )
-            .isTrue()
+        assertThat(wct.hasMinimizationHops(desk, task.token)).isTrue()
     }
 
     @Test
@@ -508,14 +510,205 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         assertThat(wct.isEmpty).isTrue()
     }
 
+    @Test
+    fun unminimizeTask() {
+        val desk = createDesk()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val wct = WindowContainerTransaction()
+        organizer.moveTaskToDesk(wct, desk.deskRoot.deskId, task)
+        organizer.onTaskAppeared(task, SurfaceControl())
+        organizer.minimizeTask(wct, deskId = desk.deskRoot.deskId, task)
+        task.parentTaskId = desk.minimizationRoot.rootId
+        organizer.onTaskInfoChanged(task)
+
+        wct.clear()
+        organizer.unminimizeTask(wct, deskId = desk.deskRoot.deskId, task)
+
+        assertThat(wct.hasUnminimizationHops(desk, task.token)).isTrue()
+    }
+
+    @Test
+    fun unminimizeTask_alreadyUnminimized_noOp() {
+        val desk = createDesk()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val wct = WindowContainerTransaction()
+        organizer.moveTaskToDesk(wct, desk.deskRoot.deskId, task)
+        organizer.onTaskAppeared(task, SurfaceControl())
+
+        wct.clear()
+        organizer.unminimizeTask(wct, deskId = desk.deskRoot.deskId, task)
+
+        assertThat(wct.hasUnminimizationHops(desk, task.token)).isFalse()
+    }
+
+    @Test
+    fun unminimizeTask_notInDesk_noOp() {
+        val desk = createDesk()
+        val task = createFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        organizer.unminimizeTask(wct, deskId = desk.deskRoot.deskId, task)
+
+        assertThat(wct.hasUnminimizationHops(desk, task.token)).isFalse()
+    }
+
+    @Test
+    fun reorderTaskToFront() {
+        val desk = createDesk()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val wct = WindowContainerTransaction()
+        organizer.onTaskAppeared(task, SurfaceControl())
+
+        organizer.reorderTaskToFront(wct, desk.deskRoot.deskId, task)
+
+        assertThat(
+                wct.hierarchyOps.singleOrNull { hop ->
+                    hop.container == task.token.asBinder() &&
+                        hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        hop.toTop &&
+                        hop.includingParents()
+                }
+            )
+            .isNotNull()
+    }
+
+    @Test
+    fun reorderTaskToFront_notInDesk_noOp() {
+        val desk = createDesk()
+        val task = createFreeformTask()
+        val wct = WindowContainerTransaction()
+
+        organizer.reorderTaskToFront(wct, desk.deskRoot.deskId, task)
+
+        assertThat(
+                wct.hierarchyOps.singleOrNull { hop ->
+                    hop.container == task.token.asBinder() &&
+                        hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        hop.toTop &&
+                        hop.includingParents()
+                }
+            )
+            .isNull()
+    }
+
+    @Test
+    fun reorderTaskToFront_minimized_unminimizesAndReorders() {
+        val desk = createDesk()
+        val task = createFreeformTask().apply { parentTaskId = desk.deskRoot.deskId }
+        val wct = WindowContainerTransaction()
+        organizer.onTaskAppeared(task, SurfaceControl())
+        task.parentTaskId = desk.minimizationRoot.rootId
+        organizer.onTaskInfoChanged(task)
+
+        organizer.reorderTaskToFront(wct, desk.deskRoot.deskId, task)
+
+        assertThat(wct.hasUnminimizationHops(desk, task.token)).isTrue()
+        assertThat(
+                wct.hierarchyOps.singleOrNull { hop ->
+                    hop.container == task.token.asBinder() &&
+                        hop.type == HIERARCHY_OP_TYPE_REORDER &&
+                        hop.toTop &&
+                        hop.includingParents()
+                }
+            )
+            .isNotNull()
+    }
+
+    @Test
+    fun onTaskAppeared_visibleDesk_onlyDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskAppeared_invisibleDesk_onlyDesk_enablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = false
+
+        createDesk(visible = false)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isTrue()
+    }
+
+    @Test
+    fun onTaskAppeared_invisibleDesk_otherVisibleDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+        createDesk(visible = false)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskInfoChanged_deskBecomesVisible_onlyDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        val desk = createDesk(visible = false)
+        desk.deskRoot.taskInfo.isVisible = true
+        organizer.onTaskInfoChanged(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskInfoChanged_deskBecomesInvisible_onlyDesk_enablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = false
+
+        val desk = createDesk(visible = true)
+        desk.deskRoot.taskInfo.isVisible = false
+        organizer.onTaskInfoChanged(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isTrue()
+    }
+
+    @Test
+    fun onTaskInfoChanged_deskBecomesInvisible_otherVisibleDesk_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+        val desk = createDesk(visible = true)
+        desk.deskRoot.taskInfo.isVisible = false
+        organizer.onTaskInfoChanged(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
+    @Test
+    fun onTaskVanished_visibleDeskDisappears_onlyDesk_enablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = false
+
+        val desk = createDesk(visible = true)
+        organizer.onTaskVanished(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isTrue()
+    }
+
+    @Test
+    fun onTaskVanished_visibleDeskDisappears_otherDeskVisible_disablesLaunchAdjacent() {
+        launchAdjacentController.launchAdjacentEnabled = true
+
+        createDesk(visible = true)
+        val desk = createDesk(visible = true)
+        organizer.onTaskVanished(desk.deskRoot.taskInfo)
+
+        assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
+    }
+
     private data class DeskRoots(
         val deskRoot: DeskRoot,
         val minimizationRoot: DeskMinimizationRoot,
     )
 
-    private fun createDesk(): DeskRoots {
+    private fun createDesk(visible: Boolean = true): DeskRoots {
         organizer.createDesk(Display.DEFAULT_DISPLAY, FakeOnCreateCallback())
-        val freeformRoot = createFreeformTask().apply { parentTaskId = -1 }
+        val freeformRoot =
+            createFreeformTask().apply {
+                parentTaskId = -1
+                isVisible = visible
+            }
         organizer.onTaskAppeared(freeformRoot, SurfaceControl())
         val minimizationRoot = createFreeformTask().apply { parentTaskId = -1 }
         organizer.onTaskAppeared(minimizationRoot, SurfaceControl())
@@ -524,6 +717,27 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
             checkNotNull(organizer.deskMinimizationRootsByDeskId[freeformRoot.taskId]),
         )
     }
+
+    private fun WindowContainerTransaction.hasMinimizationHops(
+        desk: DeskRoots,
+        task: WindowContainerToken,
+    ): Boolean =
+        hierarchyOps.any { hop ->
+            hop.isReparent &&
+                hop.container == task.asBinder() &&
+                hop.newParent == desk.minimizationRoot.token.asBinder()
+        }
+
+    private fun WindowContainerTransaction.hasUnminimizationHops(
+        desk: DeskRoots,
+        task: WindowContainerToken,
+    ): Boolean =
+        hierarchyOps.any { hop ->
+            hop.isReparent &&
+                hop.container == task.asBinder() &&
+                hop.newParent == desk.deskRoot.token.asBinder() &&
+                hop.toTop
+        }
 
     private class FakeOnCreateCallback : DesksOrganizer.OnCreateCallback {
         var deskId: Int? = null

@@ -36,6 +36,7 @@ import static android.os.UserManager.USER_TYPE_PROFILE_CLONE;
 import static android.os.UserManager.USER_TYPE_PROFILE_COMMUNAL;
 import static android.os.UserManager.USER_TYPE_PROFILE_MANAGED;
 import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
+import static android.os.UserManager.USER_TYPE_PROFILE_SUPERVISING;
 import static android.os.UserManager.USER_TYPE_PROFILE_TEST;
 import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
@@ -111,6 +112,7 @@ public final class UserTypeFactory {
         builders.put(USER_TYPE_PROFILE_CLONE, getDefaultTypeProfileClone());
         builders.put(USER_TYPE_PROFILE_COMMUNAL, getDefaultTypeProfileCommunal());
         builders.put(USER_TYPE_PROFILE_PRIVATE, getDefaultTypeProfilePrivate());
+        builders.put(USER_TYPE_PROFILE_SUPERVISING, getDefaultTypeProfileSupervising());
         if (Build.IS_DEBUGGABLE) {
             builders.put(USER_TYPE_PROFILE_TEST, getDefaultTypeProfileTest());
         }
@@ -343,6 +345,29 @@ public final class UserTypeFactory {
     }
 
     /**
+     * Returns the Builder for the default {@link UserManager#USER_TYPE_PROFILE_SUPERVISING}
+     * configuration.
+     */
+    private static UserTypeDetails.Builder getDefaultTypeProfileSupervising() {
+        return new UserTypeDetails.Builder()
+                .setName(USER_TYPE_PROFILE_SUPERVISING)
+                .setBaseType(FLAG_PROFILE)
+                .setMaxAllowed(1)
+                .setProfileParentRequired(false)
+                .setEnabled(android.multiuser.Flags.allowSupervisingProfile() ? 1 : 0)
+                .setLabels(R.string.profile_label_supervising)
+                .setDefaultRestrictions(getDefaultSupervisingProfileRestrictions())
+                .setDefaultSecureSettings(getDefaultNonManagedProfileSecureSettings())
+                .setDefaultUserProperties(new UserProperties.Builder()
+                        .setStartWithParent(false)
+                        .setShowInLauncher(UserProperties.SHOW_IN_LAUNCHER_NO)
+                        .setShowInSettings(UserProperties.SHOW_IN_SETTINGS_NO)
+                        .setShowInQuietMode(UserProperties.SHOW_IN_QUIET_MODE_HIDDEN)
+                        .setCredentialShareableWithParent(false)
+                        .setAlwaysVisible(true));
+    }
+
+    /**
      * Returns the Builder for the default {@link UserManager#USER_TYPE_FULL_SECONDARY}
      * configuration.
      */
@@ -446,6 +471,12 @@ public final class UserTypeFactory {
     static Bundle getDefaultPrivateProfileRestrictions() {
         final Bundle restrictions = getDefaultProfileRestrictions();
         restrictions.putBoolean(UserManager.DISALLOW_BLUETOOTH_SHARING, true);
+        return restrictions;
+    }
+
+    private static Bundle getDefaultSupervisingProfileRestrictions() {
+        final Bundle restrictions = getDefaultProfileRestrictions();
+        restrictions.putBoolean(UserManager.DISALLOW_INSTALL_APPS, true);
         return restrictions;
     }
 

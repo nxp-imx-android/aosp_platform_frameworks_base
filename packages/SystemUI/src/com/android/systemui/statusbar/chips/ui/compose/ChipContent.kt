@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.ui.compose
 
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +45,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.rememberChronometerStat
 import com.android.systemui.statusbar.chips.ui.viewmodel.rememberTimeRemainingState
 import kotlin.math.min
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -52,7 +54,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
     val hasEmbeddedIcon =
         viewModel.icon is OngoingActivityChipModel.ChipIcon.StatusBarView ||
             viewModel.icon is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon
-    val textStyle = MaterialTheme.typography.labelLarge
+    val textStyle = MaterialTheme.typography.labelLargeEmphasized
     val textColor = Color(viewModel.colors.text(context))
     val maxTextWidth = dimensionResource(id = R.dimen.ongoing_activity_chip_max_text_width)
     val startPadding =

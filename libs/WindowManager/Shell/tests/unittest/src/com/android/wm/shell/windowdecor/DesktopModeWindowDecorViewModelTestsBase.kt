@@ -79,7 +79,6 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.StubTransaction
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeKeyguardChangeListener
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel.DesktopModeOnInsetsChangedListener
-import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
@@ -175,7 +174,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     internal lateinit var desktopModeOnKeyguardChangedListener: DesktopModeKeyguardChangeListener
     protected lateinit var desktopModeWindowDecorViewModel: DesktopModeWindowDecorViewModel
     protected lateinit var desktopModeCompatPolicy: DesktopModeCompatPolicy
-    protected lateinit var appHandleAndHeaderVisibilityHelper: AppHandleAndHeaderVisibilityHelper
 
     fun setUpCommon() {
         spyContext = spy(mContext)
@@ -187,13 +185,9 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(mockDesktopUserRepositories.current).thenReturn(mockDesktopRepository)
         whenever(mockDisplayController.getDisplayContext(any())).thenReturn(spyContext)
         whenever(mockDisplayController.getDisplay(any())).thenReturn(display)
-        whenever(display.type).thenReturn(Display.TYPE_INTERNAL)
         whenever(mockDesktopUserRepositories.getProfile(anyInt()))
             .thenReturn(mockDesktopRepository)
         desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
-        appHandleAndHeaderVisibilityHelper =
-            AppHandleAndHeaderVisibilityHelper(spyContext, mockDisplayController,
-                desktopModeCompatPolicy)
         desktopModeWindowDecorViewModel = DesktopModeWindowDecorViewModel(
             spyContext,
             testShellExecutor,
@@ -228,7 +222,6 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             Optional.of(mockTasksLimiter),
             mockAppHandleEducationController,
             mockAppToWebEducationController,
-            appHandleAndHeaderVisibilityHelper,
             mockCaptionHandleRepository,
             Optional.of(mockActivityOrientationChangeHandler),
             mockTaskPositionerFactory,

@@ -8651,6 +8651,34 @@ public final class Settings {
         public static final String DOCKED_CLOCK_FACE = "docked_clock_face";
 
         /**
+         * Setting to indicate that content filters should be enabled on web browsers.
+         *
+         * <ul>
+         *   <li>0 = Allow all sites
+         *   <li>1 = Try to block explicit sites
+         * </ul>
+         *
+         * @hide
+         */
+        @Readable
+        public static final String BROWSER_CONTENT_FILTERS_ENABLED =
+                "browser_content_filters_enabled";
+
+        /**
+         * Setting to indicate that content filters should be enabled in web search engines.
+         *
+         * <ul>
+         *   <li>0 = Off
+         *   <li>1 = Filter
+         * </ul>
+         *
+         * @hide
+         */
+        @Readable
+        public static final String SEARCH_CONTENT_FILTERS_ENABLED =
+                "search_content_filters_enabled";
+
+        /**
          * Set by the system to track if the user needs to see the call to action for
          * the lockscreen notification policy.
          * @hide
@@ -11130,6 +11158,12 @@ public final class Settings {
          */
         @Readable
         public static final String DOUBLE_TAP_TO_WAKE = "double_tap_to_wake";
+
+        /**
+         * Controls whether double tap to sleep is enabled.
+         * @hide
+         */
+        public static final String DOUBLE_TAP_TO_SLEEP = "double_tap_to_sleep";
 
         /**
          * The current assistant component. It could be a voice interaction service,

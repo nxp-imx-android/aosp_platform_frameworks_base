@@ -36,6 +36,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceManager;
 import androidx.preference.PreferenceViewHolder;
@@ -141,7 +142,7 @@ public class RestrictedSwitchPreference extends SwitchPreferenceCompat implement
             final TextView additionalSummaryView = (TextView) holder.findViewById(
                     R.id.additional_summary);
             if (additionalSummaryView != null) {
-                if (isDisabledByAdmin()) {
+                if (isDisabledByAdmin() && switchSummary != null) {
                     additionalSummaryView.setText(switchSummary);
                     additionalSummaryView.setVisibility(View.VISIBLE);
                 } else {
@@ -151,7 +152,7 @@ public class RestrictedSwitchPreference extends SwitchPreferenceCompat implement
         } else {
             final TextView summaryView = (TextView) holder.findViewById(android.R.id.summary);
             if (summaryView != null) {
-                if (isDisabledByAdmin()) {
+                if (isDisabledByAdmin() && switchSummary != null) {
                     summaryView.setText(switchSummary);
                     summaryView.setVisibility(View.VISIBLE);
                 }
@@ -171,14 +172,10 @@ public class RestrictedSwitchPreference extends SwitchPreferenceCompat implement
                 () -> context.getString(resId));
     }
 
-    private String getRestrictedSwitchSummary() {
+    private @Nullable String getRestrictedSwitchSummary() {
         if (mHelper.isRestrictionEnforcedByAdvancedProtection()) {
-            final int apmResId = isChecked()
-                    ? com.android.settingslib.widget.restricted.R.string
-                            .enabled_by_advanced_protection
-                    : com.android.settingslib.widget.restricted.R.string
-                            .disabled_by_advanced_protection;
-            return getContext().getString(apmResId);
+            // Advanced Protection doesn't set the summary string, it keeps the current summary.
+            return null;
         }
 
         return isChecked()

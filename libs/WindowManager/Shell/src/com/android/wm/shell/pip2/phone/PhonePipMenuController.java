@@ -153,7 +153,12 @@ public class PhonePipMenuController implements PipMenuController,
         mPipUiEventLogger = pipUiEventLogger;
 
         mPipTransitionState.addPipTransitionStateChangedListener(this);
-
+        // Clear actions after exit PiP. Otherwise, next PiP could accidentally inherit the
+        // actions provided by the previous app in PiP mode.
+        mPipBoundsState.addOnPipComponentChangedListener(((oldPipComponent, newPipComponent) -> {
+            if (mAppActions != null) mAppActions.clear();
+            mCloseAction = null;
+        }));
         mPipTaskListener.addParamsChangedListener(new PipTaskListener.PipParamsChangedCallback() {
             @Override
             public void onActionsChanged(List<RemoteAction> actions, RemoteAction closeAction) {

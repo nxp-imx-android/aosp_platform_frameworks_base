@@ -187,6 +187,9 @@
     <!-- Default state of tap to wake -->
     <bool name="def_double_tap_to_wake">true</bool>
 
+    <!-- Default setting for double tap to sleep (Settings.Secure.DOUBLE_TAP_TO_SLEEP) -->
+    <bool name="def_double_tap_to_sleep">false</bool>
+
     <!-- Default for Settings.Secure.NFC_PAYMENT_DEFAULT_COMPONENT -->
     <string name="def_nfc_payment_component"></string>
 

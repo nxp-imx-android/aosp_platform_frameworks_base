@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.panels.ui.viewmodel
 
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.dagger.SysUISingleton
@@ -25,6 +26,7 @@ import com.android.systemui.qs.pipeline.shared.TileSpec
 import javax.inject.Inject
 
 @SysUISingleton
+@Stable
 class DetailsViewModel @Inject constructor(val currentTilesInteractor: CurrentTilesInteractor) {
 
     /**

@@ -1199,6 +1199,7 @@ package android.content.pm {
     method public boolean isProfile();
     method public boolean isQuietModeEnabled();
     method public boolean isRestricted();
+    method @FlaggedApi("android.multiuser.allow_supervising_profile") public boolean isSupervisingProfile();
     method public boolean supportsSwitchTo();
     method @Deprecated public boolean supportsSwitchToByUser();
     method public void writeToParcel(android.os.Parcel, int);
@@ -2459,7 +2460,7 @@ package android.os {
     method public static void invalidateCache(@NonNull String, @NonNull String);
     method public final boolean isDisabled();
     method @Nullable public Result query(@NonNull Query);
-    method public static void setTestMode(boolean);
+    method @FlaggedApi("android.os.ipc_data_cache_test_apis") public static void setTestMode(boolean);
     field public static final String MODULE_BLUETOOTH = "bluetooth";
     field public static final String MODULE_SYSTEM = "system_server";
     field public static final String MODULE_TEST = "test";

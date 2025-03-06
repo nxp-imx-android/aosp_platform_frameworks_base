@@ -138,8 +138,12 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         ImageView backgroundViewTablet =
                 (ImageView) holder.findViewById(R.id.background_view_tablet);
 
-        backgroundView.setVisibility(mIsTablet ? View.GONE : View.VISIBLE);
-        backgroundViewTablet.setVisibility(mIsTablet ? View.VISIBLE : View.GONE);
+        if (backgroundView != null) {
+            backgroundView.setVisibility(mIsTablet ? View.GONE : View.VISIBLE);
+        }
+        if (backgroundViewTablet != null) {
+            backgroundViewTablet.setVisibility(mIsTablet ? View.VISIBLE : View.GONE);
+        }
         if (mIsTablet) {
             backgroundView = backgroundViewTablet;
         }

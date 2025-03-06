@@ -72,10 +72,10 @@ fun Slider(
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChanged: (Float) -> Unit,
     onValueChangeFinished: ((Float) -> Unit)?,
-    stepDistance: Float,
     isEnabled: Boolean,
     accessibilityParams: AccessibilityParams,
     modifier: Modifier = Modifier,
+    stepDistance: Float = 0f,
     colors: SliderColors = SliderDefaults.colors(),
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     haptics: Haptics = Haptics.Disabled,
@@ -83,7 +83,7 @@ fun Slider(
     isReverseDirection: Boolean = false,
     track: (@Composable (SliderState) -> Unit)? = null,
 ) {
-    require(stepDistance > 0) { "stepDistance must be positive" }
+    require(stepDistance >= 0) { "stepDistance must not be negative" }
     val coroutineScope = rememberCoroutineScope()
     val snappedValue = snapValue(value, valueRange, stepDistance)
     val hapticsViewModel = haptics.createViewModel(snappedValue, valueRange, interactionSource)
@@ -192,16 +192,20 @@ private fun AccessibilityParams.createSemantics(
         setProgress { targetValue ->
             val targetDirection =
                 when {
-                    targetValue > value -> 1
-                    targetValue < value -> -1
-                    else -> 0
+                    targetValue > value -> 1f
+                    targetValue < value -> -1f
+                    else -> 0f
+                }
+            val offset =
+                if (stepDistance > 0) {
+                    // advance to the next step when stepDistance is > 0
+                    targetDirection * stepDistance
+                } else {
+                    // advance to the desired value otherwise
+                    targetValue - value
                 }
 
-            val newValue =
-                (value + targetDirection * stepDistance).coerceIn(
-                    valueRange.start,
-                    valueRange.endInclusive,
-                )
+            val newValue = (value + offset).coerceIn(valueRange.start, valueRange.endInclusive)
             onValueChanged(newValue)
             true
         }

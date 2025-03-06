@@ -115,8 +115,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
                 .spyStatic(DragPositioningCallbackUtility::class.java)
                 .startMocking()
 
-        doReturn(true).`when` { DesktopModeStatus.isDesktopModeSupportedOnDisplay(Mockito.any(),
-            Mockito.any()) }
+        doReturn(true).`when` { DesktopModeStatus.canInternalDisplayHostDesktops(Mockito.any()) }
         doReturn(true).`when` { DesktopModeStatus.canEnterDesktopMode(Mockito.any()) }
         doReturn(false).`when` { DesktopModeStatus.overridesShowAppHandle(Mockito.any()) }
 
@@ -395,7 +394,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         whenever(DesktopModeStatus.enforceDeviceRestrictions()).thenReturn(true)
 
         val task = createTask(windowingMode = WINDOWING_MODE_FULLSCREEN)
-        doReturn(true).`when` { DesktopModeStatus.isDesktopModeSupportedOnDisplay(any(), any()) }
+        doReturn(true).`when` { DesktopModeStatus.canInternalDisplayHostDesktops(any()) }
         setUpMockDecorationsForTasks(task)
 
         onTaskOpening(task)

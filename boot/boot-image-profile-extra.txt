@@ -70,3 +70,10 @@ HSPLandroid/os/PerfettoTrackEventExtra$FieldString;->*
 HSPLandroid/os/PerfettoTrackEventExtra$FieldNested;->*
 HSPLandroid/os/PerfettoTrackEventExtra$Pool;->*
 HSPLandroid/os/PerfettoTrackEventExtra$RingBuffer;->*
+
+# While the SystemFeaturesMetadata static cache isn't heavyweight, ensure it's
+# pre-initialized in the boot image to avoid redundant per-process overhead.
+# TODO(b/326623529): Consider removing this after the feature has fully ramped
+# and is captured with the boot image profiling pipeline.
+HSPLcom/android/internal/pm/SystemFeaturesMetadata;->*
+Lcom/android/internal/pm/SystemFeaturesMetadata;

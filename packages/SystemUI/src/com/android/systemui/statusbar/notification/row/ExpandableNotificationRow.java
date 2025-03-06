@@ -19,9 +19,12 @@ package com.android.systemui.statusbar.notification.row;
 import static android.app.Flags.notificationsRedesignTemplates;
 import static android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
+import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_EXPANDED;
+import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED;
 
 import static com.android.systemui.Flags.notificationRowTransparency;
 import static com.android.systemui.Flags.notificationsPinnedHunInShade;
+import static com.android.systemui.Flags.notificationRowAccessibilityExpanded;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
@@ -406,10 +409,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void toggleExpansionState(View v, boolean shouldLogExpandClickMetric) {
-        boolean isGroupRoot = NotificationBundleUi.isEnabled()
-                ? mGroupMembershipManager.isGroupRoot(mEntryAdapter)
-                : mGroupMembershipManager.isGroupSummary(mEntry);
-        if (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot) {
+        if (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot()) {
             mGroupExpansionChanging = true;
             if (NotificationBundleUi.isEnabled()) {
                 final boolean wasExpanded =  mGroupExpansionManager.isGroupExpanded(mEntryAdapter);
@@ -2775,7 +2775,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         return false;
     }
 
-
     public void applyLaunchAnimationParams(LaunchAnimationParameters params) {
         if (params == null) {
             // `null` params indicates the animation is over, which means we can't access
@@ -3193,6 +3192,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         return mGroupExpansionManager.isGroupExpanded(mEntry);
     }
 
+    private boolean isGroupRoot() {
+        return NotificationBundleUi.isEnabled()
+                ? mGroupMembershipManager.isGroupRoot(mEntryAdapter)
+                : mGroupMembershipManager.isGroupSummary(mEntry);
+    }
+
     private void onAttachedChildrenCountChanged() {
         final boolean wasSummary = mIsSummaryWithChildren;
         mIsSummaryWithChildren = mChildrenContainer != null
@@ -3268,6 +3273,27 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
         // RON will need be collapsed when it needs to save space on the lock screen.
         return !mSaveSpaceOnLockscreen;
+    }
+
+    /**
+     * Is this row currently showing an expanded state? This method is different from
+     * {@link #isExpanded()}, because it also handles groups, and pinned notifications.
+     */
+    private boolean isShowingExpanded() {
+        if (!shouldShowPublic() && (!mIsMinimized || isExpanded()) && isGroupRoot()) {
+            // is group and expanded?
+            return isGroupExpanded();
+        } else if (mEnableNonGroupedNotificationExpand) {
+            if (isPinned()) {
+                // is pinned and expanded?
+                return mExpandedWhenPinned;
+            } else {
+                // is regular notification and expanded?
+                return isExpanded();
+            }
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -3952,9 +3978,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     public void onExpandedByGesture(boolean userExpanded) {
         int event = MetricsEvent.ACTION_NOTIFICATION_GESTURE_EXPANDER;
-        if (NotificationBundleUi.isEnabled()
-                ? mGroupMembershipManager.isGroupRoot(mEntryAdapter)
-                : mGroupMembershipManager.isGroupSummary(mEntry)) {
+        if (isGroupRoot()) {
             event = MetricsEvent.ACTION_NOTIFICATION_GROUP_GESTURE_EXPANDER;
         }
         mMetricsLogger.action(event, userExpanded);
@@ -4007,7 +4031,17 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             if (mExpansionChangedListener != null) {
                 mExpansionChangedListener.onExpansionChanged(nowExpanded);
             }
+            if (notificationRowAccessibilityExpanded()) {
+                notifyAccessibilityContentExpansionChanged();
+            }
         }
+    }
+
+    private void notifyAccessibilityContentExpansionChanged() {
+        AccessibilityEvent event = AccessibilityEvent.obtain(TYPE_WINDOW_CONTENT_CHANGED);
+        onPopulateAccessibilityEvent(event);
+        event.setContentChangeTypes(CONTENT_CHANGE_TYPE_EXPANDED);
+        sendAccessibilityEventUnchecked(event);
     }
 
     public void setOnExpansionChangedListener(@Nullable OnExpansionChangedListener listener) {
@@ -4037,33 +4071,50 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         super.onInitializeAccessibilityNodeInfoInternal(info);
         final boolean isLongClickable = isNotificationRowLongClickable();
         if (isLongClickable) {
-            info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_LONG_CLICK);
+            info.addAction(AccessibilityAction.ACTION_LONG_CLICK);
         }
         info.setLongClickable(isLongClickable);
 
         if (canViewBeDismissed() && !mIsSnoozed) {
-            info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_DISMISS);
+            info.addAction(AccessibilityAction.ACTION_DISMISS);
         }
-        boolean expandable = shouldShowPublic();
-        boolean isExpanded = false;
-        if (!expandable) {
-            if (mIsSummaryWithChildren) {
-                expandable = true;
-                if (!mIsMinimized || isExpanded()) {
-                    isExpanded = isGroupExpanded();
+
+        if (notificationRowAccessibilityExpanded()) {
+            if (isAccessibilityExpandable()) {
+                if (isShowingExpanded()) {
+                    info.addAction(AccessibilityAction.ACTION_COLLAPSE);
+                    info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_FULL);
+                } else {
+                    info.addAction(AccessibilityAction.ACTION_EXPAND);
+                    info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_COLLAPSED);
                 }
             } else {
-                expandable = mPrivateLayout.isContentExpandable();
-                isExpanded = isExpanded();
+                info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_UNDEFINED);
+            }
+        } else {
+            boolean expandable = shouldShowPublic();
+            boolean isExpanded = false;
+            if (!expandable) {
+                if (mIsSummaryWithChildren) {
+                    expandable = true;
+                    if (!mIsMinimized || isExpanded()) {
+                        isExpanded = isGroupExpanded();
+                    }
+                } else {
+                    expandable = mPrivateLayout.isContentExpandable();
+                    isExpanded = isExpanded();
+                }
+            }
+
+            if (expandable) {
+                if (isExpanded) {
+                    info.addAction(AccessibilityAction.ACTION_COLLAPSE);
+                } else {
+                    info.addAction(AccessibilityAction.ACTION_EXPAND);
+                }
             }
         }
-        if (expandable && !mIsSnoozed) {
-            if (isExpanded) {
-                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_COLLAPSE);
-            } else {
-                info.addAction(AccessibilityNodeInfo.AccessibilityAction.ACTION_EXPAND);
-            }
-        }
+
         NotificationMenuRowPlugin provider = getProvider();
         if (provider != null) {
             MenuItem snoozeMenu = provider.getSnoozeMenuItem(getContext());
@@ -4074,6 +4125,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 info.addAction(action);
             }
         }
+    }
+
+    /** @return whether this row's expansion state can be toggled by an accessibility action. */
+    private boolean isAccessibilityExpandable() {
+        // don't add expand accessibility actions to snoozed notifications
+        return !mIsSnoozed && isContentExpandable();
     }
 
     @Override
@@ -4341,6 +4398,10 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             pw.print(", clipBounds: " + getClipBounds());
             if (PromotedNotificationUiForceExpanded.isEnabled()) {
                 pw.print(", isPromotedOngoing: " + isPromotedOngoing());
+            }
+            if (notificationRowAccessibilityExpanded()) {
+                pw.print(", isShowingExpanded: " + isShowingExpanded());
+                pw.print(", isAccessibilityExpandable: " + isAccessibilityExpandable());
             }
             pw.print(", isExpandable: " + isExpandable());
             pw.print(", mExpandable: " + mExpandable);

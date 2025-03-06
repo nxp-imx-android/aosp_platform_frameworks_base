@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.chips.ui.binder
 import android.annotation.IdRes
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.view.ViewGroup
@@ -27,6 +28,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.UiThread
+import com.android.systemui.FontStyles
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.ui.binder.ContentDescriptionViewBinder
 import com.android.systemui.common.ui.binder.IconViewBinder
@@ -168,6 +170,16 @@ object OngoingActivityChipBinder {
         // View needs to be visible in order to be re-measured
         visibility = View.VISIBLE
         forceLayout()
+    }
+
+    /** Updates the typefaces for any text shown in the chip. */
+    fun updateTypefaces(binding: OngoingActivityChipViewBinding) {
+        binding.timeView.typeface =
+            Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL)
+        binding.textView.typeface =
+            Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL)
+        binding.shortTimeDeltaView.typeface =
+            Typeface.create(FontStyles.GSF_LABEL_LARGE_EMPHASIZED, Typeface.NORMAL)
     }
 
     private fun setChipIcon(

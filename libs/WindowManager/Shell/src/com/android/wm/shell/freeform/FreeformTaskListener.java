@@ -24,6 +24,7 @@ import android.app.ActivityManager.RunningTaskInfo;
 import android.content.Context;
 import android.util.SparseArray;
 import android.view.SurfaceControl;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.protolog.ProtoLog;
@@ -167,6 +168,11 @@ public class FreeformTaskListener implements ShellTaskOrganizer.TaskListener,
     }
 
     private void updateLaunchAdjacentController() {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+            // With multiple desks, freeform tasks are children of a root task controlled by
+            // DesksOrganizer, so toggling launch-adjacent should be managed there.
+            return;
+        }
         for (int i = 0; i < mTasks.size(); i++) {
             if (mTasks.valueAt(i).mTaskInfo.isVisible) {
                 mLaunchAdjacentController.setLaunchAdjacentEnabled(false);

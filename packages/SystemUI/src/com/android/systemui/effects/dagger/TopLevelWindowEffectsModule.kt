@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,20 @@
  * limitations under the License.
  */
 
-package android.media.quality;
+package com.android.systemui.effects.dagger
 
-parcelable SoundProfileHandle;
+import com.android.systemui.CoreStartable
+import com.android.systemui.effects.TopLevelWindowEffects
+import dagger.Binds
+import dagger.Module
+import dagger.multibindings.ClassKey
+import dagger.multibindings.IntoMap
+
+@Module
+interface TopLevelWindowEffectsModule {
+
+    @Binds
+    @IntoMap
+    @ClassKey(TopLevelWindowEffects::class)
+    fun bindTopLevelWindowEffectsCoreStartable(impl: TopLevelWindowEffects): CoreStartable
+}

@@ -2482,7 +2482,7 @@ public class AudioDeviceInventory {
     @GuardedBy("mDevicesLock")
     private void makeHearingAidDeviceAvailable(
             String address, String name, int streamType, String eventSource) {
-        final int hearingAidVolIndex = mDeviceBroker.getVssVolumeForDevice(streamType,
+        final int hearingAidVolIndex = mDeviceBroker.getVolumeForDeviceIgnoreMute(streamType,
                 DEVICE_OUT_HEARING_AID);
         mDeviceBroker.postSetHearingAidVolumeIndex(hearingAidVolIndex, streamType);
 
@@ -2672,7 +2672,7 @@ public class AudioDeviceInventory {
             }
 
             final int leAudioVolIndex = (volumeIndex == -1)
-                    ? mDeviceBroker.getVssVolumeForDevice(streamType, device)
+                    ? mDeviceBroker.getVolumeForDeviceIgnoreMute(streamType, device)
                     : volumeIndex;
             final int maxIndex = mDeviceBroker.getMaxVssVolumeForStream(streamType);
             mDeviceBroker.postSetLeAudioVolumeIndex(leAudioVolIndex, maxIndex, streamType);

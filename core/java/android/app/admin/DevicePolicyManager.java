@@ -8269,6 +8269,7 @@ public class DevicePolicyManager {
      *
      * @throws SecurityException if the caller is not a device owner, a profile owner or
      *         delegated certificate chooser.
+     * @throws IllegalArgumentException if {@code alias} does not correspond to an existing key
      * @see #grantKeyPairToWifiAuth
      */
     public boolean isKeyPairGrantedToWifiAuth(@NonNull String alias) {
