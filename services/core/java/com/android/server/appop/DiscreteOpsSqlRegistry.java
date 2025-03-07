@@ -118,7 +118,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
     @Override
     void shutdown() {
         mSqliteWriteHandler.removeAllPendingMessages();
-        mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.getAllEventsAndClear());
+        mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.evictAllAppOpEvents());
     }
 
     @Override
@@ -172,10 +172,14 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
             @Nullable String[] opNamesFilter,
             @Nullable String attributionTagFilter, int opFlagsFilter,
             Set<String> attributionExemptPkgs) {
-        // flush the cache into database before read.
-        mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.getAllEventsAndClear());
-        boolean assembleChains = attributionExemptPkgs != null;
         IntArray opCodes = getAppOpCodes(filter, opNamesFilter);
+        // flush the cache into database before read.
+        if (opCodes != null) {
+            mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.evictAppOpEvents(opCodes));
+        } else {
+            mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.evictAllAppOpEvents());
+        }
+        boolean assembleChains = attributionExemptPkgs != null;
         beginTimeMillis = Math.max(beginTimeMillis, Instant.now().minus(sDiscreteHistoryCutoff,
                 ChronoUnit.MILLIS).toEpochMilli());
         List<DiscreteOp> discreteOps = mDiscreteOpsDbHelper.getDiscreteOps(filter, uidFilter,
@@ -214,7 +218,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
             @NonNull SimpleDateFormat sdf, @NonNull Date date, @NonNull String prefix,
             int nDiscreteOps) {
         // flush the cache into database before dump.
-        mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.getAllEventsAndClear());
+        mDiscreteOpsDbHelper.insertDiscreteOps(mDiscreteOpCache.evictAllAppOpEvents());
         IntArray opCodes = new IntArray();
         if (dumpOp != AppOpsManager.OP_NONE) {
             opCodes.add(dumpOp);
@@ -366,7 +370,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                     try {
                         List<DiscreteOp> evictedEvents;
                         synchronized (mDiscreteOpCache) {
-                            evictedEvents = mDiscreteOpCache.evict();
+                            evictedEvents = mDiscreteOpCache.evictOldAppOpEvents();
                         }
                         mDiscreteOpsDbHelper.insertDiscreteOps(evictedEvents);
                     } finally {
@@ -389,7 +393,7 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                     try {
                         List<DiscreteOp> evictedEvents;
                         synchronized (mDiscreteOpCache) {
-                            evictedEvents = mDiscreteOpCache.evict();
+                            evictedEvents = mDiscreteOpCache.evictOldAppOpEvents();
                             // if nothing to evict, just write the whole cache to database.
                             if (evictedEvents.isEmpty()
                                     && mDiscreteOpCache.size() >= mDiscreteOpCache.capacity()) {
@@ -451,9 +455,10 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
         }
 
         /**
-         * Evict entries older than {@link DiscreteOpsRegistry#sDiscreteHistoryQuantization}.
+         * Evict entries older than {@link DiscreteOpsRegistry#sDiscreteHistoryQuantization} i.e.
+         * app op events older than one minute (default quantization) will be evicted.
          */
-        private List<DiscreteOp> evict() {
+        private List<DiscreteOp> evictOldAppOpEvents() {
             synchronized (this) {
                 List<DiscreteOp> evictedEvents = new ArrayList<>();
                 Set<DiscreteOp> snapshot = new ArraySet<>(mCache);
@@ -470,11 +475,9 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
         }
 
         /**
-         * Remove all the entries from cache.
-         *
-         * @return return all removed entries.
+         * Evict all app op entries from cache, and return the list of removed ops.
          */
-        public List<DiscreteOp> getAllEventsAndClear() {
+        public List<DiscreteOp> evictAllAppOpEvents() {
             synchronized (this) {
                 List<DiscreteOp> cachedOps = new ArrayList<>(mCache.size());
                 if (mCache.isEmpty()) {
@@ -483,6 +486,25 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                 cachedOps.addAll(mCache);
                 mCache.clear();
                 return cachedOps;
+            }
+        }
+
+        /**
+         * Evict specified app ops from cache, and return the list of evicted ops.
+         */
+        public List<DiscreteOp> evictAppOpEvents(IntArray ops) {
+            synchronized (this) {
+                List<DiscreteOp> evictedOps = new ArrayList<>();
+                if (mCache.isEmpty()) {
+                    return evictedOps;
+                }
+                for (DiscreteOp discreteOp: mCache) {
+                    if (ops.contains(discreteOp.getOpCode())) {
+                        evictedOps.add(discreteOp);
+                    }
+                }
+                evictedOps.forEach(mCache::remove);
+                return evictedOps;
             }
         }
 
@@ -646,7 +668,10 @@ public class DiscreteOpsSqlRegistry extends DiscreteOpsRegistry {
                     + ", uidState=" + getUidStateName(mUidState)
                     + ", chainId=" + mChainId
                     + ", accessTime=" + mAccessTime
-                    + ", duration=" + mDuration + '}';
+                    + ", mDiscretizedAccessTime=" + mDiscretizedAccessTime
+                    + ", duration=" + mDuration
+                    + ", mDiscretizedDuration=" + mDiscretizedDuration
+                    + '}';
         }
 
         public int getUid() {
