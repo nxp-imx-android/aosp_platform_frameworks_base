@@ -130,7 +130,6 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                             mContext.createContextAsUser(
                                     mBubble.getUser(), Context.CONTEXT_RESTRICTED);
                     Intent fillInIntent = new Intent();
-                    fillInIntent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);
                     // First try get pending intent from the bubble
                     PendingIntent pi = mBubble.getPendingIntent();
                     if (pi == null) {
