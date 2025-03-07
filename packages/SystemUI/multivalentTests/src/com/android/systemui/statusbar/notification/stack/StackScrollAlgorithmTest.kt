@@ -38,6 +38,7 @@ import com.android.systemui.statusbar.ui.fakeSystemBarUtilsProxy
 import com.android.systemui.testKosmos
 import com.google.common.truth.Expect
 import com.google.common.truth.Truth.assertThat
+import kotlin.math.roundToInt
 import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
@@ -1572,7 +1573,11 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         fullStackHeight: Float = 3000f,
     ) {
         ambientState.headsUpTop = headsUpTop
-        ambientState.headsUpBottom = headsUpBottom
+        if (NotificationsHunSharedAnimationValues.isEnabled) {
+            headsUpAnimator.headsUpAppearHeightBottom = headsUpBottom.roundToInt()
+        } else {
+            ambientState.headsUpBottom = headsUpBottom
+        }
         ambientState.stackTop = stackTop
         ambientState.stackCutoff = stackCutoff
 
