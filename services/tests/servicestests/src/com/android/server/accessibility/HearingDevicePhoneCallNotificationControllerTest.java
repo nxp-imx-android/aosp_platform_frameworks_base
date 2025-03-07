@@ -171,7 +171,7 @@ public class HearingDevicePhoneCallNotificationControllerTest {
             HearingDevicePhoneCallNotificationController.CallStateListener {
 
         TestCallStateListener(@NonNull Context context) {
-            super(context);
+            super(context, context.getMainExecutor());
         }
 
         @Override

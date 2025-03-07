@@ -346,3 +346,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "hearing_input_change_when_comm_device"
+    namespace: "accessibility"
+    description: "Listen to the CommunicationDeviceChanged to show hearing device input notification."
+    bug: "394070235"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
