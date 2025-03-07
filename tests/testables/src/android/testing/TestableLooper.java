@@ -75,16 +75,7 @@ public class TestableLooper {
      * Baklava introduces new {@link TestLooperManager} APIs that we can use instead of reflection.
      */
     private static boolean isAtLeastBaklava() {
-        Method[] methods = TestLooperManager.class.getMethods();
-        for (Method method : methods) {
-            if (method.getName().equals("peekWhen")) {
-                return true;
-            }
-        }
-        return false;
-        // TODO(shayba): delete the above, uncomment the below.
-        // SDK_INT has not yet ramped to Baklava in all 25Q2 builds.
-        // return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA;
     }
 
     static {
