@@ -1088,14 +1088,18 @@ public class KeyguardIndicationController {
 
             if (!TextUtils.equals(mTopIndicationView.getText(), newIndication)) {
                 mWakeLock.setAcquired(true);
+                final KeyguardIndication.Builder builder = new KeyguardIndication.Builder()
+                        .setMessage(newIndication)
+                        .setTextColor(ColorStateList.valueOf(
+                                useMisalignmentColor
+                                        ? mContext.getColor(R.color.misalignment_text_color)
+                                        : Color.WHITE));
+                if (mBiometricMessage != null && newIndication == mBiometricMessage) {
+                    builder.setForceAccessibilityLiveRegionAssertive();
+                }
+
                 mTopIndicationView.switchIndication(newIndication,
-                        new KeyguardIndication.Builder()
-                                .setMessage(newIndication)
-                                .setTextColor(ColorStateList.valueOf(
-                                        useMisalignmentColor
-                                                ? mContext.getColor(R.color.misalignment_text_color)
-                                                : Color.WHITE))
-                                .build(),
+                        builder.build(),
                         true, () -> mWakeLock.setAcquired(false));
             }
             return;
