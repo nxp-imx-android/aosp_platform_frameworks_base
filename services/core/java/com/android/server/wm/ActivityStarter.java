@@ -1109,8 +1109,11 @@ class ActivityStarter {
             if (sourceRecord != null) {
                 if (requestCode >= 0 && !sourceRecord.finishing) {
                     resultRecord = sourceRecord;
+                    request.logMessage.append(" (rr=");
+                } else {
+                    request.logMessage.append(" (sr=");
                 }
-                request.logMessage.append(" (sr=" + System.identityHashCode(sourceRecord) + ")");
+                request.logMessage.append(System.identityHashCode(sourceRecord) + ")");
             }
         }
 
