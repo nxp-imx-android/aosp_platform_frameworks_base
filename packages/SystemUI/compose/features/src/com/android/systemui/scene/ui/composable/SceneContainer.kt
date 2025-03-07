@@ -101,7 +101,7 @@ fun SceneContainer(
         rememberActivated(traceName = "sceneJankMonitor") { sceneJankMonitorFactory.create() }
 
     val hapticFeedback = LocalHapticFeedback.current
-    val shadeExpansionMotion = OverlayShade.rememberShadeExpansionMotion()
+    val shadeExpansionMotion = OverlayShade.rememberShadeExpansionMotion(isFullWidthShade())
     val sceneTransitions =
         remember(hapticFeedback, shadeExpansionMotion) {
             transitionsBuilder.build(
