@@ -124,6 +124,22 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 }
             };
 
+    @VisibleForTesting
+    final AutoclickScrollPanel.ScrollPanelControllerInterface mScrollPanelController =
+            new AutoclickScrollPanel.ScrollPanelControllerInterface() {
+                @Override
+                public void handleScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
+                    // TODO(b/388845721): Perform actual scroll.
+                }
+
+                @Override
+                public void exitScrollMode() {
+                    if (mAutoclickScrollPanel != null) {
+                        mAutoclickScrollPanel.hide();
+                    }
+                }
+            };
+
     public AutoclickController(Context context, int userId, AccessibilityTraceManager trace) {
         mTrace = trace;
         mContext = context;
@@ -168,7 +184,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
         mWindowManager = mContext.getSystemService(WindowManager.class);
         mAutoclickTypePanel =
                 new AutoclickTypePanel(mContext, mWindowManager, mUserId, clickPanelController);
-        mAutoclickScrollPanel = new AutoclickScrollPanel(mContext, mWindowManager);
+        mAutoclickScrollPanel = new AutoclickScrollPanel(mContext, mWindowManager,
+                mScrollPanelController);
 
         mAutoclickTypePanel.show();
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
