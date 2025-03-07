@@ -153,7 +153,7 @@ final class AccessibilityController {
             final DisplayContent dc = mService.mRoot.getDisplayContent(displayId);
             if (dc != null) {
                 final Display display = dc.getDisplay();
-                if (display != null && display.getType() != Display.TYPE_OVERLAY) {
+                if (display != null) {
                     final DisplayMagnifier magnifier = new DisplayMagnifier(
                             mService, dc, display, callbacks);
                     magnifier.notifyImeWindowVisibilityChanged(

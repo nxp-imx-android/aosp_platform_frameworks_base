@@ -5610,7 +5610,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         }
 
         private boolean isValidDisplay(@Nullable Display display) {
-            if (display == null || display.getType() == Display.TYPE_OVERLAY) {
+            if (display == null) {
                 return false;
             }
             // Private virtual displays are created by the ap and is not allowed to access by other
