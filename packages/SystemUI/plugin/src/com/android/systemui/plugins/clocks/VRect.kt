@@ -84,12 +84,18 @@ value class VRectF(val data: ULong) {
     val size: VPointF
         get() = VPointF(width, height)
 
+    fun toRectF(): RectF = RectF(left, top, right, bottom)
+
+    fun toLong(): Long = data.toLong()
+
     override fun toString() = "($left, $top) -> ($right, $bottom)"
 
     companion object {
         private fun toBits(value: Float): Short = Half.halfToShortBits(Half.toHalf(value))
 
         private fun fromBits(value: Short): Float = Half.toFloat(Half.intBitsToHalf(value.toInt()))
+
+        fun fromLong(data: Long) = VRectF(data.toULong())
 
         fun fromCenter(center: VPointF, size: VPointF): VRectF {
             return VRectF(
@@ -162,10 +168,16 @@ value class VRect(val data: ULong) {
     val size: VPoint
         get() = VPoint(width, height)
 
+    fun toRect(): Rect = Rect(left, top, right, bottom)
+
+    fun toLong(): Long = data.toLong()
+
     override fun toString() = "($left, $top) -> ($right, $bottom)"
 
     companion object {
         val ZERO = VRect(0, 0, 0, 0)
+
+        fun fromLong(data: Long) = VRect(data.toULong())
 
         fun fromCenter(center: VPoint, size: VPoint): VRect {
             return VRect(
