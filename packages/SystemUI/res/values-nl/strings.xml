@@ -423,18 +423,17 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Omgevingsgeluid"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Links"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Rechts"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Omgevingsgeluid"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Omgevingsgeluid links"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Omgevingsgeluid rechts"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Uitvouwen naar gescheiden bediening voor links en rechts"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Samenvouwen tot geïntegreerde bediening"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Omgevingsgeluid uitzetten"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Omgevingsgeluid aanzetten"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Tools"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Live ondertiteling"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Notitie"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Microfoon van apparaat niet meer blokkeren?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Apparaatcamera niet meer blokkeren?"</string>
@@ -907,7 +906,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gesplitst scherm gebruiken met de app aan de rechterkant"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gesplitst scherm gebruiken met de app aan de linkerkant"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Volledig scherm gebruiken"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Desktopweergave gebruiken"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Naar de app rechts of onderaan gaan als je een gesplitst scherm gebruikt"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Naar de app links of bovenaan gaan als je een gesplitst scherm gebruikt"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Tijdens gesplitst scherm: een app vervangen door een andere"</string>

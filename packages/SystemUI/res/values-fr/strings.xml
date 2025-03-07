@@ -435,6 +435,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Réactiver le mode Sons environnants"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Outils"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Sous-titres instantanés"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Note"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Débloquer le micro de l\'appareil ?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Débloquer la caméra de l\'appareil ?"</string>
@@ -907,7 +909,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utiliser l\'écran partagé avec l\'appli sur la droite"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utiliser l\'écran partagé avec l\'appli sur la gauche"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Utiliser le mode plein écran"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Utiliser l\'affichage sur ordinateur"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Passer à l\'appli à droite ou en dessous avec l\'écran partagé"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Passez à l\'appli à gauche ou au-dessus avec l\'écran partagé"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"En mode écran partagé : Remplacer une appli par une autre"</string>

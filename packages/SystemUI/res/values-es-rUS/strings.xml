@@ -423,18 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Sonido envolvente"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Izquierda"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Derecha"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Sonido envolvente"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Entorno de la izquierda"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Entorno de la derecha"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Expandir los controles separados a la izquierda y a la derecha"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Contraer al control unificado"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Silenciar el sonido envolvente"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Activar el sonido envolvente"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Herramientas"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Subtitulado instantáneo"</string>
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Configuración"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Nota"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"¿Quieres desbloquear el micrófono del dispositivo?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"¿Quieres desbloquear la cámara del dispositivo?"</string>
@@ -907,7 +905,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Usar la pantalla dividida con la app a la derecha"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Usar la pantalla dividida con la app a la izquierda"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Usar la pantalla completa"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Usar la vista para computadoras de escritorio"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Ubicar la app a la derecha o abajo cuando usas la pantalla dividida"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Ubicar la app a la izquierda o arriba cuando usas la pantalla dividida"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Durante pantalla dividida: Reemplaza una app con otra"</string>
@@ -1003,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Agregar a la posición <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Posición no válida"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Posición <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Tarjeta ya agregada"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Se agregó la tarjeta"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Se quitó la tarjeta"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Editor de Configuración rápida"</string>

@@ -435,6 +435,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Slå på lyden for omgivelsene"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Verktøy"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Direkteteksting"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Merknad"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Vil du oppheve blokkeringen av enhetsmikrofonen?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Vil du oppheve blokkeringen av enhetskameraet?"</string>
@@ -907,7 +909,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Bruk delt skjerm med appen til høyre"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Bruk delt skjerm med appen til venstre"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Bruk fullskjerm"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Bruk datamaskinvisning"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Bytt til appen til høyre eller under mens du bruker delt skjerm"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Bytt til appen til venstre eller over mens du bruker delt skjerm"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"I delt skjerm: Bytt ut en app"</string>

@@ -435,6 +435,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Bunyikan suara sekitar"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Alat"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Teks Otomatis"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Catatan"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Berhenti memblokir mikrofon perangkat?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Berhenti memblokir kamera perangkat?"</string>
@@ -907,7 +909,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gunakan layar terpisah dengan aplikasi di sebelah kanan"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gunakan layar terpisah dengan aplikasi di sebelah kiri"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Gunakan layar penuh"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Gunakan tampilan desktop"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Beralih ke aplikasi di bagian kanan atau bawah saat menggunakan layar terpisah"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Beralih ke aplikasi di bagian kiri atau atas saat menggunakan layar terpisah"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Dalam layar terpisah: ganti salah satu aplikasi dengan yang lain"</string>
