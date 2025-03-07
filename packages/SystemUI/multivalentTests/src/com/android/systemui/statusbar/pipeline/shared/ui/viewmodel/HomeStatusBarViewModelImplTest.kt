@@ -1513,7 +1513,39 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
 
     @Test
     @DisableSceneContainer
-    fun shadeShown_sceneFlagOff_noStatusBarViewsShown() =
+    fun shadeSlightlyShown_sceneFlagOff_statusBarViewsShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeExpansion(0.1f)
+
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun shadeHalfShown_sceneFlagOff_noStatusBarViewsShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeExpansion(0.5f)
+
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun shadeFullyShown_sceneFlagOff_noStatusBarViewsShown() =
         kosmos.runTest {
             val clockVisible by collectLastValue(underTest.isClockVisible)
             val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
@@ -1522,6 +1554,83 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
 
             kosmos.shadeTestUtil.setShadeExpansion(1f)
 
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+        }
+
+    /** Regression test for b/394257529#comment24. */
+    @Test
+    @DisableSceneContainer
+    fun qqsToQsTransition_sceneFlagOff_statusBarViewsNeverShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 1f, qsExpansion = 0f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.9f, qsExpansion = 0.1f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.6f, qsExpansion = 0.4f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.5f, qsExpansion = 0.5f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.2f, qsExpansion = 0.8f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0f, qsExpansion = 1f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+        }
+
+    /** Regression test for b/394257529#comment24. */
+    @Test
+    @DisableSceneContainer
+    fun qsToQqsTransition_sceneFlagOff_statusBarViewsNeverShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0f, qsExpansion = 1f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.3f, qsExpansion = 0.7f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.5f, qsExpansion = 0.5f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.7f, qsExpansion = 0.3f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 1f, qsExpansion = 0f)
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
             assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
