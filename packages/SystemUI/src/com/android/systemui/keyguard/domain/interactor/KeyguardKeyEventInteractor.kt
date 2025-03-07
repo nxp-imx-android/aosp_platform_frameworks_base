@@ -136,7 +136,10 @@ constructor(
                 return true
             }
             StatusBarState.KEYGUARD -> {
-                statusBarKeyguardViewManager.showPrimaryBouncer(true)
+                statusBarKeyguardViewManager.showPrimaryBouncer(
+                    true,
+                    "KeyguardKeyEventInteractor#collapseShadeLockedOrShowPrimaryBouncer",
+                )
                 return true
             }
         }

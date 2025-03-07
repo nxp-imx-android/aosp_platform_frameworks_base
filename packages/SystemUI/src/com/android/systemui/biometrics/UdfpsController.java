@@ -880,7 +880,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
                 Log.v(TAG, "aod lock icon long-press rejected by the falsing manager.");
                 return;
             }
-            mKeyguardViewManager.showPrimaryBouncer(true);
+            mKeyguardViewManager.showPrimaryBouncer(true, "UdfpsController#onAodInterrupt");
 
             // play the same haptic as the DeviceEntryIcon longpress
             if (mOverlay != null && mOverlay.getTouchOverlay() != null) {
