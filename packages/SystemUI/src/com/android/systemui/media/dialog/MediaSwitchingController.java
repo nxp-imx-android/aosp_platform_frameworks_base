@@ -145,7 +145,7 @@ public class MediaSwitchingController
     @VisibleForTesting
     final List<MediaDevice> mGroupMediaDevices = new CopyOnWriteArrayList<>();
     final List<MediaDevice> mCachedMediaDevices = new CopyOnWriteArrayList<>();
-    private final List<MediaItem> mOutputMediaItemList = new CopyOnWriteArrayList<>();
+    private final OutputMediaItemListProxy mOutputMediaItemListProxy;
     private final List<MediaItem> mInputMediaItemList = new CopyOnWriteArrayList<>();
     private final AudioManager mAudioManager;
     private final PowerExemptionManager mPowerExemptionManager;
@@ -226,6 +226,7 @@ public class MediaSwitchingController
                 InfoMediaManager.createInstance(mContext, packageName, userHandle, lbm, token);
         mLocalMediaManager = new LocalMediaManager(mContext, lbm, imm, packageName);
         mMetricLogger = new MediaOutputMetricLogger(mContext, mPackageName);
+        mOutputMediaItemListProxy = new OutputMediaItemListProxy();
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mNearbyMediaDevicesManager = nearbyMediaDevicesManager;
         mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromSystemColors(mContext);
@@ -245,7 +246,7 @@ public class MediaSwitchingController
     protected void start(@NonNull Callback cb) {
         synchronized (mMediaDevicesLock) {
             mCachedMediaDevices.clear();
-            mOutputMediaItemList.clear();
+            mOutputMediaItemListProxy.clear();
         }
         mNearbyDeviceInfoMap.clear();
         if (mNearbyMediaDevicesManager != null) {
@@ -291,7 +292,7 @@ public class MediaSwitchingController
         mLocalMediaManager.stopScan();
         synchronized (mMediaDevicesLock) {
             mCachedMediaDevices.clear();
-            mOutputMediaItemList.clear();
+            mOutputMediaItemListProxy.clear();
         }
         if (mNearbyMediaDevicesManager != null) {
             mNearbyMediaDevicesManager.unregisterNearbyDevicesCallback(this);
@@ -333,7 +334,7 @@ public class MediaSwitchingController
 
     @Override
     public void onDeviceListUpdate(List<MediaDevice> devices) {
-        boolean isListEmpty = mOutputMediaItemList.isEmpty();
+        boolean isListEmpty = mOutputMediaItemListProxy.isEmpty();
         if (isListEmpty || !mIsRefreshing) {
             buildMediaItems(devices);
             mCallback.onDeviceListChanged();
@@ -347,11 +348,12 @@ public class MediaSwitchingController
     }
 
     @Override
-    public void onSelectedDeviceStateChanged(MediaDevice device,
-            @LocalMediaManager.MediaDeviceState int state) {
+    public void onSelectedDeviceStateChanged(
+            MediaDevice device, @LocalMediaManager.MediaDeviceState int state) {
         mCallback.onRouteChanged();
         mMetricLogger.logOutputItemSuccess(
-                device.toString(), new ArrayList<>(mOutputMediaItemList));
+                device.toString(),
+                new ArrayList<>(mOutputMediaItemListProxy.getOutputMediaItemList()));
     }
 
     @Override
@@ -362,7 +364,8 @@ public class MediaSwitchingController
     @Override
     public void onRequestFailed(int reason) {
         mCallback.onRouteChanged();
-        mMetricLogger.logOutputItemFailure(new ArrayList<>(mOutputMediaItemList), reason);
+        mMetricLogger.logOutputItemFailure(
+                new ArrayList<>(mOutputMediaItemListProxy.getOutputMediaItemList()), reason);
     }
 
     /**
@@ -381,7 +384,7 @@ public class MediaSwitchingController
         }
         try {
             synchronized (mMediaDevicesLock) {
-                mOutputMediaItemList.removeIf((MediaItem::isMutingExpectedDevice));
+                mOutputMediaItemListProxy.removeMutingExpectedDevices();
             }
             mAudioManager.cancelMuteAwaitConnection(mAudioManager.getMutingExpectedDevice());
         } catch (Exception e) {
@@ -574,14 +577,14 @@ public class MediaSwitchingController
 
     private void buildMediaItems(List<MediaDevice> devices) {
         synchronized (mMediaDevicesLock) {
-            List<MediaItem> updatedMediaItems = buildMediaItems(mOutputMediaItemList, devices);
-            mOutputMediaItemList.clear();
-            mOutputMediaItemList.addAll(updatedMediaItems);
+            List<MediaItem> updatedMediaItems =
+                    buildMediaItems(mOutputMediaItemListProxy.getOutputMediaItemList(), devices);
+            mOutputMediaItemListProxy.clearAndAddAll(updatedMediaItems);
         }
     }
 
-    protected List<MediaItem> buildMediaItems(List<MediaItem> oldMediaItems,
-            List<MediaDevice> devices) {
+    protected List<MediaItem> buildMediaItems(
+            List<MediaItem> oldMediaItems, List<MediaDevice> devices) {
         synchronized (mMediaDevicesLock) {
             if (!mLocalMediaManager.isPreferenceRouteListingExist()) {
                 attachRangeInfo(devices);
@@ -689,7 +692,8 @@ public class MediaSwitchingController
      * list.
      */
     @GuardedBy("mMediaDevicesLock")
-    private List<MediaItem> categorizeMediaItemsLocked(MediaDevice connectedMediaDevice,
+    private List<MediaItem> categorizeMediaItemsLocked(
+            MediaDevice connectedMediaDevice,
             List<MediaDevice> devices,
             boolean needToHandleMutingExpectedDevice) {
         List<MediaItem> finalMediaItems = new ArrayList<>();
@@ -748,6 +752,14 @@ public class MediaSwitchingController
     }
 
     private void attachConnectNewDeviceItemIfNeeded(List<MediaItem> mediaItems) {
+        MediaItem connectNewDeviceItem = getConnectNewDeviceItem();
+        if (connectNewDeviceItem != null) {
+            mediaItems.add(connectNewDeviceItem);
+        }
+    }
+
+    @Nullable
+    private MediaItem getConnectNewDeviceItem() {
         boolean isSelectedDeviceNotAGroup = getSelectedMediaDevice().size() == 1;
         if (enableInputRouting()) {
             // When input routing is enabled, there are expected to be at least 2 total selected
@@ -756,9 +768,9 @@ public class MediaSwitchingController
         }
 
         // Attach "Connect a device" item only when current output is not remote and not a group
-        if (!isCurrentConnectedDeviceRemote() && isSelectedDeviceNotAGroup) {
-            mediaItems.add(MediaItem.createPairNewDeviceMediaItem());
-        }
+        return (!isCurrentConnectedDeviceRemote() && isSelectedDeviceNotAGroup)
+                ? MediaItem.createPairNewDeviceMediaItem()
+                : null;
     }
 
     private void attachRangeInfo(List<MediaDevice> devices) {
@@ -847,13 +859,13 @@ public class MediaSwitchingController
         mediaItems.add(
                 MediaItem.createGroupDividerMediaItem(
                         mContext.getString(R.string.media_output_group_title)));
-        mediaItems.addAll(mOutputMediaItemList);
+        mediaItems.addAll(mOutputMediaItemListProxy.getOutputMediaItemList());
     }
 
     public List<MediaItem> getMediaItemList() {
         // If input routing is not enabled, only return output media items.
         if (!enableInputRouting()) {
-            return mOutputMediaItemList;
+            return mOutputMediaItemListProxy.getOutputMediaItemList();
         }
 
         // If input routing is enabled, return both output and input media items.
@@ -959,7 +971,7 @@ public class MediaSwitchingController
 
     public boolean isAnyDeviceTransferring() {
         synchronized (mMediaDevicesLock) {
-            for (MediaItem mediaItem : mOutputMediaItemList) {
+            for (MediaItem mediaItem : mOutputMediaItemListProxy.getOutputMediaItemList()) {
                 if (mediaItem.getMediaDevice().isPresent()
                         && mediaItem.getMediaDevice().get().getState()
                         == LocalMediaManager.MediaDeviceState.STATE_CONNECTING) {
@@ -999,8 +1011,11 @@ public class MediaSwitchingController
         startActivity(launchIntent, controller);
     }
 
-    void launchLeBroadcastNotifyDialog(View mediaOutputDialog, BroadcastSender broadcastSender,
-            BroadcastNotifyDialog action, final DialogInterface.OnClickListener listener) {
+    void launchLeBroadcastNotifyDialog(
+            View mediaOutputDialog,
+            BroadcastSender broadcastSender,
+            BroadcastNotifyDialog action,
+            final DialogInterface.OnClickListener listener) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         switch (action) {
             case ACTION_FIRST_LAUNCH:
@@ -1230,8 +1245,8 @@ public class MediaSwitchingController
         return !sourceList.isEmpty();
     }
 
-    boolean addSourceIntoSinkDeviceWithBluetoothLeAssistant(BluetoothDevice sink,
-            BluetoothLeBroadcastMetadata metadata, boolean isGroupOp) {
+    boolean addSourceIntoSinkDeviceWithBluetoothLeAssistant(
+            BluetoothDevice sink, BluetoothLeBroadcastMetadata metadata, boolean isGroupOp) {
         LocalBluetoothLeBroadcastAssistant assistant =
                 mLocalBluetoothManager.getProfileManager().getLeAudioBroadcastAssistantProfile();
         if (assistant == null) {
