@@ -17,7 +17,6 @@ package com.android.hoststubgen.visitors
 
 import com.android.hoststubgen.HostStubGenErrors
 import com.android.hoststubgen.HostStubGenStats
-import com.android.hoststubgen.LogLevel
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.UnifiedVisitor
 import com.android.hoststubgen.asm.getPackageNameFromFullClassName
@@ -26,13 +25,10 @@ import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.OutputFilter
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.log
-import java.io.PrintWriter
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.commons.ClassRemapper
-import org.objectweb.asm.util.TraceClassVisitor
 
 const val OPCODE_VERSION = Opcodes.ASM9
 
@@ -49,8 +45,6 @@ abstract class BaseAdapter(
     data class Options(
         val errors: HostStubGenErrors,
         val stats: HostStubGenStats?,
-        val enablePreTrace: Boolean,
-        val enablePostTrace: Boolean,
         val deleteClassFinals: Boolean,
         val deleteMethodFinals: Boolean,
         // We don't remove finals from fields, because final fields have a stronger memory
@@ -253,50 +247,4 @@ abstract class BaseAdapter(
         substituted: Boolean,
         superVisitor: MethodVisitor?,
     ): MethodVisitor?
-
-    companion object {
-        fun getVisitor(
-            classInternalName: String,
-            classes: ClassNodes,
-            nextVisitor: ClassVisitor,
-            filter: OutputFilter,
-            packageRedirector: PackageRedirectRemapper,
-            options: Options,
-        ): ClassVisitor {
-            var next = nextVisitor
-
-            val verbosePrinter = PrintWriter(log.getWriter(LogLevel.Verbose))
-
-            // Inject TraceClassVisitor for debugging.
-            if (options.enablePostTrace) {
-                next = TraceClassVisitor(next, verbosePrinter)
-            }
-
-            // Handle --package-redirect
-            if (!packageRedirector.isEmpty) {
-                // Don't apply the remapper on redirect-from classes.
-                // Otherwise, if the target jar actually contains the "from" classes (which
-                // may or may not be the case) they'd be renamed.
-                // But we update all references in other places, so, a method call to a "from" class
-                // would be replaced with the "to" class. All type references (e.g. variable types)
-                // will be updated too.
-                if (!packageRedirector.isTarget(classInternalName)) {
-                    next = ClassRemapper(next, packageRedirector)
-                } else {
-                    log.v(
-                        "Class $classInternalName is a redirect-from class, not applying" +
-                                " --package-redirect"
-                    )
-                }
-            }
-
-            next = ImplGeneratingAdapter(classes, next, filter, options)
-
-            // Inject TraceClassVisitor for debugging.
-            if (options.enablePreTrace) {
-                next = TraceClassVisitor(next, verbosePrinter)
-            }
-            return next
-        }
-    }
 }

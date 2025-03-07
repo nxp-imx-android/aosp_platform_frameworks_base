@@ -41,10 +41,10 @@ abstract class OutputFilter {
     abstract fun getPolicyForField(className: String, fieldName: String): FilterPolicyWithReason
 
     abstract fun getPolicyForMethod(
-            className: String,
-            methodName: String,
-            descriptor: String,
-            ): FilterPolicyWithReason
+        className: String,
+        methodName: String,
+        descriptor: String,
+    ): FilterPolicyWithReason
 
     /**
      * If a given method is a substitute-from method, return the substitute-to method name.
@@ -108,8 +108,6 @@ abstract class OutputFilter {
      * If a method call should be forwarded to another method, return the target's class / method.
      */
     open fun getMethodCallReplaceTo(
-        callerClassName: String,
-        callerMethodName: String,
         className: String,
         methodName: String,
         descriptor: String,

@@ -58,6 +58,23 @@ enum class SpecialClass {
     RFile,
 }
 
+data class MethodCallReplaceSpec(
+    val fromClass: String,
+    val fromMethod: String,
+    val fromDescriptor: String,
+    val toClass: String,
+    val toMethod: String,
+)
+
+/**
+ * When a package name matches [typeInternalNamePattern], we prepend [typeInternalNamePrefix]
+ * to it.
+ */
+data class TypeRenameSpec(
+    val typeInternalNamePattern: Pattern,
+    val typeInternalNamePrefix: String,
+)
+
 /**
  * This receives [TextFileFilterPolicyBuilder] parsing result.
  */
@@ -99,7 +116,7 @@ interface PolicyFileProcessor {
         className: String,
         methodName: String,
         methodDesc: String,
-        replaceSpec: TextFilePolicyMethodReplaceFilter.MethodCallReplaceSpec,
+        replaceSpec: MethodCallReplaceSpec,
     )
 }
 
@@ -116,9 +133,6 @@ class TextFileFilterPolicyBuilder(
     private var featureFlagsPolicy: FilterPolicyWithReason? = null
     private var syspropsPolicy: FilterPolicyWithReason? = null
     private var rFilePolicy: FilterPolicyWithReason? = null
-    private val typeRenameSpec = mutableListOf<TextFilePolicyRemapperFilter.TypeRenameSpec>()
-    private val methodReplaceSpec =
-        mutableListOf<TextFilePolicyMethodReplaceFilter.MethodCallReplaceSpec>()
 
     /**
      * Fields for a filter chain used for "partial allowlisting", which are used by
@@ -126,17 +140,14 @@ class TextFileFilterPolicyBuilder(
      */
     private val annotationAllowedInMemoryFilter: InMemoryOutputFilter
     val annotationAllowedMembersFilter: OutputFilter
+        get() = annotationAllowedInMemoryFilter
 
     private val annotationAllowedPolicy = FilterPolicy.AnnotationAllowed.withReason(FILTER_REASON)
 
     init {
         // Create a filter that checks "partial allowlisting".
-        var aaf: OutputFilter = ConstantFilter(FilterPolicy.Remove, "default disallowed")
-
-        aaf = InMemoryOutputFilter(classes, aaf)
-        annotationAllowedInMemoryFilter = aaf
-
-        annotationAllowedMembersFilter = annotationAllowedInMemoryFilter
+        val filter = ConstantFilter(FilterPolicy.Remove, "default disallowed")
+        annotationAllowedInMemoryFilter = InMemoryOutputFilter(classes, filter)
     }
 
     /**
@@ -153,20 +164,10 @@ class TextFileFilterPolicyBuilder(
      * Generate the resulting [OutputFilter].
      */
     fun createOutputFilter(): OutputFilter {
-        var ret: OutputFilter = imf
-        if (typeRenameSpec.isNotEmpty()) {
-            ret = TextFilePolicyRemapperFilter(typeRenameSpec, ret)
-        }
-        if (methodReplaceSpec.isNotEmpty()) {
-            ret = TextFilePolicyMethodReplaceFilter(methodReplaceSpec, classes, ret)
-        }
-
         // Wrap the in-memory-filter with AHF.
-        ret = AndroidHeuristicsFilter(
-            classes, aidlPolicy, featureFlagsPolicy, syspropsPolicy, rFilePolicy, ret
+        return AndroidHeuristicsFilter(
+            classes, aidlPolicy, featureFlagsPolicy, syspropsPolicy, rFilePolicy, imf
         )
-
-        return ret
     }
 
     private inner class Processor : PolicyFileProcessor {
@@ -180,9 +181,7 @@ class TextFileFilterPolicyBuilder(
         }
 
         override fun onRename(pattern: Pattern, prefix: String) {
-            typeRenameSpec += TextFilePolicyRemapperFilter.TypeRenameSpec(
-                pattern, prefix
-            )
+            imf.setRemapTypeSpec(TypeRenameSpec(pattern, prefix))
         }
 
         override fun onClassStart(className: String) {
@@ -284,12 +283,12 @@ class TextFileFilterPolicyBuilder(
             className: String,
             methodName: String,
             methodDesc: String,
-            replaceSpec: TextFilePolicyMethodReplaceFilter.MethodCallReplaceSpec,
+            replaceSpec: MethodCallReplaceSpec,
         ) {
             // Keep the source method, because the target method may call it.
             imf.setPolicyForMethod(className, methodName, methodDesc,
                 FilterPolicy.Keep.withReason(FILTER_REASON))
-            methodReplaceSpec.add(replaceSpec)
+            imf.setMethodCallReplaceSpec(replaceSpec)
         }
     }
 }
@@ -630,13 +629,13 @@ class TextFileFilterPolicyParser {
             if (classAndMethod != null) {
                 // If the substitution target contains a ".", then
                 // it's a method call redirect.
-                val spec = TextFilePolicyMethodReplaceFilter.MethodCallReplaceSpec(
-                        currentClassName!!.toJvmClassName(),
-                        methodName,
-                        signature,
-                        classAndMethod.first.toJvmClassName(),
-                        classAndMethod.second,
-                    )
+                val spec = MethodCallReplaceSpec(
+                    className.toJvmClassName(),
+                    methodName,
+                    signature,
+                    classAndMethod.first.toJvmClassName(),
+                    classAndMethod.second,
+                )
                 processor.onMethodOutClassReplace(
                     className,
                     methodName,

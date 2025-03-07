@@ -30,12 +30,15 @@ import com.android.hoststubgen.filters.TextFileFilterPolicyBuilder
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.utils.ClassPredicate
 import com.android.hoststubgen.visitors.BaseAdapter
+import com.android.hoststubgen.visitors.ImplGeneratingAdapter
 import com.android.hoststubgen.visitors.PackageRedirectRemapper
+import java.io.PrintWriter
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.commons.ClassRemapper
 import org.objectweb.asm.util.CheckClassAdapter
+import org.objectweb.asm.util.TraceClassVisitor
 
 /**
  * This class implements bytecode transformation of HostStubGen.
@@ -133,6 +136,59 @@ class HostStubGenClassProcessor(
         return filter
     }
 
+    private fun buildVisitor(base: ClassVisitor, className: String): ClassVisitor {
+        // Connect to the base visitor
+        var outVisitor: ClassVisitor = base
+
+        if (options.enableClassChecker.get) {
+            outVisitor = CheckClassAdapter(outVisitor)
+        }
+
+        // Remapping should happen at the end.
+        outVisitor = ClassRemapper(outVisitor, remapper)
+
+        val visitorOptions = BaseAdapter.Options(
+            errors = errors,
+            stats = stats,
+            deleteClassFinals = options.deleteFinals.get,
+            deleteMethodFinals = options.deleteFinals.get,
+        )
+
+        val verbosePrinter = PrintWriter(log.getWriter(LogLevel.Verbose))
+
+        // Inject TraceClassVisitor for debugging.
+        if (options.enablePostTrace.get) {
+            outVisitor = TraceClassVisitor(outVisitor, verbosePrinter)
+        }
+
+        // Handle --package-redirect
+        if (!packageRedirector.isEmpty) {
+            // Don't apply the remapper on redirect-from classes.
+            // Otherwise, if the target jar actually contains the "from" classes (which
+            // may or may not be the case) they'd be renamed.
+            // But we update all references in other places, so, a method call to a "from" class
+            // would be replaced with the "to" class. All type references (e.g. variable types)
+            // will be updated too.
+            if (!packageRedirector.isTarget(className)) {
+                outVisitor = ClassRemapper(outVisitor, packageRedirector)
+            } else {
+                log.v(
+                    "Class $className is a redirect-from class, not applying" +
+                            " --package-redirect"
+                )
+            }
+        }
+
+        outVisitor = ImplGeneratingAdapter(allClasses, outVisitor, filter, visitorOptions)
+
+        // Inject TraceClassVisitor for debugging.
+        if (options.enablePreTrace.get) {
+            outVisitor = TraceClassVisitor(outVisitor, verbosePrinter)
+        }
+
+        return outVisitor
+    }
+
     fun processClassBytecode(bytecode: ByteArray): ByteArray {
         val cr = ClassReader(bytecode)
 
@@ -146,27 +202,7 @@ class HostStubGenClassProcessor(
         val flags = ClassWriter.COMPUTE_MAXS // or ClassWriter.COMPUTE_FRAMES
         val cw = ClassWriter(flags)
 
-        // Connect to the class writer
-        var outVisitor: ClassVisitor = cw
-        if (options.enableClassChecker.get) {
-            outVisitor = CheckClassAdapter(outVisitor)
-        }
-
-        // Remapping should happen at the end.
-        outVisitor = ClassRemapper(outVisitor, remapper)
-
-        val visitorOptions = BaseAdapter.Options(
-            errors = errors,
-            stats = stats,
-            enablePreTrace = options.enablePreTrace.get,
-            enablePostTrace = options.enablePostTrace.get,
-            deleteClassFinals = options.deleteFinals.get,
-            deleteMethodFinals = options.deleteFinals.get,
-        )
-        outVisitor = BaseAdapter.getVisitor(
-            cr.className, allClasses, outVisitor, filter,
-            packageRedirector, visitorOptions
-        )
+        val outVisitor = buildVisitor(cw, cr.className)
 
         cr.accept(outVisitor, ClassReader.EXPAND_FRAMES)
         return cw.toByteArray()
