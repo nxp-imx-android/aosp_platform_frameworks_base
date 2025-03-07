@@ -21,6 +21,7 @@ import static android.app.ActivityManager.UidFrozenStateChangedCallback.UID_FROZ
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ALLOWLIST;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BACKUP;
+import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SERVICE_BINDER_CALL;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_BIND_SERVICE;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_COMPONENT_DISABLED;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_EXECUTING_SERVICE;
@@ -207,6 +208,8 @@ public class CachedAppOptimizer {
             FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON_V2__UFR_OOM_ADJ_FOLLOW_UP;
     static final int UNFREEZE_REASON_OOM_ADJ_RECONFIGURATION =
             FrameworkStatsLog.APP_FREEZE_CHANGED__UNFREEZE_REASON_V2__UFR_OOM_ADJ_RECONFIGURATION;
+    static final int UNFREEZE_REASON_OOM_ADJ_SERVICE_BINDER_CALL = FrameworkStatsLog
+            .APP_FREEZE_CHANGED__UNFREEZE_REASON_V2__UFR_OOM_ADJ_REASON_SERVICE_BINDER_CALL;
 
     @IntDef(prefix = {"UNFREEZE_REASON_"}, value = {
         UNFREEZE_REASON_NONE,
@@ -240,6 +243,7 @@ public class CachedAppOptimizer {
         UNFREEZE_REASON_COMPONENT_DISABLED,
         UNFREEZE_REASON_OOM_ADJ_FOLLOW_UP,
         UNFREEZE_REASON_OOM_ADJ_RECONFIGURATION,
+        UNFREEZE_REASON_OOM_ADJ_SERVICE_BINDER_CALL,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface UnfreezeReason {}
@@ -2245,6 +2249,8 @@ public class CachedAppOptimizer {
                 return UNFREEZE_REASON_OOM_ADJ_FOLLOW_UP;
             case OOM_ADJ_REASON_RECONFIGURATION:
                 return UNFREEZE_REASON_OOM_ADJ_RECONFIGURATION;
+            case OOM_ADJ_REASON_SERVICE_BINDER_CALL:
+                return UNFREEZE_REASON_OOM_ADJ_SERVICE_BINDER_CALL;
             default:
                 return UNFREEZE_REASON_NONE;
         }
