@@ -164,6 +164,15 @@ public class BackupManagerMonitor {
   public static final String EXTRA_LOG_V_TO_U_ALLOWLIST =
           "android.app.backup.extra.V_TO_U_ALLOWLIST";
 
+  /**
+   * An int indicating why a backup was cancelled. One of {@link
+   * com.android.server.backup.BackupRestoreTask.CancellationReason}.
+   *
+   * @hide
+   */
+  public static final String EXTRA_LOG_CANCELLATION_REASON =
+          "android.app.backup.extra.CANCELLATION_REASON";
+
   // TODO complete this list with all log messages. And document properly.
   public static final int LOG_EVENT_ID_FULL_BACKUP_CANCEL = 4;
   public static final int LOG_EVENT_ID_ILLEGAL_KEY = 5;

@@ -1138,6 +1138,10 @@ public class Bmgr {
                 }
                 out.append("]");
             }
+            if (event.containsKey(BackupManagerMonitor.EXTRA_LOG_CANCELLATION_REASON)) {
+                out.append(" cancellationReason: ");
+                out.append(event.getInt(BackupManagerMonitor.EXTRA_LOG_CANCELLATION_REASON));
+            }
             if (mVerbose) {
                 Set<String> remainingKeys = new ArraySet<>(event.keySet());
                 remainingKeys.remove(BackupManagerMonitor.EXTRA_LOG_EVENT_ID);

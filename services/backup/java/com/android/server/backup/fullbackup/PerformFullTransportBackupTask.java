@@ -973,13 +973,18 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
 
         @Override
         public void handleCancel(@CancellationReason int cancellationReason) {
-            Slog.w(TAG, "Full backup cancel of " + mTarget.packageName);
+            Slog.w(
+                    TAG,
+                    "Cancelled backup: " + mTarget.packageName + " reason:" + cancellationReason);
 
             mBackupManagerMonitorEventSender.monitorEvent(
                     BackupManagerMonitor.LOG_EVENT_ID_FULL_BACKUP_CANCEL,
                     mTarget,
                     BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT,
-                    /* extras= */ null);
+                    BackupManagerMonitorEventSender.putMonitoringExtra(
+                            /* extras= */ null,
+                            BackupManagerMonitor.EXTRA_LOG_CANCELLATION_REASON,
+                            cancellationReason));
             mIsCancelled = true;
             // Cancel tasks spun off by this task.
             mUserBackupManagerService.handleCancel(mEphemeralToken, cancellationReason);
