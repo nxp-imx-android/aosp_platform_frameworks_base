@@ -71,6 +71,7 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
@@ -80,6 +81,9 @@ import com.android.systemui.statusbar.policy.DeviceProvisionedController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.kotlin.JavaAdapter
 import com.android.systemui.wmshell.BubblesManager
+import java.util.Optional
+import kotlin.test.assertNotNull
+import kotlin.test.fail
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -107,9 +111,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
-import java.util.Optional
-import kotlin.test.assertNotNull
-import kotlin.test.fail
 
 /** Tests for [NotificationGutsManager]. */
 @SmallTest
@@ -149,6 +150,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
     @Mock private lateinit var launcherApps: LauncherApps
     @Mock private lateinit var shortcutManager: ShortcutManager
     @Mock private lateinit var channelEditorDialogController: ChannelEditorDialogController
+    @Mock private lateinit var packageDemotionInteractor: PackageDemotionInteractor
     @Mock private lateinit var peopleNotificationIdentifier: PeopleNotificationIdentifier
     @Mock private lateinit var contextTracker: UserContextProvider
     @Mock private lateinit var bubblesManager: BubblesManager
@@ -214,6 +216,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 launcherApps,
                 shortcutManager,
                 channelEditorDialogController,
+                packageDemotionInteractor,
                 contextTracker,
                 assistantFeedbackController,
                 Optional.of(bubblesManager),
@@ -521,6 +524,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 any<NotificationIconStyleProvider>(),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                any<PackageDemotionInteractor>(),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),
@@ -560,6 +564,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 any<NotificationIconStyleProvider>(),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                any<PackageDemotionInteractor>(),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),
@@ -597,6 +602,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 any<NotificationIconStyleProvider>(),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                any<PackageDemotionInteractor>(),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),

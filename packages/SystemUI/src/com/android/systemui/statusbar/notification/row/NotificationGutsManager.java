@@ -71,6 +71,7 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewListener;
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewManager;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -100,6 +101,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     private final AccessibilityManager mAccessibilityManager;
     private final HighPriorityProvider mHighPriorityProvider;
     private final ChannelEditorDialogController mChannelEditorDialogController;
+    private final PackageDemotionInteractor mPackageDemotionInteractor;
     private final OnUserInteractionCallback mOnUserInteractionCallback;
 
     // Dependencies:
@@ -155,6 +157,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             LauncherApps launcherApps,
             ShortcutManager shortcutManager,
             ChannelEditorDialogController channelEditorDialogController,
+            PackageDemotionInteractor packageDemotionInteractor,
             UserContextProvider contextTracker,
             AssistantFeedbackController assistantFeedbackController,
             Optional<BubblesManager> bubblesManagerOptional,
@@ -184,6 +187,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         mShortcutManager = shortcutManager;
         mContextTracker = contextTracker;
         mChannelEditorDialogController = channelEditorDialogController;
+        mPackageDemotionInteractor = packageDemotionInteractor;
         mAssistantFeedbackController = assistantFeedbackController;
         mBubblesManagerOptional = bubblesManagerOptional;
         mUiEventLogger = uiEventLogger;
@@ -429,6 +433,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mIconStyleProvider,
                 mOnUserInteractionCallback,
                 mChannelEditorDialogController,
+                mPackageDemotionInteractor,
                 packageName,
                 row.getEntry().getChannel(),
                 row.getEntry(),
