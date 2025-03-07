@@ -27,6 +27,7 @@ import android.os.Handler
 import android.util.Log
 import android.view.Display
 import android.view.IWindowManager
+import com.android.app.displaylib.DisplayRepository as DisplayRepositoryFromLib
 import com.android.app.tracing.FlowTracing.traceEach
 import com.android.app.tracing.traceSection
 import com.android.systemui.dagger.SysUISingleton
@@ -60,7 +61,7 @@ import kotlinx.coroutines.flow.scan
 import kotlinx.coroutines.flow.stateIn
 
 /** Repository for providing access to display related information and events. */
-interface DisplayRepository {
+interface DisplayRepository : DisplayRepositoryFromLib {
     /** Display change event indicating a change to the given displayId has occurred. */
     val displayChangeEvent: Flow<Int>
 
@@ -72,13 +73,6 @@ interface DisplayRepository {
 
     /** A [StateFlow] that maintains a set of display IDs that should have system decorations. */
     val displayIdsWithSystemDecorations: StateFlow<Set<Int>>
-
-    /**
-     * Provides the current set of displays.
-     *
-     * Consider using [displayIds] if only the [Display.getDisplayId] is needed.
-     */
-    val displays: StateFlow<Set<Display>>
 
     /**
      * Provides the current set of display ids.
