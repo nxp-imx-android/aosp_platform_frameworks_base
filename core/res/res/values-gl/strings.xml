@@ -2274,6 +2274,18 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Desprazar"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pausa"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Posición"</string>
+    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
+    <skip />
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> incluíuse no grupo RESTRINXIDO"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"enviouse unha imaxe"</string>
@@ -2481,6 +2493,8 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"Traballo 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"Proba"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"Compartido"</string>
+    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
+    <skip />
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"Perfil de traballo"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"Espazo privado"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Clonado"</string>
