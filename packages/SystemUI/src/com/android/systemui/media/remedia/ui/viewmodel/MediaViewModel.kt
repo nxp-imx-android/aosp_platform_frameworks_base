@@ -24,6 +24,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
+import com.android.systemui.classifier.Classifier
+import com.android.systemui.classifier.domain.interactor.runIfNotFalseTap
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -31,6 +33,7 @@ import com.android.systemui.media.remedia.domain.interactor.MediaInteractor
 import com.android.systemui.media.remedia.domain.model.MediaActionModel
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
 import com.android.systemui.media.remedia.shared.model.MediaSessionState
+import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -43,6 +46,7 @@ class MediaViewModel
 @AssistedInject
 constructor(
     private val interactor: MediaInteractor,
+    private val falsingSystem: FalsingSystem,
     @Assisted private val context: Context,
     @Assisted private val carouselVisibility: MediaCarouselVisibility,
 ) : ExclusiveActivatable() {
@@ -106,10 +110,12 @@ constructor(
                                     seekProgress = progress
                                 },
                                 onScrubFinished = {
-                                    interactor.seek(
-                                        sessionKey = session.key,
-                                        to = (seekProgress * session.durationMs).roundToLong(),
-                                    )
+                                    if (!falsingSystem.isFalseTouch(Classifier.MEDIA_SEEKBAR)) {
+                                        interactor.seek(
+                                            sessionKey = session.key,
+                                            to = (seekProgress * session.durationMs).roundToLong(),
+                                        )
+                                    }
                                     isScrubbing = false
                                 },
                             )
@@ -139,20 +145,36 @@ constructor(
                                                 R.string.controls_media_dismiss_button
                                             ),
                                         onClick = {
-                                            interactor.hide(session.key)
-                                            isGutsVisible = false
+                                            falsingSystem.runIfNotFalseTap(
+                                                FalsingManager.LOW_PENALTY
+                                            ) {
+                                                interactor.hide(session.key)
+                                                isGutsVisible = false
+                                            }
                                         },
                                     )
                                 } else {
                                     MediaGutsButtonViewModel(
                                         text = context.getString(R.string.cancel),
-                                        onClick = { isGutsVisible = false },
+                                        onClick = {
+                                            falsingSystem.runIfNotFalseTap(
+                                                FalsingManager.LOW_PENALTY
+                                            ) {
+                                                isGutsVisible = false
+                                            }
+                                        },
                                     )
                                 },
                             secondaryAction =
                                 MediaGutsButtonViewModel(
                                         text = context.getString(R.string.cancel),
-                                        onClick = { isGutsVisible = false },
+                                        onClick = {
+                                            falsingSystem.runIfNotFalseTap(
+                                                FalsingManager.LOW_PENALTY
+                                            ) {
+                                                isGutsVisible = false
+                                            }
+                                        },
                                     )
                                     .takeIf { session.canBeHidden },
                             settingsButton =
@@ -165,7 +187,11 @@ constructor(
                                                     res = R.string.controls_media_settings_button
                                                 ),
                                         ),
-                                    onClick = { interactor.openMediaSettings() },
+                                    onClick = {
+                                        falsingSystem.runIfNotFalseTap(FalsingManager.LOW_PENALTY) {
+                                            interactor.openMediaSettings()
+                                        }
+                                    },
                                 ),
                             onLongClick = { isGutsVisible = false },
                         )
@@ -178,7 +204,12 @@ constructor(
                                 icon = session.outputDevice.icon,
                                 text = session.outputDevice.name,
                                 onClick = {
-                                    // TODO(b/397989775): tell the UI to show the output switcher.
+                                    falsingSystem.runIfNotFalseTap(
+                                        FalsingManager.MODERATE_PENALTY
+                                    ) {
+                                        // TODO(b/397989775): tell the UI to show the output
+                                        // switcher.
+                                    }
                                 },
                             )
                         )
@@ -189,12 +220,16 @@ constructor(
                         return MediaSecondaryActionViewModel.Action(
                             icon = session.outputDevice.icon,
                             onClick = {
-                                // TODO(b/397989775): tell the UI to show the output switcher.
+                                falsingSystem.runIfNotFalseTap(FalsingManager.MODERATE_PENALTY) {
+                                    // TODO(b/397989775): tell the UI to show the output switcher.
+                                }
                             },
                         )
                     }
 
-                override val onClick = session.onClick
+                override val onClick = {
+                    falsingSystem.runIfNotFalseTap(FalsingManager.LOW_PENALTY) { session.onClick() }
+                }
                 override val onClickLabel =
                     context.getString(R.string.controls_media_playing_item_description)
                 override val onLongClick = { isGutsVisible = true }
@@ -230,7 +265,14 @@ constructor(
                 MediaPlayPauseActionViewModel(
                     state = mediaSessionState,
                     icon = icon,
-                    onClick = onClick ?: {},
+                    onClick =
+                        onClick?.let {
+                            {
+                                falsingSystem.runIfNotFalseTap(FalsingManager.MODERATE_PENALTY) {
+                                    it()
+                                }
+                            }
+                        },
                 )
             is MediaActionModel.None,
             is MediaActionModel.ReserveSpace -> null
@@ -240,10 +282,26 @@ constructor(
     private fun MediaActionModel.toSecondaryActionViewModel(): MediaSecondaryActionViewModel {
         return when (this) {
             is MediaActionModel.Action ->
-                MediaSecondaryActionViewModel.Action(icon = icon, onClick = onClick)
+                MediaSecondaryActionViewModel.Action(
+                    icon = icon,
+                    onClick =
+                        onClick?.let {
+                            {
+                                falsingSystem.runIfNotFalseTap(FalsingManager.MODERATE_PENALTY) {
+                                    it()
+                                }
+                            }
+                        },
+                )
             is MediaActionModel.ReserveSpace -> MediaSecondaryActionViewModel.ReserveSpace
             is MediaActionModel.None -> MediaSecondaryActionViewModel.None
         }
+    }
+
+    interface FalsingSystem {
+        fun runIfNotFalseTap(@FalsingManager.Penalty penalty: Int, block: () -> Unit)
+
+        fun isFalseTouch(@Classifier.InteractionType interactionType: Int): Boolean
     }
 
     @AssistedFactory
