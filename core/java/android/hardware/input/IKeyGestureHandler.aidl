@@ -20,12 +20,12 @@ import android.hardware.input.AidlKeyGestureEvent;
 import android.os.IBinder;
 
 /** @hide */
-interface IKeyGestureHandler {
+oneway interface IKeyGestureHandler {
 
     /**
-     * Called when a key gesture starts, ends, or is cancelled. If a handler returns {@code true},
-     * it means they intend to handle the full gesture and should handle all the events pertaining
-     * to that gesture.
+     * Called when a key gesture starts, ends, or is cancelled. It is only sent to the handler that
+     * registered the callback for that particular gesture type.
+     * {@see IInputManager#registerKeyGestureHandler(int[], IKeyGestureHandler)}
      */
-    boolean handleKeyGesture(in AidlKeyGestureEvent event, in IBinder focusedToken);
+    void handleKeyGesture(in AidlKeyGestureEvent event, in IBinder focusedToken);
 }

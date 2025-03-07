@@ -514,14 +514,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     private InputManager.KeyGestureEventHandler mKeyGestureEventHandler =
-            new InputManager.KeyGestureEventHandler() {
-                @Override
-                public boolean handleKeyGestureEvent(
-                        @NonNull KeyGestureEvent event,
-                        @Nullable IBinder focusedToken) {
-                    return AccessibilityManagerService.this.handleKeyGestureEvent(event);
-                }
-            };
+            (event, focusedToken) -> AccessibilityManagerService.this.handleKeyGestureEvent(event);
 
     @VisibleForTesting
     AccessibilityManagerService(
@@ -637,7 +630,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         new AccessibilityContentObserver(mMainHandler).register(
                 mContext.getContentResolver());
         if (enableTalkbackAndMagnifierKeyGestures()) {
-            mInputManager.registerKeyGestureEventHandler(mKeyGestureEventHandler);
+            List<Integer> supportedGestures = List.of(
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
+            mInputManager.registerKeyGestureEventHandler(supportedGestures,
+                    mKeyGestureEventHandler);
         }
         if (com.android.settingslib.flags.Flags.hearingDevicesInputRoutingControl()) {
             if (mHearingDeviceNotificationController != null) {
@@ -686,13 +683,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     @VisibleForTesting
-    boolean handleKeyGestureEvent(KeyGestureEvent event) {
+    void handleKeyGestureEvent(KeyGestureEvent event) {
         final boolean complete =
                 event.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
                         && !event.isCancelled();
         final int gestureType = event.getKeyGestureType();
         if (!complete) {
-            return false;
+            return;
         }
 
         String targetName;
@@ -703,7 +700,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             case KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK:
                 targetName = mContext.getString(R.string.config_defaultSelectToSpeakService);
                 if (targetName.isEmpty()) {
-                    return false;
+                    return;
                 }
 
                 final ComponentName targetServiceComponent = TextUtils.isEmpty(targetName)
@@ -715,7 +712,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                             userState.getInstalledServiceInfoLocked(targetServiceComponent);
                 }
                 if (accessibilityServiceInfo == null) {
-                    return false;
+                    return;
                 }
 
                 // Skip enabling if a warning dialog is required for the feature.
@@ -725,11 +722,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     Slog.w(LOG_TAG,
                             "Accessibility warning is required before this service can be "
                                     + "activated automatically via KEY_GESTURE shortcut.");
-                    return false;
+                    return;
                 }
                 break;
             default:
-                return false;
+                Slog.w(LOG_TAG, "Received a key gesture " + event
+                        + " that was not registered by this handler");
+                return;
         }
 
         List<String> shortcutTargets = getAccessibilityShortcutTargets(
@@ -748,14 +747,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             // this will be a separate dialog that appears that requires the user to confirm
             // which will resolve this race condition. For now, just require two presses the
             // first time it is activated.
-            return true;
+            return;
         }
 
         final int displayId = event.getDisplayId() != INVALID_DISPLAY
                 ? event.getDisplayId() : getLastNonProxyTopFocusedDisplayId();
         performAccessibilityShortcutInternal(displayId, KEY_GESTURE, targetName);
-
-        return true;
     }
 
     @Override

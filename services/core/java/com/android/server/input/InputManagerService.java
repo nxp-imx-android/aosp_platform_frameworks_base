@@ -2751,18 +2751,23 @@ public class InputManagerService extends IInputManager.Stub
     @SuppressLint("MissingPermission")
     private void initKeyGestures() {
         InputManager im = Objects.requireNonNull(mContext.getSystemService(InputManager.class));
-        im.registerKeyGestureEventHandler(new InputManager.KeyGestureEventHandler() {
-            @Override
-            public boolean handleKeyGestureEvent(@NonNull KeyGestureEvent event,
-                    @Nullable IBinder focussedToken) {
-                return InputManagerService.this.handleKeyGestureEvent(event);
-            }
-        });
+        List<Integer> supportedGestures = List.of(
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_UP,
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN,
+                KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_TOGGLE,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS
+        );
+        im.registerKeyGestureEventHandler(supportedGestures,
+                (event, focusedToken) -> InputManagerService.this.handleKeyGestureEvent(event));
     }
 
     @SuppressLint("MissingPermission")
     @VisibleForTesting
-    boolean handleKeyGestureEvent(@NonNull KeyGestureEvent event) {
+    void handleKeyGestureEvent(@NonNull KeyGestureEvent event) {
         int deviceId = event.getDeviceId();
         boolean complete = event.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
                 && !event.isCancelled();
@@ -2771,20 +2776,20 @@ public class InputManagerService extends IInputManager.Stub
                 if (complete) {
                     mKeyboardBacklightController.incrementKeyboardBacklight(deviceId);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_DOWN:
                 if (complete) {
                     mKeyboardBacklightController.decrementKeyboardBacklight(deviceId);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_KEYBOARD_BACKLIGHT_TOGGLE:
                 // TODO(b/367748270): Add functionality to turn keyboard backlight on/off.
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_CAPS_LOCK:
                 if (complete) {
                     mNative.toggleCapsLock(deviceId);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_BOUNCE_KEYS:
                 if (complete) {
                     final boolean bounceKeysEnabled =
@@ -2792,7 +2797,6 @@ public class InputManagerService extends IInputManager.Stub
                     InputSettings.setAccessibilityBounceKeysThreshold(mContext,
                             bounceKeysEnabled ? 0
                                     : InputSettings.DEFAULT_BOUNCE_KEYS_THRESHOLD_MILLIS);
-                    return true;
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS:
@@ -2800,7 +2804,6 @@ public class InputManagerService extends IInputManager.Stub
                     final boolean mouseKeysEnabled = InputSettings.isAccessibilityMouseKeysEnabled(
                             mContext);
                     InputSettings.setAccessibilityMouseKeysEnabled(mContext, !mouseKeysEnabled);
-                    return true;
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS:
@@ -2808,7 +2811,6 @@ public class InputManagerService extends IInputManager.Stub
                     final boolean stickyKeysEnabled =
                             InputSettings.isAccessibilityStickyKeysEnabled(mContext);
                     InputSettings.setAccessibilityStickyKeysEnabled(mContext, !stickyKeysEnabled);
-                    return true;
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS:
@@ -2817,14 +2819,13 @@ public class InputManagerService extends IInputManager.Stub
                             InputSettings.isAccessibilitySlowKeysEnabled(mContext);
                     InputSettings.setAccessibilitySlowKeysThreshold(mContext,
                             slowKeysEnabled ? 0 : InputSettings.DEFAULT_SLOW_KEYS_THRESHOLD_MILLIS);
-                    return true;
                 }
                 break;
             default:
-                return false;
-
+                Log.w(TAG, "Received a key gesture " + event
+                        + " that was not registered by this handler");
+                break;
         }
-        return false;
     }
 
     // Native callback.
@@ -3147,11 +3148,14 @@ public class InputManagerService extends IInputManager.Stub
 
     @Override
     @PermissionManuallyEnforced
-    public void registerKeyGestureHandler(@NonNull IKeyGestureHandler handler) {
+    public void registerKeyGestureHandler(int[] keyGesturesToHandle,
+            @NonNull IKeyGestureHandler handler) {
         enforceManageKeyGesturePermission();
 
         Objects.requireNonNull(handler);
-        mKeyGestureController.registerKeyGestureHandler(handler, Binder.getCallingPid());
+        Objects.requireNonNull(keyGesturesToHandle);
+        mKeyGestureController.registerKeyGestureHandler(keyGesturesToHandle, handler,
+                Binder.getCallingPid());
     }
 
     @Override

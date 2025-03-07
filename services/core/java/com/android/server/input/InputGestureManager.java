@@ -94,9 +94,9 @@ final class InputGestureManager {
         mContext = context;
     }
 
-    public void systemRunning() {
+    public void init(List<InputGestureData> bookmarks) {
         initSystemShortcuts();
-        blockListBookmarkedTriggers();
+        blockListBookmarkedTriggers(bookmarks);
     }
 
     private void initSystemShortcuts() {
@@ -263,10 +263,9 @@ final class InputGestureManager {
         }
     }
 
-    private void blockListBookmarkedTriggers() {
+    private void blockListBookmarkedTriggers(List<InputGestureData> bookmarks) {
         synchronized (mGestureLock) {
-            InputManager im = Objects.requireNonNull(mContext.getSystemService(InputManager.class));
-            for (InputGestureData bookmark : im.getAppLaunchBookmarks()) {
+            for (InputGestureData bookmark : bookmarks) {
                 mBlockListedTriggers.add(bookmark.getTrigger());
             }
         }

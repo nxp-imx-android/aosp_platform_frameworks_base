@@ -43,6 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -146,7 +147,7 @@ public class PhoneWindowManagerTests {
 
         mPhoneWindowManager.mKeyguardDelegate = mKeyguardServiceDelegate;
         final InputManager im = mock(InputManager.class);
-        doNothing().when(im).registerKeyGestureEventHandler(any());
+        doNothing().when(im).registerKeyGestureEventHandler(anyList(), any());
         doReturn(im).when(mContext).getSystemService(eq(Context.INPUT_SERVICE));
     }
 
