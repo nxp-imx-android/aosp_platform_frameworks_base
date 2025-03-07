@@ -18,6 +18,7 @@ package com.android.systemui.wallpapers.data.repository
 
 import android.app.WallpaperInfo
 import android.app.WallpaperManager
+import android.app.WallpaperManager.FLAG_LOCK
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.UserInfo
@@ -44,6 +45,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.eq
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.mock
@@ -275,17 +277,17 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(SharedFlags.FLAG_EXTENDED_WALLPAPER_EFFECTS)
-    fun shouldSendNotificationLayout_setExtendedEffectsWallpaper_launchSendLayoutJob() =
+    fun shouldSendNotificationLayout_setExtendedEffectsWallpaper() =
         testScope.runTest {
             underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.shouldSendFocalArea)
-            val extedendEffectsWallpaper =
+            val extendedEffectsWallpaper =
                 mock<WallpaperInfo>().apply {
                     whenever(this.component).thenReturn(ComponentName(context, focalAreaTarget))
                 }
 
             whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
-                .thenReturn(extedendEffectsWallpaper)
+                .thenReturn(extendedEffectsWallpaper)
             broadcastDispatcher.sendIntentToMatchingReceiversOnly(
                 context,
                 Intent(Intent.ACTION_WALLPAPER_CHANGED),
@@ -295,7 +297,7 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(SharedFlags.FLAG_EXTENDED_WALLPAPER_EFFECTS)
-    fun shouldSendNotificationLayout_setNotExtendedEffectsWallpaper_cancelSendLayoutJob() =
+    fun shouldSendNotificationLayout_setNotExtendedEffectsWallpaper() =
         testScope.runTest {
             underTest = kosmos.wallpaperRepository
             val latest by collectLastValue(underTest.shouldSendFocalArea)
@@ -320,6 +322,51 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(SharedFlags.FLAG_EXTENDED_WALLPAPER_EFFECTS)
+    fun shouldSendNotificationLayout_setExtendedEffectsWallpaperOnlyForHomescreen() =
+        testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            val latest by collectLastValue(underTest.shouldSendFocalArea)
+            val extendedEffectsWallpaper =
+                mock<WallpaperInfo>().apply {
+                    whenever(this.component).thenReturn(ComponentName("", focalAreaTarget))
+                }
+
+            whenever(kosmos.wallpaperManager.lockScreenWallpaperExists()).thenReturn(true)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
+                .thenReturn(extendedEffectsWallpaper)
+            whenever(kosmos.wallpaperManager.getWallpaperInfo(eq(FLAG_LOCK), any()))
+                .thenReturn(UNSUPPORTED_WP)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_WALLPAPER_CHANGED),
+            )
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(SharedFlags.FLAG_EXTENDED_WALLPAPER_EFFECTS)
+    fun shouldSendNotificationLayout_setExtendedEffectsWallpaperOnlyForLockscreen() =
+        testScope.runTest {
+            underTest = kosmos.wallpaperRepository
+            val latest by collectLastValue(underTest.shouldSendFocalArea)
+            val extendedEffectsWallpaper =
+                mock<WallpaperInfo>().apply {
+                    whenever(this.component).thenReturn(ComponentName("", focalAreaTarget))
+                }
+            whenever(kosmos.wallpaperManager.lockScreenWallpaperExists()).thenReturn(true)
+            whenever(kosmos.wallpaperManager.getWallpaperInfoForUser(any()))
+                .thenReturn(UNSUPPORTED_WP)
+            whenever(kosmos.wallpaperManager.getWallpaperInfo(eq(FLAG_LOCK), any()))
+                .thenReturn(extendedEffectsWallpaper)
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_WALLPAPER_CHANGED),
+            )
+            assertThat(latest).isTrue()
         }
 
     private companion object {
