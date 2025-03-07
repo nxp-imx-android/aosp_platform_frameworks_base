@@ -282,7 +282,7 @@ public class CreateUserDialogController {
                 mCustomDialogHelper.getDialog().dismiss();
                 break;
             case EXIT_DIALOG:
-                finish();
+                mUserCreationDialog.dismiss();
                 break;
             default:
                 if (mCurrentState < EXIT_DIALOG) {
