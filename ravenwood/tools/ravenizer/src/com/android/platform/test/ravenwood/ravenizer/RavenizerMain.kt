@@ -21,6 +21,7 @@ import com.android.hoststubgen.LogLevel
 import com.android.hoststubgen.executableName
 import com.android.hoststubgen.log
 import com.android.hoststubgen.runMainWithBoilerplate
+import com.android.hoststubgen.utils.JAR_RESOURCE_PREFIX
 import java.nio.file.Paths
 import kotlin.io.path.exists
 
@@ -36,6 +37,10 @@ import kotlin.io.path.exists
  */
 private val RAVENIZER_DOTFILE = System.getenv("HOME") + "/.ravenizer-unsafe"
 
+/**
+ * This is the name of the standard option text file embedded inside ravenizer.jar.
+ */
+private const val RAVENIZER_STANDARD_OPTIONS = "texts/ravenizer-standard-options.txt"
 
 /**
  * Entry point.
@@ -45,12 +50,12 @@ fun main(args: Array<String>) {
     log.setConsoleLogLevel(LogLevel.Info)
 
     runMainWithBoilerplate {
-        var newArgs = args.asList()
+        val newArgs = args.toMutableList()
+        newArgs.add(0, "@$JAR_RESOURCE_PREFIX$RAVENIZER_STANDARD_OPTIONS")
+
         if (Paths.get(RAVENIZER_DOTFILE).exists()) {
             log.i("Reading options from $RAVENIZER_DOTFILE")
-            newArgs = args.toMutableList().apply {
-                add(0, "@$RAVENIZER_DOTFILE")
-            }
+            newArgs.add(0, "@$RAVENIZER_DOTFILE")
         }
 
         val options = RavenizerOptions().apply { parseArgs(newArgs) }

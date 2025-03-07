@@ -217,7 +217,7 @@ private val numericalInnerClassName = """.*\$\d+$""".toRegex()
 
 fun isAnonymousInnerClass(cn: ClassNode): Boolean {
     // TODO: Is there a better way?
-    return cn.name.matches(numericalInnerClassName)
+    return cn.outerClass != null && cn.name.matches(numericalInnerClassName)
 }
 
 /**

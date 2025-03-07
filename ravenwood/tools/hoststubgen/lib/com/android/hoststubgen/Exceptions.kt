@@ -15,8 +15,6 @@
  */
 package com.android.hoststubgen
 
-import java.io.File
-
 /**
  * We will not print the stack trace for exceptions implementing it.
  */
@@ -64,9 +62,6 @@ class DuplicateAnnotationException(annotationName: String?) :
 class InputFileNotFoundException(filename: String) :
     ArgumentsException("File '$filename' not found")
 
-fun String.ensureFileExists(): String {
-    if (!File(this).exists()) {
-        throw InputFileNotFoundException(this)
-    }
-    return this
-}
+/** Thrown when a JAR resource does not exist. */
+class JarResourceNotFoundException(path: String) :
+    ArgumentsException("JAR resource '$path' not found")

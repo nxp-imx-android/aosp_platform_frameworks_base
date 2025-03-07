@@ -16,6 +16,7 @@
 package com.android.hoststubgen
 
 import com.android.hoststubgen.asm.ClassNodes
+import com.android.hoststubgen.asm.findAnyAnnotation
 import com.android.hoststubgen.filters.AnnotationBasedFilter
 import com.android.hoststubgen.filters.ClassWidePolicyPropagatingFilter
 import com.android.hoststubgen.filters.ConstantFilter
@@ -26,6 +27,7 @@ import com.android.hoststubgen.filters.KeepNativeFilter
 import com.android.hoststubgen.filters.OutputFilter
 import com.android.hoststubgen.filters.SanitizationFilter
 import com.android.hoststubgen.filters.TextFileFilterPolicyBuilder
+import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
 import com.android.hoststubgen.utils.ClassPredicate
 import com.android.hoststubgen.visitors.BaseAdapter
 import com.android.hoststubgen.visitors.PackageRedirectRemapper
@@ -40,7 +42,7 @@ import org.objectweb.asm.util.CheckClassAdapter
  */
 class HostStubGenClassProcessor(
     private val options: HostStubGenClassProcessorOptions,
-    private val allClasses: ClassNodes,
+    val allClasses: ClassNodes,
     private val errors: HostStubGenErrors = HostStubGenErrors(),
     private val stats: HostStubGenStats? = null,
 ) {
@@ -48,6 +50,7 @@ class HostStubGenClassProcessor(
     val remapper = FilterRemapper(filter)
 
     private val packageRedirector = PackageRedirectRemapper(options.packageRedirects)
+    private val processedAnnotation = setOf(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR)
 
     /**
      * Build the filter, which decides what classes/methods/fields should be put in stub or impl
@@ -132,6 +135,12 @@ class HostStubGenClassProcessor(
 
     fun processClassBytecode(bytecode: ByteArray): ByteArray {
         val cr = ClassReader(bytecode)
+
+        // If the class was already processed previously, skip
+        val clz = allClasses.getClass(cr.className)
+        if (clz.findAnyAnnotation(processedAnnotation) != null) {
+            return bytecode
+        }
 
         // COMPUTE_FRAMES wouldn't be happy if code uses
         val flags = ClassWriter.COMPUTE_MAXS // or ClassWriter.COMPUTE_FRAMES

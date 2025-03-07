@@ -22,13 +22,13 @@ import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.asm.toJvmClassName
 import com.android.hoststubgen.log
 import com.android.hoststubgen.normalizeTextLine
+import com.android.hoststubgen.utils.FileOrResource
 import com.android.hoststubgen.whitespaceRegex
-import org.objectweb.asm.tree.ClassNode
 import java.io.BufferedReader
-import java.io.FileReader
 import java.io.PrintWriter
 import java.io.Reader
 import java.util.regex.Pattern
+import org.objectweb.asm.tree.ClassNode
 
 /**
  * Print a class node as a "keep" policy.
@@ -143,10 +143,10 @@ class TextFileFilterPolicyBuilder(
      * Parse a given policy file. This method can be called multiple times to read from
      * multiple files. To get the resulting filter, use [createOutputFilter]
      */
-    fun parse(file: String) {
+    fun parse(file: FileOrResource) {
         // We may parse multiple files, but we reuse the same parser, because the parser
         // will make sure there'll be no dupplicating "special class" policies.
-        parser.parse(FileReader(file), file, Processor())
+        parser.parse(file.open(), file.path, Processor())
     }
 
     /**
