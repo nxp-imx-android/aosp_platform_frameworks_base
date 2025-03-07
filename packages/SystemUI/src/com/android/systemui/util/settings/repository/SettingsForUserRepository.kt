@@ -47,6 +47,11 @@ abstract class SettingsForUserRepository(
             .distinctUntilChanged()
             .flowOn(backgroundDispatcher)
 
+    fun intSettingForUser(userId: Int, name: String, defaultValue: Int = 0): Flow<Int> =
+        settingObserver(name, userId) { userSettings.getIntForUser(name, defaultValue, userId) }
+            .distinctUntilChanged()
+            .flowOn(backgroundDispatcher)
+
     fun <T> settingObserver(name: String, userId: Int, settingsReader: () -> T): Flow<T> {
         return userSettings
             .observerFlow(userId, name)
@@ -61,6 +66,16 @@ abstract class SettingsForUserRepository(
     suspend fun getBoolForUser(userId: Int, name: String, defaultValue: Boolean = false): Boolean {
         return withContext(backgroundContext) {
             userSettings.getBoolForUser(name, defaultValue, userId)
+        }
+    }
+
+    suspend fun setIntForUser(userId: Int, name: String, value: Int) {
+        withContext(backgroundContext) { userSettings.putIntForUser(name, value, userId) }
+    }
+
+    suspend fun getIntForUser(userId: Int, name: String, defaultValue: Int = 0): Int {
+        return withContext(backgroundContext) {
+            userSettings.getIntForUser(name, defaultValue, userId)
         }
     }
 }
