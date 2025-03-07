@@ -3871,6 +3871,10 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
      */
     public void notifyCarrierRoamingNtnSignalStrengthChanged(int subId,
             @NonNull NtnSignalStrength ntnSignalStrength) {
+        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
+            log("notifyCarrierRoamingNtnSignalStrengthChanged: invalid subscription id");
+            return;
+        }
         if (!checkNotifyPermission("notifyCarrierRoamingNtnSignalStrengthChanged")) {
             log("notifyCarrierRoamingNtnSignalStrengthChanged: caller does not have required "
                     + "permissions.");
