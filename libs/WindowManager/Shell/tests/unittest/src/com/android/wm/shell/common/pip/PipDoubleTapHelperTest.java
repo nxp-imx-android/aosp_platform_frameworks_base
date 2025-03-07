@@ -21,7 +21,6 @@ import static com.android.wm.shell.common.pip.PipDoubleTapHelper.SIZE_SPEC_DEFAU
 import static com.android.wm.shell.common.pip.PipDoubleTapHelper.SIZE_SPEC_MAX;
 import static com.android.wm.shell.common.pip.PipDoubleTapHelper.nextSizeSpec;
 
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import android.graphics.Point;
@@ -41,131 +40,75 @@ import org.mockito.Mock;
  */
 @RunWith(AndroidTestingRunner.class)
 public class PipDoubleTapHelperTest extends ShellTestCase {
-    // represents the current pip window state and has information on current
-    // max, min, and normal sizes
-    @Mock private PipBoundsState mBoundStateMock;
-    // tied to boundsStateMock.getBounds() in setUp()
-    @Mock private Rect mBoundsMock;
+    @Mock private PipBoundsState mMockPipBoundsState;
 
-    // represents the most recent manually resized bounds
-    // i.e. dimensions from the most recent pinch in/out
-    @Mock private Rect mUserResizeBoundsMock;
+    // Actual dimension guidelines of the PiP bounds.
+    private static final int MAX_EDGE_SIZE = 100;
+    private static final int DEFAULT_EDGE_SIZE = 60;
+    private static final int MIN_EDGE_SIZE = 50;
+    private static final int AVERAGE_EDGE_SIZE = (MAX_EDGE_SIZE + MIN_EDGE_SIZE) / 2;
 
-    // actual dimensions of the pip screen bounds
-    private static final int MAX_WIDTH = 100;
-    private static final int DEFAULT_WIDTH = 40;
-    private static final int MIN_WIDTH = 10;
-
-    private static final int AVERAGE_WIDTH = (MAX_WIDTH + MIN_WIDTH) / 2;
-
-    /**
-     * Initializes mocks and assigns values for different pip screen bounds.
-     */
     @Before
     public void setUp() {
         // define pip bounds
-        when(mBoundStateMock.getMaxSize()).thenReturn(new Point(MAX_WIDTH, 20));
-        when(mBoundStateMock.getMinSize()).thenReturn(new Point(MIN_WIDTH, 2));
+        when(mMockPipBoundsState.getMaxSize()).thenReturn(new Point(MAX_EDGE_SIZE, MAX_EDGE_SIZE));
+        when(mMockPipBoundsState.getMinSize()).thenReturn(new Point(MIN_EDGE_SIZE, MIN_EDGE_SIZE));
 
-        Rect rectMock = mock(Rect.class);
-        when(rectMock.width()).thenReturn(DEFAULT_WIDTH);
-        when(mBoundStateMock.getNormalBounds()).thenReturn(rectMock);
-
-        when(mBoundsMock.width()).thenReturn(DEFAULT_WIDTH);
-        when(mBoundStateMock.getBounds()).thenReturn(mBoundsMock);
+        final Rect normalBounds = new Rect(0, 0, DEFAULT_EDGE_SIZE, DEFAULT_EDGE_SIZE);
+        when(mMockPipBoundsState.getNormalBounds()).thenReturn(normalBounds);
     }
 
-    /**
-     * Tests {@link PipDoubleTapHelper#nextSizeSpec(PipBoundsState, Rect)}.
-     *
-     * <p>when the user resizes the screen to a larger than the average but not the maximum width,
-     * then we toggle between {@code PipSizeSpec.CUSTOM} and {@code PipSizeSpec.DEFAULT}
-     */
     @Test
-    public void testNextScreenSize_resizedWiderThanAverage_returnDefaultThenCustom() {
-        // make the user resize width in between MAX and average
-        when(mUserResizeBoundsMock.width()).thenReturn((MAX_WIDTH + AVERAGE_WIDTH) / 2);
-        // make current bounds same as resized bound since no double tap yet
-        when(mBoundsMock.width()).thenReturn((MAX_WIDTH + AVERAGE_WIDTH) / 2);
+    public void nextSizeSpec_resizedWiderThanAverage_returnDefaultThenCustom() {
+        final int resizeEdgeSize = (MAX_EDGE_SIZE + AVERAGE_EDGE_SIZE) / 2;
+        final Rect userResizeBounds = new Rect(0, 0, resizeEdgeSize, resizeEdgeSize);
+        when(mMockPipBoundsState.getBounds()).thenReturn(userResizeBounds);
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_DEFAULT);
 
-        // then nextScreenSize() i.e. double tapping should
-        // toggle to DEFAULT state
-        Assert.assertSame(nextSizeSpec(mBoundStateMock, mUserResizeBoundsMock),
-                SIZE_SPEC_DEFAULT);
-
-        // once we toggle to DEFAULT our screen size gets updated
-        // but not the user resize bounds
-        when(mBoundsMock.width()).thenReturn(DEFAULT_WIDTH);
-
-        // then nextScreenSize() i.e. double tapping should
-        // toggle to CUSTOM state
-        Assert.assertSame(nextSizeSpec(mBoundStateMock, mUserResizeBoundsMock),
-                SIZE_SPEC_CUSTOM);
+        // once we toggle to DEFAULT only PiP bounds state gets updated - not the user resize bounds
+        when(mMockPipBoundsState.getBounds()).thenReturn(
+                new Rect(0, 0, DEFAULT_EDGE_SIZE, DEFAULT_EDGE_SIZE));
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_CUSTOM);
     }
 
-    /**
-     * Tests {@link PipDoubleTapHelper#nextSizeSpec(PipBoundsState, Rect)}.
-     *
-     * <p>when the user resizes the screen to a smaller than the average but not the default width,
-     * then we toggle between {@code PipSizeSpec.CUSTOM} and {@code PipSizeSpec.MAX}
-     */
     @Test
-    public void testNextScreenSize_resizedNarrowerThanAverage_returnMaxThenCustom() {
-        // make the user resize width in between MIN and average
-        when(mUserResizeBoundsMock.width()).thenReturn((MIN_WIDTH + AVERAGE_WIDTH) / 2);
-        // make current bounds same as resized bound since no double tap yet
-        when(mBoundsMock.width()).thenReturn((MIN_WIDTH + AVERAGE_WIDTH) / 2);
+    public void nextSizeSpec_resizedSmallerThanAverage_returnMaxThenCustom() {
+        final int resizeEdgeSize = (AVERAGE_EDGE_SIZE + MIN_EDGE_SIZE) / 2;
+        final Rect userResizeBounds = new Rect(0, 0, resizeEdgeSize, resizeEdgeSize);
+        when(mMockPipBoundsState.getBounds()).thenReturn(userResizeBounds);
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_MAX);
 
-        // then nextScreenSize() i.e. double tapping should
-        // toggle to MAX state
-        Assert.assertSame(nextSizeSpec(mBoundStateMock, mUserResizeBoundsMock),
-                SIZE_SPEC_MAX);
-
-        // once we toggle to MAX our screen size gets updated
-        // but not the user resize bounds
-        when(mBoundsMock.width()).thenReturn(MAX_WIDTH);
-
-        // then nextScreenSize() i.e. double tapping should
-        // toggle to CUSTOM state
-        Assert.assertSame(nextSizeSpec(mBoundStateMock, mUserResizeBoundsMock),
-                SIZE_SPEC_CUSTOM);
+        // Once we toggle to MAX our screen size gets updated but not the user resize bounds
+        when(mMockPipBoundsState.getBounds()).thenReturn(
+                new Rect(0, 0, MAX_EDGE_SIZE, MAX_EDGE_SIZE));
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_CUSTOM);
     }
 
-    /**
-     * Tests {@link PipDoubleTapHelper#nextSizeSpec(PipBoundsState, Rect)}.
-     *
-     * <p>when the user resizes the screen to exactly the maximum width
-     * then we toggle to {@code PipSizeSpec.DEFAULT}
-     */
     @Test
-    public void testNextScreenSize_resizedToMax_returnDefault() {
-        // the resized width is the same as MAX_WIDTH
-        when(mUserResizeBoundsMock.width()).thenReturn(MAX_WIDTH);
-        // the current bounds are also at MAX_WIDTH
-        when(mBoundsMock.width()).thenReturn(MAX_WIDTH);
-
-        // then nextScreenSize() i.e. double tapping should
-        // toggle to DEFAULT state
-        Assert.assertSame(nextSizeSpec(mBoundStateMock, mUserResizeBoundsMock),
-                SIZE_SPEC_DEFAULT);
+    public void nextSizeSpec_resizedToMax_returnDefault() {
+        final Rect userResizeBounds = new Rect(0, 0, MAX_EDGE_SIZE, MAX_EDGE_SIZE);
+        when(mMockPipBoundsState.getBounds()).thenReturn(userResizeBounds);
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_DEFAULT);
     }
 
-    /**
-     * Tests {@link PipDoubleTapHelper#nextSizeSpec(PipBoundsState, Rect)}.
-     *
-     * <p>when the user resizes the screen to exactly the default width
-     * then we toggle to {@code PipSizeSpec.MAX}
-     */
     @Test
-    public void testNextScreenSize_resizedToDefault_returnMax() {
-        // the resized width is the same as DEFAULT_WIDTH
-        when(mUserResizeBoundsMock.width()).thenReturn(DEFAULT_WIDTH);
-        // the current bounds are also at DEFAULT_WIDTH
-        when(mBoundsMock.width()).thenReturn(DEFAULT_WIDTH);
+    public void nextSizeSpec_resizedToDefault_returnMax() {
+        final Rect userResizeBounds = new Rect(0, 0, DEFAULT_EDGE_SIZE, DEFAULT_EDGE_SIZE);
+        when(mMockPipBoundsState.getBounds()).thenReturn(userResizeBounds);
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_MAX);
+    }
 
-        // then nextScreenSize() i.e. double tapping should
-        // toggle to MAX state
-        Assert.assertSame(nextSizeSpec(mBoundStateMock, mUserResizeBoundsMock),
-                SIZE_SPEC_MAX);
+    @Test
+    public void nextSizeSpec_resizedToAlmostMax_returnDefault() {
+        final Rect userResizeBounds = new Rect(0, 0, MAX_EDGE_SIZE, MAX_EDGE_SIZE - 1);
+        when(mMockPipBoundsState.getBounds()).thenReturn(userResizeBounds);
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_DEFAULT);
+    }
+
+    @Test
+    public void nextSizeSpec_resizedToAlmostMin_returnMax() {
+        final Rect userResizeBounds = new Rect(0, 0, MIN_EDGE_SIZE, MIN_EDGE_SIZE + 1);
+        when(mMockPipBoundsState.getBounds()).thenReturn(userResizeBounds);
+        Assert.assertEquals(nextSizeSpec(mMockPipBoundsState, userResizeBounds), SIZE_SPEC_MAX);
     }
 }

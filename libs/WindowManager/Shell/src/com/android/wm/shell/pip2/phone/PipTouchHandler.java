@@ -934,6 +934,7 @@ public class PipTouchHandler implements PipTransitionState.PipTransitionStateCha
                     }
 
                     // the size to toggle to after a double tap
+                    mPipBoundsState.setNormalBounds(getAdjustedNormalBounds());
                     int nextSize = PipDoubleTapHelper
                             .nextSizeSpec(mPipBoundsState, getUserResizeBounds());
 
