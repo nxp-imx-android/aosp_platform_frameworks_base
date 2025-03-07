@@ -34,8 +34,9 @@ import com.android.systemui.keyguard.data.repository.KeyguardTransitionRepositor
 import com.android.systemui.keyguard.shared.model.BiometricUnlockMode.Companion.isWakeAndUnlock
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
+import com.android.systemui.power.shared.model.WakefulnessModel
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.util.kotlin.Utils.Companion.sample
+import com.android.systemui.util.kotlin.Utils.Companion.sample as sampleCombine
 import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
@@ -121,9 +122,10 @@ constructor(
     private fun shouldTransitionToCommunal(
         shouldShowCommunal: Boolean,
         isCommunalAvailable: Boolean,
+        wakefulness: WakefulnessModel,
     ) =
         if (communalSettingsInteractor.isV2FlagEnabled()) {
-            shouldShowCommunal
+            shouldShowCommunal && !wakefulness.isAwakeFromMotionOrLift()
         } else {
             isCommunalAvailable && dreamManager.canStartDreaming(false)
         }
@@ -148,14 +150,14 @@ constructor(
         }
 
         scope.launch {
-            powerInteractor.isAwake
+            powerInteractor.detailedWakefulness
                 .debounce(50L)
-                .filterRelevantKeyguardStateAnd { isAwake -> isAwake }
-                .sample(
+                .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwake() }
+                .sampleCombine(
                     communalInteractor.isCommunalAvailable,
                     communalSettingsInteractor.autoOpenEnabled,
                 )
-                .collect { (_, isCommunalAvailable, shouldShowCommunal) ->
+                .collect { (detailedWakefulness, isCommunalAvailable, shouldShowCommunal) ->
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
                     val isKeyguardGoingAway = keyguardInteractor.isKeyguardGoingAway.value
@@ -186,7 +188,11 @@ constructor(
                     } else if (isKeyguardOccludedLegacy) {
                         startTransitionTo(KeyguardState.OCCLUDED)
                     } else if (
-                        shouldTransitionToCommunal(shouldShowCommunal, isCommunalAvailable)
+                        shouldTransitionToCommunal(
+                            shouldShowCommunal,
+                            isCommunalAvailable,
+                            detailedWakefulness,
+                        )
                     ) {
                         if (!SceneContainerFlag.isEnabled) {
                             transitionToGlanceableHub()
@@ -208,7 +214,7 @@ constructor(
         scope.launch {
             powerInteractor.detailedWakefulness
                 .filterRelevantKeyguardStateAnd { it.isAwake() }
-                .sample(
+                .sampleCombine(
                     communalSettingsInteractor.autoOpenEnabled,
                     communalInteractor.isCommunalAvailable,
                     keyguardInteractor.biometricUnlockState,
@@ -217,7 +223,7 @@ constructor(
                 )
                 .collect {
                     (
-                        _,
+                        detailedWakefulness,
                         shouldShowCommunal,
                         isCommunalAvailable,
                         biometricUnlockState,
@@ -245,7 +251,11 @@ constructor(
                                 )
                             }
                         } else if (
-                            shouldTransitionToCommunal(shouldShowCommunal, isCommunalAvailable)
+                            shouldTransitionToCommunal(
+                                shouldShowCommunal,
+                                isCommunalAvailable,
+                                detailedWakefulness,
+                            )
                         ) {
                             if (!SceneContainerFlag.isEnabled) {
                                 transitionToGlanceableHub()

@@ -61,6 +61,11 @@ data class WakefulnessModel(
             (lastWakeReason == WakeSleepReason.TAP || lastWakeReason == WakeSleepReason.GESTURE)
     }
 
+    fun isAwakeFromMotionOrLift(): Boolean {
+        return isAwake() &&
+            (lastWakeReason == WakeSleepReason.MOTION || lastWakeReason == WakeSleepReason.LIFT)
+    }
+
     override fun logDiffs(prevVal: WakefulnessModel, row: TableRowLogger) {
         row.logChange(columnName = "wakefulness", value = toString())
     }

@@ -101,14 +101,14 @@ constructor(
                 )
                 .collect {
                     (
-                        _,
+                        detailedWakefulness,
                         startedStep,
                         canWakeDirectlyToGone,
                     ) ->
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val biometricUnlockMode = keyguardInteractor.biometricUnlockState.value.mode
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
-                    val shouldShowCommunal = communalSettingsInteractor.autoOpenEnabled.value
+                    val autoOpenCommunal = communalSettingsInteractor.autoOpenEnabled.value
 
                     if (!maybeHandleInsecurePowerGesture()) {
                         val shouldTransitionToLockscreen =
@@ -135,8 +135,12 @@ constructor(
                             (!KeyguardWmStateRefactor.isEnabled && canDismissLockscreen()) ||
                                 (KeyguardWmStateRefactor.isEnabled && canWakeDirectlyToGone)
 
+                        // Avoid transitioning to communal automatically if the device is waking
+                        // up due to motion.
                         val shouldTransitionToCommunal =
-                            communalSettingsInteractor.isV2FlagEnabled() && shouldShowCommunal
+                            communalSettingsInteractor.isV2FlagEnabled() &&
+                                autoOpenCommunal &&
+                                !detailedWakefulness.isAwakeFromMotionOrLift()
 
                         if (shouldTransitionToGone) {
                             // TODO(b/360368320): Adapt for scene framework
