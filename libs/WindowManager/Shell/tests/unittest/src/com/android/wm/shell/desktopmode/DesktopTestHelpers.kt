@@ -22,6 +22,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.app.WindowConfiguration.WINDOWING_MODE_PINNED
 import android.content.ComponentName
 import android.graphics.Rect
 import android.view.Display.DEFAULT_DISPLAY
@@ -42,6 +43,17 @@ object DesktopTestHelpers {
             .setWindowingMode(WINDOWING_MODE_FREEFORM)
             .setLastActiveTime(100)
             .setUserId(DEFAULT_USER_ID)
+            .apply { bounds?.let { setBounds(it) } }
+            .build()
+
+    fun createPinnedTask(displayId: Int = DEFAULT_DISPLAY, bounds: Rect? = null): RunningTaskInfo =
+        TestRunningTaskInfoBuilder()
+            .setDisplayId(displayId)
+            .setParentTaskId(displayId)
+            .setToken(MockToken().token())
+            .setActivityType(ACTIVITY_TYPE_STANDARD)
+            .setWindowingMode(WINDOWING_MODE_PINNED)
+            .setLastActiveTime(100)
             .apply { bounds?.let { setBounds(it) } }
             .build()
 

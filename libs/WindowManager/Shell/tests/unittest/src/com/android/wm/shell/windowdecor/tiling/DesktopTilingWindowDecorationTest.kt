@@ -16,6 +16,7 @@
 package com.android.wm.shell.windowdecor.tiling
 
 import android.app.ActivityManager
+import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Rect
@@ -24,8 +25,10 @@ import android.testing.AndroidTestingRunner
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
+import android.window.TransitionInfo.Change
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -40,6 +43,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeT
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createPinnedTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
@@ -552,6 +556,37 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    fun taskTiled_shouldBeRemoved_whenEnteringPip() {
+        val task1 = createPipTask()
+        val stableBounds = STABLE_BOUNDS_MOCK
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(context.resources).thenReturn(resources)
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
+        whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
+        whenever(tiledTaskHelper.desktopModeWindowDecoration).thenReturn(desktopWindowDecoration)
+        tilingDecoration.onAppTiled(
+            task1,
+            desktopWindowDecoration,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+        )
+        tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
+        val changeInfo = createPipChangeTransition(task1)
+        tilingDecoration.onTransitionReady(
+            transition = mock(),
+            info = changeInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        assertThat(tilingDecoration.leftTaskResizingHelper).isNull()
+        verify(tiledTaskHelper, times(1)).dispose()
+    }
+
+    @Test
     fun taskNotTiled_shouldNotBeRemoved_whenNotTiled() {
         val task1 = createVisibleTask()
         val task2 = createVisibleTask()
@@ -650,6 +685,23 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private fun createVisibleTask() =
         createFreeformTask().also {
             whenever(userRepositories.current.isVisibleTask(eq(it.taskId))).thenReturn(true)
+        }
+
+    private fun createPipTask() =
+        createPinnedTask().also {
+            whenever(userRepositories.current.isVisibleTask(eq(it.taskId))).thenReturn(true)
+        }
+
+    private fun createPipChangeTransition(task: RunningTaskInfo?, type: Int = TRANSIT_PIP) =
+        TransitionInfo(type, /* flags= */ 0).apply {
+            addChange(
+                Change(mock(), mock()).apply {
+                    mode = TRANSIT_PIP
+                    parent = null
+                    taskInfo = task
+                    flags = flags
+                }
+            )
         }
 
     companion object {
