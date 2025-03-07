@@ -176,6 +176,16 @@ class InsetsSourceProvider {
     }
 
     /**
+     * @return Whether the current window container has a visible surface.
+     */
+    protected boolean isSurfaceVisible() {
+        final WindowState windowState = mWindowContainer.asWindowState();
+        return windowState != null
+                ? windowState.wouldBeVisibleIfPolicyIgnored() && windowState.isVisibleByPolicy()
+                : mWindowContainer.isVisibleRequested();
+    }
+
+    /**
      * Updates the window container that currently backs this source.
      *
      * @param windowContainer The window container that links to this source.
@@ -368,20 +378,9 @@ class InsetsSourceProvider {
         if (mWindowContainer == null) {
             return;
         }
-        WindowState windowState = mWindowContainer.asWindowState();
-        boolean isServerVisible = windowState != null
-                ? windowState.wouldBeVisibleIfPolicyIgnored() && windowState.isVisibleByPolicy()
-                : mWindowContainer.isVisibleRequested();
+        final WindowState windowState = mWindowContainer.asWindowState();
+        final boolean isServerVisible = isSurfaceVisible();
 
-        if (android.view.inputmethod.Flags.refactorInsetsController()) {
-            if (mControl != null && mControl.getType() == WindowInsets.Type.ime() && !mServerVisible
-                    && isServerVisible && windowState != null) {
-                // in case the IME becomes visible, we need to check if it is already drawn and
-                // does not have given insets pending. If it's not yet drawn, we do not set
-                // server visibility
-                isServerVisible = windowState.isDrawn() && !windowState.mGivenInsetsPending;
-            }
-        }
         final boolean serverVisibleChanged = mServerVisible != isServerVisible;
         setServerVisible(isServerVisible);
         if (mControl != null && mControlTarget != null) {

@@ -19,6 +19,9 @@ package com.android.server.wm;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
+import static com.android.server.wm.WindowStateAnimator.HAS_DRAWN;
+import static com.android.server.wm.WindowStateAnimator.NO_SURFACE;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -243,5 +246,34 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.updateControlForTarget(controlTarget, true /* force */, null /* statsToken */);
         verify(displayWindowInsetsController, times(1)).setImeInputTargetRequestedVisibility(
                 eq(true), any());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
+    public void testOnPostLayout_resetServerVisibilityWhenImeIsNotDrawn() {
+        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
+        final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
+        makeWindowVisibleAndDrawn(ime);
+        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setServerVisible(true);
+        mImeProvider.setClientVisible(true);
+        mImeProvider.updateVisibility();
+        mImeProvider.updateControlForTarget(inputTarget, true /* force */, null /* statsToken */);
+
+        // Calling onPostLayout, as the drawn state is initially false.
+        mImeProvider.onPostLayout();
+        assertTrue(mImeProvider.isSurfaceVisible());
+
+        // Reset window's drawn state
+        ime.mWinAnimator.mDrawState = NO_SURFACE;
+        mImeProvider.onPostLayout();
+        assertFalse(mImeProvider.isServerVisible());
+        assertFalse(mImeProvider.isSurfaceVisible());
+
+        // Set it back to drawn
+        ime.mWinAnimator.mDrawState = HAS_DRAWN;
+        mImeProvider.onPostLayout();
+        assertTrue(mImeProvider.isServerVisible());
+        assertTrue(mImeProvider.isSurfaceVisible());
     }
 }

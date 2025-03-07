@@ -82,6 +82,13 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
      */
     private boolean mGivenInsetsReady = false;
 
+    /**
+     * The last state of the windowContainer. This is used to reset server visibility, in case of
+     * the IME (temporarily) redrawing  (e.g. during a rotation), to dispatch the control with
+     * leash again after it has finished drawing.
+     */
+    private boolean mLastDrawn = false;
+
     ImeInsetsSourceProvider(@NonNull InsetsSource source,
             @NonNull InsetsStateController stateController,
             @NonNull DisplayContent displayContent) {
@@ -97,6 +104,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             final WindowState ws =
                     mWindowContainer != null ? mWindowContainer.asWindowState() : null;
             final boolean givenInsetsPending = ws != null && ws.mGivenInsetsPending;
+            mLastDrawn = ws != null && ws.isDrawn();
 
             // isLeashReadyForDispatching (used to dispatch the leash of the control) is
             // depending on mGivenInsetsReady. Therefore, triggering notifyControlChanged here
@@ -157,6 +165,35 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             return super.isLeashReadyForDispatching();
         }
     }
+
+    /**
+     * This is used to determine the desired serverVisibility state. For the IME, just having a
+     * window state that would be visible by policy is not enough.
+     */
+    @Override
+    protected boolean isSurfaceVisible() {
+        final boolean isSurfaceVisible = super.isSurfaceVisible();
+        if (android.view.inputmethod.Flags.refactorInsetsController()) {
+            final WindowState windowState = mWindowContainer.asWindowState();
+            if (mControl != null && windowState != null) {
+                final boolean isDrawn = windowState.isDrawn();
+                if (!isServerVisible() && isSurfaceVisible) {
+                    // In case the IME becomes visible, we need to check if it is already drawn and
+                    // does not have given insets pending. If it's not yet drawn, we do not set
+                    // server visibility
+                    return isDrawn && !windowState.mGivenInsetsPending;
+                } else if (mLastDrawn && !isDrawn) {
+                    // If the IME was drawn before, but is not drawn anymore, we need to reset
+                    // server visibility, which will also reset {@link
+                    // ImeInsetsSourceProvider#mGivenInsetsReady}. Otherwise, the new control
+                    // with leash won't be dispatched after the surface has redrawn.
+                    return false;
+                }
+            }
+        }
+        return isSurfaceVisible;
+    }
+
 
     @Nullable
     @Override
@@ -779,6 +816,8 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         pw.print(prefix);
         pw.print("mImeShowing=");
         pw.print(mImeShowing);
+        pw.print(" mLastDrawn=");
+        pw.print(mLastDrawn);
         if (mImeRequester != null) {
             pw.print(prefix);
             pw.print("showImePostLayout pending for mImeRequester=");
