@@ -320,7 +320,8 @@ public class InputMethodManagerServiceWindowGainedFocusTest
                 mMockRemoteAccessibilityInputConnection /* remoteAccessibilityInputConnection */,
                 mTargetSdkVersion /* unverifiedTargetSdkVersion */,
                 mUserId /* userId */,
-                mMockImeOnBackInvokedDispatcher /* imeDispatcher */);
+                mMockImeOnBackInvokedDispatcher /* imeDispatcher */,
+                true /* imeRequestedVisible */);
     }
 
     @Test

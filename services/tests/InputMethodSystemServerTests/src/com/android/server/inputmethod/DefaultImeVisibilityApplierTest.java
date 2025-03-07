@@ -287,6 +287,7 @@ public class DefaultImeVisibilityApplierTest extends InputMethodManagerServiceTe
                 mMockRemoteAccessibilityInputConnection /* remoteAccessibilityInputConnection */,
                 mTargetSdkVersion /* unverifiedTargetSdkVersion */,
                 mUserId /* userId */,
-                mMockImeOnBackInvokedDispatcher /* imeDispatcher */);
+                mMockImeOnBackInvokedDispatcher /* imeDispatcher */,
+                true /* imeRequestedVisible */);
     }
 }

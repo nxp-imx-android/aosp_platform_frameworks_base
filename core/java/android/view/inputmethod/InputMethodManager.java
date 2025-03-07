@@ -871,6 +871,19 @@ public final class InputMethodManager {
         IInputMethodManagerGlobalInvoker.reportPerceptibleAsync(windowToken, perceptible);
     }
 
+    private static boolean hasViewImeRequestedVisible(View view) {
+        // before the refactor, the requestedVisibleTypes for the IME were not in sync with
+        // the state that was actually requested.
+        if (Flags.refactorInsetsController() && view != null) {
+            final var controller = view.getWindowInsetsController();
+            if (controller != null) {
+                return (view.getWindowInsetsController()
+                        .getRequestedVisibleTypes() & WindowInsets.Type.ime()) != 0;
+            }
+        }
+        return false;
+    }
+
     private final class DelegateImpl implements
             ImeFocusController.InputMethodManagerDelegate {
 
@@ -941,6 +954,9 @@ public final class InputMethodManager {
                     Log.v(TAG, "Reporting focus gain, without startInput");
                 }
 
+                final boolean imeRequestedVisible = hasViewImeRequestedVisible(
+                        mCurRootView.getView());
+
                 // ignore the result
                 Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMM.startInputOrWindowGainedFocus");
                 IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus(
@@ -950,7 +966,7 @@ public final class InputMethodManager {
                         null,
                         null, null,
                         mCurRootView.mContext.getApplicationInfo().targetSdkVersion,
-                        UserHandle.myUserId(), mImeDispatcher);
+                        UserHandle.myUserId(), mImeDispatcher, imeRequestedVisible);
                 Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             }
         }
@@ -2441,9 +2457,8 @@ public final class InputMethodManager {
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_CLIENT_NO_ONGOING_USER_ANIMATION);
                     if (resultReceiver != null) {
-                        final boolean imeReqVisible =
-                                (viewRootImpl.getInsetsController().getRequestedVisibleTypes()
-                                        & WindowInsets.Type.ime()) != 0;
+                        final boolean imeReqVisible = hasViewImeRequestedVisible(
+                                viewRootImpl.getView());
                         resultReceiver.send(
                                 imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_SHOWN
                                         : InputMethodManager.RESULT_SHOWN, null);
@@ -2656,9 +2671,8 @@ public final class InputMethodManager {
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_CLIENT_VIEW_HANDLER_AVAILABLE);
 
-                    final boolean imeReqVisible =
-                            (viewRootImpl.getInsetsController().getRequestedVisibleTypes()
-                                    & WindowInsets.Type.ime()) != 0;
+                    final boolean imeReqVisible = hasViewImeRequestedVisible(
+                            viewRootImpl.getView());
                     if (resultReceiver != null) {
                         resultReceiver.send(
                                 !imeReqVisible ? InputMethodManager.RESULT_UNCHANGED_HIDDEN
@@ -3412,6 +3426,7 @@ public final class InputMethodManager {
         final Handler icHandler;
         InputBindResult res = null;
         final boolean hasServedView;
+        final boolean imeRequestedVisible;
         synchronized (mH) {
             // Now that we are locked again, validate that our state hasn't
             // changed.
@@ -3479,10 +3494,13 @@ public final class InputMethodManager {
             }
             mServedInputConnection = servedInputConnection;
 
+            imeRequestedVisible = hasViewImeRequestedVisible(servedView);
+
             if (DEBUG) {
                 Log.v(TAG, "START INPUT: view=" + InputMethodDebug.dumpViewInfo(view)
                         + " ic=" + ic + " editorInfo=" + editorInfo + " startInputFlags="
-                        + InputMethodDebug.startInputFlagsToString(startInputFlags));
+                        + InputMethodDebug.startInputFlagsToString(startInputFlags)
+                        + " imeRequestedVisible=" + imeRequestedVisible);
             }
 
             // When we switch between non-editable views, do not call into the IMMS.
@@ -3513,7 +3531,7 @@ public final class InputMethodManager {
                         servedInputConnection == null ? null
                                 : servedInputConnection.asIRemoteAccessibilityInputConnection(),
                         view.getContext().getApplicationInfo().targetSdkVersion, targetUserId,
-                        mImeDispatcher, mAsyncShowHideMethodEnabled);
+                        mImeDispatcher, imeRequestedVisible, mAsyncShowHideMethodEnabled);
             } else {
                 res = IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus(
                         startInputReason, mClient, windowGainingFocus, startInputFlags,
@@ -3521,7 +3539,7 @@ public final class InputMethodManager {
                         servedInputConnection == null ? null
                                 : servedInputConnection.asIRemoteAccessibilityInputConnection(),
                         view.getContext().getApplicationInfo().targetSdkVersion, targetUserId,
-                        mImeDispatcher);
+                        mImeDispatcher, imeRequestedVisible);
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             if (Flags.useZeroJankProxy()) {
