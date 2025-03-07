@@ -294,6 +294,14 @@ public class PerformFullTransportBackupTask extends FullBackupTask implements Ba
             // SinglePackageBackupPreflight.
             if (cancellationReason == CancellationReason.TIMEOUT) {
                 Slog.wtf(TAG, "This task cannot time out");
+                return;
+            }
+
+            // We don't cancel the entire operation if a single agent is disconnected unexpectedly.
+            // SinglePackageBackupRunner and SinglePackageBackupPreflight will receive the same
+            // callback and fail gracefully. The operation should then continue to the next package.
+            if (cancellationReason == CancellationReason.AGENT_DISCONNECTED) {
+                return;
             }
 
             if (mCancelled) {

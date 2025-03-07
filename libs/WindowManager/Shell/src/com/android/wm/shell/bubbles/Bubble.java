@@ -375,7 +375,7 @@ public class Bubble implements BubbleViewProvider {
                 user,
                 icon,
                 BubbleType.TYPE_APP,
-                getAppBubbleKeyForApp(intent.getPackage(), user),
+                getAppBubbleKeyForApp(ComponentUtils.getPackageName(intent), user),
                 mainExecutor, bgExecutor);
     }
 

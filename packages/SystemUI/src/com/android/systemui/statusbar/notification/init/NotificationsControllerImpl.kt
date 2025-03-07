@@ -18,10 +18,10 @@ package com.android.systemui.statusbar.notification.init
 
 import android.service.notification.StatusBarNotification
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.people.widget.PeopleSpaceWidgetManager
 import com.android.systemui.plugins.statusbar.NotificationSwipeActionHelper.SnoozeOption
 import com.android.systemui.statusbar.NotificationListener
-import com.android.systemui.statusbar.NotificationMediaManager
 import com.android.systemui.statusbar.NotificationPresenter
 import com.android.systemui.statusbar.notification.AnimatedImageNotificationManager
 import com.android.systemui.statusbar.notification.NotificationActivityStarter

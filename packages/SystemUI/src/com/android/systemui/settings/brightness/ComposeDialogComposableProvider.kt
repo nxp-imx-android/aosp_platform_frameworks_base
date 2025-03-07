@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
+import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 
@@ -46,7 +47,11 @@ private fun BrightnessSliderForDialog(
         rememberViewModel(traceName = "BrightnessDialog.viewModel") {
             brightnessSliderViewModelFactory.create(false)
         }
-    BrightnessSliderContainer(viewModel = viewModel, Modifier.fillMaxWidth().padding(8.dp))
+    BrightnessSliderContainer(
+        viewModel = viewModel,
+        containerColors = ContainerColors.singleColor(ContainerColors.defaultContainerColor),
+        modifier = Modifier.fillMaxWidth().padding(8.dp),
+    )
 }
 
 class ComposableProvider(

@@ -221,20 +221,20 @@ constructor(
                 mSmartReplyHistoryExtender.isExtending(key)
         } else false
 
-    override fun releaseNotificationIfKeptForRemoteInputHistory(entry: NotificationEntry) {
-        if (DEBUG) Log.d(TAG, "releaseNotificationIfKeptForRemoteInputHistory(entry=${entry.key})")
+    override fun releaseNotificationIfKeptForRemoteInputHistory(entryKey: String) {
+        if (DEBUG) Log.d(TAG, "releaseNotificationIfKeptForRemoteInputHistory(entry=${entryKey})")
         if (!lifetimeExtensionRefactor()) {
             mRemoteInputHistoryExtender.endLifetimeExtensionAfterDelay(
-                entry.key,
+                entryKey,
                 REMOTE_INPUT_EXTENDER_RELEASE_DELAY,
             )
             mSmartReplyHistoryExtender.endLifetimeExtensionAfterDelay(
-                entry.key,
+                entryKey,
                 REMOTE_INPUT_EXTENDER_RELEASE_DELAY,
             )
         }
         mRemoteInputActiveExtender.endLifetimeExtensionAfterDelay(
-            entry.key,
+            entryKey,
             REMOTE_INPUT_EXTENDER_RELEASE_DELAY,
         )
     }

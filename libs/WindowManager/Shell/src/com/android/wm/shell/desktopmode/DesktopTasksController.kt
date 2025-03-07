@@ -32,6 +32,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -113,6 +115,9 @@ import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
+import com.android.wm.shell.desktopmode.multidesks.createDesk
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -192,6 +197,7 @@ class DesktopTasksController(
     private val dragToDesktopTransitionHandler: DragToDesktopTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
     private val userRepositories: DesktopUserRepositories,
+    desktopRepositoryInitializer: DesktopRepositoryInitializer,
     private val recentsTransitionHandler: RecentsTransitionHandler,
     private val multiInstanceHelper: MultiInstanceHelper,
     @ShellMainThread private val mainExecutor: ShellExecutor,
@@ -238,6 +244,10 @@ class DesktopTasksController(
                 removeVisualIndicator()
             }
 
+            override fun onTransitionInterrupted() {
+                removeVisualIndicator()
+            }
+
             private fun removeVisualIndicator() {
                 visualIndicator?.fadeOutIndicator { releaseVisualIndicator() }
             }
@@ -270,6 +280,19 @@ class DesktopTasksController(
         }
         userId = ActivityManager.getCurrentUser()
         taskRepository = userRepositories.getProfile(userId)
+
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desktopRepositoryInitializer.deskRecreationFactory =
+                DeskRecreationFactory { deskUserId, destinationDisplayId, deskId ->
+                    if (deskUserId != userId) {
+                        // TODO: b/400984250 - add multi-user support for multi-desk restoration.
+                        logW("Tried to recreated desk of another user.")
+                        deskId
+                    } else {
+                        desksOrganizer.createDesk(destinationDisplayId)
+                    }
+                }
+        }
     }
 
     private fun onInit() {
@@ -1198,43 +1221,15 @@ class DesktopTasksController(
             return
         }
 
+        if (splitScreenController.isTaskInSplitScreen(task.taskId)) {
+            moveSplitPairToDisplay(task, displayId)
+            return
+        }
+
         val wct = WindowContainerTransaction()
         val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
         if (displayAreaInfo == null) {
             logW("moveToDisplay: display not found")
-            return
-        }
-
-        // check if the task is part of splitscreen
-        if (
-            Flags.enableNonDefaultDisplaySplit() &&
-                Flags.enableMoveToNextDisplayShortcut() &&
-                splitScreenController.isTaskInSplitScreen(task.taskId)
-        ) {
-            val activeDeskId = taskRepository.getActiveDeskId(displayId)
-            logV("moveToDisplay: moving split root to displayId=%d", displayId)
-            val stageCoordinatorRootTaskToken =
-                splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(
-                    DEFAULT_DISPLAY
-                )
-            wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
-            val deactivationRunnable =
-                if (activeDeskId != null) {
-                    // Split is being placed on top of an existing desk in the target display. Make
-                    // sure it is cleaned up.
-                    performDesktopExitCleanUp(
-                        wct = wct,
-                        deskId = activeDeskId,
-                        displayId = displayId,
-                        willExitDesktop = true,
-                        shouldEndUpAtHome = false,
-                    )
-                } else {
-                    null
-                }
-            val transition =
-                transitions.startTransition(TRANSIT_CHANGE, wct, moveToDisplayTransitionHandler)
-            deactivationRunnable?.invoke(transition)
             return
         }
 
@@ -1296,6 +1291,53 @@ class DesktopTasksController(
             transitions.startTransition(TRANSIT_CHANGE, wct, moveToDisplayTransitionHandler)
         deactivationRunnable?.invoke(transition)
         activationRunnable?.invoke(transition)
+    }
+
+    /**
+     * Move split pair associated with the [task] to display with [displayId].
+     *
+     * No-op if task is already on that display per [RunningTaskInfo.displayId].
+     */
+    private fun moveSplitPairToDisplay(task: RunningTaskInfo, displayId: Int) {
+        if (!splitScreenController.isTaskInSplitScreen(task.taskId)) {
+            return
+        }
+
+        if (!Flags.enableNonDefaultDisplaySplit() || !Flags.enableMoveToNextDisplayShortcut()) {
+            return
+        }
+
+        val wct = WindowContainerTransaction()
+        val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
+        if (displayAreaInfo == null) {
+            logW("moveSplitPairToDisplay: display not found")
+            return
+        }
+
+        val activeDeskId = taskRepository.getActiveDeskId(displayId)
+        logV("moveSplitPairToDisplay: moving split root to displayId=%d", displayId)
+
+        val stageCoordinatorRootTaskToken =
+            splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(DEFAULT_DISPLAY)
+        wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
+
+        val deactivationRunnable =
+            if (activeDeskId != null) {
+                // Split is being placed on top of an existing desk in the target display. Make
+                // sure it is cleaned up.
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = activeDeskId,
+                    displayId = displayId,
+                    willExitDesktop = true,
+                    shouldEndUpAtHome = false,
+                )
+            } else {
+                null
+            }
+        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        deactivationRunnable?.invoke(transition)
+        return
     }
 
     /**
@@ -1693,15 +1735,7 @@ class DesktopTasksController(
                     wct.reorder(runningTaskInfo.token, /* onTop= */ true)
                 } else if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
                     // Task is not running, start it
-                    wct.startTask(
-                        taskId,
-                        ActivityOptions.makeBasic()
-                            .apply {
-                                launchWindowingMode = WINDOWING_MODE_FREEFORM
-                                splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
-                            }
-                            .toBundle(),
-                    )
+                    wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
                 }
             }
 
@@ -2261,11 +2295,19 @@ class DesktopTasksController(
             wct.reorder(task.token, true)
             return wct
         }
+        val inheritedTaskBounds =
+            getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
+        if (!taskRepository.isActiveTask(task.taskId) && inheritedTaskBounds != null) {
+            // Inherit bounds from closing task instance to prevent application jumping different
+            // cascading positions.
+            wct.setBounds(task.token, inheritedTaskBounds)
+        }
         // TODO(b/365723620): Handle non running tasks that were launched after reboot.
         // If task is already visible, it must have been handled already and added to desktop mode.
-        // Cascade task only if it's not visible yet.
+        // Cascade task only if it's not visible yet and has no inherited bounds.
         if (
-            DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
+            inheritedTaskBounds == null &&
+                DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
                 !taskRepository.isVisibleTask(task.taskId)
         ) {
             val displayLayout = displayController.getDisplayLayout(task.displayId)
@@ -2501,9 +2543,17 @@ class DesktopTasksController(
     ) {
         val targetDisplayId = taskRepository.getDisplayForDesk(deskId)
         val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return
-        val initialBounds = getInitialBounds(displayLayout, task, targetDisplayId)
-        if (canChangeTaskPosition(task)) {
-            wct.setBounds(task.token, initialBounds)
+        val inheritedTaskBounds =
+            getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
+        if (inheritedTaskBounds != null) {
+            // Inherit bounds from closing task instance to prevent application jumping different
+            // cascading positions.
+            wct.setBounds(task.token, inheritedTaskBounds)
+        } else {
+            val initialBounds = getInitialBounds(displayLayout, task, targetDisplayId)
+            if (canChangeTaskPosition(task)) {
+                wct.setBounds(task.token, initialBounds)
+            }
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct = wct, deskId = deskId, task = task)
@@ -2785,9 +2835,6 @@ class DesktopTasksController(
         }
         prepareForDeskActivation(displayId, wct)
         desksOrganizer.activateDesk(wct, deskId)
-        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-            // TODO: 362720497 - do non-running tasks need to be restarted with |wct#startTask|?
-        }
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId)
         )
@@ -2804,6 +2851,19 @@ class DesktopTasksController(
             if (taskToMinimize != null) {
                 desksOrganizer.minimizeTask(wct, deskId, taskToMinimize)
             }
+        }
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            expandedTasksOrderedFrontToBack
+                .filter { taskId -> taskId != taskIdToMinimize }
+                .reversed()
+                .forEach { taskId ->
+                    val runningTaskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId)
+                    if (runningTaskInfo == null) {
+                        wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
+                    } else {
+                        desksOrganizer.reorderTaskToFront(wct, deskId, runningTaskInfo)
+                    }
+                }
         }
         return { transition ->
             val activateDeskTransition =
@@ -3453,6 +3513,13 @@ class DesktopTasksController(
                 taskInfo,
                 DesktopImmersiveController.ExitReason.APP_NOT_IMMERSIVE,
             )
+        }
+    }
+
+    private fun createActivityOptionsForStartTask(): ActivityOptions {
+        return ActivityOptions.makeBasic().apply {
+            launchWindowingMode = WINDOWING_MODE_FREEFORM
+            splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
         }
     }
 

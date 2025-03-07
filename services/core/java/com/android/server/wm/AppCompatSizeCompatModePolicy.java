@@ -361,7 +361,10 @@ class AppCompatSizeCompatModePolicy {
         if (enableSizeCompatModeImprovementsForConnectedDisplays()) {
             overrideConfig.touchscreen = fullConfig.touchscreen;
             overrideConfig.navigation = fullConfig.navigation;
-            overrideConfig.fontScale = fullConfig.fontScale;
+            overrideConfig.keyboard = fullConfig.keyboard;
+            overrideConfig.keyboardHidden = fullConfig.keyboardHidden;
+            overrideConfig.hardKeyboardHidden = fullConfig.hardKeyboardHidden;
+            overrideConfig.navigationHidden = fullConfig.navigationHidden;
         }
         // The smallest screen width is the short side of screen bounds. Because the bounds
         // and density won't be changed, smallestScreenWidthDp is also fixed.

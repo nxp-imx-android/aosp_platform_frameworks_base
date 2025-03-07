@@ -24,7 +24,6 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
-import android.view.Display
 import android.view.SurfaceControl
 import androidx.test.filters.SmallTest
 import com.android.internal.policy.SystemBarUtils
@@ -67,7 +66,6 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     private lateinit var taskInfo: RunningTaskInfo
     @Mock private lateinit var syncQueue: SyncTransactionQueue
     @Mock private lateinit var displayController: DisplayController
-    @Mock private lateinit var display: Display
     @Mock private lateinit var taskSurface: SurfaceControl
     @Mock private lateinit var taskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer
     @Mock private lateinit var displayLayout: DisplayLayout
@@ -83,12 +81,20 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         whenever(displayLayout.width()).thenReturn(DISPLAY_BOUNDS.width())
         whenever(displayLayout.height()).thenReturn(DISPLAY_BOUNDS.height())
         whenever(displayLayout.stableInsets()).thenReturn(STABLE_INSETS)
-        whenever(displayController.getDisplay(anyInt())).thenReturn(display)
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
         whenever(displayController.getDisplay(anyInt())).thenReturn(mContext.display)
         whenever(bubbleBoundsProvider.getBubbleBarExpandedViewDropTargetBounds(any()))
             .thenReturn(Rect())
         taskInfo = DesktopTestHelpers.createFullscreenTask()
+
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_isDesktopModeSupported,
+            true,
+        )
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
+            true,
+        )
     }
 
     @Test
@@ -260,14 +266,9 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
     )
     fun testDefaultIndicatorWithNoDesktop() {
         mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_isDesktopModeSupported,
+            com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
             false,
         )
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_isDesktopModeDevOptionSupported,
-            false,
-        )
-
         // Fullscreen to center, no desktop indicator
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
         var result = visualIndicator.updateIndicatorType(PointF(500f, 500f))

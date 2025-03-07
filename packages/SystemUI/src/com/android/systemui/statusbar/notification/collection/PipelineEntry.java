@@ -70,7 +70,9 @@ public abstract class PipelineEntry {
     /**
      * @return Index of section assigned to this entry.
      */
-    public abstract int getSectionIndex();
+    public int getSectionIndex() {
+        return mAttachState.getSection() != null ? mAttachState.getSection().getIndex() : -1;
+    }
 
     /**
      * @return Parent PipelineEntry

@@ -32,6 +32,7 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.StatusBarChipLogTags.pad
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
+import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.call.domain.interactor.CallChipInteractor
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
@@ -43,8 +44,10 @@ import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCall
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -60,25 +63,60 @@ constructor(
     private val activityStarter: ActivityStarter,
     @StatusBarChipsLog private val logger: LogBuffer,
 ) : OngoingActivityChipViewModel {
-    override val chip: StateFlow<OngoingActivityChipModel> =
-        interactor.ongoingCallState
-            .map { state ->
-                when (state) {
-                    is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
-                    is OngoingCallModel.InCall ->
-                        if (state.isAppVisible) {
-                            OngoingActivityChipModel.Inactive()
-                        } else {
-                            prepareChip(state, systemClock)
-                        }
+    private val chipWithReturnAnimation: StateFlow<OngoingActivityChipModel> =
+        if (StatusBarChipsReturnAnimations.isEnabled) {
+            interactor.ongoingCallState
+                .map { state ->
+                    when (state) {
+                        is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
+                        is OngoingCallModel.InCall ->
+                            prepareChip(state, systemClock, isHidden = state.isAppVisible)
+                    }
                 }
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), OngoingActivityChipModel.Inactive())
+                .stateIn(
+                    scope,
+                    SharingStarted.WhileSubscribed(),
+                    OngoingActivityChipModel.Inactive(),
+                )
+        } else {
+            MutableStateFlow(OngoingActivityChipModel.Inactive()).asStateFlow()
+        }
+
+    private val chipLegacy: StateFlow<OngoingActivityChipModel> =
+        if (!StatusBarChipsReturnAnimations.isEnabled) {
+            interactor.ongoingCallState
+                .map { state ->
+                    when (state) {
+                        is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
+                        is OngoingCallModel.InCall ->
+                            if (state.isAppVisible) {
+                                OngoingActivityChipModel.Inactive()
+                            } else {
+                                prepareChip(state, systemClock, isHidden = false)
+                            }
+                    }
+                }
+                .stateIn(
+                    scope,
+                    SharingStarted.WhileSubscribed(),
+                    OngoingActivityChipModel.Inactive(),
+                )
+        } else {
+            MutableStateFlow(OngoingActivityChipModel.Inactive()).asStateFlow()
+        }
+
+    override val chip: StateFlow<OngoingActivityChipModel> =
+        if (StatusBarChipsReturnAnimations.isEnabled) {
+            chipWithReturnAnimation
+        } else {
+            chipLegacy
+        }
 
     /** Builds an [OngoingActivityChipModel.Active] from all the relevant information. */
     private fun prepareChip(
         state: OngoingCallModel.InCall,
         systemClock: SystemClock,
+        isHidden: Boolean,
     ): OngoingActivityChipModel.Active {
         val key = state.notificationKey
         val contentDescription = getContentDescription(state.appName)
@@ -110,6 +148,7 @@ constructor(
                 colors = colors,
                 onClickListenerLegacy = getOnClickListener(state.intent),
                 clickBehavior = getClickBehavior(state.intent),
+                isHidden = isHidden,
             )
         } else {
             val startTimeInElapsedRealtime =
@@ -121,6 +160,7 @@ constructor(
                 startTimeMs = startTimeInElapsedRealtime,
                 onClickListenerLegacy = getOnClickListener(state.intent),
                 clickBehavior = getClickBehavior(state.intent),
+                isHidden = isHidden,
             )
         }
     }

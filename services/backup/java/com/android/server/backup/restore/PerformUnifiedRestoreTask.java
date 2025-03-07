@@ -589,6 +589,7 @@ public class PerformUnifiedRestoreTask implements BackupRestoreTask {
                         monitoringExtras);
                 Slog.e(TAG, "Failure getting next package name");
                 EventLog.writeEvent(EventLogTags.RESTORE_TRANSPORT_FAILURE);
+                mStatus = BackupTransport.TRANSPORT_ERROR;
                 nextState = UnifiedRestoreState.FINAL;
                 return;
             } else if (mRestoreDescription == RestoreDescription.NO_MORE_PACKAGES) {

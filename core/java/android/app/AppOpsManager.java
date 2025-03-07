@@ -18,7 +18,6 @@ package android.app;
 
 
 import static android.location.flags.Flags.FLAG_LOCATION_BYPASS;
-import static android.media.audio.Flags.roForegroundAudioControl;
 import static android.permission.flags.Flags.FLAG_OP_ENABLE_MOBILE_DATA_BY_USER;
 import static android.service.notification.Flags.FLAG_REDACT_SENSITIVE_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS;
 import static android.view.contentprotection.flags.Flags.FLAG_CREATE_ACCESSIBILITY_OVERLAY_APP_OP_ENABLED;
@@ -3478,6 +3477,16 @@ public class AppOpsManager {
     @SystemApi
     public static String opToPermission(@NonNull String op) {
         return opToPermission(strOpToOp(op));
+    }
+
+    /**
+     * Whether an app op is backed by a runtime permission or not.
+     * @hide
+     */
+    public static boolean opIsRuntimePermission(int op) {
+        if (op == OP_NONE) return false;
+
+        return ArrayUtils.contains(RUNTIME_PERMISSION_OPS, op);
     }
 
     /**

@@ -22,6 +22,13 @@ import android.annotation.DimenRes
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskInfo
 import android.content.Context
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.pm.ActivityInfo.LAUNCH_MULTIPLE
+import android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE
+import android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE_PER_TASK
+import android.content.pm.ActivityInfo.LAUNCH_SINGLE_TASK
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.content.pm.ActivityInfo.isFixedOrientationLandscape
 import android.content.pm.ActivityInfo.isFixedOrientationPortrait
@@ -30,7 +37,9 @@ import android.content.res.Configuration.ORIENTATION_PORTRAIT
 import android.graphics.Rect
 import android.os.SystemProperties
 import android.util.Size
+import android.window.DesktopModeFlags
 import com.android.wm.shell.R
+import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import kotlin.math.ceil
@@ -262,6 +271,58 @@ fun getAppHeaderHeight(context: Context): Int =
 
 /** Returns the resource id of the app header height in desktop mode. */
 @DimenRes fun getAppHeaderHeightId(): Int = R.dimen.desktop_mode_freeform_decor_caption_height
+
+/**
+ * Returns the task bounds a launching task should inherit from an existing running instance.
+ * Returns null if there are no bounds to inherit.
+ */
+fun getInheritedExistingTaskBounds(
+    taskRepository: DesktopRepository,
+    shellTaskOrganizer: ShellTaskOrganizer,
+    task: RunningTaskInfo,
+    deskId: Int,
+): Rect? {
+    if (!DesktopModeFlags.INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES.isTrue) return null
+    val activeTask = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId).firstOrNull()
+    if (activeTask == null) return null
+    val lastTask = shellTaskOrganizer.getRunningTaskInfo(activeTask)
+    val lastTaskTopActivity = lastTask?.topActivity
+    val currentTaskTopActivity = task.topActivity
+    val intentFlags = task.baseIntent.flags
+    val launchMode = task.topActivityInfo?.launchMode ?: LAUNCH_MULTIPLE
+    return when {
+        // No running task activity to inherit bounds from.
+        lastTaskTopActivity == null -> null
+        // No current top activity to set bounds for.
+        currentTaskTopActivity == null -> null
+        // Top task is not an instance of the launching activity, do not inherit its bounds.
+        lastTaskTopActivity.packageName != currentTaskTopActivity.packageName -> null
+        // Top task is an instance of launching activity. Activity will be launching in a new
+        // task with the existing task also being closed. Inherit existing task bounds to
+        // prevent new task jumping.
+        (isLaunchingNewTask(launchMode, intentFlags) && isClosingExitingInstance(intentFlags)) ->
+            lastTask.configuration.windowConfiguration.bounds
+        else -> null
+    }
+}
+
+/**
+ * Returns true if the launch mode or intent will result in a new task being created for the
+ * activity.
+ */
+private fun isLaunchingNewTask(launchMode: Int, intentFlags: Int) =
+    launchMode == LAUNCH_SINGLE_TASK ||
+        launchMode == LAUNCH_SINGLE_INSTANCE ||
+        launchMode == LAUNCH_SINGLE_INSTANCE_PER_TASK ||
+        (intentFlags and FLAG_ACTIVITY_NEW_TASK) != 0
+
+/**
+ * Returns true if the intent will result in an existing task instance being closed if a new one
+ * appears.
+ */
+private fun isClosingExitingInstance(intentFlags: Int) =
+    (intentFlags and FLAG_ACTIVITY_CLEAR_TASK) != 0 ||
+        (intentFlags and FLAG_ACTIVITY_MULTIPLE_TASK) == 0
 
 /**
  * Calculates the desired initial bounds for applications in desktop windowing. This is done as a

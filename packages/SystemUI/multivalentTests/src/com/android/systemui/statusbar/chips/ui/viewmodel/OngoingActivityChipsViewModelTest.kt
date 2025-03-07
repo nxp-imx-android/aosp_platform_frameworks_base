@@ -137,7 +137,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
 
-            addOngoingCallState()
+            addOngoingCallState(isAppVisible = false)
 
             val latest by collectLastValue(underTest.primaryChip)
 
@@ -163,7 +163,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             screenRecordState.value = ScreenRecordModel.DoingNothing
             mediaProjectionState.value =
                 MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
-            addOngoingCallState()
+            addOngoingCallState(isAppVisible = false)
 
             val latest by collectLastValue(underTest.primaryChip)
 
@@ -178,7 +178,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             // MediaProjection covers both share-to-app and cast-to-other-device
             mediaProjectionState.value = MediaProjectionState.NotProjecting
 
-            addOngoingCallState(key = notificationKey)
+            addOngoingCallState(key = notificationKey, isAppVisible = false)
 
             val latest by collectLastValue(underTest.primaryChip)
 
@@ -190,7 +190,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             // Start with just the lowest priority chip shown
             val callNotificationKey = "call"
-            addOngoingCallState(key = callNotificationKey)
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
             // And everything else hidden
             mediaProjectionState.value = MediaProjectionState.NotProjecting
             screenRecordState.value = ScreenRecordModel.DoingNothing
@@ -225,7 +225,7 @@ class OngoingActivityChipsViewModelTest : SysuiTestCase() {
             mediaProjectionState.value =
                 MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
             val callNotificationKey = "call"
-            addOngoingCallState(key = callNotificationKey)
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
 
             val latest by collectLastValue(underTest.primaryChip)
 

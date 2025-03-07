@@ -17,6 +17,7 @@
 package com.android.wm.shell.pip2.phone;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -86,6 +87,7 @@ public class PipSchedulerTest {
     @Mock private SurfaceControl.Transaction mMockTransaction;
     @Mock private PipAlphaAnimator mMockAlphaAnimator;
     @Mock private SplitScreenController mMockSplitScreenController;
+    @Mock private SurfaceControl mMockLeash;
 
     @Captor private ArgumentCaptor<Runnable> mRunnableArgumentCaptor;
     @Captor private ArgumentCaptor<WindowContainerTransaction> mWctArgumentCaptor;
@@ -313,6 +315,30 @@ public class PipSchedulerTest {
 
         mPipScheduler.scheduleFinishResizePip(TEST_BOUNDS);
         verify(mMockAlphaAnimator, never()).start();
+    }
+
+    @Test
+    public void onPipTransitionStateChanged_exiting_endAnimation() {
+        mPipScheduler.setOverlayFadeoutAnimator(mMockAlphaAnimator);
+        when(mMockAlphaAnimator.isStarted()).thenReturn(true);
+        mPipScheduler.onPipTransitionStateChanged(PipTransitionState.ENTERED_PIP,
+                PipTransitionState.EXITING_PIP, null);
+
+        verify(mMockAlphaAnimator, times(1)).end();
+        assertNull("mOverlayFadeoutAnimator should be reset to null",
+                mPipScheduler.getOverlayFadeoutAnimator());
+    }
+
+    @Test
+    public void onPipTransitionStateChanged_scheduledBoundsChange_endAnimation() {
+        mPipScheduler.setOverlayFadeoutAnimator(mMockAlphaAnimator);
+        when(mMockAlphaAnimator.isStarted()).thenReturn(true);
+        mPipScheduler.onPipTransitionStateChanged(PipTransitionState.ENTERED_PIP,
+                PipTransitionState.SCHEDULED_BOUNDS_CHANGE, null);
+
+        verify(mMockAlphaAnimator, times(1)).end();
+        assertNull("mOverlayFadeoutAnimator should be reset to null",
+                mPipScheduler.getOverlayFadeoutAnimator());
     }
 
     private void setNullPipTaskToken() {

@@ -83,6 +83,8 @@ import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.broadcast.BroadcastSender;
+import com.android.systemui.dagger.qualifiers.Background;
+import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.media.dialog.MediaItem.MediaItemType;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
@@ -113,6 +115,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import javax.inject.Inject;
 
 /**
  * Controller for a dialog that allows users to switch media output and input devices, control
@@ -149,7 +153,8 @@ public class MediaSwitchingController
     private final NearbyMediaDevicesManager mNearbyMediaDevicesManager;
     private final Map<String, Integer> mNearbyDeviceInfoMap = new ConcurrentHashMap<>();
     private final MediaSession.Token mToken;
-
+    @Inject @Main Executor mMainExecutor;
+    @Inject @Background Executor mBackgroundExecutor;
     @VisibleForTesting
     boolean mIsRefreshing = false;
     @VisibleForTesting
@@ -163,17 +168,10 @@ public class MediaSwitchingController
     @VisibleForTesting
     MediaOutputMetricLogger mMetricLogger;
     private int mCurrentState;
-
-    private int mColorItemContent;
-    private int mColorSeekbarProgress;
-    private int mColorButtonBackground;
-    private int mColorItemBackground;
-    private int mColorConnectedItemBackground;
-    private int mColorPositiveButtonText;
-    private int mColorDialogBackground;
     private FeatureFlags mFeatureFlags;
     private UserTracker mUserTracker;
     private VolumePanelGlobalStateInteractor mVolumePanelGlobalStateInteractor;
+    @NonNull private MediaOutputColorSchemeLegacy mMediaOutputColorSchemeLegacy;
 
     public enum BroadcastNotifyDialog {
         ACTION_FIRST_LAUNCH,
@@ -230,20 +228,7 @@ public class MediaSwitchingController
         mMetricLogger = new MediaOutputMetricLogger(mContext, mPackageName);
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mNearbyMediaDevicesManager = nearbyMediaDevicesManager;
-        mColorItemContent = Utils.getColorStateListDefaultColor(mContext,
-                R.color.media_dialog_item_main_content);
-        mColorSeekbarProgress = Utils.getColorStateListDefaultColor(mContext,
-                R.color.media_dialog_seekbar_progress);
-        mColorButtonBackground = Utils.getColorStateListDefaultColor(mContext,
-                R.color.media_dialog_button_background);
-        mColorItemBackground = Utils.getColorStateListDefaultColor(mContext,
-                R.color.media_dialog_item_background);
-        mColorConnectedItemBackground = Utils.getColorStateListDefaultColor(mContext,
-                R.color.media_dialog_connected_item_background);
-        mColorPositiveButtonText = Utils.getColorStateListDefaultColor(mContext,
-                R.color.media_dialog_solid_button_text);
-        mColorDialogBackground = Utils.getColorStateListDefaultColor(mContext,
-                R.color.media_dialog_background);
+        mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromSystemColors(mContext);
 
         if (enableInputRouting()) {
             mInputRouteManager = new InputRouteManager(mContext, audioManager);
@@ -568,26 +553,15 @@ public class MediaSwitchingController
         return null;
     }
 
-    void setCurrentColorScheme(WallpaperColors wallpaperColors, boolean isDarkTheme) {
-        ColorScheme mCurrentColorScheme = new ColorScheme(wallpaperColors,
+    void updateCurrentColorScheme(WallpaperColors wallpaperColors, boolean isDarkTheme) {
+        ColorScheme currentColorScheme = new ColorScheme(wallpaperColors,
                 isDarkTheme);
-        if (isDarkTheme) {
-            mColorItemContent = mCurrentColorScheme.getAccent1().getS100(); // A1-100
-            mColorSeekbarProgress = mCurrentColorScheme.getAccent2().getS600(); // A2-600
-            mColorButtonBackground = mCurrentColorScheme.getAccent1().getS300(); // A1-300
-            mColorItemBackground = mCurrentColorScheme.getNeutral2().getS800(); // N2-800
-            mColorConnectedItemBackground = mCurrentColorScheme.getAccent2().getS800(); // A2-800
-            mColorPositiveButtonText = mCurrentColorScheme.getAccent2().getS800(); // A2-800
-            mColorDialogBackground = mCurrentColorScheme.getNeutral1().getS900(); // N1-900
-        } else {
-            mColorItemContent = mCurrentColorScheme.getAccent1().getS800(); // A1-800
-            mColorSeekbarProgress = mCurrentColorScheme.getAccent1().getS300(); // A1-300
-            mColorButtonBackground = mCurrentColorScheme.getAccent1().getS600(); // A1-600
-            mColorItemBackground = mCurrentColorScheme.getAccent2().getS50(); // A2-50
-            mColorConnectedItemBackground = mCurrentColorScheme.getAccent1().getS100(); // A1-100
-            mColorPositiveButtonText = mCurrentColorScheme.getNeutral1().getS50(); // N1-50
-            mColorDialogBackground = mCurrentColorScheme.getBackgroundColor();
-        }
+        mMediaOutputColorSchemeLegacy = MediaOutputColorSchemeLegacy.fromDynamicColors(
+                currentColorScheme, isDarkTheme);
+    }
+
+    MediaOutputColorSchemeLegacy getColorSchemeLegacy() {
+        return mMediaOutputColorSchemeLegacy;
     }
 
     public void refreshDataSetIfNeeded() {
@@ -596,34 +570,6 @@ public class MediaSwitchingController
             mCallback.onDeviceListChanged();
             mNeedRefresh = false;
         }
-    }
-
-    public int getColorConnectedItemBackground() {
-        return mColorConnectedItemBackground;
-    }
-
-    public int getColorPositiveButtonText() {
-        return mColorPositiveButtonText;
-    }
-
-    public int getColorDialogBackground() {
-        return mColorDialogBackground;
-    }
-
-    public int getColorItemContent() {
-        return mColorItemContent;
-    }
-
-    public int getColorSeekbarProgress() {
-        return mColorSeekbarProgress;
-    }
-
-    public int getColorButtonBackground() {
-        return mColorButtonBackground;
-    }
-
-    public int getColorItemBackground() {
-        return mColorItemBackground;
     }
 
     private void buildMediaItems(List<MediaDevice> devices) {
@@ -1097,7 +1043,7 @@ public class MediaSwitchingController
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
         MediaOutputBroadcastDialog dialog = new MediaOutputBroadcastDialog(mContext, true,
-                broadcastSender, controller);
+                broadcastSender, controller, mMainExecutor, mBackgroundExecutor);
         dialog.show();
     }
 

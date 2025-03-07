@@ -20,7 +20,6 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.LayerDrawable
-import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RoundRectShape
 
@@ -44,45 +43,6 @@ fun replaceColorAlpha(@ColorInt color: Int, alpha: Int): Int {
         Color.red(color),
         Color.green(color),
         Color.blue(color)
-    )
-}
-
-/**
- * Creates a RippleDrawable with specified color, corner radius, and insets.
- */
-fun createRippleDrawable(
-    @ColorInt color: Int,
-    cornerRadius: Int,
-    drawableInsets: DrawableInsets,
-): RippleDrawable {
-    return RippleDrawable(
-        ColorStateList(
-            arrayOf(
-                intArrayOf(android.R.attr.state_hovered),
-                intArrayOf(android.R.attr.state_pressed),
-                intArrayOf(),
-            ),
-            intArrayOf(
-                replaceColorAlpha(color, OPACITY_11),
-                replaceColorAlpha(color, OPACITY_15),
-                Color.TRANSPARENT,
-            )
-        ),
-        null /* content */,
-        LayerDrawable(arrayOf(
-            ShapeDrawable().apply {
-                shape = RoundRectShape(
-                    FloatArray(8) { cornerRadius.toFloat() },
-                    null /* inset */,
-                    null /* innerRadii */
-                )
-                paint.color = Color.WHITE
-            }
-        )).apply {
-            require(numberOfLayers == 1) { "Must only contain one layer" }
-            setLayerInset(0 /* index */,
-                drawableInsets.l, drawableInsets.t, drawableInsets.r, drawableInsets.b)
-        }
     )
 }
 

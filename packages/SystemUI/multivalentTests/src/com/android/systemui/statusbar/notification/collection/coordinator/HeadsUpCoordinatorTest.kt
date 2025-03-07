@@ -50,6 +50,8 @@ import com.android.systemui.statusbar.notification.interruption.NotificationInte
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper.DecisionImpl
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper.FullScreenIntentDecisionImpl
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
+import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.phone.NotificationGroupTestHelper
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -138,6 +140,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
                 headsUpViewBinder,
                 visualInterruptionDecisionProvider,
                 remoteInputManager,
+                kosmos.mockNotificationActionClickManager,
                 launchFullScreenIntentProvider,
                 flags,
                 statusBarNotificationChipsInteractor,
@@ -161,8 +164,14 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             verify(notifPipeline).addOnBeforeFinalizeFilterListener(capture())
         }
         onHeadsUpChangedListener = withArgCaptor { verify(headsUpManager).addListener(capture()) }
-        actionPressListener = withArgCaptor {
-            verify(remoteInputManager).addActionPressListener(capture())
+        actionPressListener = if (NotificationBundleUi.isEnabled) {
+            withArgCaptor {
+                verify(kosmos.mockNotificationActionClickManager).addActionClickListener(capture())
+            }
+        } else {
+            withArgCaptor {
+                verify(remoteInputManager).addActionPressListener(capture())
+            }
         }
         given(headsUpManager.allEntries).willAnswer { huns.stream() }
         given(headsUpManager.isHeadsUpEntry(anyString())).willAnswer { invocation ->
@@ -260,7 +269,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         addHUN(entry)
 
         actionPressListener.accept(entry)
-        verify(headsUpManager, times(1)).setUserActionMayIndirectlyRemove(entry)
+        verify(headsUpManager, times(1)).setUserActionMayIndirectlyRemove(entry.key)
 
         whenever(headsUpManager.canRemoveImmediately(anyString())).thenReturn(true)
         assertFalse(notifLifetimeExtender.maybeExtendLifetime(entry, 0))

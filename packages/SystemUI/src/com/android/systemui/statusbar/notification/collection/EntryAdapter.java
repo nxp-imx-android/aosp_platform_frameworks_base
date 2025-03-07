@@ -140,5 +140,10 @@ public interface EntryAdapter {
      * Process a click on a notification bubble icon
      */
     void onNotificationBubbleIconClicked();
+
+    /**
+     * Processes a click on a notification action
+     */
+    void onNotificationActionClicked();
 }
 

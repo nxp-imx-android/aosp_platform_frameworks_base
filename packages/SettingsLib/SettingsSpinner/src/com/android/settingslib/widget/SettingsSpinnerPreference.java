@@ -19,6 +19,7 @@ package com.android.settingslib.widget;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.AdapterView;
 import android.widget.Spinner;
 
@@ -110,7 +111,6 @@ public class SettingsSpinnerPreference extends Preference
         notifyChanged();
     }
 
-
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
@@ -119,6 +119,18 @@ public class SettingsSpinnerPreference extends Preference
         spinner.setSelection(mPosition);
         spinner.setOnItemSelectedListener(mOnSelectedListener);
         spinner.setLongClickable(false);
+        spinner.setAccessibilityDelegate(
+                new View.AccessibilityDelegate() {
+                    @Override
+                    public void sendAccessibilityEvent(View host, int eventType) {
+                        if (eventType == AccessibilityEvent.TYPE_VIEW_SELECTED) {
+                            // Ignore the INTERRUPT events TYPE_VIEW_SELECTED or Talkback will speak
+                            // for it while fragment updating.
+                            return;
+                        }
+                        super.sendAccessibilityEvent(host, eventType);
+                    }
+                });
         if (mShouldPerformClick) {
             mShouldPerformClick = false;
             // To show dropdown view.

@@ -127,6 +127,7 @@ object ShadeHeader {
 @Composable
 fun ContentScope.CollapsedShadeHeader(
     viewModel: ShadeHeaderViewModel,
+    isSplitShade: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val cutoutLocation = LocalDisplayCutout.current.location
@@ -141,8 +142,6 @@ fun ContentScope.CollapsedShadeHeader(
             }
         }
 
-    val isShadeLayoutWide = viewModel.isShadeLayoutWide
-
     val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
@@ -154,7 +153,7 @@ fun ContentScope.CollapsedShadeHeader(
                 horizontalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
-                Clock(scale = 1f, onClick = viewModel::onClockClicked)
+                Clock(onClick = viewModel::onClockClicked)
                 VariableDayDate(
                     longerDateText = viewModel.longerDateText,
                     shorterDateText = viewModel.shorterDateText,
@@ -184,11 +183,11 @@ fun ContentScope.CollapsedShadeHeader(
                         Modifier.element(ShadeHeader.Elements.CollapsedContentEnd)
                             .padding(horizontal = horizontalPadding),
                 ) {
-                    if (isShadeLayoutWide) {
+                    if (isSplitShade) {
                         ShadeCarrierGroup(viewModel = viewModel)
                     }
                     SystemIconChip(
-                        onClick = viewModel::onSystemIconChipClicked.takeIf { isShadeLayoutWide }
+                        onClick = viewModel::onSystemIconChipClicked.takeIf { isSplitShade }
                     ) {
                         StatusIcons(
                             viewModel = viewModel,
@@ -233,13 +232,11 @@ fun ContentScope.ExpandedShadeHeader(
                     .defaultMinSize(minHeight = ShadeHeader.Dimensions.ExpandedHeight),
         ) {
             Box(modifier = Modifier.fillMaxWidth()) {
-                Box {
-                    Clock(
-                        scale = 2.57f,
-                        onClick = viewModel::onClockClicked,
-                        modifier = Modifier.align(Alignment.CenterStart),
-                    )
-                }
+                Clock(
+                    onClick = viewModel::onClockClicked,
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    scale = 2.57f,
+                )
                 Box(
                     modifier =
                         Modifier.element(ShadeHeader.Elements.ShadeCarrierGroup).fillMaxWidth()
@@ -291,8 +288,6 @@ fun ContentScope.OverlayShadeHeader(
     val horizontalPadding =
         max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
 
-    val isShadeLayoutWide = viewModel.isShadeLayoutWide
-
     val isPrivacyChipVisible by viewModel.isPrivacyChipVisible.collectAsStateWithLifecycle()
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
@@ -301,16 +296,15 @@ fun ContentScope.OverlayShadeHeader(
         startContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
                 val chipHighlight = viewModel.notificationsChipHighlight
-                if (isShadeLayoutWide) {
+                if (viewModel.showClock) {
                     Clock(
-                        scale = 1f,
                         onClick = viewModel::onClockClicked,
                         modifier = Modifier.padding(horizontal = 4.dp),
                     )
-                    Spacer(modifier = Modifier.width(5.dp))
                 }
                 NotificationsChip(
                     onClick = viewModel::onNotificationIconChipClicked,
@@ -437,7 +431,11 @@ private fun CutoutAwareShadeHeader(
 }
 
 @Composable
-private fun ContentScope.Clock(scale: Float, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ContentScope.Clock(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    scale: Float = 1f,
+) {
     val layoutDirection = LocalLayoutDirection.current
 
     ElementWithValues(key = ShadeHeader.Elements.Clock, modifier = modifier) {

@@ -308,7 +308,9 @@ final class OverlayManagerServiceImpl {
             Slog.d(TAG, "onPackageRemoved pkgName=" + pkgName + " userId=" + userId);
         }
         // Update the state of all overlays that target this package.
-        final Set<UserPackage> targets = updateOverlaysForTarget(pkgName, userId, 0 /* flags */);
+        Set<UserPackage> targets = Collections.emptySet();
+        targets = CollectionUtils.addAll(targets,
+                updateOverlaysForTarget(pkgName, userId, 0 /* flags */));
 
         // Remove all the overlays this package declares.
         return CollectionUtils.addAll(targets,

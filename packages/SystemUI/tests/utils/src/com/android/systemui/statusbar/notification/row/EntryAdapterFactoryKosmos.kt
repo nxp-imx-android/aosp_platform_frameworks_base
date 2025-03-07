@@ -25,12 +25,13 @@ import com.android.systemui.statusbar.notification.people.peopleNotificationIden
 import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 
 val Kosmos.entryAdapterFactory by
-Kosmos.Fixture {
-    EntryAdapterFactoryImpl(
-        mockNotificationActivityStarter,
-        metricsLogger,
-        peopleNotificationIdentifier,
-        notificationIconStyleProvider,
-        visualStabilityCoordinator,
-    )
-}
+    Kosmos.Fixture {
+        EntryAdapterFactoryImpl(
+            mockNotificationActivityStarter,
+            metricsLogger,
+            peopleNotificationIdentifier,
+            notificationIconStyleProvider,
+            visualStabilityCoordinator,
+            mockNotificationActionClickManager,
+        )
+    }

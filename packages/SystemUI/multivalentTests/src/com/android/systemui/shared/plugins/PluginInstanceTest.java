@@ -33,6 +33,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.log.LogAssertKt;
 import com.android.systemui.plugins.Plugin;
 import com.android.systemui.plugins.PluginLifecycleManager;
 import com.android.systemui.plugins.PluginListener;
@@ -138,11 +139,12 @@ public class PluginInstanceTest extends SysuiTestCase {
 
         mVersionCheckResult = false;
         assertFalse(mPluginInstance.hasError());
-
         mPluginInstanceFactory.create(
                 mContext, mAppInfo, wrongVersionTestPluginComponentName,
                 TestPlugin.class, mPluginListener);
-        mPluginInstance.onCreate();
+        LogAssertKt.assertRunnableLogsWtf(()-> {
+            mPluginInstance.onCreate();
+        });
         assertTrue(mPluginInstance.hasError());
         assertNull(mPluginInstance.getPlugin());
     }
@@ -193,8 +195,10 @@ public class PluginInstanceTest extends SysuiTestCase {
         mPluginInstance.onCreate();
         assertFalse(mPluginInstance.hasError());
 
-        Object result = mPluginInstance.getPlugin().methodThrowsError();
-        assertNotNull(result);  // Wrapper function should return non-null;
+        LogAssertKt.assertRunnableLogsWtf(()-> {
+            Object result = mPluginInstance.getPlugin().methodThrowsError();
+            assertNotNull(result);  // Wrapper function should return non-null;
+        });
         assertTrue(mPluginInstance.hasError());
         assertNull(mPluginInstance.getPlugin());
     }

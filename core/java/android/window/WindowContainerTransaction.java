@@ -688,12 +688,6 @@ public final class WindowContainerTransaction implements Parcelable {
     @NonNull
     public WindowContainerTransaction setAdjacentRoots(
             @NonNull WindowContainerToken root1, @NonNull WindowContainerToken root2) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            mHierarchyOps.add(HierarchyOp.createForAdjacentRoots(
-                    root1.asBinder(),
-                    root2.asBinder()));
-            return this;
-        }
         return setAdjacentRootSet(root1, root2);
     }
 
@@ -714,10 +708,6 @@ public final class WindowContainerTransaction implements Parcelable {
      */
     @NonNull
     public WindowContainerTransaction setAdjacentRootSet(@NonNull WindowContainerToken... roots) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalArgumentException("allowMultipleAdjacentTaskFragments is not enabled."
-                    + " Use #setAdjacentRoots instead.");
-        }
         if (roots.length < 2) {
             throw new IllegalArgumentException("setAdjacentRootSet must have size >= 2");
         }
@@ -1973,13 +1963,6 @@ public final class WindowContainerTransaction implements Parcelable {
             return mContainers;
         }
 
-        /** @deprecated b/373709676 replace with {@link #getContainers()}. */
-        @Deprecated
-        @NonNull
-        public IBinder getAdjacentRoot() {
-            return mReparent;
-        }
-
         public boolean getToTop() {
             return mToTop;
         }
@@ -2127,17 +2110,12 @@ public final class WindowContainerTransaction implements Parcelable {
                     sb.append(mContainer).append(" to ").append(mToTop ? "top" : "bottom");
                     break;
                 case HIERARCHY_OP_TYPE_SET_ADJACENT_ROOTS:
-                    if (Flags.allowMultipleAdjacentTaskFragments()) {
-                        for (IBinder container : mContainers) {
-                            if (container == mContainers[0]) {
-                                sb.append("adjacentRoots=").append(container);
-                            } else {
-                                sb.append(", ").append(container);
-                            }
+                    for (IBinder container : mContainers) {
+                        if (container == mContainers[0]) {
+                            sb.append("adjacentRoots=").append(container);
+                        } else {
+                            sb.append(", ").append(container);
                         }
-                    } else {
-                        sb.append("container=").append(mContainer)
-                                .append(" adjacentRoot=").append(mReparent);
                     }
                     break;
                 case HIERARCHY_OP_TYPE_LAUNCH_TASK:

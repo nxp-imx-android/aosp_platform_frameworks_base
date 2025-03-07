@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,789 +26,701 @@ import com.android.settingslib.mobile.MobileIconCarrierIdOverrides
 import com.android.settingslib.mobile.MobileIconCarrierIdOverridesImpl
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.flags.Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS
+import com.android.systemui.flags.fake
+import com.android.systemui.flags.featureFlagsClassic
+import com.android.systemui.kairos.ActivatedKairosFixture
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.MutableState
+import com.android.systemui.kairos.kairos
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.CarrierMergedNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.DefaultNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.OverrideNetworkType
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.FakeMobileIconsInteractor.Companion.FIVE_G_OVERRIDE
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.FakeMobileIconsInteractor.Companion.FOUR_G
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.FakeMobileIconsInteractor.Companion.THREE_G
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.NetworkTypeIconModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
-import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconInteractorKairosTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
+    private val kosmos =
+        testKosmos().apply {
+            useUnconfinedTestDispatcher()
+            featureFlagsClassic.fake.apply { setDefault(FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS) }
+        }
 
-    private lateinit var underTest: MobileIconInteractorKairos
-    private val mobileMappingsProxy = FakeMobileMappingsProxy()
-    private val mobileIconsInteractor = FakeMobileIconsInteractor(mobileMappingsProxy, mock())
+    private val Kosmos.tableLogBuffer by Fixture {
+        logcatTableLogBuffer(this, "MobileIconInteractorKairosTest")
+    }
 
-    private val connectionRepository =
-        FakeMobileConnectionRepository(
-            SUB_1_ID,
-            logcatTableLogBuffer(kosmos, "MobileIconInteractorTest"),
+    private var Kosmos.overrides: MobileIconCarrierIdOverrides by Fixture {
+        MobileIconCarrierIdOverridesImpl()
+    }
+
+    private val Kosmos.defaultSubscriptionHasDataEnabled by Fixture { MutableState(kairos, true) }
+
+    private val Kosmos.alwaysShowDataRatIcon by Fixture { MutableState(kairos, false) }
+
+    private val Kosmos.alwaysUseCdmaLevel by Fixture { MutableState(kairos, false) }
+
+    private val Kosmos.isSingleCarrier by Fixture { MutableState(kairos, true) }
+
+    private val Kosmos.mobileIsDefault by Fixture { MutableState(kairos, false) }
+
+    private val Kosmos.defaultMobileIconMapping by Fixture {
+        MutableState(kairos, fakeMobileIconsInteractor.TEST_MAPPING)
+    }
+
+    private val Kosmos.defaultMobileIconGroup by Fixture { MutableState(kairos, TelephonyIcons.G) }
+
+    private val Kosmos.isDefaultConnectionFailed by Fixture { MutableState(kairos, false) }
+
+    private val Kosmos.isForceHidden by Fixture { MutableState(kairos, false) }
+
+    private val Kosmos.underTest by ActivatedKairosFixture {
+        MobileIconInteractorKairosImpl(
+            defaultSubscriptionHasDataEnabled,
+            alwaysShowDataRatIcon,
+            alwaysUseCdmaLevel,
+            isSingleCarrier,
+            mobileIsDefault,
+            defaultMobileIconMapping,
+            defaultMobileIconGroup,
+            isDefaultConnectionFailed,
+            isForceHidden,
+            connectionRepository = connectionRepo,
+            context = context,
+            carrierIdOverrides = overrides,
         )
+    }
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    private val Kosmos.connectionRepo by Fixture {
+        FakeMobileConnectionRepositoryKairos(SUB_1_ID, kairos, tableLogBuffer).apply {
+            dataEnabled.setValue(true)
+            isInService.setValue(true)
+        }
+    }
 
-    @Before
-    fun setUp() {
-        underTest = createInteractor()
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
 
-        mobileIconsInteractor.activeDataConnectionHasDataEnabled.value = true
-        connectionRepository.isInService.value = true
+    @Test
+    fun gsm_usesGsmLevel() = runTest {
+        connectionRepo.isGsm.setValue(true)
+        connectionRepo.primaryLevel.setValue(GSM_LEVEL)
+        connectionRepo.cdmaLevel.setValue(CDMA_LEVEL)
+
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        assertThat(latest?.level).isEqualTo(GSM_LEVEL)
     }
 
     @Test
-    fun gsm_usesGsmLevel() =
-        testScope.runTest {
-            connectionRepository.isGsm.value = true
-            connectionRepository.primaryLevel.value = GSM_LEVEL
-            connectionRepository.cdmaLevel.value = CDMA_LEVEL
+    fun gsm_alwaysShowCdmaTrue_stillUsesGsmLevel() = runTest {
+        connectionRepo.isGsm.setValue(true)
+        connectionRepo.primaryLevel.setValue(GSM_LEVEL)
+        connectionRepo.cdmaLevel.setValue(CDMA_LEVEL)
+        //            mobileIconsInteractor.alwaysUseCdmaLevel.setValue(true)
+        alwaysUseCdmaLevel.setValue(true)
 
-            var latest: Int? = null
-            val job = underTest.signalLevelIcon.onEach { latest = it.level }.launchIn(this)
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            assertThat(latest).isEqualTo(GSM_LEVEL)
-
-            job.cancel()
-        }
+        assertThat(latest?.level).isEqualTo(GSM_LEVEL)
+    }
 
     @Test
-    fun gsm_alwaysShowCdmaTrue_stillUsesGsmLevel() =
-        testScope.runTest {
-            connectionRepository.isGsm.value = true
-            connectionRepository.primaryLevel.value = GSM_LEVEL
-            connectionRepository.cdmaLevel.value = CDMA_LEVEL
-            mobileIconsInteractor.alwaysUseCdmaLevel.value = true
+    fun notGsm_level_default_unknown() = runTest {
+        connectionRepo.isGsm.setValue(false)
 
-            var latest: Int? = null
-            val job = underTest.signalLevelIcon.onEach { latest = it.level }.launchIn(this)
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            assertThat(latest).isEqualTo(GSM_LEVEL)
-
-            job.cancel()
-        }
+        assertThat(latest?.level).isEqualTo(CellSignalStrength.SIGNAL_STRENGTH_NONE_OR_UNKNOWN)
+    }
 
     @Test
-    fun notGsm_level_default_unknown() =
-        testScope.runTest {
-            connectionRepository.isGsm.value = false
+    fun notGsm_alwaysShowCdmaTrue_usesCdmaLevel() = runTest {
+        connectionRepo.isGsm.setValue(false)
+        connectionRepo.primaryLevel.setValue(GSM_LEVEL)
+        connectionRepo.cdmaLevel.setValue(CDMA_LEVEL)
+        //            mobileIconsInteractor.alwaysUseCdmaLevel.setValue(true)
+        alwaysUseCdmaLevel.setValue(true)
 
-            var latest: Int? = null
-            val job = underTest.signalLevelIcon.onEach { latest = it.level }.launchIn(this)
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            assertThat(latest).isEqualTo(CellSignalStrength.SIGNAL_STRENGTH_NONE_OR_UNKNOWN)
-            job.cancel()
-        }
-
-    @Test
-    fun notGsm_alwaysShowCdmaTrue_usesCdmaLevel() =
-        testScope.runTest {
-            connectionRepository.isGsm.value = false
-            connectionRepository.primaryLevel.value = GSM_LEVEL
-            connectionRepository.cdmaLevel.value = CDMA_LEVEL
-            mobileIconsInteractor.alwaysUseCdmaLevel.value = true
-
-            var latest: Int? = null
-            val job = underTest.signalLevelIcon.onEach { latest = it.level }.launchIn(this)
-
-            assertThat(latest).isEqualTo(CDMA_LEVEL)
-
-            job.cancel()
-        }
+        assertThat(latest?.level).isEqualTo(CDMA_LEVEL)
+    }
 
     @Test
-    fun notGsm_alwaysShowCdmaFalse_usesPrimaryLevel() =
-        testScope.runTest {
-            connectionRepository.isGsm.value = false
-            connectionRepository.primaryLevel.value = GSM_LEVEL
-            connectionRepository.cdmaLevel.value = CDMA_LEVEL
-            mobileIconsInteractor.alwaysUseCdmaLevel.value = false
+    fun notGsm_alwaysShowCdmaFalse_usesPrimaryLevel() = runTest {
+        connectionRepo.isGsm.setValue(false)
+        connectionRepo.primaryLevel.setValue(GSM_LEVEL)
+        connectionRepo.cdmaLevel.setValue(CDMA_LEVEL)
+        //            mobileIconsInteractor.alwaysUseCdmaLevel.setValue(false)
+        alwaysUseCdmaLevel.setValue(false)
 
-            var latest: Int? = null
-            val job = underTest.signalLevelIcon.onEach { latest = it.level }.launchIn(this)
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            assertThat(latest).isEqualTo(GSM_LEVEL)
-
-            job.cancel()
-        }
+        assertThat(latest?.level).isEqualTo(GSM_LEVEL)
+    }
 
     @Test
-    fun numberOfLevels_comesFromRepo_whenApplicable() =
-        testScope.runTest {
-            var latest: Int? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = (it as? SignalIconModel.Cellular)?.numberOfLevels }
-                    .launchIn(this)
+    fun numberOfLevels_comesFromRepo_whenApplicable() = runTest {
+        val latest by
+            underTest.signalLevelIcon
+                .map { (it as? SignalIconModel.Cellular)?.numberOfLevels }
+                .collectLastValue()
 
-            connectionRepository.numberOfLevels.value = 5
-            assertThat(latest).isEqualTo(5)
+        connectionRepo.numberOfLevels.setValue(5)
+        assertThat(latest).isEqualTo(5)
 
-            connectionRepository.numberOfLevels.value = 4
-            assertThat(latest).isEqualTo(4)
-
-            job.cancel()
-        }
+        connectionRepo.numberOfLevels.setValue(4)
+        assertThat(latest).isEqualTo(4)
+    }
 
     @Test
-    fun inflateSignalStrength_arbitrarilyAddsOneToTheReportedLevel() =
-        testScope.runTest {
-            connectionRepository.inflateSignalStrength.value = false
-            val latest by collectLastValue(underTest.signalLevelIcon)
+    fun inflateSignalStrength_arbitrarilyAddsOneToTheReportedLevel() = runTest {
+        connectionRepo.inflateSignalStrength.setValue(false)
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            connectionRepository.primaryLevel.value = 4
-            assertThat(latest!!.level).isEqualTo(4)
+        connectionRepo.primaryLevel.setValue(4)
+        assertThat(latest!!.level).isEqualTo(4)
 
-            connectionRepository.inflateSignalStrength.value = true
-            connectionRepository.primaryLevel.value = 4
+        connectionRepo.inflateSignalStrength.setValue(true)
+        connectionRepo.primaryLevel.setValue(4)
 
-            // when INFLATE_SIGNAL_STRENGTH is true, we add 1 to the reported signal level
-            assertThat(latest!!.level).isEqualTo(5)
-        }
-
-    @Test
-    fun networkSlice_configOn_hasPrioritizedCaps_showsSlice() =
-        testScope.runTest {
-            connectionRepository.allowNetworkSliceIndicator.value = true
-            val latest by collectLastValue(underTest.showSliceAttribution)
-
-            connectionRepository.hasPrioritizedNetworkCapabilities.value = true
-
-            assertThat(latest).isTrue()
-        }
+        // when INFLATE_SIGNAL_STRENGTH is true, we add 1 to the reported signal level
+        assertThat(latest!!.level).isEqualTo(5)
+    }
 
     @Test
-    fun networkSlice_configOn_noPrioritizedCaps_noSlice() =
-        testScope.runTest {
-            connectionRepository.allowNetworkSliceIndicator.value = true
-            val latest by collectLastValue(underTest.showSliceAttribution)
+    fun networkSlice_configOn_hasPrioritizedCaps_showsSlice() = runTest {
+        connectionRepo.allowNetworkSliceIndicator.setValue(true)
+        val latest by underTest.showSliceAttribution.collectLastValue()
 
-            connectionRepository.hasPrioritizedNetworkCapabilities.value = false
+        connectionRepo.hasPrioritizedNetworkCapabilities.setValue(true)
 
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun networkSlice_configOff_hasPrioritizedCaps_noSlice() =
-        testScope.runTest {
-            connectionRepository.allowNetworkSliceIndicator.value = false
-            val latest by collectLastValue(underTest.showSliceAttribution)
-
-            connectionRepository.hasPrioritizedNetworkCapabilities.value = true
-
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun networkSlice_configOff_noPrioritizedCaps_noSlice() =
-        testScope.runTest {
-            connectionRepository.allowNetworkSliceIndicator.value = false
-            val latest by collectLastValue(underTest.showSliceAttribution)
+    fun networkSlice_configOn_noPrioritizedCaps_noSlice() = runTest {
+        connectionRepo.allowNetworkSliceIndicator.setValue(true)
+        val latest by underTest.showSliceAttribution.collectLastValue()
 
-            connectionRepository.hasPrioritizedNetworkCapabilities.value = false
+        connectionRepo.hasPrioritizedNetworkCapabilities.setValue(false)
 
-            assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun iconGroup_three_g() =
-        testScope.runTest {
-            connectionRepository.resolvedNetworkType.value =
-                DefaultNetworkType(mobileMappingsProxy.toIconKey(THREE_G))
-
-            var latest: NetworkTypeIconModel? = null
-            val job = underTest.networkTypeIconGroup.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest).isEqualTo(NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G))
-
-            job.cancel()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun iconGroup_updates_on_change() =
-        testScope.runTest {
-            connectionRepository.resolvedNetworkType.value =
-                DefaultNetworkType(mobileMappingsProxy.toIconKey(THREE_G))
+    fun networkSlice_configOff_hasPrioritizedCaps_noSlice() = runTest {
+        connectionRepo.allowNetworkSliceIndicator.setValue(false)
+        val latest by underTest.showSliceAttribution.collectLastValue()
 
-            var latest: NetworkTypeIconModel? = null
-            val job = underTest.networkTypeIconGroup.onEach { latest = it }.launchIn(this)
+        connectionRepo.hasPrioritizedNetworkCapabilities.setValue(true)
 
-            connectionRepository.resolvedNetworkType.value =
-                DefaultNetworkType(mobileMappingsProxy.toIconKey(FOUR_G))
-
-            assertThat(latest).isEqualTo(NetworkTypeIconModel.DefaultIcon(TelephonyIcons.FOUR_G))
-
-            job.cancel()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun iconGroup_5g_override_type() =
-        testScope.runTest {
-            connectionRepository.resolvedNetworkType.value =
-                OverrideNetworkType(mobileMappingsProxy.toIconKeyOverride(FIVE_G_OVERRIDE))
+    fun networkSlice_configOff_noPrioritizedCaps_noSlice() = runTest {
+        connectionRepo.allowNetworkSliceIndicator.setValue(false)
+        val latest by underTest.showSliceAttribution.collectLastValue()
 
-            var latest: NetworkTypeIconModel? = null
-            val job = underTest.networkTypeIconGroup.onEach { latest = it }.launchIn(this)
+        connectionRepo.hasPrioritizedNetworkCapabilities.setValue(false)
 
-            assertThat(latest).isEqualTo(NetworkTypeIconModel.DefaultIcon(TelephonyIcons.NR_5G))
-
-            job.cancel()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun iconGroup_default_if_no_lookup() =
-        testScope.runTest {
-            connectionRepository.resolvedNetworkType.value =
-                DefaultNetworkType(mobileMappingsProxy.toIconKey(NETWORK_TYPE_UNKNOWN))
+    fun iconGroup_three_g() = runTest {
+        connectionRepo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileMappingsProxy.toIconKey(THREE_G))
+        )
 
-            var latest: NetworkTypeIconModel? = null
-            val job = underTest.networkTypeIconGroup.onEach { latest = it }.launchIn(this)
+        val latest by underTest.networkTypeIconGroup.collectLastValue()
 
-            assertThat(latest)
-                .isEqualTo(NetworkTypeIconModel.DefaultIcon(FakeMobileIconsInteractor.DEFAULT_ICON))
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G))
+    }
 
     @Test
-    fun iconGroup_carrierMerged_usesOverride() =
-        testScope.runTest {
-            connectionRepository.resolvedNetworkType.value = CarrierMergedNetworkType
+    fun iconGroup_updates_on_change() = runTest {
+        connectionRepo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileMappingsProxy.toIconKey(THREE_G))
+        )
 
-            var latest: NetworkTypeIconModel? = null
-            val job = underTest.networkTypeIconGroup.onEach { latest = it }.launchIn(this)
+        val latest by underTest.networkTypeIconGroup.collectLastValue()
 
-            assertThat(latest)
-                .isEqualTo(
-                    NetworkTypeIconModel.DefaultIcon(CarrierMergedNetworkType.iconGroupOverride)
-                )
+        connectionRepo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileMappingsProxy.toIconKey(FOUR_G))
+        )
 
-            job.cancel()
-        }
-
-    @Test
-    fun overrideIcon_usesCarrierIdOverride() =
-        testScope.runTest {
-            val overrides =
-                mock<MobileIconCarrierIdOverrides>().also {
-                    whenever(it.carrierIdEntryExists(anyInt())).thenReturn(true)
-                    whenever(it.getOverrideFor(anyInt(), anyString(), any())).thenReturn(1234)
-                }
-
-            underTest = createInteractor(overrides)
-
-            connectionRepository.resolvedNetworkType.value =
-                DefaultNetworkType(mobileMappingsProxy.toIconKey(THREE_G))
-
-            var latest: NetworkTypeIconModel? = null
-            val job = underTest.networkTypeIconGroup.onEach { latest = it }.launchIn(this)
-
-            assertThat(latest)
-                .isEqualTo(NetworkTypeIconModel.OverriddenIcon(TelephonyIcons.THREE_G, 1234))
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(NetworkTypeIconModel.DefaultIcon(TelephonyIcons.FOUR_G))
+    }
 
     @Test
-    fun alwaysShowDataRatIcon_matchesParent() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.alwaysShowDataRatIcon.onEach { latest = it }.launchIn(this)
+    fun iconGroup_5g_override_type() = runTest {
+        connectionRepo.resolvedNetworkType.setValue(
+            OverrideNetworkType(mobileMappingsProxy.toIconKeyOverride(FIVE_G_OVERRIDE))
+        )
 
-            mobileIconsInteractor.alwaysShowDataRatIcon.value = true
-            assertThat(latest).isTrue()
+        val latest by underTest.networkTypeIconGroup.collectLastValue()
 
-            mobileIconsInteractor.alwaysShowDataRatIcon.value = false
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(NetworkTypeIconModel.DefaultIcon(TelephonyIcons.NR_5G))
+    }
 
     @Test
-    fun dataState_connected() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isDataConnected.onEach { latest = it }.launchIn(this)
+    fun iconGroup_default_if_no_lookup() = runTest {
+        connectionRepo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileMappingsProxy.toIconKey(NETWORK_TYPE_UNKNOWN))
+        )
 
-            connectionRepository.dataConnectionState.value = DataConnectionState.Connected
+        val latest by underTest.networkTypeIconGroup.collectLastValue()
 
-            assertThat(latest).isTrue()
-
-            job.cancel()
-        }
-
-    @Test
-    fun dataState_notConnected() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isDataConnected.onEach { latest = it }.launchIn(this)
-
-            connectionRepository.dataConnectionState.value = DataConnectionState.Disconnected
-
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
+        assertThat(latest)
+            .isEqualTo(NetworkTypeIconModel.DefaultIcon(FakeMobileIconsInteractor.DEFAULT_ICON))
+    }
 
     @Test
-    fun isInService_usesRepositoryValue() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isInService.onEach { latest = it }.launchIn(this)
+    fun iconGroup_carrierMerged_usesOverride() = runTest {
+        connectionRepo.resolvedNetworkType.setValue(CarrierMergedNetworkType)
 
-            connectionRepository.isInService.value = true
+        val latest by underTest.networkTypeIconGroup.collectLastValue()
 
-            assertThat(latest).isTrue()
-
-            connectionRepository.isInService.value = false
-
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
+        assertThat(latest)
+            .isEqualTo(NetworkTypeIconModel.DefaultIcon(CarrierMergedNetworkType.iconGroupOverride))
+    }
 
     @Test
-    fun roaming_isGsm_usesConnectionModel() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isRoaming.onEach { latest = it }.launchIn(this)
+    fun overrideIcon_usesCarrierIdOverride() = runTest {
+        overrides =
+            mock<MobileIconCarrierIdOverrides> {
+                on { carrierIdEntryExists(anyInt()) } doReturn true
+                on { getOverrideFor(anyInt(), anyString(), any()) } doReturn 1234
+            }
 
-            connectionRepository.cdmaRoaming.value = true
-            connectionRepository.isGsm.value = true
-            connectionRepository.isRoaming.value = false
+        connectionRepo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileMappingsProxy.toIconKey(THREE_G))
+        )
 
-            assertThat(latest).isFalse()
+        val latest by underTest.networkTypeIconGroup.collectLastValue()
 
-            connectionRepository.isRoaming.value = true
-
-            assertThat(latest).isTrue()
-
-            job.cancel()
-        }
-
-    @Test
-    fun roaming_isCdma_usesCdmaRoamingBit() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isRoaming.onEach { latest = it }.launchIn(this)
-
-            connectionRepository.cdmaRoaming.value = false
-            connectionRepository.isGsm.value = false
-            connectionRepository.isRoaming.value = true
-
-            assertThat(latest).isFalse()
-
-            connectionRepository.cdmaRoaming.value = true
-            connectionRepository.isGsm.value = false
-            connectionRepository.isRoaming.value = false
-
-            assertThat(latest).isTrue()
-
-            job.cancel()
-        }
+        assertThat(latest)
+            .isEqualTo(NetworkTypeIconModel.OverriddenIcon(TelephonyIcons.THREE_G, 1234))
+    }
 
     @Test
-    fun roaming_falseWhileCarrierNetworkChangeActive() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isRoaming.onEach { latest = it }.launchIn(this)
+    fun alwaysShowDataRatIcon_matchesParent() = runTest {
+        val latest by underTest.alwaysShowDataRatIcon.collectLastValue()
 
-            connectionRepository.cdmaRoaming.value = true
-            connectionRepository.isGsm.value = false
-            connectionRepository.isRoaming.value = true
-            connectionRepository.carrierNetworkChangeActive.value = true
+        //            mobileIconsInteractor.alwaysShowDataRatIcon.setValue(true)
+        alwaysShowDataRatIcon.setValue(true)
 
-            assertThat(latest).isFalse()
+        assertThat(latest).isTrue()
 
-            connectionRepository.cdmaRoaming.value = true
-            connectionRepository.isGsm.value = true
+        //            mobileIconsInteractor.alwaysShowDataRatIcon.setValue(false)
+        alwaysShowDataRatIcon.setValue(false)
 
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun networkName_usesOperatorAlphaShortWhenNonNullAndRepoIsDefault() =
-        testScope.runTest {
-            var latest: NetworkNameModel? = null
-            val job = underTest.networkName.onEach { latest = it }.launchIn(this)
+    fun dataState_connected() = runTest {
+        val latest by underTest.isDataConnected.collectLastValue()
 
-            val testOperatorName = "operatorAlphaShort"
+        connectionRepo.dataConnectionState.setValue(DataConnectionState.Connected)
 
-            // Default network name, operator name is non-null, uses the operator name
-            connectionRepository.networkName.value = DEFAULT_NAME_MODEL
-            connectionRepository.operatorAlphaShort.value = testOperatorName
-
-            assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived(testOperatorName))
-
-            // Default network name, operator name is null, uses the default
-            connectionRepository.operatorAlphaShort.value = null
-
-            assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
-
-            // Derived network name, operator name non-null, uses the derived name
-            connectionRepository.networkName.value = DERIVED_NAME_MODEL
-            connectionRepository.operatorAlphaShort.value = testOperatorName
-
-            assertThat(latest).isEqualTo(DERIVED_NAME_MODEL)
-
-            job.cancel()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun networkNameForSubId_usesOperatorAlphaShortWhenNonNullAndRepoIsDefault() =
-        testScope.runTest {
-            var latest: String? = null
-            val job = underTest.carrierName.onEach { latest = it }.launchIn(this)
+    fun dataState_notConnected() = runTest {
+        val latest by underTest.isDataConnected.collectLastValue()
 
-            val testOperatorName = "operatorAlphaShort"
+        connectionRepo.dataConnectionState.setValue(DataConnectionState.Disconnected)
 
-            // Default network name, operator name is non-null, uses the operator name
-            connectionRepository.carrierName.value = DEFAULT_NAME_MODEL
-            connectionRepository.operatorAlphaShort.value = testOperatorName
-
-            assertThat(latest).isEqualTo(testOperatorName)
-
-            // Default network name, operator name is null, uses the default
-            connectionRepository.operatorAlphaShort.value = null
-
-            assertThat(latest).isEqualTo(DEFAULT_NAME)
-
-            // Derived network name, operator name non-null, uses the derived name
-            connectionRepository.carrierName.value =
-                NetworkNameModel.SubscriptionDerived(DERIVED_NAME)
-            connectionRepository.operatorAlphaShort.value = testOperatorName
-
-            assertThat(latest).isEqualTo(DERIVED_NAME)
-
-            job.cancel()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun isSingleCarrier_matchesParent() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isSingleCarrier.onEach { latest = it }.launchIn(this)
+    fun isInService_usesRepositoryValue() = runTest {
+        val latest by underTest.isInService.collectLastValue()
 
-            mobileIconsInteractor.isSingleCarrier.value = true
-            assertThat(latest).isTrue()
+        connectionRepo.isInService.setValue(true)
 
-            mobileIconsInteractor.isSingleCarrier.value = false
-            assertThat(latest).isFalse()
+        assertThat(latest).isTrue()
 
-            job.cancel()
-        }
+        connectionRepo.isInService.setValue(false)
+
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun isForceHidden_matchesParent() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job = underTest.isForceHidden.onEach { latest = it }.launchIn(this)
+    fun roaming_isGsm_usesConnectionModel() = runTest {
+        val latest by underTest.isRoaming.collectLastValue()
 
-            mobileIconsInteractor.isForceHidden.value = true
-            assertThat(latest).isTrue()
+        connectionRepo.cdmaRoaming.setValue(true)
+        connectionRepo.isGsm.setValue(true)
+        connectionRepo.isRoaming.setValue(false)
 
-            mobileIconsInteractor.isForceHidden.value = false
-            assertThat(latest).isFalse()
+        assertThat(latest).isFalse()
 
-            job.cancel()
-        }
+        connectionRepo.isRoaming.setValue(true)
 
-    @Test
-    fun isAllowedDuringAirplaneMode_matchesRepo() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.isAllowedDuringAirplaneMode)
-
-            connectionRepository.isAllowedDuringAirplaneMode.value = true
-            assertThat(latest).isTrue()
-
-            connectionRepository.isAllowedDuringAirplaneMode.value = false
-            assertThat(latest).isFalse()
-        }
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun cellBasedIconId_correctLevel_notCutout() =
-        testScope.runTest {
-            connectionRepository.isNonTerrestrial.value = false
-            connectionRepository.isInService.value = true
-            connectionRepository.primaryLevel.value = 1
-            connectionRepository.setDataEnabled(false)
-            connectionRepository.isNonTerrestrial.value = false
+    fun roaming_isCdma_usesCdmaRoamingBit() = runTest {
+        val latest by underTest.isRoaming.collectLastValue()
 
-            var latest: SignalIconModel.Cellular? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = it as? SignalIconModel.Cellular }
-                    .launchIn(this)
+        connectionRepo.cdmaRoaming.setValue(false)
+        connectionRepo.isGsm.setValue(false)
+        connectionRepo.isRoaming.setValue(true)
 
-            assertThat(latest?.level).isEqualTo(1)
-            assertThat(latest?.showExclamationMark).isFalse()
+        assertThat(latest).isFalse()
 
-            job.cancel()
-        }
+        connectionRepo.cdmaRoaming.setValue(true)
+        connectionRepo.isGsm.setValue(false)
+        connectionRepo.isRoaming.setValue(false)
+
+        assertThat(latest).isTrue()
+    }
 
     @Test
-    fun icon_usesLevelFromInteractor() =
-        testScope.runTest {
-            connectionRepository.isNonTerrestrial.value = false
-            connectionRepository.isInService.value = true
+    fun roaming_falseWhileCarrierNetworkChangeActive() = runTest {
+        val latest by underTest.isRoaming.collectLastValue()
 
-            var latest: SignalIconModel? = null
-            val job = underTest.signalLevelIcon.onEach { latest = it }.launchIn(this)
+        connectionRepo.cdmaRoaming.setValue(true)
+        connectionRepo.isGsm.setValue(false)
+        connectionRepo.isRoaming.setValue(true)
+        connectionRepo.carrierNetworkChangeActive.setValue(true)
 
-            connectionRepository.primaryLevel.value = 3
-            assertThat(latest!!.level).isEqualTo(3)
+        assertThat(latest).isFalse()
 
-            connectionRepository.primaryLevel.value = 1
-            assertThat(latest!!.level).isEqualTo(1)
+        connectionRepo.cdmaRoaming.setValue(true)
+        connectionRepo.isGsm.setValue(true)
 
-            job.cancel()
-        }
-
-    @Test
-    fun cellBasedIcon_usesNumberOfLevelsFromInteractor() =
-        testScope.runTest {
-            connectionRepository.isNonTerrestrial.value = false
-
-            var latest: SignalIconModel.Cellular? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = it as? SignalIconModel.Cellular }
-                    .launchIn(this)
-
-            connectionRepository.numberOfLevels.value = 5
-            assertThat(latest!!.numberOfLevels).isEqualTo(5)
-
-            connectionRepository.numberOfLevels.value = 2
-            assertThat(latest!!.numberOfLevels).isEqualTo(2)
-
-            job.cancel()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun cellBasedIcon_defaultDataDisabled_showExclamationTrue() =
-        testScope.runTest {
-            connectionRepository.isNonTerrestrial.value = false
-            mobileIconsInteractor.activeDataConnectionHasDataEnabled.value = false
+    fun networkName_usesOperatorAlphaShortWhenNonNullAndRepoIsDefault() = runTest {
+        val latest by underTest.networkName.collectLastValue()
 
-            var latest: SignalIconModel.Cellular? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = it as? SignalIconModel.Cellular }
-                    .launchIn(this)
+        val testOperatorName = "operatorAlphaShort"
 
-            assertThat(latest!!.showExclamationMark).isTrue()
+        // Default network name, operator name is non-null, uses the operator name
+        connectionRepo.networkName.setValue(DEFAULT_NAME_MODEL)
+        connectionRepo.operatorAlphaShort.setValue(testOperatorName)
 
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(NetworkNameModel.IntentDerived(testOperatorName))
 
-    @Test
-    fun cellBasedIcon_defaultConnectionFailed_showExclamationTrue() =
-        testScope.runTest {
-            connectionRepository.isNonTerrestrial.value = false
-            mobileIconsInteractor.isDefaultConnectionFailed.value = true
+        // Default network name, operator name is null, uses the default
+        connectionRepo.operatorAlphaShort.setValue(null)
 
-            var latest: SignalIconModel.Cellular? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = it as? SignalIconModel.Cellular }
-                    .launchIn(this)
+        assertThat(latest).isEqualTo(DEFAULT_NAME_MODEL)
 
-            assertThat(latest!!.showExclamationMark).isTrue()
+        // Derived network name, operator name non-null, uses the derived name
+        connectionRepo.networkName.setValue(DERIVED_NAME_MODEL)
+        connectionRepo.operatorAlphaShort.setValue(testOperatorName)
 
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(DERIVED_NAME_MODEL)
+    }
 
     @Test
-    fun cellBasedIcon_enabledAndNotFailed_showExclamationFalse() =
-        testScope.runTest {
-            connectionRepository.isNonTerrestrial.value = false
-            connectionRepository.isInService.value = true
-            mobileIconsInteractor.activeDataConnectionHasDataEnabled.value = true
-            mobileIconsInteractor.isDefaultConnectionFailed.value = false
+    fun networkNameForSubId_usesOperatorAlphaShortWhenNonNullAndRepoIsDefault() = runTest {
+        val latest by underTest.carrierName.collectLastValue()
 
-            var latest: SignalIconModel.Cellular? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = it as? SignalIconModel.Cellular }
-                    .launchIn(this)
+        val testOperatorName = "operatorAlphaShort"
 
-            assertThat(latest!!.showExclamationMark).isFalse()
+        // Default network name, operator name is non-null, uses the operator name
+        connectionRepo.carrierName.setValue(DEFAULT_NAME_MODEL)
+        connectionRepo.operatorAlphaShort.setValue(testOperatorName)
 
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(testOperatorName)
 
-    @Test
-    fun cellBasedIcon_usesEmptyState_whenNotInService() =
-        testScope.runTest {
-            var latest: SignalIconModel.Cellular? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = it as? SignalIconModel.Cellular }
-                    .launchIn(this)
+        // Default network name, operator name is null, uses the default
+        connectionRepo.operatorAlphaShort.setValue(null)
 
-            connectionRepository.isNonTerrestrial.value = false
-            connectionRepository.isInService.value = false
+        assertThat(latest).isEqualTo(DEFAULT_NAME)
 
-            assertThat(latest?.level).isEqualTo(0)
-            assertThat(latest?.showExclamationMark).isTrue()
+        // Derived network name, operator name non-null, uses the derived name
+        connectionRepo.carrierName.setValue(NetworkNameModel.SubscriptionDerived(DERIVED_NAME))
+        connectionRepo.operatorAlphaShort.setValue(testOperatorName)
 
-            // Changing the level doesn't overwrite the disabled state
-            connectionRepository.primaryLevel.value = 2
-            assertThat(latest?.level).isEqualTo(0)
-            assertThat(latest?.showExclamationMark).isTrue()
-
-            // Once back in service, the regular icon appears
-            connectionRepository.isInService.value = true
-            assertThat(latest?.level).isEqualTo(2)
-            assertThat(latest?.showExclamationMark).isFalse()
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(DERIVED_NAME)
+    }
 
     @Test
-    fun cellBasedIcon_usesCarrierNetworkState_whenInCarrierNetworkChangeMode() =
-        testScope.runTest {
-            var latest: SignalIconModel.Cellular? = null
-            val job =
-                underTest.signalLevelIcon
-                    .onEach { latest = it as? SignalIconModel.Cellular? }
-                    .launchIn(this)
+    fun isSingleCarrier_matchesParent() = runTest {
+        val latest by underTest.isSingleCarrier.collectLastValue()
 
-            connectionRepository.isNonTerrestrial.value = false
-            connectionRepository.isInService.value = true
-            connectionRepository.carrierNetworkChangeActive.value = true
-            connectionRepository.primaryLevel.value = 1
-            connectionRepository.cdmaLevel.value = 1
+        //            mobileIconsInteractor.isSingleCarrier.setValue(true)
+        isSingleCarrier.setValue(true)
+        assertThat(latest).isTrue()
 
-            assertThat(latest!!.level).isEqualTo(1)
-            assertThat(latest!!.carrierNetworkChange).isTrue()
-
-            // SignalIconModel respects the current level
-            connectionRepository.primaryLevel.value = 2
-
-            assertThat(latest!!.level).isEqualTo(2)
-            assertThat(latest!!.carrierNetworkChange).isTrue()
-
-            job.cancel()
-        }
+        //            mobileIconsInteractor.isSingleCarrier.setValue(false)
+        isSingleCarrier.setValue(false)
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun satBasedIcon_isUsedWhenNonTerrestrial() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.signalLevelIcon)
+    fun isForceHidden_matchesParent() = runTest {
+        val latest by underTest.isForceHidden.collectLastValue()
 
-            // Start off using cellular
-            assertThat(latest).isInstanceOf(SignalIconModel.Cellular::class.java)
+        //            mobileIconsInteractor.isForceHidden.setValue(true)
+        isForceHidden.setValue(true)
+        assertThat(latest).isTrue()
 
-            connectionRepository.isNonTerrestrial.value = true
+        //            mobileIconsInteractor.isForceHidden.setValue(false)
+        isForceHidden.setValue(false)
+        assertThat(latest).isFalse()
+    }
 
-            assertThat(latest).isInstanceOf(SignalIconModel.Satellite::class.java)
-        }
+    @Test
+    fun isAllowedDuringAirplaneMode_matchesRepo() = runTest {
+        val latest by underTest.isAllowedDuringAirplaneMode.collectLastValue()
+
+        connectionRepo.isAllowedDuringAirplaneMode.setValue(true)
+        assertThat(latest).isTrue()
+
+        connectionRepo.isAllowedDuringAirplaneMode.setValue(false)
+        assertThat(latest).isFalse()
+    }
+
+    @Test
+    fun cellBasedIconId_correctLevel_notCutout() = runTest {
+        connectionRepo.isNonTerrestrial.setValue(false)
+        connectionRepo.isInService.setValue(true)
+        connectionRepo.primaryLevel.setValue(1)
+        connectionRepo.dataEnabled.setValue(true)
+        connectionRepo.isNonTerrestrial.setValue(false)
+
+        val latest by
+            underTest.signalLevelIcon.map { it as? SignalIconModel.Cellular }.collectLastValue()
+
+        assertThat(latest?.level).isEqualTo(1)
+
+        // TODO: need to provision MobileIconsInteractorKairos#isDefaultConnectionFailed +
+        // defaultSubscriptionHasDataEnabled?
+        assertThat(latest?.showExclamationMark).isEqualTo(false)
+    }
+
+    @Test
+    fun icon_usesLevelFromInteractor() = runTest {
+        connectionRepo.isNonTerrestrial.setValue(false)
+        connectionRepo.isInService.setValue(true)
+
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        connectionRepo.primaryLevel.setValue(3)
+        assertThat(latest!!.level).isEqualTo(3)
+
+        connectionRepo.primaryLevel.setValue(1)
+        assertThat(latest!!.level).isEqualTo(1)
+    }
+
+    @Test
+    fun cellBasedIcon_usesNumberOfLevelsFromInteractor() = runTest {
+        connectionRepo.isNonTerrestrial.setValue(false)
+
+        val latest by
+            underTest.signalLevelIcon.map { it as? SignalIconModel.Cellular }.collectLastValue()
+
+        connectionRepo.numberOfLevels.setValue(5)
+        assertThat(latest!!.numberOfLevels).isEqualTo(5)
+
+        connectionRepo.numberOfLevels.setValue(2)
+        assertThat(latest!!.numberOfLevels).isEqualTo(2)
+    }
+
+    @Test
+    fun cellBasedIcon_defaultDataDisabled_showExclamationTrue() = runTest {
+        connectionRepo.isNonTerrestrial.setValue(false)
+        connectionRepo.dataEnabled.setValue(false)
+        defaultSubscriptionHasDataEnabled.setValue(false)
+
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        assertThat((latest!! as SignalIconModel.Cellular).showExclamationMark).isTrue()
+    }
+
+    @Test
+    fun cellBasedIcon_defaultConnectionFailed_showExclamationTrue() = runTest {
+        connectionRepo.isNonTerrestrial.setValue(false)
+        //            mobileIconsInteractor.isDefaultConnectionFailed.setValue(true)
+        isDefaultConnectionFailed.setValue(true)
+
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        assertThat((latest!! as SignalIconModel.Cellular).showExclamationMark).isTrue()
+    }
+
+    @Test
+    fun cellBasedIcon_enabledAndNotFailed_showExclamationFalse() = runTest {
+        connectionRepo.isNonTerrestrial.setValue(false)
+        connectionRepo.isInService.setValue(true)
+        connectionRepo.dataEnabled.setValue(true)
+        //            mobileIconsInteractor.isDefaultConnectionFailed.setValue(false)
+        isDefaultConnectionFailed.setValue(false)
+
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        assertThat((latest!! as SignalIconModel.Cellular).showExclamationMark).isFalse()
+    }
+
+    @Test
+    fun cellBasedIcon_usesEmptyState_whenNotInService() = runTest {
+        val latest by
+            underTest.signalLevelIcon.map { it as SignalIconModel.Cellular }.collectLastValue()
+
+        connectionRepo.isNonTerrestrial.setValue(false)
+        connectionRepo.isInService.setValue(false)
+
+        assertThat(latest?.level).isEqualTo(0)
+        assertThat(latest?.showExclamationMark).isTrue()
+
+        // Changing the level doesn't overwrite the disabled state
+        connectionRepo.primaryLevel.setValue(2)
+        assertThat(latest?.level).isEqualTo(0)
+        assertThat(latest?.showExclamationMark).isTrue()
+
+        // Once back in service, the regular icon appears
+        connectionRepo.isInService.setValue(true)
+        assertThat(latest?.level).isEqualTo(2)
+        assertThat(latest?.showExclamationMark).isFalse()
+    }
+
+    @Test
+    fun cellBasedIcon_usesCarrierNetworkState_whenInCarrierNetworkChangeMode() = runTest {
+        val latest by
+            underTest.signalLevelIcon.map { it as SignalIconModel.Cellular }.collectLastValue()
+
+        connectionRepo.isNonTerrestrial.setValue(false)
+        connectionRepo.isInService.setValue(true)
+        connectionRepo.carrierNetworkChangeActive.setValue(true)
+        connectionRepo.primaryLevel.setValue(1)
+        connectionRepo.cdmaLevel.setValue(1)
+
+        assertThat(latest!!.level).isEqualTo(1)
+        assertThat(latest!!.carrierNetworkChange).isTrue()
+
+        // SignalIconModel respects the current level
+        connectionRepo.primaryLevel.setValue(2)
+
+        assertThat(latest!!.level).isEqualTo(2)
+        assertThat(latest!!.carrierNetworkChange).isTrue()
+    }
+
+    @Test
+    fun satBasedIcon_isUsedWhenNonTerrestrial() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
+
+        // Start off using cellular
+        assertThat(latest).isInstanceOf(SignalIconModel.Cellular::class.java)
+
+        connectionRepo.isNonTerrestrial.setValue(true)
+
+        assertThat(latest).isInstanceOf(SignalIconModel.Satellite::class.java)
+    }
 
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     // See b/346904529 for more context
-    fun satBasedIcon_doesNotInflateSignalStrength_flagOff() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.signalLevelIcon)
+    fun satBasedIcon_doesNotInflateSignalStrength_flagOff() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            // GIVEN a satellite connection
-            connectionRepository.isNonTerrestrial.value = true
-            // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
-            connectionRepository.inflateSignalStrength.value = true
+        // GIVEN a satellite connection
+        connectionRepo.isNonTerrestrial.setValue(true)
+        // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
+        connectionRepo.inflateSignalStrength.setValue(true)
 
-            connectionRepository.primaryLevel.value = 4
-            assertThat(latest!!.level).isEqualTo(4)
+        connectionRepo.primaryLevel.setValue(4)
+        assertThat(latest!!.level).isEqualTo(4)
 
-            connectionRepository.inflateSignalStrength.value = true
-            connectionRepository.primaryLevel.value = 4
+        connectionRepo.inflateSignalStrength.setValue(true)
+        connectionRepo.primaryLevel.setValue(4)
 
-            // Icon level is unaffected
-            assertThat(latest!!.level).isEqualTo(4)
-        }
+        // Icon level is unaffected
+        assertThat(latest!!.level).isEqualTo(4)
+    }
 
     @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     // See b/346904529 for more context
-    fun satBasedIcon_doesNotInflateSignalStrength_flagOn() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.signalLevelIcon)
+    fun satBasedIcon_doesNotInflateSignalStrength_flagOn() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            // GIVEN a satellite connection
-            connectionRepository.isNonTerrestrial.value = true
-            // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
-            connectionRepository.inflateSignalStrength.value = true
+        // GIVEN a satellite connection
+        connectionRepo.isNonTerrestrial.setValue(true)
+        // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
+        connectionRepo.inflateSignalStrength.setValue(true)
 
-            connectionRepository.satelliteLevel.value = 4
-            assertThat(latest!!.level).isEqualTo(4)
+        connectionRepo.satelliteLevel.setValue(4)
+        assertThat(latest!!.level).isEqualTo(4)
 
-            connectionRepository.inflateSignalStrength.value = true
-            connectionRepository.primaryLevel.value = 4
+        connectionRepo.inflateSignalStrength.setValue(true)
+        connectionRepo.primaryLevel.setValue(4)
 
-            // Icon level is unaffected
-            assertThat(latest!!.level).isEqualTo(4)
-        }
+        // Icon level is unaffected
+        assertThat(latest!!.level).isEqualTo(4)
+    }
 
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
-    fun satBasedIcon_usesPrimaryLevel_flagOff() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.signalLevelIcon)
+    fun satBasedIcon_usesPrimaryLevel_flagOff() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            // GIVEN a satellite connection
-            connectionRepository.isNonTerrestrial.value = true
+        // GIVEN a satellite connection
+        connectionRepo.isNonTerrestrial.setValue(true)
 
-            // GIVEN primary level is set
-            connectionRepository.primaryLevel.value = 4
-            connectionRepository.satelliteLevel.value = 0
+        // GIVEN primary level is set
+        connectionRepo.primaryLevel.setValue(4)
+        connectionRepo.satelliteLevel.setValue(0)
 
-            // THEN icon uses the primary level because the flag is off
-            assertThat(latest!!.level).isEqualTo(4)
-        }
+        // THEN icon uses the primary level because the flag is off
+        assertThat(latest!!.level).isEqualTo(4)
+    }
 
     @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
-    fun satBasedIcon_usesSatelliteLevel_flagOn() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.signalLevelIcon)
+    fun satBasedIcon_usesSatelliteLevel_flagOn() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            // GIVEN a satellite connection
-            connectionRepository.isNonTerrestrial.value = true
+        // GIVEN a satellite connection
+        connectionRepo.isNonTerrestrial.setValue(true)
 
-            // GIVEN satellite level is set
-            connectionRepository.satelliteLevel.value = 4
-            connectionRepository.primaryLevel.value = 0
+        // GIVEN satellite level is set
+        connectionRepo.satelliteLevel.setValue(4)
+        connectionRepo.primaryLevel.setValue(0)
 
-            // THEN icon uses the satellite level because the flag is on
-            assertThat(latest!!.level).isEqualTo(4)
-        }
+        // THEN icon uses the satellite level because the flag is on
+        assertThat(latest!!.level).isEqualTo(4)
+    }
 
     /**
      * Context (b/377518113), this test will not be needed after FLAG_CARRIER_ROAMING_NB_IOT_NTN is
@@ -816,43 +728,23 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
      */
     @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
-    fun satBasedIcon_reportsLevelZeroWhenOutOfService() =
-        testScope.runTest {
-            val latest by collectLastValue(underTest.signalLevelIcon)
+    fun satBasedIcon_reportsLevelZeroWhenOutOfService() = runTest {
+        val latest by underTest.signalLevelIcon.collectLastValue()
 
-            // GIVEN a satellite connection
-            connectionRepository.isNonTerrestrial.value = true
-            // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
-            connectionRepository.inflateSignalStrength.value = true
+        // GIVEN a satellite connection
+        connectionRepo.isNonTerrestrial.setValue(true)
+        // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
+        connectionRepo.inflateSignalStrength.setValue(true)
 
-            connectionRepository.primaryLevel.value = 4
-            assertThat(latest!!.level).isEqualTo(4)
+        connectionRepo.primaryLevel.setValue(4)
+        assertThat(latest!!.level).isEqualTo(4)
 
-            connectionRepository.isInService.value = false
-            connectionRepository.primaryLevel.value = 4
+        connectionRepo.isInService.setValue(false)
+        connectionRepo.primaryLevel.setValue(4)
 
-            // THEN level reports 0, by policy
-            assertThat(latest!!.level).isEqualTo(0)
-        }
-
-    private fun createInteractor(
-        overrides: MobileIconCarrierIdOverrides = MobileIconCarrierIdOverridesImpl()
-    ) =
-        MobileIconInteractorKairosImpl(
-            testScope.backgroundScope,
-            mobileIconsInteractor.activeDataConnectionHasDataEnabled,
-            mobileIconsInteractor.alwaysShowDataRatIcon,
-            mobileIconsInteractor.alwaysUseCdmaLevel,
-            mobileIconsInteractor.isSingleCarrier,
-            mobileIconsInteractor.mobileIsDefault,
-            mobileIconsInteractor.defaultMobileIconMapping,
-            mobileIconsInteractor.defaultMobileIconGroup,
-            mobileIconsInteractor.isDefaultConnectionFailed,
-            mobileIconsInteractor.isForceHidden,
-            connectionRepository,
-            context,
-            overrides,
-        )
+        // THEN level reports 0, by policy
+        assertThat(latest!!.level).isEqualTo(0)
+    }
 
     companion object {
         private const val GSM_LEVEL = 1

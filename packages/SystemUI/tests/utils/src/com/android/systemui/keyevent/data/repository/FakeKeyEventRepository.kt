@@ -34,7 +34,7 @@ class FakeKeyEventRepository @Inject constructor() : KeyEventRepository {
         _isPowerButtonDown.value = isDown
     }
 
-    fun setPowerButtonBeingLongPressed(isLongPressed: Boolean) {
+    fun setPowerButtonLongPressed(isLongPressed: Boolean) {
         _isPowerButtonLongPressed.value = isLongPressed
     }
 }

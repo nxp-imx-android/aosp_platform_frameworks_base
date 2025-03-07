@@ -431,6 +431,38 @@ class DesktopMixedTransitionHandlerTest : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX,
+    )
+    fun startAndAnimateLaunchTransition_withMinimizeChange_wrongTaskId_reparentsMinimizeChange() {
+        val wct = WindowContainerTransaction()
+        val launchingTask = createTask(WINDOWING_MODE_FREEFORM)
+        val minimizingTask = createTask(WINDOWING_MODE_FREEFORM)
+        val launchTaskChange = createChange(launchingTask, mode = TRANSIT_OPEN)
+        val minimizeChange = createChange(minimizingTask)
+        val transition = Binder()
+        whenever(transitions.startTransition(eq(TRANSIT_OPEN), eq(wct), anyOrNull()))
+            .thenReturn(transition)
+
+        mixedHandler.startLaunchTransition(
+            transitionType = TRANSIT_OPEN,
+            wct = wct,
+            taskId = Int.MAX_VALUE,
+            minimizingTaskId = minimizingTask.taskId,
+        )
+        mixedHandler.startAnimation(
+            transition,
+            createCloseTransitionInfo(TRANSIT_OPEN, listOf(launchTaskChange, minimizeChange)),
+            SurfaceControl.Transaction(),
+            SurfaceControl.Transaction(),
+        ) {}
+
+        verify(rootTaskDisplayAreaOrganizer)
+            .reparentToDisplayArea(anyInt(), eq(minimizeChange.leash), any())
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX)
     fun startAnimation_pendingTransition_noLaunchChange_returnsFalse() {
         val wct = WindowContainerTransaction()

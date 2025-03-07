@@ -93,7 +93,7 @@ public class InsetsPolicyTest extends WindowTestsBase {
 
         final Task task1 = createTask(mDisplayContent);
         final Task task2 = createTask(mDisplayContent);
-        task1.setAdjacentTaskFragment(task2);
+        task1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(task1, task2));
         final WindowState win = createAppWindow(task1, WINDOWING_MODE_MULTI_WINDOW, "app");
         final InsetsSourceControl[] controls = addWindowAndGetControlsForDispatch(win);
 

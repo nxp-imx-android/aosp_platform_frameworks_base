@@ -34,7 +34,6 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.wm.BaseAppSnapshotPersister.PersistInfoProvider;
-import com.android.window.flags.Flags;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -532,26 +531,6 @@ class ActivitySnapshotController extends AbsAppSnapshotController<ActivityRecord
         final int currentIndex = currTF.asTask() != null
                 ? currentTask.mChildren.indexOf(currentActivity)
                 : currentTask.mChildren.indexOf(currTF);
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final int prevAdjacentIndex = currentTask.mChildren.indexOf(
-                    prevTF.getAdjacentTaskFragment());
-            if (prevAdjacentIndex > currentIndex) {
-                // PrevAdjacentTF already above currentActivity
-                return;
-            }
-            // Add both the one below, and its adjacent.
-            if (!inTransition || isInParticipant(initPrev, mTmpTransitionParticipants)) {
-                result.add(initPrev);
-            }
-            final ActivityRecord prevAdjacentActivity = prevTF.getAdjacentTaskFragment()
-                    .getTopMostActivity();
-            if (prevAdjacentActivity != null && (!inTransition
-                    || isInParticipant(prevAdjacentActivity, mTmpTransitionParticipants))) {
-                result.add(prevAdjacentActivity);
-            }
-            return;
-        }
-
         final boolean hasAdjacentAboveCurrent = prevTF.forOtherAdjacentTaskFragments(
                 prevAdjacentTF -> {
                     final int prevAdjacentIndex = currentTask.mChildren.indexOf(prevAdjacentTF);

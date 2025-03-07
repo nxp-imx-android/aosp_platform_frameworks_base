@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode
 
 import android.animation.Animator
+import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.os.IBinder
 import android.view.Choreographer
@@ -28,9 +29,7 @@ import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.transition.Transitions
 import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * Transition handler for moving a window to a different display.
- */
+/** Transition handler for moving a window to a different display. */
 class DesktopModeMoveToDisplayTransitionHandler(
     private val animationTransaction: SurfaceControl.Transaction
 ) : Transitions.TransitionHandler {
@@ -47,46 +46,52 @@ class DesktopModeMoveToDisplayTransitionHandler(
         finishTransaction: SurfaceControl.Transaction,
         finishCallback: Transitions.TransitionFinishCallback,
     ): Boolean {
-        val change = info.changes.find { it.startDisplayId != it.endDisplayId } ?: return false
-        ValueAnimator.ofFloat(0f, 1f)
-            .apply {
-                duration = ANIM_DURATION.inWholeMilliseconds
-                interpolator = Interpolators.LINEAR
-                addUpdateListener { animation ->
-                    animationTransaction
-                        .setAlpha(change.leash, animation.animatedValue as Float)
-                        .setFrameTimeline(Choreographer.getInstance().vsyncId)
-                        .apply()
-                }
-                addListener(
-                    object : Animator.AnimatorListener {
-                        override fun onAnimationStart(animation: Animator) {
-                            val endBounds = change.endAbsBounds
-                            startTransaction
-                                .setPosition(
-                                    change.leash,
-                                    endBounds.left.toFloat(),
-                                    endBounds.top.toFloat(),
-                                )
-                                .setWindowCrop(change.leash, endBounds.width(), endBounds.height())
-                                .apply()
-                        }
+        val changes = info.changes.filter { it.startDisplayId != it.endDisplayId }
+        if (changes.isEmpty()) return false
+        for (change in changes) {
+            val endBounds = change.endAbsBounds
+            // The position should be relative to the parent. For example, in ActivityEmbedding, the
+            // leash surface for the embedded Activity is parented to the container.
+            val endPosition = change.endRelOffset
+            startTransaction
+                .setPosition(change.leash, endPosition.x.toFloat(), endPosition.y.toFloat())
+                .setWindowCrop(change.leash, endBounds.width(), endBounds.height())
+        }
+        startTransaction.apply()
 
-                        override fun onAnimationEnd(animation: Animator) {
-                            finishTransaction.apply()
-                            finishCallback.onTransitionFinished(null)
-                        }
-
-                        override fun onAnimationCancel(animation: Animator) {
-                            finishTransaction.apply()
-                            finishCallback.onTransitionFinished(null)
-                        }
-
-                        override fun onAnimationRepeat(animation: Animator) = Unit
+        val animator = AnimatorSet()
+        animator.playTogether(
+            changes.map {
+                ValueAnimator.ofFloat(0f, 1f).apply {
+                    duration = ANIM_DURATION.inWholeMilliseconds
+                    interpolator = Interpolators.LINEAR
+                    addUpdateListener { animation ->
+                        animationTransaction
+                            .setAlpha(it.leash, animation.animatedValue as Float)
+                            .setFrameTimeline(Choreographer.getInstance().vsyncId)
+                            .apply()
                     }
-                )
+                }
             }
-            .start()
+        )
+        animator.addListener(
+            object : Animator.AnimatorListener {
+                override fun onAnimationStart(animation: Animator) = Unit
+
+                override fun onAnimationEnd(animation: Animator) {
+                    finishTransaction.apply()
+                    finishCallback.onTransitionFinished(null)
+                }
+
+                override fun onAnimationCancel(animation: Animator) {
+                    finishTransaction.apply()
+                    finishCallback.onTransitionFinished(null)
+                }
+
+                override fun onAnimationRepeat(animation: Animator) = Unit
+            }
+        )
+        animator.start()
         return true
     }
 

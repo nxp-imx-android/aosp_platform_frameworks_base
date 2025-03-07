@@ -356,7 +356,6 @@ import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.policy.WindowManagerPolicy.ScreenOffListener;
 import com.android.server.power.ShutdownThread;
 import com.android.server.utils.PriorityDump;
-import com.android.server.wallpaper.WallpaperCropper.WallpaperCropUtils;
 import com.android.window.flags.Flags;
 
 import dalvik.annotation.optimization.NeverCompile;
@@ -8100,12 +8099,6 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public void setWallpaperCropUtils(WallpaperCropUtils wallpaperCropUtils) {
-            mRoot.getDisplayContent(DEFAULT_DISPLAY).mWallpaperController
-                    .setWallpaperCropUtils(wallpaperCropUtils);
-        }
-
-        @Override
         public boolean isUidFocused(int uid) {
             synchronized (mGlobalLock) {
                 for (int i = mRoot.getChildCount() - 1; i >= 0; i--) {
@@ -9374,23 +9367,6 @@ public class WindowManagerService extends IWindowManager.Stub
             return focusedActivity;
         }
 
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final TaskFragment adjacentTaskFragment = taskFragment.getAdjacentTaskFragment();
-            final ActivityRecord adjacentTopActivity = adjacentTaskFragment.topRunningActivity();
-            if (adjacentTopActivity == null) {
-                // Return if no adjacent activity.
-                return focusedActivity;
-            }
-
-            if (adjacentTopActivity.getLastWindowCreateTime()
-                    < focusedActivity.getLastWindowCreateTime()) {
-                // Return if the current focus activity has more recently active window.
-                return focusedActivity;
-            }
-
-            return adjacentTopActivity;
-        }
-
         // Find the adjacent activity with more recently active window.
         final ActivityRecord[] mostRecentActiveActivity = { focusedActivity };
         final long[] mostRecentActiveTime = { focusedActivity.getLastWindowCreateTime() };
@@ -9461,20 +9437,15 @@ public class WindowManagerService extends IWindowManager.Stub
             // No adjacent window.
             return false;
         }
-        final TaskFragment adjacentFragment;
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            if (fromFragment.getAdjacentTaskFragments().size() > 2) {
-                throw new IllegalStateException("Not yet support 3+ adjacent for non-Task TFs");
-            }
-            final TaskFragment[] tmpAdjacent = new TaskFragment[1];
-            fromFragment.forOtherAdjacentTaskFragments(adjacentTF -> {
-                tmpAdjacent[0] = adjacentTF;
-                return true;
-            });
-            adjacentFragment = tmpAdjacent[0];
-        } else {
-            adjacentFragment = fromFragment.getAdjacentTaskFragment();
+        if (fromFragment.getAdjacentTaskFragments().size() > 2) {
+            throw new IllegalStateException("Not yet support 3+ adjacent for non-Task TFs");
         }
+        final TaskFragment[] tmpAdjacent = new TaskFragment[1];
+        fromFragment.forOtherAdjacentTaskFragments(adjacentTF -> {
+            tmpAdjacent[0] = adjacentTF;
+            return true;
+        });
+        final TaskFragment adjacentFragment = tmpAdjacent[0];
         if (adjacentFragment.isIsolatedNav()) {
             // Don't move the focus if the adjacent TF is isolated navigation.
             return false;

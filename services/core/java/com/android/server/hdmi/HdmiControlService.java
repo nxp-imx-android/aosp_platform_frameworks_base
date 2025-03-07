@@ -1593,6 +1593,17 @@ public class HdmiControlService extends SystemService {
         this.mCecMessageBuffer = cecMessageBuffer;
     }
 
+    List<HdmiCecMessage> getCecMessageWithOpcode(int opcode) {
+        List<HdmiCecMessage> cecMessagesWithOpcode = new ArrayList<>();
+        List<HdmiCecMessage> cecMessages = mCecMessageBuffer.getBuffer();
+        for (HdmiCecMessage message: cecMessages) {
+            if (message.getOpcode() == opcode) {
+                cecMessagesWithOpcode.add(message);
+            }
+        }
+        return cecMessagesWithOpcode;
+    }
+
     /**
      * Returns {@link Looper} of main thread. Use this {@link Looper} instance
      * for tasks that are running on main service thread.

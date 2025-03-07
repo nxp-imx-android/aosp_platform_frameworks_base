@@ -236,7 +236,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     fun primaryChip_screenRecordShowAndCallShow_screenRecordShown() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
-            addOngoingCallState("call")
+            addOngoingCallState("call", isAppVisible = false)
 
             val latest by collectLastValue(underTest.primaryChip)
 
@@ -249,7 +249,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val callNotificationKey = "call"
             screenRecordState.value = ScreenRecordModel.Recording
-            addOngoingCallState(callNotificationKey)
+            addOngoingCallState(callNotificationKey, isAppVisible = false)
 
             val latest by collectLastValue(underTest.chipsLegacy)
             val unused by collectLastValue(underTest.chips)
@@ -296,7 +296,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     @Test
     fun chipsLegacy_oneChip_notSquished() =
         kosmos.runTest {
-            addOngoingCallState()
+            addOngoingCallState(isAppVisible = false)
 
             val latest by collectLastValue(underTest.chipsLegacy)
 
@@ -323,7 +323,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     fun chipsLegacy_twoTimerChips_isSmallPortrait_bothSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
-            addOngoingCallState(key = "call")
+            addOngoingCallState(key = "call", isAppVisible = false)
 
             val latest by collectLastValue(underTest.chipsLegacy)
 
@@ -385,7 +385,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     fun chipsLegacy_countdownChipAndTimerChip_countdownNotSquished_butTimerSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Starting(millisUntilStarted = 2000)
-            addOngoingCallState(key = "call")
+            addOngoingCallState(key = "call", isAppVisible = false)
 
             val latest by collectLastValue(underTest.chipsLegacy)
 
@@ -431,7 +431,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
 
             // WHEN there's 2 chips
-            addOngoingCallState(key = "call")
+            addOngoingCallState(key = "call", isAppVisible = false)
 
             // THEN they both become squished
             assertThat(latest!!.primary)
@@ -487,7 +487,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     fun chipsLegacy_twoChips_isLandscape_notSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
-            addOngoingCallState(key = "call")
+            addOngoingCallState(key = "call", isAppVisible = false)
 
             // WHEN we're in landscape
             val config =
@@ -533,7 +533,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
     fun chipsLegacy_twoChips_isLargeScreen_notSquished() =
         kosmos.runTest {
             screenRecordState.value = ScreenRecordModel.Recording
-            addOngoingCallState(key = "call")
+            addOngoingCallState(key = "call", isAppVisible = false)
 
             // WHEN we're on a large screen
             kosmos.displayStateRepository.setIsLargeScreen(true)
@@ -627,7 +627,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             screenRecordState.value = ScreenRecordModel.DoingNothing
             mediaProjectionState.value =
                 MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
-            addOngoingCallState(key = "call")
+            addOngoingCallState(key = "call", isAppVisible = false)
 
             val latest by collectLastValue(underTest.primaryChip)
 
@@ -642,7 +642,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             screenRecordState.value = ScreenRecordModel.DoingNothing
             mediaProjectionState.value =
                 MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
-            addOngoingCallState(key = "call")
+            addOngoingCallState(key = "call", isAppVisible = false)
 
             val latest by collectLastValue(underTest.chipsLegacy)
             val unused by collectLastValue(underTest.chips)
@@ -681,7 +681,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             mediaProjectionState.value = MediaProjectionState.NotProjecting
 
             val callNotificationKey = "call"
-            addOngoingCallState(key = callNotificationKey)
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
 
             val latest by collectLastValue(underTest.primaryChip)
 
@@ -697,7 +697,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             // MediaProjection covers both share-to-app and cast-to-other-device
             mediaProjectionState.value = MediaProjectionState.NotProjecting
 
-            addOngoingCallState(key = callNotificationKey)
+            addOngoingCallState(key = callNotificationKey, isAppVisible = false)
 
             val latest by collectLastValue(underTest.chipsLegacy)
             val unused by collectLastValue(underTest.chips)
@@ -913,7 +913,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                     ),
                     activeNotificationModel(
                         key = "fourthNotif",
-                        statusBarChipIcon = thirdIcon,
+                        statusBarChipIcon = fourthIcon,
                         promotedContent =
                             PromotedNotificationContentModel.Builder("fourthNotif").build(),
                     ),
@@ -975,7 +975,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val unused by collectLastValue(underTest.chips)
 
             val callNotificationKey = "call"
-            addOngoingCallState(callNotificationKey)
+            addOngoingCallState(callNotificationKey, isAppVisible = false)
 
             val firstIcon = createStatusBarIconViewOrNull()
             activeNotificationListRepository.addNotifs(
@@ -1053,7 +1053,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chipsLegacy)
             val unused by collectLastValue(underTest.chips)
 
-            addOngoingCallState(callNotificationKey)
+            addOngoingCallState(callNotificationKey, isAppVisible = false)
             screenRecordState.value = ScreenRecordModel.Recording
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
@@ -1160,7 +1160,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertIsNotifChip(latest, context, notifIcon, "notif")
 
             // WHEN the higher priority call chip is added
-            addOngoingCallState(callNotificationKey)
+            addOngoingCallState(callNotificationKey, isAppVisible = false)
 
             // THEN the higher priority call chip is used
             assertIsCallChip(latest, callNotificationKey, context)
@@ -1191,7 +1191,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             screenRecordState.value = ScreenRecordModel.Recording
             mediaProjectionState.value =
                 MediaProjectionState.Projecting.EntireScreen(NORMAL_PACKAGE)
-            addOngoingCallState(callNotificationKey)
+            addOngoingCallState(callNotificationKey, isAppVisible = false)
             val notifIcon = createStatusBarIconViewOrNull()
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
@@ -1253,7 +1253,7 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             assertThat(unused).isEqualTo(MultipleOngoingActivityChipsModel())
 
             // WHEN the higher priority call chip is added
-            addOngoingCallState(callNotificationKey)
+            addOngoingCallState(callNotificationKey, isAppVisible = false)
 
             // THEN the higher priority call chip is used as primary and notif is demoted to
             // secondary

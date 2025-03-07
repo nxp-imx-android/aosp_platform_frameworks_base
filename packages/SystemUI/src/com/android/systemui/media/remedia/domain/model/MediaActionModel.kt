@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.effects.dagger
+package com.android.systemui.media.remedia.domain.model
 
-import com.android.systemui.CoreStartable
-import com.android.systemui.effects.TopLevelWindowEffects
-import dagger.Binds
-import dagger.Module
-import dagger.multibindings.ClassKey
-import dagger.multibindings.IntoMap
+import com.android.systemui.common.shared.model.Icon
 
-@Module
-interface TopLevelWindowEffectsModule {
+sealed interface MediaActionModel {
+    data class Action(val icon: Icon, val onClick: (() -> Unit)?) : MediaActionModel
 
-    @Binds
-    @IntoMap
-    @ClassKey(TopLevelWindowEffects::class)
-    fun bindTopLevelWindowEffectsCoreStartable(impl: TopLevelWindowEffects): CoreStartable
+    data object ReserveSpace : MediaActionModel
+
+    data object None : MediaActionModel
 }

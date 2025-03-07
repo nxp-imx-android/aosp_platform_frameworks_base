@@ -19,8 +19,8 @@ package com.android.systemui.statusbar.chips.call.ui.viewmodel
 import android.app.PendingIntent
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.view.View
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.Expandable
@@ -33,13 +33,16 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
+import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
 import com.android.systemui.testKosmos
@@ -51,10 +54,16 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class CallChipViewModelTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
     private val chipBackgroundView = mock<ChipBackgroundContainer>()
@@ -87,9 +96,10 @@ class CallChipViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
 
-            addOngoingCallState(startTimeMs = 0)
+            addOngoingCallState(startTimeMs = 0, isAppVisible = false)
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
         }
 
     @Test
@@ -97,9 +107,10 @@ class CallChipViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
 
-            addOngoingCallState(startTimeMs = -2)
+            addOngoingCallState(startTimeMs = -2, isAppVisible = false)
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
         }
 
     @Test
@@ -107,9 +118,82 @@ class CallChipViewModelTest : SysuiTestCase() {
         kosmos.runTest {
             val latest by collectLastValue(underTest.chip)
 
-            addOngoingCallState(startTimeMs = 345)
+            addOngoingCallState(startTimeMs = 345, isAppVisible = false)
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
+        }
+
+    @Test
+    @DisableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    fun chipLegacy_inCallWithVisibleApp_zeroStartTime_isHiddenAsInactive() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            addOngoingCallState(startTimeMs = 0, isAppVisible = true)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
+        }
+
+    @Test
+    @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    @EnableChipsModernization
+    fun chipWithReturnAnimation_inCallWithVisibleApp_zeroStartTime_isHiddenAsIconOnly() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            addOngoingCallState(startTimeMs = 0, isAppVisible = true)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+        }
+
+    @Test
+    @DisableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    fun chipLegacy_inCallWithVisibleApp_negativeStartTime_isHiddenAsInactive() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            addOngoingCallState(startTimeMs = -2, isAppVisible = true)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
+        }
+
+    @Test
+    @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    @EnableChipsModernization
+    fun chipWithReturnAnimation_inCallWithVisibleApp_negativeStartTime_isHiddenAsIconOnly() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            addOngoingCallState(startTimeMs = -2, isAppVisible = true)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+        }
+
+    @Test
+    @DisableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    fun chipLegacy_inCallWithVisibleApp_positiveStartTime_isHiddenAsInactive() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            addOngoingCallState(startTimeMs = 345, isAppVisible = true)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Inactive::class.java)
+        }
+
+    @Test
+    @EnableFlags(StatusBarChipsReturnAnimations.FLAG_NAME)
+    @EnableChipsModernization
+    fun chipWithReturnAnimation_inCallWithVisibleApp_positiveStartTime_isHiddenAsTimer() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chip)
+
+            addOngoingCallState(startTimeMs = 345, isAppVisible = true)
+
+            assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
         }
 
     @Test
@@ -418,5 +502,18 @@ class CallChipViewModelTest : SysuiTestCase() {
 
         private const val PROMOTED_BACKGROUND_COLOR = 65
         private const val PROMOTED_PRIMARY_TEXT_COLOR = 98
+
+        @get:Parameters(name = "{0}")
+        @JvmStatic
+        val flags: List<FlagsParameterization>
+            get() = buildList {
+                addAll(
+                    FlagsParameterization.allCombinationsOf(
+                        StatusBarRootModernization.FLAG_NAME,
+                        StatusBarChipsModernization.FLAG_NAME,
+                        StatusBarChipsReturnAnimations.FLAG_NAME,
+                    )
+                )
+            }
     }
 }

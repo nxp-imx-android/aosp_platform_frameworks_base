@@ -1138,6 +1138,14 @@ public final class MediaRouter2Manager {
         }
 
         @Override
+        public void notifyDeviceSuggestionsUpdated(
+                String packageName,
+                String suggestingPackageName,
+                @Nullable List<SuggestedDeviceInfo> suggestedDeviceInfo) {
+            // MediaRouter2Manager doesn't support device suggestions
+        }
+
+        @Override
         public void notifyRoutesUpdated(List<MediaRoute2Info> routes) {
             mHandler.sendMessage(
                     obtainMessage(

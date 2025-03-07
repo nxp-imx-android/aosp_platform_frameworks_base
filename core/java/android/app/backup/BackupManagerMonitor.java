@@ -297,6 +297,9 @@ public class BackupManagerMonitor {
    @hide */
   public static final int LOG_EVENT_ID_FAILED_TO_READ_DATA_FROM_TRANSPORT = 81;
 
+  /** The pipe between the BackupAgent and the framework was broken during full backup. @hide */
+  public static final int LOG_EVENT_ID_FULL_BACKUP_AGENT_PIPE_BROKEN = 82;
+
   /**
    * This method will be called each time something important happens on BackupManager.
    *

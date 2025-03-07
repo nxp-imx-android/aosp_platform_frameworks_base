@@ -20,6 +20,7 @@ import android.app.PictureInPictureParams;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.os.SystemProperties;
 import android.view.SurfaceControl;
 import android.window.WindowContainerToken;
@@ -47,7 +48,7 @@ import java.util.function.Supplier;
 /**
  * Scheduler for Shell initiated PiP transitions and animations.
  */
-public class PipScheduler {
+public class PipScheduler implements PipTransitionState.PipTransitionStateChangedListener {
     private static final String TAG = PipScheduler.class.getSimpleName();
 
     /**
@@ -71,6 +72,7 @@ public class PipScheduler {
     private final PipSurfaceTransactionHelper mPipSurfaceTransactionHelper;
 
     @Nullable private Runnable mUpdateMovementBoundsRunnable;
+    @Nullable private PipAlphaAnimator mOverlayFadeoutAnimator;
 
     private PipAlphaAnimatorSupplier mPipAlphaAnimatorSupplier;
     private Supplier<PictureInPictureParams> mPipParamsSupplier;
@@ -85,6 +87,7 @@ public class PipScheduler {
         mPipBoundsState = pipBoundsState;
         mMainExecutor = mainExecutor;
         mPipTransitionState = pipTransitionState;
+        mPipTransitionState.addPipTransitionStateChangedListener(this);
         mPipDesktopState = pipDesktopState;
         mSplitScreenControllerOptional = splitScreenControllerOptional;
 
@@ -238,12 +241,16 @@ public class PipScheduler {
 
     void startOverlayFadeoutAnimation(@NonNull SurfaceControl overlayLeash,
             boolean withStartDelay, @NonNull Runnable onAnimationEnd) {
-        PipAlphaAnimator animator = mPipAlphaAnimatorSupplier.get(mContext, overlayLeash,
+        mOverlayFadeoutAnimator = mPipAlphaAnimatorSupplier.get(mContext, overlayLeash,
                 null /* startTx */, null /* finishTx */, PipAlphaAnimator.FADE_OUT);
-        animator.setDuration(CONTENT_OVERLAY_FADE_OUT_DURATION_MS);
-        animator.setStartDelay(withStartDelay ? EXTRA_CONTENT_OVERLAY_FADE_OUT_DELAY_MS : 0);
-        animator.setAnimationEndCallback(onAnimationEnd);
-        animator.start();
+        mOverlayFadeoutAnimator.setDuration(CONTENT_OVERLAY_FADE_OUT_DURATION_MS);
+        mOverlayFadeoutAnimator.setStartDelay(withStartDelay
+                ? EXTRA_CONTENT_OVERLAY_FADE_OUT_DELAY_MS : 0);
+        mOverlayFadeoutAnimator.setAnimationEndCallback(() -> {
+            onAnimationEnd.run();
+            mOverlayFadeoutAnimator = null;
+        });
+        mOverlayFadeoutAnimator.start();
     }
 
     void setUpdateMovementBoundsRunnable(@Nullable Runnable updateMovementBoundsRunnable) {
@@ -289,6 +296,21 @@ public class PipScheduler {
         mSurfaceControlTransactionFactory = factory;
     }
 
+    @Override
+    public void onPipTransitionStateChanged(@PipTransitionState.TransitionState int oldState,
+            @PipTransitionState.TransitionState int newState,
+            @android.annotation.Nullable Bundle extra) {
+        switch (newState) {
+            case PipTransitionState.EXITING_PIP:
+            case PipTransitionState.SCHEDULED_BOUNDS_CHANGE:
+                if (mOverlayFadeoutAnimator != null && mOverlayFadeoutAnimator.isStarted()) {
+                    mOverlayFadeoutAnimator.end();
+                    mOverlayFadeoutAnimator = null;
+                }
+                break;
+        }
+    }
+
     @VisibleForTesting
     interface PipAlphaAnimatorSupplier {
         PipAlphaAnimator get(@NonNull Context context,
@@ -301,6 +323,17 @@ public class PipScheduler {
     @VisibleForTesting
     void setPipAlphaAnimatorSupplier(@NonNull PipAlphaAnimatorSupplier supplier) {
         mPipAlphaAnimatorSupplier = supplier;
+    }
+
+    @VisibleForTesting
+    void setOverlayFadeoutAnimator(@NonNull PipAlphaAnimator animator) {
+        mOverlayFadeoutAnimator = animator;
+    }
+
+    @VisibleForTesting
+    @Nullable
+    PipAlphaAnimator getOverlayFadeoutAnimator() {
+        return mOverlayFadeoutAnimator;
     }
 
     void setPipParamsSupplier(@NonNull Supplier<PictureInPictureParams> pipParamsSupplier) {

@@ -110,16 +110,14 @@ public class AnimationHandler {
         }
     };
 
-    public final static ThreadLocal<AnimationHandler> sAnimatorHandler = new ThreadLocal<>();
+    public static final ThreadLocal<AnimationHandler> sAnimatorHandler =
+            ThreadLocal.withInitial(AnimationHandler::new);
     private static AnimationHandler sTestHandler = null;
     private boolean mListDirty = false;
 
     public static AnimationHandler getInstance() {
         if (sTestHandler != null) {
             return sTestHandler;
-        }
-        if (sAnimatorHandler.get() == null) {
-            sAnimatorHandler.set(new AnimationHandler());
         }
         return sAnimatorHandler.get();
     }

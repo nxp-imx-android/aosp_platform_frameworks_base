@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.os.LocaleList
 import android.os.UserHandle
 import androidx.tracing.Trace
 import com.android.internal.annotations.VisibleForTesting
@@ -80,6 +81,13 @@ class WindowDecorTaskResourceLoader(
      */
     private val existingTasks = mutableSetOf<Int>()
 
+    /**
+     * A map of task -> localeList to keep track of the language of app name that's currently
+     * cached in |taskToResourceCache|.
+     */
+    @VisibleForTesting
+    val localeListOnCache = ConcurrentHashMap<Int, LocaleList>()
+
     init {
         shellInit.addInitCallback(this::onInit, this)
     }
@@ -99,11 +107,14 @@ class WindowDecorTaskResourceLoader(
     fun getName(taskInfo: RunningTaskInfo): CharSequence {
         checkWindowDecorExists(taskInfo)
         val cachedResources = taskToResourceCache[taskInfo.taskId]
-        if (cachedResources != null) {
+        val localeListActiveOnCacheTime = localeListOnCache[taskInfo.taskId]
+        if (cachedResources != null &&
+            taskInfo.getConfiguration().getLocales().equals(localeListActiveOnCacheTime)) {
             return cachedResources.appName
         }
         val resources = loadAppResources(taskInfo)
         taskToResourceCache[taskInfo.taskId] = resources
+        localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
         return resources.appName
     }
 
@@ -117,6 +128,7 @@ class WindowDecorTaskResourceLoader(
         }
         val resources = loadAppResources(taskInfo)
         taskToResourceCache[taskInfo.taskId] = resources
+        localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
         return resources.appIcon
     }
 
@@ -130,6 +142,7 @@ class WindowDecorTaskResourceLoader(
         }
         val resources = loadAppResources(taskInfo)
         taskToResourceCache[taskInfo.taskId] = resources
+        localeListOnCache[taskInfo.taskId] = taskInfo.getConfiguration().getLocales()
         return resources.veilIcon
     }
 
@@ -142,6 +155,7 @@ class WindowDecorTaskResourceLoader(
     fun onWindowDecorClosed(taskInfo: RunningTaskInfo) {
         existingTasks.remove(taskInfo.taskId)
         taskToResourceCache.remove(taskInfo.taskId)
+        localeListOnCache.remove(taskInfo.taskId)
     }
 
     private fun checkWindowDecorExists(taskInfo: RunningTaskInfo) {

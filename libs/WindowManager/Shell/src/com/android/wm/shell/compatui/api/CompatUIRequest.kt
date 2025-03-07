@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.systemui.effects;
+package com.android.wm.shell.compatui.api
 
-import com.android.systemui.CoreStartable
-import com.android.systemui.dagger.SysUISingleton;
-import javax.inject.Inject
+/**
+ * Abstraction for all the possible Compat UI Component requests.
+ */
+interface CompatUIRequest {
+    /**
+     * Unique request identifier
+     */
+    val requestId: Int
 
-@SysUISingleton
-class TopLevelWindowEffects @Inject constructor() : CoreStartable {
-    override fun start() {
+    @Suppress("UNCHECKED_CAST")
+    fun <T : CompatUIRequest> asType(): T? = this as? T
 
+    fun <T : CompatUIRequest> asType(clazz: Class<T>): T? {
+        return if (clazz.isInstance(this)) clazz.cast(this) else null
     }
 }

@@ -22,7 +22,6 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
@@ -32,7 +31,6 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.modifier.ModifierLocalModifierNode
 import androidx.compose.ui.node.DrawModifierNode
@@ -50,11 +48,7 @@ import androidx.compose.ui.util.fastForEach
  * The elements redirected to this container will be drawn above the content of this composable.
  */
 fun Modifier.container(state: ContainerState): Modifier {
-    return onPlaced { state.lastOffsetInWindow = it.positionInWindow() }
-        .drawWithContent {
-            drawContent()
-            state.drawInOverlay(this)
-        }
+    return this then ContainerElement(state)
 }
 
 /**
@@ -103,6 +97,30 @@ internal interface LayerRenderer {
     val zIndex: Float
 
     fun drawInOverlay(drawScope: DrawScope)
+}
+
+private data class ContainerElement(private val state: ContainerState) :
+    ModifierNodeElement<ContainerNode>() {
+    override fun create(): ContainerNode {
+        return ContainerNode(state)
+    }
+
+    override fun update(node: ContainerNode) {
+        node.state = state
+    }
+}
+
+/** A node implementing [container] that can be delegated to. */
+class ContainerNode(var state: ContainerState) :
+    Modifier.Node(), LayoutAwareModifierNode, DrawModifierNode {
+    override fun onPlaced(coordinates: LayoutCoordinates) {
+        state.lastOffsetInWindow = coordinates.positionInWindow()
+    }
+
+    override fun ContentDrawScope.draw() {
+        drawContent()
+        state.drawInOverlay(this)
+    }
 }
 
 private data class DrawInContainerElement(

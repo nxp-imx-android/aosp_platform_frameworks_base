@@ -27,7 +27,9 @@
     384,
     400,
     416,
-    432
+    432,
+    448,
+    464
   ],
   "features": [
     {
@@ -145,6 +147,14 @@
         {
           "x": 64,
           "y": 50
+        },
+        {
+          "x": 64,
+          "y": 50
+        },
+        {
+          "x": 64,
+          "y": 50
         }
       ]
     },
@@ -194,67 +204,75 @@
         },
         {
           "width": 168.8,
-          "height": 38.4
+          "height": 22.4
         },
         {
           "width": 165.2,
-          "height": 34.8
+          "height": 10
         },
         {
           "width": 162.8,
-          "height": 30
+          "height": 2.4
         },
         {
           "width": 161.2,
-          "height": 25.2
+          "height": 0
         },
         {
           "width": 160.4,
-          "height": 20.4
+          "height": 0
         },
         {
           "width": 160,
-          "height": 16.4
+          "height": 0
         },
         {
           "width": 160,
-          "height": 12.8
+          "height": 0
         },
         {
           "width": 160,
-          "height": 9.6
+          "height": 0
         },
         {
           "width": 160,
-          "height": 7.2
+          "height": 0
         },
         {
           "width": 160,
-          "height": 5.2
+          "height": 0
         },
         {
           "width": 160,
-          "height": 3.6
+          "height": 0
         },
         {
           "width": 160,
-          "height": 2.8
+          "height": 0
         },
         {
           "width": 160,
-          "height": 1.6
+          "height": 0
         },
         {
           "width": 160,
-          "height": 1.2
+          "height": 0
         },
         {
           "width": 160,
-          "height": 0.8
+          "height": 0
         },
         {
           "width": 160,
-          "height": 0.4
+          "height": 0
+        },
+        {
+          "width": 160,
+          "height": 0
+        },
+        {
+          "width": 160,
+          "height": 0
         },
         {
           "width": 160,
@@ -293,6 +311,8 @@
         0.025142312,
         0.015358448,
         0.0092999935,
+        0,
+        0,
         0,
         0,
         0,

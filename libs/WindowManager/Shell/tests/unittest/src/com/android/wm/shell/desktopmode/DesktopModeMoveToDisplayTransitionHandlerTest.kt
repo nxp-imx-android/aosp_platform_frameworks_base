@@ -16,8 +16,10 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.graphics.Rect
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.SurfaceControl
 import android.view.WindowManager
 import android.window.TransitionInfo
 import androidx.test.filters.SmallTest
@@ -30,6 +32,8 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWithLooper
@@ -55,7 +59,9 @@ class DesktopModeMoveToDisplayTransitionHandlerTest : ShellTestCase() {
                 info =
                     TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
                         addChange(
-                            TransitionInfo.Change(mock(), mock()).apply { setDisplayId(1, 1) }
+                            TransitionInfo.Change(mock(), mock()).apply {
+                                setDisplayId(/* start= */ 1, /* end= */ 1)
+                            }
                         )
                     },
                 startTransaction = StubTransaction(),
@@ -74,7 +80,9 @@ class DesktopModeMoveToDisplayTransitionHandlerTest : ShellTestCase() {
                 info =
                     TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
                         addChange(
-                            TransitionInfo.Change(mock(), mock()).apply { setDisplayId(1, 2) }
+                            TransitionInfo.Change(mock(), mock()).apply {
+                                setDisplayId(/* start= */ 1, /* end= */ 2)
+                            }
                         )
                     },
                 startTransaction = StubTransaction(),
@@ -83,5 +91,78 @@ class DesktopModeMoveToDisplayTransitionHandlerTest : ShellTestCase() {
             )
 
         assertTrue("Should animate display change transition", animates)
+    }
+
+    @Test
+    fun startAnimation_movingActivityEmbedding_shouldSetCorrectBounds() {
+        val leashLeft = mock<SurfaceControl>()
+        val leashRight = mock<SurfaceControl>()
+        val leashContainer = mock<SurfaceControl>()
+        val startTransaction = spy(StubTransaction())
+
+        handler.startAnimation(
+            transition = mock(),
+            info =
+                TransitionInfo(WindowManager.TRANSIT_CHANGE, /* flags= */ 0).apply {
+                    addChange(
+                        TransitionInfo.Change(mock(), mock()).apply {
+                            flags = TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY
+                            leash = leashLeft
+                            setDisplayId(/* start= */ 1, /* end= */ 2)
+                            setEndAbsBounds(
+                                Rect(
+                                    /* left= */ 100,
+                                    /* top= */ 100,
+                                    /* right= */ 500,
+                                    /* bottom= */ 700,
+                                )
+                            )
+                            setEndRelOffset(/* left= */ 0, /* top= */ 0)
+                        }
+                    )
+                    addChange(
+                        TransitionInfo.Change(mock(), mock()).apply {
+                            flags = TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY
+                            leash = leashRight
+                            setDisplayId(1, 2)
+                            setEndAbsBounds(
+                                Rect(
+                                    /* left= */ 500,
+                                    /* top= */ 100,
+                                    /* right= */ 900,
+                                    /* bottom= */ 700,
+                                )
+                            )
+                            setEndRelOffset(/* left= */ 400, /* top= */ 0)
+                        }
+                    )
+                    addChange(
+                        TransitionInfo.Change(mock(), mock()).apply {
+                            flags = TransitionInfo.FLAG_TRANSLUCENT
+                            leash = leashContainer
+                            setDisplayId(/* start= */ 1, /* end= */ 2)
+                            setEndAbsBounds(
+                                Rect(
+                                    /* left= */ 100,
+                                    /* top= */ 100,
+                                    /* right= */ 900,
+                                    /* bottom= */ 700,
+                                )
+                            )
+                            setEndRelOffset(/* left= */ 100, /* top= */ 100)
+                        }
+                    )
+                },
+            startTransaction = startTransaction,
+            finishTransaction = StubTransaction(),
+            finishCallback = mock(),
+        )
+
+        verify(startTransaction).setPosition(leashLeft, 0f, 0f)
+        verify(startTransaction).setPosition(leashRight, 400f, 0f)
+        verify(startTransaction).setPosition(leashContainer, 100f, 100f)
+        verify(startTransaction).setWindowCrop(leashLeft, 400, 600)
+        verify(startTransaction).setWindowCrop(leashRight, 400, 600)
+        verify(startTransaction).setWindowCrop(leashContainer, 800, 600)
     }
 }

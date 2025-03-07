@@ -18,7 +18,7 @@ package com.android.server.wm;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
 
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN;
 import static com.android.server.wm.ActivityTaskManagerService.POWER_MODE_REASON_CHANGE_DISPLAY;
 import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELDS;
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
@@ -140,8 +140,9 @@ class DeferredDisplayUpdater {
         if (displayInfoDiff == DIFF_EVERYTHING
                 || !mDisplayContent.getLastHasContent()
                 || !mDisplayContent.mTransitionController.isShellTransitionsEnabled()) {
-            ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS,
-                    "DeferredDisplayUpdater: applying DisplayInfo immediately");
+            ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                    "DeferredDisplayUpdater: applying DisplayInfo(%d x %d) immediately",
+                    displayInfo.logicalWidth, displayInfo.logicalHeight);
 
             mLastWmDisplayInfo = displayInfo;
             applyLatestDisplayInfo();
@@ -151,17 +152,23 @@ class DeferredDisplayUpdater {
 
         // If there are non WM-specific display info changes, apply only these fields immediately
         if ((displayInfoDiff & DIFF_NOT_WM_DEFERRABLE) > 0) {
-            ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS,
-                    "DeferredDisplayUpdater: partially applying DisplayInfo immediately");
+            ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                    "DeferredDisplayUpdater: partially applying DisplayInfo(%d x %d) immediately",
+                    displayInfo.logicalWidth, displayInfo.logicalHeight);
             applyLatestDisplayInfo();
         }
 
         // If there are WM-specific display info changes, apply them through a Shell transition
         if ((displayInfoDiff & DIFF_WM_DEFERRABLE) > 0) {
-            ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS,
-                    "DeferredDisplayUpdater: deferring DisplayInfo update");
+            ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                    "DeferredDisplayUpdater: deferring DisplayInfo(%d x %d) update",
+                    displayInfo.logicalWidth, displayInfo.logicalHeight);
 
             requestDisplayChangeTransition(physicalDisplayUpdated, () -> {
+                ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                        "DeferredDisplayUpdater: applying DisplayInfo(%d x %d) after deferring",
+                        displayInfo.logicalWidth, displayInfo.logicalHeight);
+
                 // Apply deferrable fields to DisplayContent only when the transition
                 // starts collecting, non-deferrable fields are ignored in mLastWmDisplayInfo
                 mLastWmDisplayInfo = displayInfo;
@@ -199,7 +206,7 @@ class DeferredDisplayUpdater {
                         mDisplayContent.getDisplayPolicy().getNotificationShade();
                 if (notificationShade != null && notificationShade.isVisible()
                         && mDisplayContent.mAtmService.mKeyguardController.isKeyguardOrAodShowing(
-                                mDisplayContent.mDisplayId)) {
+                        mDisplayContent.mDisplayId)) {
                     Slog.i(TAG, notificationShade + " uses blast for display switch");
                     notificationShade.mSyncMethodOverride = BLASTSyncEngine.METHOD_BLAST;
                 }
@@ -208,9 +215,6 @@ class DeferredDisplayUpdater {
             mDisplayContent.mAtmService.deferWindowLayout();
             try {
                 onStartCollect.run();
-
-                ProtoLog.d(WM_DEBUG_WINDOW_TRANSITIONS,
-                        "DeferredDisplayUpdater: applied DisplayInfo after deferring");
 
                 if (physicalDisplayUpdated) {
                     onDisplayUpdated(transition, fromRotation, startBounds);

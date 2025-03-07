@@ -56,11 +56,11 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
@@ -68,6 +68,7 @@ import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.compose.animation.scene.animateContentDpAsState
+import com.android.compose.animation.scene.animateContentFloatAsState
 import com.android.compose.animation.scene.animateSceneFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.padding
@@ -223,9 +224,6 @@ private fun ContentScope.ShadeScene(
                 viewModel = viewModel,
                 headerViewModel = headerViewModel,
                 notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-                createTintedIconManager = createTintedIconManager,
-                createBatteryMeterViewController = createBatteryMeterViewController,
-                statusBarIconController = statusBarIconController,
                 mediaCarouselController = mediaCarouselController,
                 mediaHost = qqsMediaHost,
                 modifier = modifier,
@@ -253,9 +251,6 @@ private fun ContentScope.SingleShade(
     viewModel: ShadeSceneContentViewModel,
     headerViewModel: ShadeHeaderViewModel,
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
-    createTintedIconManager: (ViewGroup, StatusBarLocation) -> TintedIconManager,
-    createBatteryMeterViewController: (ViewGroup, StatusBarLocation) -> BatteryMeterViewController,
-    statusBarIconController: StatusBarIconController,
     mediaCarouselController: MediaCarouselController,
     mediaHost: MediaHost,
     modifier: Modifier = Modifier,
@@ -340,6 +335,7 @@ private fun ContentScope.SingleShade(
             content = {
                 CollapsedShadeHeader(
                     viewModel = headerViewModel,
+                    isSplitShade = false,
                     modifier = Modifier.layoutId(SingleShadeMeasurePolicy.LayoutId.ShadeHeader),
                 )
 
@@ -434,15 +430,13 @@ private fun ContentScope.SplitShade(
     val footerActionsViewModel =
         remember(lifecycleOwner, viewModel) { viewModel.getFooterActionsViewModel(lifecycleOwner) }
     val tileSquishiness by
-        animateSceneFloatAsState(
+        animateContentFloatAsState(
             value = 1f,
             key = QuickSettings.SharedValues.TilesSquishiness,
             canOverflow = false,
         )
     val unfoldTranslationXForStartSide by
         viewModel.unfoldTranslationX(isOnStartSide = true).collectAsStateWithLifecycle(0f)
-    val unfoldTranslationXForEndSide by
-        viewModel.unfoldTranslationX(isOnStartSide = false).collectAsStateWithLifecycle(0f)
 
     val notificationStackPadding = dimensionResource(id = R.dimen.notification_side_paddings)
     val navBarBottomHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -512,6 +506,7 @@ private fun ContentScope.SplitShade(
         Column(modifier = Modifier.fillMaxSize()) {
             CollapsedShadeHeader(
                 viewModel = headerViewModel,
+                isSplitShade = true,
                 modifier =
                     Modifier.then(brightnessMirrorShowingModifier)
                         .padding(horizontal = { unfoldTranslationXForStartSide.roundToInt() }),

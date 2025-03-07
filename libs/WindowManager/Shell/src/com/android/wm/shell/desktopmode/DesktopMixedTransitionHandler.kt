@@ -452,6 +452,11 @@ class DesktopMixedTransitionHandler(
     private fun findTaskChange(info: TransitionInfo, taskId: Int): TransitionInfo.Change? =
         info.changes.firstOrNull { change -> change.taskInfo?.taskId == taskId }
 
+    private fun findLaunchChange(info: TransitionInfo): TransitionInfo.Change? =
+        info.changes.firstOrNull { change ->
+            change.mode == TRANSIT_OPEN && change.taskInfo != null && change.taskInfo!!.isFreeform
+        }
+
     private fun findDesktopTaskLaunchChange(
         info: TransitionInfo,
         launchTaskId: Int?,
@@ -459,14 +464,18 @@ class DesktopMixedTransitionHandler(
         return if (launchTaskId != null) {
             // Launching a known task (probably from background or moving to front), so
             // specifically look for it.
-            findTaskChange(info, launchTaskId)
+            val launchChange = findTaskChange(info, launchTaskId)
+            if (
+                DesktopModeFlags.ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX.isTrue &&
+                    launchChange == null
+            ) {
+                findLaunchChange(info)
+            } else {
+                launchChange
+            }
         } else {
             // Launching a new task, so the first opening freeform task.
-            info.changes.firstOrNull { change ->
-                change.mode == TRANSIT_OPEN &&
-                    change.taskInfo != null &&
-                    change.taskInfo!!.isFreeform
-            }
+            findLaunchChange(info)
         }
     }
 

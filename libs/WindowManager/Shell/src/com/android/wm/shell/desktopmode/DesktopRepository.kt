@@ -716,12 +716,15 @@ class DesktopRepository(
     }
 
     /**
-     * Returns the top transparent fullscreen task id for a given display's active desk, or null.
+     * Returns the top transparent fullscreen task id for a given display, or null.
      *
      * TODO: b/389960283 - add explicit [deskId] argument.
      */
     fun getTopTransparentFullscreenTaskId(displayId: Int): Int? =
-        desktopData.getActiveDesk(displayId)?.topTransparentFullscreenTaskId
+        desktopData
+            .desksSequence(displayId)
+            .mapNotNull { it.topTransparentFullscreenTaskId }
+            .firstOrNull()
 
     /**
      * Clears the top transparent fullscreen task id info for a given display's active desk.
@@ -818,7 +821,6 @@ class DesktopRepository(
     }
 
     /** Minimizes the task in its desk. */
-    @VisibleForTesting
     fun minimizeTaskInDesk(displayId: Int, deskId: Int, taskId: Int) {
         logD("MinimizeTaskInDesk: displayId=%d deskId=%d, task=%d", displayId, deskId, taskId)
         desktopData.getDesk(deskId)?.minimizedTasks?.add(taskId)
@@ -933,6 +935,12 @@ class DesktopRepository(
                 listener.onDeskRemoved(displayId = desk.displayId, deskId = desk.deskId)
             }
         }
+        if (
+            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue &&
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            removeDeskFromPersistentRepository(desk)
+        }
         return activeTasks
     }
 
@@ -1031,6 +1039,24 @@ class DesktopRepository(
         }
     }
 
+    private fun removeDeskFromPersistentRepository(desk: Desk) {
+        mainCoroutineScope.launch {
+            try {
+                logD(
+                    "updatePersistentRepositoryForRemovedDesk user=%d desk=%d",
+                    userId,
+                    desk.deskId,
+                )
+                persistentRepository.removeDesktop(userId = userId, desktopId = desk.deskId)
+            } catch (throwable: Throwable) {
+                logE(
+                    "An exception occurred while updating the persistent repository \n%s",
+                    throwable.stackTrace,
+                )
+            }
+        }
+    }
+
     internal fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix  "
         pw.println("${prefix}DesktopRepository")
@@ -1049,6 +1075,7 @@ class DesktopRepository(
             }
             .forEach { (displayId, activeDeskId, desks) ->
                 pw.println("${prefix}Display #$displayId:")
+                pw.println("${innerPrefix}numOfDesks=${desks.size}")
                 pw.println("${innerPrefix}activeDesk=$activeDeskId")
                 pw.println("${innerPrefix}desks:")
                 val desksPrefix = "$innerPrefix  "

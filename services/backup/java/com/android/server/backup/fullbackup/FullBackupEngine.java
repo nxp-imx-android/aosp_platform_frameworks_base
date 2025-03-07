@@ -25,6 +25,7 @@ import static com.android.server.backup.UserBackupManagerService.SHARED_BACKUP_A
 import android.annotation.UserIdInt;
 import android.app.ApplicationThreadConstants;
 import android.app.IBackupAgent;
+import android.app.backup.BackupManagerMonitor;
 import android.app.backup.BackupTransport;
 import android.app.backup.FullBackupDataOutput;
 import android.content.pm.ApplicationInfo;
@@ -268,6 +269,12 @@ public class FullBackupEngine {
                 mBackupManagerMonitorEventSender.monitorAgentLoggingResults(mPkg, mAgent);
             } catch (IOException e) {
                 Slog.e(TAG, "Error backing up " + mPkg.packageName + ": " + e.getMessage());
+                // This is likely due to the app process dying.
+                mBackupManagerMonitorEventSender.monitorEvent(
+                        BackupManagerMonitor.LOG_EVENT_ID_FULL_BACKUP_AGENT_PIPE_BROKEN,
+                        mPkg,
+                        BackupManagerMonitor.LOG_EVENT_CATEGORY_AGENT,
+                        /* extras= */ null);
                 result = BackupTransport.AGENT_ERROR;
             } finally {
                 try {

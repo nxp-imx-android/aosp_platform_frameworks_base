@@ -1716,6 +1716,7 @@ final class ActivityRecord extends WindowToken {
         }
 
         mAppCompatController.getLetterboxPolicy().onMovedToDisplay(mDisplayContent.getDisplayId());
+        mAppCompatController.getDisplayCompatModePolicy().onMovedToDisplay();
     }
 
     void layoutLetterboxIfNeeded(WindowState winHint) {
@@ -3801,19 +3802,10 @@ final class ActivityRecord extends WindowToken {
         final TaskFragment taskFragment = getTaskFragment();
         if (next != null && taskFragment != null && taskFragment.isEmbedded()) {
             final TaskFragment organized = taskFragment.getOrganizedTaskFragment();
-            if (Flags.allowMultipleAdjacentTaskFragments()) {
-                delayRemoval = organized != null
-                        && organized.topRunningActivity() == null
-                        && organized.isDelayLastActivityRemoval()
-                        && organized.forOtherAdjacentTaskFragments(next::isDescendantOf);
-            } else {
-                final TaskFragment adjacent =
-                        organized != null ? organized.getAdjacentTaskFragment() : null;
-                if (adjacent != null && next.isDescendantOf(adjacent)
-                        && organized.topRunningActivity() == null) {
-                    delayRemoval = organized.isDelayLastActivityRemoval();
-                }
-            }
+            delayRemoval = organized != null
+                    && organized.topRunningActivity() == null
+                    && organized.isDelayLastActivityRemoval()
+                    && organized.forOtherAdjacentTaskFragments(next::isDescendantOf);
         }
 
         // isNextNotYetVisible is to check if the next activity is invisible, or it has been
@@ -4787,11 +4779,6 @@ final class ActivityRecord extends WindowToken {
         }
 
         // Make sure the embedded adjacent can also be shown.
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final ActivityRecord adjacentActivity = taskFragment.getAdjacentTaskFragment()
-                    .getTopNonFinishingActivity();
-            return canShowWhenLocked(adjacentActivity);
-        }
         final boolean hasAdjacentNotAllowToShow = taskFragment.forOtherAdjacentTaskFragments(
                 adjacentTF -> !canShowWhenLocked(adjacentTF.getTopNonFinishingActivity()));
         return !hasAdjacentNotAllowToShow;
@@ -8980,6 +8967,7 @@ final class ActivityRecord extends WindowToken {
         // Reset the existing override configuration so it can be updated according to the latest
         // configuration.
         mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
+        mAppCompatController.getDisplayCompatModePolicy().onProcessRestarted();
 
         if (!attachedToProcess()) {
             return;

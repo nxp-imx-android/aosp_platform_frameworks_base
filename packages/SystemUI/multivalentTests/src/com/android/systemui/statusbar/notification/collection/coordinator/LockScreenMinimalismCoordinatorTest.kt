@@ -28,6 +28,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.SysuiStatusBarStateController
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
@@ -280,6 +281,8 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
         val group = GroupEntryBuilder().setSummary(parent).addChild(child1).addChild(child2).build()
         val listEntryList = listOf(group, solo1, solo2)
         val notificationEntryList = listOf(solo1, solo2, parent, child1, child2)
+        val bundle = BundleEntry("bundleKey")
+        val bundleList = listOf(bundle)
 
         runCoordinatorTest {
             // All entries are added (and now unseen)
@@ -299,6 +302,11 @@ class LockScreenMinimalismCoordinatorTest : SysuiTestCase() {
             onBeforeTransformGroupsListener.onBeforeTransformGroups(listEntryList)
             assertThatTopOngoingKey().isEqualTo(null)
             assertThatTopUnseenKey().isEqualTo(solo1.key)
+
+            // TEST: bundle is not picked
+            onBeforeTransformGroupsListener.onBeforeTransformGroups(bundleList)
+            assertThatTopOngoingKey().isEqualTo(null)
+            assertThatTopUnseenKey().isEqualTo(null)
 
             // TEST: if top-ranked unseen is colorized, fall back to #2 ranked unseen
             solo1.setColorizedFgs(true)

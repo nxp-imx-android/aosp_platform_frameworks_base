@@ -68,6 +68,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewStub;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.Chronometer;
@@ -114,7 +115,6 @@ import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.SourceType;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
-import com.android.systemui.statusbar.notification.collection.NotificationEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
@@ -123,6 +123,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.logging.NotificationCounters;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
@@ -185,7 +186,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     private boolean mShowSnooze = false;
     private boolean mIsFaded;
 
-    private boolean mIsPromotedOngoing = false;
     private boolean mHasStatusBarChipDuringHeadsUpAnimation = false;
 
     @Nullable
@@ -871,7 +871,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     private void updateLimitsForView(NotificationContentView layout) {
         final int maxExpandedHeight;
-        if (isPromotedOngoing()) {
+        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
             maxExpandedHeight = mMaxExpandedHeightForPromotedOngoing;
         } else {
             maxExpandedHeight = mMaxExpandedHeight;
@@ -979,7 +979,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
         }
-        updateBackgroundOpacity();
+        updateColors();
     }
 
     /**
@@ -1350,7 +1350,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mIsSummaryWithChildren) {
             return mChildrenContainer.getIntrinsicHeight();
         }
-        if (isPromotedOngoing()) {
+        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
             return getMaxExpandHeight();
         }
         if (mExpandedWhenPinned) {
@@ -2939,7 +2939,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mIsSummaryWithChildren && !shouldShowPublic()) {
             return !mChildrenExpanded;
         }
-        if (isPromotedOngoing()) {
+        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
             return false;
         }
         return mEnableNonGroupedNotificationExpand && mExpandable;
@@ -2950,17 +2950,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mPrivateLayout.updateExpandButtons(isExpandable());
     }
 
-    /**
-     * Set this notification to be promoted ongoing
-     */
-    public void setPromotedOngoing(boolean promotedOngoing) {
-        if (PromotedNotificationUiForceExpanded.isUnexpectedlyInLegacyMode()) {
-            return;
-        }
-
-        mIsPromotedOngoing = promotedOngoing;
-        setExpandable(!mIsPromotedOngoing);
-    }
 
     /**
      * Sets whether the status bar is showing a chip corresponding to this notification.
@@ -3061,7 +3050,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public void setUserLocked(boolean userLocked) {
-        if (isPromotedOngoing()) return;
+        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) return;
 
         mUserLocked = userLocked;
         mPrivateLayout.setUserExpanding(userLocked);
@@ -3121,7 +3110,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     mChildrenContainer.setOnKeyguard(onKeyguard);
                 }
             }
-            updateBackgroundOpacity();
+            updateColors();
         }
     }
 
@@ -3247,7 +3236,16 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public boolean isPromotedOngoing() {
-        return PromotedNotificationUiForceExpanded.isEnabled() && mIsPromotedOngoing;
+        if (!PromotedNotificationUi.isEnabled()) {
+            return false;
+        }
+
+        final NotificationEntry entry = mEntry;
+        if (entry == null) {
+            return false;
+        }
+
+        return entry.isPromotedOngoing();
     }
 
     private boolean isPromotedNotificationExpanded(boolean allowOnKeyguard) {
@@ -3309,7 +3307,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public boolean isExpanded(boolean allowOnKeyguard) {
-        if (isPromotedOngoing()) {
+        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
             return isPromotedNotificationExpanded(allowOnKeyguard);
         }
 
@@ -4038,10 +4036,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private void notifyAccessibilityContentExpansionChanged() {
-        AccessibilityEvent event = AccessibilityEvent.obtain(TYPE_WINDOW_CONTENT_CHANGED);
-        onPopulateAccessibilityEvent(event);
-        event.setContentChangeTypes(CONTENT_CHANGE_TYPE_EXPANDED);
-        sendAccessibilityEventUnchecked(event);
+        if (AccessibilityManager.getInstance(mContext).isEnabled()) {
+            AccessibilityEvent event = AccessibilityEvent.obtain();
+            event.setEventType(TYPE_WINDOW_CONTENT_CHANGED);
+            event.setContentChangeTypes(CONTENT_CHANGE_TYPE_EXPANDED);
+            sendAccessibilityEventUnchecked(event);
+        }
     }
 
     public void setOnExpansionChangedListener(@Nullable OnExpansionChangedListener listener) {
@@ -4396,9 +4396,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     + (!shouldShowPublic() && mIsSummaryWithChildren));
             pw.print(", mShowNoBackground: " + mShowNoBackground);
             pw.print(", clipBounds: " + getClipBounds());
-            if (PromotedNotificationUiForceExpanded.isEnabled()) {
-                pw.print(", isPromotedOngoing: " + isPromotedOngoing());
-            }
+            pw.print(", isPromotedOngoing: " + isPromotedOngoing());
             if (notificationRowAccessibilityExpanded()) {
                 pw.print(", isShowingExpanded: " + isShowingExpanded());
                 pw.print(", isAccessibilityExpandable: " + isAccessibilityExpandable());
@@ -4630,11 +4628,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
     }
 
-    private void updateBackgroundOpacity() {
-        if (mBackgroundNormal != null) {
-            // Row background should be opaque when it's displayed as a heads-up notification or
-            // displayed on keyguard.
-            mBackgroundNormal.setForceOpaque(mIsHeadsUp || mOnKeyguard);
-        }
+    @Override
+    protected boolean usesTransparentBackground() {
+        return super.usesTransparentBackground() && !mIsHeadsUp && !mOnKeyguard;
     }
 }

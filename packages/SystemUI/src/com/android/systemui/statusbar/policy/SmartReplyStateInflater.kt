@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.policy
 
 import android.app.ActivityOptions
+import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.app.Notification.Action.SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY
 import android.app.PendingIntent
@@ -53,7 +54,6 @@ import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.logging.NotificationLogger
-import com.android.systemui.statusbar.notification.row.MagicActionBackgroundDrawable
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
 import com.android.systemui.statusbar.policy.InflatedSmartReplyState.SuppressedActions
 import com.android.systemui.statusbar.policy.SmartReplyView.SmartActions
@@ -397,16 +397,21 @@ constructor(
         delayOnClickListener: Boolean,
         packageContext: Context,
     ): Button {
-        val isMagicAction = Flags.notificationMagicActionsTreatment() &&
+        val isMagicAction =
+            Flags.notificationMagicActionsTreatment() &&
                 smartActions.fromAssistant &&
                 action.extras.getBoolean(Notification.Action.EXTRA_IS_MAGIC, false)
-        val layoutRes = if (isMagicAction) {
-            R.layout.magic_action_button
-        } else {
-            R.layout.smart_action_button
-        }
-        return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false)
-                as Button)
+        val layoutRes =
+            if (isMagicAction) {
+                R.layout.magic_action_button
+            } else {
+                if (notificationsRedesignTemplates()) {
+                    R.layout.notification_2025_smart_action_button
+                } else {
+                    R.layout.smart_action_button
+                }
+            }
+        return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
                 text = action.title
 
@@ -435,7 +440,6 @@ constructor(
                 // Mark this as an Action button
                 (layoutParams as SmartReplyView.LayoutParams).mButtonType = SmartButtonType.ACTION
             }
-
     }
 
     private fun onSmartActionClick(
@@ -499,9 +503,11 @@ constructor(
         replyIndex: Int,
         choice: CharSequence,
         delayOnClickListener: Boolean,
-    ): Button =
-        (LayoutInflater.from(parent.context).inflate(R.layout.smart_reply_button, parent, false)
-                as Button)
+    ): Button {
+        val layoutRes =
+            if (notificationsRedesignTemplates()) R.layout.notification_2025_smart_reply_button
+            else R.layout.smart_reply_button
+        return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
                 text = choice
                 val onClickListener =
@@ -531,6 +537,7 @@ constructor(
                 // Mark this as a Reply button
                 (layoutParams as SmartReplyView.LayoutParams).mButtonType = SmartButtonType.REPLY
             }
+    }
 
     private fun onSmartReplyClick(
         entry: NotificationEntry,

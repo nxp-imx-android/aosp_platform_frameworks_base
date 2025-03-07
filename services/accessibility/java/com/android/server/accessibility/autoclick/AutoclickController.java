@@ -248,7 +248,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     private boolean isPaused() {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused()
-                && !mAutoclickTypePanel.isHovered();
+                && !isHovered();
+    }
+
+    private boolean isHovered() {
+        return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isHovered();
     }
 
     private void cancelPendingClick() {
@@ -495,6 +499,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
         private int mEventPolicyFlags;
         /** Current meta state. This value will be used as meta state for click event sequence. */
         private int mMetaState;
+        /** Last observed panel hovered state when click was scheduled. */
+        private boolean mHoveredState;
 
         /**
          * The current anchor's coordinates. Should be ignored if #mLastMotionEvent is null.
@@ -648,6 +654,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
             }
             mLastMotionEvent = MotionEvent.obtain(event);
             mEventPolicyFlags = policyFlags;
+            mHoveredState = isHovered();
 
             if (useAsAnchor) {
                 final int pointerIndex = mLastMotionEvent.getActionIndex();
@@ -729,14 +736,18 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             final long now = SystemClock.uptimeMillis();
 
-            // TODO(b/395094903): always triggers left-click when the cursor hovers over the
-            // autoclick type panel, to always allow users to change a different click type.
-            // Otherwise, if one chooses the right-click, this user won't be able to rely on
-            // autoclick to select other click types.
-            final int actionButton =
-                    mActiveClickType == AUTOCLICK_TYPE_RIGHT_CLICK
-                            ? BUTTON_SECONDARY
-                            : BUTTON_PRIMARY;
+            int actionButton;
+            if (mHoveredState) {
+                // Always triggers left-click when the cursor hovers over the autoclick type
+                // panel, to always allow users to change a different click type. Otherwise, if
+                // one chooses the right-click, this user won't be able to rely on autoclick to
+                // select other click types.
+                actionButton = BUTTON_PRIMARY;
+            } else {
+                actionButton = mActiveClickType == AUTOCLICK_TYPE_RIGHT_CLICK
+                        ? BUTTON_SECONDARY
+                        : BUTTON_PRIMARY;
+            }
 
             MotionEvent downEvent =
                     MotionEvent.obtain(

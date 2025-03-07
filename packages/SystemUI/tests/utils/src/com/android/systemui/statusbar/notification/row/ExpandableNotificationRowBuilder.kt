@@ -37,6 +37,7 @@ import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.log.logcatLogBuffer
+import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.media.controls.util.MediaFeatureFlag
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.plugins.ActivityStarter
@@ -45,7 +46,6 @@ import com.android.systemui.settings.UserTracker
 import com.android.systemui.shared.system.ActivityManagerWrapper
 import com.android.systemui.shared.system.DevicePolicyManagerWrapper
 import com.android.systemui.shared.system.PackageManagerWrapper
-import com.android.systemui.statusbar.NotificationMediaManager
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.RankingBuilder
@@ -375,6 +375,7 @@ class ExpandableNotificationRowBuilder(
                     Mockito.mock(PeopleNotificationIdentifier::class.java),
                     Mockito.mock(NotificationIconStyleProvider::class.java),
                     Mockito.mock(VisualStabilityCoordinator::class.java),
+                    Mockito.mock(NotificationActionClickManager::class.java),
                 )
                 .create(entry)
 

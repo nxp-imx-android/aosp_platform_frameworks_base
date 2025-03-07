@@ -16,6 +16,9 @@
 
 package com.android.server.appop;
 
+import static android.app.AppOpsManager.OP_ACCESS_ACCESSIBILITY;
+import static android.app.AppOpsManager.OP_ACCESS_NOTIFICATIONS;
+import static android.app.AppOpsManager.OP_BIND_ACCESSIBILITY_SERVICE;
 import static android.app.AppOpsManager.OP_CAMERA;
 import static android.app.AppOpsManager.OP_COARSE_LOCATION;
 import static android.app.AppOpsManager.OP_EMERGENCY_LOCATION;
@@ -23,25 +26,20 @@ import static android.app.AppOpsManager.OP_FINE_LOCATION;
 import static android.app.AppOpsManager.OP_FLAG_SELF;
 import static android.app.AppOpsManager.OP_FLAG_TRUSTED_PROXIED;
 import static android.app.AppOpsManager.OP_FLAG_TRUSTED_PROXY;
+import static android.app.AppOpsManager.OP_GPS;
 import static android.app.AppOpsManager.OP_MONITOR_HIGH_POWER_LOCATION;
 import static android.app.AppOpsManager.OP_MONITOR_LOCATION;
 import static android.app.AppOpsManager.OP_PHONE_CALL_CAMERA;
 import static android.app.AppOpsManager.OP_PHONE_CALL_MICROPHONE;
-import static android.app.AppOpsManager.OP_PROCESS_OUTGOING_CALLS;
+import static android.app.AppOpsManager.OP_READ_DEVICE_IDENTIFIERS;
 import static android.app.AppOpsManager.OP_READ_HEART_RATE;
-import static android.app.AppOpsManager.OP_READ_ICC_SMS;
 import static android.app.AppOpsManager.OP_READ_OXYGEN_SATURATION;
 import static android.app.AppOpsManager.OP_READ_SKIN_TEMPERATURE;
-import static android.app.AppOpsManager.OP_READ_SMS;
 import static android.app.AppOpsManager.OP_RECEIVE_AMBIENT_TRIGGER_AUDIO;
 import static android.app.AppOpsManager.OP_RECEIVE_SANDBOX_TRIGGER_AUDIO;
 import static android.app.AppOpsManager.OP_RECORD_AUDIO;
 import static android.app.AppOpsManager.OP_RESERVED_FOR_TESTING;
-import static android.app.AppOpsManager.OP_SEND_SMS;
-import static android.app.AppOpsManager.OP_SMS_FINANCIAL_TRANSACTIONS;
-import static android.app.AppOpsManager.OP_SYSTEM_ALERT_WINDOW;
-import static android.app.AppOpsManager.OP_WRITE_ICC_SMS;
-import static android.app.AppOpsManager.OP_WRITE_SMS;
+import static android.app.AppOpsManager.OP_RUN_IN_BACKGROUND;
 
 import static java.lang.Long.min;
 import static java.lang.Math.max;
@@ -51,14 +49,15 @@ import android.annotation.Nullable;
 import android.app.AppOpsManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.permission.flags.Flags;
 import android.provider.DeviceConfig;
+import android.util.IntArray;
 import android.util.Slog;
-
-import com.android.internal.util.ArrayUtils;
 
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
 
@@ -95,21 +94,37 @@ abstract class DiscreteOpsRegistry {
     static final String PROPERTY_DISCRETE_HISTORY_QUANTIZATION =
             "discrete_history_quantization_millis";
     static final String PROPERTY_DISCRETE_FLAGS = "discrete_history_op_flags";
+    // Comma separated app ops list config for testing i.e. "1,2,3,4"
     static final String PROPERTY_DISCRETE_OPS_LIST = "discrete_history_ops_cslist";
-    static final String DEFAULT_DISCRETE_OPS = OP_FINE_LOCATION + "," + OP_COARSE_LOCATION
+    // These ops are deemed important for detecting a malicious app, and are recorded.
+    static final int[] IMPORTANT_OPS_FOR_SECURITY = new int[] {
+            OP_GPS,
+            OP_ACCESS_NOTIFICATIONS,
+            OP_RUN_IN_BACKGROUND,
+            OP_BIND_ACCESSIBILITY_SERVICE,
+            OP_ACCESS_ACCESSIBILITY,
+            OP_READ_DEVICE_IDENTIFIERS,
+            OP_MONITOR_HIGH_POWER_LOCATION,
+            OP_MONITOR_LOCATION
+    };
+
+    // These are additional ops, which are not backed by runtime permissions, but are recorded.
+    static final int[] ADDITIONAL_DISCRETE_OPS = new int[] {
+            OP_PHONE_CALL_MICROPHONE,
+            OP_RECEIVE_AMBIENT_TRIGGER_AUDIO,
+            OP_RECEIVE_SANDBOX_TRIGGER_AUDIO,
+            OP_PHONE_CALL_CAMERA,
+            OP_EMERGENCY_LOCATION,
+            OP_RESERVED_FOR_TESTING
+    };
+
+    // Legacy ops captured in discrete database.
+    private static final String LEGACY_OPS = OP_FINE_LOCATION + "," + OP_COARSE_LOCATION
             + "," + OP_EMERGENCY_LOCATION + "," + OP_CAMERA + "," + OP_RECORD_AUDIO + ","
             + OP_PHONE_CALL_MICROPHONE + "," + OP_PHONE_CALL_CAMERA + ","
             + OP_RECEIVE_AMBIENT_TRIGGER_AUDIO + "," + OP_RECEIVE_SANDBOX_TRIGGER_AUDIO
             + "," + OP_READ_HEART_RATE + "," + OP_READ_OXYGEN_SATURATION + ","
             + OP_READ_SKIN_TEMPERATURE + "," + OP_RESERVED_FOR_TESTING;
-    static final int[] sDiscreteOpsToLog =
-            new int[]{OP_FINE_LOCATION, OP_COARSE_LOCATION, OP_EMERGENCY_LOCATION, OP_CAMERA,
-                    OP_RECORD_AUDIO, OP_PHONE_CALL_MICROPHONE, OP_PHONE_CALL_CAMERA,
-                    OP_RECEIVE_AMBIENT_TRIGGER_AUDIO, OP_RECEIVE_SANDBOX_TRIGGER_AUDIO, OP_READ_SMS,
-                    OP_WRITE_SMS, OP_SEND_SMS, OP_READ_ICC_SMS, OP_WRITE_ICC_SMS,
-                    OP_SMS_FINANCIAL_TRANSACTIONS, OP_SYSTEM_ALERT_WINDOW, OP_MONITOR_LOCATION,
-                    OP_MONITOR_HIGH_POWER_LOCATION, OP_PROCESS_OUTGOING_CALLS,
-            };
 
     static final long DEFAULT_DISCRETE_HISTORY_CUTOFF = Duration.ofDays(7).toMillis();
     static final long MAXIMUM_DISCRETE_HISTORY_CUTOFF = Duration.ofDays(30).toMillis();
@@ -121,7 +136,7 @@ abstract class DiscreteOpsRegistry {
     // in case of duplicate op events.
     static long sDiscreteHistoryQuantization;
 
-    static int[] sDiscreteOps;
+    static int[] sDiscreteOps = new int[0];
     static int sDiscreteFlags;
 
     static final int OP_FLAGS_DISCRETE = OP_FLAG_SELF | OP_FLAG_TRUSTED_PROXIED
@@ -191,7 +206,7 @@ abstract class DiscreteOpsRegistry {
     }
 
     static boolean isDiscreteOp(int op, @AppOpsManager.OpFlags int flags) {
-        if (!ArrayUtils.contains(sDiscreteOps, op)) {
+        if (Arrays.binarySearch(sDiscreteOps, op) < 0) {
             return false;
         }
         if ((flags & (sDiscreteFlags)) == 0) {
@@ -221,11 +236,42 @@ abstract class DiscreteOpsRegistry {
         } else {
             sDiscreteHistoryQuantization = DEFAULT_DISCRETE_HISTORY_QUANTIZATION;
         }
-        sDiscreteFlags = p.getKeyset().contains(PROPERTY_DISCRETE_FLAGS) ? sDiscreteFlags =
-                p.getInt(PROPERTY_DISCRETE_FLAGS, OP_FLAGS_DISCRETE) : OP_FLAGS_DISCRETE;
-        sDiscreteOps = p.getKeyset().contains(PROPERTY_DISCRETE_OPS_LIST) ? parseOpsList(
-                p.getString(PROPERTY_DISCRETE_OPS_LIST, DEFAULT_DISCRETE_OPS)) : parseOpsList(
-                DEFAULT_DISCRETE_OPS);
+        sDiscreteFlags = p.getKeyset().contains(PROPERTY_DISCRETE_FLAGS)
+                ? p.getInt(PROPERTY_DISCRETE_FLAGS, OP_FLAGS_DISCRETE) : OP_FLAGS_DISCRETE;
+        String opsListConfig = p.getString(PROPERTY_DISCRETE_OPS_LIST, null);
+        sDiscreteOps = opsListConfig == null ? getDefaultOpsList() : parseOpsList(opsListConfig);
+
+        Arrays.sort(sDiscreteOps);
+    }
+
+    // App ops backed by runtime/dangerous permissions.
+    private static IntArray getRuntimePermissionOps() {
+        IntArray runtimeOps = new IntArray();
+        for (int op = 0; op < AppOpsManager._NUM_OP; op++) {
+            if (AppOpsManager.opIsRuntimePermission(op)) {
+                runtimeOps.add(op);
+            }
+        }
+        return runtimeOps;
+    }
+
+    /**
+     * @return an array of app ops captured into discrete database.
+     */
+    private static int[] getDefaultOpsList() {
+        if (!(Flags.recordAllRuntimeAppopsSqlite() && Flags.enableSqliteAppopsAccesses())) {
+            return getDefaultLegacyOps();
+        }
+
+        IntArray discreteOpsArray = getRuntimePermissionOps();
+        discreteOpsArray.addAll(IMPORTANT_OPS_FOR_SECURITY);
+        discreteOpsArray.addAll(ADDITIONAL_DISCRETE_OPS);
+
+        return discreteOpsArray.toArray();
+    }
+
+    private static int[] getDefaultLegacyOps() {
+        return parseOpsList(LEGACY_OPS);
     }
 
     private static int[] parseOpsList(String opsList) {
@@ -243,7 +289,7 @@ abstract class DiscreteOpsRegistry {
             }
         } catch (NumberFormatException e) {
             Slog.e(TAG, "Failed to parse Discrete ops list: " + e.getMessage());
-            return parseOpsList(DEFAULT_DISCRETE_OPS);
+            return getDefaultOpsList();
         }
         return result;
     }

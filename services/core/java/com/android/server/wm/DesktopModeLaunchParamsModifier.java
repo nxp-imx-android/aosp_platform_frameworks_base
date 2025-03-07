@@ -19,6 +19,12 @@ package com.android.server.wm;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
+import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
+import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
+import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE_PER_TASK;
+import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TASK;
 
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -131,6 +137,18 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
+        if (DesktopModeFlags.INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES.isTrue()) {
+            ActivityRecord topVisibleFreeformActivity =
+                    task.getDisplayContent().getTopMostVisibleFreeformActivity();
+            if (shouldInheritExistingTaskBounds(topVisibleFreeformActivity, activity, task)) {
+                appendLog("inheriting bounds from existing closing instance");
+                outParams.mBounds.set(topVisibleFreeformActivity.getBounds());
+                appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
+                // Return result done to prevent other modifiers from changing or cascading bounds.
+                return RESULT_DONE;
+            }
+        }
+
         DesktopModeBoundsCalculator.updateInitialBounds(task, layout, activity, options,
                 outParams.mBounds, this::appendLog);
         appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
@@ -159,7 +177,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         //  activity will also enter desktop mode. On this same relationship, we can also assume
         //  if there are not visible freeform tasks but a freeform activity is now launching, it
         //  will force the device into desktop mode.
-        return (task.getDisplayContent().getTopMostVisibleFreeformActivity() != null
+        return (task.getDisplayContent().getTopMostFreeformActivity() != null
                     && checkSourceWindowModesCompatible(task, options, currentParams))
                 || isRequestingFreeformWindowMode(task, options, currentParams);
     }
@@ -199,6 +217,40 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                  WINDOWING_MODE_FREEFORM -> true;
             default -> false;
         };
+    }
+
+    /**
+     * Whether the launching task should inherit the task bounds of an existing closing instance.
+     */
+    private boolean shouldInheritExistingTaskBounds(
+            @Nullable ActivityRecord existingTaskActivity,
+            @Nullable ActivityRecord launchingActivity,
+            @NonNull Task launchingTask) {
+        if (existingTaskActivity == null || launchingActivity == null) return false;
+        return (existingTaskActivity.packageName == launchingActivity.packageName)
+                && isLaunchingNewTask(launchingActivity.launchMode,
+                    launchingTask.getBaseIntent().getFlags())
+                && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags());
+    }
+
+    /**
+     * Returns true if the launch mode or intent will result in a new task being created for the
+     * activity.
+     */
+    private boolean isLaunchingNewTask(int launchMode, int intentFlags) {
+        return launchMode == LAUNCH_SINGLE_TASK
+                || launchMode == LAUNCH_SINGLE_INSTANCE
+                || launchMode == LAUNCH_SINGLE_INSTANCE_PER_TASK
+                || (intentFlags & FLAG_ACTIVITY_NEW_TASK) != 0;
+    }
+
+    /**
+     * Returns true if the intent will result in an existing task instance being closed if a new
+     * one appears.
+     */
+    private boolean isClosingExitingInstance(int intentFlags) {
+        return (intentFlags & FLAG_ACTIVITY_CLEAR_TASK) != 0
+            || (intentFlags & FLAG_ACTIVITY_MULTIPLE_TASK) == 0;
     }
 
     private void initLogBuilder(Task task, ActivityRecord activity) {

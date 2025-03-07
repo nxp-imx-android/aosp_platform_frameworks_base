@@ -77,7 +77,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Pluggable;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CollectionReadyForBuildListener;
-import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.time.FakeSystemClock;
@@ -1795,7 +1794,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS);
 
         // THEN an exception is NOT thrown directly, but a WTF IS logged.
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             dispatchBuild();
             runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
         });
@@ -1818,7 +1817,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_2);
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 1);
 
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             Assert.assertThrows(IllegalStateException.class, () -> {
                 dispatchBuild();
                 runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
@@ -1844,13 +1843,13 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_2);
 
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS);
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             dispatchBuild();
             runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
         });
 
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS);
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             // Note: dispatchBuild itself triggers a non-reentrant pipeline run.
             dispatchBuild();
             runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
@@ -1874,7 +1873,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_1);
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS);
 
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             dispatchBuild();
             runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
         });
@@ -1897,7 +1896,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_1);
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 1);
 
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             Assert.assertThrows(IllegalStateException.class, () -> {
                 dispatchBuild();
                 runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
@@ -1922,7 +1921,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_2);
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS);
 
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             dispatchBuild();
             runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
         });
@@ -1945,7 +1944,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_2);
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 1);
 
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             Assert.assertThrows(IllegalStateException.class, () -> {
                 dispatchBuild();
                 runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
@@ -1970,7 +1969,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_2);
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS);
 
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             dispatchBuild();
             runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);
         });
@@ -1993,7 +1992,7 @@ public class ShadeListBuilderTest extends SysuiTestCase {
         addNotif(0, PACKAGE_2);
         invalidator.setInvalidationCount(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 1);
 
-        LogAssertKt.assertLogsWtfs(() -> {
+        LogAssertKt.assertRunnableLogsWtfs(() -> {
             Assert.assertThrows(IllegalStateException.class, () -> {
                 dispatchBuild();
                 runWhileScheduledUpTo(MAX_CONSECUTIVE_REENTRANT_REBUILDS + 2);

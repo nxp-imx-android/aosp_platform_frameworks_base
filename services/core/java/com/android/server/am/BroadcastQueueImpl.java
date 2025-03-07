@@ -606,8 +606,9 @@ class BroadcastQueueImpl extends BroadcastQueue {
         } else {
             mRunningColdStart.reEnqueueActiveBroadcast();
         }
-        demoteFromRunningLocked(mRunningColdStart);
+        final BroadcastProcessQueue queue = mRunningColdStart;
         clearRunningColdStart();
+        demoteFromRunningLocked(queue);
         enqueueUpdateRunningList();
     }
 
@@ -1527,6 +1528,15 @@ class BroadcastQueueImpl extends BroadcastQueue {
 
         final int cookie = traceBegin("demoteFromRunning");
         // We've drained running broadcasts; maybe move back to runnable
+        if (mRunningColdStart == queue) {
+            // TODO: b/399020479 - Remove wtf log once we identify the case where mRunningColdStart
+            // is not getting cleared.
+            // If this queue is mRunningColdStart, then it should have been cleared before
+            // it is demoted. Log a wtf if this isn't the case.
+            Slog.wtf(TAG, "mRunningColdStart has not been cleared; mRunningColdStart.app: "
+                    + mRunningColdStart.app + " , queue.app: " + queue.app,
+                            new IllegalStateException());
+        }
         queue.makeActiveIdle();
         queue.traceProcessEnd();
 
@@ -2328,12 +2338,6 @@ class BroadcastQueueImpl extends BroadcastQueue {
             leaf = leaf.processNameNext;
         }
         return null;
-    }
-
-    @VisibleForTesting
-    @GuardedBy("mService")
-    @Nullable BroadcastProcessQueue removeProcessQueue(@NonNull ProcessRecord app) {
-        return removeProcessQueue(app.processName, app.info.uid);
     }
 
     @VisibleForTesting

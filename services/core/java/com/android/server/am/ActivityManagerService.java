@@ -16190,14 +16190,16 @@ public class ActivityManagerService extends IActivityManager.Stub
         return mUserController.switchUser(targetUserId);
     }
 
+    @Nullable
     @Override
-    public String getSwitchingFromUserMessage() {
-        return mUserController.getSwitchingFromSystemUserMessage();
+    public String getSwitchingFromUserMessage(@UserIdInt int userId) {
+        return mUserController.getSwitchingFromUserMessage(userId);
     }
 
+    @Nullable
     @Override
-    public String getSwitchingToUserMessage() {
-        return mUserController.getSwitchingToSystemUserMessage();
+    public String getSwitchingToUserMessage(@UserIdInt int userId) {
+        return mUserController.getSwitchingToUserMessage(userId);
     }
 
     @Override
@@ -16938,13 +16940,13 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
 
         @Override
-        public void setSwitchingFromSystemUserMessage(String switchingFromSystemUserMessage) {
-            mUserController.setSwitchingFromSystemUserMessage(switchingFromSystemUserMessage);
+        public void setSwitchingFromUserMessage(@UserIdInt int userId, @Nullable String message) {
+            mUserController.setSwitchingFromUserMessage(userId, message);
         }
 
         @Override
-        public void setSwitchingToSystemUserMessage(String switchingToSystemUserMessage) {
-            mUserController.setSwitchingToSystemUserMessage(switchingToSystemUserMessage);
+        public void setSwitchingToUserMessage(@UserIdInt int userId, @Nullable String message) {
+            mUserController.setSwitchingToUserMessage(userId, message);
         }
 
         @Override

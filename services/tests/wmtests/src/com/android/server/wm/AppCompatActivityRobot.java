@@ -243,6 +243,11 @@ class AppCompatActivityRobot {
                 .getAspectRatioOverrides()).getUserMinAspectRatio();
     }
 
+    void setShouldRefreshActivityForCameraCompat(boolean enabled) {
+        doReturn(enabled).when(mActivityStack.top().mAppCompatController.getCameraOverrides())
+                .shouldRefreshActivityForCameraCompat();
+    }
+
     void setIgnoreOrientationRequest(boolean enabled) {
         mDisplayContent.setIgnoreOrientationRequest(enabled);
     }

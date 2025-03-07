@@ -48,10 +48,12 @@ import androidx.test.filters.SmallTest;
 import com.android.media.flags.Flags;
 import com.android.settingslib.media.LocalMediaManager;
 import com.android.settingslib.media.MediaDevice;
+import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.res.R;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ListeningExecutorService;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +63,7 @@ import org.mockito.Captor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @SmallTest
@@ -95,6 +98,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
     private List<MediaDevice> mMediaDevices = new ArrayList<>();
     private List<MediaItem> mMediaItems = new ArrayList<>();
     MediaOutputSeekbar mSpyMediaOutputSeekbar;
+    Executor mMainExecutor = mContext.getMainExecutor();
+    ListeningExecutorService mBackgroundExecutor = ThreadUtils.getBackgroundExecutor();
 
     @Before
     public void setUp() {
@@ -108,6 +113,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         when(mMediaSwitchingController.getSessionVolumeMax()).thenReturn(TEST_MAX_VOLUME);
         when(mMediaSwitchingController.getSessionVolume()).thenReturn(TEST_CURRENT_VOLUME);
         when(mMediaSwitchingController.getSessionName()).thenReturn(TEST_SESSION_NAME);
+        when(mMediaSwitchingController.getColorSchemeLegacy()).thenReturn(
+                mock(MediaOutputColorSchemeLegacy.class));
         when(mIconCompat.toIcon(mContext)).thenReturn(mIcon);
         when(mMediaDevice1.getName()).thenReturn(TEST_DEVICE_NAME_1);
         when(mMediaDevice1.getId()).thenReturn(TEST_DEVICE_ID_1);
@@ -122,7 +129,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         mMediaItems.add(MediaItem.createDeviceMediaItem(mMediaDevice1, true));
         mMediaItems.add(MediaItem.createDeviceMediaItem(mMediaDevice2, false));
 
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -148,7 +156,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
 
     @Test
     public void onBindViewHolder_bindPairNew_verifyView() {
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -173,7 +182,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                                 .map((item) -> item.getMediaDevice().get())
                                 .collect(Collectors.toList()));
         when(mMediaSwitchingController.getSessionName()).thenReturn(TEST_SESSION_NAME);
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -195,7 +205,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
                                 .map((item) -> item.getMediaDevice().get())
                                 .collect(Collectors.toList()));
         when(mMediaSwitchingController.getSessionName()).thenReturn(null);
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -665,7 +676,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
 
     @Test
     public void onItemClick_clickPairNew_verifyLaunchBluetoothPairing() {
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -683,7 +695,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mMediaDevice2.getState()).isEqualTo(
                 LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_TRANSFER);
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -701,7 +714,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mMediaDevice2.getState()).isEqualTo(
                 LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_TRANSFER);
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController,
+                mContext.getMainExecutor(), ThreadUtils.getBackgroundExecutor());
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -723,7 +737,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         when(mMediaDevice2.getState()).thenReturn(
                 LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED);
         when(mMediaDevice2.getSelectionBehavior()).thenReturn(SELECTION_BEHAVIOR_GO_TO_APP);
-        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController);
+        mMediaOutputAdapter = new MediaOutputAdapterLegacy(mMediaSwitchingController, mMainExecutor,
+                mBackgroundExecutor);
         mMediaOutputAdapter.updateItems();
         mViewHolder = (MediaOutputAdapterLegacy.MediaDeviceViewHolderLegacy) mMediaOutputAdapter
                 .onCreateViewHolder(new LinearLayout(mContext), 0);
@@ -778,6 +793,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -799,6 +816,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -820,6 +839,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -841,6 +862,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -862,6 +885,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();
@@ -883,6 +908,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
+        assertThat(mViewHolder.mTitleText.getAlpha())
+                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_DISABLED_ALPHA);
         assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
 
         mViewHolder.mContainerLayout.performClick();

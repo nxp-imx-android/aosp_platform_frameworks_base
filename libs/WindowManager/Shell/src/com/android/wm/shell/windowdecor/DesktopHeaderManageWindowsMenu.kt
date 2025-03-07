@@ -54,7 +54,7 @@ class DesktopHeaderManageWindowsMenu(
     private val desktopUserRepositories: DesktopUserRepositories,
     private val surfaceControlBuilderSupplier: Supplier<SurfaceControl.Builder>,
     private val surfaceControlTransactionSupplier: Supplier<SurfaceControl.Transaction>,
-    snapshotList: List<Pair<Int, TaskSnapshot>>,
+    snapshotList: List<Pair<Int, TaskSnapshot?>>,
     onIconClickListener: ((Int) -> Unit),
     onOutsideClickListener: (() -> Unit)
 ) : ManageWindowsViewContainer(

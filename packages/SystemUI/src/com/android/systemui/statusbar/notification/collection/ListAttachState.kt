@@ -31,8 +31,8 @@ data class ListAttachState private constructor(
     var parent: PipelineEntry?,
 
     /**
-     * The section that this ListEntry was sorted into. If the child of the group, this will be the
-     * parent's section. Null if not attached to the list.
+     * The section that this PipelineEntry was sorted into. If the child of the group, this will be
+     * the parent's section. Null if not attached to the list.
      */
     var section: NotifSection?,
 

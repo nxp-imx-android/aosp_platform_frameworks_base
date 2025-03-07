@@ -171,6 +171,7 @@ import com.android.wm.shell.windowdecor.CaptionWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel;
 import com.android.wm.shell.windowdecor.WindowDecorViewModel;
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer;
+import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.DefaultWindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.common.viewhost.PooledWindowDecorViewHostSupplier;
@@ -758,6 +759,7 @@ public abstract class WMShellModule {
             ToggleResizeDesktopTaskTransitionHandler toggleResizeDesktopTaskTransitionHandler,
             DragToDesktopTransitionHandler dragToDesktopTransitionHandler,
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DesktopRepositoryInitializer desktopRepositoryInitializer,
             Optional<DesktopImmersiveController> desktopImmersiveController,
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver,
             LaunchAdjacentController launchAdjacentController,
@@ -804,6 +806,7 @@ public abstract class WMShellModule {
                 dragToDesktopTransitionHandler,
                 desktopImmersiveController.get(),
                 desktopUserRepositories,
+                desktopRepositoryInitializer,
                 recentsTransitionHandler,
                 multiInstanceHelper,
                 mainExecutor,
@@ -1021,6 +1024,7 @@ public abstract class WMShellModule {
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
+            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
@@ -1044,10 +1048,10 @@ public abstract class WMShellModule {
                 rootTaskDisplayAreaOrganizer, interactionJankMonitor, genericLinksParser,
                 assistContentRequester, windowDecorViewHostSupplier, multiInstanceHelper,
                 desktopTasksLimiter, appHandleEducationController, appToWebEducationController,
-                windowDecorCaptionHandleRepository, activityOrientationChangeHandler,
-                focusTransitionObserver, desktopModeEventLogger, desktopModeUiEventLogger,
-                taskResourceLoader, recentsTransitionHandler, desktopModeCompatPolicy,
-                desktopTilingDecorViewModel,
+                appHandleAndHeaderVisibilityHelper, windowDecorCaptionHandleRepository,
+                activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
+                desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
+                desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController));
     }
 
@@ -1071,6 +1075,16 @@ public abstract class WMShellModule {
     static MultiDisplayDragMoveIndicatorSurface.Factory
             providesMultiDisplayDragMoveIndicatorSurfaceFactory(Context context) {
         return new MultiDisplayDragMoveIndicatorSurface.Factory(context);
+    }
+
+    @WMSingleton
+    @Provides
+    static AppHandleAndHeaderVisibilityHelper provideAppHandleAndHeaderVisibilityHelper(
+            @NonNull Context context,
+            @NonNull DisplayController displayController,
+            @NonNull DesktopModeCompatPolicy desktopModeCompatPolicy) {
+        return new AppHandleAndHeaderVisibilityHelper(context, displayController,
+                desktopModeCompatPolicy);
     }
 
     @WMSingleton
@@ -1235,7 +1249,7 @@ public abstract class WMShellModule {
             @DynamicOverride DesktopUserRepositories desktopUserRepositories,
             @NonNull DesksOrganizer desksOrganizer
     ) {
-        if (DesktopModeStatus.canEnterDesktopMode(context)) {
+        if (DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.of(
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer));
         }
@@ -1301,10 +1315,12 @@ public abstract class WMShellModule {
     static Optional<DesktopDisplayEventHandler> provideDesktopDisplayEventHandler(
             Context context,
             ShellInit shellInit,
+            @ShellMainThread CoroutineScope mainScope,
             DisplayController displayController,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             Optional<DesktopTasksController> desktopTasksController,
-            Optional<DesktopDisplayModeController> desktopDisplayModeController
+            Optional<DesktopDisplayModeController> desktopDisplayModeController,
+            DesktopRepositoryInitializer desktopRepositoryInitializer
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
@@ -1313,7 +1329,9 @@ public abstract class WMShellModule {
                 new DesktopDisplayEventHandler(
                         context,
                         shellInit,
+                        mainScope,
                         displayController,
+                        desktopRepositoryInitializer,
                         desktopUserRepositories.get(),
                         desktopTasksController.get(),
                         desktopDisplayModeController.get()));

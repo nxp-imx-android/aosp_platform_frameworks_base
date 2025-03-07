@@ -164,7 +164,6 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.pm.SaferIntentUtils;
 import com.android.server.utils.Slogf;
 import com.android.server.wm.ActivityMetricsLogger.LaunchingState;
-import com.android.window.flags.Flags;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -2991,17 +2990,9 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
                 if (child.asTaskFragment() != null
                         && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                    final boolean isAnyTranslucent;
-                    if (Flags.allowMultipleAdjacentTaskFragments()) {
-                        final TaskFragment.AdjacentSet set =
-                                child.asTaskFragment().getAdjacentTaskFragments();
-                        isAnyTranslucent = set.forAllTaskFragments(
-                                tf -> !isOpaque(tf), null);
-                    } else {
-                        final TaskFragment adjacent = child.asTaskFragment()
-                                .getAdjacentTaskFragment();
-                        isAnyTranslucent = !isOpaque(child) || !isOpaque(adjacent);
-                    }
+                    final boolean isAnyTranslucent = !isOpaque(child)
+                            || child.asTaskFragment().forOtherAdjacentTaskFragments(
+                                    tf -> !isOpaque(tf));
                     if (!isAnyTranslucent) {
                         // This task fragment and all its adjacent task fragments are opaque,
                         // consider it opaque even if it doesn't fill its parent.

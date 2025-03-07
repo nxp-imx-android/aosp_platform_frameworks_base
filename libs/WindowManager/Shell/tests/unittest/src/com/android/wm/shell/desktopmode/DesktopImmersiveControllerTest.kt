@@ -114,6 +114,8 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
                 transactionSupplier = transactionSupplier,
             )
         desktopRepository = userRepositories.current
+        desktopRepository.addDesk(DEFAULT_DISPLAY, DEFAULT_DESK_ID)
+        desktopRepository.setActiveDesk(DEFAULT_DISPLAY, DEFAULT_DESK_ID)
     }
 
     @Test
@@ -835,5 +837,6 @@ class DesktopImmersiveControllerTest : ShellTestCase() {
     companion object {
         private val STABLE_BOUNDS = Rect(0, 100, 2000, 1900)
         private val DISPLAY_BOUNDS = Rect(0, 0, 2000, 2000)
+        private const val DEFAULT_DESK_ID = 0
     }
 }
