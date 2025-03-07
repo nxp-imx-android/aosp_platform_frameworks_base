@@ -21,9 +21,12 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.content.ContentResolver
+import android.hardware.input.InputManager
 import android.os.Binder
+import android.os.Handler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
 import android.view.Display.DEFAULT_DISPLAY
@@ -44,6 +47,7 @@ import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
+import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,13 +68,18 @@ import org.mockito.kotlin.whenever
  */
 @SmallTest
 @RunWith(TestParameterInjector::class)
-class DesktopDisplayModeControllerTest : ShellTestCase() {
+class DesktopDisplayModeControllerTest(
+    @TestParameter(valuesProvider = FlagsParameterizationProvider::class)
+    flags: FlagsParameterization
+) : ShellTestCase() {
     private val transitions = mock<Transitions>()
     private val rootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     private val mockWindowManager = mock<IWindowManager>()
     private val shellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
+    private val inputManager = mock<InputManager>()
+    private val mainHandler = mock<Handler>()
 
     private lateinit var controller: DesktopDisplayModeController
 
@@ -81,6 +90,10 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
         TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FULLSCREEN).build()
     private val defaultTDA = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
     private val wallpaperToken = MockToken().token()
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
 
     @Before
     fun setUp() {
@@ -95,27 +108,20 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
                 mockWindowManager,
                 shellTaskOrganizer,
                 desktopWallpaperActivityTokenProvider,
+                inputManager,
+                mainHandler,
             )
         runningTasks.add(freeformTask)
         runningTasks.add(fullscreenTask)
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenReturn(ArrayList(runningTasks))
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(wallpaperToken)
+        setTabletModeStatus(SwitchState.UNKNOWN)
     }
 
-    private fun testDisplayWindowingModeSwitch(
-        defaultWindowingMode: Int,
-        extendedDisplayEnabled: Boolean,
-        expectToSwitch: Boolean,
-    ) {
-        defaultTDA.configuration.windowConfiguration.windowingMode = defaultWindowingMode
-        whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(defaultWindowingMode)
-        val settingsSession =
-            ExtendedDisplaySettingsSession(
-                context.contentResolver,
-                if (extendedDisplayEnabled) 1 else 0,
-            )
-
-        settingsSession.use {
+    private fun testDisplayWindowingModeSwitchOnDisplayConnected(expectToSwitch: Boolean) {
+        defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
+        ExtendedDisplaySettingsSession(context.contentResolver, 1).use {
             connectExternalDisplay()
             if (expectToSwitch) {
                 // Assumes [connectExternalDisplay] properly triggered the switching transition.
@@ -133,7 +139,7 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
                 assertThat(arg.firstValue.changes[wallpaperToken.asBinder()]?.windowingMode)
                     .isEqualTo(WINDOWING_MODE_FULLSCREEN)
                 assertThat(arg.secondValue.changes[defaultTDA.token.asBinder()]?.windowingMode)
-                    .isEqualTo(defaultWindowingMode)
+                    .isEqualTo(WINDOWING_MODE_FULLSCREEN)
                 assertThat(arg.secondValue.changes[wallpaperToken.asBinder()]?.windowingMode)
                     .isEqualTo(WINDOWING_MODE_FULLSCREEN)
             } else {
@@ -144,25 +150,64 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    fun displayWindowingModeSwitchOnDisplayConnected_flagDisabled(
-        @TestParameter param: ModeSwitchTestCase
-    ) {
-        testDisplayWindowingModeSwitch(
-            param.defaultWindowingMode,
-            param.extendedDisplayEnabled,
-            // When the flag is disabled, never switch.
-            expectToSwitch = false,
-        )
+    fun displayWindowingModeSwitchOnDisplayConnected_flagDisabled() {
+        // When the flag is disabled, never switch.
+        testDisplayWindowingModeSwitchOnDisplayConnected(/* expectToSwitch= */ false)
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
-    fun displayWindowingModeSwitchOnDisplayConnected(@TestParameter param: ModeSwitchTestCase) {
-        testDisplayWindowingModeSwitch(
-            param.defaultWindowingMode,
-            param.extendedDisplayEnabled,
-            param.expectToSwitchByDefault,
-        )
+    fun displayWindowingModeSwitchOnDisplayConnected() {
+        testDisplayWindowingModeSwitchOnDisplayConnected(/* expectToSwitch= */ true)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING)
+    @DisableFlags(Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH)
+    fun testTargetWindowingMode_formfactorDisabled(
+        @TestParameter param: ExternalDisplayBasedTargetModeTestCase,
+        @TestParameter tabletModeStatus: SwitchState,
+    ) {
+        whenever(mockWindowManager.getWindowingMode(anyInt()))
+            .thenReturn(param.defaultWindowingMode)
+        if (param.hasExternalDisplay) {
+            connectExternalDisplay()
+        } else {
+            disconnectExternalDisplay()
+        }
+        setTabletModeStatus(tabletModeStatus)
+
+        ExtendedDisplaySettingsSession(
+                context.contentResolver,
+                if (param.extendedDisplayEnabled) 1 else 0,
+            )
+            .use {
+                assertThat(controller.getTargetWindowingModeForDefaultDisplay())
+                    .isEqualTo(param.expectedWindowingMode)
+            }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING,
+        Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
+    )
+    fun testTargetWindowingMode(@TestParameter param: FormFactorBasedTargetModeTestCase) {
+        if (param.hasExternalDisplay) {
+            connectExternalDisplay()
+        } else {
+            disconnectExternalDisplay()
+        }
+        setTabletModeStatus(param.tabletModeStatus)
+
+        ExtendedDisplaySettingsSession(
+                context.contentResolver,
+                if (param.extendedDisplayEnabled) 1 else 0,
+            )
+            .use {
+                assertThat(controller.getTargetWindowingModeForDefaultDisplay())
+                    .isEqualTo(param.expectedWindowingMode)
+            }
     }
 
     @Test
@@ -217,6 +262,10 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
         controller.refreshDisplayWindowingMode()
     }
 
+    private fun setTabletModeStatus(status: SwitchState) {
+        whenever(inputManager.isInTabletMode()).thenReturn(status.value)
+    }
+
     private class ExtendedDisplaySettingsSession(
         private val contentResolver: ContentResolver,
         private val overrideValue: Int,
@@ -233,33 +282,158 @@ class DesktopDisplayModeControllerTest : ShellTestCase() {
         }
     }
 
+    private class FlagsParameterizationProvider : TestParameterValuesProvider() {
+        override fun provideValues(
+            context: TestParameterValuesProvider.Context
+        ): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH
+            )
+        }
+    }
+
     companion object {
         const val EXTERNAL_DISPLAY_ID = 100
 
-        enum class ModeSwitchTestCase(
+        enum class SwitchState(val value: Int) {
+            UNKNOWN(InputManager.SWITCH_STATE_UNKNOWN),
+            ON(InputManager.SWITCH_STATE_ON),
+            OFF(InputManager.SWITCH_STATE_OFF),
+        }
+
+        enum class ExternalDisplayBasedTargetModeTestCase(
             val defaultWindowingMode: Int,
+            val hasExternalDisplay: Boolean,
             val extendedDisplayEnabled: Boolean,
-            val expectToSwitchByDefault: Boolean,
+            val expectedWindowingMode: Int,
         ) {
-            FULLSCREEN_DISPLAY(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                extendedDisplayEnabled = true,
-                expectToSwitchByDefault = true,
-            ),
-            FULLSCREEN_DISPLAY_MIRRORING(
-                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
-                extendedDisplayEnabled = false,
-                expectToSwitchByDefault = false,
-            ),
-            FREEFORM_DISPLAY(
+            FREEFORM_EXTERNAL_EXTENDED(
                 defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = true,
                 extendedDisplayEnabled = true,
-                expectToSwitchByDefault = false,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            FREEFORM_DISPLAY_MIRRORING(
+            FULLSCREEN_EXTERNAL_EXTENDED(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FREEFORM_NO_EXTERNAL_EXTENDED(
                 defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FULLSCREEN_NO_EXTERNAL_EXTENDED(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            FREEFORM_EXTERNAL_MIRROR(
+                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = true,
                 extendedDisplayEnabled = false,
-                expectToSwitchByDefault = false,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FULLSCREEN_EXTERNAL_MIRROR(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            FREEFORM_NO_EXTERNAL_MIRROR(
+                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FULLSCREEN_NO_EXTERNAL_MIRROR(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+        }
+
+        enum class FormFactorBasedTargetModeTestCase(
+            val hasExternalDisplay: Boolean,
+            val extendedDisplayEnabled: Boolean,
+            val tabletModeStatus: SwitchState,
+            val expectedWindowingMode: Int,
+        ) {
+            EXTERNAL_EXTENDED_TABLET(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_EXTENDED_TABLET(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_TABLET(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_TABLET(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_EXTENDED_CLAMSHELL(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_EXTENDED_CLAMSHELL(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_MIRROR_CLAMSHELL(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_MIRROR_CLAMSHELL(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_EXTENDED_UNKNOWN(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_EXTENDED_UNKNOWN(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_UNKNOWN(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_UNKNOWN(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
         }
     }
