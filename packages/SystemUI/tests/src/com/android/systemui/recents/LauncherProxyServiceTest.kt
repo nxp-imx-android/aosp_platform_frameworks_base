@@ -244,7 +244,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
         `when`(userManager.isVisibleBackgroundUsersSupported()).thenReturn(true)
         `when`(userManager.isUserForeground()).thenReturn(true)
         val spyContext = spy(context)
-        val ops = createLauncherProxyService(spyContext)
+        val ops = assertLogsWtf { createLauncherProxyService(spyContext) }.result
         ops.startConnectionToCurrentUser()
         verify(spyContext, times(0)).bindServiceAsUser(any(), any(), anyInt(), any())
     }

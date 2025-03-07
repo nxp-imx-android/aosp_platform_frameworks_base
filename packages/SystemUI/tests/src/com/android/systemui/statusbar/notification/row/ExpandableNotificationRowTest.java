@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.notification.row;
 
 import static android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES;
 
+import static com.android.systemui.log.LogAssertKt.assertRunnableLogsWtf;
 import static com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL;
 import static com.android.systemui.statusbar.notification.row.NotificationTestHelper.PKG;
 import static com.android.systemui.statusbar.notification.row.NotificationTestHelper.USER_HANDLE;
@@ -1147,7 +1148,7 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     public void hasStatusBarChipDuringHeadsUpAnimation_flagOff_false() throws Exception {
         final ExpandableNotificationRow row = mNotificationTestHelper.createRow();
 
-        row.setHasStatusBarChipDuringHeadsUpAnimation(true);
+        assertRunnableLogsWtf(() -> row.setHasStatusBarChipDuringHeadsUpAnimation(true));
 
         assertThat(row.hasStatusBarChipDuringHeadsUpAnimation()).isFalse();
     }

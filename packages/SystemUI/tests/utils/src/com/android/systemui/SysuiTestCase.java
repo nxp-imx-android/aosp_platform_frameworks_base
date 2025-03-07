@@ -46,6 +46,7 @@ import androidx.test.uiautomator.UiDevice;
 import com.android.internal.protolog.ProtoLog;
 import com.android.systemui.broadcast.FakeBroadcastDispatcher;
 import com.android.systemui.flags.SceneContainerRule;
+import com.android.systemui.log.LogWtfHandlerRule;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -126,6 +127,8 @@ public abstract class SysuiTestCase {
     // TODO(b/339471826): Fix Robolectric to execute the @ClassRule correctly
     @Rule public final SetFlagsRule mSetFlagsRule =
             isRobolectricTest() ? new SetFlagsRule() : mSetFlagsClassRule.createSetFlagsRule();
+
+    @Rule public final LogWtfHandlerRule mLogWtfRule = new LogWtfHandlerRule();
 
     @Rule(order = 10)
     public final SceneContainerRule mSceneContainerRule = new SceneContainerRule();
