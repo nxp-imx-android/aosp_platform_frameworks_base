@@ -34,7 +34,7 @@ public abstract class ListEntry extends PipelineEntry {
     }
 
     /**
-     * The SystemClock.uptimeMillis() when this object was created. In general, this means the
+     * The SystemClock.elapsedRealtime() when this object was created. In general, this means the
      * moment when NotificationManager notifies our listener about the existence of this entry.
      *
      * This value will not change if the notification is updated, although it will change if the

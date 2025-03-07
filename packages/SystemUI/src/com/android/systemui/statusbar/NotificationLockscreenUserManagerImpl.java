@@ -47,7 +47,6 @@ import android.database.ExecutorContentObserver;
 import android.net.Uri;
 import android.os.Looper;
 import android.os.Process;
-import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
@@ -78,6 +77,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.UseElapsedRealtimeForCreationTime;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
@@ -920,7 +920,9 @@ public class NotificationLockscreenUserManagerImpl implements
     // notification's "when" time, or the notification entry creation time
     private long getEarliestNotificationTime(NotificationEntry notif) {
         long notifWhenWallClock = notif.getSbn().getNotification().getWhen();
-        long creationTimeDelta = SystemClock.uptimeMillis() - notif.getCreationTime();
+        long creationTimeDelta = UseElapsedRealtimeForCreationTime.getCurrentTime()
+                - notif.getCreationTime();
+
         long creationTimeWallClock = System.currentTimeMillis() - creationTimeDelta;
         return Math.min(notifWhenWallClock, creationTimeWallClock);
     }

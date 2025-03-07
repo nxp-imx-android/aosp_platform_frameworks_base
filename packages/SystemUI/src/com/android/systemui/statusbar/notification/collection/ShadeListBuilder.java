@@ -570,7 +570,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             List<PipelineEntry> out,
             List<NotifFilter> filters) {
         Trace.beginSection("ShadeListBuilder.filterNotifs");
-        final long now = mSystemClock.uptimeMillis();
+        final long now = UseElapsedRealtimeForCreationTime.getCurrentTime(mSystemClock);
         for (PipelineEntry entry : entries) {
             if (entry instanceof GroupEntry) {
                 final GroupEntry groupEntry = (GroupEntry) entry;
@@ -614,7 +614,8 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
                 GroupEntry group = mGroups.get(topLevelKey);
                 if (group == null) {
-                    group = new GroupEntry(topLevelKey, mSystemClock.uptimeMillis());
+                    group = new GroupEntry(topLevelKey,
+                            UseElapsedRealtimeForCreationTime.getCurrentTime(mSystemClock));
                     mGroups.put(topLevelKey, group);
                 }
                 if (group.getParent() == null) {

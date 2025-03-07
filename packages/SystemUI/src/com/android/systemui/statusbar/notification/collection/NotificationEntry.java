@@ -255,7 +255,7 @@ public final class NotificationEntry extends ListEntry {
     /**
      * @param sbn the StatusBarNotification from system server
      * @param ranking also from system server
-     * @param creationTime SystemClock.uptimeMillis of when we were created
+     * @param creationTime SystemClock.elapsedRealtime of when we were created
      */
     public NotificationEntry(
             @NonNull StatusBarNotification sbn,

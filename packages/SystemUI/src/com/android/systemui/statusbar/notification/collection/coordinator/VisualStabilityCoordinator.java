@@ -499,7 +499,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
      * notification and we are reordering based on the user's change.
      *
      * @param entry notification entry that can change sections even if isReorderingAllowed is false
-     * @param now current time SystemClock.uptimeMillis
+     * @param now current time SystemClock.elapsedRealtime
      */
     public void temporarilyAllowSectionChanges(@NonNull NotificationEntry entry, long now) {
         final String entryKey = entry.getKey();

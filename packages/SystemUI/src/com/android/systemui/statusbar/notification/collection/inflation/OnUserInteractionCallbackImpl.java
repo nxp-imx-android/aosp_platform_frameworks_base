@@ -20,7 +20,6 @@ import static android.service.notification.NotificationStats.DISMISS_SENTIMENT_N
 
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 
-import android.os.SystemClock;
 import android.service.notification.NotificationStats;
 
 import androidx.annotation.NonNull;
@@ -30,6 +29,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.notification.collection.NotifCollection;
 import com.android.systemui.statusbar.notification.collection.NotifCollection.CancellationReason;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.UseElapsedRealtimeForCreationTime;
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
 import com.android.systemui.statusbar.notification.collection.notifcollection.DismissedByUserStats;
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider;
@@ -85,7 +85,7 @@ public class OnUserInteractionCallbackImpl implements OnUserInteractionCallback 
     public void onImportanceChanged(NotificationEntry entry) {
         mVisualStabilityCoordinator.temporarilyAllowSectionChanges(
                 entry,
-                SystemClock.uptimeMillis());
+                UseElapsedRealtimeForCreationTime.getCurrentTime());
     }
 
     @NonNull
