@@ -825,24 +825,42 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         startConnectionToCurrentUser();
     }
 
-    private void updateSystemUiStateFlags() {
-        // TODO b/398011576 - We should update flags for all navigation bars.
+    private void updateSysUIStateForNavbars() {
+        if (ShadeWindowGoesAround.isEnabled()) {
+            var displays = mDisplayRepository.getDisplayIds().getValue();
+            for (int displayId : displays) {
+                updateSysUIStateForNavbarWithDisplayId(displayId);
+            }
+        } else {
+            updateSysUIStateForNavbarWithDisplayId(Display.DEFAULT_DISPLAY);
+        }
+    }
+
+    private void updateSysUIStateForNavbarWithDisplayId(int displayId) {
         final NavigationBar navBarFragment =
-                mNavBarControllerLazy.get().getDefaultNavigationBar();
+                mNavBarControllerLazy.get().getNavigationBar(displayId);
         final NavigationBarView navBarView =
-                mNavBarControllerLazy.get().getNavigationBarView(mContext.getDisplayId());
+                mNavBarControllerLazy.get().getNavigationBarView(displayId);
         if (SysUiState.DEBUG) {
             Log.d(TAG_OPS, "Updating sysui state flags: navBarFragment=" + navBarFragment
                     + " navBarView=" + navBarView
                     + " shadeViewController=" + mShadeViewControllerLazy.get());
         }
 
+        final SysUiState displaySysuiState = mPerDisplaySysUiStateRepository.get(displayId);
+        if (displaySysuiState == null) return;
+
         if (navBarFragment != null) {
             navBarFragment.updateSystemUiStateFlags();
         }
         if (navBarView != null) {
-            navBarView.updateDisabledSystemUiStateFlags(mDefaultDisplaySysUIState);
+            navBarView.updateDisabledSystemUiStateFlags(displaySysuiState);
         }
+    }
+
+    /** Force updates SystemUI state flags prior to sending them to Launcher. */
+    public void updateSystemUiStateFlags() {
+        updateSysUIStateForNavbars();
         mShadeViewControllerLazy.get().updateSystemUiStateFlags();
         if (mStatusBarWinController != null) {
             mStatusBarWinController.notifyStateChangedCallbacks();

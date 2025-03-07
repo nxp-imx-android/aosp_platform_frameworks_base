@@ -22,6 +22,7 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.PowerManager
 import android.os.UserManager
+import android.platform.test.annotations.EnableFlags
 import android.testing.TestableContext
 import android.testing.TestableLooper
 import android.view.Display
@@ -29,6 +30,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.app.AssistUtils
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.qualifiers.Main
@@ -44,6 +46,7 @@ import com.android.systemui.model.sysUiState
 import com.android.systemui.model.sysUiStateFactory
 import com.android.systemui.navigationbar.NavigationBarController
 import com.android.systemui.navigationbar.NavigationModeController
+import com.android.systemui.navigationbar.views.NavigationBar
 import com.android.systemui.process.ProcessWrapper
 import com.android.systemui.recents.LauncherProxyService.ACTION_QUICKSTEP
 import com.android.systemui.settings.FakeDisplayTracker
@@ -60,7 +63,6 @@ import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.testKosmos
 import com.android.systemui.unfold.progress.UnfoldTransitionProgressForwarder
 import com.android.systemui.util.mockito.mock
-import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wm.shell.back.BackAnimation
 import com.android.wm.shell.sysui.ShellInterface
@@ -88,6 +90,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -278,6 +281,28 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             verify(launcherProxy).onSystemUiStateChanged(anyLong(), eq(0))
             verify(launcherProxy).onSystemUiStateChanged(anyLong(), eq(1))
             verify(launcherProxy).onSystemUiStateChanged(anyLong(), eq(2))
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun updateSystemUiStateFlags_updatesAllNavBars() =
+        kosmos.testScope.runTest {
+            kosmos.displayRepository.apply {
+                addDisplay(0)
+                addDisplay(1)
+            }
+            kosmos.fakeSysUIStatePerDisplayRepository.apply {
+                add(1, sysUiStateFactory.create(1))
+            }
+            val navBar0 = mock<NavigationBar>()
+            val navBar1 = mock<NavigationBar>()
+            whenever(navBarController.getNavigationBar(eq(0))).thenReturn(navBar0)
+            whenever(navBarController.getNavigationBar(eq(1))).thenReturn(navBar1)
+
+            subject.updateSystemUiStateFlags()
+
+            verify(navBar0).updateSystemUiStateFlags()
+            verify(navBar1).updateSystemUiStateFlags()
         }
 
     private fun createLauncherProxyService(ctx: Context): LauncherProxyService {

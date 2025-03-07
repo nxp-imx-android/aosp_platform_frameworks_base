@@ -27,10 +27,13 @@ import android.view.WindowManager;
 import com.android.app.viewcapture.ViewCapture;
 import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.systemui.dagger.qualifiers.DisplayId;
+import com.android.systemui.display.data.repository.PerDisplayRepository;
+import com.android.systemui.model.SysUiState;
 import com.android.systemui.navigationbar.NavigationBarComponent.NavigationBarScope;
 import com.android.systemui.navigationbar.views.NavigationBarFrame;
 import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.res.R;
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 
 import dagger.Lazy;
 import dagger.Module;
@@ -69,6 +72,20 @@ public interface NavigationBarModule {
     @DisplayId
     static WindowManager provideWindowManager(@DisplayId Context context) {
         return context.getSystemService(WindowManager.class);
+    }
+
+    /** A SysUiState for the navigation bar display. */
+    @Provides
+    @NavigationBarScope
+    @DisplayId
+    static SysUiState provideSysUiState(@DisplayId Context context,
+            SysUiState defaultState,
+            PerDisplayRepository<SysUiState> repository) {
+        if (ShadeWindowGoesAround.isEnabled()) {
+            return repository.get(context.getDisplayId());
+        } else {
+            return defaultState;
+        }
     }
 
     /** A ViewCaptureAwareWindowManager specific to the display's context. */
