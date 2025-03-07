@@ -1,5 +1,6 @@
 package com.android.systemui.qs.tiles
 
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.os.Handler
 import android.os.Looper
@@ -8,11 +9,11 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.FlagsParameterization.allCombinationsOf
+import android.service.quicksettings.Tile
 import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
-import com.android.internal.telephony.flags.Flags
 import com.android.settingslib.Utils
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
 import com.android.systemui.SysuiTestCase
@@ -82,6 +83,7 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
         testableLooper = TestableLooper.get(this)
 
         whenever(qsHost.context).thenReturn(mContext)
+        whenever(bluetoothController.canConfigBluetooth()).thenReturn(true)
 
         tile =
             FakeBluetoothTile(
@@ -257,6 +259,38 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
             .removeOnMetadataChangedListener(eq(cachedDevice), any())
     }
 
+    @Test
+    @EnableFlags(QSComposeFragment.FLAG_NAME)
+    fun disableBluetooth_transientTurningOff() {
+        enableBluetooth()
+        tile.refreshState()
+        testableLooper.processAllMessages()
+
+        tile.handleSecondaryClick(null)
+        testableLooper.processAllMessages()
+
+        val state = tile.state
+
+        assertThat(state.state).isEqualTo(Tile.STATE_INACTIVE)
+        assertThat(state.isTransient).isTrue()
+        assertThat(state.icon).isEqualTo(createExpectedIcon(R.drawable.qs_bluetooth_icon_off))
+    }
+
+    @Test
+    @EnableFlags(QSComposeFragment.FLAG_NAME)
+    fun turningOffState() {
+        setBluetoothTurningOff()
+
+        tile.refreshState()
+        testableLooper.processAllMessages()
+
+        val state = tile.state
+
+        assertThat(state.state).isEqualTo(Tile.STATE_INACTIVE)
+        assertThat(state.isTransient).isTrue()
+        assertThat(state.icon).isEqualTo(createExpectedIcon(R.drawable.qs_bluetooth_icon_off))
+    }
+
     private class FakeBluetoothTile(
         qsHost: QSHost,
         uiEventLogger: QsEventLogger,
@@ -316,6 +350,13 @@ class BluetoothTileTest(flags: FlagsParameterization) : SysuiTestCase() {
     fun setBluetoothConnecting() {
         whenever(bluetoothController.isBluetoothConnected).thenReturn(false)
         whenever(bluetoothController.isBluetoothConnecting).thenReturn(true)
+    }
+
+    fun setBluetoothTurningOff() {
+        whenever(bluetoothController.isBluetoothConnected).thenReturn(false)
+        whenever(bluetoothController.isBluetoothConnecting).thenReturn(false)
+        whenever(bluetoothController.isBluetoothEnabled).thenReturn(false)
+        whenever(bluetoothController.bluetoothState).thenReturn(BluetoothAdapter.STATE_TURNING_OFF)
     }
 
     fun addConnectedDevice(device: CachedBluetoothDevice) {
