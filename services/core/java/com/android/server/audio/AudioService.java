@@ -529,7 +529,7 @@ public class AudioService extends IAudioService.Stub
      */
     private InputDeviceVolumeHelper mInputDeviceVolumeHelper;
 
-    /*package*/ int getVolumeForDeviceIgnoreMute(int stream, int device) {
+    /*package*/ int getVssVolumeForDevice(int stream, int device) {
         final VolumeStreamState streamState = mStreamStates.get(stream);
         return streamState != null ? streamState.getIndex(device) : -1;
     }
@@ -5098,7 +5098,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         final int device = absVolumeDevices.toArray(new Integer[0])[0].intValue();
-        final int index = getVolumeForDeviceIgnoreMute(streamType, device);
+        final int index = getStreamVolume(streamType, device);
 
         if (DEBUG_VOL) {
             Slog.i(TAG, "onUpdateContextualVolumes streamType: " + streamType
