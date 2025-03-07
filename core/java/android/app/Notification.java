@@ -6453,43 +6453,44 @@ public class Notification implements Parcelable
             return mN.showsTime() || mN.showsChronometer();
         }
 
-        private void resetStandardTemplateWithActions(RemoteViews big) {
+        private void resetStandardTemplateWithActions(RemoteViews contentView) {
             // actions_container is only reset when there are no actions to avoid focus issues with
             // remote inputs.
-            big.setViewVisibility(R.id.actions, View.GONE);
-            big.removeAllViews(R.id.actions);
+            contentView.setViewVisibility(R.id.actions, View.GONE);
+            contentView.removeAllViews(R.id.actions);
 
-            big.setViewVisibility(R.id.notification_material_reply_container, View.GONE);
-            big.setTextViewText(R.id.notification_material_reply_text_1, null);
-            big.setViewVisibility(R.id.notification_material_reply_text_1_container, View.GONE);
-            big.setViewVisibility(R.id.notification_material_reply_progress, View.GONE);
+            contentView.setViewVisibility(R.id.notification_material_reply_container, View.GONE);
+            contentView.setTextViewText(R.id.notification_material_reply_text_1, null);
+            contentView.setViewVisibility(R.id.notification_material_reply_text_1_container,
+                    View.GONE);
+            contentView.setViewVisibility(R.id.notification_material_reply_progress, View.GONE);
 
-            big.setViewVisibility(R.id.notification_material_reply_text_2, View.GONE);
-            big.setTextViewText(R.id.notification_material_reply_text_2, null);
-            big.setViewVisibility(R.id.notification_material_reply_text_3, View.GONE);
-            big.setTextViewText(R.id.notification_material_reply_text_3, null);
+            contentView.setViewVisibility(R.id.notification_material_reply_text_2, View.GONE);
+            contentView.setTextViewText(R.id.notification_material_reply_text_2, null);
+            contentView.setViewVisibility(R.id.notification_material_reply_text_3, View.GONE);
+            contentView.setTextViewText(R.id.notification_material_reply_text_3, null);
 
             // This may get erased by bindSnoozeAction
-            big.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
+            contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                     RemoteViews.MARGIN_BOTTOM, R.dimen.notification_content_margin);
         }
 
-        private void bindSnoozeAction(RemoteViews big, StandardTemplateParams p) {
+        private void bindSnoozeAction(RemoteViews contentView, StandardTemplateParams p) {
             boolean hideSnoozeButton = mN.isFgsOrUij()
                     || mN.fullScreenIntent != null
                     || isBackgroundColorized(p)
                     || p.mViewType != StandardTemplateParams.VIEW_TYPE_EXPANDED;
-            big.setBoolean(R.id.snooze_button, "setEnabled", !hideSnoozeButton);
+            contentView.setBoolean(R.id.snooze_button, "setEnabled", !hideSnoozeButton);
             if (hideSnoozeButton) {
                 // Only hide; NotificationContentView will show it when it adds the click listener
-                big.setViewVisibility(R.id.snooze_button, View.GONE);
+                contentView.setViewVisibility(R.id.snooze_button, View.GONE);
             }
 
             final boolean snoozeEnabled = !hideSnoozeButton
                     && mContext.getContentResolver() != null
                     && isSnoozeSettingEnabled();
             if (snoozeEnabled) {
-                big.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
+                contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                         RemoteViews.MARGIN_BOTTOM, 0);
             }
         }
@@ -6526,14 +6527,14 @@ public class Notification implements Parcelable
 
         private RemoteViews applyStandardTemplateWithActions(int layoutId,
                 StandardTemplateParams p, TemplateBindResult result) {
-            RemoteViews big = applyStandardTemplate(layoutId, p, result);
+            RemoteViews contentView = applyStandardTemplate(layoutId, p, result);
 
-            resetStandardTemplateWithActions(big);
-            bindSnoozeAction(big, p);
+            resetStandardTemplateWithActions(contentView);
+            bindSnoozeAction(contentView, p);
             // color the snooze and bubble actions with the theme color
             ColorStateList actionColor = ColorStateList.valueOf(getStandardActionColor(p));
-            big.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
-            big.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
+            contentView.setColorStateList(R.id.snooze_button, "setImageTintList", actionColor);
+            contentView.setColorStateList(R.id.bubble_button, "setImageTintList", actionColor);
 
             boolean validRemoteInput = false;
 
@@ -6549,26 +6550,26 @@ public class Notification implements Parcelable
             if (p.mCallStyleActions) {
                 // Clear view padding to allow buttons to start on the left edge.
                 // This must be done before 'setEmphasizedMode' which sets top/bottom margins.
-                big.setViewPadding(R.id.actions, 0, 0, 0, 0);
+                contentView.setViewPadding(R.id.actions, 0, 0, 0, 0);
                 if (!Flags.notificationsRedesignTemplates()) {
                     // Add an optional indent that will make buttons start at the correct column
                     // when there is enough space to do so (and fall back to the left edge if not).
                     // This is handled directly in NotificationActionListLayout in the new design.
-                    big.setInt(R.id.actions, "setCollapsibleIndentDimen",
+                    contentView.setInt(R.id.actions, "setCollapsibleIndentDimen",
                             R.dimen.call_notification_collapsible_indent);
                 }
                 if (evenlyDividedCallStyleActionLayout()) {
                     if (CallStyle.DEBUG_NEW_ACTION_LAYOUT) {
                         Log.d(TAG, "setting evenly divided mode on action list");
                     }
-                    big.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
+                    contentView.setBoolean(R.id.actions, "setEvenlyDividedMode", true);
                 }
             }
-            big.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
+            contentView.setBoolean(R.id.actions, "setEmphasizedMode", emphasizedMode);
             if (numActions > 0 && !p.mHideActions) {
-                big.setViewVisibility(R.id.actions_container, View.VISIBLE);
-                big.setViewVisibility(R.id.actions, View.VISIBLE);
-                big.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
+                contentView.setViewVisibility(R.id.actions_container, View.VISIBLE);
+                contentView.setViewVisibility(R.id.actions, View.VISIBLE);
+                contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                         RemoteViews.MARGIN_BOTTOM, 0);
                 for (int i = 0; i < numActions; i++) {
                     Action action = nonContextualActions.get(i);
@@ -6586,10 +6587,10 @@ public class Notification implements Parcelable
                         //  (8dp remaining gap is from all buttons' standard 4dp inset).
                         button.setViewLayoutMarginDimen(R.id.action0, RemoteViews.MARGIN_START, 0);
                     }
-                    big.addView(R.id.actions, button);
+                    contentView.addView(R.id.actions, button);
                 }
             } else {
-                big.setViewVisibility(R.id.actions_container, View.GONE);
+                contentView.setViewVisibility(R.id.actions_container, View.GONE);
             }
 
             RemoteInputHistoryItem[] replyText = getParcelableArrayFromBundle(
@@ -6598,37 +6599,41 @@ public class Notification implements Parcelable
                     && !TextUtils.isEmpty(replyText[0].getText())
                     && p.maxRemoteInputHistory > 0) {
                 boolean showSpinner = mN.extras.getBoolean(EXTRA_SHOW_REMOTE_INPUT_SPINNER);
-                big.setViewVisibility(R.id.notification_material_reply_container, View.VISIBLE);
-                big.setViewVisibility(R.id.notification_material_reply_text_1_container,
+                contentView.setViewVisibility(R.id.notification_material_reply_container,
                         View.VISIBLE);
-                big.setTextViewText(R.id.notification_material_reply_text_1,
+                contentView.setViewVisibility(R.id.notification_material_reply_text_1_container,
+                        View.VISIBLE);
+                contentView.setTextViewText(R.id.notification_material_reply_text_1,
                         ensureColorSpanContrastOrStripStyling(replyText[0].getText(), p));
-                setTextViewColorSecondary(big, R.id.notification_material_reply_text_1, p);
-                big.setViewVisibility(R.id.notification_material_reply_progress,
+                setTextViewColorSecondary(contentView, R.id.notification_material_reply_text_1, p);
+                contentView.setViewVisibility(R.id.notification_material_reply_progress,
                         showSpinner ? View.VISIBLE : View.GONE);
-                big.setProgressIndeterminateTintList(
+                contentView.setProgressIndeterminateTintList(
                         R.id.notification_material_reply_progress,
                         ColorStateList.valueOf(getPrimaryAccentColor(p)));
 
                 if (replyText.length > 1 && !TextUtils.isEmpty(replyText[1].getText())
                         && p.maxRemoteInputHistory > 1) {
-                    big.setViewVisibility(R.id.notification_material_reply_text_2, View.VISIBLE);
-                    big.setTextViewText(R.id.notification_material_reply_text_2,
+                    contentView.setViewVisibility(R.id.notification_material_reply_text_2,
+                            View.VISIBLE);
+                    contentView.setTextViewText(R.id.notification_material_reply_text_2,
                             ensureColorSpanContrastOrStripStyling(replyText[1].getText(), p));
-                    setTextViewColorSecondary(big, R.id.notification_material_reply_text_2, p);
+                    setTextViewColorSecondary(contentView, R.id.notification_material_reply_text_2,
+                            p);
 
                     if (replyText.length > 2 && !TextUtils.isEmpty(replyText[2].getText())
                             && p.maxRemoteInputHistory > 2) {
-                        big.setViewVisibility(
+                        contentView.setViewVisibility(
                                 R.id.notification_material_reply_text_3, View.VISIBLE);
-                        big.setTextViewText(R.id.notification_material_reply_text_3,
+                        contentView.setTextViewText(R.id.notification_material_reply_text_3,
                                 ensureColorSpanContrastOrStripStyling(replyText[2].getText(), p));
-                        setTextViewColorSecondary(big, R.id.notification_material_reply_text_3, p);
+                        setTextViewColorSecondary(contentView,
+                                R.id.notification_material_reply_text_3, p);
                     }
                 }
             }
 
-            return big;
+            return contentView;
         }
 
         /**
