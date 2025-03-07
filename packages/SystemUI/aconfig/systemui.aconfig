@@ -2148,3 +2148,14 @@ flag {
     description: "Enables return animations for status bar chips"
     bug: "202516970"
 }
+
+flag {
+    name: "media_projection_grey_error_text"
+    namespace: "systemui"
+    description: "Set the error text color to grey when app sharing is hidden by the requesting app"
+    bug: "390624334"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
