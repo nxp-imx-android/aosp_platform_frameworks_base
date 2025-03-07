@@ -36,13 +36,14 @@ import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
+import com.android.systemui.statusbar.notification.headsup.AvalancheController;
+import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.BypassController;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm.SectionProvider;
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager;
-import com.android.systemui.statusbar.notification.headsup.AvalancheController;
 
 import java.io.PrintWriter;
 
@@ -424,6 +425,7 @@ public class AmbientState implements Dumpable {
     /** the bottom-most y position where we can draw pinned HUNs  */
     public float getHeadsUpBottom() {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return 0f;
+        NotificationsHunSharedAnimationValues.assertInLegacyMode();
         return mHeadsUpBottom;
     }
 
