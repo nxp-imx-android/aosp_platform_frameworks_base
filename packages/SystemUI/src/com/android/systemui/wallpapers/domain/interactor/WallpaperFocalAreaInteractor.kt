@@ -21,14 +21,12 @@ import android.content.res.Resources
 import android.graphics.PointF
 import android.graphics.RectF
 import android.util.Log
-import android.util.TypedValue
 import com.android.app.animation.MathUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.wallpapers.data.repository.WallpaperFocalAreaRepository
 import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -75,28 +73,11 @@ constructor(
                         screenBounds.centerY() + screenBounds.height() / 2F / wallpaperZoomedInScale,
                     )
 
-                val focalAreaMaxWidthDp = getFocalAreaMaxWidthDp(context)
-                val maxFocalAreaWidth =
-                    TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP,
-                        focalAreaMaxWidthDp.toFloat(),
-                        context.resources.displayMetrics,
-                    )
-
                 val (left, right) =
-                // Tablet & unfold foldable landscape
-                if (isShadeLayoutWide) {
-                        Pair(
-                            scaledBounds.centerX() - maxFocalAreaWidth / 2F,
-                            scaledBounds.centerX() + maxFocalAreaWidth / 2F,
-                        )
-                    } else {
-                        val focalAreaWidth = min(scaledBounds.width(), maxFocalAreaWidth)
-                        Pair(
-                            scaledBounds.centerX() - focalAreaWidth / 2F,
-                            scaledBounds.centerX() + focalAreaWidth / 2F,
-                        )
-                    }
+                    Pair(
+                        scaledBounds.centerX() - scaledBounds.width() / 2F,
+                        scaledBounds.centerX() + scaledBounds.width() / 2F,
+                    )
                 val scaledBottomMargin =
                     (context.resources.displayMetrics.heightPixels - shortcutAbsoluteTop) /
                         wallpaperZoomedInScale
@@ -158,17 +139,6 @@ constructor(
                         )
                 )
             return if (scale == 0f) 1f else scale
-        }
-
-        // A max width for focal area shape effects bounds, to avoid it becoming too large,
-        // especially in portrait mode
-        const val FOCAL_AREA_MAX_WIDTH_DP_TABLET = 500
-        const val FOCAL_AREA_MAX_WIDTH_DP_FOLDABLE = 400
-
-        fun getFocalAreaMaxWidthDp(context: Context): Int {
-            return if (context.resources.getBoolean(R.bool.center_align_focal_area_shape))
-                FOCAL_AREA_MAX_WIDTH_DP_TABLET
-            else FOCAL_AREA_MAX_WIDTH_DP_FOLDABLE
         }
 
         private val TAG = WallpaperFocalAreaInteractor::class.simpleName
