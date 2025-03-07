@@ -4002,6 +4002,10 @@ public final class ActivityThread extends ClientTransactionHandler
                         + (fromIpc ? " (from ipc" : ""));
             }
         }
+        if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
+            Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                    "updateProcessState: processState=" + processState);
+        }
     }
 
     /** Converts a process state to a VM process state. */
