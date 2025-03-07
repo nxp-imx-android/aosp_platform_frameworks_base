@@ -18,6 +18,8 @@ package com.android.systemui.wallpapers.data.repository
 
 import android.app.WallpaperInfo
 import android.app.WallpaperManager
+import android.app.WallpaperManager.FLAG_LOCK
+import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -65,6 +67,12 @@ interface WallpaperRepository {
     /** Emits the current user's current wallpaper. */
     val wallpaperInfo: StateFlow<WallpaperInfo?>
 
+    /**
+     * Emits the current user's lockscreen wallpaper. This will emit the same value as
+     * [wallpaperInfo] if the wallpaper is shared between home and lock screen.
+     */
+    val lockscreenWallpaperInfo: StateFlow<WallpaperInfo?>
+
     /** Emits true if the current user's current wallpaper supports ambient mode. */
     val wallpaperSupportsAmbientMode: Flow<Boolean>
 
@@ -83,7 +91,7 @@ interface WallpaperRepository {
 class WallpaperRepositoryImpl
 @Inject
 constructor(
-    @Background scope: CoroutineScope,
+    @Background private val scope: CoroutineScope,
     @Background private val bgDispatcher: CoroutineDispatcher,
     broadcastDispatcher: BroadcastDispatcher,
     userRepository: UserRepository,
@@ -109,22 +117,8 @@ constructor(
             // Only update the wallpaper status once the user selection has finished.
             .filter { it.selectionStatus == SelectionStatus.SELECTION_COMPLETE }
 
-    override val wallpaperInfo: StateFlow<WallpaperInfo?> =
-        if (!wallpaperManager.isWallpaperSupported) {
-            MutableStateFlow(null).asStateFlow()
-        } else {
-            combine(wallpaperChanged, selectedUser, ::Pair)
-                .mapLatestConflated { (_, selectedUser) -> getWallpaper(selectedUser) }
-                .stateIn(
-                    scope,
-                    // Always be listening for wallpaper changes.
-                    SharingStarted.Eagerly,
-                    // The initial value is null, but it should get updated pretty quickly because
-                    // the `combine` should immediately kick off a fetch.
-                    initialValue = null,
-                )
-        }
-
+    override val wallpaperInfo: StateFlow<WallpaperInfo?> = getWallpaperInfo(FLAG_SYSTEM)
+    override val lockscreenWallpaperInfo: StateFlow<WallpaperInfo?> = getWallpaperInfo(FLAG_LOCK)
     override val wallpaperSupportsAmbientMode: Flow<Boolean> =
         combine(
                 secureSettings
@@ -182,7 +176,7 @@ constructor(
     }
 
     override val shouldSendFocalArea =
-        wallpaperInfo
+        lockscreenWallpaperInfo
             .map {
                 val focalAreaTarget = context.resources.getString(SysUIR.string.focal_area_target)
                 val shouldSendNotificationLayout = it?.component?.className == focalAreaTarget
@@ -194,11 +188,34 @@ constructor(
                 initialValue = extendedWallpaperEffects(),
             )
 
-    private suspend fun getWallpaper(selectedUser: SelectedUserModel): WallpaperInfo? {
+    private suspend fun getWallpaper(
+        selectedUser: SelectedUserModel,
+        which: Int = FLAG_SYSTEM,
+    ): WallpaperInfo? {
         return withContext(bgDispatcher) {
-            wallpaperManager.getWallpaperInfoForUser(selectedUser.userInfo.id)
+            if (which == FLAG_LOCK && wallpaperManager.lockScreenWallpaperExists()) {
+                wallpaperManager.getWallpaperInfo(FLAG_LOCK, selectedUser.userInfo.id)
+            } else {
+                wallpaperManager.getWallpaperInfoForUser(selectedUser.userInfo.id)
+            }
         }
     }
+
+    private fun getWallpaperInfo(which: Int): StateFlow<WallpaperInfo?> =
+        if (!wallpaperManager.isWallpaperSupported) {
+            MutableStateFlow(null).asStateFlow()
+        } else {
+            combine(wallpaperChanged, selectedUser, ::Pair)
+                .mapLatestConflated { (_, selectedUser) -> getWallpaper(selectedUser, which) }
+                .stateIn(
+                    scope,
+                    // Always be listening for wallpaper changes.
+                    SharingStarted.Eagerly,
+                    // The initial value is null, but it should get updated pretty quickly because
+                    // the `combine` should immediately kick off a fetch.
+                    initialValue = null,
+                )
+        }
 
     companion object {
         private val TAG = WallpaperRepositoryImpl::class.simpleName
