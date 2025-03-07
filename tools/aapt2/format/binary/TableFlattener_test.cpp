@@ -1069,4 +1069,23 @@ TEST_F(TableFlattenerTest, FlattenTypeEntryWithNameCollapseInExemption) {
               testing::IsTrue());
 }
 
+TEST_F(TableFlattenerTest, UsesReadWriteFeatureFlagSerializesCorrectly) {
+  std::unique_ptr<ResourceTable> table =
+      test::ResourceTableBuilder()
+          .Add(NewResourceBuilder("com.app.a:color/foo")
+                   .SetValue(util::make_unique<BinaryPrimitive>(
+                       uint8_t(Res_value::TYPE_INT_COLOR_ARGB8), 0xffaabbcc))
+                   .SetUsesReadWriteFeatureFlags(true)
+                   .SetId(0x7f020000)
+                   .Build())
+          .Build();
+  ResTable res_table;
+  TableFlattenerOptions options;
+  ASSERT_TRUE(Flatten(context_.get(), options, table.get(), &res_table));
+
+  uint32_t flags;
+  ASSERT_TRUE(res_table.getResourceEntryFlags(0x7f020000, &flags));
+  ASSERT_EQ(flags, ResTable_entry::FLAG_USES_FEATURE_FLAGS);
+}
+
 }  // namespace aapt
