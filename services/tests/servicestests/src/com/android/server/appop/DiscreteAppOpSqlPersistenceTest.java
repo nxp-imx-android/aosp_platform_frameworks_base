@@ -97,7 +97,8 @@ public class DiscreteAppOpSqlPersistenceTest {
         mDiscreteRegistry.recordDiscreteAccess(opEvent2);
         List<DiscreteOp> discreteOps = mDiscreteRegistry.getAllDiscreteOps();
 
-        assertThat(discreteOps.size()).isEqualTo(1);
+        assertWithMessage("Expected list size is 1, but the list is: " + discreteOps)
+                .that(discreteOps.size()).isEqualTo(1);
         assertThat(discreteOps).contains(opEvent);
     }
 
