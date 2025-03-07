@@ -46,12 +46,14 @@ import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsMode
 import com.android.systemui.statusbar.sysuiStatusBarStateController
 import com.android.systemui.util.animation.DisappearParameters
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.whenever
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
@@ -454,6 +456,20 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
                 underTest.isQsVisible = true
                 fakeShadeRepository.setLegacyExpandedOrAwaitingInputTransfer(true)
                 assertThat(underTest.isQsVisibleAndAnyShadeExpanded).isTrue()
+            }
+        }
+
+    @Test
+    fun isEditing() =
+        with(kosmos) {
+            testScope.testWithinLifecycle {
+                underTest.containerViewModel.editModeViewModel.startEditing()
+                runCurrent()
+                assertThat(underTest.isEditing).isTrue()
+
+                underTest.containerViewModel.editModeViewModel.stopEditing()
+                runCurrent()
+                assertThat(underTest.isEditing).isFalse()
             }
         }
 
