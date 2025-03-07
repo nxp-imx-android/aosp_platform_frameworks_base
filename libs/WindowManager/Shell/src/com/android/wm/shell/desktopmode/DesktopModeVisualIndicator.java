@@ -20,10 +20,13 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR;
+import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_LEFT_INDICATOR;
+import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
+import static com.android.wm.shell.shared.ShellSharedConstants.SMALL_TABLET_MAX_EDGE_DP;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -32,6 +35,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.util.Pair;
 import android.view.Display;
 import android.view.SurfaceControl;
 import android.window.DesktopModeFlags;
@@ -45,12 +49,16 @@ import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
+import com.android.wm.shell.common.split.SplitScreenUtils;
 import com.android.wm.shell.shared.annotations.ShellDesktopThread;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
-import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Animated visual indicator for Desktop Mode windowing transitions.
@@ -115,11 +123,19 @@ public class DesktopModeVisualIndicator {
     private final Context mContext;
     private final DisplayController mDisplayController;
     private final ActivityManager.RunningTaskInfo mTaskInfo;
-    private final Display mDisplay;
 
     private IndicatorType mCurrentType;
     private final DragStartState mDragStartState;
     private final SnapEventHandler mSnapEventHandler;
+
+    private final boolean mUseSmallTabletRegions;
+    /**
+     * Ordered list of {@link Rect} zones that we will match an input coordinate against.
+     * List is traversed from first to last element. The first rect that contains the input event
+     * will be used and the matching {@link IndicatorType} is returned.
+     * Empty rect matches all.
+     */
+    private final List<Pair<Rect, IndicatorType>> mSortedRegions;
 
     public DesktopModeVisualIndicator(@ShellDesktopThread ShellExecutor desktopExecutor,
             @ShellMainThread ShellExecutor mainExecutor,
@@ -130,6 +146,24 @@ public class DesktopModeVisualIndicator {
             DragStartState dragStartState,
             @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider,
             SnapEventHandler snapEventHandler) {
+        this(desktopExecutor, mainExecutor, syncQueue, taskInfo, displayController, context,
+                taskSurface, taskDisplayAreaOrganizer, dragStartState, bubbleBoundsProvider,
+                snapEventHandler, useSmallTabletRegions(displayController, taskInfo),
+                isLeftRightSplit(context, displayController, taskInfo));
+    }
+
+    @VisibleForTesting
+    DesktopModeVisualIndicator(@ShellDesktopThread ShellExecutor desktopExecutor,
+            @ShellMainThread ShellExecutor mainExecutor,
+            SyncTransactionQueue syncQueue,
+            ActivityManager.RunningTaskInfo taskInfo, DisplayController displayController,
+            Context context, SurfaceControl taskSurface,
+            RootTaskDisplayAreaOrganizer taskDisplayAreaOrganizer,
+            DragStartState dragStartState,
+            @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider,
+            SnapEventHandler snapEventHandler,
+            boolean useSmallTabletRegions,
+            boolean isLeftRightSplit) {
         SurfaceControl.Builder builder = new SurfaceControl.Builder();
         if (!DragStartState.isDragToDesktopStartState(dragStartState)
                 || !DesktopModeFlags.ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX.isTrue()) {
@@ -147,14 +181,46 @@ public class DesktopModeVisualIndicator {
         mCurrentType = NO_INDICATOR;
         mDragStartState = dragStartState;
         mSnapEventHandler = snapEventHandler;
-        mDisplay = mDisplayController.getDisplay(mTaskInfo.displayId);
+        Display display = mDisplayController.getDisplay(mTaskInfo.displayId);
+        DisplayLayout displayLayout = mDisplayController.getDisplayLayout(mTaskInfo.displayId);
         mVisualIndicatorViewContainer.createView(
                 mContext,
-                mDisplay,
-                mDisplayController.getDisplayLayout(mTaskInfo.displayId),
+                display,
+                displayLayout,
                 mTaskInfo,
                 taskSurface
         );
+
+        mUseSmallTabletRegions = useSmallTabletRegions;
+
+        if (useSmallTabletRegions) {
+            mSortedRegions = initSmallTabletRegions(displayLayout, isLeftRightSplit);
+        } else {
+            // TODO(b/401596837): add support for initializing regions for large tablets
+            mSortedRegions = Collections.emptyList();
+        }
+    }
+
+    private static boolean useSmallTabletRegions(DisplayController displayController,
+            ActivityManager.RunningTaskInfo taskInfo) {
+        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+            // Small tablet regions get enabled with bubbles feature
+            return false;
+        }
+        Display display = displayController.getDisplay(taskInfo.displayId);
+        DisplayLayout displayLayout = displayController.getDisplayLayout(taskInfo.displayId);
+        if (displayLayout == null) return false;
+        return displayLayout.pxToDp(display.getMaximumSizeDimension()) < SMALL_TABLET_MAX_EDGE_DP;
+    }
+
+    private static boolean isLeftRightSplit(Context context, DisplayController displayController,
+            ActivityManager.RunningTaskInfo taskInfo) {
+        DisplayLayout layout = displayController.getDisplayLayout(taskInfo.displayId);
+        boolean landscape = layout != null && layout.isLandscape();
+        boolean leftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(
+                context.getResources());
+        return SplitScreenUtils.isLeftRightSplit(leftRightSplitInPortrait,
+                /* isLargeScreen= */ true, landscape);
     }
 
     /** Start the fade out animation, running the callback on the main thread once it is done. */
@@ -190,24 +256,35 @@ public class DesktopModeVisualIndicator {
      */
     @NonNull
     IndicatorType updateIndicatorType(PointF inputCoordinates) {
+        final IndicatorType result;
+        if (mUseSmallTabletRegions) {
+            result = getIndicatorSmallTablet(inputCoordinates);
+        } else {
+            result = getIndicatorLargeTablet(inputCoordinates);
+        }
+        if (mDragStartState != DragStartState.DRAGGED_INTENT) {
+            mVisualIndicatorViewContainer.transitionIndicator(
+                    mTaskInfo, mDisplayController, mCurrentType, result
+            );
+            mCurrentType = result;
+        }
+        return result;
+    }
+
+    @NonNull
+    private IndicatorType getIndicatorLargeTablet(PointF inputCoordinates) {
+        // TODO(b/401596837): cache the regions to avoid recalculating on each motion event
         final DisplayLayout layout = mDisplayController.getDisplayLayout(mTaskInfo.displayId);
         // Perform a quick check first: any input off the left edge of the display should be split
         // left, and split right for the right edge. This is universal across all drag event types.
         if (inputCoordinates.x < 0) return TO_SPLIT_LEFT_INDICATOR;
         if (inputCoordinates.x > layout.width()) return TO_SPLIT_RIGHT_INDICATOR;
-        IndicatorType result;
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
-                && !DesktopModeStatus.isDesktopModeSupportedOnDisplay(mContext, mDisplay)) {
-            // If desktop is not available, default to "no indicator"
-            result = NO_INDICATOR;
-        } else {
-            // If we are in freeform, we don't want a visible indicator in the "freeform" drag zone.
-            // In drags not originating on a freeform caption, we should default to a TO_DESKTOP
-            // indicator.
-            result = mDragStartState == DragStartState.FROM_FREEFORM
+        // If we are in freeform, we don't want a visible indicator in the "freeform" drag zone.
+        // In drags not originating on a freeform caption, we should default to a TO_DESKTOP
+        // indicator.
+        IndicatorType result = mDragStartState == DragStartState.FROM_FREEFORM
                     ? NO_INDICATOR
                     : TO_DESKTOP_INDICATOR;
-        }
         final int transitionAreaWidth = mContext.getResources().getDimensionPixelSize(
                 com.android.wm.shell.R.dimen.desktop_mode_transition_region_thickness);
         // Because drags in freeform use task position for indicator calculation, we need to
@@ -215,9 +292,9 @@ public class DesktopModeVisualIndicator {
         final int captionHeight = mContext.getResources().getDimensionPixelSize(
                 com.android.wm.shell.R.dimen.desktop_mode_freeform_decor_caption_height);
         final Region fullscreenRegion = calculateFullscreenRegion(layout, captionHeight);
-        final Region splitLeftRegion = calculateSplitLeftRegion(layout, transitionAreaWidth,
+        final Rect splitLeftRegion = calculateSplitLeftRegion(layout, transitionAreaWidth,
                 captionHeight);
-        final Region splitRightRegion = calculateSplitRightRegion(layout, transitionAreaWidth,
+        final Rect splitRightRegion = calculateSplitRightRegion(layout, transitionAreaWidth,
                 captionHeight);
         final int x = (int) inputCoordinates.x;
         final int y = (int) inputCoordinates.y;
@@ -234,16 +311,21 @@ public class DesktopModeVisualIndicator {
             if (calculateBubbleLeftRegion(layout).contains(x, y)) {
                 result = IndicatorType.TO_BUBBLE_LEFT_INDICATOR;
             } else if (calculateBubbleRightRegion(layout).contains(x, y)) {
-                result = IndicatorType.TO_BUBBLE_RIGHT_INDICATOR;
+                result = TO_BUBBLE_RIGHT_INDICATOR;
             }
         }
-        if (mDragStartState != DragStartState.DRAGGED_INTENT) {
-            mVisualIndicatorViewContainer.transitionIndicator(
-                    mTaskInfo, mDisplayController, mCurrentType, result
-            );
-            mCurrentType = result;
-        }
         return result;
+    }
+
+    @NonNull
+    private IndicatorType getIndicatorSmallTablet(PointF inputCoordinates) {
+        for (Pair<Rect, IndicatorType> region : mSortedRegions) {
+            if (region.first.isEmpty()) return region.second; // empty rect matches all
+            if (region.first.contains((int) inputCoordinates.x, (int) inputCoordinates.y)) {
+                return region.second;
+            }
+        }
+        return NO_INDICATOR;
     }
 
     /**
@@ -284,53 +366,79 @@ public class DesktopModeVisualIndicator {
     }
 
     @VisibleForTesting
-    Region calculateSplitLeftRegion(DisplayLayout layout,
+    Rect calculateSplitLeftRegion(DisplayLayout layout,
             int transitionEdgeWidth, int captionHeight) {
-        final Region region = new Region();
         // In freeform, keep the top corners clear.
         int transitionHeight = mDragStartState == DragStartState.FROM_FREEFORM
                 ? mContext.getResources().getDimensionPixelSize(
                 com.android.wm.shell.R.dimen.desktop_mode_split_from_desktop_height) :
                 -captionHeight;
-        region.union(new Rect(0, transitionHeight, transitionEdgeWidth, layout.height()));
-        return region;
+        return new Rect(0, transitionHeight, transitionEdgeWidth, layout.height());
     }
 
     @VisibleForTesting
-    Region calculateSplitRightRegion(DisplayLayout layout,
+    Rect calculateSplitRightRegion(DisplayLayout layout,
             int transitionEdgeWidth, int captionHeight) {
-        final Region region = new Region();
         // In freeform, keep the top corners clear.
         int transitionHeight = mDragStartState == DragStartState.FROM_FREEFORM
                 ? mContext.getResources().getDimensionPixelSize(
                 com.android.wm.shell.R.dimen.desktop_mode_split_from_desktop_height) :
                 -captionHeight;
-        region.union(new Rect(layout.width() - transitionEdgeWidth, transitionHeight,
-                layout.width(), layout.height()));
-        return region;
-    }
-
-    @VisibleForTesting
-    Region calculateBubbleLeftRegion(DisplayLayout layout) {
-        int regionWidth = mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.bubble_transform_area_width);
-        int regionHeight = mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.bubble_transform_area_height);
-        return new Region(0, layout.height() - regionHeight, regionWidth, layout.height());
-    }
-
-    @VisibleForTesting
-    Region calculateBubbleRightRegion(DisplayLayout layout) {
-        int regionWidth = mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.bubble_transform_area_width);
-        int regionHeight = mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.bubble_transform_area_height);
-        return new Region(layout.width() - regionWidth, layout.height() - regionHeight,
+        return new Rect(layout.width() - transitionEdgeWidth, transitionHeight,
                 layout.width(), layout.height());
+    }
+
+    @VisibleForTesting
+    Rect calculateBubbleLeftRegion(DisplayLayout layout) {
+        int regionSize = getBubbleRegionSize();
+        return new Rect(0, layout.height() - regionSize, regionSize, layout.height());
+    }
+
+    @VisibleForTesting
+    Rect calculateBubbleRightRegion(DisplayLayout layout) {
+        int regionSize = getBubbleRegionSize();
+        return new Rect(layout.width() - regionSize, layout.height() - regionSize,
+                layout.width(), layout.height());
+    }
+
+    private int getBubbleRegionSize() {
+        int resId = mUseSmallTabletRegions
+                ? com.android.wm.shell.shared.R.dimen.drag_zone_bubble_fold
+                : com.android.wm.shell.shared.R.dimen.drag_zone_bubble_tablet;
+        return mContext.getResources().getDimensionPixelSize(resId);
     }
 
     @VisibleForTesting
     Rect getIndicatorBounds() {
         return mVisualIndicatorViewContainer.getIndicatorBounds();
+    }
+
+    private List<Pair<Rect, IndicatorType>> initSmallTabletRegions(DisplayLayout layout,
+            boolean isLeftRightSplit) {
+        boolean dragFromFullscreen = mDragStartState == DragStartState.FROM_FULLSCREEN;
+        boolean dragFromSplit = mDragStartState == DragStartState.FROM_SPLIT;
+        if (isLeftRightSplit && (dragFromFullscreen || dragFromSplit)) {
+            int splitRegionWidth = mContext.getResources().getDimensionPixelSize(
+                    com.android.wm.shell.shared.R.dimen.drag_zone_h_split_from_app_width_fold);
+            return Arrays.asList(
+                    new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR),
+                    new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR),
+                    new Pair<>(calculateSplitLeftRegion(layout, splitRegionWidth,
+                            /* captionHeight= */ 0), TO_SPLIT_LEFT_INDICATOR),
+                    new Pair<>(calculateSplitRightRegion(layout, splitRegionWidth,
+                            /* captionHeight= */ 0), TO_SPLIT_RIGHT_INDICATOR),
+                    new Pair<>(new Rect(), TO_FULLSCREEN_INDICATOR) // default to fullscreen
+            );
+        }
+        if (dragFromFullscreen) {
+            // If left/right split is not available, we can only drag fullscreen tasks
+            // TODO(b/401352409): add support for top/bottom split zones
+            return Arrays.asList(
+                    new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR),
+                    new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR),
+                    new Pair<>(new Rect(), TO_FULLSCREEN_INDICATOR) // default to fullscreen
+            );
+        }
+        return Collections.emptyList();
     }
 }
