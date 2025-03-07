@@ -105,17 +105,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "allow_multiple_adjacent_task_fragments"
-    description: "Refactor to allow more than 2 adjacent TaskFragments"
-    bug: "373709676"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "track_system_ui_context_before_wms"
     description: "Keep track of SystemUiContext before WMS is initialized"
     bug: "384428048"
