@@ -262,6 +262,12 @@ constructor(
     override val popupChips
         get() = statusBarPopupChips.shownPopupChips
 
+    private val isShadeExpandedEnough =
+        // Keep the status bar visible while the shade is just starting to open, but otherwise
+        // hide it so that the status bar doesn't draw while it can't be seen.
+        // See b/394257529#comment24.
+        shadeInteractor.anyExpansion.map { it >= 0.2 }.distinctUntilChanged()
+
     /**
      * Whether the display of this statusbar has the shade window (that is hosting shade container
      * and lockscreen, among other things).
@@ -283,7 +289,7 @@ constructor(
                     Overlays.QuickSettingsShade in currentOverlays)
             }
         } else {
-            shadeInteractor.isAnyFullyExpanded
+            isShadeExpandedEnough
         }
 
     private val isShadeVisibleOnThisDisplay: Flow<Boolean> =
