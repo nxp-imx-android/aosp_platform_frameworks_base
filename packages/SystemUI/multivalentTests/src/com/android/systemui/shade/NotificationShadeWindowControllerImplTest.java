@@ -40,6 +40,7 @@ import android.app.IActivityManager;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.testing.TestableLooper.RunWithLooper;
 import android.view.View;
@@ -49,6 +50,7 @@ import androidx.test.filters.SmallTest;
 
 import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.colorextraction.ColorExtractor;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.biometrics.AuthController;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
@@ -265,6 +267,7 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_DISABLE_BLURRED_SHADE_VISIBLE)
     public void setBackgroundBlurRadius_expandedWithBlurs() {
         mNotificationShadeWindowController.setBackgroundBlurRadius(10);
         verify(mNotificationShadeWindowView).setVisibility(eq(View.VISIBLE));
