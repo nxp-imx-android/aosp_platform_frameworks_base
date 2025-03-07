@@ -12822,6 +12822,22 @@ public final class Settings {
         public static final String ADAPTIVE_CONNECTIVITY_ENABLED = "adaptive_connectivity_enabled";
 
         /**
+         * Whether the Adaptive wifi scorer switch is enabled.
+         *
+         * @hide
+         */
+        public static final String ADAPTIVE_CONNECTIVITY_WIFI_ENABLED =
+                "adaptive_connectivity_wifi_enabled";
+
+        /**
+         * Whether the Adaptive 5G PM switch is enabled.
+         *
+         * @hide
+         */
+        public static final String ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED =
+                "adaptive_connectivity_mobile_network_enabled";
+
+        /**
          * Controls the 'Sunlight boost' toggle in wearable devices (high brightness mode).
          *
          * Valid values for this key are: '0' (disabled) or '1' (enabled).
