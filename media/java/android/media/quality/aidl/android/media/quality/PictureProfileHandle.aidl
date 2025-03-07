@@ -16,4 +16,4 @@
 
 package android.media.quality;
 
-parcelable PictureProfileHandle;
+parcelable PictureProfileHandle cpp_header "quality/MediaQualityManager.h";
