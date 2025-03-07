@@ -38,7 +38,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.display.BrightnessSynchronizer;
 import com.android.internal.protolog.ProtoLog;
 import com.android.server.wm.utils.DisplayInfoOverrides.DisplayInfoFieldsUpdater;
-import com.android.window.flags.Flags;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -336,7 +335,6 @@ class DeferredDisplayUpdater {
 
     /** Returns {@code true} if the transition will control when to turn on the screen. */
     boolean waitForTransition(@NonNull Message screenUnblocker) {
-        if (!Flags.waitForTransitionOnDisplaySwitch()) return false;
         if (!mShouldWaitForTransitionWhenScreenOn) {
             return false;
         }
