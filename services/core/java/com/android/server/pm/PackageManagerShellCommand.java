@@ -96,6 +96,7 @@ import android.os.ServiceManager;
 import android.os.ServiceSpecificException;
 import android.os.ShellCommand;
 import android.os.SystemClock;
+import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -1564,6 +1565,12 @@ class PackageManagerShellCommand extends ShellCommand {
     private int doRunInstall(final InstallParams params) throws RemoteException {
         final PrintWriter pw = getOutPrintWriter();
 
+        // Do not allow app installation if boot has not completed already
+        if (!SystemProperties.getBoolean("sys.boot_completed", false)) {
+            pw.println("Error: device is still booting.");
+            return 1;
+        }
+
         int requestUserId = params.userId;
         if (requestUserId != UserHandle.USER_ALL && requestUserId != UserHandle.USER_CURRENT) {
             UserManagerInternal umi =
@@ -2174,6 +2181,13 @@ class PackageManagerShellCommand extends ShellCommand {
 
     private int runUninstall() throws RemoteException {
         final PrintWriter pw = getOutPrintWriter();
+
+        // Do not allow app uninstallation if boot has not completed already
+        if (!SystemProperties.getBoolean("sys.boot_completed", false)) {
+            pw.println("Error: device is still booting.");
+            return 1;
+        }
+
         int flags = 0;
         int userId = UserHandle.USER_ALL;
         long versionCode = PackageManager.VERSION_CODE_HIGHEST;
