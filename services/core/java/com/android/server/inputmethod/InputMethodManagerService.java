@@ -5800,7 +5800,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     return false;
                 }
             }
-            return mInputManagerInternal.transferTouchGesture(sourceInputToken, curHostInputToken);
+            return mInputManagerInternal.transferTouchGesture(
+                    sourceInputToken, curHostInputToken, /* transferEntireGesture */ false);
         }
 
         @Override

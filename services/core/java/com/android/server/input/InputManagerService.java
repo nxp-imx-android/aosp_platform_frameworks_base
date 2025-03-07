@@ -1370,7 +1370,7 @@ public class InputManagerService extends IInputManager.Stub
     public boolean startDragAndDrop(@NonNull IBinder fromChannelToken,
             @NonNull IBinder dragAndDropChannelToken) {
         return mNative.transferTouchGesture(fromChannelToken, dragAndDropChannelToken,
-                true /* isDragDrop */);
+                true /* isDragDrop */, false /* transferEntireGesture */);
     }
 
     /**
@@ -1394,11 +1394,11 @@ public class InputManagerService extends IInputManager.Stub
      *   if the source window is not actively receiving a touch gesture at the time of the request.
      */
     public boolean transferTouchGesture(@NonNull IBinder fromChannelToken,
-            @NonNull IBinder toChannelToken) {
+            @NonNull IBinder toChannelToken, boolean transferEntireGesture) {
         Objects.requireNonNull(fromChannelToken);
         Objects.requireNonNull(toChannelToken);
         return mNative.transferTouchGesture(fromChannelToken, toChannelToken,
-                false /* isDragDrop */);
+                false /* isDragDrop */, transferEntireGesture);
     }
 
     @Override // Binder call
@@ -3703,8 +3703,9 @@ public class InputManagerService extends IInputManager.Stub
 
         @Override
         public boolean transferTouchGesture(@NonNull IBinder fromChannelToken,
-                @NonNull IBinder toChannelToken) {
-            return InputManagerService.this.transferTouchGesture(fromChannelToken, toChannelToken);
+                @NonNull IBinder toChannelToken, boolean transferEntireGesture) {
+            return InputManagerService.this.transferTouchGesture(
+                    fromChannelToken, toChannelToken, transferEntireGesture);
         }
 
         @Override
