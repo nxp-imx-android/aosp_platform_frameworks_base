@@ -158,3 +158,11 @@ flag {
     bug: "370720522"
     is_exported: true
 }
+
+flag {
+    name: "virtual_sensor_additional_info"
+    namespace: "virtual_devices"
+    description: "API for injecting SensorAdditionalInfo for VirtualSensor"
+    bug: "393517834"
+    is_exported: true
+}

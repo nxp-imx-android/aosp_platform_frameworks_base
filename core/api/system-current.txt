@@ -3642,9 +3642,24 @@ package android.companion.virtual.sensor {
     method public int getDeviceId();
     method @NonNull public String getName();
     method public int getType();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_sensor_additional_info") public void sendAdditionalInfo(@NonNull android.companion.virtual.sensor.VirtualSensorAdditionalInfo);
     method public void sendEvent(@NonNull android.companion.virtual.sensor.VirtualSensorEvent);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.sensor.VirtualSensor> CREATOR;
+  }
+
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_sensor_additional_info") public final class VirtualSensorAdditionalInfo implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getType();
+    method @NonNull public java.util.List<float[]> getValues();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.sensor.VirtualSensorAdditionalInfo> CREATOR;
+  }
+
+  public static final class VirtualSensorAdditionalInfo.Builder {
+    ctor public VirtualSensorAdditionalInfo.Builder(int);
+    method @NonNull public android.companion.virtual.sensor.VirtualSensorAdditionalInfo.Builder addValues(@NonNull float[]);
+    method @NonNull public android.companion.virtual.sensor.VirtualSensorAdditionalInfo build();
   }
 
   public interface VirtualSensorCallback {
@@ -3664,6 +3679,7 @@ package android.companion.virtual.sensor {
     method public float getResolution();
     method public int getType();
     method @Nullable public String getVendor();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_sensor_additional_info") public boolean isAdditionalInfoSupported();
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") public boolean isWakeUpSensor();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.sensor.VirtualSensorConfig> CREATOR;
@@ -3672,6 +3688,7 @@ package android.companion.virtual.sensor {
   public static final class VirtualSensorConfig.Builder {
     ctor public VirtualSensorConfig.Builder(@IntRange(from=1) int, @NonNull String);
     method @NonNull public android.companion.virtual.sensor.VirtualSensorConfig build();
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_sensor_additional_info") @NonNull public android.companion.virtual.sensor.VirtualSensorConfig.Builder setAdditionalInfoSupported(boolean);
     method @NonNull public android.companion.virtual.sensor.VirtualSensorConfig.Builder setDirectChannelTypesSupported(int);
     method @NonNull public android.companion.virtual.sensor.VirtualSensorConfig.Builder setHighestDirectReportRateLevel(int);
     method @NonNull public android.companion.virtual.sensor.VirtualSensorConfig.Builder setMaxDelay(int);
