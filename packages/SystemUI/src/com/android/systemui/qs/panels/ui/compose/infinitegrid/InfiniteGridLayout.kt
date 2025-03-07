@@ -78,8 +78,15 @@ constructor(
             }
 
         val columns = columnsWithMediaViewModel.columns
+        val largeTiles by iconTilesViewModel.largeTilesState
         val largeTilesSpan by iconTilesViewModel.largeTilesSpanState
-        val sizedTiles = tiles.map { SizedTileImpl(it, it.spec.width(largeTilesSpan)) }
+        // Tiles or largeTiles may be updated while this is composed, so listen to any changes
+        val sizedTiles =
+            remember(tiles, largeTiles, largeTilesSpan) {
+                tiles.map {
+                    SizedTileImpl(it, if (largeTiles.contains(it.spec)) largeTilesSpan else 1)
+                }
+            }
         val bounceables =
             remember(sizedTiles) { List(sizedTiles.size) { BounceableTileViewModel() } }
         val squishiness by viewModel.squishinessViewModel.squishiness.collectAsStateWithLifecycle()
