@@ -5665,11 +5665,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         LocalServices.addService(InputMethodManagerInternal.class, mInputMethodManagerInternal);
     }
 
-    // TODO(b/352228316): Remove it once IMMIProxy is removed.
-    InputMethodManagerInternal getLocalService(){
-        return mInputMethodManagerInternal;
-    }
-
     private final class LocalServiceImpl extends InputMethodManagerInternal {
 
         @ImfLockFree
