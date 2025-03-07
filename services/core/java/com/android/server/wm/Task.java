@@ -3831,10 +3831,11 @@ class Task extends TaskFragment {
         pw.print(ActivityInfo.resizeModeToString(mResizeMode));
         pw.print(" mSupportsPictureInPicture="); pw.print(mSupportsPictureInPicture);
         pw.print(" isResizeable="); pw.println(isResizeable());
-        pw.print(" isPerceptible="); pw.println(mIsPerceptible);
+        pw.print(prefix); pw.print("isPerceptible="); pw.println(mIsPerceptible);
         pw.print(prefix); pw.print("lastActiveTime="); pw.print(lastActiveTime);
         pw.println(" (inactive for " + (getInactiveDuration() / 1000) + "s)");
-        pw.print(prefix); pw.println(" isTrimmable=" + mIsTrimmableFromRecents);
+        pw.print(prefix); pw.print("isTrimmable=" + mIsTrimmableFromRecents);
+        pw.print(" isForceHidden="); pw.println(isForceHidden());
         if (mLaunchAdjacentDisabled) {
             pw.println(prefix + "mLaunchAdjacentDisabled=true");
         }
