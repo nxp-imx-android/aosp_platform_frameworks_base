@@ -17,6 +17,7 @@
 package com.android.server.supervision
 
 import android.app.Activity
+import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
 import android.app.admin.DevicePolicyManagerInternal
 import android.app.supervision.flags.Flags
@@ -61,6 +62,9 @@ class SupervisionServiceTest {
     @get:Rule val mocks: MockitoRule = MockitoJUnit.rule()
 
     @Mock private lateinit var mockDpmInternal: DevicePolicyManagerInternal
+
+    @Mock
+    private lateinit var mockKeyguardManager: KeyguardManager
     @Mock private lateinit var mockPackageManager: PackageManager
     @Mock private lateinit var mockUserManagerInternal: UserManagerInternal
 
@@ -71,7 +75,7 @@ class SupervisionServiceTest {
     @Before
     fun setUp() {
         context = InstrumentationRegistry.getInstrumentation().context
-        context = SupervisionContextWrapper(context, mockPackageManager)
+        context = SupervisionContextWrapper(context, mockKeyguardManager, mockPackageManager)
 
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal::class.java)
         LocalServices.addService(DevicePolicyManagerInternal::class.java, mockDpmInternal)
@@ -250,9 +254,39 @@ class SupervisionServiceTest {
 
     @Test
     fun createConfirmSupervisionCredentialsIntent() {
+        service.mInternal.setSupervisionEnabledForUser(context.getUserId(), true)
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(true)
+
         val intent = checkNotNull(service.createConfirmSupervisionCredentialsIntent())
         assertThat(intent.action).isEqualTo(ACTION_CONFIRM_SUPERVISION_CREDENTIALS)
         assertThat(intent.getPackage()).isEqualTo("com.android.settings")
+    }
+
+    @Test
+    fun createConfirmSupervisionCredentialsIntent_supervisionNotEnabled_returnsNull() {
+        service.mInternal.setSupervisionEnabledForUser(context.getUserId(), false)
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(true)
+
+        assertThat(service.createConfirmSupervisionCredentialsIntent()).isNull()
+    }
+
+    @Test
+    fun createConfirmSupervisionCredentialsIntent_noSupervisingUser_returnsNull() {
+        service.mInternal.setSupervisionEnabledForUser(context.getUserId(), true)
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(UserHandle.USER_NULL)
+
+        assertThat(service.createConfirmSupervisionCredentialsIntent()).isNull()
+    }
+
+    @Test
+    fun createConfirmSupervisionCredentialsIntent_supervisingUserMissingSecureLock_returnsNull() {
+        service.mInternal.setSupervisionEnabledForUser(context.getUserId(), true)
+        whenever(mockUserManagerInternal.getSupervisingProfileId()).thenReturn(SUPERVISING_USER_ID)
+        whenever(mockKeyguardManager.isDeviceSecure(SUPERVISING_USER_ID)).thenReturn(false)
+
+        assertThat(service.createConfirmSupervisionCredentialsIntent()).isNull()
     }
 
     private val systemSupervisionPackage: String
@@ -279,6 +313,7 @@ class SupervisionServiceTest {
     private companion object {
         const val USER_ID = 100
         const val APP_UID = USER_ID * UserHandle.PER_USER_RANGE
+        const val SUPERVISING_USER_ID = 10
     }
 }
 
@@ -286,9 +321,18 @@ class SupervisionServiceTest {
  * A context wrapper that allows broadcast intents to immediately invoke the receivers without
  * performing checks on the sending user.
  */
-private class SupervisionContextWrapper(val context: Context, val pkgManager: PackageManager) :
-    ContextWrapper(context) {
+private class SupervisionContextWrapper(
+    val context: Context,
+    val keyguardManager: KeyguardManager,
+    val pkgManager: PackageManager,
+) : ContextWrapper(context) {
     val interceptors = mutableListOf<Pair<BroadcastReceiver, IntentFilter>>()
+
+    override fun getSystemService(name: String): Any =
+        when (name) {
+            Context.KEYGUARD_SERVICE -> keyguardManager
+            else -> super.getSystemService(name)
+        }
 
     override fun getPackageManager() = pkgManager
 

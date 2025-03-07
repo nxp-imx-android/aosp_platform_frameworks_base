@@ -1521,6 +1521,20 @@ public class UserManagerService extends IUserManager.Stub {
         return UserHandle.USER_NULL;
     }
 
+    /** Returns the currently-designated supervising profile, or USER_NULL if not present. */
+    private @CanBeNULL @UserIdInt int getSupervisingProfileId() {
+        synchronized (mUsersLock) {
+            final int userSize = mUsers.size();
+            for (int i = 0; i < userSize; i++) {
+                final UserInfo user = mUsers.valueAt(i).info;
+                if (user.isSupervisingProfile() && !mRemovingUserIds.get(user.id)) {
+                    return user.id;
+                }
+            }
+        }
+        return UserHandle.USER_NULL;
+    }
+
     public @NonNull List<UserInfo> getUsers(boolean excludeDying) {
         return getUsers(/*excludePartial= */ true, excludeDying, /* excludePreCreated= */
                 true);
@@ -8335,10 +8349,14 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
-        public @UserIdInt int getCommunalProfileId() {
+        public @CanBeNULL @UserIdInt int getCommunalProfileId() {
             return getCommunalProfileIdUnchecked();
         }
 
+        @Override
+        public @CanBeNULL @UserIdInt int getSupervisingProfileId() {
+            return UserManagerService.this.getSupervisingProfileId();
+        }
     } // class LocalService
 
 
