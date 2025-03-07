@@ -21,7 +21,6 @@ import android.app.admin.DevicePolicyManager
 import android.app.admin.devicePolicyManager
 import android.content.Intent
 import android.content.pm.UserInfo
-import android.content.res.mainResources
 import android.os.UserHandle
 import android.os.UserManager
 import android.os.userManager
@@ -39,9 +38,8 @@ import com.android.systemui.Flags.FLAG_COMMUNAL_WIDGET_RESIZING
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
-import com.android.systemui.common.data.repository.batteryRepository
-import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.model.CommunalSmartspaceTimer
+import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.fakeCommunalMediaRepository
 import com.android.systemui.communal.data.repository.fakeCommunalPrefsRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
@@ -50,14 +48,9 @@ import com.android.systemui.communal.data.repository.fakeCommunalTutorialReposit
 import com.android.systemui.communal.data.repository.fakeCommunalWidgetRepository
 import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.domain.model.CommunalTransitionProgressModel
-import com.android.systemui.communal.posturing.data.repository.fake
-import com.android.systemui.communal.posturing.data.repository.posturingRepository
-import com.android.systemui.communal.posturing.shared.model.PosturedState
 import com.android.systemui.communal.shared.model.CommunalContentSize
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.EditModeState
-import com.android.systemui.dock.DockManager
-import com.android.systemui.dock.fakeDockManager
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -75,19 +68,16 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.statusbar.phone.fakeManagedProfileController
 import com.android.systemui.testKosmos
-import com.android.systemui.user.data.repository.FakeUserRepository
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.capture
 import com.android.systemui.util.mockito.nullable
 import com.android.systemui.util.mockito.whenever
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceTimeBy
-import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -98,10 +88,6 @@ import org.mockito.Mockito.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
-/**
- * This class of test cases assume that communal is enabled. For disabled cases, see
- * [CommunalInteractorCommunalDisabledTest].
- */
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
@@ -109,10 +95,7 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
         UserInfo(/* id= */ 0, /* name= */ "primary user", /* flags= */ UserInfo.FLAG_MAIN)
     private val secondaryUser = UserInfo(/* id= */ 1, /* name= */ "secondary user", /* flags= */ 0)
 
-    private val kosmos =
-        testKosmos()
-            .apply { mainResources = mContext.orCreateTestableResources.resources }
-            .useUnconfinedTestDispatcher()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
     private val Kosmos.underTest by Kosmos.Fixture { communalInteractor }
 
@@ -128,104 +111,40 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         kosmos.fakeFeatureFlagsClassic.set(Flags.COMMUNAL_SERVICE_ENABLED, true)
         mSetFlagsRule.enableFlags(FLAG_COMMUNAL_HUB)
-
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnSleepByDefault,
-            false,
-        )
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault,
-            false,
-        )
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault,
-            false,
-        )
-    }
-
-    @After
-    fun tearDown() {
-        mContext.orCreateTestableResources.removeOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnSleepByDefault
-        )
-        mContext.orCreateTestableResources.removeOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnDockByDefault
-        )
-        mContext.orCreateTestableResources.removeOverride(
-            com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault
-        )
     }
 
     @Test
     fun communalEnabled_true() =
         kosmos.runTest {
-            fakeUserRepository.setSelectedUserInfo(mainUser)
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
             assertThat(underTest.isCommunalEnabled.value).isTrue()
-        }
-
-    @Test
-    fun isCommunalAvailable_mainUserUnlockedAndMainUser_true() =
-        kosmos.runTest {
-            val isAvailable by collectLastValue(underTest.isCommunalAvailable)
-            assertThat(isAvailable).isFalse()
-
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
-            fakeUserRepository.setSelectedUserInfo(mainUser)
-            fakeKeyguardRepository.setKeyguardShowing(true)
-
-            assertThat(isAvailable).isTrue()
-        }
-
-    @Test
-    fun isCommunalAvailable_mainUserLockedAndMainUser_false() =
-        kosmos.runTest {
-            val isAvailable by collectLastValue(underTest.isCommunalAvailable)
-            assertThat(isAvailable).isFalse()
-
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, false)
-            fakeUserRepository.setSelectedUserInfo(mainUser)
-            fakeKeyguardRepository.setKeyguardShowing(true)
-
-            assertThat(isAvailable).isFalse()
-        }
-
-    @Test
-    fun isCommunalAvailable_mainUserUnlockedAndSecondaryUser_false() =
-        kosmos.runTest {
-            val isAvailable by collectLastValue(underTest.isCommunalAvailable)
-            assertThat(isAvailable).isFalse()
-
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
-            fakeUserRepository.setSelectedUserInfo(secondaryUser)
-            fakeKeyguardRepository.setKeyguardShowing(true)
-
-            assertThat(isAvailable).isFalse()
         }
 
     @Test
     fun isCommunalAvailable_whenKeyguardShowing_true() =
         kosmos.runTest {
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
+            fakeKeyguardRepository.setKeyguardShowing(false)
+
             val isAvailable by collectLastValue(underTest.isCommunalAvailable)
             assertThat(isAvailable).isFalse()
 
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
-            fakeUserRepository.setSelectedUserInfo(mainUser)
             fakeKeyguardRepository.setKeyguardShowing(true)
-
             assertThat(isAvailable).isTrue()
         }
 
     @Test
-    fun isCommunalAvailable_communalDisabled_false() =
+    fun isCommunalAvailable_suppressed() =
         kosmos.runTest {
-            mSetFlagsRule.disableFlags(FLAG_COMMUNAL_HUB, FLAG_GLANCEABLE_HUB_V2)
+            communalSettingsInteractor.setSuppressionReasons(emptyList())
+            fakeKeyguardRepository.setKeyguardShowing(true)
 
             val isAvailable by collectLastValue(underTest.isCommunalAvailable)
-            assertThat(isAvailable).isFalse()
+            assertThat(isAvailable).isTrue()
 
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, false)
-            fakeUserRepository.setSelectedUserInfo(mainUser)
-            fakeKeyguardRepository.setKeyguardShowing(true)
+            communalSettingsInteractor.setSuppressionReasons(
+                listOf(SuppressionReason.ReasonUnknown())
+            )
 
             assertThat(isAvailable).isFalse()
         }
@@ -1278,66 +1197,6 @@ class CommunalInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
                     3 to CommunalContentSize.Responsive(1),
                 )
                 .inOrder()
-        }
-
-    @Test
-    fun showCommunalWhileCharging() =
-        kosmos.runTest {
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
-            fakeUserRepository.setSelectedUserInfo(mainUser)
-            fakeKeyguardRepository.setKeyguardShowing(true)
-            fakeSettings.putIntForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                1,
-                mainUser.id,
-            )
-
-            val shouldShowCommunal by collectLastValue(underTest.shouldShowCommunal)
-            batteryRepository.fake.setDevicePluggedIn(false)
-            assertThat(shouldShowCommunal).isFalse()
-
-            batteryRepository.fake.setDevicePluggedIn(true)
-            assertThat(shouldShowCommunal).isTrue()
-        }
-
-    @Test
-    fun showCommunalWhilePosturedAndCharging() =
-        kosmos.runTest {
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
-            fakeUserRepository.setSelectedUserInfo(mainUser)
-            fakeKeyguardRepository.setKeyguardShowing(true)
-            fakeSettings.putIntForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                1,
-                mainUser.id,
-            )
-
-            val shouldShowCommunal by collectLastValue(underTest.shouldShowCommunal)
-            batteryRepository.fake.setDevicePluggedIn(true)
-            posturingRepository.fake.setPosturedState(PosturedState.NotPostured)
-            assertThat(shouldShowCommunal).isFalse()
-
-            posturingRepository.fake.setPosturedState(PosturedState.Postured(1f))
-            assertThat(shouldShowCommunal).isTrue()
-        }
-
-    @Test
-    fun showCommunalWhileDocked() =
-        kosmos.runTest {
-            fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, true)
-            fakeUserRepository.setSelectedUserInfo(mainUser)
-            fakeKeyguardRepository.setKeyguardShowing(true)
-            fakeSettings.putIntForUser(Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK, 1, mainUser.id)
-
-            batteryRepository.fake.setDevicePluggedIn(true)
-            fakeDockManager.setIsDocked(false)
-
-            val shouldShowCommunal by collectLastValue(underTest.shouldShowCommunal)
-            assertThat(shouldShowCommunal).isFalse()
-
-            fakeDockManager.setIsDocked(true)
-            fakeDockManager.setDockEvent(DockManager.STATE_DOCKED)
-            assertThat(shouldShowCommunal).isTrue()
         }
 
     private fun setKeyguardFeaturesDisabled(user: UserInfo, disabledFlags: Int) {

@@ -73,12 +73,12 @@ class CommunalOngoingContentStartableTest : SysuiTestCase() {
             assertThat(fakeCommunalMediaRepository.isListening()).isFalse()
             assertThat(fakeCommunalSmartspaceRepository.isListening()).isFalse()
 
-            kosmos.setCommunalEnabled(true)
+            setCommunalEnabled(true)
 
             assertThat(fakeCommunalMediaRepository.isListening()).isTrue()
             assertThat(fakeCommunalSmartspaceRepository.isListening()).isTrue()
 
-            kosmos.setCommunalEnabled(false)
+            setCommunalEnabled(false)
 
             assertThat(fakeCommunalMediaRepository.isListening()).isFalse()
             assertThat(fakeCommunalSmartspaceRepository.isListening()).isFalse()
@@ -93,13 +93,13 @@ class CommunalOngoingContentStartableTest : SysuiTestCase() {
             assertThat(fakeCommunalMediaRepository.isListening()).isFalse()
             assertThat(fakeCommunalSmartspaceRepository.isListening()).isFalse()
 
-            kosmos.setCommunalEnabled(true)
+            setCommunalEnabled(true)
 
             // Media listening does not start when UMO is disabled.
             assertThat(fakeCommunalMediaRepository.isListening()).isFalse()
             assertThat(fakeCommunalSmartspaceRepository.isListening()).isTrue()
 
-            kosmos.setCommunalEnabled(false)
+            setCommunalEnabled(false)
 
             assertThat(fakeCommunalMediaRepository.isListening()).isFalse()
             assertThat(fakeCommunalSmartspaceRepository.isListening()).isFalse()

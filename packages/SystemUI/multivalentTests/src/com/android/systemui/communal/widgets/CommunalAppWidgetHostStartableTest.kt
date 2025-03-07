@@ -17,7 +17,6 @@
 package com.android.systemui.communal.widgets
 
 import android.content.pm.UserInfo
-import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
@@ -25,6 +24,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.fakeCommunalWidgetRepository
 import com.android.systemui.communal.domain.interactor.communalInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
+import com.android.systemui.communal.domain.interactor.setCommunalEnabled
 import com.android.systemui.communal.shared.model.FakeGlanceableHubMultiUserHelper
 import com.android.systemui.communal.shared.model.fakeGlanceableHubMultiUserHelper
 import com.android.systemui.coroutines.collectLastValue
@@ -37,11 +37,9 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos
-import com.android.systemui.user.data.repository.FakeUserRepository.Companion.MAIN_USER_ID
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.mockito.whenever
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.test.runCurrent
@@ -282,22 +280,12 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
             }
         }
 
-    private suspend fun setCommunalAvailable(
-        available: Boolean,
-        setKeyguardShowing: Boolean = true,
-    ) =
+    private fun setCommunalAvailable(available: Boolean, setKeyguardShowing: Boolean = true) =
         with(kosmos) {
-            fakeUserRepository.setUserUnlocked(MAIN_USER_ID, true)
-            fakeUserRepository.setSelectedUserInfo(MAIN_USER_INFO)
+            setCommunalEnabled(available)
             if (setKeyguardShowing) {
                 fakeKeyguardRepository.setKeyguardShowing(true)
             }
-            val settingsValue = if (available) 1 else 0
-            fakeSettings.putIntForUser(
-                Settings.Secure.GLANCEABLE_HUB_ENABLED,
-                settingsValue,
-                MAIN_USER_INFO.id,
-            )
         }
 
     private companion object {

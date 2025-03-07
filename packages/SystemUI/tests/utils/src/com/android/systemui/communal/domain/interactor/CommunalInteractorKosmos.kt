@@ -16,17 +16,14 @@
 
 package com.android.systemui.communal.domain.interactor
 
-import android.content.pm.UserInfo
 import android.content.testableContext
 import android.os.userManager
 import com.android.systemui.broadcast.broadcastDispatcher
-import com.android.systemui.common.domain.interactor.batteryInteractor
+import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.communalMediaRepository
 import com.android.systemui.communal.data.repository.communalSmartspaceRepository
 import com.android.systemui.communal.data.repository.communalWidgetRepository
-import com.android.systemui.communal.posturing.domain.interactor.posturingInteractor
 import com.android.systemui.communal.widgets.EditWidgetsActivityStarter
-import com.android.systemui.dock.dockManager
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
@@ -39,13 +36,9 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.plugins.activityStarter
-import com.android.systemui.res.R
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.phone.fakeManagedProfileController
-import com.android.systemui.user.data.repository.FakeUserRepository
-import com.android.systemui.user.data.repository.fakeUserRepository
-import com.android.systemui.user.domain.interactor.userLockedInteractor
 import com.android.systemui.util.mockito.mock
 
 val Kosmos.communalInteractor by Fixture {
@@ -70,10 +63,6 @@ val Kosmos.communalInteractor by Fixture {
         logBuffer = logcatLogBuffer("CommunalInteractor"),
         tableLogBuffer = mock(),
         managedProfileController = fakeManagedProfileController,
-        batteryInteractor = batteryInteractor,
-        dockManager = dockManager,
-        posturingInteractor = posturingInteractor,
-        userLockedInteractor = userLockedInteractor,
     )
 }
 
@@ -86,28 +75,28 @@ fun Kosmos.setCommunalV2ConfigEnabled(enabled: Boolean) {
     )
 }
 
-suspend fun Kosmos.setCommunalEnabled(enabled: Boolean): UserInfo {
+fun Kosmos.setCommunalEnabled(enabled: Boolean) {
     fakeFeatureFlagsClassic.set(Flags.COMMUNAL_SERVICE_ENABLED, enabled)
-    return if (enabled) {
-        fakeUserRepository.asMainUser()
-    } else {
-        fakeUserRepository.asDefaultUser()
-    }
+    val suppressionReasons =
+        if (enabled) {
+            emptyList()
+        } else {
+            listOf(SuppressionReason.ReasonUnknown())
+        }
+    communalSettingsInteractor.setSuppressionReasons(suppressionReasons)
 }
 
-suspend fun Kosmos.setCommunalV2Enabled(enabled: Boolean): UserInfo {
+fun Kosmos.setCommunalV2Enabled(enabled: Boolean) {
     setCommunalV2ConfigEnabled(enabled)
     return setCommunalEnabled(enabled)
 }
 
-suspend fun Kosmos.setCommunalAvailable(available: Boolean): UserInfo {
-    val user = setCommunalEnabled(available)
+fun Kosmos.setCommunalAvailable(available: Boolean) {
+    setCommunalEnabled(available)
     fakeKeyguardRepository.setKeyguardShowing(available)
-    fakeUserRepository.setUserUnlocked(FakeUserRepository.MAIN_USER_ID, available)
-    return user
 }
 
-suspend fun Kosmos.setCommunalV2Available(available: Boolean): UserInfo {
+fun Kosmos.setCommunalV2Available(available: Boolean) {
     setCommunalV2ConfigEnabled(available)
-    return setCommunalAvailable(available)
+    setCommunalAvailable(available)
 }

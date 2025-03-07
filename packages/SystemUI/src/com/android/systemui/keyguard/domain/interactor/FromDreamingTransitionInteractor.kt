@@ -115,7 +115,7 @@ constructor(
                 powerInteractor.isAwake
                     .debounce(50L)
                     .filterRelevantKeyguardStateAnd { isAwake -> isAwake }
-                    .sample(communalInteractor.shouldShowCommunal)
+                    .sample(communalSettingsInteractor.autoOpenEnabled)
                     .collect { shouldShowCommunal ->
                         if (shouldShowCommunal) {
                             // This case handles tapping the power button to transition through
