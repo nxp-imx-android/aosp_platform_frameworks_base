@@ -59,6 +59,8 @@ sealed interface MediaNavigationViewModel {
          * the seek bar). The position/progress should be committed.
          */
         val onScrubFinished: () -> Unit,
+        /** Accessibility string to attach to the seekbar UI element. */
+        val contentDescription: String,
     ) : MediaNavigationViewModel
 
     /** The seek bar should be hidden. */
