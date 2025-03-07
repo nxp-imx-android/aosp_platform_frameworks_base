@@ -63,6 +63,16 @@ flag {
 }
 
 flag {
+  name: "modes_ui_dnd_tile"
+  namespace: "systemui"
+  description: "Shows a dedicated tile for the DND mode; dependent on modes_ui"
+  bug: "401217520"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "modes_hsum"
   namespace: "systemui"
   description: "Fixes for modes (and DND/Zen in general) with HSUM or secondary users"
