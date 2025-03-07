@@ -22,7 +22,7 @@ import android.hardware.SensorPrivacyManager.Sensors.Sensor
 import android.os.UserHandle
 import android.provider.DeviceConfig
 import android.util.Log
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
 import com.android.systemui.qs.tiles.base.interactor.QSTileDataInteractor
