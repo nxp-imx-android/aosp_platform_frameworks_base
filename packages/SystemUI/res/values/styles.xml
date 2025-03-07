@@ -19,7 +19,8 @@
 
     <style name="TextAppearance.StatusBar.Clock" parent="@*android:style/TextAppearance.StatusBar.Icon">
         <item name="android:textSize">@dimen/status_bar_clock_size</item>
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamilyMedium</item>
+        <item name="android:fontFamily" android:featureFlag="!com.android.systemui.status_bar_font_updates">@*android:string/config_headlineFontFamilyMedium</item>
+        <item name="android:fontFamily" android:featureFlag="com.android.systemui.status_bar_font_updates">"variable-label-large-emphasized"</item>
         <item name="android:textColor">@color/status_bar_clock_color</item>
         <item name="android:fontFeatureSettings">tnum</item>
     </style>

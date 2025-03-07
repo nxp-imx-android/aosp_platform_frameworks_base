@@ -544,6 +544,14 @@ flag {
 }
 
 flag {
+  name: "status_bar_font_updates"
+  namespace: "systemui"
+  description: "Read only flag for using a new font in the status bar"
+  bug: "393609116"
+  is_fixed_read_only: true
+}
+
+flag {
     name: "promote_notifications_automatically"
     namespace: "systemui"
     description: "Flag to automatically turn certain notifications into promoted notifications so "
