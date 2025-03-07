@@ -163,7 +163,7 @@ final class AttributedOp {
     public void rejected(@AppOpsManager.UidState int uidState, @AppOpsManager.OpFlags int flags) {
         rejected(System.currentTimeMillis(), uidState, flags);
 
-        mAppOpsService.mHistoricalRegistry.incrementOpRejected(parent.op, parent.uid,
+        mAppOpsService.mHistoricalRegistry.incrementOpRejectedCount(parent.op, parent.uid,
                 parent.packageName, tag, uidState, flags);
     }
 
