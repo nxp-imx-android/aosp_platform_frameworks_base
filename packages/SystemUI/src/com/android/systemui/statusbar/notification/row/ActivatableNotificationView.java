@@ -40,6 +40,7 @@ import android.view.animation.Interpolator;
 import com.android.app.animation.Interpolators;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.jank.InteractionJankMonitor.Configuration;
+import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.common.shared.colors.SurfaceEffectColors;
 import com.android.systemui.res.R;
@@ -101,7 +102,8 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     private ValueAnimator mBackgroundColorAnimator;
     private float mAppearAnimationFraction = -1.0f;
     private float mAppearAnimationTranslation;
-    private int mNormalColor;
+    protected int mNormalColor;
+    protected int mOpaqueColor;
     private boolean mIsBelowSpeedBump;
     private long mLastActionUpTime;
 
@@ -130,17 +132,13 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
 
     protected void updateColors() {
         if (notificationRowTransparency()) {
-            if (mIsBlurSupported) {
-                mNormalColor = SurfaceEffectColors.surfaceEffect1(getContext());
-            } else {
-                mNormalColor = mContext.getColor(
-                        com.android.internal.R.color.materialColorSurfaceContainer);
-            }
+            mNormalColor = SurfaceEffectColors.surfaceEffect1(getContext());
+            mOpaqueColor = mContext.getColor(
+                    com.android.internal.R.color.materialColorSurfaceContainer);
         } else {
             mNormalColor = mContext.getColor(
                     com.android.internal.R.color.materialColorSurfaceContainerHigh);
         }
-        setBackgroundToNormalColor();
         mTintedRippleColor = mContext.getColor(
                 R.color.notification_ripple_tinted_color);
         mNormalRippleColor = mContext.getColor(
@@ -149,12 +147,6 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
         mBgTint = NO_COLOR;
         mOverrideTint = NO_COLOR;
         mOverrideAmount = 0.0f;
-    }
-
-    private void setBackgroundToNormalColor() {
-        if (mBackgroundNormal != null) {
-            mBackgroundNormal.setNormalColor(mNormalColor);
-        }
     }
 
     /**
@@ -186,7 +178,6 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
         mBackgroundNormal = findViewById(R.id.backgroundNormal);
         mFakeShadow = findViewById(R.id.fake_shadow);
         mShadowHidden = mFakeShadow.getVisibility() != VISIBLE;
-        setBackgroundToNormalColor();
         initBackground();
         updateBackgroundTint();
         updateOutlineAlpha();
@@ -352,7 +343,7 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     }
 
     protected boolean usesTransparentBackground() {
-        return mIsBlurSupported && notificationRowTransparency();
+        return false;
     }
 
     @Override
@@ -709,7 +700,11 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
         if (withTint && mBgTint != NO_COLOR) {
             return mBgTint;
         } else {
-            return mNormalColor;
+            if (Flags.notificationRowTransparency()) {
+                return usesTransparentBackground() ? mNormalColor : mOpaqueColor;
+            } else {
+                return mNormalColor;
+            }
         }
     }
 
