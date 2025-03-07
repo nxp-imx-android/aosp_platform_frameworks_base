@@ -75,6 +75,13 @@ object KeyguardTouchViewBinder {
 
                     onSingleTap(x, y)
                 }
+
+                override fun onDoubleTapDetected(view: View) {
+                    if (falsingManager.isFalseDoubleTap()) {
+                        return
+                    }
+                    viewModel.onDoubleClick()
+                }
             }
 
         view.repeatWhenAttached {
@@ -90,9 +97,20 @@ object KeyguardTouchViewBinder {
                             }
                     }
                 }
+                launch("$TAG#viewModel.isDoubleTapHandlingEnabled") {
+                    viewModel.isDoubleTapHandlingEnabled.collect { isEnabled ->
+                        view.setDoublePressHandlingEnabled(isEnabled)
+                        view.contentDescription =
+                            if (isEnabled) {
+                                view.resources.getString(R.string.accessibility_desc_lock_screen)
+                            } else {
+                                null
+                            }
+                    }
+                }
             }
         }
     }
 
-    private const val TAG = "KeyguardLongPressViewBinder"
+    private const val TAG = "KeyguardTouchViewBinder"
 }
