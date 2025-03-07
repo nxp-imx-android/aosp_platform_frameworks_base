@@ -204,3 +204,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_magnetic_split_divider"
+    namespace: "multitasking"
+    description: "Makes the split divider snap 'magnetically' to available snap points during drag"
+    bug: "383631946"
+}
