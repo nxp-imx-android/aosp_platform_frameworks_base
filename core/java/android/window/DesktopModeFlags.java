@@ -113,7 +113,7 @@ public enum DesktopModeFlags {
     ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true),
     ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, false),
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(
-            Flags::enableOpaqueBackgroundForTransparentWindows, false),
+            Flags::enableOpaqueBackgroundForTransparentWindows, true),
     ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
