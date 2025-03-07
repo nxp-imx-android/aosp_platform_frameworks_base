@@ -76,6 +76,7 @@ import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_SNAP_RESIZE
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.util.LatencyTracker
 import com.android.window.flags.Flags
@@ -2631,7 +2632,7 @@ class DesktopTasksController(
                 // Caption insets stay fixed and don't scale with bounds.
                 val captionInsets =
                     if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
-                        getAppHeaderHeight(context)
+                        getDesktopViewAppHeaderHeightPx(context)
                     } else {
                         0
                     }

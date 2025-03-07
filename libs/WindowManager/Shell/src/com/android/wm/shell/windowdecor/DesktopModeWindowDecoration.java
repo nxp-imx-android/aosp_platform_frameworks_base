@@ -27,6 +27,7 @@ import static android.view.MotionEvent.ACTION_UP;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
 import static com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopMode;
 import static com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopModeOrShowAppHandle;
 import static com.android.wm.shell.shared.desktopmode.DesktopModeStatus.isDesktopModeSupportedOnDisplay;
@@ -1768,7 +1769,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private static int getCaptionHeightIdStatic(@WindowingMode int windowingMode) {
         return windowingMode == WINDOWING_MODE_FULLSCREEN
                 ? com.android.internal.R.dimen.status_bar_height_default
-                : DesktopModeUtils.getAppHeaderHeightId();
+                : getDesktopViewAppHeaderHeightId();
     }
 
     private int getCaptionHeight(@WindowingMode int windowingMode) {

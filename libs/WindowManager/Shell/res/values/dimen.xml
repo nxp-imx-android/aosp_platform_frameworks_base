@@ -437,9 +437,6 @@
     <!-- Height of button (32dp)  + 2 * margin (5dp each). -->
     <dimen name="freeform_decor_caption_height">42dp</dimen>
 
-    <!-- Height of desktop mode caption for freeform tasks. -->
-    <dimen name="desktop_mode_freeform_decor_caption_height">40dp</dimen>
-
     <!-- Height of desktop mode caption for fullscreen tasks. -->
     <dimen name="desktop_mode_fullscreen_decor_caption_height">36dp</dimen>
 
