@@ -19790,6 +19790,14 @@ public final class Settings {
         public static final String REPAIR_MODE_ACTIVE = "repair_mode_active";
 
         /**
+         * Whether the notification manager service should redact notifications that contain otps
+         * from untrusted listeners. Defaults to 1/true.
+         * @hide
+         */
+        public static final String REDACT_OTP_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS =
+                "redact_otp_notifications_from_untrusted_listeners";
+
+        /**
          * Settings migrated from Wear OS settings provider.
          * @hide
          */

@@ -567,6 +567,7 @@ public class SettingsBackupTest {
                     Settings.Global.REVIEW_PERMISSIONS_NOTIFICATION_STATE,
                     Settings.Global.HEARING_DEVICE_LOCAL_AMBIENT_VOLUME, // cache per hearing device
                     Settings.Global.HEARING_DEVICE_LOCAL_NOTIFICATION, // cache per hearing device
+                    Settings.Global.REDACT_OTP_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS,
                     Settings.Global.Wearable.COMBINED_LOCATION_ENABLE,
                     Settings.Global.Wearable.HAS_PAY_TOKENS,
                     Settings.Global.Wearable.GMS_CHECKIN_TIMEOUT_MIN,
