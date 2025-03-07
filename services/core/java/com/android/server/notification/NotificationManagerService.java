@@ -8197,6 +8197,18 @@ public class NotificationManagerService extends SystemService {
             // This can also throw IllegalStateException if called too late.
             mZenModeHelper.setDeviceEffectsApplier(applier);
         }
+
+        @Override
+        public void onDisplayRemoveSystemDecorations(int displayId) {
+            synchronized (mToastQueue) {
+                for (int i = mToastQueue.size() - 1; i >= 0; i--) {
+                    final ToastRecord toast = mToastQueue.get(i);
+                    if (toast.displayId == displayId) {
+                        cancelToastLocked(i);
+                    }
+                }
+            }
+        }
     };
 
     private static boolean isBigPictureWithBitmapOrIcon(Notification n) {

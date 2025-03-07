@@ -52,6 +52,8 @@ import android.view.Surface;
 import androidx.test.filters.SmallTest;
 
 import com.android.server.LocalServices;
+import com.android.server.UiThread;
+import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
 import com.android.window.flags.Flags;
@@ -59,6 +61,7 @@ import com.android.window.flags.Flags;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -384,6 +387,30 @@ public class DisplayWindowSettingsTests extends WindowTestsBase {
     @Test
     public void testSecondaryDisplayDefaultToNotShowSystemDecors() {
         assertFalse(mDisplayWindowSettings.shouldShowSystemDecorsLocked(mSecondaryDisplay));
+    }
+
+    @Test
+    @EnableFlags(com.android.server.display.feature.flags.Flags
+            .FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    public void testSetShouldShowSystemDecorsNotifyNotificationManager() {
+        final NotificationManagerInternal notificationManager = Mockito.mock(
+                NotificationManagerInternal.class);
+        LocalServices.addService(NotificationManagerInternal.class, notificationManager);
+        try {
+            // First show the decoration because setting false is noop if the decoration has already
+            // been hidden.
+            mDisplayWindowSettings.setShouldShowSystemDecorsLocked(
+                    mSecondaryDisplay, /* shouldShow= */ true);
+
+            mDisplayWindowSettings.setShouldShowSystemDecorsLocked(
+                    mSecondaryDisplay, /* shouldShow= */ false);
+
+            waitHandlerIdle(UiThread.getHandler());
+            Mockito.verify(notificationManager).onDisplayRemoveSystemDecorations(
+                    mSecondaryDisplay.mDisplayId);
+        } finally {
+            LocalServices.removeServiceForTest(NotificationManagerInternal.class);
+        }
     }
 
     @Test
