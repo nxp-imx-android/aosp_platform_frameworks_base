@@ -49,6 +49,7 @@ import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.log.assertLogsWtf
 import com.android.systemui.mediaprojection.data.model.MediaProjectionState
 import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
@@ -107,7 +108,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class HomeStatusBarViewModelImplTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
-    private val Kosmos.underTest by Kosmos.Fixture { kosmos.homeStatusBarViewModel }
+    private val Kosmos.underTest by
+        Kosmos.Fixture { kosmos.homeStatusBarViewModel.also { it.activateIn(kosmos.testScope) } }
 
     @Before
     fun setUp() {
@@ -891,32 +893,26 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
     @EnableChipsModernization
     fun ongoingActivityChips_statusBarHidden_noSecureCamera_noHun_notAllowed() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
-
             // home status bar not allowed
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
 
-            assertThat(latest!!.areChipsAllowed).isFalse()
+            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isFalse()
         }
 
     @Test
     @EnableChipsModernization
     fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_noHun_isAllowed() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
-
             transitionKeyguardToGone()
 
-            assertThat(latest!!.areChipsAllowed).isTrue()
+            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isTrue()
         }
 
     @Test
     @EnableChipsModernization
     fun ongoingActivityChips_statusBarNotHidden_secureCamera_noHun_notAllowed() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
-
             fakeKeyguardTransitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.OCCLUDED,
@@ -924,7 +920,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             )
             kosmos.keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
 
-            assertThat(latest!!.areChipsAllowed).isFalse()
+            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isFalse()
         }
 
     @Test
@@ -932,8 +928,6 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
     @EnableChipsModernization
     fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOff_notAllowed() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
-
             transitionKeyguardToGone()
 
             headsUpNotificationRepository.setNotifications(
@@ -943,7 +937,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(latest!!.areChipsAllowed).isFalse()
+            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isFalse()
         }
 
     @Test
@@ -951,8 +945,6 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
     @EnableChipsModernization
     fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOff_isAllowed() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
-
             transitionKeyguardToGone()
 
             headsUpNotificationRepository.setNotifications(
@@ -962,16 +954,14 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(latest!!.areChipsAllowed).isTrue()
+            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isTrue()
         }
 
     @Test
     @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
     @EnableChipsModernization
-    fun ongoingActivityChips_tatusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOn_isAllowed() =
+    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOn_isAllowed() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
-
             transitionKeyguardToGone()
 
             headsUpNotificationRepository.setNotifications(
@@ -981,7 +971,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(latest!!.areChipsAllowed).isTrue()
+            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isTrue()
         }
 
     @Test
@@ -989,8 +979,6 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
     @EnableChipsModernization
     fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOn_isAllowed() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
-
             transitionKeyguardToGone()
 
             headsUpNotificationRepository.setNotifications(
@@ -1000,7 +988,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(latest!!.areChipsAllowed).isTrue()
+            assertThat(underTest.ongoingActivityChips.areChipsAllowed).isTrue()
         }
 
     @Test
@@ -1008,17 +996,16 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
     @EnableChipsModernization
     fun ongoingActivityChips_followsChipsViewModel() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.ongoingActivityChips)
             transitionKeyguardToGone()
 
             screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
 
-            assertIsScreenRecordChip(latest!!.chips.active[0])
+            assertIsScreenRecordChip(underTest.ongoingActivityChips.chips.active[0])
 
             addOngoingCallState(key = "call")
 
-            assertIsScreenRecordChip(latest!!.chips.active[0])
-            assertIsCallChip(latest!!.chips.active[1], "call", context)
+            assertIsScreenRecordChip(underTest.ongoingActivityChips.chips.active[0])
+            assertIsCallChip(underTest.ongoingActivityChips.chips.active[1], "call", context)
         }
 
     @Test
