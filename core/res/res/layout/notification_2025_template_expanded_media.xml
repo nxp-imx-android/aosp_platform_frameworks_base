@@ -53,7 +53,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/notification_2025_media_actions_margin_start"
-            android:minHeight="@dimen/notification_content_margin"
+            android:minHeight="@dimen/notification_2025_margin"
             >
 
             <!-- Nesting in FrameLayout is required to ensure that the marginStart actually applies
