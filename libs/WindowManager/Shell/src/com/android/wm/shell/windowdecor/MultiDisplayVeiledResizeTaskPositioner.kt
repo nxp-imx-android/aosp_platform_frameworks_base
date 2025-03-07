@@ -278,12 +278,15 @@ class MultiDisplayVeiledResizeTaskPositioner(
                         currentDisplayLayout,
                     )
                 )
-
-                multiDisplayDragMoveIndicatorController.onDragEnd(
-                    desktopWindowDecoration.mTaskInfo.taskId,
-                    transactionSupplier,
-                )
             }
+
+            // Call the MultiDisplayDragMoveIndicatorController to clear any active indicator
+            // surfaces. This is necessary even if the drag ended on the same display, as surfaces
+            // may have been created for other displays during the drag.
+            multiDisplayDragMoveIndicatorController.onDragEnd(
+                desktopWindowDecoration.mTaskInfo.taskId,
+                transactionSupplier,
+            )
 
             interactionJankMonitor.end(Cuj.CUJ_DESKTOP_MODE_DRAG_WINDOW)
         }
