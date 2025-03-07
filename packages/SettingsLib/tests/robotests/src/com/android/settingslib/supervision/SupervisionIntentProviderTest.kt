@@ -19,6 +19,7 @@ package com.android.settingslib.supervision
 import android.app.supervision.SupervisionManager
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -77,8 +78,8 @@ class SupervisionIntentProviderTest {
     fun getSettingsIntent_unresolvedIntent() {
         `when`(mockSupervisionManager.activeSupervisionAppPackage)
             .thenReturn(SUPERVISION_APP_PACKAGE)
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any(), anyInt(), anyInt()))
-            .thenReturn(emptyList())
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
+            .thenReturn(emptyList<ResolveInfo>())
 
         val intent = SupervisionIntentProvider.getSettingsIntent(context)
 
@@ -89,7 +90,7 @@ class SupervisionIntentProviderTest {
     fun getSettingsIntent_resolvedIntent() {
         `when`(mockSupervisionManager.activeSupervisionAppPackage)
             .thenReturn(SUPERVISION_APP_PACKAGE)
-        `when`(mockPackageManager.queryIntentActivitiesAsUser(any(), anyInt(), anyInt()))
+        `when`(mockPackageManager.queryIntentActivitiesAsUser(any<Intent>(), anyInt(), anyInt()))
             .thenReturn(listOf(ResolveInfo()))
 
         val intent = SupervisionIntentProvider.getSettingsIntent(context)
