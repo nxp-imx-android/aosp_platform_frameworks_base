@@ -127,6 +127,15 @@ public class LayoutComponent extends Component {
     // Should be removed after ImageLayout is in
     private static final boolean USE_IMAGE_TEMP_FIX = true;
 
+    /**
+     * Set canvas operations op on this component
+     *
+     * @param operations
+     */
+    public void setCanvasOperations(@Nullable CanvasOperations operations) {
+        mDrawContentOperations = operations;
+    }
+
     @Override
     public void inflate() {
         ArrayList<TextData> data = new ArrayList<>();
@@ -139,7 +148,6 @@ public class LayoutComponent extends Component {
                 mChildrenComponents.clear();
                 LayoutComponentContent content = (LayoutComponentContent) op;
                 content.getComponents(mChildrenComponents);
-                mDrawContentOperations = content.getCanvasOperations(this);
                 if (USE_IMAGE_TEMP_FIX) {
                     if (mChildrenComponents.isEmpty() && !mContent.mList.isEmpty()) {
                         CanvasContent canvasContent =

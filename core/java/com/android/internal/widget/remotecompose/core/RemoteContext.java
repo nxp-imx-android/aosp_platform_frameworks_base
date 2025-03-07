@@ -552,6 +552,14 @@ public abstract class RemoteContext {
     public abstract int getInteger(int id);
 
     /**
+     * Get a Long given an id
+     *
+     * @param id of the long
+     * @return the value
+     */
+    public abstract long getLong(int id);
+
+    /**
      * Get the color given and ID
      *
      * @param id of the color
@@ -628,6 +636,8 @@ public abstract class RemoteContext {
 
     /** The delta between current and last Frame */
     public static final int ID_ANIMATION_DELTA_TIME = 31;
+
+    public static final int ID_EPOCH_SECOND = 32;
 
     public static final float FLOAT_DENSITY = Utils.asNan(ID_DENSITY);
 
@@ -713,6 +723,9 @@ public abstract class RemoteContext {
 
     /** When was this player built */
     public static final float FLOAT_API_LEVEL = Utils.asNan(ID_API_LEVEL);
+
+    /** The time in seconds since the epoch. */
+    public static final long INT_EPOCH_SECOND = ((long) ID_EPOCH_SECOND) + 0x100000000L;
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Click handling

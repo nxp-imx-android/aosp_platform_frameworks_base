@@ -20,6 +20,7 @@ import android.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
+import com.android.internal.widget.remotecompose.core.operations.DrawContent;
 import com.android.internal.widget.remotecompose.core.operations.FloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.Header;
 import com.android.internal.widget.remotecompose.core.operations.IntegerExpression;
@@ -28,9 +29,11 @@ import com.android.internal.widget.remotecompose.core.operations.RootContentBeha
 import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.TextData;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
+import com.android.internal.widget.remotecompose.core.operations.layout.CanvasOperations;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.Container;
 import com.android.internal.widget.remotecompose.core.operations.layout.ContainerEnd;
+import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.LoopOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.RootLayoutComponent;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentModifiers;
@@ -65,7 +68,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.3f;
+    static final float BUILD = 0.4f;
 
     @NonNull ArrayList<Operation> mOperations = new ArrayList<>();
 
@@ -101,6 +104,8 @@ public class CoreDocument implements Serializable {
     private int mLastId = 1; // last component id when inflating the file
 
     private IntMap<Object> mDocProperties;
+
+    boolean mFirstPaint = true;
 
     /** Returns a version number that is monotonically increasing. */
     public static int getDocumentApiLevel() {
@@ -678,6 +683,7 @@ public class CoreDocument implements Serializable {
         ArrayList<Operation> ops = finalOperationsList;
 
         ArrayList<Container> containers = new ArrayList<>();
+        LayoutComponent lastLayoutComponent = null;
 
         mLastId = -1;
         for (Operation o : operations) {
@@ -696,6 +702,9 @@ public class CoreDocument implements Serializable {
                     }
                     if (component.getComponentId() < mLastId) {
                         mLastId = component.getComponentId();
+                    }
+                    if (component instanceof LayoutComponent) {
+                        lastLayoutComponent = (LayoutComponent) component;
                     }
                 }
                 containers.add(container);
@@ -723,7 +732,13 @@ public class CoreDocument implements Serializable {
                     }
                     ops.add((Operation) container);
                 }
+                if (container instanceof CanvasOperations) {
+                    ((CanvasOperations) container).setComponent(lastLayoutComponent);
+                }
             } else {
+                if (o instanceof DrawContent) {
+                    ((DrawContent) o).setComponent(lastLayoutComponent);
+                }
                 ops.add(o);
             }
         }
@@ -784,6 +799,7 @@ public class CoreDocument implements Serializable {
 
         registerVariables(context, mOperations);
         context.mMode = RemoteContext.ContextMode.UNSET;
+        mFirstPaint = true;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1093,6 +1109,28 @@ public class CoreDocument implements Serializable {
     }
 
     /**
+     * Traverse the list of operations to update the variables. TODO: this should walk the
+     * dependency tree instead
+     *
+     * @param context
+     * @param operations
+     */
+    private void updateVariables(
+            @NonNull RemoteContext context, int theme, List<Operation> operations) {
+        for (int i = 0; i < operations.size(); i++) {
+            Operation op = operations.get(i);
+            if (op.isDirty() && op instanceof VariableSupport) {
+                ((VariableSupport) op).updateVariables(context);
+                op.apply(context);
+                op.markNotDirty();
+            }
+            if (op instanceof Container) {
+                updateVariables(context, theme, ((Container) op).getList());
+            }
+        }
+    }
+
+    /**
      * Paint the document
      *
      * @param context the provided PaintContext
@@ -1109,6 +1147,13 @@ public class CoreDocument implements Serializable {
 
         context.mRemoteComposeState = mRemoteComposeState;
         context.mRemoteComposeState.setContext(context);
+
+        // Update any dirty variables
+        if (mFirstPaint) {
+            mFirstPaint = false;
+        } else {
+            updateVariables(context, theme, mOperations);
+        }
 
         // If we have a content sizing set, we are going to take the original document
         // dimension into account and apply scale+translate according to the RootContentBehavior

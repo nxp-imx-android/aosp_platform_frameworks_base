@@ -392,6 +392,11 @@ public class AndroidRemoteContext extends RemoteContext {
     }
 
     @Override
+    public long getLong(int id) {
+        return ((LongConstant) mRemoteComposeState.getObject(id)).getValue();
+    }
+
+    @Override
     public int getColor(int id) {
         return mRemoteComposeState.getColor(id);
     }

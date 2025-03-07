@@ -25,6 +25,7 @@ import com.android.internal.widget.remotecompose.core.operations.ClipRect;
 import com.android.internal.widget.remotecompose.core.operations.ColorConstant;
 import com.android.internal.widget.remotecompose.core.operations.ColorExpression;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
+import com.android.internal.widget.remotecompose.core.operations.ConditionalOperations;
 import com.android.internal.widget.remotecompose.core.operations.DataListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DataListIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapIds;
@@ -50,6 +51,7 @@ import com.android.internal.widget.remotecompose.core.operations.FloatConstant;
 import com.android.internal.widget.remotecompose.core.operations.FloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.FloatFunctionCall;
 import com.android.internal.widget.remotecompose.core.operations.FloatFunctionDefine;
+import com.android.internal.widget.remotecompose.core.operations.HapticFeedback;
 import com.android.internal.widget.remotecompose.core.operations.Header;
 import com.android.internal.widget.remotecompose.core.operations.ImageAttribute;
 import com.android.internal.widget.remotecompose.core.operations.IntegerExpression;
@@ -64,6 +66,7 @@ import com.android.internal.widget.remotecompose.core.operations.PaintData;
 import com.android.internal.widget.remotecompose.core.operations.ParticlesCreate;
 import com.android.internal.widget.remotecompose.core.operations.ParticlesLoop;
 import com.android.internal.widget.remotecompose.core.operations.PathAppend;
+import com.android.internal.widget.remotecompose.core.operations.PathCombine;
 import com.android.internal.widget.remotecompose.core.operations.PathCreate;
 import com.android.internal.widget.remotecompose.core.operations.PathData;
 import com.android.internal.widget.remotecompose.core.operations.PathTween;
@@ -222,6 +225,9 @@ public class Operations {
     public static final int ATTRIBUTE_TIME = 172;
     public static final int CANVAS_OPERATIONS = 173;
     public static final int MODIFIER_DRAW_CONTENT = 174;
+    public static final int PATH_COMBINE = 175;
+    public static final int HAPTIC_FEEDBACK = 177;
+    public static final int CONDITIONAL_OPERATIONS = 178;
 
     ///////////////////////////////////////// ======================
 
@@ -426,6 +432,9 @@ public class Operations {
         map.put(ATTRIBUTE_IMAGE, ImageAttribute::read);
         map.put(ATTRIBUTE_TEXT, TextAttribute::read);
         map.put(ATTRIBUTE_TIME, TimeAttribute::read);
+        map.put(PATH_COMBINE, PathCombine::read);
+        map.put(HAPTIC_FEEDBACK, HapticFeedback::read);
+        map.put(CONDITIONAL_OPERATIONS, ConditionalOperations::read);
 
         //        map.put(ACCESSIBILITY_CUSTOM_ACTION, CoreSemantics::read);
     }

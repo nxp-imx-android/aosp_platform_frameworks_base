@@ -49,9 +49,12 @@ public class TimeVariables {
 
         OffsetDateTime offsetDateTime = dateTime.atZone(zoneId).toOffsetDateTime();
         ZoneOffset offset = offsetDateTime.getOffset();
+        long epochSec = dateTime.toEpochSecond(offset);
 
         context.loadFloat(RemoteContext.ID_OFFSET_TO_UTC, offset.getTotalSeconds());
         context.loadFloat(RemoteContext.ID_CONTINUOUS_SEC, sec);
+        // This will overflow in 2038.
+        context.loadInteger(RemoteContext.ID_EPOCH_SECOND, (int) epochSec);
         context.loadFloat(RemoteContext.ID_TIME_IN_SEC, currentSeconds);
         context.loadFloat(RemoteContext.ID_TIME_IN_MIN, currentMinute);
         context.loadFloat(RemoteContext.ID_TIME_IN_HR, hour);
