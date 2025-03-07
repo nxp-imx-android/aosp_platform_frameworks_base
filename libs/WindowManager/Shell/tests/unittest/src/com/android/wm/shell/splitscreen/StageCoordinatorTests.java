@@ -211,11 +211,19 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mSplitLayout.getDividerLeash()).thenReturn(dividerLeash);
 
         mRootTask = new TestRunningTaskInfoBuilder().build();
-        SurfaceControl rootLeash = new SurfaceControl.Builder().setName("test").build();
+        SurfaceControl rootLeash = new SurfaceControl.Builder().setName("splitRoot").build();
         mStageCoordinator.onTaskAppeared(mRootTask, rootLeash);
 
         mSideStage.mRootTaskInfo = new TestRunningTaskInfoBuilder().build();
         mMainStage.mRootTaskInfo = new TestRunningTaskInfoBuilder().build();
+        SurfaceControl mainRootLeash = new SurfaceControl.Builder().setName("mainRoot").build();
+        SurfaceControl sideRootLeash = new SurfaceControl.Builder().setName("sideRoot").build();
+        mMainStage.mRootLeash = mainRootLeash;
+        mSideStage.mRootLeash = sideRootLeash;
+        SurfaceControl mainDimLayer = new SurfaceControl.Builder().setName("mainDim").build();
+        SurfaceControl sideDimLayer = new SurfaceControl.Builder().setName("sideDim").build();
+        mMainStage.mDimLayer = mainDimLayer;
+        mSideStage.mDimLayer = sideDimLayer;
         doReturn(mock(SplitDecorManager.class)).when(mMainStage).getSplitDecorManager();
         doReturn(mock(SplitDecorManager.class)).when(mSideStage).getSplitDecorManager();
 
