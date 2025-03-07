@@ -30,9 +30,11 @@ import android.util.Log
 import android.view.View
 import com.android.internal.R
 import com.android.systemui.broadcast.BroadcastDispatcher
+import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R as SysUIR
+import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.shared.Flags.extendedWallpaperEffects
 import com.android.systemui.user.data.model.SelectedUserModel
@@ -88,6 +90,7 @@ constructor(
     private val wallpaperManager: WallpaperManager,
     private val context: Context,
     private val secureSettings: SecureSettings,
+    @ShadeDisplayAware configurationInteractor: ConfigurationInteractor,
 ) : WallpaperRepository {
     private val wallpaperChanged: Flow<Unit> =
         broadcastDispatcher
@@ -123,9 +126,16 @@ constructor(
         }
 
     override val wallpaperSupportsAmbientMode: Flow<Boolean> =
-        secureSettings
-            .observerFlow(UserHandle.USER_ALL, Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED)
-            .onStart { emit(Unit) }
+        combine(
+                secureSettings
+                    .observerFlow(
+                        UserHandle.USER_ALL,
+                        Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED,
+                    )
+                    .onStart { emit(Unit) },
+                configurationInteractor.onAnyConfigurationChange,
+                ::Pair,
+            )
             .map {
                 val userEnabled =
                     secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1) == 1

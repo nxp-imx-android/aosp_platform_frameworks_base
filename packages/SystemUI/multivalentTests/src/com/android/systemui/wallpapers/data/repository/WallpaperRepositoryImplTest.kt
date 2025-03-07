@@ -29,6 +29,7 @@ import com.android.app.wallpaperManager
 import com.android.internal.R
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R as SysUIR
@@ -64,6 +65,7 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
     private val testScope = kosmos.testScope
     private val userRepository = kosmos.fakeUserRepository
     private val broadcastDispatcher = kosmos.broadcastDispatcher
+    private val configRepository = kosmos.fakeConfigurationRepository
 
     // Initialized in each test since certain flows rely on mocked data that isn't
     // modifiable after start, like wallpaperManager.isWallpaperSupported
@@ -251,10 +253,18 @@ class WallpaperRepositoryImplTest : SysuiTestCase() {
             secureSettings.putInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1)
             context.orCreateTestableResources.addOverride(
                 R.bool.config_dozeSupportsAodWallpaper,
+                false,
+            )
+            configRepository.onAnyConfigurationChange()
+            val latest by collectLastValue(underTest.wallpaperSupportsAmbientMode)
+            assertThat(latest).isFalse()
+
+            // Validate that a configuration change recalculates the flow
+            context.orCreateTestableResources.addOverride(
+                R.bool.config_dozeSupportsAodWallpaper,
                 true,
             )
-
-            val latest by collectLastValue(underTest.wallpaperSupportsAmbientMode)
+            configRepository.onAnyConfigurationChange()
             assertThat(latest).isTrue()
         }
 
