@@ -32,12 +32,12 @@
         android:orientation="vertical"
         >
 
-
-        <com.android.internal.widget.NotificationMaxHeightFrameLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:minHeight="@dimen/notification_2025_min_height"
             android:clipChildren="false"
+            android:layout_weight="1"
             >
 
             <ImageView
@@ -194,7 +194,7 @@
                 android:layout_height="@dimen/notification_close_button_size"
                 android:layout_gravity="top|end" />
 
-        </com.android.internal.widget.NotificationMaxHeightFrameLayout>
+        </FrameLayout>
 
     <LinearLayout
             android:id="@+id/notification_action_list_margin_target"
