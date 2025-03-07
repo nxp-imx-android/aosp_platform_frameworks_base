@@ -81,7 +81,7 @@ class SysUIStateDispatcherTest : SysuiTestCase() {
     private companion object {
         const val DISPLAY_1 = 1
         const val DISPLAY_2 = 2
-        const val FLAG_1 = 10L
-        const val FLAG_2 = 20L
+        const val FLAG_1 = 1L
+        const val FLAG_2 = 2L
     }
 }
