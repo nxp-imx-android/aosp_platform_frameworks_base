@@ -38,11 +38,11 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp">
+            android:gravity="center_horizontal"
+            android:layout_marginHorizontal="4dp">
 
             <Button
-                android:layout_width="94dp"
+                android:layout_width="108dp"
                 android:layout_height="60dp"
                 android:id="@+id/maximize_menu_immersive_toggle_button"
                 style="?android:attr/buttonBarButtonStyle"
@@ -75,8 +75,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp">
+            android:layout_marginHorizontal="4dp">
 
             <Button
                 android:layout_width="108dp"
@@ -112,8 +111,7 @@
             android:layout_weight="1"
             android:orientation="vertical"
             android:gravity="center_horizontal"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp">
+            android:layout_marginHorizontal="4dp">
             <LinearLayout
                 android:id="@+id/maximize_menu_snap_menu_layout"
                 android:layout_width="wrap_content"

@@ -1096,8 +1096,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return Resources.ID_NULL;
     }
 
-    private PointF calculateMaximizeMenuPosition(int menuWidth, int menuHeight) {
-        final PointF position = new PointF();
+    private Point calculateMaximizeMenuPosition(int menuWidth, int menuHeight) {
+        final Point position = new Point();
         final Resources resources = mContext.getResources();
         final DisplayLayout displayLayout =
                 mDisplayController.getDisplayLayout(mTaskInfo.displayId);
@@ -1112,11 +1112,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         final int[] maximizeButtonLocation = new int[2];
         maximizeWindowButton.getLocationInWindow(maximizeButtonLocation);
 
-        float menuLeft = (mPositionInParent.x + maximizeButtonLocation[0] - ((float) (menuWidth
-                - maximizeWindowButton.getWidth()) / 2));
-        float menuTop = (mPositionInParent.y + captionHeight);
-        final float menuRight = menuLeft + menuWidth;
-        final float menuBottom = menuTop + menuHeight;
+        int menuLeft = (mPositionInParent.x + maximizeButtonLocation[0] - (menuWidth
+                - maximizeWindowButton.getWidth()) / 2);
+        int menuTop = (mPositionInParent.y + captionHeight);
+        final int menuRight = menuLeft + menuWidth;
+        final int menuBottom = menuTop + menuHeight;
 
         // If the menu is out of screen bounds, shift it as needed
         if (menuLeft < 0) {
@@ -1128,7 +1128,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             menuTop = (displayHeight - menuHeight);
         }
 
-        return new PointF(menuLeft, menuTop);
+        return new Point(menuLeft, menuTop);
     }
 
     boolean isHandleMenuActive() {
