@@ -157,10 +157,6 @@ public class LottieColorUtils {
     /** Applies material colors. */
     public static void applyMaterialColor(@NonNull Context context,
             @NonNull LottieAnimationView lottieAnimationView) {
-        if (!SettingsThemeHelper.isExpressiveTheme(context)) {
-            return;
-        }
-
         for (String key : MATERIAL_COLOR_MAP.keySet()) {
             final int color = context.getColor(MATERIAL_COLOR_MAP.get(key));
             lottieAnimationView.addValueCallback(
