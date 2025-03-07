@@ -52,6 +52,8 @@ import com.android.internal.util.ArrayUtils;
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
 
+import java.nio.BufferOverflowException;
+import java.nio.ReadOnlyBufferException;
 import libcore.util.SneakyThrow;
 
 import java.io.ByteArrayInputStream;
@@ -62,6 +64,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamClass;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Array;
@@ -457,8 +460,15 @@ public final class Parcel {
     private static native void nativeDestroy(long nativePtr);
 
     private static native byte[] nativeMarshall(long nativePtr);
+    private static native int nativeMarshallArray(
+            long nativePtr, byte[] data, int offset, int length);
+    private static native int nativeMarshallBuffer(
+            long nativePtr, ByteBuffer buffer, int offset, int length);
     private static native void nativeUnmarshall(
             long nativePtr, byte[] data, int offset, int length);
+    private static native void nativeUnmarshallBuffer(
+            long nativePtr, ByteBuffer buffer, int offset, int length);
+
     private static native int nativeCompareData(long thisNativePtr, long otherNativePtr);
     private static native boolean nativeCompareDataInRange(
             long ptrA, int offsetA, long ptrB, int offsetB, int length);
@@ -814,10 +824,78 @@ public final class Parcel {
     }
 
     /**
+     * Writes the raw bytes of the parcel to a buffer.
+     *
+     * <p class="note">The data you retrieve here <strong>must not</strong>
+     * be placed in any kind of persistent storage (on local disk, across
+     * a network, etc).  For that, you should use standard serialization
+     * or another kind of general serialization mechanism.  The Parcel
+     * marshalled representation is highly optimized for local IPC, and as
+     * such does not attempt to maintain compatibility with data created
+     * in different versions of the platform.
+     *
+     * @param buffer The ByteBuffer to write the data to.
+     * @throws ReadOnlyBufferException if the buffer is read-only.
+     * @throws BufferOverflowException if the buffer is too small.
+     *
+     * @hide
+     */
+    public final void marshall(@NonNull ByteBuffer buffer) {
+        if (buffer == null) {
+            throw new NullPointerException();
+        }
+        if (buffer.isReadOnly()) {
+            throw new ReadOnlyBufferException();
+        }
+
+        final int position = buffer.position();
+        final int remaining = buffer.remaining();
+
+        int marshalledSize = 0;
+        if (buffer.isDirect()) {
+            marshalledSize = nativeMarshallBuffer(mNativePtr, buffer, position, remaining);
+        } else if (buffer.hasArray()) {
+            marshalledSize = nativeMarshallArray(
+                    mNativePtr, buffer.array(), buffer.arrayOffset() + position, remaining);
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        buffer.position(position + marshalledSize);
+    }
+
+    /**
      * Fills the raw bytes of this Parcel with the supplied data.
      */
     public final void unmarshall(@NonNull byte[] data, int offset, int length) {
         nativeUnmarshall(mNativePtr, data, offset, length);
+    }
+
+    /**
+     * Fills the raw bytes of this Parcel with data from the supplied buffer.
+     *
+     * @param buffer will read buffer.remaining() bytes from the buffer.
+     *
+     * @hide
+     */
+    public final void unmarshall(@NonNull ByteBuffer buffer) {
+        if (buffer == null) {
+            throw new NullPointerException();
+        }
+
+        final int position = buffer.position();
+        final int remaining = buffer.remaining();
+
+        if (buffer.isDirect()) {
+            nativeUnmarshallBuffer(mNativePtr, buffer, position, remaining);
+        } else if (buffer.hasArray()) {
+            nativeUnmarshall(
+                    mNativePtr, buffer.array(), buffer.arrayOffset() + position, remaining);
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        buffer.position(position + remaining);
     }
 
     public final void appendFrom(Parcel parcel, int offset, int length) {
