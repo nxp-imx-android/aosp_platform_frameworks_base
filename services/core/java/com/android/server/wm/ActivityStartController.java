@@ -479,9 +479,9 @@ public class ActivityStartController {
                             }
                         } catch (SecurityException securityException) {
                             ActivityStarter.logAndThrowExceptionForIntentRedirect(mService.mContext,
-                                    "Creator URI Grant Caused Exception.", intent, creatorUid,
-                                    creatorPackage, filterCallingUid, callingPackage,
-                                    securityException);
+                                    ActivityStarter.INTENT_REDIRECT_EXCEPTION_GRANT_URI_PERMISSION,
+                                    intent, creatorUid, creatorPackage, filterCallingUid,
+                                    callingPackage, securityException);
                         }
                     }
                     if ((aInfo.applicationInfo.privateFlags
