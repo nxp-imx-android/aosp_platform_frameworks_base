@@ -205,6 +205,9 @@ public class VeiledResizeTaskPositioner implements TaskPositioner, Transitions.T
         return new Rect(mRepositionTaskBounds);
     }
 
+    @Override
+    public void close() {}
+
     private boolean isResizing() {
         return (mCtrlType & CTRL_TYPE_TOP) != 0 || (mCtrlType & CTRL_TYPE_BOTTOM) != 0
                 || (mCtrlType & CTRL_TYPE_LEFT) != 0 || (mCtrlType & CTRL_TYPE_RIGHT) != 0;

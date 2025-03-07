@@ -780,6 +780,18 @@ public class WindowDecorationTests extends ShellTestCase {
     }
 
     @Test
+    public void testClose_withTaskDragResizerSet_callResizerClose() {
+        final TestWindowDecoration windowDecor = createWindowDecoration(
+                new TestRunningTaskInfoBuilder().build());
+        final TaskDragResizer taskDragResizer = mock(TaskDragResizer.class);
+        windowDecor.setTaskDragResizer(taskDragResizer);
+
+        windowDecor.close();
+
+        verify(taskDragResizer).close();
+    }
+
+    @Test
     public void testRelayout_captionFrameChanged_insetsReapplied() {
         final Display defaultDisplay = mock(Display.class);
         doReturn(defaultDisplay).when(mMockDisplayController)

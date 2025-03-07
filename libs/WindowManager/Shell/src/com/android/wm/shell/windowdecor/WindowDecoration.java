@@ -695,6 +695,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     public void close() {
         Trace.beginSection("WindowDecoration#close");
         mDisplayController.removeDisplayWindowListener(mOnDisplaysChangedListener);
+        if (mTaskDragResizer != null) {
+            mTaskDragResizer.close();
+        }
         final WindowContainerTransaction wct = mWindowContainerTransactionSupplier.get();
         releaseViews(wct);
         mTaskOrganizer.applyTransaction(wct);
