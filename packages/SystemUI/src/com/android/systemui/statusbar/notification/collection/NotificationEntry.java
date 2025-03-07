@@ -29,8 +29,6 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_NOTIFICAT
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BAR;
 
-import static com.android.systemui.statusbar.notification.collection.BundleEntry.ROOT_BUNDLES;
-import static com.android.systemui.statusbar.notification.collection.GroupEntry.ROOT_ENTRY;
 import static com.android.systemui.statusbar.notification.collection.NotifCollection.REASON_NOT_CANCELED;
 
 import static java.util.Objects.requireNonNull;
@@ -41,7 +39,6 @@ import android.app.Notification;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationManager.Policy;
-import android.app.PendingIntent;
 import android.app.Person;
 import android.app.RemoteInput;
 import android.app.RemoteInputHistoryItem;
@@ -68,7 +65,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifDismissInterceptor;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender;
-import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
@@ -81,13 +77,13 @@ import com.android.systemui.statusbar.notification.row.shared.NotificationRowCon
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.ListenerSet;
 
-import kotlinx.coroutines.flow.MutableStateFlow;
-import kotlinx.coroutines.flow.StateFlow;
-import kotlinx.coroutines.flow.StateFlowKt;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.flow.StateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 /**
  * Represents a notification that the system UI knows about
@@ -497,7 +493,8 @@ public final class NotificationEntry extends ListEntry {
     public @Nullable List<NotificationEntry> getAttachedNotifChildren() {
         if (NotificationBundleUi.isEnabled()) {
             if (isGroupSummary()) {
-                return ((GroupEntry) getParent()).getChildren();
+                GroupEntry parent = (GroupEntry) getParent();
+                return parent != null ? new ArrayList<>(parent.getChildren()) : null;
             }
         } else {
             if (row == null) {
