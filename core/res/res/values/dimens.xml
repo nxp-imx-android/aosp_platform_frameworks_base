@@ -277,11 +277,23 @@
     <!-- The margin on the end of the top-line content views (accommodates the expander) -->
     <dimen name="notification_heading_margin_end">56dp</dimen>
 
+    <!-- The vertical spacing for the smart reply/smart action container.
+     Note that the button background itself also has an inset of 6dp (making the height of the
+     tappable area 48dp total, 32dp for the visible button plus 6dp top and bottom), so the visible
+     space between the button and the other content is going to be 16dp. -->
+    <dimen name="notification_2025_smart_reply_container_margin">10dp</dimen>
+
     <!-- The total height of the notification action list -->
     <dimen name="notification_action_list_height">60dp</dimen>
 
+    <!-- The total height of the notification action list (2025 redesign version) -->
+    <dimen name="notification_2025_action_list_height">48dp</dimen>
+
     <!-- The margin of the notification action list at the top -->
     <dimen name="notification_action_list_margin_top">0dp</dimen>
+
+    <!-- The margin of the notification action list at the bottom in the 2025 redesign -->
+    <dimen name="notification_2025_action_list_margin_bottom">6dp</dimen>
 
     <!-- The overall height of the emphasized notification action -->
     <dimen name="notification_action_emphasized_height">48dp</dimen>
@@ -303,6 +315,9 @@
 
     <!-- The size of icons for visual actions in the notification_material_action_list -->
     <dimen name="notification_actions_icon_size">56dp</dimen>
+
+    <!-- The size of icon actions in notification_material_action_list (2025 redesign version) -->
+    <dimen name="notification_2025_actions_icon_size">48dp</dimen>
 
     <!-- The size of icons for visual actions in the notification_material_action_list -->
     <dimen name="notification_actions_icon_drawable_size">20dp</dimen>

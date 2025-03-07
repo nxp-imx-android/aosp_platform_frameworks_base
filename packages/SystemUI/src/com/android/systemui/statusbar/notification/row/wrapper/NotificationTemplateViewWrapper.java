@@ -53,8 +53,8 @@ import com.android.systemui.statusbar.notification.ImageTransformState;
 import com.android.systemui.statusbar.notification.TransformState;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
-import com.android.systemui.util.DimensionKt;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
+import com.android.systemui.util.DimensionKt;
 
 import java.util.function.Consumer;
 
@@ -411,7 +411,8 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
     @Override
     public int getExtraMeasureHeight() {
         int extra = 0;
-        if (mActions != null) {
+        if (!notificationsRedesignTemplates() && mActions != null) {
+            // With the redesign, this should always be 0.
             extra = mActions.getExtraMeasureHeight();
         }
         if (mRemoteInputHistory != null && mRemoteInputHistory.getVisibility() != View.GONE) {

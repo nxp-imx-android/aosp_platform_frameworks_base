@@ -127,8 +127,8 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/notification_2025_content_margin_start"
             android:layout_marginEnd="@dimen/notification_content_margin_end"
-            android:layout_marginTop="@dimen/notification_content_margin" />
-        <include layout="@layout/notification_material_action_list" />
+            android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin" />
+        <include layout="@layout/notification_2025_action_list" />
     </LinearLayout>
     <include layout="@layout/notification_2025_right_icon" />
 </FrameLayout>
