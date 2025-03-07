@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.notification.row
 
 import android.annotation.SuppressLint
-import android.app.Flags
 import android.app.Notification
 import android.app.Notification.EXTRA_SUMMARIZED_CONTENT
 import android.app.Notification.MessagingStyle
@@ -45,7 +44,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.NotifInflation
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.InflationTask
-import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_SENSITIVE_CONTENT
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
 import com.android.systemui.statusbar.notification.InflationException
@@ -758,7 +757,7 @@ constructor(
                         entry.logKey,
                         "inflating public single line view model",
                     )
-                    if (bindParams.redactionType == REDACTION_TYPE_SENSITIVE_CONTENT) {
+                    if (bindParams.redactionType == REDACTION_TYPE_OTP) {
                         SingleLineViewInflater.inflateSingleLineViewModel(
                             notification = entry.sbn.notification,
                             messagingStyle = messagingStyle,
@@ -876,7 +875,7 @@ constructor(
                         logger.logAsyncTaskProgress(row.loggingKey, "creating public remote view")
                         if (
                             LockscreenOtpRedaction.isEnabled &&
-                                bindParams.redactionType == REDACTION_TYPE_SENSITIVE_CONTENT
+                                bindParams.redactionType == REDACTION_TYPE_OTP
                         ) {
                             createSensitiveContentMessageNotification(
                                     entry.sbn.notification,

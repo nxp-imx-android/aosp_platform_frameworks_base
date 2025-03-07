@@ -795,7 +795,7 @@ public class NotificationLockscreenUserManagerImpl implements
         }
 
         if (shouldShowSensitiveContentRedactedView(ent)) {
-            return REDACTION_TYPE_SENSITIVE_CONTENT;
+            return REDACTION_TYPE_OTP;
         }
         return REDACTION_TYPE_NONE;
     }
@@ -920,7 +920,7 @@ public class NotificationLockscreenUserManagerImpl implements
     // notification's "when" time, or the notification entry creation time
     private long getEarliestNotificationTime(NotificationEntry notif) {
         long notifWhenWallClock = notif.getSbn().getNotification().getWhen();
-        long creationTimeDelta = SystemClock.elapsedRealtime() - notif.getCreationTime();
+        long creationTimeDelta = SystemClock.uptimeMillis() - notif.getCreationTime();
         long creationTimeWallClock = System.currentTimeMillis() - creationTimeDelta;
         return Math.min(notifWhenWallClock, creationTimeWallClock);
     }

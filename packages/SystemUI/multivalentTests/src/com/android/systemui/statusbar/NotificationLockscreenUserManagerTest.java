@@ -33,7 +33,7 @@ import static android.provider.Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS;
 
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE;
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC;
-import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_SENSITIVE_CONTENT;
+import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -693,7 +693,7 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
         mLockscreenUserManager.mConnectedToWifi.set(false);
 
         // Sensitive Content notifications are always redacted
-        assertEquals(REDACTION_TYPE_SENSITIVE_CONTENT,
+        assertEquals(REDACTION_TYPE_OTP,
                 mLockscreenUserManager.getRedactionType(mSensitiveContentNotif));
     }
 
