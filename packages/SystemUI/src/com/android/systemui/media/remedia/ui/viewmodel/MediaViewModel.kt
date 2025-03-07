@@ -17,6 +17,9 @@
 package com.android.systemui.media.remedia.ui.viewmodel
 
 import android.content.Context
+import android.icu.text.MeasureFormat
+import android.icu.util.Measure
+import android.icu.util.MeasureUnit
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -38,7 +41,9 @@ import com.android.systemui.res.R
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.util.Locale
 import kotlin.math.roundToLong
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.awaitCancellation
 
 /** Models UI state for a media element. */
@@ -118,6 +123,12 @@ constructor(
                                     }
                                     isScrubbing = false
                                 },
+                                contentDescription =
+                                    context.getString(
+                                        R.string.controls_media_seekbar_description,
+                                        formatTimeContentDescription(session.positionMs),
+                                        formatTimeContentDescription(session.durationMs),
+                                    ),
                             )
                         } else {
                             MediaNavigationViewModel.Hidden
@@ -298,6 +309,43 @@ constructor(
         }
     }
 
+    /**
+     * Returns a time string suitable for content description, e.g. "12 minutes 34 seconds"
+     *
+     * Follows same logic as Chronometer#formatDuration
+     */
+    private fun formatTimeContentDescription(milliseconds: Long): String {
+        var seconds = milliseconds.milliseconds.inWholeSeconds
+
+        val hours =
+            if (seconds >= OneHourInSec) {
+                seconds / OneHourInSec
+            } else {
+                0
+            }
+        seconds -= hours * OneHourInSec
+
+        val minutes =
+            if (seconds >= OneMinuteInSec) {
+                seconds / OneMinuteInSec
+            } else {
+                0
+            }
+        seconds -= minutes * OneMinuteInSec
+
+        val measures = arrayListOf<Measure>()
+        if (hours > 0) {
+            measures.add(Measure(hours, MeasureUnit.HOUR))
+        }
+        if (minutes > 0) {
+            measures.add(Measure(minutes, MeasureUnit.MINUTE))
+        }
+        measures.add(Measure(seconds, MeasureUnit.SECOND))
+
+        return MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
+            .formatMeasures(*measures.toTypedArray())
+    }
+
     interface FalsingSystem {
         fun runIfNotFalseTap(@FalsingManager.Penalty penalty: Int, block: () -> Unit)
 
@@ -307,5 +355,10 @@ constructor(
     @AssistedFactory
     interface Factory {
         fun create(context: Context, carouselVisibility: MediaCarouselVisibility): MediaViewModel
+    }
+
+    companion object {
+        private const val OneMinuteInSec = 60
+        private const val OneHourInSec = OneMinuteInSec * 60
     }
 }

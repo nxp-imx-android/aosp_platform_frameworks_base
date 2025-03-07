@@ -98,6 +98,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -678,7 +680,10 @@ private fun ContentScope.Navigation(
                                     modifier = Modifier.fillMaxWidth(),
                                 )
                             },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier =
+                                Modifier.fillMaxWidth().clearAndSetSemantics {
+                                    contentDescription = viewModel.contentDescription
+                                },
                         )
                     }
                 }
