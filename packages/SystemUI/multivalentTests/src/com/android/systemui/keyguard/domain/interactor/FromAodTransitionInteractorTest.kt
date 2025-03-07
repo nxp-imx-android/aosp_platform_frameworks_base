@@ -443,4 +443,24 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
             Truth.assertThat(currentScene).isEqualTo(CommunalScenes.Communal)
             assertThat(transitionRepository).noTransitionsStarted()
         }
+
+    @Test
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    fun testDoNotTransitionToGlanceableHub_onWakeUpFromAodDueToMotion() =
+        kosmos.runTest {
+            setCommunalV2Available(true)
+
+            val currentScene by collectLastValue(communalSceneInteractor.currentScene)
+            fakeCommunalSceneRepository.changeScene(CommunalScenes.Blank)
+
+            // Communal is not showing
+            Truth.assertThat(currentScene).isEqualTo(CommunalScenes.Blank)
+
+            powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LIFT)
+            testScope.advanceTimeBy(100) // account for debouncing
+
+            Truth.assertThat(currentScene).isEqualTo(CommunalScenes.Blank)
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.AOD, to = KeyguardState.LOCKSCREEN)
+        }
 }
