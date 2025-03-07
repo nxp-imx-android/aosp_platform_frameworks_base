@@ -46,7 +46,7 @@ public class DrawContent extends PaintOperation implements Serializable {
      *
      * @param component
      */
-    public void setComponent(LayoutComponent component) {
+    public void setComponent(@Nullable LayoutComponent component) {
         mComponent = component;
     }
 

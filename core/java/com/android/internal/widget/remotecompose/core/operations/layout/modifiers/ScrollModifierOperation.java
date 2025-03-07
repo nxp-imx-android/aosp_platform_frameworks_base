@@ -401,10 +401,8 @@ public class ScrollModifierOperation extends ListActionsOperation
                 .add("direction", mDirection)
                 .add("max", mMax)
                 .add("notchMax", mNotchMax)
-                .add("scrollX", mScrollX)
-                .add("scrollY", mScrollY)
-                .add("maxScrollX", mMaxScrollX)
-                .add("maxScrollY", mMaxScrollY)
+                .add("scrollValue", isVerticalScroll() ? mScrollY : mScrollX)
+                .add("maxScrollValue", isVerticalScroll() ? mMaxScrollY : mMaxScrollX)
                 .add("contentDimension", mContentDimension)
                 .add("hostDimension", mHostDimension);
     }

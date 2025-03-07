@@ -275,7 +275,7 @@ public class TimeAttribute extends PaintOperation {
                 ctx.loadFloat(mId, time.getSecond());
                 break;
             case TIME_IN_MIN:
-                ctx.loadFloat(mId, time.getDayOfMonth());
+                ctx.loadFloat(mId, time.getMinute());
                 break;
             case TIME_IN_HR:
                 ctx.loadFloat(mId, time.getHour());

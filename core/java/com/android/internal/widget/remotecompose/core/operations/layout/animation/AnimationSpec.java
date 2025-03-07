@@ -35,6 +35,7 @@ import java.util.List;
 /** Basic component animation spec */
 public class AnimationSpec extends Operation implements ModifierOperation {
     public static final AnimationSpec DEFAULT = new AnimationSpec();
+    public static final AnimationSpec DISABLED = new AnimationSpec(0);
     int mAnimationId = -1;
     float mMotionDuration = 300;
     int mMotionEasingType = GeneralEasing.CUBIC_STANDARD;
@@ -69,6 +70,15 @@ public class AnimationSpec extends Operation implements ModifierOperation {
                 GeneralEasing.CUBIC_STANDARD,
                 ANIMATION.FADE_IN,
                 ANIMATION.FADE_OUT);
+    }
+
+    public AnimationSpec(int value) {
+        this();
+        mAnimationId = value;
+    }
+
+    public boolean isAnimationEnabled() {
+        return mAnimationId != 0;
     }
 
     public int getAnimationId() {
@@ -130,6 +140,7 @@ public class AnimationSpec extends Operation implements ModifierOperation {
     public void serialize(MapSerializer serializer) {
         serializer
                 .addType("AnimationSpec")
+                .add("animationId", mAnimationId)
                 .add("motionDuration", getMotionDuration())
                 .add("motionEasingType", Easing.getString(getMotionEasingType()))
                 .add("visibilityDuration", getVisibilityDuration())
