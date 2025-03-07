@@ -16,15 +16,20 @@
 
 package com.android.systemui.keyguard.domain.interactor
 
+import android.annotation.SuppressLint
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.data.repository.BiometricSettingsRepository
 import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.launch
 
 /** The reason we're showing lockscreen while awake, used for logging. */
 enum class ShowWhileAwakeReason(private val logReason: String) {
@@ -38,6 +43,9 @@ enum class ShowWhileAwakeReason(private val logReason: String) {
     ),
     KEYGUARD_TIMEOUT_WHILE_SCREEN_ON(
         "Timed out while the screen was kept on, or WM#lockNow() was called."
+    ),
+    SWITCHED_TO_SECURE_USER_WHILE_GOING_AWAY(
+        "User switch to secure user occurred during keyguardGoingAway sequence, so we're locking."
     );
 
     override fun toString(): String {
@@ -68,6 +76,7 @@ enum class ShowWhileAwakeReason(private val logReason: String) {
 class KeyguardShowWhileAwakeInteractor
 @Inject
 constructor(
+    @Background val backgroundScope: CoroutineScope,
     biometricSettingsRepository: BiometricSettingsRepository,
     keyguardEnabledInteractor: KeyguardEnabledInteractor,
     keyguardServiceShowLockscreenInteractor: KeyguardServiceShowLockscreenInteractor,
@@ -91,6 +100,15 @@ constructor(
             .filter { reshow -> reshow }
             .map { ShowWhileAwakeReason.KEYGUARD_REENABLED }
 
+    /**
+     * Emits whenever a user switch to a secure user occurs during keyguard going away.
+     *
+     * This is an event flow, hence the SharedFlow.
+     */
+    @SuppressLint("SharedFlowCreation")
+    val switchedToSecureUserDuringGoingAway: MutableSharedFlow<ShowWhileAwakeReason> =
+        MutableSharedFlow()
+
     /** Emits whenever we should show lockscreen while the screen is on, for any reason. */
     val showWhileAwakeEvents: Flow<ShowWhileAwakeReason> =
         merge(
@@ -108,5 +126,15 @@ constructor(
             keyguardServiceShowLockscreenInteractor.showNowEvents.filter {
                 keyguardEnabledInteractor.isKeyguardEnabledAndNotSuppressed()
             },
+            switchedToSecureUserDuringGoingAway,
         )
+
+    /** A user switch to a secure user occurred while we were going away. We need to re-lock. */
+    fun onSwitchedToSecureUserWhileKeyguardGoingAway() {
+        backgroundScope.launch {
+            switchedToSecureUserDuringGoingAway.emit(
+                ShowWhileAwakeReason.SWITCHED_TO_SECURE_USER_WHILE_GOING_AWAY
+            )
+        }
+    }
 }
