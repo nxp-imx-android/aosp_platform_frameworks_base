@@ -18,7 +18,9 @@ package com.android.systemui.statusbar.notification.row
 
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.ColorFilter
 import android.graphics.Paint
 import android.graphics.Path
@@ -31,8 +33,26 @@ import android.graphics.RectF
 import android.graphics.Shader
 import com.android.systemui.res.R
 import com.android.wm.shell.shared.animation.Interpolators
+import android.graphics.drawable.RippleDrawable
+import androidx.core.content.ContextCompat
 
 class MagicActionBackgroundDrawable(
+    context: Context,
+) : RippleDrawable(
+    ContextCompat.getColorStateList(
+        context,
+        R.color.notification_ripple_untinted_color
+    ) ?: ColorStateList.valueOf(Color.TRANSPARENT),
+    createBaseDrawable(context), null
+) {
+    companion object {
+        private fun createBaseDrawable(context: Context): Drawable {
+            return BaseBackgroundDrawable(context)
+        }
+    }
+}
+
+class BaseBackgroundDrawable(
     context: Context,
 ) : Drawable() {
 
@@ -42,6 +62,14 @@ class MagicActionBackgroundDrawable(
 
     private val buttonShape = Path()
     // Color and style
+    private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val bgColor =
+            context.getColor(
+                com.android.internal.R.color.materialColorSurfaceContainerHigh
+            )
+        color = bgColor
+        style = Paint.Style.FILL
+    }
     private val outlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         val outlineColor =
             context.getColor(
@@ -91,6 +119,7 @@ class MagicActionBackgroundDrawable(
         canvas.save()
         // Draw background
         canvas.clipPath(buttonShape)
+        canvas.drawPath(buttonShape, bgPaint)
         // Apply gradient to outline
         canvas.drawPath(buttonShape, outlinePaint)
         updateGradient(boundsF)
@@ -119,11 +148,13 @@ class MagicActionBackgroundDrawable(
     }
 
     override fun setAlpha(alpha: Int) {
+        bgPaint.alpha = alpha
         outlinePaint.alpha = alpha
         invalidateSelf()
     }
 
     override fun setColorFilter(colorFilter: ColorFilter?) {
+        bgPaint.colorFilter = colorFilter
         outlinePaint.colorFilter = colorFilter
         invalidateSelf()
     }
