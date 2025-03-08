@@ -1832,6 +1832,17 @@ class Task extends TaskFragment {
                 && supportsMultiWindowInDisplayArea(tda);
     }
 
+    /** Returns true if the task bounds should persist across power cycles. */
+    private static boolean persistTaskBounds(@NonNull WindowConfiguration configuration) {
+        return configuration.getWindowingMode() == WINDOWING_MODE_FREEFORM;
+    }
+
+    /** Returns true if the nested task is allowed to have independent bounds from its parent. */
+    private static boolean allowIndependentBoundsFromParent(
+            @NonNull WindowConfiguration configuration) {
+        return configuration.getWindowingMode() == WINDOWING_MODE_FREEFORM;
+    }
+
     /**
      * Check whether this task can be launched on the specified display.
      *
@@ -1996,11 +2007,11 @@ class Task extends TaskFragment {
     private void onConfigurationChangedInner(Configuration newParentConfig) {
         // Check if the new configuration supports persistent bounds (eg. is Freeform) and if so
         // restore the last recorded non-fullscreen bounds.
-        final boolean prevPersistTaskBounds = getWindowConfiguration().persistTaskBounds();
-        boolean nextPersistTaskBounds =
-                getRequestedOverrideConfiguration().windowConfiguration.persistTaskBounds();
+        final boolean prevPersistTaskBounds = persistTaskBounds(getWindowConfiguration());
+        boolean nextPersistTaskBounds = persistTaskBounds(
+                getRequestedOverrideConfiguration().windowConfiguration);
         if (getRequestedOverrideWindowingMode() == WINDOWING_MODE_UNDEFINED) {
-            nextPersistTaskBounds = newParentConfig.windowConfiguration.persistTaskBounds();
+            nextPersistTaskBounds = persistTaskBounds(newParentConfig.windowConfiguration);
         }
         // Only restore to the last non-fullscreen bounds when the requested override bounds
         // have not been explicitly set already.
@@ -2042,7 +2053,7 @@ class Task extends TaskFragment {
 
         // If the configuration supports persistent bounds (eg. Freeform), keep track of the
         // current (non-fullscreen) bounds for persistence.
-        if (getWindowConfiguration().persistTaskBounds()) {
+        if (persistTaskBounds(getWindowConfiguration())) {
             final Rect currentBounds = getRequestedOverrideBounds();
             if (!currentBounds.isEmpty()) {
                 setLastNonFullscreenBounds(currentBounds);
@@ -2383,33 +2394,48 @@ class Task extends TaskFragment {
     }
 
     void updateOverrideConfigurationFromLaunchBounds() {
-        // If the task is controlled by another organized task, do not set override
-        // configurations and let its parent (organized task) to control it;
         final Task rootTask = getRootTask();
-        boolean shouldInheritBounds = rootTask != this && rootTask.isOrganized();
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
-            // Only inherit from organized parent when this task is not organized.
-            shouldInheritBounds &= !isOrganized();
-        }
-        final Rect bounds = shouldInheritBounds ? null : getLaunchBounds();
-        setBounds(bounds);
-    }
-
-    /** Returns the bounds that should be used to launch this task. */
-    Rect getLaunchBounds() {
-        final Task rootTask = getRootTask();
-        if (rootTask == null) {
-            return null;
-        }
-
+        final boolean hasParentTask = rootTask != this;
         final int windowingMode = getWindowingMode();
-        if (!isActivityTypeStandardOrUndefined()
-                || windowingMode == WINDOWING_MODE_FULLSCREEN) {
-            return isResizeable() ? rootTask.getRequestedOverrideBounds() : null;
-        } else if (!getWindowConfiguration().persistTaskBounds()) {
-            return rootTask.getRequestedOverrideBounds();
+        final boolean isNonStandardOrFullscreen = !isActivityTypeStandardOrUndefined()
+                || windowingMode == WINDOWING_MODE_FULLSCREEN;
+        if (!Flags.nestedTasksWithIndependentBounds()
+                && !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+            final Rect bounds;
+            if (hasParentTask && rootTask.isOrganized()) {
+                bounds = null;
+            } else if (isNonStandardOrFullscreen) {
+                bounds = isResizeable() ? rootTask.getRequestedOverrideBounds() : null;
+            } else if (!persistTaskBounds(getWindowConfiguration())) {
+                bounds = rootTask.getRequestedOverrideBounds();
+            } else {
+                bounds = mLastNonFullscreenBounds;
+            }
+            setBounds(bounds);
+            return;
         }
-        return mLastNonFullscreenBounds;
+
+        // Non-standard/fullscreen unresizable tasks should always inherit.
+        boolean shouldInheritBounds = isNonStandardOrFullscreen && !isResizeable();
+        // Task itself is not organized (e.g. Home), just inherit from its organized parent.
+        shouldInheritBounds |= hasParentTask && rootTask.isOrganized() && !isOrganized();
+        // Nested tasks should inherit when they're not allowed to have independent bounds, such as
+        // in multi-window split-screen.
+        shouldInheritBounds |= hasParentTask
+                && !(allowIndependentBoundsFromParent(getWindowConfiguration())
+                && persistTaskBounds(getWindowConfiguration()));
+        if (shouldInheritBounds) {
+            setBounds(null);
+            return;
+        }
+        if (!hasParentTask && !persistTaskBounds(getWindowConfiguration())) {
+            // Non-nested, non-persistable tasks such as PIP or multi-window floating windows.
+            return;
+        }
+        // Non-nested, persisted tasks (e.g. top-level freeform) or nested persisted tasks that
+        // allow independent bounds from parent (e.g. nested freeform) should use launch-params
+        // bounds set to |mLastNonFullscreenBounds|.
+        setBounds(mLastNonFullscreenBounds);
     }
 
     void setRootProcess(WindowProcessController proc) {
