@@ -30,9 +30,9 @@ import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.biometrics.data.repository.FaceSensorInfo
 import com.android.systemui.biometrics.data.repository.fakeFacePropertyRepository
 import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRepository
+import com.android.systemui.biometrics.shared.model.FaceSensorInfo
 import com.android.systemui.biometrics.shared.model.SensorStrength
 import com.android.systemui.bouncer.data.repository.BouncerMessageRepositoryImpl
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
@@ -94,9 +94,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
         overrideResource(kg_trust_agent_disabled, "Trust agent is unavailable")
     }
 
-    suspend fun TestScope.init(
-        fingerprintAuthCurrentlyAllowed: Boolean = true,
-    ) {
+    suspend fun TestScope.init(fingerprintAuthCurrentlyAllowed: Boolean = true) {
         kosmos.fakeUserRepository.setSelectedUserInfo(PRIMARY_USER)
         mSetFlagsRule.enableFlags(Flags.FLAG_REVAMPED_BOUNCER_MESSAGES)
         underTest =
@@ -223,7 +221,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             keyguardUpdateMonitorCaptor.value.onBiometricAcquired(
                 BiometricSourceType.FACE,
-                BiometricFaceConstants.FACE_ACQUIRED_START
+                BiometricFaceConstants.FACE_ACQUIRED_START,
             )
 
             assertThat(primaryResMessage(bouncerMessage))
@@ -246,7 +244,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
 
             keyguardUpdateMonitorCaptor.value.onBiometricAcquired(
                 BiometricSourceType.FACE,
-                BiometricFaceConstants.FACE_ACQUIRED_START
+                BiometricFaceConstants.FACE_ACQUIRED_START,
             )
 
             assertThat(primaryResMessage(bouncerMessage))
@@ -493,7 +491,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_FOR_UNATTENDED_UPDATE to
                     defaultMessage,
                 LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_DPM_LOCK_NOW to
-                    Pair("Enter PIN", "For added security, device was locked by work policy")
+                    Pair("Enter PIN", "For added security, device was locked by work policy"),
             )
         }
 
@@ -532,7 +530,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
                         "Enter PIN",
-                        "Added security required. Device wasn’t unlocked for a while."
+                        "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
         }
@@ -570,7 +568,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
                         "Enter PIN",
-                        "Added security required. Device wasn’t unlocked for a while."
+                        "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
         }
@@ -614,7 +612,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
                     .STRONG_AUTH_REQUIRED_AFTER_NON_STRONG_BIOMETRICS_TIMEOUT to
                     Pair(
                         "Enter PIN",
-                        "Added security required. Device wasn’t unlocked for a while."
+                        "Added security required. Device wasn’t unlocked for a while.",
                     ),
             )
         }
@@ -660,7 +658,7 @@ class BouncerMessageInteractorTest : SysuiTestCase() {
             UserInfo(
                 /* id= */ PRIMARY_USER_ID,
                 /* name= */ "primary user",
-                /* flags= */ UserInfo.FLAG_PRIMARY
+                /* flags= */ UserInfo.FLAG_PRIMARY,
             )
     }
 }

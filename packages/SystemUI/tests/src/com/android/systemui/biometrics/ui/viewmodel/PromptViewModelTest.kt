@@ -66,6 +66,8 @@ import com.android.systemui.biometrics.shared.model.AuthenticationReason
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
+import com.android.systemui.biometrics.shared.model.toFaceSensorInfo
+import com.android.systemui.biometrics.shared.model.toFingerprintSensorInfo
 import com.android.systemui.biometrics.shared.model.toSensorStrength
 import com.android.systemui.biometrics.shared.model.toSensorType
 import com.android.systemui.biometrics.ui.NegativeButtonState
@@ -2028,7 +2030,8 @@ internal data class TestCase(
         }
 
     val modalities: BiometricModalities
-        get() = BiometricModalities(fingerprint, face)
+        get() =
+            BiometricModalities(fingerprint?.toFingerprintSensorInfo(), face?.toFaceSensorInfo())
 
     val authenticatedByFingerprint: Boolean
         get() = authenticatedModality == BiometricModality.Fingerprint
@@ -2089,7 +2092,10 @@ private fun PromptSelectorInteractor.initializePrompt(
         info,
         userId,
         REQUEST_ID,
-        BiometricModalities(fingerprintProperties = fingerprint, faceProperties = face),
+        BiometricModalities(
+            fingerprintSensorInfo = fingerprint?.toFingerprintSensorInfo(),
+            faceSensorInfo = face?.toFaceSensorInfo(),
+        ),
         CHALLENGE,
         packageName,
         onSwitchToCredential = false,

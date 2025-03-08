@@ -32,6 +32,7 @@ import com.android.systemui.biometrics.fingerprintSensorPropertiesInternal
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.shared.model.PromptKind
+import com.android.systemui.biometrics.shared.model.toFingerprintSensorInfo
 import com.android.systemui.biometrics.udfpsUtils
 import com.android.systemui.biometrics.ui.viewmodel.BiometricPromptUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.biometrics.ui.viewmodel.biometricPromptUdfpsAccessibilityOverlayViewModel
@@ -213,7 +214,9 @@ class BiometricPromptUdfpsAccessibilityOverlayViewModelTest() : SysuiTestCase() 
         if (sensorType != null && isSensorListening) {
             activeModalities =
                 BiometricModalities(
-                    fingerprintSensorPropertiesInternal(sensorType = sensorType).first()
+                    fingerprintSensorPropertiesInternal(sensorType = sensorType)
+                        .first()
+                        .toFingerprintSensorInfo()
                 )
         }
 

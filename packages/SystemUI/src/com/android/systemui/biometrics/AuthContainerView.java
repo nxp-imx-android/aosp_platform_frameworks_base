@@ -21,6 +21,8 @@ import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BA
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_BIOMETRIC_PROMPT_TRANSITION;
+import static com.android.systemui.biometrics.shared.model.FaceSensorInfoKt.toFaceSensorInfo;
+import static com.android.systemui.biometrics.shared.model.FingerprintSensorInfoKt.toFingerprintSensorInfo;
 
 import android.animation.Animator;
 import android.annotation.IntDef;
@@ -67,6 +69,8 @@ import com.android.systemui.biometrics.AuthController.ScaleFactorProvider;
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor;
 import com.android.systemui.biometrics.plugins.AuthContextPlugins;
 import com.android.systemui.biometrics.shared.model.BiometricModalities;
+import com.android.systemui.biometrics.shared.model.FaceSensorInfo;
+import com.android.systemui.biometrics.shared.model.FingerprintSensorInfo;
 import com.android.systemui.biometrics.shared.model.PromptKind;
 import com.android.systemui.biometrics.ui.CredentialView;
 import com.android.systemui.biometrics.ui.binder.BiometricViewBinder;
@@ -349,9 +353,18 @@ public class AuthContainerView extends LinearLayout
         mIsWatch =
                 config.mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_WATCH);
 
+        final FingerprintSensorPropertiesInternal fingerprintSensorProperties =
+                Utils.findFirstSensorProperties(fpProps, mConfig.mSensorIds);
+        final FingerprintSensorInfo fingerprintSensorInfo = fingerprintSensorProperties != null
+                ? toFingerprintSensorInfo(fingerprintSensorProperties) : null;
+
+        final FaceSensorPropertiesInternal faceSensorProperties =
+                Utils.findFirstSensorProperties(faceProps, mConfig.mSensorIds);
+        final FaceSensorInfo faceSensorInfo = faceSensorProperties != null
+                ? toFaceSensorInfo(faceSensorProperties) : null;
+
         final BiometricModalities biometricModalities = new BiometricModalities(
-                Utils.findFirstSensorProperties(fpProps, mConfig.mSensorIds),
-                Utils.findFirstSensorProperties(faceProps, mConfig.mSensorIds));
+                fingerprintSensorInfo, faceSensorInfo);
 
         final boolean isLandscape = mContext.getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE;
