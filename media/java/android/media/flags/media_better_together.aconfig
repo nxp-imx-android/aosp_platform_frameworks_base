@@ -242,3 +242,13 @@ flag {
     description: "Fallbacks to the default handling for volume adjustment when media session has fixed volume handling and its app is in the foreground and setting a media controller."
     bug: "293743975"
 }
+
+flag {
+    name: "fix_output_media_item_list_index_out_of_bounds_exception"
+    namespace: "media_better_together"
+    description: "Fixes a bug of causing IndexOutOfBoundsException when building media item list."
+    bug: "398246089"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
