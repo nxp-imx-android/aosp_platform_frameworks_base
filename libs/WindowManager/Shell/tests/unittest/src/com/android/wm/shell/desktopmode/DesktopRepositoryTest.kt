@@ -1225,36 +1225,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
-    fun setTaskInPip_savedAsMinimizedPipInDisplay() {
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isFalse()
-
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isTrue()
-    }
-
-    @Test
-    fun removeTaskInPip_removedAsMinimizedPipInDisplay() {
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isTrue()
-
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = false)
-
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isFalse()
-    }
-
-    @Test
-    fun setTaskInPip_multipleDisplays_bothAreInPip() {
-        repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        repo.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-        repo.setTaskInPip(SECOND_DISPLAY, taskId = 2, enterPip = true)
-
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isTrue()
-        assertThat(repo.isTaskMinimizedPipInDisplay(SECOND_DISPLAY, taskId = 2)).isTrue()
-    }
-
-    @Test
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun addTask_deskDoesNotExists_createsDesk() {
         repo.addTask(displayId = 999, taskId = 6, isVisible = true)
