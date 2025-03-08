@@ -101,7 +101,13 @@ fun BatteryCanvas(
             for (glyph in glyphs) {
                 // Move the glyph to the right spot
                 val verticalOffset = (BatteryFrame.innerHeight - glyph.height) / 2
-                inset(horizontalOffset, verticalOffset) { glyph.draw(this, colors) }
+                inset(
+                    // Never try and inset more than half of the available size - see b/400246091.
+                    minOf(horizontalOffset, size.width / 2),
+                    minOf(verticalOffset, size.height / 2),
+                ) {
+                    glyph.draw(this, colors)
+                }
 
                 horizontalOffset += glyph.width + INTER_GLYPH_PADDING_PX
             }
