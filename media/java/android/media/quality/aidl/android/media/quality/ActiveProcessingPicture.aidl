@@ -16,4 +16,4 @@
 
 package android.media.quality;
 
-parcelable ActiveProcessingPicture;
+parcelable ActiveProcessingPicture cpp_header "quality/MediaQualityManager.h";

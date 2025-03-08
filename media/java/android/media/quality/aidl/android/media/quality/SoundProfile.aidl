@@ -16,4 +16,4 @@
 
 package android.media.quality;
 
-parcelable SoundProfile;
+parcelable SoundProfile cpp_header "quality/MediaQualityManager.h";

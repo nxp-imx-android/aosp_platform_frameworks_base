@@ -17,7 +17,7 @@
 package com.android.systemui.communal.domain.interactor
 
 import android.content.pm.UserInfo
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.communal.data.model.FEATURE_AUTO_OPEN
 import com.android.systemui.communal.data.model.FEATURE_ENABLED
 import com.android.systemui.communal.data.model.FEATURE_MANUAL_OPEN

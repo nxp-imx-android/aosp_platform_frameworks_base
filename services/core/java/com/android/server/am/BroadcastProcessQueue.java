@@ -245,6 +245,24 @@ class BroadcastProcessQueue {
      */
     private final ArrayList<BroadcastRecord> mOutgoingBroadcasts = new ArrayList<>();
 
+    /**
+     * The timestamp, in {@link SystemClock#uptimeMillis()}, at which a cold start was initiated
+     * for the process associated with this queue.
+     *
+     * Note: We could use the already existing {@link ProcessRecord#getStartUptime()} instead
+     * of this, but the need for this timestamp is to identify an issue (b/393898613) where the
+     * suspicion is that process is not attached or getting changed. So, we don't want to rely on
+     * ProcessRecord directly for this purpose.
+     */
+    private long mProcessStartInitiatedTimestampMillis;
+
+    /**
+     * Indicates whether the number of current receivers has been incremented using
+     * {@link ProcessReceiverRecord#incrementCurReceivers()}. This allows to skip decrementing
+     * the receivers when it is not required.
+     */
+    private boolean mCurReceiversIncremented;
+
     public BroadcastProcessQueue(@NonNull BroadcastConstants constants,
             @NonNull String processName, int uid) {
         this.constants = Objects.requireNonNull(constants);
@@ -650,6 +668,52 @@ class BroadcastProcessQueue {
 
     public boolean getActiveFirstLaunch() {
         return mActiveFirstLaunch;
+    }
+
+    public void incrementCurAppReceivers() {
+        app.mReceivers.incrementCurReceivers();
+        mCurReceiversIncremented = true;
+    }
+
+    public void decrementCurAppReceivers() {
+        if (mCurReceiversIncremented) {
+            app.mReceivers.decrementCurReceivers();
+            mCurReceiversIncremented = false;
+        }
+    }
+
+    public void setProcessStartInitiatedTimestampMillis(@UptimeMillisLong long timestampMillis) {
+        mProcessStartInitiatedTimestampMillis = timestampMillis;
+    }
+
+    @UptimeMillisLong
+    public long getProcessStartInitiatedTimestampMillis() {
+        return mProcessStartInitiatedTimestampMillis;
+    }
+
+    public boolean hasProcessStartInitiationTimedout() {
+        if (mProcessStartInitiatedTimestampMillis <= 0) {
+            return false;
+        }
+        return (SystemClock.uptimeMillis() - mProcessStartInitiatedTimestampMillis)
+                > constants.PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS;
+    }
+
+    /**
+     * Returns if the process start initiation is expected to be timed out at this point. This
+     * allows us to dump necessary state for debugging before the process start is timed out
+     * and discarded.
+     */
+    public boolean isProcessStartInitiationTimeoutExpected() {
+        if (mProcessStartInitiatedTimestampMillis <= 0) {
+            return false;
+        }
+        return (SystemClock.uptimeMillis() - mProcessStartInitiatedTimestampMillis)
+                > constants.PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS / 2;
+    }
+
+    public void clearProcessStartInitiatedTimestampMillis() {
+        mProcessStartInitiatedTimestampMillis = 0;
     }
 
     /**
@@ -1557,6 +1621,10 @@ class BroadcastProcessQueue {
         }
         if (mActiveReEnqueued) {
             pw.print("activeReEnqueued:"); pw.println(mActiveReEnqueued);
+        }
+        if (mProcessStartInitiatedTimestampMillis > 0) {
+            pw.print("processStartInitiatedTimestamp:"); pw.println(
+                    TimeUtils.formatUptime(mProcessStartInitiatedTimestampMillis));
         }
     }
 

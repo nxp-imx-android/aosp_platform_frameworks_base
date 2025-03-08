@@ -27,6 +27,7 @@ import com.android.internal.widget.remotecompose.core.SerializableToString;
 import com.android.internal.widget.remotecompose.core.TouchListener;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
+import com.android.internal.widget.remotecompose.core.operations.BitmapData;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
 import com.android.internal.widget.remotecompose.core.operations.TextData;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
@@ -1131,14 +1132,14 @@ public class Component extends PaintOperation
     }
 
     /**
-     * Extract child TextData elements
+     * Extract child Data elements
      *
-     * @param data an ArrayList that will be populated with the TextData elements (if any)
+     * @param data an ArrayList that will be populated with the Data elements (if any)
      */
-    public void getData(@NonNull ArrayList<TextData> data) {
+    public void getData(@NonNull ArrayList<Operation> data) {
         for (Operation op : mList) {
-            if (op instanceof TextData) {
-                data.add((TextData) op);
+            if (op instanceof TextData || op instanceof BitmapData) {
+                data.add(op);
             }
         }
     }

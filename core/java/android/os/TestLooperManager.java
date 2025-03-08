@@ -96,8 +96,8 @@ public class TestLooperManager {
     }
 
     /**
-     * Retrieves and removes the next message that should be executed by this queue.
-     * If the queue is empty or no messages are deliverable, returns null.
+     * Retrieves and removes the next message in this queue.
+     * If the queue is empty, returns null.
      * This method never blocks.
      *
      * <p>Callers should always call {@link #recycle(Message)} on the message when all interactions
@@ -112,9 +112,9 @@ public class TestLooperManager {
     }
 
     /**
-     * Retrieves, but does not remove, the values of {@link Message#when} of next message that
-     * should be executed by this queue.
-     * If the queue is empty or no messages are deliverable, returns null.
+     * Retrieves, but does not remove, the values of {@link Message#when} of next message in the
+     * queue.
+     * If the queue is empty, returns null.
      * This method never blocks.
      */
     @FlaggedApi(Flags.FLAG_MESSAGE_QUEUE_TESTABILITY)

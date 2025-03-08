@@ -19,13 +19,10 @@ package com.android.wm.shell.shared.desktopmode
 import android.Manifest.permission.SYSTEM_ALERT_WINDOW
 import android.app.TaskInfo
 import android.content.Context
-import android.content.pm.ActivityInfo
-import android.content.pm.ActivityInfo.INSETS_DECOUPLED_CONFIGURATION_ENFORCED
-import android.content.pm.ActivityInfo.OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION
-import android.content.pm.ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS
 import android.content.pm.PackageManager
 import android.window.DesktopModeFlags
 import com.android.internal.R
+import com.android.internal.policy.DesktopModeCompatUtils
 
 /**
  * Class to decide whether to apply app compat policies in desktop mode.
@@ -60,22 +57,11 @@ class DesktopModeCompatPolicy(private val context: Context) {
                                 hasFullscreenTransparentPermission(packageName))) &&
                         !isTopActivityNoDisplay)
 
-    /**
-     * Whether the caption insets should be excluded from configuration for system to handle.
-     *
-     * The treatment is enabled when all the of the following is true:
-     * * Any flags to forcibly consume caption insets are enabled.
-     * * Top activity have configuration coupled with insets.
-     * * Task is not resizeable or [ActivityInfo.OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS]
-     * is enabled.
-     */
+    /** @see DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds */
     fun shouldExcludeCaptionFromAppBounds(taskInfo: TaskInfo): Boolean =
-        DesktopModeFlags.EXCLUDE_CAPTION_FROM_APP_BOUNDS.isTrue
-                && isAnyForceConsumptionFlagsEnabled()
-                && taskInfo.topActivityInfo?.let {
-            isInsetsCoupledWithConfiguration(it) && (!taskInfo.isResizeable || it.isChangeEnabled(
-                OVERRIDE_EXCLUDE_CAPTION_INSETS_FROM_APP_BOUNDS
-            ))
+        taskInfo.topActivityInfo?.let {
+            DesktopModeCompatUtils.shouldExcludeCaptionFromAppBounds(it, taskInfo.isResizeable,
+                taskInfo.appCompatTaskInfo.hasOptOutEdgeToEdge())
         } ?: false
 
     /**
@@ -118,12 +104,4 @@ class DesktopModeCompatPolicy(private val context: Context) {
      */
     private fun isPartOfDefaultHomePackageOrNoHomeAvailable(packageName: String?) =
         defaultHomePackage == null || (packageName != null && packageName == defaultHomePackage)
-
-    private fun isAnyForceConsumptionFlagsEnabled(): Boolean =
-        DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS.isTrue
-            || DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION.isTrue
-
-    private fun isInsetsCoupledWithConfiguration(info: ActivityInfo): Boolean =
-        !(info.isChangeEnabled(OVERRIDE_ENABLE_INSETS_DECOUPLED_CONFIGURATION)
-                || info.isChangeEnabled(INSETS_DECOUPLED_CONFIGURATION_ENFORCED))
 }

@@ -625,7 +625,7 @@ final class ActivityRecord extends WindowToken {
     @VisibleForTesting
     final TaskFragment.ConfigOverrideHint mResolveConfigHint;
 
-    private final boolean mOptOutEdgeToEdge;
+    final boolean mOptOutEdgeToEdge;
 
     private static ConstrainDisplayApisConfig sConstrainDisplayApisConfig;
 

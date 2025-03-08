@@ -6,7 +6,7 @@ import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.common.shared.model.PackageChangeModel.Empty.user
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application

@@ -30,7 +30,6 @@ import com.android.internal.widget.remotecompose.core.operations.MatrixRestore;
 import com.android.internal.widget.remotecompose.core.operations.MatrixSave;
 import com.android.internal.widget.remotecompose.core.operations.MatrixTranslate;
 import com.android.internal.widget.remotecompose.core.operations.PaintData;
-import com.android.internal.widget.remotecompose.core.operations.TextData;
 import com.android.internal.widget.remotecompose.core.operations.TouchExpression;
 import com.android.internal.widget.remotecompose.core.operations.layout.animation.AnimationSpec;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentModifiers;
@@ -138,7 +137,7 @@ public class LayoutComponent extends Component {
 
     @Override
     public void inflate() {
-        ArrayList<TextData> data = new ArrayList<>();
+        ArrayList<Operation> data = new ArrayList<>();
         ArrayList<Operation> supportedOperations = new ArrayList<>();
 
         for (Operation op : mList) {
@@ -186,8 +185,6 @@ public class LayoutComponent extends Component {
                     ((ScrollModifierOperation) op).inflate(this);
                 }
                 mComponentModifiers.add((ModifierOperation) op);
-            } else if (op instanceof TextData) {
-                data.add((TextData) op);
             } else if (op instanceof TouchExpression
                     || (op instanceof PaintData)
                     || (op instanceof FloatExpression)) {

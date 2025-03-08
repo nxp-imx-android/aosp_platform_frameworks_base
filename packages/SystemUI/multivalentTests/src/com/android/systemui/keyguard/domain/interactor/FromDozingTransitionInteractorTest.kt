@@ -20,7 +20,6 @@ import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
-import android.provider.Settings
 import android.service.dream.dreamManager
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -30,8 +29,6 @@ import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
 import com.android.systemui.Flags.FLAG_SCENE_CONTAINER
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.common.data.repository.batteryRepository
-import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.repository.FakeCommunalSceneRepository
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
@@ -61,8 +58,6 @@ import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.se
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
-import com.android.systemui.user.data.repository.fakeUserRepository
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.flow.flowOf
@@ -171,15 +166,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
     fun testTransitionToLockscreen_onWake_canDream_ktfRefactor() =
         kosmos.runTest {
             setCommunalAvailable(true)
-            if (glanceableHubV2()) {
-                val user = fakeUserRepository.asMainUser()
-                fakeSettings.putIntForUser(
-                    Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                    1,
-                    user.id,
-                )
-                batteryRepository.fake.setDevicePluggedIn(true)
-            } else {
+            if (!glanceableHubV2()) {
                 whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(true)
             }
 
@@ -226,15 +213,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
     fun testTransitionToGlanceableHub_onWakeup_ifAvailable() =
         kosmos.runTest {
             setCommunalAvailable(true)
-            if (glanceableHubV2()) {
-                val user = fakeUserRepository.asMainUser()
-                fakeSettings.putIntForUser(
-                    Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                    1,
-                    user.id,
-                )
-                batteryRepository.fake.setDevicePluggedIn(true)
-            } else {
+            if (!glanceableHubV2()) {
                 whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(true)
             }
 
@@ -247,6 +226,25 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
                 .isEqualTo(CommunalScenes.Communal)
             // No transitions are directly started by this interactor.
             assertThat(transitionRepository).noTransitionsStarted()
+        }
+
+    @Test
+    @DisableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR, FLAG_SCENE_CONTAINER)
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
+    fun testTransitionToLockscreen_onWakeupFromLift() =
+        kosmos.runTest {
+            setCommunalAvailable(true)
+            if (!glanceableHubV2()) {
+                whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(true)
+            }
+
+            // Device turns on.
+            powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LIFT)
+            testScope.advanceTimeBy(51L)
+
+            // We transition to the lockscreen instead of the hub.
+            assertThat(transitionRepository)
+                .startedTransition(from = KeyguardState.DOZING, to = KeyguardState.LOCKSCREEN)
         }
 
     @Test

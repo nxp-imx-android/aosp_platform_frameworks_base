@@ -786,8 +786,8 @@ public final class MessageQueue {
     }
 
     /**
-     * Get the timestamp of the next executable message in our priority queue.
-     * Returns null if there are no messages ready for delivery.
+     * Get the timestamp of the next message in our priority queue.
+     * Returns null if there are no messages in the queue.
      *
      * Caller must ensure that this doesn't race 'next' from the Looper thread.
      */
@@ -799,8 +799,8 @@ public final class MessageQueue {
     }
 
     /**
-     * Return the next executable message in our priority queue.
-     * Returns null if there are no messages ready for delivery
+     * Return the next message in our priority queue.
+     * Returns null if there are no messages in the queue.
      *
      * Caller must ensure that this doesn't race 'next' from the Looper thread.
      */

@@ -18,6 +18,7 @@ package com.android.server.accessibility.autoclick;
 
 import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentation;
 
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
 import static com.android.server.testutils.MockitoUtilsKt.eq;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -547,6 +548,29 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void triggerRightClickWithRevertToLeftClickEnabled_resetClickType() {
+        // Move mouse to initialize autoclick panel.
+        injectFakeMouseActionHoverMoveEvent();
+
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+        mController.clickPanelController.handleAutoclickTypeChange(AUTOCLICK_TYPE_RIGHT_CLICK);
+
+        // Set ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK to true.
+        Settings.Secure.putIntForUser(mTestableContext.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                AccessibilityUtils.State.ON,
+                mTestableContext.getUserId());
+        mController.onChangeForTesting(/* selfChange= */ true,
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK));
+        when(mockAutoclickTypePanel.isPaused()).thenReturn(false);
+        mController.mClickScheduler.run();
+        assertThat(mController.mClickScheduler.getRevertToLeftClickForTesting()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
     public void pauseButton_flagOn_clickNotTriggeredWhenPaused() {
         injectFakeMouseActionHoverMoveEvent();
 
@@ -766,6 +790,8 @@ public class AutoclickControllerTest {
         // Set click type to right click.
         mController.clickPanelController.handleAutoclickTypeChange(
                 AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK);
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
 
         // Send hover move event.
         MotionEvent hoverMove = MotionEvent.obtain(

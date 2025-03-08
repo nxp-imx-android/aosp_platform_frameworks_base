@@ -179,7 +179,7 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
      * @return
      */
     public boolean performClick(Component component) {
-        mDocument.performClick(mRemoteContext, component.getComponentId());
+        mDocument.performClick(mRemoteContext, component.getComponentId(), "");
         return true;
     }
 

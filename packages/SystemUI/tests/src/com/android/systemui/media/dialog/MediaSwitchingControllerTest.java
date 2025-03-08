@@ -60,13 +60,13 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
 import android.service.notification.StatusBarNotification;
 import android.testing.TestableLooper;
 import android.text.TextUtils;
 import android.view.View;
 
 import androidx.core.graphics.drawable.IconCompat;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.media.flags.Flags;
@@ -101,6 +101,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -108,7 +111,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 @SmallTest
-@RunWith(AndroidJUnit4.class)
+@RunWith(ParameterizedAndroidJunit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 public class MediaSwitchingControllerTest extends SysuiTestCase {
     private static final String TEST_DEVICE_1_ID = "test_device_1_id";
@@ -201,6 +204,17 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private MediaDescription mMediaDescription;
     private List<RoutingSessionInfo> mRoutingSessionInfos = new ArrayList<>();
 
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_FIX_OUTPUT_MEDIA_ITEM_LIST_INDEX_OUT_OF_BOUNDS_EXCEPTION,
+                Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING);
+    }
+
+    public MediaSwitchingControllerTest(FlagsParameterization flags) {
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
+
     @Before
     public void setUp() {
         mPackageName = mContext.getPackageName();
@@ -259,7 +273,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID);
         mMediaDevices.add(mMediaDevice1);
         mMediaDevices.add(mMediaDevice2);
-
 
         when(mNearbyDevice1.getMediaRoute2Id()).thenReturn(TEST_DEVICE_1_ID);
         when(mNearbyDevice1.getRangeZone()).thenReturn(NearbyDevice.RANGE_FAR);
@@ -689,7 +702,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.getMediaItemList().clear();
+        mMediaSwitchingController.clearMediaItemList();
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
         final List<MediaDevice> devices = new ArrayList<>();
         int dividerSize = 0;
@@ -1528,7 +1541,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .getSelectedMediaDevice();
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.getMediaItemList().clear();
+        mMediaSwitchingController.clearMediaItemList();
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
@@ -1546,7 +1559,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .getSelectedMediaDevice();
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.getMediaItemList().clear();
+        mMediaSwitchingController.clearMediaItemList();
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
@@ -1564,7 +1577,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .getSelectedMediaDevice();
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.getMediaItemList().clear();
+        mMediaSwitchingController.clearMediaItemList();
 
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
@@ -1582,7 +1595,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .getSelectedMediaDevice();
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.getMediaItemList().clear();
+        mMediaSwitchingController.clearMediaItemList();
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
         mMediaDevices.clear();
         mMediaDevices.add(mMediaDevice2);

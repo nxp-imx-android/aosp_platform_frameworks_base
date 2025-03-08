@@ -104,6 +104,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleRowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.ColumnLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.FitBoxLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.ImageLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.RowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.StateLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextLayout;
@@ -115,6 +116,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HostActionMetadataOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HostActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HostNamedActionOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.MarqueeModifierOperation;
@@ -247,6 +249,7 @@ public class Operations {
     public static final int LAYOUT_CANVAS_CONTENT = 207;
     public static final int LAYOUT_TEXT = 208;
     public static final int LAYOUT_STATE = 217;
+    public static final int LAYOUT_IMAGE = 234;
 
     public static final int COMPONENT_START = 2;
 
@@ -278,6 +281,7 @@ public class Operations {
 
     public static final int MODIFIER_VISIBILITY = 211;
     public static final int HOST_ACTION = 209;
+    public static final int HOST_METADATA_ACTION = 216;
     public static final int HOST_NAMED_ACTION = 210;
 
     public static final int VALUE_INTEGER_CHANGE_ACTION = 212;
@@ -385,6 +389,7 @@ public class Operations {
         map.put(CONTAINER_END, ContainerEnd::read);
 
         map.put(HOST_ACTION, HostActionOperation::read);
+        map.put(HOST_METADATA_ACTION, HostActionMetadataOperation::read);
         map.put(HOST_NAMED_ACTION, HostNamedActionOperation::read);
         map.put(VALUE_INTEGER_CHANGE_ACTION, ValueIntegerChangeActionOperation::read);
         map.put(
@@ -407,7 +412,7 @@ public class Operations {
         map.put(LAYOUT_CANVAS, CanvasLayout::read);
         map.put(LAYOUT_CANVAS_CONTENT, CanvasContent::read);
         map.put(LAYOUT_TEXT, TextLayout::read);
-
+        map.put(LAYOUT_IMAGE, ImageLayout::read);
         map.put(LAYOUT_STATE, StateLayout::read);
         map.put(DRAW_CONTENT, DrawContent::read);
 

@@ -155,7 +155,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         doAnswer((invocation) -> {
             Log.v(TAG, "Intercepting startProcessLocked() for "
                     + Arrays.toString(invocation.getArguments()));
-            assertHealth();
             final String processName = invocation.getArgument(0);
             final ProcessStartBehavior behavior = mNewProcessStartBehaviors.getOrDefault(
                     processName, mNextProcessStartBehavior.getAndSet(ProcessStartBehavior.SUCCESS));
@@ -206,6 +205,9 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
                             mActiveProcesses.remove(res);
                             res.setKilled(true);
                             break;
+                        case MISSING_RESPONSE:
+                            res.setPendingStart(true);
+                            break;
                         default:
                             throw new UnsupportedOperationException();
                     }
@@ -244,6 +246,7 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         mConstants.ALLOW_BG_ACTIVITY_START_TIMEOUT = 0;
         mConstants.PENDING_COLD_START_CHECK_INTERVAL_MILLIS = 500;
         mConstants.MAX_FROZEN_OUTGOING_BROADCASTS = 10;
+        mConstants.PENDING_COLD_START_ABANDON_TIMEOUT_MILLIS = 2000;
     }
 
     @After
@@ -279,6 +282,8 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
         FAIL_NULL,
         /** Process is killed without reporting to BroadcastQueue */
         KILLED_WITHOUT_NOTIFY,
+        /** Process start fails without no response */
+        MISSING_RESPONSE,
     }
 
     private enum ProcessBehavior {
@@ -1168,6 +1173,37 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
 
         // Broadcast queue always kills the target process when broadcast delivery fails.
         assertNull(receiverGreenApp);
+        verifyScheduleRegisteredReceiver(times(1), receiverBlueApp, airplane);
+        verifyScheduleReceiver(times(1), receiverYellowApp, airplane);
+        verifyScheduleReceiver(times(1), receiverOrangeApp, timezone);
+    }
+
+    @Test
+    public void testProcessStartWithMissingResponse() throws Exception {
+        final ProcessRecord callerApp = makeActiveProcessRecord(PACKAGE_RED);
+        final ProcessRecord receiverBlueApp = makeActiveProcessRecord(PACKAGE_BLUE);
+
+        mNewProcessStartBehaviors.put(PACKAGE_GREEN, ProcessStartBehavior.MISSING_RESPONSE);
+
+        final Intent airplane = new Intent(Intent.ACTION_AIRPLANE_MODE_CHANGED);
+        enqueueBroadcast(makeBroadcastRecord(airplane, callerApp, List.of(
+                withPriority(makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN), 10),
+                withPriority(makeRegisteredReceiver(receiverBlueApp), 5),
+                withPriority(makeManifestReceiver(PACKAGE_YELLOW, CLASS_YELLOW), 0))));
+
+        final Intent timezone = new Intent(Intent.ACTION_TIMEZONE_CHANGED);
+        enqueueBroadcast(makeBroadcastRecord(timezone, callerApp,
+                List.of(makeManifestReceiver(PACKAGE_ORANGE, CLASS_ORANGE))));
+
+        waitForIdle();
+        final ProcessRecord receiverGreenApp = mAms.getProcessRecordLocked(PACKAGE_GREEN,
+                getUidForPackage(PACKAGE_GREEN));
+        final ProcessRecord receiverYellowApp = mAms.getProcessRecordLocked(PACKAGE_YELLOW,
+                getUidForPackage(PACKAGE_YELLOW));
+        final ProcessRecord receiverOrangeApp = mAms.getProcessRecordLocked(PACKAGE_ORANGE,
+                getUidForPackage(PACKAGE_ORANGE));
+
+        verifyScheduleReceiver(times(1), receiverGreenApp, airplane);
         verifyScheduleRegisteredReceiver(times(1), receiverBlueApp, airplane);
         verifyScheduleReceiver(times(1), receiverYellowApp, airplane);
         verifyScheduleReceiver(times(1), receiverOrangeApp, timezone);

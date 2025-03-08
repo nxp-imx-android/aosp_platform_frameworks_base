@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator;
 
+import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
@@ -99,7 +101,11 @@ public class RankingCoordinator implements Coordinator {
             NotificationPriorityBucketKt.BUCKET_ALERTING) {
         @Override
         public boolean isInSection(PipelineEntry entry) {
-            return mHighPriorityProvider.isHighPriority(entry);
+            return mHighPriorityProvider.isHighPriority(entry)
+                    && entry.getRepresentativeEntry() != null
+                    && entry.getRepresentativeEntry().getChannel() != null
+                    && !SYSTEM_RESERVED_IDS.contains(
+                    entry.getRepresentativeEntry().getChannel().getId());
         }
 
         @Nullable

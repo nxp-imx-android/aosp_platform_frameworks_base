@@ -16,4 +16,4 @@
 
 package android.media.quality;
 
-parcelable AmbientBacklightEvent;
+parcelable AmbientBacklightEvent cpp_header "quality/MediaQualityManager.h";
