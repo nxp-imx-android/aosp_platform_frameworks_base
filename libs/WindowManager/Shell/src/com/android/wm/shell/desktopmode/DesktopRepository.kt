@@ -339,7 +339,7 @@ class DesktopRepository(
         val affectedDisplays = mutableSetOf<Int>()
         desktopData
             .desksSequence()
-            .filter { desk -> desk.displayId != excludedDeskId }
+            .filter { desk -> desk.deskId != excludedDeskId }
             .forEach { desk ->
                 val removed = removeActiveTaskFromDesk(desk.deskId, taskId, notifyListeners = false)
                 if (removed) {
