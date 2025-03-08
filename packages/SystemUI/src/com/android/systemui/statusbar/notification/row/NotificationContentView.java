@@ -1247,7 +1247,7 @@ public class NotificationContentView extends FrameLayout implements Notification
             final boolean isSingleLineViewPresent = mSingleLineView != null;
 
             if (shouldShowSingleLineView && !isSingleLineViewPresent) {
-                Log.wtf(TAG, "calculateVisibleType: SingleLineView is not available!");
+                Log.e(TAG, "calculateVisibleType: SingleLineView is not available!");
             }
 
             final int collapsedVisualType = shouldShowSingleLineView && isSingleLineViewPresent
@@ -1274,7 +1274,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         final boolean shouldShowSingleLineView = mIsChildInGroup && !isGroupExpanded();
         final boolean isSingleLinePresent =  mSingleLineView != null;
         if (shouldShowSingleLineView && !isSingleLinePresent) {
-            Log.wtf(TAG, "getVisualTypeForHeight: singleLineView is not available.");
+            Log.e(TAG, "getVisualTypeForHeight: singleLineView is not available.");
         }
 
         if (!mUserExpanding && shouldShowSingleLineView && isSingleLinePresent) {
