@@ -165,6 +165,9 @@ public class HearingDevicePhoneCallNotificationController {
             if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
                 if (com.android.server.accessibility.Flags.hearingInputChangeWhenCommDevice()) {
                     AudioDeviceInfo commDevice = mAudioManager.getCommunicationDevice();
+                    if (commDevice == null) {
+                        return;
+                    }
                     mHearingDevice = getSupportedInputHearingDeviceInfo(List.of(commDevice));
                     if (mHearingDevice != null) {
                         showNotificationIfNeeded();
