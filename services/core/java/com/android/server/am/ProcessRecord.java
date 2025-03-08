@@ -70,6 +70,7 @@ import com.android.server.wm.WindowProcessController;
 import com.android.server.wm.WindowProcessListener;
 
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
@@ -1412,6 +1413,16 @@ class ProcessRecord implements WindowProcessListener {
         toShortString(sb);
         sb.append('}');
         return mStringName = sb.toString();
+    }
+
+    String toDetailedString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(this);
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        dump(pw, "  ");
+        sb.append(sw);
+        return sb.toString();
     }
 
     /*
