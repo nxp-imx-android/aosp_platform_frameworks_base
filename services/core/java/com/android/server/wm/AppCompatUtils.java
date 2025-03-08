@@ -216,6 +216,7 @@ final class AppCompatUtils {
                 AppCompatCameraPolicy.getCameraCompatFreeformMode(top);
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
+        appCompatTaskInfo.setOptOutEdgeToEdge(top.mOptOutEdgeToEdge);
     }
 
     /**

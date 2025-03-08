@@ -44,6 +44,7 @@ import android.app.ActivityOptions;
 import android.content.ComponentName;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.graphics.Rect;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArrayMap;
 import android.util.SparseArray;
@@ -52,6 +53,7 @@ import androidx.test.filters.MediumTest;
 
 import com.android.server.wm.LaunchParamsController.LaunchParams;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
+import com.android.window.flags.Flags;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -372,6 +374,34 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
         assertEquals(expected, task.mLastNonFullscreenBounds);
     }
 
+    /**
+     * Ensures that app bounds are set to exclude freeform caption if window is in freeform.
+     */
+    @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS)
+    public void testLayoutTaskBoundsFreeformAppBounds() {
+        final Rect expected = new Rect(10, 20, 30, 40);
+
+        final LaunchParams params = new LaunchParams();
+        params.mBounds.set(expected);
+        params.mAppBounds.set(expected);
+        final InstrumentedPositioner positioner = new InstrumentedPositioner(RESULT_DONE, params);
+        final Task task = new TaskBuilder(mAtm.mTaskSupervisor)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
+        final ActivityOptions options = ActivityOptions.makeBasic().setFlexibleLaunchSize(true);
+
+        mController.registerModifier(positioner);
+
+        assertNotEquals(expected, task.getBounds());
+
+        layoutTask(task, options);
+
+        // Task will make adjustments to requested bounds. We only need to guarantee that the
+        // requested bounds are expected.
+        assertEquals(expected,
+                task.getRequestedOverrideConfiguration().windowConfiguration.getAppBounds());
+    }
+
     public static class InstrumentedPositioner implements LaunchParamsModifier {
 
         private final int mReturnVal;
@@ -472,5 +502,10 @@ public class LaunchParamsControllerTests extends WindowTestsBase {
     private void layoutTask(@NonNull Task task) {
         mController.layoutTask(task, null /* layout */, null /* activity */, null /* source */,
                 null /* options */);
+    }
+
+    private void layoutTask(@NonNull Task task, ActivityOptions options) {
+        mController.layoutTask(task, null /* layout */, null /* activity */, null /* source */,
+                options /* options */);
     }
 }

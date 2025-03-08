@@ -41,6 +41,7 @@ import static android.util.DisplayMetrics.DENSITY_DEFAULT;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
 import static com.android.server.wm.DesktopModeBoundsCalculator.DESKTOP_MODE_INITIAL_BOUNDS_SCALE;
 import static com.android.server.wm.DesktopModeBoundsCalculator.DESKTOP_MODE_LANDSCAPE_APP_PADDING;
 import static com.android.server.wm.DesktopModeBoundsCalculator.centerInScreen;
@@ -893,9 +894,11 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS})
+            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testDefaultLandscapeBounds_landscapeDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
         final TestDisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
                 LANDSCAPE_DISPLAY_BOUNDS);
@@ -903,11 +906,11 @@ public class DesktopModeLaunchParamsModifierTests extends
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_LANDSCAPE,
                 task, /* ignoreOrientationRequest */ true);
 
-
-        final int desiredWidth =
-                (int) (LANDSCAPE_DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final float displayAspectRatio = (float) LANDSCAPE_DISPLAY_BOUNDS.width()
+                / LANDSCAPE_DISPLAY_BOUNDS.height();
         final int desiredHeight =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final int desiredWidth = (int) ((desiredHeight - captionHeight) * displayAspectRatio);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -916,7 +919,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS)
+    @EnableFlags({Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testUnResizablePortraitBounds_landscapeDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -925,6 +929,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Task task = createTask(display, /* isResizeable */ false);
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_PORTRAIT,
                 task, /* ignoreOrientationRequest */ true);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
@@ -932,7 +937,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         final int desiredHeight =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
-        final int desiredWidth = (int) (desiredHeight / LETTERBOX_ASPECT_RATIO);
+        final int desiredWidth = (int) ((desiredHeight - captionHeight) / LETTERBOX_ASPECT_RATIO);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -1070,7 +1075,8 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS})
+            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testDefaultPortraitBounds_portraitDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1079,12 +1085,14 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Task task = createTask(display, /* isResizeable */ false);
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_PORTRAIT,
                 task, /* ignoreOrientationRequest */ true);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
-
-        final int desiredWidth =
-                (int) (PORTRAIT_DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final float displayAspectRatio = (float) PORTRAIT_DISPLAY_BOUNDS.height()
+                / PORTRAIT_DISPLAY_BOUNDS.width();
         final int desiredHeight =
-                (int) (PORTRAIT_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+                (int) (PORTRAIT_DISPLAY_BOUNDS.height()  * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final int desiredWidth =
+                (int) ((desiredHeight - captionHeight) / displayAspectRatio);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -1093,7 +1101,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS)
+    @EnableFlags({Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testUnResizableLandscapeBounds_portraitDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1102,6 +1111,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Task task = createTask(display, /* isResizeable */ false);
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_LANDSCAPE,
                 task, /* ignoreOrientationRequest */ true);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
@@ -1109,7 +1119,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         final int desiredWidth = PORTRAIT_DISPLAY_BOUNDS.width()
                 - (DESKTOP_MODE_LANDSCAPE_APP_PADDING * 2);
-        final int desiredHeight = (int) (desiredWidth / LETTERBOX_ASPECT_RATIO);
+        final int desiredHeight = (int) (desiredWidth / LETTERBOX_ASPECT_RATIO) + captionHeight;
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
