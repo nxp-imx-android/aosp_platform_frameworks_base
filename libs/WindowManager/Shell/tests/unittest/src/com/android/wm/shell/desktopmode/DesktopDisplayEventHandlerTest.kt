@@ -61,10 +61,10 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Mock lateinit var testExecutor: ShellExecutor
     @Mock lateinit var displayController: DisplayController
     @Mock private lateinit var mockDesktopUserRepositories: DesktopUserRepositories
-    @Mock private lateinit var mockDesktopRepositoryInitializer: DesktopRepositoryInitializer
     @Mock private lateinit var mockDesktopRepository: DesktopRepository
     @Mock private lateinit var mockDesktopTasksController: DesktopTasksController
     @Mock private lateinit var desktopDisplayModeController: DesktopDisplayModeController
+    private val desktopRepositoryInitializer = FakeDesktopRepositoryInitializer()
     private val testScope = TestScope()
 
     private lateinit var mockitoSession: StaticMockitoSession
@@ -90,7 +90,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
                 shellInit,
                 testScope.backgroundScope,
                 displayController,
-                mockDesktopRepositoryInitializer,
+                desktopRepositoryInitializer,
                 mockDesktopUserRepositories,
                 mockDesktopTasksController,
                 desktopDisplayModeController,
@@ -109,12 +109,10 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Test
     fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_createsDesk() =
         testScope.runTest {
-            val stateFlow = MutableStateFlow(false)
-            whenever(mockDesktopRepositoryInitializer.isInitialized).thenReturn(stateFlow)
             whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
-            stateFlow.emit(true)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
             runCurrent()
 
             verify(mockDesktopTasksController).createDesk(DEFAULT_DISPLAY)
@@ -123,8 +121,6 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Test
     fun testDisplayAdded_supportsDesks_desktopRepositoryNotInitialized_doesNotCreateDesk() =
         testScope.runTest {
-            val stateFlow = MutableStateFlow(false)
-            whenever(mockDesktopRepositoryInitializer.isInitialized).thenReturn(stateFlow)
             whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
@@ -136,13 +132,11 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Test
     fun testDisplayAdded_supportsDesks_desktopRepositoryInitializedTwice_createsDeskOnce() =
         testScope.runTest {
-            val stateFlow = MutableStateFlow(false)
-            whenever(mockDesktopRepositoryInitializer.isInitialized).thenReturn(stateFlow)
             whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
-            stateFlow.emit(true)
-            stateFlow.emit(true)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
             runCurrent()
 
             verify(mockDesktopTasksController, times(1)).createDesk(DEFAULT_DISPLAY)
@@ -151,13 +145,11 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Test
     fun testDisplayAdded_supportsDesks_desktopRepositoryInitialized_deskExists_doesNotCreateDesk() =
         testScope.runTest {
-            val stateFlow = MutableStateFlow(false)
-            whenever(mockDesktopRepositoryInitializer.isInitialized).thenReturn(stateFlow)
             whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
             whenever(mockDesktopRepository.getNumberOfDesks(DEFAULT_DISPLAY)).thenReturn(1)
 
             onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(DEFAULT_DISPLAY)
-            stateFlow.emit(true)
+            desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
             runCurrent()
 
             verify(mockDesktopTasksController, never()).createDesk(DEFAULT_DISPLAY)
@@ -202,5 +194,16 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     fun testDisconnectExternalDisplay() {
         onDisplaysChangedListenerCaptor.lastValue.onDisplayRemoved(externalDisplayId)
         verify(desktopDisplayModeController).refreshDisplayWindowingMode()
+    }
+
+    private class FakeDesktopRepositoryInitializer : DesktopRepositoryInitializer {
+        override var deskRecreationFactory: DesktopRepositoryInitializer.DeskRecreationFactory =
+            DesktopRepositoryInitializer.DeskRecreationFactory { _, _, deskId -> deskId }
+
+        override val isInitialized: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
+        override fun initialize(userRepositories: DesktopUserRepositories) {
+            isInitialized.value = true
+        }
     }
 }
