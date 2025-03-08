@@ -277,8 +277,10 @@ interface IWindowSession {
      *
      * @param window The window that is insets animaiton is running.
      * @param animatingTypes Indicates the currently animating insets types.
+     * @param imeStatsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    oneway void updateAnimatingTypes(IWindow window, int animatingTypes);
+    oneway void updateAnimatingTypes(IWindow window, int animatingTypes,
+            in @nullable ImeTracker.Token imeStatsToken);
 
     /**
      * Called when the system gesture exclusion has changed.

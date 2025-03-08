@@ -4734,7 +4734,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @EnforcePermission(android.Manifest.permission.MANAGE_APP_TOKENS)
     @Override
-    public void updateDisplayWindowAnimatingTypes(int displayId, @InsetsType int animatingTypes) {
+    public void updateDisplayWindowAnimatingTypes(int displayId, @InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         updateDisplayWindowAnimatingTypes_enforcePermission();
         if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
             final long origId = Binder.clearCallingIdentity();
@@ -4742,9 +4743,13 @@ public class WindowManagerService extends IWindowManager.Stub
                 synchronized (mGlobalLock) {
                     final DisplayContent dc = mRoot.getDisplayContent(displayId);
                     if (dc == null || dc.mRemoteInsetsControlTarget == null) {
+                        ImeTracker.forLogging().onFailed(statsToken,
+                                ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
                         return;
                     }
-                    dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes);
+                    ImeTracker.forLogging().onProgress(statsToken,
+                            ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
+                    dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes, statsToken);
                 }
             } finally {
                 Binder.restoreCallingIdentity(origId);

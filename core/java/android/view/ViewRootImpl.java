@@ -2550,9 +2550,11 @@ public final class ViewRootImpl implements ViewParent,
 
     /**
      * Notify the when the animating insets types have changed.
+     *
+     * @hide
      */
-    @VisibleForTesting
-    public void updateAnimatingTypes(@InsetsType int animatingTypes) {
+    public void updateAnimatingTypes(@InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         if (sToolkitSetFrameRateReadOnlyFlagValue) {
             boolean running = animatingTypes != 0;
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
@@ -2562,7 +2564,7 @@ public final class ViewRootImpl implements ViewParent,
             }
             mInsetsAnimationRunning = running;
             try {
-                mWindowSession.updateAnimatingTypes(mWindow, animatingTypes);
+                mWindowSession.updateAnimatingTypes(mWindow, animatingTypes, statsToken);
             } catch (RemoteException e) {
             }
         }

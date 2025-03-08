@@ -1208,8 +1208,9 @@ public class InsetsControllerTest {
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        verify(mTestHost, times(1)).updateAnimatingTypes(eq(types));
-        verify(mTestHost, times(1)).updateAnimatingTypes(eq(0) /* animatingTypes */);
+        verify(mTestHost, times(1)).updateAnimatingTypes(eq(types), any() /* statsToken */);
+        verify(mTestHost, times(1)).updateAnimatingTypes(eq(0) /* animatingTypes */,
+                any() /* statsToken */);
     }
 
     private void waitUntilNextFrame() throws Exception {

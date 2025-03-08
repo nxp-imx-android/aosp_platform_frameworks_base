@@ -424,7 +424,8 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     }
 
     @Override
-    void onAnimatingTypesChanged(InsetsControlTarget caller) {
+    void onAnimatingTypesChanged(InsetsControlTarget caller,
+            @Nullable ImeTracker.Token statsToken) {
         if (Flags.reportAnimatingInsetsTypes()) {
             final InsetsControlTarget controlTarget = getControlTarget();
             // If the IME is not being requested anymore and the animation is finished, we need to
@@ -432,8 +433,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             if (caller != null && caller == controlTarget && !caller.isRequestedVisible(
                     WindowInsets.Type.ime())
                     && (caller.getAnimatingTypes() & WindowInsets.Type.ime()) == 0) {
-                // TODO(b/353463205) check statsToken
-                invokeOnImeRequestedChangedListener(caller, null);
+                ImeTracker.forLogging().onFailed(statsToken,
+                        ImeTracker.PHASE_WM_NOTIFY_HIDE_ANIMATION_FINISHED);
+                invokeOnImeRequestedChangedListener(caller, statsToken);
+            } else {
+                ImeTracker.forLogging().onCancelled(statsToken,
+                        ImeTracker.PHASE_WM_NOTIFY_HIDE_ANIMATION_FINISHED);
             }
         }
     }
