@@ -82,6 +82,10 @@ class TypefaceVariantCacheImpl(var baseTypeface: Typeface, override val animatio
     }
 }
 
+interface TextAnimatorListener : TextInterpolatorListener {
+    fun onInvalidate() {}
+}
+
 /**
  * This class provides text animation between two styles.
  *
@@ -110,12 +114,18 @@ class TypefaceVariantCacheImpl(var baseTypeface: Typeface, override val animatio
 class TextAnimator(
     layout: Layout,
     private val typefaceCache: TypefaceVariantCache,
-    private val invalidateCallback: () -> Unit = {},
+    private val listener: TextAnimatorListener? = null,
 ) {
-    @VisibleForTesting var textInterpolator = TextInterpolator(layout, typefaceCache)
+    var textInterpolator = TextInterpolator(layout, typefaceCache, listener)
     @VisibleForTesting var createAnimator: () -> ValueAnimator = { ValueAnimator.ofFloat(1f) }
 
     var animator: ValueAnimator? = null
+
+    val progress: Float
+        get() = textInterpolator.progress
+
+    val linearProgress: Float
+        get() = textInterpolator.linearProgress
 
     val fontVariationUtils = FontVariationUtils()
 
@@ -288,8 +298,9 @@ class TextAnimator(
             animator = buildAnimator(animation).apply { start() }
         } else {
             textInterpolator.progress = 1f
+            textInterpolator.linearProgress = 1f
             textInterpolator.rebase()
-            invalidateCallback()
+            listener?.onInvalidate()
         }
     }
 
@@ -302,7 +313,7 @@ class TextAnimator(
             addUpdateListener {
                 textInterpolator.progress = it.animatedValue as Float
                 textInterpolator.linearProgress = it.currentPlayTime / it.duration.toFloat()
-                invalidateCallback()
+                listener?.onInvalidate()
             }
 
             addListener(
