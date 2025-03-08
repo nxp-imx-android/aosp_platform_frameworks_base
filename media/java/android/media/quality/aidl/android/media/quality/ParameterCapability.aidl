@@ -16,4 +16,4 @@
 
 package android.media.quality;
 
-parcelable ParameterCapability;
+parcelable ParameterCapability cpp_header "quality/MediaQualityManager.h";
