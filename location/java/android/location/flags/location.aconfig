@@ -167,4 +167,5 @@ flag {
     namespace: "location"
     description: "Flag for GNSS assistance interface"
     bug: "209078566"
+    is_exported: true
 }
