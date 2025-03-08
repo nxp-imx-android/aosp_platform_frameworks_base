@@ -757,7 +757,10 @@ public class CompanionAssociationActivity extends FragmentActivity implements
 
         mPermissionListAdapter.setPermissionType(permissionTypes);
         mPermissionListRecyclerView.setAdapter(mPermissionListAdapter);
-        mPermissionListRecyclerView.setLayoutManager(mPermissionsLayoutManager);
+        // Only attach the LinearLayoutManager if it's not already attached.
+        if (mPermissionListRecyclerView.getLayoutManager() == null) {
+            mPermissionListRecyclerView.setLayoutManager(mPermissionsLayoutManager);
+        }
 
         disableButtons();
 
