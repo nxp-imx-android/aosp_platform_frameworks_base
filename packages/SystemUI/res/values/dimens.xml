@@ -283,7 +283,7 @@
     <dimen name="notification_max_height">358dp</dimen>
 
     <!-- Height of a large promoted ongoing notification in the status bar -->
-    <dimen name="notification_max_height_for_promoted_ongoing">272dp</dimen>
+    <dimen name="notification_max_height_for_promoted_ongoing">218dp</dimen>
 
     <!-- Height of a heads up notification in the status bar for legacy custom views -->
     <dimen name="notification_max_heads_up_height_legacy">128dp</dimen>
@@ -1157,6 +1157,8 @@
     <dimen name="smart_action_button_icon_size">18dp</dimen>
     <dimen name="smart_action_button_icon_padding">8dp</dimen>
     <dimen name="smart_action_button_outline_stroke_width">2dp</dimen>
+    <dimen name="notification_2025_smart_reply_button_corner_radius">18dp</dimen>
+    <dimen name="notification_2025_smart_reply_button_min_height">48dp</dimen>
 
     <!-- Magic Action params. -->
     <!-- Corner radius = half of min_height to create rounded sides. -->
@@ -1341,19 +1343,6 @@
     <dimen name="qs_media_seekbar_progress_stroke_width">2dp</dimen>
     <dimen name="qs_media_session_collapsed_legacy_guideline">144dp</dimen>
     <dimen name="qs_media_session_collapsed_guideline">168dp</dimen>
-
-    <!-- Size of Smartspace media recommendations cards in the QSPanel carousel -->
-    <dimen name="qs_media_rec_default_width">380dp</dimen>
-    <dimen name="qs_media_rec_icon_top_margin">16dp</dimen>
-    <dimen name="qs_media_rec_album_icon_size">16dp</dimen>
-    <dimen name="qs_media_rec_album_size">88dp</dimen>
-    <dimen name="qs_media_rec_album_width">110dp</dimen>
-    <dimen name="qs_media_rec_album_height_expanded">108dp</dimen>
-    <dimen name="qs_media_rec_album_height_collapsed">77dp</dimen>
-    <dimen name="qs_media_rec_album_side_margin">16dp</dimen>
-    <dimen name="qs_media_rec_album_bottom_margin">8dp</dimen>
-    <dimen name="qs_media_rec_album_title_bottom_margin">22dp</dimen>
-    <dimen name="qs_media_rec_album_subtitle_height">12dp</dimen>
 
     <!-- Chipbar -->
     <!-- (Used for media tap-to-transfer chip for sender device and active unlock) -->
@@ -2179,7 +2168,7 @@
     <dimen name="volume_dialog_background_top_margin">-28dp</dimen>
 
     <dimen name="volume_dialog_window_margin">14dp</dimen>
-    <dimen name="volume_dialog_components_spacing">8dp</dimen>
+    <dimen name="volume_dialog_components_spacing">10dp</dimen>
     <dimen name="volume_dialog_floating_sliders_spacing">8dp</dimen>
     <dimen name="volume_dialog_floating_sliders_vertical_padding">10dp</dimen>
     <dimen name="volume_dialog_floating_sliders_vertical_padding_negative">
@@ -2202,11 +2191,6 @@
     <dimen name="volume_dialog_background_square_corner_radius">12dp</dimen>
 
     <dimen name="volume_dialog_ringer_drawer_margin">@dimen/volume_dialog_buttons_margin</dimen>
-    <!--
-     (volume_dialog_slider_width - volume_dialog_button_size) / 2
-     This centers ringer drawer against the volume slider
-    -->
-    <dimen name="volume_dialog_ringer_drawer_diff_end_margin">6dp</dimen>
     <dimen name="volume_dialog_ringer_drawer_button_size">@dimen/volume_dialog_button_size</dimen>
     <dimen name="volume_dialog_ringer_drawer_button_icon_radius">10dp</dimen>
     <dimen name="volume_dialog_ringer_selected_button_background_radius">20dp</dimen>

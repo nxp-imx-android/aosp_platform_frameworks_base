@@ -96,7 +96,7 @@
         <FrameLayout
             android:id="@+id/reply_action_container"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/notification_action_list_height"
+            android:layout_height="@dimen/notification_2025_action_list_height"
             android:gravity="center_vertical"
             android:orientation="horizontal" />
         <FrameLayout

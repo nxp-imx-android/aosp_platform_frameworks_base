@@ -56,13 +56,13 @@ import com.android.systemui.util.WallpaperController
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import com.android.wm.shell.appzoomout.AppZoomOut
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import java.io.PrintWriter
 import java.util.Optional
 import javax.inject.Inject
 import kotlin.math.max
 import kotlin.math.sign
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Responsible for blurring the notification shade window, and applying a zoom effect to the
@@ -97,6 +97,7 @@ constructor(
         private const val MIN_VELOCITY = -MAX_VELOCITY
         private const val INTERACTION_BLUR_FRACTION = 0.8f
         private const val ANIMATION_BLUR_FRACTION = 1f - INTERACTION_BLUR_FRACTION
+        private const val TRANSITION_THRESHOLD = 0.98f
         private const val TAG = "DepthController"
     }
 
@@ -163,6 +164,9 @@ constructor(
     /**
      * When launching an app from the shade, the animations progress should affect how blurry the
      * shade is, overriding the expansion amount.
+     *
+     * TODO(b/399617511): remove this once [Flags.notificationShadeBlur] is launched and the Shade
+     *   closing is actually instantaneous.
      */
     var blursDisabledForAppLaunch: Boolean = false
         set(value) {
@@ -192,8 +196,12 @@ constructor(
                 return
             }
 
-            shadeAnimation.animateTo(0)
-            shadeAnimation.finishIfRunning()
+            if (Flags.notificationShadeBlur()) {
+                shadeAnimation.skipTo(0)
+            } else {
+                shadeAnimation.animateTo(0)
+                shadeAnimation.finishIfRunning()
+            }
         }
         @Deprecated(
             message =
@@ -225,16 +233,10 @@ constructor(
             scheduleUpdate()
         }
 
-    /** Blur radius of the wake-up animation on this frame. */
-    private var wakeBlurRadius = 0f
-        set(value) {
-            if (field == value) return
-            field = value
-            scheduleUpdate()
-        }
+    private data class WakeAndUnlockBlurData(val radius: Float, val useZoom: Boolean = true)
 
-    /** Blur radius of the unlock animation on this frame. */
-    private var unlockBlurRadius = 0f
+    /** Blur radius of the wake and unlock animation on this frame, and whether to zoom out. */
+    private var wakeAndUnlockBlurData = WakeAndUnlockBlurData(0f)
         set(value) {
             if (field == value) return
             field = value
@@ -261,7 +263,7 @@ constructor(
             ShadeInterpolation.getNotificationScrimAlpha(qsPanelExpansion) * shadeExpansion
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(qsExpandedRatio))
         combinedBlur = max(combinedBlur, blurUtils.blurRadiusOfRatio(transitionToFullShadeProgress))
-        var shadeRadius = max(combinedBlur, max(wakeBlurRadius, unlockBlurRadius))
+        var shadeRadius = max(combinedBlur, wakeAndUnlockBlurData.radius)
 
         if (areBlursDisabledForAppLaunch || blursDisabledForUnlock) {
             shadeRadius = 0f
@@ -270,7 +272,9 @@ constructor(
         var blur = shadeRadius.toInt()
         // If the blur comes from waking up, we don't want to zoom out the background
         val zoomOut =
-            if (shadeRadius != wakeBlurRadius) blurRadiusToZoomOut(blurRadius = shadeRadius) else 0f
+            if (shadeRadius != wakeAndUnlockBlurData.radius|| wakeAndUnlockBlurData.useZoom)
+                blurRadiusToZoomOut(blurRadius = shadeRadius)
+            else 0f
         // Make blur be 0 if it is necessary to stop blur effect.
         if (scrimsVisible) {
             if (!Flags.notificationShadeBlur()) {
@@ -355,14 +359,14 @@ constructor(
                         startDelay = keyguardStateController.keyguardFadingAwayDelay
                         interpolator = Interpolators.FAST_OUT_SLOW_IN
                         addUpdateListener { animation: ValueAnimator ->
-                            unlockBlurRadius =
-                                blurUtils.blurRadiusOfRatio(animation.animatedValue as Float)
+                            wakeAndUnlockBlurData =
+                                WakeAndUnlockBlurData(blurUtils.blurRadiusOfRatio(animation.animatedValue as Float))
                         }
                         addListener(
                             object : AnimatorListenerAdapter() {
                                 override fun onAnimationEnd(animation: Animator) {
                                     keyguardAnimator = null
-                                    unlockBlurRadius = 0f
+                                    wakeAndUnlockBlurData = WakeAndUnlockBlurData(0f)
                                 }
                             }
                         )
@@ -404,12 +408,15 @@ constructor(
         }
 
     private fun updateWakeBlurRadius(ratio: Float) {
-        wakeBlurRadius =
-            if (!wallpaperSupportsAmbientMode) {
-                0f
-            } else {
-                blurUtils.blurRadiusOfRatio(ratio)
-            }
+        wakeAndUnlockBlurData = WakeAndUnlockBlurData(getNewWakeBlurRadius(ratio), false)
+    }
+
+    private fun getNewWakeBlurRadius(ratio: Float): Float {
+        return if (!wallpaperSupportsAmbientMode) {
+            0f
+        } else {
+            blurUtils.blurRadiusOfRatio(ratio)
+        }
     }
 
     init {
@@ -436,7 +443,11 @@ constructor(
         applicationScope.launch {
             wallpaperInteractor.wallpaperSupportsAmbientMode.collect { supported ->
                 wallpaperSupportsAmbientMode = supported
-                updateWakeBlurRadius(prevDozeAmount)
+                if (getNewWakeBlurRadius(prevDozeAmount) == wakeAndUnlockBlurData.radius
+                    && !wakeAndUnlockBlurData.useZoom) {
+                    // Update wake and unlock radius only if the previous value comes from wake-up.
+                    updateWakeBlurRadius(prevDozeAmount)
+                }
             }
         }
         initBlurListeners()
@@ -513,6 +524,22 @@ constructor(
         prevTimestamp = timestamp
 
         scheduleUpdate()
+    }
+
+    fun onTransitionAnimationProgress(progress: Float) {
+        if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) return
+        // Because the Shade takes a few frames to actually trigger the unblur after a transition
+        // has ended, we need to disable it manually, or the opening window itself will be blurred
+        // for a few frames due to relative ordering. We do this towards the end, so that the
+        // window is already covering the background and the unblur is not visible.
+        if (progress >= TRANSITION_THRESHOLD && shadeAnimation.radius > 0) {
+            blursDisabledForAppLaunch = true
+        }
+    }
+
+    fun onTransitionAnimationEnd() {
+        if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) return
+        blursDisabledForAppLaunch = false
     }
 
     private fun updateShadeAnimationBlur(
@@ -613,8 +640,8 @@ constructor(
             it.println("shouldApplyShadeBlur: ${shouldApplyShadeBlur()}")
             it.println("shadeAnimation: ${shadeAnimation.radius}")
             it.println("brightnessMirrorRadius: ${brightnessMirrorSpring.radius}")
-            it.println("wakeBlur: $wakeBlurRadius")
-            it.println("unlockBlur: $wakeBlurRadius")
+            it.println("wakeAndUnlockBlurRadius: ${wakeAndUnlockBlurData.radius}")
+            it.println("wakeAndUnlockBlurUsesZoom: ${wakeAndUnlockBlurData.useZoom}")
             it.println("blursDisabledForAppLaunch: $blursDisabledForAppLaunch")
             it.println("appLaunchTransitionIsInProgress: $appLaunchTransitionIsInProgress")
             it.println("qsPanelExpansion: $qsPanelExpansion")
@@ -660,11 +687,38 @@ constructor(
             springAnimation.addEndListener { _, _, _, _ -> pendingRadius = -1 }
         }
 
+        /**
+         * Starts an animation to [newRadius], or updates the current one if already ongoing.
+         * IMPORTANT: do NOT use this method + [finishIfRunning] to instantaneously change the value
+         * of the animation. The change will NOT be instantaneous. Use [skipTo] instead.
+         *
+         * Explanation:
+         * 1. If idle, [SpringAnimation.animateToFinalPosition] requests a start to the animation.
+         * 2. On the first frame after an idle animation is requested to start, the animation simply
+         *    acquires the starting value and does nothing else.
+         * 3. [SpringAnimation.skipToEnd] requests a fast-forward to the end value, but this happens
+         *    during calculation of the next animation value. Because on the first frame no such
+         *    calculation happens (point #2), there is one lagging frame where we still see the old
+         *    value.
+         */
         fun animateTo(newRadius: Int) {
             if (pendingRadius == newRadius) {
                 return
             }
             pendingRadius = newRadius
+            springAnimation.animateToFinalPosition(newRadius.toFloat())
+        }
+
+        /**
+         * Instantaneously set a new blur radius to this animation. Always use this instead of
+         * [animateTo] and [finishIfRunning] to make sure that the change takes effect in the next
+         * frame. See the doc for [animateTo] for an explanation.
+         */
+        fun skipTo(newRadius: Int) {
+            if (pendingRadius == newRadius) return
+            pendingRadius = newRadius
+            springAnimation.cancel()
+            springAnimation.setStartValue(newRadius.toFloat())
             springAnimation.animateToFinalPosition(newRadius.toFloat())
         }
 

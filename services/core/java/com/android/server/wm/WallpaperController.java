@@ -21,7 +21,6 @@ import static android.app.WallpaperManager.COMMAND_UNFREEZE;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_GOING_AWAY_WITH_WALLPAPER;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
@@ -58,7 +57,8 @@ import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
-import com.android.server.wallpaper.WallpaperCropper.WallpaperCropUtils;
+import com.android.server.wallpaper.WallpaperCropper;
+import com.android.server.wallpaper.WallpaperDefaultDisplayInfo;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -72,7 +72,6 @@ import java.util.function.Consumer;
 class WallpaperController {
     private static final String TAG = TAG_WITH_CLASS_NAME ? "WallpaperController" : TAG_WM;
     private WindowManagerService mService;
-    private WallpaperCropUtils mWallpaperCropUtils = null;
     private DisplayContent mDisplayContent;
 
     // Larger index has higher z-order.
@@ -117,43 +116,25 @@ class WallpaperController {
 
     private boolean mShouldOffsetWallpaperCenter;
 
+    // This is for WallpaperCropper, which has cropping logic for the default display only.
+    // TODO(b/400685784) make the WallpaperCropper operate on every display independently
+    private final WallpaperDefaultDisplayInfo mDefaultDisplayInfo;
+
     private final ToBooleanFunction<WindowState> mFindWallpaperTargetFunction = w -> {
-        final boolean useShellTransition = w.mTransitionController.isShellTransitionsEnabled();
-        if (!useShellTransition) {
-            if (w.mActivityRecord != null && !w.mActivityRecord.isVisible()
-                    && !w.mActivityRecord.isAnimating(TRANSITION | PARENTS)) {
-                // If this window's app token is hidden and not animating, it is of no interest.
-                if (DEBUG_WALLPAPER) Slog.v(TAG, "Skipping hidden and not animating token: " + w);
-                return false;
-            }
-        } else {
-            final ActivityRecord ar = w.mActivityRecord;
-            // The animating window can still be visible on screen if it is in transition, so we
-            // should check whether this window can be wallpaper target even when visibleRequested
-            // is false.
-            if (ar != null && !ar.isVisibleRequested() && !ar.isVisible()) {
-                // An activity that is not going to remain visible shouldn't be the target.
-                return false;
-            }
+        final ActivityRecord ar = w.mActivityRecord;
+        // The animating window can still be visible on screen if it is in transition, so we
+        // should check whether this window can be wallpaper target even when visibleRequested
+        // is false.
+        if (ar != null && !ar.isVisibleRequested() && !ar.isVisible()) {
+            // An activity that is not going to remain visible shouldn't be the target.
+            return false;
         }
         if (DEBUG_WALLPAPER) Slog.v(TAG, "Win " + w + ": isOnScreen=" + w.isOnScreen()
                 + " mDrawState=" + w.mWinAnimator.mDrawState);
 
-        final WindowContainer animatingContainer = w.mActivityRecord != null
-                ? w.mActivityRecord.getAnimatingContainer() : null;
-        if (!useShellTransition && animatingContainer != null
-                && animatingContainer.isAnimating(TRANSITION | PARENTS)
-                && AppTransition.isKeyguardGoingAwayTransitOld(animatingContainer.mTransit)
-                && (animatingContainer.mTransitFlags
-                & TRANSIT_FLAG_KEYGUARD_GOING_AWAY_WITH_WALLPAPER) != 0) {
-            // Keep the wallpaper visible when Keyguard is going away.
-            mFindResults.setUseTopWallpaperAsTarget(true);
-        }
-
         if (mService.mPolicy.isKeyguardLocked()) {
             if (w.canShowWhenLocked()) {
-                if (mService.mPolicy.isKeyguardOccluded() || (useShellTransition
-                        ? w.inTransition() : mService.mPolicy.isKeyguardUnoccluding())) {
+                if (mService.mPolicy.isKeyguardOccluded() || w.inTransition()) {
                     // The lowest show-when-locked window decides whether to show wallpaper.
                     mFindResults.mNeedsShowWhenLockedWallpaper = !isFullscreen(w.mAttrs)
                             || (w.mActivityRecord != null && !w.mActivityRecord.fillsParent());
@@ -176,15 +157,11 @@ class WallpaperController {
             }
         }
 
-        final boolean animationWallpaper = animatingContainer != null
-                && animatingContainer.getAnimation() != null
-                && animatingContainer.getAnimation().getShowWallpaper();
-        final boolean hasWallpaper = w.hasWallpaper() || animationWallpaper;
         if (isBackNavigationTarget(w)) {
             if (DEBUG_WALLPAPER) Slog.v(TAG, "Found back animation wallpaper target: " + w);
             mFindResults.setWallpaperTarget(w);
             return true;
-        } else if (hasWallpaper
+        } else if (w.hasWallpaper()
                 && (w.mActivityRecord != null ? w.isOnScreen() : w.isReadyForDisplay())) {
             if (DEBUG_WALLPAPER) Slog.v(TAG, "Found wallpaper target: " + w);
             mFindResults.setWallpaperTarget(w);
@@ -225,12 +202,14 @@ class WallpaperController {
     WallpaperController(WindowManagerService service, DisplayContent displayContent) {
         mService = service;
         mDisplayContent = displayContent;
+        WindowManager windowManager = service.mContext.getSystemService(WindowManager.class);
         Resources resources = service.mContext.getResources();
         mMinWallpaperScale =
                 resources.getFloat(com.android.internal.R.dimen.config_wallpaperMinScale);
         mMaxWallpaperScale = resources.getFloat(R.dimen.config_wallpaperMaxScale);
         mShouldOffsetWallpaperCenter = resources.getBoolean(
                 com.android.internal.R.bool.config_offsetWallpaperToCenterOfLargestDisplay);
+        mDefaultDisplayInfo = new WallpaperDefaultDisplayInfo(windowManager, resources);
     }
 
     void resetLargestDisplay(Display display) {
@@ -271,10 +250,6 @@ class WallpaperController {
             }
         }
         return largestDisplaySize;
-    }
-
-    void setWallpaperCropUtils(WallpaperCropUtils wallpaperCropUtils) {
-        mWallpaperCropUtils = wallpaperCropUtils;
     }
 
     WindowState getWallpaperTarget() {
@@ -379,16 +354,12 @@ class WallpaperController {
         int offsetY;
 
         if (multiCrop()) {
-            if (mWallpaperCropUtils == null) {
-                Slog.e(TAG, "Update wallpaper offsets before the system is ready. Aborting");
-                return false;
-            }
             Point bitmapSize = new Point(
                     wallpaperWin.mRequestedWidth, wallpaperWin.mRequestedHeight);
             SparseArray<Rect> cropHints = token.getCropHints();
             wallpaperFrame = bitmapSize.x <= 0 || bitmapSize.y <= 0 ? wallpaperWin.getFrame()
-                    : mWallpaperCropUtils.getCrop(screenSize, bitmapSize, cropHints,
-                            wallpaperWin.isRtl());
+                    : WallpaperCropper.getCrop(screenSize, mDefaultDisplayInfo, bitmapSize,
+                            cropHints, wallpaperWin.isRtl());
             int frameWidth = wallpaperFrame.width();
             int frameHeight = wallpaperFrame.height();
             float frameRatio = (float) frameWidth / frameHeight;

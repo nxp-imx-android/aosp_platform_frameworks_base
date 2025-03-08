@@ -106,13 +106,23 @@ constructor(@NotificationHeadsUpLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logAvalancheDuration(thisKey: String, duration: Int, reason: String, nextKey: String) {
+    fun logAvalancheDuration(
+        thisKey: String,
+        duration: RemainingDuration,
+        reason: String,
+        nextKey: String,
+    ) {
+        val durationMs =
+            when (duration) {
+                is RemainingDuration.UpdatedDuration -> duration.duration
+                is RemainingDuration.HideImmediately -> 0
+            }
         buffer.log(
             TAG,
             INFO,
             {
                 str1 = thisKey
-                int1 = duration
+                int1 = durationMs
                 str2 = reason
                 str3 = nextKey
             },

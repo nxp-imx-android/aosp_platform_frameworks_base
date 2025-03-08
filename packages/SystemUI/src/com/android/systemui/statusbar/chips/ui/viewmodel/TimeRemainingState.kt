@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
-import android.os.SystemClock
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -39,7 +38,14 @@ import kotlinx.coroutines.delay
  * Manages state and updates for the duration remaining between now and a given time in the future.
  */
 class TimeRemainingState(private val timeSource: TimeSource, private val futureTimeMillis: Long) {
-    private var durationRemaining by mutableStateOf(Duration.ZERO)
+    // Start with the right duration from the outset so we don't use "now" as an initial value.
+    private var durationRemaining by
+        mutableStateOf(
+            calculateDurationRemaining(
+                currentTimeMillis = timeSource.getCurrentTime(),
+                futureTimeMillis = futureTimeMillis,
+            )
+        )
     private var startTimeMillis: Long = 0
 
     /**
@@ -56,7 +62,11 @@ class TimeRemainingState(private val timeSource: TimeSource, private val futureT
         while (true) {
             val currentTime = timeSource.getCurrentTime()
             durationRemaining =
-                (futureTimeMillis - currentTime).toDuration(DurationUnit.MILLISECONDS)
+                calculateDurationRemaining(
+                    currentTimeMillis = currentTime,
+                    futureTimeMillis = futureTimeMillis,
+                )
+
             // No need to update if duration is more than 1 minute in the past. Because, we will
             // stop displaying anything.
             if (durationRemaining.inWholeMilliseconds < -1.minutes.inWholeMilliseconds) {
@@ -65,6 +75,13 @@ class TimeRemainingState(private val timeSource: TimeSource, private val futureT
             val delaySkewMillis = (currentTime - startTimeMillis) % 1000L
             delay(calculateNextUpdateDelay(durationRemaining) - delaySkewMillis)
         }
+    }
+
+    private fun calculateDurationRemaining(
+        currentTimeMillis: Long,
+        futureTimeMillis: Long,
+    ): Duration {
+        return (futureTimeMillis - currentTimeMillis).toDuration(DurationUnit.MILLISECONDS)
     }
 
     private fun calculateNextUpdateDelay(duration: Duration): Long {
@@ -85,7 +102,7 @@ class TimeRemainingState(private val timeSource: TimeSource, private val futureT
 @Composable
 fun rememberTimeRemainingState(
     futureTimeMillis: Long,
-    timeSource: TimeSource = remember { TimeSource { SystemClock.elapsedRealtime() } },
+    timeSource: TimeSource = remember { TimeSource { System.currentTimeMillis() } },
 ): TimeRemainingState {
 
     val state =

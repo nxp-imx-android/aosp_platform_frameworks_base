@@ -82,6 +82,7 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 statusBarChipIconView = testIconView,
                 contentIntent = testIntent,
                 promotedContent = testPromotedContent,
+                isAppVisible = false,
             )
 
             // Verify model is InCall and has the correct icon, intent, and promoted content.
@@ -92,12 +93,12 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             assertThat(model.intent).isSameInstanceAs(testIntent)
             assertThat(model.notificationKey).isEqualTo(key)
             assertThat(model.promotedContent).isSameInstanceAs(testPromotedContent)
+            assertThat(model.isAppVisible).isFalse()
         }
 
     @Test
     fun ongoingCallNotification_setsAllFields_withAppVisible() =
         kosmos.runTest {
-            kosmos.activityManagerRepository.fake.startingIsAppVisibleValue = true
             val latest by collectLastValue(underTest.ongoingCallState)
 
             // Set up notification with icon view and intent
@@ -112,17 +113,19 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                 statusBarChipIconView = testIconView,
                 contentIntent = testIntent,
                 promotedContent = testPromotedContent,
+                isAppVisible = true,
             )
 
-            // Verify model is InCallWithVisibleApp and has the correct icon, intent, and promoted
-            // content.
-            assertThat(latest).isInstanceOf(OngoingCallModel.InCallWithVisibleApp::class.java)
-            val model = latest as OngoingCallModel.InCallWithVisibleApp
+            // Verify model is InCall with visible app and has the correct icon, intent, and
+            // promoted content.
+            assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+            val model = latest as OngoingCallModel.InCall
             assertThat(model.startTimeMs).isEqualTo(startTimeMs)
             assertThat(model.notificationIconView).isSameInstanceAs(testIconView)
             assertThat(model.intent).isSameInstanceAs(testIntent)
             assertThat(model.notificationKey).isEqualTo(key)
             assertThat(model.promotedContent).isSameInstanceAs(testPromotedContent)
+            assertThat(model.isAppVisible).isTrue()
         }
 
     @Test
@@ -139,23 +142,23 @@ class OngoingCallInteractorTest : SysuiTestCase() {
     @Test
     fun ongoingCallNotification_appVisibleInitially_emitsInCallWithVisibleApp() =
         kosmos.runTest {
-            kosmos.activityManagerRepository.fake.startingIsAppVisibleValue = true
             val latest by collectLastValue(underTest.ongoingCallState)
 
-            addOngoingCallState(uid = UID)
+            addOngoingCallState(uid = UID, isAppVisible = true)
 
-            assertThat(latest).isInstanceOf(OngoingCallModel.InCallWithVisibleApp::class.java)
+            assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((latest as OngoingCallModel.InCall).isAppVisible).isTrue()
         }
 
     @Test
     fun ongoingCallNotification_appNotVisibleInitially_emitsInCall() =
         kosmos.runTest {
-            kosmos.activityManagerRepository.fake.startingIsAppVisibleValue = false
             val latest by collectLastValue(underTest.ongoingCallState)
 
-            addOngoingCallState(uid = UID)
+            addOngoingCallState(uid = UID, isAppVisible = false)
 
             assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((latest as OngoingCallModel.InCall).isAppVisible).isFalse()
         }
 
     @Test
@@ -164,17 +167,19 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.ongoingCallState)
 
             // Start with notification and app not visible
-            kosmos.activityManagerRepository.fake.startingIsAppVisibleValue = false
-            addOngoingCallState(uid = UID)
+            addOngoingCallState(uid = UID, isAppVisible = false)
             assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((latest as OngoingCallModel.InCall).isAppVisible).isFalse()
 
             // App becomes visible
             kosmos.activityManagerRepository.fake.setIsAppVisible(UID, true)
-            assertThat(latest).isInstanceOf(OngoingCallModel.InCallWithVisibleApp::class.java)
+            assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((latest as OngoingCallModel.InCall).isAppVisible).isTrue()
 
             // App becomes invisible again
             kosmos.activityManagerRepository.fake.setIsAppVisible(UID, false)
             assertThat(latest).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((latest as OngoingCallModel.InCall).isAppVisible).isFalse()
         }
 
     @Test
@@ -238,18 +243,17 @@ class OngoingCallInteractorTest : SysuiTestCase() {
                         .ongoingProcessRequiresStatusBarVisible
                 )
 
-            kosmos.activityManagerRepository.fake.startingIsAppVisibleValue = false
-
-            addOngoingCallState(uid = UID)
+            addOngoingCallState(uid = UID, isAppVisible = false)
 
             assertThat(ongoingCallState).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((ongoingCallState as OngoingCallModel.InCall).isAppVisible).isFalse()
             assertThat(requiresStatusBarVisibleInRepository).isTrue()
             assertThat(requiresStatusBarVisibleInWindowController).isTrue()
 
             kosmos.activityManagerRepository.fake.setIsAppVisible(UID, true)
 
-            assertThat(ongoingCallState)
-                .isInstanceOf(OngoingCallModel.InCallWithVisibleApp::class.java)
+            assertThat(ongoingCallState).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((ongoingCallState as OngoingCallModel.InCall).isAppVisible).isTrue()
             assertThat(requiresStatusBarVisibleInRepository).isFalse()
             assertThat(requiresStatusBarVisibleInWindowController).isFalse()
         }
@@ -265,6 +269,7 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             addOngoingCallState()
 
             assertThat(ongoingCallState).isInstanceOf(OngoingCallModel.InCall::class.java)
+            assertThat((ongoingCallState as OngoingCallModel.InCall).isAppVisible).isFalse()
             verify(kosmos.swipeStatusBarAwayGestureHandler, never())
                 .addOnGestureDetectedCallback(any(), any())
         }

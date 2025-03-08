@@ -22,6 +22,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.appcompat.content.res.AppCompatResources
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.DebugLogger.debugLog
 import com.android.systemui.res.R
 import com.android.systemui.screenshot.ScreenshotEvent.SCREENSHOT_EDIT_TAPPED
@@ -34,6 +35,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.UUID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Provides actions for screenshots. This class can be overridden by a vendor-specific SysUI
@@ -68,6 +71,7 @@ constructor(
     private val context: Context,
     private val uiEventLogger: UiEventLogger,
     private val actionIntentCreator: ActionIntentCreator,
+    @Application private val applicationScope: CoroutineScope,
     @Assisted val requestId: UUID,
     @Assisted val request: ScreenshotData,
     @Assisted val actionExecutor: ActionExecutor,
@@ -75,7 +79,7 @@ constructor(
 ) : ScreenshotActionsProvider {
     private var addedScrollChip = false
     private var onScrollClick: Runnable? = null
-    private var pendingAction: ((ScreenshotSavedResult) -> Unit)? = null
+    private var pendingAction: (suspend (ScreenshotSavedResult) -> Unit)? = null
     private var result: ScreenshotSavedResult? = null
     private var webUri: Uri? = null
 
@@ -166,15 +170,16 @@ constructor(
             return
         }
         this.result = result
-        pendingAction?.invoke(result)
+        pendingAction?.also { applicationScope.launch { it.invoke(result) } }
     }
 
     override fun onAssistContent(assistContent: AssistContent?) {
         webUri = assistContent?.webUri
     }
 
-    private fun onDeferrableActionTapped(onResult: (ScreenshotSavedResult) -> Unit) {
-        result?.let { onResult.invoke(it) } ?: run { pendingAction = onResult }
+    private fun onDeferrableActionTapped(onResult: suspend (ScreenshotSavedResult) -> Unit) {
+        result?.let { applicationScope.launch { onResult.invoke(it) } }
+            ?: run { pendingAction = onResult }
     }
 
     @AssistedFactory
@@ -188,6 +193,6 @@ constructor(
     }
 
     companion object {
-        private const val TAG = "ScreenshotActionsProvider"
+        private const val TAG = "ScreenshotActionsPrvdr"
     }
 }

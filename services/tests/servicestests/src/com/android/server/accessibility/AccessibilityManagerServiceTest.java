@@ -2374,14 +2374,6 @@ public class AccessibilityManagerServiceTest {
         return lockState;
     }
 
-    private void assertStartActivityWithExpectedComponentName(Context mockContext,
-            String componentName) {
-        verify(mockContext).startActivityAsUser(mIntentArgumentCaptor.capture(),
-                any(Bundle.class), any(UserHandle.class));
-        assertThat(mIntentArgumentCaptor.getValue().getStringExtra(
-                Intent.EXTRA_COMPONENT_NAME)).isEqualTo(componentName);
-    }
-
     private void assertStartActivityWithExpectedShortcutType(Context mockContext,
             @UserShortcutType int shortcutType) {
         verify(mockContext).startActivityAsUser(mIntentArgumentCaptor.capture(),
@@ -2482,10 +2474,6 @@ public class AccessibilityManagerServiceTest {
 
         Context getMockContext() {
             return mMockContext;
-        }
-
-        public void addMockUserContext(int userId, Context context) {
-            mMockUserContexts.put(userId, context);
         }
 
         @Override

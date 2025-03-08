@@ -207,6 +207,44 @@ constructor(
     val qsExpandFraction: Flow<Float> =
         shadeInteractor.qsExpansion.dumpWhileCollecting("qsExpandFraction")
 
+    /**
+     * Fraction of the LockScreen -> Shade transition. 0..1 while the transition in progress, and
+     * snaps back to 0 when it is Idle.
+     */
+    val lockScreenToShadeTransitionProgress: Flow<Float> =
+        combine(
+                shadeInteractor.shadeExpansion,
+                shadeModeInteractor.shadeMode,
+                sceneInteractor.transitionState,
+            ) { shadeExpansion, _, transitionState ->
+                when (transitionState) {
+                    is Idle -> 0f
+                    is ChangeScene ->
+                        if (
+                            transitionState.isTransitioning(
+                                from = Scenes.Lockscreen,
+                                to = Scenes.Shade,
+                            )
+                        ) {
+                            shadeExpansion
+                        } else {
+                            0f
+                        }
+
+                    is Transition.OverlayTransition ->
+                        if (
+                            transitionState.currentScene == Scenes.Lockscreen &&
+                                transitionState.isTransitioning(to = Overlays.NotificationsShade)
+                        ) {
+                            shadeExpansion
+                        } else {
+                            0f
+                        }
+                }
+            }
+            .distinctUntilChanged()
+            .dumpWhileCollecting("lockScreenToShadeTransitionProgress")
+
     val isOccluded: Flow<Boolean> =
         bouncerInteractor.bouncerExpansion
             .map { it == 1f }
@@ -266,7 +304,7 @@ constructor(
         combine(shadeModeInteractor.shadeMode, shadeInteractor.qsExpansion) { shadeMode, qsExpansion
                 ->
                 when (shadeMode) {
-                    is ShadeMode.Dual -> false
+                    is ShadeMode.Dual,
                     is ShadeMode.Split -> true
                     is ShadeMode.Single -> qsExpansion < 0.5f
                 }

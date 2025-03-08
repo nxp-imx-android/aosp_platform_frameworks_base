@@ -22,9 +22,13 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.systemui.qs.panels.ui.viewmodel.TileGridViewModel
 
 @Composable
-fun ContentScope.TileGrid(viewModel: TileGridViewModel, modifier: Modifier = Modifier) {
+fun ContentScope.TileGrid(
+    viewModel: TileGridViewModel,
+    modifier: Modifier = Modifier,
+    listening: () -> Boolean = { true },
+) {
     val gridLayout = viewModel.gridLayout
     val tiles = viewModel.tileViewModels
 
-    with(gridLayout) { TileGrid(tiles, modifier) }
+    with(gridLayout) { TileGrid(tiles, modifier, listening) }
 }

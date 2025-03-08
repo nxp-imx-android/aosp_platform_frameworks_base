@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.display
 
+import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import android.view.Display.TYPE_EXTERNAL
 import android.view.MotionEvent
@@ -31,6 +32,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.shade.data.repository.statusBarTouchShadeDisplayPolicy
 import com.android.systemui.shade.domain.interactor.notificationElement
 import com.android.systemui.shade.domain.interactor.qsElement
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
@@ -41,6 +43,7 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
 class StatusBarTouchShadeDisplayPolicyTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope

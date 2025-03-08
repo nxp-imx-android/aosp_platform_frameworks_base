@@ -103,6 +103,8 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
         whenever(internetWifiEntry.hasInternetAccess()).thenReturn(true)
         whenever(wifiEntries.size).thenReturn(1)
         whenever(internetDetailsContentController.getDialogTitleText()).thenReturn(TITLE)
+        whenever(internetDetailsContentController.getSubtitleText(ArgumentMatchers.anyBoolean()))
+            .thenReturn("")
         whenever(internetDetailsContentController.getMobileNetworkTitle(ArgumentMatchers.anyInt()))
             .thenReturn(MOBILE_NETWORK_TITLE)
         whenever(
@@ -128,15 +130,13 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
                 internetDetailsContentController,
                 canConfigMobileData = true,
                 canConfigWifi = true,
-                coroutineScope = scope,
-                context = mContext,
                 uiEventLogger = mock<UiEventLogger>(),
                 handler = handler,
                 backgroundExecutor = bgExecutor,
                 keyguard = keyguard,
             )
 
-        internetDetailsContentManager.bind(contentView)
+        internetDetailsContentManager.bind(contentView, scope)
         internetDetailsContentManager.adapter = internetAdapter
         internetDetailsContentManager.connectedWifiEntry = internetWifiEntry
         internetDetailsContentManager.wifiEntriesCount = wifiEntries.size
@@ -774,6 +774,26 @@ class InternetDetailsContentManagerTest : SysuiTestCase() {
             internetDetailsContentManager.lifecycleOwner!!
         ) {
             assertThat(sharedWifiButton?.visibility).isEqualTo(View.VISIBLE)
+        }
+    }
+
+    @Test
+    fun updateTitleAndSubtitle() {
+        assertThat(internetDetailsContentManager.title).isEqualTo("Internet")
+        assertThat(internetDetailsContentManager.subTitle).isEqualTo("")
+
+        whenever(internetDetailsContentController.getDialogTitleText()).thenReturn("New title")
+        whenever(internetDetailsContentController.getSubtitleText(ArgumentMatchers.anyBoolean()))
+            .thenReturn("New subtitle")
+
+        internetDetailsContentManager.updateContent(true)
+        bgExecutor.runAllReady()
+
+        internetDetailsContentManager.internetContentData.observe(
+            internetDetailsContentManager.lifecycleOwner!!
+        ) {
+            assertThat(internetDetailsContentManager.title).isEqualTo("New title")
+            assertThat(internetDetailsContentManager.subTitle).isEqualTo("New subtitle")
         }
     }
 

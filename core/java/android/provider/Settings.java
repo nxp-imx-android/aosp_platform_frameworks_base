@@ -8651,6 +8651,34 @@ public final class Settings {
         public static final String DOCKED_CLOCK_FACE = "docked_clock_face";
 
         /**
+         * Setting to indicate that content filters should be enabled on web browsers.
+         *
+         * <ul>
+         *   <li>0 = Allow all sites
+         *   <li>1 = Try to block explicit sites
+         * </ul>
+         *
+         * @hide
+         */
+        @Readable
+        public static final String BROWSER_CONTENT_FILTERS_ENABLED =
+                "browser_content_filters_enabled";
+
+        /**
+         * Setting to indicate that content filters should be enabled in web search engines.
+         *
+         * <ul>
+         *   <li>0 = Off
+         *   <li>1 = Filter
+         * </ul>
+         *
+         * @hide
+         */
+        @Readable
+        public static final String SEARCH_CONTENT_FILTERS_ENABLED =
+                "search_content_filters_enabled";
+
+        /**
          * Set by the system to track if the user needs to see the call to action for
          * the lockscreen notification policy.
          * @hide
@@ -9463,24 +9491,6 @@ public final class Settings {
          */
         public static final String REDUCE_BRIGHT_COLORS_PERSIST_ACROSS_REBOOTS =
                 "reduce_bright_colors_persist_across_reboots";
-
-        /**
-         * Setting that specifies whether Even Dimmer - a feature that allows the brightness
-         * slider to go below what the display can conventionally do, should be enabled.
-         *
-         * @hide
-         */
-        public static final String EVEN_DIMMER_ACTIVATED =
-                "even_dimmer_activated";
-
-        /**
-         * Setting that specifies which nits level Even Dimmer should allow the screen brightness
-         * to go down to.
-         *
-         * @hide
-         */
-        public static final String EVEN_DIMMER_MIN_NITS =
-                "even_dimmer_min_nits";
 
         /**
          * Setting that holds EM_VALUE (proprietary)
@@ -10601,7 +10611,61 @@ public final class Settings {
          *
          * @hide
          */
+        @TestApi
+        @Readable
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi purely for CTS support.
         public static final String GLANCEABLE_HUB_ENABLED = "glanceable_hub_enabled";
+
+        /**
+         * Indicates that glanceable hub should never be started automatically.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_NEVER = 0;
+
+        /**
+         * Indicates that glanceable hub should be started when charging.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_CHARGING = 1;
+
+        /**
+         * Indicates that glanceable hub should be started when charging and upright.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_CHARGING_UPRIGHT = 2;
+
+        /**
+         * Indicates that glanceable hub should be started when docked.
+         *
+         * @hide
+         */
+        public static final int GLANCEABLE_HUB_START_DOCKED = 3;
+
+        /** @hide */
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef({
+                GLANCEABLE_HUB_START_NEVER,
+                GLANCEABLE_HUB_START_CHARGING,
+                GLANCEABLE_HUB_START_CHARGING_UPRIGHT,
+                GLANCEABLE_HUB_START_DOCKED,
+        })
+        public @interface WhenToStartGlanceableHub {
+        }
+
+        /**
+         * Indicates when to start glanceable hub. Possible values are:
+         * 0: Never
+         * 1: While charging always
+         * 2: While upright and charging
+         * 3: While docked
+         *
+         * @hide
+         */
+        public static final String WHEN_TO_START_GLANCEABLE_HUB =
+                "when_to_start_glanceable_hub";
 
         /**
          * Whether home controls are enabled to be shown over the screensaver by the user.
@@ -11145,6 +11209,12 @@ public final class Settings {
          */
         @Readable
         public static final String DOUBLE_TAP_TO_WAKE = "double_tap_to_wake";
+
+        /**
+         * Controls whether double tap to sleep is enabled.
+         * @hide
+         */
+        public static final String DOUBLE_TAP_TO_SLEEP = "double_tap_to_sleep";
 
         /**
          * The current assistant component. It could be a voice interaction service,
@@ -12512,6 +12582,48 @@ public final class Settings {
          */
         public static final String ACCESSIBILITY_MAGNIFICATION_ALWAYS_ON_ENABLED =
                 "accessibility_magnification_always_on_enabled";
+
+        /**
+         * Controls how the magnification follows the cursor.
+         *
+         * @hide
+         */
+        public static final String ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE =
+                "accessibility_magnification_cursor_following_mode";
+
+        /**
+         * Magnification cursor following mode value for the continuous mode.
+         *
+         * @hide
+         */
+        public static final int ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS = 0;
+
+        /**
+         * Magnification cursor following mode value for the center mode.
+         *
+         * @hide
+         */
+        public static final int ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER = 1;
+
+        /**
+         * Magnification cursor following mode value for the edge mode.
+         *
+         * @hide
+         */
+        public static final int ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE = 2;
+
+        /**
+         * Different cursor following settings that can be used as values with
+         * {@link #ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE}.
+         * @hide
+         */
+        @Retention(RetentionPolicy.SOURCE)
+        @IntDef(prefix = { "ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_" },
+                value = {
+                        ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS,
+                        ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CENTER,
+                        ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_EDGE})
+        public @interface AccessibilityMagnificationCursorFollowingMode {}
 
         /**
          * Whether the following typing focus feature for magnification is enabled.

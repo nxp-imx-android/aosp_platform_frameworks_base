@@ -20,7 +20,6 @@ import android.animation.ValueAnimator
 import android.util.Log
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -60,7 +59,6 @@ constructor(
     private val wakeToGoneInteractor: KeyguardWakeDirectlyToGoneInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
-    private val communalInteractor: CommunalInteractor,
 ) :
     TransitionInteractor(
         fromState = KeyguardState.AOD,
@@ -103,14 +101,14 @@ constructor(
                 )
                 .collect {
                     (
-                        _,
+                        detailedWakefulness,
                         startedStep,
                         canWakeDirectlyToGone,
                     ) ->
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val biometricUnlockMode = keyguardInteractor.biometricUnlockState.value.mode
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value
-                    val shouldShowCommunal = communalInteractor.shouldShowCommunal.value
+                    val autoOpenCommunal = communalSettingsInteractor.autoOpenEnabled.value
 
                     if (!maybeHandleInsecurePowerGesture()) {
                         val shouldTransitionToLockscreen =
@@ -137,8 +135,12 @@ constructor(
                             (!KeyguardWmStateRefactor.isEnabled && canDismissLockscreen()) ||
                                 (KeyguardWmStateRefactor.isEnabled && canWakeDirectlyToGone)
 
+                        // Avoid transitioning to communal automatically if the device is waking
+                        // up due to motion.
                         val shouldTransitionToCommunal =
-                            communalSettingsInteractor.isV2FlagEnabled() && shouldShowCommunal
+                            communalSettingsInteractor.isV2FlagEnabled() &&
+                                autoOpenCommunal &&
+                                !detailedWakefulness.isAwakeFromMotionOrLift()
 
                         if (shouldTransitionToGone) {
                             // TODO(b/360368320): Adapt for scene framework

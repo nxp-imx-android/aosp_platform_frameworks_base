@@ -120,7 +120,7 @@ public class RestrictedPreferenceHelper {
             final TextView summaryView = (TextView) holder.findViewById(android.R.id.summary);
             if (summaryView != null) {
                 final CharSequence disabledText = getDisabledByAdminSummaryString();
-                if (mDisabledByAdmin) {
+                if (mDisabledByAdmin && disabledText != null) {
                     summaryView.setText(disabledText);
                 } else if (mDisabledByEcm) {
                     summaryView.setText(getEcmTextResId());
@@ -132,10 +132,10 @@ public class RestrictedPreferenceHelper {
         }
     }
 
-    private String getDisabledByAdminSummaryString() {
+    private @Nullable String getDisabledByAdminSummaryString() {
         if (isRestrictionEnforcedByAdvancedProtection()) {
-            return mContext.getString(com.android.settingslib.widget.restricted
-                    .R.string.disabled_by_advanced_protection);
+            // Advanced Protection doesn't set the summary string, it keeps the current summary.
+            return null;
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             return mContext.getSystemService(DevicePolicyManager.class).getResources().getString(
@@ -321,7 +321,10 @@ public class RestrictedPreferenceHelper {
         }
 
         if (android.security.Flags.aapmApi() && !isEnabled && mDisabledByAdmin) {
-            mPreference.setSummary(getDisabledByAdminSummaryString());
+            String summary = getDisabledByAdminSummaryString();
+            if (summary != null) {
+                mPreference.setSummary(summary);
+            }
         }
 
         if (!isEnabled && mDisabledByEcm) {

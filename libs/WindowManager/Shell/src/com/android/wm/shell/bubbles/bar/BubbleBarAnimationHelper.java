@@ -580,6 +580,7 @@ public class BubbleBarAnimationHelper {
     public void animateConvert(BubbleViewProvider expandedBubble,
             @NonNull SurfaceControl.Transaction startT,
             @NonNull Rect origBounds,
+            float origScale,
             @NonNull SurfaceControl snapshot,
             @NonNull SurfaceControl taskLeash,
             @Nullable Runnable afterAnimation) {
@@ -599,7 +600,7 @@ public class BubbleBarAnimationHelper {
                 new SizeChangeAnimation(
                         new Rect(origBounds.left - position.x, origBounds.top - position.y,
                                 origBounds.right - position.x, origBounds.bottom - position.y),
-                        new Rect(0, 0, size.getWidth(), size.getHeight()));
+                        new Rect(0, 0, size.getWidth(), size.getHeight()), origScale);
         sca.initialize(bbev, taskLeash, snapshot, startT);
 
         Animator a = sca.buildViewAnimator(bbev, tvSf, snapshot, /* onFinish */ (va) -> {
@@ -614,6 +615,7 @@ public class BubbleBarAnimationHelper {
 
         bbev.setSurfaceZOrderedOnTop(true);
         a.setDuration(EXPANDED_VIEW_ANIMATE_TO_REST_DURATION);
+        a.setInterpolator(Interpolators.EMPHASIZED);
         a.start();
     }
 

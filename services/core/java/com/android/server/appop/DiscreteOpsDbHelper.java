@@ -189,11 +189,11 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
             @AppOpsManager.HistoricalOpsRequestFilter int requestFilters,
             int uidFilter, @Nullable String packageNameFilter,
             @Nullable String attributionTagFilter, IntArray opCodesFilter, int opFlagsFilter,
-            long beginTime, long endTime, int limit, String orderByColumn) {
+            long beginTime, long endTime, int limit, String orderByColumn, boolean ascending) {
         List<SQLCondition> conditions = prepareConditions(beginTime, endTime, requestFilters,
                 uidFilter, packageNameFilter,
                 attributionTagFilter, opCodesFilter, opFlagsFilter);
-        String sql = buildSql(conditions, orderByColumn, limit);
+        String sql = buildSql(conditions, orderByColumn, ascending, limit);
         long startTime = 0;
         if (Flags.sqliteDiscreteOpEventLoggingEnabled()) {
             startTime = SystemClock.elapsedRealtime();
@@ -249,7 +249,8 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
         return results;
     }
 
-    private String buildSql(List<SQLCondition> conditions, String orderByColumn, int limit) {
+    private String buildSql(List<SQLCondition> conditions, String orderByColumn, boolean ascending,
+            int limit) {
         StringBuilder sql = new StringBuilder(DiscreteOpsTable.SELECT_TABLE_DATA);
         if (!conditions.isEmpty()) {
             sql.append(" WHERE ");
@@ -264,6 +265,7 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
 
         if (orderByColumn != null) {
             sql.append(" ORDER BY ").append(orderByColumn);
+            sql.append(ascending ? " ASC " : " DESC ");
         }
         if (limit > 0) {
             sql.append(" LIMIT ").append(limit);

@@ -53,12 +53,14 @@ public enum DesktopModeFlags {
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS(
             Flags::enableCaptionCompatInsetForceConsumptionAlways, true),
     ENABLE_CASCADING_WINDOWS(Flags::enableCascadingWindows, true),
+    ENABLE_DESKTOP_APP_HANDLE_ANIMATION(Flags::enableDesktopAppHandleAnimation, false),
     ENABLE_DESKTOP_APP_LAUNCH_ALTTAB_TRANSITIONS_BUGFIX(
             Flags::enableDesktopAppLaunchAlttabTransitionsBugfix, true),
     ENABLE_DESKTOP_APP_LAUNCH_TRANSITIONS_BUGFIX(Flags::enableDesktopAppLaunchTransitionsBugfix,
             true),
     ENABLE_DESKTOP_CLOSE_SHORTCUT_BUGFIX(Flags::enableDesktopCloseShortcutBugfix, false),
     ENABLE_DESKTOP_COMPAT_UI_VISIBILITY_STATUS(Flags::enableCompatUiVisibilityStatus, true),
+    ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX(Flags::enableDesktopImmersiveDragBugfix, false),
     ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX(
             Flags::enableDesktopIndicatorInSeparateThreadBugfix, false),
     ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX(
@@ -92,6 +94,7 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_MULTI_INSTANCE_FEATURES(
             Flags::enableDesktopWindowingMultiInstanceFeatures, true),
     ENABLE_DESKTOP_WINDOWING_PERSISTENCE(Flags::enableDesktopWindowingPersistence, true),
+    ENABLE_DESKTOP_WINDOWING_PIP(Flags::enableDesktopWindowingPip, false),
     ENABLE_DESKTOP_WINDOWING_QUICK_SWITCH(Flags::enableDesktopWindowingQuickSwitch, true),
     ENABLE_DESKTOP_WINDOWING_SCVH_CACHE(Flags::enableDesktopWindowingScvhCacheBugFix, true),
     ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS(Flags::enableDesktopWindowingSizeConstraints, true),
@@ -106,10 +109,11 @@ public enum DesktopModeFlags {
     ENABLE_FULLY_IMMERSIVE_IN_DESKTOP(Flags::enableFullyImmersiveInDesktop, true),
     ENABLE_HANDLE_INPUT_FIX(Flags::enableHandleInputFix, true),
     ENABLE_HOLD_TO_DRAG_APP_HANDLE(Flags::enableHoldToDragAppHandle, true),
+    ENABLE_INPUT_LAYER_TRANSITION_FIX(Flags::enableInputLayerTransitionFix, false),
     ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true),
     ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, false),
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(
-            Flags::enableOpaqueBackgroundForTransparentWindows, false),
+            Flags::enableOpaqueBackgroundForTransparentWindows, true),
     ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
@@ -134,10 +138,14 @@ public enum DesktopModeFlags {
     ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS(
             Flags::enableWindowingTransitionHandlersObservers, false),
     EXCLUDE_CAPTION_FROM_APP_BOUNDS(Flags::excludeCaptionFromAppBounds, false),
+    FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK(
+            Flags::forceCloseTopTransparentFullscreenTask, false),
     IGNORE_ASPECT_RATIO_RESTRICTIONS_FOR_RESIZEABLE_FREEFORM_ACTIVITIES(
             Flags::ignoreAspectRatioRestrictionsForResizeableFreeformActivities, true),
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
-            Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true)
+            Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
+    INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES(
+            Flags::inheritTaskBoundsForTrampolineTaskLaunches, false),
     // go/keep-sorted end
     ;
 

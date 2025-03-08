@@ -31,6 +31,8 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.scene.shared.model.fakeSceneDataSource
+import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationTransitionThresholds.EXPANSION_FOR_DELAYED_STACK_FADE_IN
@@ -69,6 +71,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
     @Test
     fun updateBounds() =
         testScope.runTest {
+            kosmos.enableSingleShade()
             val radius = MutableStateFlow(32)
             val leftOffset = MutableStateFlow(0)
             val shape by
@@ -106,7 +109,7 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
                     )
                 )
 
-            // When: QuickSettings shows up full screen
+            // When: QuickSettings shows up full screen on single shade.
             fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
             val transitionState =
                 MutableStateFlow<ObservableTransitionState>(
@@ -115,6 +118,10 @@ class NotificationStackAppearanceIntegrationTest : SysuiTestCase() {
             sceneInteractor.setTransitionState(transitionState)
             // Then: shape is null
             assertThat(shape).isNull()
+
+            // Same scenario on Dual Shade, shape should have clipping bounds
+            kosmos.enableDualShade()
+            assertThat(shape).isNotNull()
         }
 
     @Test

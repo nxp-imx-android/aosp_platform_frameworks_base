@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"Nakakonekta sa <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"Nakakonekta sa <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"I-expand ang grupo."</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"Idagdag ang device sa grupo."</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"Alisin ang device sa grupo."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"Buksan ang application."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"Hindi nakakonekta."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"Roaming"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"Input"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"Mga hearing aid"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"Ino-on…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"Hindi ma-adjust ang liwanag dahil kinokontrol ito ng nangingibabaw na app"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"I-auto rotate"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"Awtomatikong i-rotate ang screen"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"Lokasyon"</string>
@@ -438,6 +435,7 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"I-unmute ang paligid"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Mga Tool"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Instant Caption"</string>
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Mga Setting"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Tala"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"I-unblock ang mikropono ng device?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"I-unblock ang camera ng device?"</string>
@@ -910,7 +908,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gumamit ng split screen nang nasa kanan ang app"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gumamit ng split screen nang nasa kaliwa ang app"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Gamitin ang full screen"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Gamitin ang desktop view"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Lumipat sa app sa kanan o ibaba habang ginagamit ang split screen"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Lumipat sa app sa kaliwa o itaas habang ginagamit ang split screen"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Habang nasa split screen: magpalit-palit ng app"</string>
@@ -1006,6 +1005,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Idagdag sa posisyong <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Invalid ang posisyon."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Posisyon <xliff:g id="POSITION">%1$d</xliff:g>"</string>
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Naidagdag na ang tile"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Idinagdag ang tile"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Inalis ang tile"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Editor ng Mga mabilisang setting."</string>

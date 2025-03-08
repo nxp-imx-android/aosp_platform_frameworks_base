@@ -26,6 +26,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
+import com.android.server.wm.flicker.helpers.DesktopModeAppHelper.MaximizeDesktopAppTrigger
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
 import com.android.window.flags.Flags
@@ -38,11 +39,10 @@ import org.junit.Rule
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class MaximizeAppWindow
-constructor(
+abstract class MaximizeAppWindow(
     private val rotation: Rotation = Rotation.ROTATION_0,
     isResizable: Boolean = true,
-    private val usingKeyboard: Boolean = false
+    private val trigger: MaximizeDesktopAppTrigger = MaximizeDesktopAppTrigger.MAXIMIZE_MENU,
 ) {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
@@ -59,7 +59,7 @@ constructor(
     @Before
     fun setup() {
         Assume.assumeTrue(Flags.enableDesktopWindowingMode() && tapl.isTablet)
-        if (usingKeyboard) {
+        if (trigger == MaximizeDesktopAppTrigger.KEYBOARD_SHORTCUT) {
             Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
         }
         tapl.setEnableRotation(true)
@@ -70,7 +70,7 @@ constructor(
 
     @Test
     open fun maximizeAppWindow() {
-        testApp.maximiseDesktopApp(wmHelper, device, usingKeyboard = usingKeyboard)
+        testApp.maximiseDesktopApp(wmHelper, device, trigger)
     }
 
     @After

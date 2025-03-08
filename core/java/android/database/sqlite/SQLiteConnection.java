@@ -183,11 +183,6 @@ public final class SQLiteConnection implements CancellationSignal.OnCancelListen
     private static native long nativeChanges(long connectionPtr);
     private static native long nativeTotalChanges(long connectionPtr);
 
-    // This method is deprecated and should be removed when it is no longer needed by the
-    // robolectric tests.  It should not be called from any frameworks java code.
-    @Deprecated
-    private static native void nativeClose(long connectionPtr);
-
     private SQLiteConnection(SQLiteConnectionPool pool,
             SQLiteDatabaseConfiguration configuration,
             int connectionId, boolean primaryConnection) {

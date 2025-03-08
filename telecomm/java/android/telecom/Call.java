@@ -30,6 +30,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ParcelFileDescriptor;
+import android.os.UserHandle;
 
 import com.android.internal.telecom.IVideoProvider;
 import com.android.server.telecom.flags.Flags;
@@ -680,6 +681,7 @@ public final class Call {
         private final @CallDirection int mCallDirection;
         private final @Connection.VerificationStatus int mCallerNumberVerificationStatus;
         private final Uri mContactPhotoUri;
+        private final UserHandle mAssociatedUser;
 
         /**
          * Whether the supplied capabilities  supports the specified capability.
@@ -1081,6 +1083,16 @@ public final class Call {
             return mCallerNumberVerificationStatus;
         }
 
+        /**
+         * Gets the user that originated the call
+         * @return The user
+         *
+         * @hide
+         */
+        public UserHandle getAssociatedUser() {
+            return mAssociatedUser;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (o instanceof Details) {
@@ -1107,7 +1119,8 @@ public final class Call {
                         Objects.equals(mCallDirection, d.mCallDirection) &&
                         Objects.equals(mCallerNumberVerificationStatus,
                                 d.mCallerNumberVerificationStatus) &&
-                        Objects.equals(mContactPhotoUri, d.mContactPhotoUri);
+                        Objects.equals(mContactPhotoUri, d.mContactPhotoUri) &&
+                        Objects.equals(mAssociatedUser, d.mAssociatedUser);
             }
             return false;
         }
@@ -1133,7 +1146,8 @@ public final class Call {
                             mContactDisplayName,
                             mCallDirection,
                             mCallerNumberVerificationStatus,
-                    mContactPhotoUri);
+                            mContactPhotoUri,
+                    mAssociatedUser);
         }
 
         /** {@hide} */
@@ -1158,7 +1172,8 @@ public final class Call {
                 String contactDisplayName,
                 int callDirection,
                 int callerNumberVerificationStatus,
-                Uri contactPhotoUri) {
+                Uri contactPhotoUri,
+                UserHandle originatingUser) {
             mState = state;
             mTelecomCallId = telecomCallId;
             mHandle = handle;
@@ -1180,6 +1195,7 @@ public final class Call {
             mCallDirection = callDirection;
             mCallerNumberVerificationStatus = callerNumberVerificationStatus;
             mContactPhotoUri = contactPhotoUri;
+            mAssociatedUser = originatingUser;
         }
 
         /** {@hide} */
@@ -1205,7 +1221,8 @@ public final class Call {
                     parcelableCall.getContactDisplayName(),
                     parcelableCall.getCallDirection(),
                     parcelableCall.getCallerNumberVerificationStatus(),
-                    parcelableCall.getContactPhotoUri()
+                    parcelableCall.getContactPhotoUri(),
+                    parcelableCall.getAssociatedUser()
             );
         }
 
@@ -2631,7 +2648,8 @@ public final class Call {
                         mDetails.getContactDisplayName(),
                         mDetails.getCallDirection(),
                         mDetails.getCallerNumberVerificationStatus(),
-                        mDetails.getContactPhotoUri()
+                        mDetails.getContactPhotoUri(),
+                        mDetails.getAssociatedUser()
                         );
                 fireDetailsChanged(mDetails);
             }

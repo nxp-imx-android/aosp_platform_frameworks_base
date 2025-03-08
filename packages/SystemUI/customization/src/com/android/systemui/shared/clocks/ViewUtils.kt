@@ -18,8 +18,9 @@ package com.android.systemui.shared.clocks
 
 import android.graphics.Rect
 import android.view.View
-import com.android.systemui.shared.clocks.VPoint.Companion.center
-import com.android.systemui.shared.clocks.VPointF.Companion.center
+import com.android.systemui.plugins.clocks.VPoint.Companion.center
+import com.android.systemui.plugins.clocks.VPointF
+import com.android.systemui.plugins.clocks.VPointF.Companion.center
 
 object ViewUtils {
     fun View.computeLayoutDiff(targetRegion: Rect, isLargeClock: Boolean): VPointF {

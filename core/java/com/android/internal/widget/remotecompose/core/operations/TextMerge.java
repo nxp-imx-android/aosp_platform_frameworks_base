@@ -22,6 +22,7 @@ import android.annotation.NonNull;
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
@@ -31,7 +32,7 @@ import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 import java.util.List;
 
 /** Operation to deal with Text data */
-public class TextMerge extends Operation implements Serializable {
+public class TextMerge extends Operation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.TEXT_MERGE;
     private static final String CLASS_NAME = "TextMerge";
     public int mTextId;
@@ -123,10 +124,21 @@ public class TextMerge extends Operation implements Serializable {
         context.loadText(mTextId, str1 + str2);
     }
 
+    @Override
+    public void updateVariables(@NonNull RemoteContext context) {
+        apply(context);
+    }
+
+    @Override
+    public void registerListening(@NonNull RemoteContext context) {
+        context.listensTo(mSrcId1, this);
+        context.listensTo(mSrcId2, this);
+    }
+
     @NonNull
     @Override
     public String deepToString(@NonNull String indent) {
-        return indent + toString();
+        return indent + this;
     }
 
     @Override

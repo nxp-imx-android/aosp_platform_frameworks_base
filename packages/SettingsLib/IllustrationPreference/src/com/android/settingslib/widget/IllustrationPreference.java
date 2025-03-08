@@ -138,8 +138,12 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         ImageView backgroundViewTablet =
                 (ImageView) holder.findViewById(R.id.background_view_tablet);
 
-        backgroundView.setVisibility(mIsTablet ? View.GONE : View.VISIBLE);
-        backgroundViewTablet.setVisibility(mIsTablet ? View.VISIBLE : View.GONE);
+        if (backgroundView != null) {
+            backgroundView.setVisibility(mIsTablet ? View.GONE : View.VISIBLE);
+        }
+        if (backgroundViewTablet != null) {
+            backgroundViewTablet.setVisibility(mIsTablet ? View.VISIBLE : View.GONE);
+        }
         if (mIsTablet) {
             backgroundView = backgroundViewTablet;
         }
@@ -183,7 +187,9 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         if (mLottieDynamicColor) {
             LottieColorUtils.applyDynamicColors(getContext(), illustrationView);
         }
-        LottieColorUtils.applyMaterialColor(getContext(), illustrationView);
+        if (SettingsThemeHelper.isExpressiveTheme(getContext())) {
+            LottieColorUtils.applyMaterialColor(getContext(), illustrationView);
+        }
 
         if (mOnBindListener != null) {
             mOnBindListener.onBind(illustrationView);
@@ -441,6 +447,10 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
         // Ensures the illustration view size is smaller than or equal to the background view size.
         final float aspectRatio = (float) frameWidth / frameHeight;
         illustrationView.setMaxWidth((int) (restrictedMaxHeight * aspectRatio));
+    }
+
+    public boolean isAnimatable() {
+        return mIsAnimatable;
     }
 
     private void startAnimation(Drawable drawable) {

@@ -19,7 +19,7 @@ package com.android.systemui.statusbar.pipeline.airplane.data.repository
 import android.net.ConnectivityManager
 import android.os.Handler
 import android.provider.Settings.Global
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer

@@ -97,7 +97,6 @@ import com.android.server.wm.SurfaceAnimator.Animatable;
 import com.android.server.wm.SurfaceAnimator.AnimationType;
 import com.android.server.wm.SurfaceAnimator.OnAnimationFinishedCallback;
 import com.android.server.wm.utils.AlwaysTruePredicate;
-import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
@@ -2007,8 +2006,13 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return getActivity(r -> !r.finishing, true /* traverseTopToBottom */);
     }
 
-    ActivityRecord getTopMostVisibleFreeformActivity() {
+    ActivityRecord getTopMostFreeformActivity() {
         return getActivity(r -> r.isVisibleRequested() && r.inFreeformWindowingMode(),
+                true /* traverseTopToBottom */);
+    }
+
+    ActivityRecord getTopMostVisibleFreeformActivity() {
+        return getActivity(r -> r.isVisible() && r.inFreeformWindowingMode(),
                 true /* traverseTopToBottom */);
     }
 
@@ -2630,7 +2634,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         if (!mTransitionController.canAssignLayers(this)) return;
         final boolean changed = layer != mLastLayer || mLastRelativeToLayer != null;
         if (mSurfaceControl != null && changed) {
-            if (Flags.useSelfSyncTransactionForLayer() && mSyncState != SYNC_STATE_NONE) {
+            if (mSyncState != SYNC_STATE_NONE) {
                 // When this container needs to be synced, assign layer with its own sync
                 // transaction to avoid out of ordering when merge.
                 // Still use the passed-in transaction for non-sync case, such as building finish
@@ -2647,7 +2651,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
             boolean forceUpdate) {
         final boolean changed = layer != mLastLayer || mLastRelativeToLayer != relativeTo;
         if (mSurfaceControl != null && (changed || forceUpdate)) {
-            if (Flags.useSelfSyncTransactionForLayer() && mSyncState != SYNC_STATE_NONE) {
+            if (mSyncState != SYNC_STATE_NONE) {
                 // When this container needs to be synced, assign layer with its own sync
                 // transaction to avoid out of ordering when merge.
                 // Still use the passed-in transaction for non-sync case, such as building finish

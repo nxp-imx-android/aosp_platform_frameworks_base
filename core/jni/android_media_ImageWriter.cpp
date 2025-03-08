@@ -399,7 +399,7 @@ static jlong ImageWriter_init(JNIEnv* env, jobject thiz, jobject weakThiz, jobje
     }
     sp<JNIImageWriterContext> ctx(new JNIImageWriterContext(env, weakThiz, clazz));
 
-    sp<Surface> producer = new Surface(bufferProducer, /*controlledByApp*/false);
+    sp<Surface> producer = sp<Surface>::make(bufferProducer, /*controlledByApp*/ false);
     ctx->setProducer(producer);
     /**
      * NATIVE_WINDOW_API_CPU isn't a good choice here, as it makes the bufferQueue not connectable

@@ -19,7 +19,7 @@ package com.android.wm.shell.scenarios
 import android.app.Instrumentation
 import android.tools.NavBar
 import android.tools.Rotation
-import android.tools.device.apphelpers.BrowserAppHelper
+import android.tools.device.apphelpers.GmailAppHelper
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
@@ -44,8 +44,8 @@ abstract class UnminimizeAppFromTaskbar(val rotation: Rotation = Rotation.ROTATI
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val browserHelper = BrowserAppHelper(instrumentation)
-    private val browserApp = DesktopModeAppHelper(browserHelper)
+    private val gmailHelper = GmailAppHelper(instrumentation)
+    private val gmailApp = DesktopModeAppHelper(gmailHelper)
 
     @Rule
     @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
@@ -59,20 +59,20 @@ abstract class UnminimizeAppFromTaskbar(val rotation: Rotation = Rotation.ROTATI
         ChangeDisplayOrientationRule.setRotation(rotation)
         testApp.enterDesktopMode(wmHelper, device)
         tapl.showTaskbarIfHidden()
-        browserApp.launchViaIntent(wmHelper)
-        browserApp.minimizeDesktopApp(wmHelper, device)
+        gmailApp.launchViaIntent(wmHelper)
+        gmailApp.minimizeDesktopApp(wmHelper, device)
     }
 
     @Test
     open fun unminimizeApp() {
         tapl.launchedAppState.taskbar
-            .getAppIcon(browserHelper.appName)
-            .launch(browserHelper.packageName)
+            .getAppIcon(gmailHelper.appName)
+            .launch(gmailHelper.packageName)
     }
 
     @After
     fun teardown() {
         testApp.exit(wmHelper)
-        browserApp.exit(wmHelper)
+        gmailApp.exit(wmHelper)
     }
 }

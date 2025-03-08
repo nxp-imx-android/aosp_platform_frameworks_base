@@ -18,16 +18,17 @@ package com.android.systemui.shade.domain.interactor
 
 import android.content.res.Configuration
 import android.content.res.mockResources
+import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.common.ui.data.repository.configurationRepository
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.scene.ui.view.mockShadeRootView
 import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
 import com.android.systemui.statusbar.notification.row.notificationRebindingTracker
@@ -48,6 +49,7 @@ import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
 class ShadeDisplaysInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
@@ -82,7 +84,7 @@ class ShadeDisplaysInteractorTest : SysuiTestCase() {
     fun start_shadeInCorrectPosition_notAddedOrRemoved() =
         testScope.runTest {
             whenever(display.displayId).thenReturn(0)
-            positionRepository.setDisplayId(0)
+            positionRepository.setPendingDisplayId(0)
 
             underTest.start()
 
@@ -93,18 +95,19 @@ class ShadeDisplaysInteractorTest : SysuiTestCase() {
     fun start_shadeInWrongPosition_changes() =
         testScope.runTest {
             whenever(display.displayId).thenReturn(0)
-            positionRepository.setDisplayId(1)
+            positionRepository.setPendingDisplayId(1)
 
             underTest.start()
 
             verify(shadeContext).reparentToDisplay(eq(1))
+            assertThat(positionRepository.displayId.value).isEqualTo(1)
         }
 
     @Test
     fun start_shadeInWrongPosition_logsStartToLatencyTracker() =
         testScope.runTest {
             whenever(display.displayId).thenReturn(0)
-            positionRepository.setDisplayId(1)
+            positionRepository.setPendingDisplayId(1)
 
             underTest.start()
 
@@ -115,7 +118,7 @@ class ShadeDisplaysInteractorTest : SysuiTestCase() {
     fun start_shadeInWrongPosition_someNotificationsVisible_hiddenThenShown() =
         testScope.runTest {
             whenever(display.displayId).thenReturn(0)
-            positionRepository.setDisplayId(1)
+            positionRepository.setPendingDisplayId(1)
             activeNotificationRepository.setActiveNotifs(1)
 
             underTest.start()
@@ -129,7 +132,7 @@ class ShadeDisplaysInteractorTest : SysuiTestCase() {
     fun start_shadeInWrongPosition_someNotificationsVisible_waitsForInflationsBeforeShowingNssl() =
         testScope.runTest {
             whenever(display.displayId).thenReturn(0)
-            positionRepository.setDisplayId(1)
+            positionRepository.setPendingDisplayId(1)
             activeNotificationRepository.setActiveNotifs(1)
 
             val endRebinding = notificationRebindingTracker.trackRebinding("test")
@@ -155,7 +158,7 @@ class ShadeDisplaysInteractorTest : SysuiTestCase() {
     fun start_shadeInWrongPosition_noNotifications_nsslNotHidden() =
         testScope.runTest {
             whenever(display.displayId).thenReturn(0)
-            positionRepository.setDisplayId(1)
+            positionRepository.setPendingDisplayId(1)
             activeNotificationRepository.setActiveNotifs(0)
 
             underTest.start()
@@ -170,7 +173,7 @@ class ShadeDisplaysInteractorTest : SysuiTestCase() {
     fun start_shadeInWrongPosition_waitsUntilMovedToDisplayReceived() =
         testScope.runTest {
             whenever(display.displayId).thenReturn(0)
-            positionRepository.setDisplayId(1)
+            positionRepository.setPendingDisplayId(1)
             activeNotificationRepository.setActiveNotifs(1)
 
             underTest.start()

@@ -673,11 +673,13 @@ bool ResourceFileFlattener::Flatten(ResourceTable* table, IArchiveWriter* archiv
 
               // Update the output format of this XML file.
               file_ref->type = XmlFileTypeForOutputFormat(options_.output_format);
-              bool result = table->AddResource(NewResourceBuilder(file.name)
-                                                   .SetValue(std::move(file_ref), file.config)
-                                                   .SetAllowMangled(true)
-                                                   .Build(),
-                                               context_->GetDiagnostics());
+              bool result = table->AddResource(
+                  NewResourceBuilder(file.name)
+                      .SetValue(std::move(file_ref), file.config)
+                      .SetAllowMangled(true)
+                      .SetUsesReadWriteFeatureFlags(doc->file.uses_readwrite_feature_flags)
+                      .Build(),
+                  context_->GetDiagnostics());
               if (!result) {
                 return false;
               }

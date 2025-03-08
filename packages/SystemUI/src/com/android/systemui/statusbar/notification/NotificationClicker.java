@@ -124,8 +124,14 @@ public final class NotificationClicker implements View.OnClickListener {
         Notification notification = sbn.getNotification();
         if (notification.contentIntent != null || notification.fullScreenIntent != null
                 || row.getEntry().isBubble()) {
-            row.setBubbleClickListener(v ->
-                    mNotificationActivityStarter.onNotificationBubbleIconClicked(row.getEntry()));
+            if (NotificationBundleUi.isEnabled()) {
+                row.setBubbleClickListener(
+                        v -> row.getEntryAdapter().onNotificationBubbleIconClicked());
+            } else {
+                row.setBubbleClickListener(v ->
+                        mNotificationActivityStarter.onNotificationBubbleIconClicked(
+                                row.getEntry()));
+            }
             row.setOnClickListener(this);
             row.setOnDragSuccessListener(mOnDragSuccessListener);
         } else {

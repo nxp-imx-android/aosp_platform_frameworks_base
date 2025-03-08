@@ -18,18 +18,14 @@ package com.android.systemui.qs
 
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 
-class FakeTileDetailsViewModel(var tileSpec: String?) : TileDetailsViewModel() {
+class FakeTileDetailsViewModel(var tileSpec: String?) : TileDetailsViewModel {
     private var _clickOnSettingsButton = 0
 
     override fun clickOnSettingsButton() {
         _clickOnSettingsButton++
     }
 
-    override fun getTitle(): String {
-        return tileSpec ?: " Fake title"
-    }
+    override val title = tileSpec ?: " Fake title"
 
-    override fun getSubTitle(): String {
-        return tileSpec ?: "Fake sub title"
-    }
+    override val subTitle = tileSpec ?: "Fake sub title"
 }

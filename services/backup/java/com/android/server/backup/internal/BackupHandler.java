@@ -34,6 +34,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.EventLogTags;
 import com.android.server.backup.BackupAgentTimeoutParameters;
 import com.android.server.backup.BackupRestoreTask;
+import com.android.server.backup.BackupRestoreTask.CancellationReason;
 import com.android.server.backup.DataChangedJournal;
 import com.android.server.backup.OperationStorage;
 import com.android.server.backup.TransportManager;
@@ -410,8 +411,8 @@ public class BackupHandler extends Handler {
 
             case MSG_BACKUP_OPERATION_TIMEOUT:
             case MSG_RESTORE_OPERATION_TIMEOUT: {
-                Slog.d(TAG, "Timeout message received for token=" + Integer.toHexString(msg.arg1));
-                backupManagerService.handleCancel(msg.arg1, false);
+                Slog.d(TAG, "Timeout for token=" + Integer.toHexString(msg.arg1));
+                backupManagerService.handleCancel(msg.arg1, CancellationReason.TIMEOUT);
                 break;
             }
 

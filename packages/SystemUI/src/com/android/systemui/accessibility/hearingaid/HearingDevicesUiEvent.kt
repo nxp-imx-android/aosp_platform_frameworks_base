@@ -39,7 +39,9 @@ enum class HearingDevicesUiEvent(private val id: Int) : UiEventLogger.UiEventEnu
     @UiEvent(doc = "Expand the ambient volume controls")
     HEARING_DEVICES_AMBIENT_EXPAND_CONTROLS(2153),
     @UiEvent(doc = "Collapse the ambient volume controls")
-    HEARING_DEVICES_AMBIENT_COLLAPSE_CONTROLS(2154);
+    HEARING_DEVICES_AMBIENT_COLLAPSE_CONTROLS(2154),
+    @UiEvent(doc = "Click on the device settings to enter hearing devices page")
+    HEARING_DEVICES_SETTINGS_CLICK(2172);
 
     override fun getId(): Int = this.id
 }

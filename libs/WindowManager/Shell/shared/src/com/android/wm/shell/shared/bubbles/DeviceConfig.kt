@@ -26,6 +26,8 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import kotlin.math.max
 
+import com.android.wm.shell.shared.ShellSharedConstants.SMALL_TABLET_MAX_EDGE_DP
+
 /** Contains device configuration used for positioning bubbles on the screen. */
 data class DeviceConfig(
         val isLargeScreen: Boolean,
@@ -38,7 +40,6 @@ data class DeviceConfig(
     companion object {
 
         private const val LARGE_SCREEN_MIN_EDGE_DP = 600
-        private const val SMALL_TABLET_MAX_EDGE_DP = 960
 
         @JvmStatic
         fun create(context: Context, windowManager: WindowManager): DeviceConfig {

@@ -23,19 +23,15 @@ import com.android.systemui.screenrecord.RecordingController
 class ScreenRecordDetailsViewModel(
     val recordingController: RecordingController,
     val onStartRecordingClicked: Runnable,
-) : TileDetailsViewModel() {
+) : TileDetailsViewModel {
 
     override fun clickOnSettingsButton() {
         // No settings button in this tile.
     }
 
-    override fun getTitle(): String {
-        // TODO(b/388321032): Replace this string with a string in a translatable xml file,
-        return "Screen recording"
-    }
+    // TODO(b/388321032): Replace this string with a string in a translatable xml file,
+    override val title = "Screen recording"
 
-    override fun getSubTitle(): String {
-        // No sub-title in this tile.
-        return ""
-    }
+    // No sub-title in this tile.
+    override val subTitle = ""
 }

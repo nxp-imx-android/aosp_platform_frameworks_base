@@ -22,6 +22,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_BACK
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
@@ -31,6 +32,7 @@ import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.sysui.UserChangeListener
@@ -38,17 +40,18 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TransitionObserver
 
 /**
- * Limits the number of tasks shown in Desktop Mode.
+ * Keeps track of minimized tasks and limits the number of tasks shown in Desktop Mode.
  *
- * This class should only be used if
- * [android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_TASK_LIMIT] is enabled and
- * [maxTasksLimit] is strictly greater than 0.
+ * [maxTasksLimit] must be strictly greater than 0 if it's given.
+ *
+ * TODO(b/400634379): Separate two responsibilities of this class into two classes.
  */
 class DesktopTasksLimiter(
     transitions: Transitions,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val shellTaskOrganizer: ShellTaskOrganizer,
-    private val maxTasksLimit: Int,
+    private val desksOrganizer: DesksOrganizer,
+    private val maxTasksLimit: Int?,
     private val interactionJankMonitor: InteractionJankMonitor,
     private val context: Context,
     @ShellMainThread private val handler: Handler,
@@ -59,13 +62,19 @@ class DesktopTasksLimiter(
     private var userId: Int
 
     init {
-        require(maxTasksLimit > 0) {
-            "DesktopTasksLimiter: maxTasksLimit should be greater than 0. Current value: $maxTasksLimit."
+        maxTasksLimit?.let {
+            require(it > 0) {
+                "DesktopTasksLimiter: maxTasksLimit should be greater than 0. Current value: $it."
+            }
         }
         transitions.registerObserver(minimizeTransitionObserver)
         userId = ActivityManager.getCurrentUser()
         desktopUserRepositories.current.addActiveTaskListener(leftoverMinimizedTasksRemover)
-        logV("Starting limiter with a maximum of %d tasks", maxTasksLimit)
+        if (maxTasksLimit != null) {
+            logV("Starting limiter with a maximum of %d tasks", maxTasksLimit)
+        } else {
+            logV("Starting limiter without the task limit")
+        }
     }
 
     data class TaskDetails(
@@ -252,7 +261,7 @@ class DesktopTasksLimiter(
      * returning the task to minimize.
      */
     fun addAndGetMinimizeTaskChanges(
-        displayId: Int,
+        deskId: Int,
         wct: WindowContainerTransaction,
         newFrontTaskId: Int?,
         launchingNewIntent: Boolean = false,
@@ -261,14 +270,19 @@ class DesktopTasksLimiter(
         val taskRepository = desktopUserRepositories.current
         val taskIdToMinimize =
             getTaskIdToMinimize(
-                taskRepository.getExpandedTasksOrdered(displayId),
+                taskRepository.getExpandedTasksIdsInDeskOrdered(deskId),
                 newFrontTaskId,
                 launchingNewIntent,
             )
-        // If it's a running task, reorder it to back.
         taskIdToMinimize
             ?.let { shellTaskOrganizer.getRunningTaskInfo(it) }
-            ?.let { wct.reorder(it.token, /* onTop= */ false) }
+            ?.let { task ->
+                if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    wct.reorder(task.token, /* onTop= */ false)
+                } else {
+                    desksOrganizer.minimizeTask(wct, deskId, task)
+                }
+            }
         return taskIdToMinimize
     }
 
@@ -324,7 +338,7 @@ class DesktopTasksLimiter(
         launchingNewIntent: Boolean,
     ): Int? {
         val newTasksOpening = if (launchingNewIntent) 1 else 0
-        if (visibleOrderedTasks.size + newTasksOpening <= maxTasksLimit) {
+        if (visibleOrderedTasks.size + newTasksOpening <= (maxTasksLimit ?: Int.MAX_VALUE)) {
             logV("No need to minimize; tasks below limit")
             // No need to minimize anything
             return null

@@ -97,4 +97,39 @@ class BatteryViewModelTest : SysuiTestCase() {
 
             assertThat(underTest.glyphList).isEqualTo(listOf(BatteryGlyph.BoltLarge))
         }
+
+    @Test
+    fun glyphList_attributionOrdering_prioritizesDefendOverCharging() =
+        kosmos.runTest {
+            fakeSystemSettingsRepository.setInt(Settings.System.SHOW_BATTERY_PERCENT, 0)
+            batteryController.fake._level = 39
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._isDefender = true
+
+            assertThat(underTest.glyphList).isEqualTo(listOf(BatteryGlyph.DefendLarge))
+        }
+
+    @Test
+    fun glyphList_attributionOrdering_prioritizesPowerSaveOverDefend() =
+        kosmos.runTest {
+            fakeSystemSettingsRepository.setInt(Settings.System.SHOW_BATTERY_PERCENT, 0)
+            batteryController.fake._level = 39
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._isDefender = true
+            batteryController.fake._isPowerSave = true
+
+            assertThat(underTest.glyphList).isEqualTo(listOf(BatteryGlyph.PlusLarge))
+        }
+
+    @Test
+    fun glyphList_attributionOrdering_prioritizesPowerSaveOverCharging() =
+        kosmos.runTest {
+            fakeSystemSettingsRepository.setInt(Settings.System.SHOW_BATTERY_PERCENT, 0)
+            batteryController.fake._level = 39
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._isDefender = false
+            batteryController.fake._isPowerSave = true
+
+            assertThat(underTest.glyphList).isEqualTo(listOf(BatteryGlyph.PlusLarge))
+        }
 }

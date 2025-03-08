@@ -260,6 +260,16 @@ flag {
 }
 
 flag {
+    name: "pointer_up_motion_event_in_touch_exploration"
+    namespace: "accessibility"
+    description: "Allows POINTER_UP motionEvents to trigger during touch exploration."
+    bug: "374930391"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "proxy_use_apps_on_virtual_device_listener"
     namespace: "accessibility"
     description: "Fixes race condition described in b/286587811"
@@ -332,6 +342,16 @@ flag {
     namespace: "accessibility"
     description: "Skip onSomePackageChanged callback if the SwitchUser signal is not received yet."
     bug: "340927041"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "hearing_input_change_when_comm_device"
+    namespace: "accessibility"
+    description: "Listen to the CommunicationDeviceChanged to show hearing device input notification."
+    bug: "394070235"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

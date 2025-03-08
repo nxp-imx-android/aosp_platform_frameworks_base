@@ -128,7 +128,7 @@ import java.util.concurrent.TimeUnit;
  */
 // TODO (bug:122218838): Make sure we handle start of epoch time
 // TODO (bug:122218838): Validate changed time is handled correctly
-final class HistoricalRegistry {
+final class HistoricalRegistry implements HistoricalRegistryInterface {
     private static final boolean DEBUG = false;
     private static final boolean KEEP_WTF_LOG = Build.IS_DEBUGGABLE;
 
@@ -218,7 +218,8 @@ final class HistoricalRegistry {
         mDiscreteRegistry = other.mDiscreteRegistry;
     }
 
-    void systemReady(@NonNull ContentResolver resolver) {
+    @Override
+    public void systemReady(@NonNull ContentResolver resolver) {
         mDiscreteRegistry.systemReady();
         final Uri uri = Settings.Global.getUriFor(Settings.Global.APPOP_HISTORY_PARAMETERS);
         resolver.registerContentObserver(uri, false, new ContentObserver(
@@ -320,8 +321,10 @@ final class HistoricalRegistry {
                 + "=" + setting + " resetting!");
     }
 
-    void dump(String prefix, PrintWriter pw, int filterUid, @Nullable String filterPackage,
-            @Nullable String filterAttributionTag, int filterOp,
+
+    @Override
+    public void dump(String prefix, PrintWriter pw, int filterUid,
+            @Nullable String filterPackage, @Nullable String filterAttributionTag, int filterOp,
             @HistoricalOpsRequestFilter int filter) {
         synchronized (mOnDiskLock) {
             synchronized (mInMemoryLock) {
@@ -366,7 +369,8 @@ final class HistoricalRegistry {
         }
     }
 
-    void dumpDiscreteData(@NonNull PrintWriter pw, int uidFilter,
+    @Override
+    public void dumpDiscreteData(@NonNull PrintWriter pw, int uidFilter,
             @Nullable String packageNameFilter, @Nullable String attributionTagFilter,
             @HistoricalOpsRequestFilter int filter, int dumpOp,
             @NonNull SimpleDateFormat sdf, @NonNull Date date, @NonNull String prefix,
@@ -381,7 +385,8 @@ final class HistoricalRegistry {
         }
     }
 
-    void getHistoricalOpsFromDiskRaw(int uid, @Nullable String packageName,
+    @Override
+    public void getHistoricalOpsFromDiskRaw(int uid, @Nullable String packageName,
             @Nullable String attributionTag, @Nullable String[] opNames,
             @OpHistoryFlags int historyFlags, @HistoricalOpsRequestFilter int filter,
             long beginTimeMillis, long endTimeMillis, @OpFlags int flags,
@@ -414,11 +419,12 @@ final class HistoricalRegistry {
         callback.sendResult(payload);
     }
 
-    void getHistoricalOps(int uid, @Nullable String packageName, @Nullable String attributionTag,
-            @Nullable String[] opNames, @OpHistoryFlags int historyFlags,
-            @HistoricalOpsRequestFilter int filter, long beginTimeMillis, long endTimeMillis,
-            @OpFlags int flags, @Nullable String[] attributionExemptPkgs,
-            @NonNull RemoteCallback callback) {
+    @Override
+    public void getHistoricalOps(int uid, @Nullable String packageName,
+            @Nullable String attributionTag, @Nullable String[] opNames,
+            @OpHistoryFlags int historyFlags, @HistoricalOpsRequestFilter int filter,
+            long beginTimeMillis, long endTimeMillis, @OpFlags int flags,
+            @Nullable String[] attributionExemptPkgs, @NonNull RemoteCallback callback) {
         final long currentTimeMillis = System.currentTimeMillis();
         if (endTimeMillis == Long.MAX_VALUE) {
             endTimeMillis = currentTimeMillis;
@@ -493,11 +499,12 @@ final class HistoricalRegistry {
         callback.sendResult(payload);
     }
 
-    void incrementOpAccessedCount(int op, int uid, @NonNull String packageName,
+    @Override
+    public void incrementOpAccessedCount(int op, int uid, @NonNull String packageName,
             @NonNull String deviceId, @Nullable String attributionTag, @UidState int uidState,
             @OpFlags int flags, long accessTime,
             @AppOpsManager.AttributionFlags int attributionFlags, int attributionChainId,
-            @DiscreteOpsRegistry.AccessType int accessType, int accessCount) {
+            int accessCount) {
         synchronized (mInMemoryLock) {
             if (mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
                 if (!isPersistenceInitializedMLocked()) {
@@ -510,12 +517,13 @@ final class HistoricalRegistry {
 
                 mDiscreteRegistry.recordDiscreteAccess(uid, packageName, deviceId, op,
                         attributionTag, flags, uidState, accessTime, -1, attributionFlags,
-                        attributionChainId, accessType);
+                        attributionChainId);
             }
         }
     }
 
-    void incrementOpRejected(int op, int uid, @NonNull String packageName,
+    @Override
+    public void incrementOpRejectedCount(int op, int uid, @NonNull String packageName,
             @Nullable String attributionTag, @UidState int uidState, @OpFlags int flags) {
         synchronized (mInMemoryLock) {
             if (mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
@@ -530,11 +538,11 @@ final class HistoricalRegistry {
         }
     }
 
-    void increaseOpAccessDuration(int op, int uid, @NonNull String packageName,
+    @Override
+    public void increaseOpAccessDuration(int op, int uid, @NonNull String packageName,
             @NonNull String deviceId, @Nullable String attributionTag, @UidState int uidState,
             @OpFlags int flags, long eventStartTime, long increment,
-            @AppOpsManager.AttributionFlags int attributionFlags, int attributionChainId,
-            @DiscreteOpsRegistry.AccessType int accessType) {
+            @AppOpsManager.AttributionFlags int attributionFlags, int attributionChainId) {
         synchronized (mInMemoryLock) {
             if (mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
                 if (!isPersistenceInitializedMLocked()) {
@@ -546,12 +554,13 @@ final class HistoricalRegistry {
                         attributionTag, uidState, flags, increment);
                 mDiscreteRegistry.recordDiscreteAccess(uid, packageName, deviceId, op,
                         attributionTag, flags, uidState, eventStartTime, increment,
-                        attributionFlags, attributionChainId, accessType);
+                        attributionFlags, attributionChainId);
             }
         }
     }
 
-    void setHistoryParameters(@HistoricalMode int mode,
+    @Override
+    public void setHistoryParameters(@HistoricalMode int mode,
             long baseSnapshotInterval, long intervalCompressionMultiplier) {
         synchronized (mOnDiskLock) {
             synchronized (mInMemoryLock) {
@@ -586,7 +595,8 @@ final class HistoricalRegistry {
         }
     }
 
-    void offsetHistory(long offsetMillis) {
+    @Override
+    public void offsetHistory(long offsetMillis) {
         synchronized (mOnDiskLock) {
             synchronized (mInMemoryLock) {
                 if (!isPersistenceInitializedMLocked()) {
@@ -608,13 +618,11 @@ final class HistoricalRegistry {
                 mPersistence.persistHistoricalOpsDLocked(history);
             }
         }
-    }
-
-    void offsetDiscreteHistory(long offsetMillis) {
         mDiscreteRegistry.offsetHistory(offsetMillis);
     }
 
-    void addHistoricalOps(HistoricalOps ops) {
+    @Override
+    public void addHistoricalOps(HistoricalOps ops) {
         final List<HistoricalOps> pendingWrites;
         synchronized (mInMemoryLock) {
             if (!isPersistenceInitializedMLocked()) {
@@ -635,7 +643,8 @@ final class HistoricalRegistry {
         offsetHistory(offsetMillis);
     }
 
-    void resetHistoryParameters() {
+    @Override
+    public void resetHistoryParameters() {
         if (!isPersistenceInitializedMLocked()) {
             Slog.d(LOG_TAG, "Interaction before persistence initialized");
             return;
@@ -645,7 +654,8 @@ final class HistoricalRegistry {
         mDiscreteRegistry.setDebugMode(false);
     }
 
-    void clearHistory(int uid, String packageName) {
+    @Override
+    public void clearHistory(int uid, String packageName) {
         synchronized (mOnDiskLock) {
             synchronized (mInMemoryLock) {
                 if (!isPersistenceInitializedMLocked()) {
@@ -669,11 +679,13 @@ final class HistoricalRegistry {
         mDiscreteRegistry.clearHistory(uid, packageName);
     }
 
-    void writeAndClearDiscreteHistory() {
+    @Override
+    public void writeAndClearDiscreteHistory() {
         mDiscreteRegistry.writeAndClearOldAccessHistory();
     }
 
-    void clearAllHistory() {
+    @Override
+    public void clearAllHistory() {
         clearHistoricalRegistry();
         mDiscreteRegistry.clearHistory();
     }
@@ -742,7 +754,8 @@ final class HistoricalRegistry {
         return mCurrentHistoricalOps;
     }
 
-    void shutdown() {
+    @Override
+    public void shutdown() {
         synchronized (mInMemoryLock) {
             if (mMode == AppOpsManager.HISTORICAL_MODE_DISABLED) {
                 return;
@@ -753,7 +766,8 @@ final class HistoricalRegistry {
         mDiscreteRegistry.shutdown();
     }
 
-    void persistPendingHistory() {
+    @Override
+    public void persistPendingHistory() {
         final List<HistoricalOps> pendingWrites;
         synchronized (mOnDiskLock) {
             synchronized (mInMemoryLock) {

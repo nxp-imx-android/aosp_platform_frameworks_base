@@ -27,8 +27,10 @@ import static android.view.MotionEvent.ACTION_UP;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS;
 
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightId;
 import static com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopMode;
 import static com.android.wm.shell.shared.desktopmode.DesktopModeStatus.canEnterDesktopModeOrShowAppHandle;
+import static com.android.wm.shell.shared.desktopmode.DesktopModeStatus.isDesktopModeSupportedOnDisplay;
 import static com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener;
@@ -207,7 +209,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final WindowDecorCaptionHandleRepository mWindowDecorCaptionHandleRepository;
     private final DesktopUserRepositories mDesktopUserRepositories;
     private boolean mIsRecentsTransitionRunning = false;
-
+    private boolean mIsDragging = false;
     private Runnable mLoadAppInfoRunnable;
     private Runnable mSetAppInfoRunnable;
 
@@ -513,7 +515,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         updateRelayoutParams(mRelayoutParams, mContext, taskInfo, mSplitScreenController,
                 applyStartTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
                 mIsStatusBarVisible, mIsKeyguardVisibleAndOccluded, inFullImmersive,
-                mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
+                mIsDragging, mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
                 displayExclusionRegion, mIsRecentsTransitionRunning,
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo));
 
@@ -911,6 +913,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean isStatusBarVisible,
             boolean isKeyguardVisibleAndOccluded,
             boolean inFullImmersiveMode,
+            boolean isDragging,
             @NonNull InsetsState displayInsetsState,
             boolean hasGlobalFocus,
             @NonNull Region displayExclusionRegion,
@@ -933,9 +936,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mAsyncViewHost = isAppHandle;
 
         final boolean showCaption;
-        if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
+        if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue() && isDragging) {
+            // If the task is being dragged, the caption should not be hidden so that it continues
+            // receiving input
+            showCaption = true;
+        } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
             if (inFullImmersiveMode) {
-                showCaption = isStatusBarVisible && !isKeyguardVisibleAndOccluded;
+                showCaption = (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
             } else {
                 showCaption = taskInfo.isFreeform()
                         || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
@@ -1090,8 +1097,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return Resources.ID_NULL;
     }
 
-    private PointF calculateMaximizeMenuPosition(int menuWidth, int menuHeight) {
-        final PointF position = new PointF();
+    private Point calculateMaximizeMenuPosition(int menuWidth, int menuHeight) {
+        final Point position = new Point();
         final Resources resources = mContext.getResources();
         final DisplayLayout displayLayout =
                 mDisplayController.getDisplayLayout(mTaskInfo.displayId);
@@ -1106,11 +1113,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         final int[] maximizeButtonLocation = new int[2];
         maximizeWindowButton.getLocationInWindow(maximizeButtonLocation);
 
-        float menuLeft = (mPositionInParent.x + maximizeButtonLocation[0] - ((float) (menuWidth
-                - maximizeWindowButton.getWidth()) / 2));
-        float menuTop = (mPositionInParent.y + captionHeight);
-        final float menuRight = menuLeft + menuWidth;
-        final float menuBottom = menuTop + menuHeight;
+        int menuLeft = (mPositionInParent.x + maximizeButtonLocation[0] - (menuWidth
+                - maximizeWindowButton.getWidth()) / 2);
+        int menuTop = (mPositionInParent.y + captionHeight);
+        final int menuRight = menuLeft + menuWidth;
+        final int menuBottom = menuTop + menuHeight;
 
         // If the menu is out of screen bounds, shift it as needed
         if (menuLeft < 0) {
@@ -1122,7 +1129,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             menuTop = (displayHeight - menuHeight);
         }
 
-        return new PointF(menuLeft, menuTop);
+        return new Point(menuLeft, menuTop);
     }
 
     boolean isHandleMenuActive() {
@@ -1405,7 +1412,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 supportsMultiInstance,
                 shouldShowManageWindowsButton,
                 shouldShowChangeAspectRatioButton,
-                canEnterDesktopMode(mContext),
+                isDesktopModeSupportedOnDisplay(mContext, mDisplay),
                 isBrowserApp,
                 isBrowserApp ? getAppLink() : getBrowserLink(),
                 mResult.mCaptionWidth,
@@ -1702,6 +1709,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mExclusionRegionListener.onExclusionRegionDismissed(mTaskInfo.taskId);
         disposeResizeVeil();
         disposeStatusBarInputLayer();
+        mWindowDecorViewHolder.close();
         mWindowDecorViewHolder = null;
         if (canEnterDesktopMode(mContext) && isEducationEnabled()) {
             notifyNoCaptionHandle();
@@ -1761,16 +1769,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private static int getCaptionHeightIdStatic(@WindowingMode int windowingMode) {
         return windowingMode == WINDOWING_MODE_FULLSCREEN
                 ? com.android.internal.R.dimen.status_bar_height_default
-                : DesktopModeUtils.getAppHeaderHeightId();
+                : getDesktopViewAppHeaderHeightId();
     }
 
     private int getCaptionHeight(@WindowingMode int windowingMode) {
         return loadDimensionPixelSize(mContext.getResources(), getCaptionHeightId(windowingMode));
-    }
-
-    @Override
-    int getCaptionViewId() {
-        return R.id.desktop_mode_caption;
     }
 
     void setAnimatingTaskResizeOrReposition(boolean animatingTaskResizeOrReposition) {
@@ -1795,6 +1798,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
         mIsRecentsTransitionRunning = isRecentsTransitionRunning;
+    }
+
+    /**
+     * Declares whether the window decoration is being dragged.
+     */
+    void setIsDragging(boolean isDragging) {
+        mIsDragging = isDragging;
     }
 
     /**

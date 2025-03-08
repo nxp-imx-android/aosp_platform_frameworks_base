@@ -103,6 +103,10 @@ public class IntegrationTests {
     @RequiresFlagsEnabled(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
     public void reportJankStats_confirmPendingStatsIncreases() {
         Activity jankTrackerActivity = mJankTrackerActivityRule.launchActivity(null);
+        mDevice.wait(Until.findObject(
+                By.text(jankTrackerActivity.getString(R.string.continue_test))),
+                WAIT_FOR_TIMEOUT_MS);
+
         EditText editText = jankTrackerActivity.findViewById(R.id.edit_text);
         JankTracker jankTracker = editText.getJankTracker();
 
@@ -135,6 +139,10 @@ public class IntegrationTests {
     public void simulateWidgetStateChanges_confirmStateChangesAreTracked() {
         JankTrackerActivity jankTrackerActivity =
                 mJankTrackerActivityRule.launchActivity(null);
+        mDevice.wait(Until.findObject(
+                        By.text(jankTrackerActivity.getString(R.string.continue_test))),
+                WAIT_FOR_TIMEOUT_MS);
+
         TestWidget testWidget = jankTrackerActivity.findViewById(R.id.jank_tracker_widget);
         JankTracker jankTracker = testWidget.getJankTracker();
         jankTracker.forceListenerRegistration();

@@ -19,6 +19,7 @@ package com.android.systemui.qs.panels.ui.compose.selection
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.Transition
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateOffset
 import androidx.compose.animation.core.animateSize
 import androidx.compose.animation.core.updateTransition
@@ -58,11 +59,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
 import com.android.compose.modifiers.size
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BADGE_ANGLE_RAD
+import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeIconSize
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeSize
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeXOffset
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BadgeYOffset
@@ -147,16 +151,14 @@ fun InteractiveTileContainer(
                         onClick = onClick,
                     )
             ) {
+                val size = with(LocalDensity.current) { BadgeIconSize.toDp() }
                 Icon(
                     Icons.Default.Remove,
                     contentDescription = null,
                     modifier =
-                        Modifier.size(
-                                width = { decorationSize.width.roundToInt() },
-                                height = { decorationSize.height.roundToInt() },
-                            )
-                            .align(Alignment.Center)
-                            .graphicsLayer { this.alpha = badgeIconAlpha },
+                        Modifier.size(size).align(Alignment.Center).graphicsLayer {
+                            this.alpha = badgeIconAlpha
+                        },
                 )
             }
         }
@@ -184,26 +186,46 @@ private fun Modifier.selectionBorder(
     }
 }
 
+/**
+ * Draws a clickable badge in the top end corner of the parent composable.
+ *
+ * The badge will fade in and fade out based on whether or not it's enabled.
+ *
+ * @param icon the [ImageVector] to display in the badge
+ * @param contentDescription the content description for the icon
+ * @param enabled Whether the badge should be visible and clickable
+ * @param onClick the callback when the badge is clicked
+ */
 @Composable
-fun StaticTileBadge(icon: ImageVector, contentDescription: String?, onClick: () -> Unit) {
+fun StaticTileBadge(
+    icon: ImageVector,
+    contentDescription: String?,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
     val offset = with(LocalDensity.current) { Offset(BadgeXOffset.toPx(), BadgeYOffset.toPx()) }
+    val alpha by animateFloatAsState(if (enabled) 1f else 0f)
     MinimumInteractiveSizeComponent(angle = { BADGE_ANGLE_RAD }, offset = { offset }) {
         Box(
             Modifier.fillMaxSize()
-                .clickable(
-                    interactionSource = null,
-                    indication = null,
-                    onClickLabel = contentDescription,
-                    onClick = onClick,
-                )
+                .graphicsLayer { this.alpha = alpha }
+                .thenIf(enabled) {
+                    Modifier.clickable(
+                        interactionSource = null,
+                        indication = null,
+                        onClickLabel = contentDescription,
+                        onClick = onClick,
+                    )
+                }
         ) {
             val secondaryColor = MaterialTheme.colorScheme.secondary
+            val size = with(LocalDensity.current) { BadgeIconSize.toDp() }
             Icon(
                 icon,
                 contentDescription = contentDescription,
                 modifier =
-                    Modifier.size(BadgeSize).align(Alignment.Center).drawBehind {
-                        drawCircle(secondaryColor)
+                    Modifier.size(size).align(Alignment.Center).drawBehind {
+                        drawCircle(secondaryColor, radius = BadgeSize.toPx() / 2)
                     },
             )
         }
@@ -214,7 +236,8 @@ fun StaticTileBadge(icon: ImageVector, contentDescription: String?, onClick: () 
 private fun MinimumInteractiveSizeComponent(
     angle: () -> Float,
     offset: () -> Offset,
-    content: @Composable BoxScope.() -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit = {},
 ) {
     // Use a higher zIndex than the tile to draw over it, and manually create the touch target
     // as we're drawing over neighbor tiles as well.
@@ -222,7 +245,8 @@ private fun MinimumInteractiveSizeComponent(
     Box(
         contentAlignment = Alignment.Center,
         modifier =
-            Modifier.zIndex(2f)
+            modifier
+                .zIndex(2f)
                 .systemGestureExclusion { Rect(Offset.Zero, it.size.toSize()) }
                 .layout { measurable, constraints ->
                     val size = minTouchTargetSize.roundToPx()
@@ -315,6 +339,7 @@ private fun offsetForAngle(angle: Float, radius: Float, center: Offset): Offset 
 private object SelectionDefaults {
     val SelectedBorderWidth = 2.dp
     val BadgeSize = 24.dp
+    val BadgeIconSize = 16.sp
     val BadgeXOffset = -4.dp
     val BadgeYOffset = 4.dp
     val ResizingPillWidth = 8.dp

@@ -150,8 +150,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
                 {"Meta + Left arrow -> Go back", new int[]{META_KEY, KeyEvent.KEYCODE_DPAD_LEFT},
                         KeyGestureEvent.KEY_GESTURE_TYPE_BACK, KeyEvent.KEYCODE_DPAD_LEFT,
                         META_ON},
-                {"Meta + Del -> Go back", new int[]{META_KEY, KeyEvent.KEYCODE_DEL},
-                        KeyGestureEvent.KEY_GESTURE_TYPE_BACK, KeyEvent.KEYCODE_DEL, META_ON},
                 {"APP_SWITCH key -> Open App switcher", new int[]{KeyEvent.KEYCODE_APP_SWITCH},
                         KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
                         KeyEvent.KEYCODE_APP_SWITCH, 0},
@@ -607,29 +605,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
     }
 
     @Test
-    public void testKeyGestureAccessibilityShortcutChord() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.moveTimeForward(5000);
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordCalled();
-    }
-
-    @Test
-    public void testKeyGestureAccessibilityShortcutChordCancelled() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordNotCalled();
-    }
-
-    @Test
     public void testKeyGestureRingerToggleChord() {
         mPhoneWindowManager.overridePowerVolumeUp(POWER_VOLUME_UP_BEHAVIOR_MUTE);
         Assert.assertTrue(
@@ -669,29 +644,6 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
         Assert.assertTrue(
                 sendKeyGestureEventCancel(KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS));
         mPhoneWindowManager.assertShowGlobalActionsNotCalled();
-    }
-
-    @Test
-    public void testKeyGestureAccessibilityTvShortcutChord() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.moveTimeForward(5000);
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordCalled();
-    }
-
-    @Test
-    public void testKeyGestureAccessibilityTvShortcutChordCancelled() {
-        Assert.assertTrue(
-                sendKeyGestureEventStart(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        Assert.assertTrue(
-                sendKeyGestureEventCancel(
-                        KeyGestureEvent.KEY_GESTURE_TYPE_TV_ACCESSIBILITY_SHORTCUT_CHORD));
-        mPhoneWindowManager.assertAccessibilityKeychordNotCalled();
     }
 
     @Test

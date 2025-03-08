@@ -27,6 +27,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.GLANCEABLE_HUB
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.StateToValue
+import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.transitions.GlanceableHubTransition
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
@@ -49,7 +50,7 @@ constructor(
     @ShadeDisplayAware configurationInteractor: ConfigurationInteractor,
     animationFlow: KeyguardTransitionAnimationFlow,
     private val blurFactory: GlanceableHubBlurComponent.Factory,
-) : GlanceableHubTransition {
+) : GlanceableHubTransition, DeviceEntryIconTransition {
     private val transitionAnimation =
         animationFlow
             .setup(
@@ -102,4 +103,8 @@ constructor(
 
     val notificationTranslationX: Flow<Float> =
         keyguardTranslationX.map { it.value }.filterNotNull()
+
+    val deviceEntryBackgroundViewAlpha: Flow<Float> = keyguardAlpha
+
+    override val deviceEntryParentViewAlpha: Flow<Float> = keyguardAlpha
 }

@@ -51,6 +51,17 @@ flag {
 }
 
 flag {
+  name: "use_cached_insets_for_display_switch"
+  namespace: "windowing_frontend"
+  description: "Reduce intermediate insets changes for display switch"
+  bug: "266197298"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "edge_to_edge_by_default"
   namespace: "windowing_frontend"
   description: "Make app go edge-to-edge by default when targeting SDK 35 or greater"
@@ -71,6 +82,14 @@ flag {
   namespace: "windowing_frontend"
   description: "Deprecate and disable windowOptOutEdgeToEdgeEnforcement"
   bug: "377864165"
+  is_fixed_read_only: true
+}
+
+flag {
+  name: "action_mode_edge_to_edge"
+  namespace: "windowing_frontend"
+  description: "Make contextual action bar edge-to-edge"
+  bug: "379783298"
   is_fixed_read_only: true
 }
 
@@ -478,6 +497,28 @@ flag {
     namespace: "windowing_frontend"
     description: "Reduce task snapshot memory usage in either heap and dmabuf."
     bug: "238206323"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "early_launch_hint"
+    namespace: "windowing_frontend"
+    description: "Sets Launch powermode for activity launches earlier"
+    bug: "399380676"
+    is_fixed_read_only: true
+        metadata {
+            purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "scramble_snapshot_file_name"
+    namespace: "windowing_frontend"
+    description: "Scramble the file name of task snapshot."
+    bug: "293139053"
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX

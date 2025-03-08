@@ -27,7 +27,6 @@ import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
-import com.android.internal.widget.remotecompose.core.operations.DrawContent;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
@@ -164,12 +163,10 @@ public class CanvasOperations extends PaintOperation
      *
      * @param layoutComponent
      */
-    public void setComponent(LayoutComponent layoutComponent) {
+    public void setComponent(@Nullable LayoutComponent layoutComponent) {
         mComponent = layoutComponent;
-        for (Operation op : mList) {
-            if (op instanceof DrawContent) {
-                ((DrawContent) op).setComponent(layoutComponent);
-            }
+        if (layoutComponent != null) {
+            layoutComponent.setCanvasOperations(this);
         }
     }
 }

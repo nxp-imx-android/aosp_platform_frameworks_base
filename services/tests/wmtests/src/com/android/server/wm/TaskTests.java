@@ -1750,8 +1750,7 @@ public class TaskTests extends WindowTestsBase {
 
         primary.mVisibleRequested = true;
         secondary.mVisibleRequested = true;
-        primary.setAdjacentTaskFragment(secondary);
-        secondary.setAdjacentTaskFragment(primary);
+        primary.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(primary, secondary));
         primary.setEmbeddedDimArea(EMBEDDED_DIM_AREA_PARENT_TASK);
         doReturn(true).when(primary).shouldBoostDimmer();
         task.assignChildLayers(t);

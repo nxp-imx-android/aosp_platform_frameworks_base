@@ -29,6 +29,9 @@ import kotlinx.coroutines.flow.asStateFlow
 class FakeWallpaperRepository : WallpaperRepository {
     private val _wallpaperInfo: MutableStateFlow<WallpaperInfo?> = MutableStateFlow(null)
     override val wallpaperInfo: StateFlow<WallpaperInfo?> = _wallpaperInfo.asStateFlow()
+    private val _lockscreenWallpaperInfo: MutableStateFlow<WallpaperInfo?> = MutableStateFlow(null)
+    override val lockscreenWallpaperInfo: StateFlow<WallpaperInfo?> =
+        _lockscreenWallpaperInfo.asStateFlow()
     private val _wallpaperSupportsAmbientMode = MutableStateFlow(false)
     override val wallpaperSupportsAmbientMode: Flow<Boolean> =
         _wallpaperSupportsAmbientMode.asStateFlow()

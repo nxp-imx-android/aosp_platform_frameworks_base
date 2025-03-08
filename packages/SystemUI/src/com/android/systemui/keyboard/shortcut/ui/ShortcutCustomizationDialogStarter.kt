@@ -88,10 +88,7 @@ constructor(
     private fun createDialog(): Dialog {
         return dialogFactory.create(dialogDelegate = ShortcutCustomizationDialogDelegate()) { dialog
             ->
-            val uiState by
-                viewModel.shortcutCustomizationUiState.collectAsStateWithLifecycle(
-                    initialValue = ShortcutCustomizationUiState.Inactive
-                )
+            val uiState by viewModel.shortcutCustomizationUiState.collectAsStateWithLifecycle()
             val coroutineScope = rememberCoroutineScope()
             ShortcutCustomizationDialog(
                 uiState = uiState,

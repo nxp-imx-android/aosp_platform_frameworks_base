@@ -243,16 +243,17 @@ class AppCompatActivityRobot {
                 .getAspectRatioOverrides()).getUserMinAspectRatio();
     }
 
+    void setShouldRefreshActivityForCameraCompat(boolean enabled) {
+        doReturn(enabled).when(mActivityStack.top().mAppCompatController.getCameraOverrides())
+                .shouldRefreshActivityForCameraCompat();
+    }
+
     void setIgnoreOrientationRequest(boolean enabled) {
         mDisplayContent.setIgnoreOrientationRequest(enabled);
     }
 
     void setTopActivityOrganizedTask() {
         doReturn(mTaskStack.top()).when(mActivityStack.top()).getOrganizedTask();
-    }
-
-    void setIsInLetterboxAnimation(boolean inAnimation) {
-        doReturn(inAnimation).when(mActivityStack.top()).isInLetterboxAnimation();
     }
 
     void setTopTaskInMultiWindowMode(boolean inMultiWindowMode) {

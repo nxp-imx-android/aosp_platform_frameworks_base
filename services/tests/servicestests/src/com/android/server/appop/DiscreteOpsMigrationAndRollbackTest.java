@@ -70,7 +70,7 @@ public class DiscreteOpsMigrationAndRollbackTest {
                     opEvent.getDeviceId(), opEvent.getOpCode(), opEvent.getAttributionTag(),
                     opEvent.getOpFlags(), opEvent.getUidState(), opEvent.getAccessTime(),
                     opEvent.getDuration(), opEvent.getAttributionFlags(),
-                    (int) opEvent.getChainId(), DiscreteOpsRegistry.ACCESS_TYPE_NOTE_OP);
+                    (int) opEvent.getChainId());
         }
         xmlRegistry.writeAndClearOldAccessHistory();
         assertThat(xmlRegistry.readLargestChainIdFromDiskLocked()).isEqualTo(RECORD_COUNT);
@@ -104,7 +104,7 @@ public class DiscreteOpsMigrationAndRollbackTest {
                     opEvent.getDeviceId(), opEvent.getOpCode(), opEvent.getAttributionTag(),
                     opEvent.getOpFlags(), opEvent.getUidState(), opEvent.getAccessTime(),
                     opEvent.getDuration(), opEvent.getAttributionFlags(),
-                    (int) opEvent.getChainId(), DiscreteOpsRegistry.ACCESS_TYPE_NOTE_OP);
+                    (int) opEvent.getChainId());
         }
         // flush records from cache to the database.
         sqlRegistry.shutdown();

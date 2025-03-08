@@ -36,12 +36,7 @@ class AppCompatLetterboxUtils {
             outLetterboxPosition.set(0, 0);
             return;
         }
-        if (activity.isInLetterboxAnimation()) {
-            // In this case we attach the letterbox to the task instead of the activity.
-            activity.getTask().getPosition(outLetterboxPosition);
-        } else {
-            activity.getPosition(outLetterboxPosition);
-        }
+        activity.getPosition(outLetterboxPosition);
     }
 
     /**

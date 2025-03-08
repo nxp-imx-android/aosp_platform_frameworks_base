@@ -18,6 +18,7 @@ package com.android.systemui.qs.composefragment
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
@@ -48,6 +49,7 @@ import androidx.compose.foundation.layout.requiredHeightIn
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,16 +60,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.approachLayout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.layout.positionOnScreen
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
@@ -101,6 +107,7 @@ import com.android.mechanics.GestureContext
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
+import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyboard.shortcut.ui.composable.InteractionsConfig
@@ -248,12 +255,25 @@ constructor(
 
     @Composable
     private fun Content() {
-        PlatformTheme(isDarkTheme = true) {
+        PlatformTheme(isDarkTheme = true /* Delete AlwaysDarkMode when removing this */) {
             ProvideShortcutHelperIndication(interactionsConfig = interactionsConfig()) {
-                if (viewModel.isQsVisibleAndAnyShadeExpanded) {
+                // TODO(b/389985793): Make sure that there is no coroutine work or recompositions
+                // happening when alwaysCompose is true but isQsVisibleAndAnyShadeExpanded is false.
+                if (alwaysCompose || viewModel.isQsVisibleAndAnyShadeExpanded) {
                     Box(
                         modifier =
-                            Modifier.graphicsLayer { alpha = viewModel.viewAlpha }
+                            Modifier.thenIf(alwaysCompose) {
+                                    Modifier.layout { measurable, constraints ->
+                                        measurable.measure(constraints).run {
+                                            layout(width, height) {
+                                                if (viewModel.isQsVisibleAndAnyShadeExpanded) {
+                                                    place(0, 0)
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .graphicsLayer { alpha = viewModel.viewAlpha }
                                 .thenIf(notificationScrimClippingParams.isEnabled) {
                                     Modifier.notificationScrimClip {
                                         notificationScrimClippingParams.params
@@ -331,12 +351,12 @@ constructor(
         }
 
         SceneTransitionLayout(state = sceneState, modifier = Modifier.fillMaxSize()) {
-            scene(QuickSettings) {
+            scene(QuickSettings, alwaysCompose = alwaysCompose) {
                 LaunchedEffect(Unit) { viewModel.onQSOpen() }
                 Element(QuickSettings.rootElementKey, Modifier) { QuickSettingsElement() }
             }
 
-            scene(QuickQuickSettings) {
+            scene(QuickQuickSettings, alwaysCompose = alwaysCompose) {
                 LaunchedEffect(Unit) { viewModel.onQQSOpen() }
                 // Cannot pass the element modifier in because the top element has a `testTag`
                 // and this would overwrite it.
@@ -401,7 +421,7 @@ constructor(
     }
 
     override fun isCustomizing(): Boolean {
-        return viewModel.containerViewModel.editModeViewModel.isEditing.value
+        return viewModel.isEditing
     }
 
     override fun closeCustomizer() {
@@ -626,7 +646,21 @@ constructor(
             ) {
                 val Tiles =
                     @Composable {
-                        QuickQuickSettings(viewModel = viewModel.quickQuickSettingsViewModel)
+                        QuickQuickSettings(
+                            viewModel = viewModel.quickQuickSettingsViewModel,
+                            listening = {
+                                /*
+                                 *  When always compose is false, this will always be true, and we'll be
+                                 *  listening whenever this is composed.
+                                 *  When always compose is true, we listen if we are visible and not
+                                 *  fully expanded
+                                 */
+                                !alwaysCompose ||
+                                    (viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                        viewModel.expansionState.progress < 1f &&
+                                        !viewModel.isEditing)
+                            },
+                        )
                     }
                 val Media =
                     @Composable {
@@ -713,11 +747,26 @@ constructor(
                         )
                         val BrightnessSlider =
                             @Composable {
-                                BrightnessSliderContainer(
-                                    viewModel = containerViewModel.brightnessSliderViewModel,
-                                    modifier =
-                                        Modifier.systemGestureExclusionInShade().fillMaxWidth(),
-                                )
+                                AlwaysDarkMode {
+                                    Box(
+                                        Modifier.systemGestureExclusionInShade(
+                                            enabled = {
+                                                layoutState.transitionState is TransitionState.Idle
+                                            }
+                                        )
+                                    ) {
+                                        BrightnessSliderContainer(
+                                            viewModel =
+                                                containerViewModel.brightnessSliderViewModel,
+                                            containerColors =
+                                                ContainerColors(
+                                                    Color.Transparent,
+                                                    ContainerColors.defaultContainerColor,
+                                                ),
+                                            modifier = Modifier.fillMaxWidth(),
+                                        )
+                                    }
+                                }
                             }
                         val TileGrid =
                             @Composable {
@@ -726,6 +775,19 @@ constructor(
                                     TileGrid(
                                         viewModel = containerViewModel.tileGridViewModel,
                                         modifier = Modifier.fillMaxWidth(),
+                                        listening = {
+                                            /*
+                                             *  When always compose is false, this will always be true,
+                                             *  and we'll be listening whenever this is composed.
+                                             *  When always compose is true, we look a the second
+                                             *  condition and we'll listen if QS is visible AND we are
+                                             *  not fully collapsed.
+                                             */
+                                            !alwaysCompose ||
+                                                (viewModel.isQsVisibleAndAnyShadeExpanded &&
+                                                    viewModel.expansionState.progress > 0f &&
+                                                    !viewModel.isEditing)
+                                        },
                                     )
                                 }
                             }
@@ -830,6 +892,7 @@ constructor(
                 println("qqsPositionOnScreen", rect)
             }
             println("QQS visible", qqsVisible.value)
+            println("Always composed", alwaysCompose)
             if (::viewModel.isInitialized) {
                 printSection("View Model") { viewModel.dump(this@run, args) }
             }
@@ -1177,3 +1240,31 @@ private fun interactionsConfig() =
         // we are OK using this as our content is clipped and all corner radius are larger than this
         surfaceCornerRadius = 28.dp,
     )
+
+private inline val alwaysCompose
+    get() = Flags.alwaysComposeQsUiFragment()
+
+/**
+ * Forces the configuration and themes to be dark theme. This is needed in order to have
+ * [colorResource] retrieve the dark mode colors.
+ *
+ * This should be removed when we remove the force dark mode in [PlatformTheme] at the root of the
+ * compose hierarchy.
+ */
+@Composable
+private fun AlwaysDarkMode(content: @Composable () -> Unit) {
+    val currentConfig = LocalConfiguration.current
+    val darkConfig =
+        Configuration(currentConfig).apply {
+            uiMode =
+                (uiMode and (Configuration.UI_MODE_NIGHT_MASK.inv())) or
+                    Configuration.UI_MODE_NIGHT_YES
+        }
+    val newContext = LocalContext.current.createConfigurationContext(darkConfig)
+    CompositionLocalProvider(
+        LocalConfiguration provides darkConfig,
+        LocalContext provides newContext,
+    ) {
+        content()
+    }
+}

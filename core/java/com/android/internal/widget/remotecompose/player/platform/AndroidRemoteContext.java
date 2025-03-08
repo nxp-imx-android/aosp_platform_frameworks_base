@@ -197,7 +197,7 @@ public class AndroidRemoteContext extends RemoteContext {
 
     @Override
     public void runAction(int id, @NonNull String metadata) {
-        mDocument.performClick(this, id);
+        mDocument.performClick(this, id, metadata);
     }
 
     @Override
@@ -389,6 +389,11 @@ public class AndroidRemoteContext extends RemoteContext {
     @Override
     public int getInteger(int id) {
         return mRemoteComposeState.getInteger(id);
+    }
+
+    @Override
+    public long getLong(int id) {
+        return ((LongConstant) mRemoteComposeState.getObject(id)).getValue();
     }
 
     @Override

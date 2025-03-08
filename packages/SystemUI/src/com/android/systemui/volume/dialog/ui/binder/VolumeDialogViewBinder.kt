@@ -37,6 +37,7 @@ import com.android.systemui.common.ui.view.onApplyWindowInsets
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
+import com.android.systemui.volume.dialog.dagger.scope.VolumeDialog
 import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogScope
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogVisibilityModel
 import com.android.systemui.volume.dialog.ui.utils.JankListenerFactory
@@ -72,7 +73,7 @@ constructor(
     private val viewModel: VolumeDialogViewModel,
     private val jankListenerFactory: JankListenerFactory,
     private val tracer: VolumeTracer,
-    private val viewBinders: List<@JvmSuppressWildcards ViewBinder>,
+    @VolumeDialog private val viewBinders: List<@JvmSuppressWildcards ViewBinder>,
 ) {
 
     private val halfOpenedOffsetPx: Float =

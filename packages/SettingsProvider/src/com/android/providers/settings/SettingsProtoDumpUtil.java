@@ -1881,6 +1881,10 @@ class SettingsProtoDumpUtil {
                 SecureSettingsProto.Accessibility
                         .ACCESSIBILITY_MAGNIFICATION_JOYSTICK_ENABLED);
         dumpSetting(s, p,
+                Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE,
+                SecureSettingsProto.Accessibility
+                        .ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE);
+        dumpSetting(s, p,
                 Settings.Secure.ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED,
                 SecureSettingsProto.Accessibility
                         .ACCESSIBILITY_MAGNIFICATION_TWO_FINGER_TRIPLE_TAP_ENABLED);
@@ -2188,15 +2192,6 @@ class SettingsProtoDumpUtil {
         dumpSetting(s, p,
                 Settings.Secure.ENHANCED_VOICE_PRIVACY_ENABLED,
                 SecureSettingsProto.ENHANCED_VOICE_PRIVACY_ENABLED);
-
-        final long evenDimmerToken = p.start(SecureSettingsProto.EVEN_DIMMER);
-        dumpSetting(s, p,
-                Settings.Secure.EVEN_DIMMER_ACTIVATED,
-                SecureSettingsProto.EvenDimmer.EVEN_DIMMER_ACTIVATED);
-        dumpSetting(s, p,
-                Settings.Secure.EVEN_DIMMER_MIN_NITS,
-                SecureSettingsProto.EvenDimmer.EVEN_DIMMER_MIN_NITS);
-        p.end(evenDimmerToken);
 
         dumpSetting(s, p,
                 Settings.Secure.EM_VALUE,

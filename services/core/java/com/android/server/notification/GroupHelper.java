@@ -1002,8 +1002,7 @@ public class GroupHelper {
     private FullyQualifiedGroupKey getSectionGroupKeyWithFallback(final NotificationRecord record) {
         final NotificationSectioner sectioner = getSection(record);
         if (sectioner != null) {
-            return new FullyQualifiedGroupKey(record.getUserId(), record.getSbn().getPackageName(),
-                sectioner);
+            return FullyQualifiedGroupKey.forRecord(record, sectioner);
         } else {
             return getPreviousValidSectionKey(record);
         }
@@ -1102,6 +1101,49 @@ public class GroupHelper {
                     Slog.wtf(TAG, "Failed to group sparse groups", e);
                 }
             }
+        }
+    }
+
+    /**
+     * Called when a group summary is posted. If there are any ungrouped notifications that are
+     * in that group, remove them as they are no longer candidates for autogrouping.
+     *
+     * @param summaryRecord the NotificationRecord for the newly posted group summary
+     * @param notificationList the full notification list from NotificationManagerService
+     */
+    @FlaggedApi(android.service.notification.Flags.FLAG_NOTIFICATION_FORCE_GROUPING)
+    protected void onGroupSummaryAdded(final NotificationRecord summaryRecord,
+            final List<NotificationRecord> notificationList) {
+        String groupKey = summaryRecord.getSbn().getGroup();
+        synchronized (mAggregatedNotifications) {
+            final NotificationSectioner sectioner = getSection(summaryRecord);
+            if (sectioner == null) {
+                Slog.w(TAG, "onGroupSummaryAdded " + summaryRecord + ": no valid section found");
+                return;
+            }
+
+            FullyQualifiedGroupKey aggregateGroupKey = FullyQualifiedGroupKey.forRecord(
+                    summaryRecord, sectioner);
+            ArrayMap<String, NotificationAttributes> ungrouped =
+                    mUngroupedAbuseNotifications.getOrDefault(aggregateGroupKey,
+                            new ArrayMap<>());
+            if (ungrouped.isEmpty()) {
+                // don't bother looking through the notification list if there are no pending
+                // ungrouped notifications in this section (likely to be the most common case)
+                return;
+            }
+
+            // Look through full notification list for any notifications belonging to this group;
+            // remove from ungrouped map if needed, as the presence of the summary means they will
+            // now be grouped
+            for (NotificationRecord r : notificationList) {
+                if (!r.getNotification().isGroupSummary()
+                        && groupKey.equals(r.getSbn().getGroup())
+                        && ungrouped.containsKey(r.getKey())) {
+                    ungrouped.remove(r.getKey());
+                }
+            }
+            mUngroupedAbuseNotifications.put(aggregateGroupKey, ungrouped);
         }
     }
 
@@ -1496,8 +1538,8 @@ public class GroupHelper {
 
     private boolean isNotificationAggregatedInSection(NotificationRecord record,
             NotificationSectioner sectioner) {
-        final FullyQualifiedGroupKey fullAggregateGroupKey = new FullyQualifiedGroupKey(
-                record.getUserId(), record.getSbn().getPackageName(), sectioner);
+        final FullyQualifiedGroupKey fullAggregateGroupKey = FullyQualifiedGroupKey.forRecord(
+                record, sectioner);
         return record.getGroupKey().equals(fullAggregateGroupKey.toString());
     }
 
@@ -1893,6 +1935,12 @@ public class GroupHelper {
     record FullyQualifiedGroupKey(int userId, String pkg, String groupName) {
         FullyQualifiedGroupKey(int userId, String pkg, @Nullable NotificationSectioner sectioner) {
             this(userId, pkg, AGGREGATE_GROUP_KEY + (sectioner != null ? sectioner.mName : ""));
+        }
+
+        static FullyQualifiedGroupKey forRecord(NotificationRecord record,
+                @Nullable NotificationSectioner sectioner) {
+            return new FullyQualifiedGroupKey(record.getUserId(), record.getSbn().getPackageName(),
+                    sectioner);
         }
 
         @Override

@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Resources
-import android.graphics.RectF
 import android.os.Trace
 import android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS
 import android.provider.Settings.Global.ZEN_MODE_OFF
@@ -56,9 +55,11 @@ import com.android.systemui.log.core.Logger
 import com.android.systemui.modes.shared.ModesUi
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockEventListener
 import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockTickRate
+import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.plugins.clocks.ZenData.ZenMode
@@ -148,7 +149,7 @@ constructor(
         val clockStr = clock.toString()
         loggers.forEach { it.d({ "New Clock: $str1" }) { str1 = clockStr } }
 
-        clock.initialize(isDarkTheme(), dozeAmount.value, 0f, { onClockBoundsChanged.value = it })
+        clock.initialize(isDarkTheme(), dozeAmount.value, 0f, clockListener)
 
         if (!regionSamplingEnabled) {
             updateColors()
@@ -249,7 +250,7 @@ constructor(
     private var largeClockOnSecondaryDisplay = false
 
     val dozeAmount = MutableStateFlow(0f)
-    val onClockBoundsChanged = MutableStateFlow<RectF?>(null)
+    val onClockBoundsChanged = MutableStateFlow<VRectF>(VRectF.ZERO)
 
     private fun isDarkTheme(): Boolean {
         val isLightTheme = TypedValue()
@@ -311,6 +312,13 @@ constructor(
     private var weatherData: WeatherData? = null
     private var zenData: ZenData? = null
     private var alarmData: AlarmData? = null
+
+    private val clockListener =
+        object : ClockEventListener {
+            override fun onBoundsChanged(bounds: VRectF) {
+                onClockBoundsChanged.value = bounds
+            }
+        }
 
     private val configListener =
         object : ConfigurationController.ConfigurationListener {

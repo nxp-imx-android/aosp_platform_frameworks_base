@@ -66,3 +66,11 @@ flag {
      description: "Remove AppIntegrityManagerService"
      bug: "364200023"
 }
+
+flag {
+     name: "wear_gesture_api"
+     namespace: "wear_frameworks"
+     description: "Whether the Wear Gesture API is available."
+     bug: "396154116"
+     is_exported: true
+}

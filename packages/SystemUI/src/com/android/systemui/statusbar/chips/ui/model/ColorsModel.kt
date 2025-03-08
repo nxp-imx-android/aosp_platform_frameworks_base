@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.chips.ui.model
 import android.content.Context
 import android.content.res.ColorStateList
 import androidx.annotation.ColorInt
-import com.android.settingslib.Utils
 import com.android.systemui.res.R
 
 /** Model representing how the chip in the status bar should be colored. */
@@ -34,14 +33,14 @@ sealed interface ColorsModel {
     @ColorInt fun outline(context: Context): Int?
 
     /** The chip should match the theme's primary accent color. */
-    // TODO(b/347717946): The chip's color isn't getting updated when the user switches theme, it
-    // only gets updated when a different configuration change happens, like a rotation.
     data object AccentThemed : ColorsModel {
         override fun background(context: Context): ColorStateList =
-            Utils.getColorAttr(context, com.android.internal.R.attr.colorAccent)
+            ColorStateList.valueOf(
+                context.getColor(com.android.internal.R.color.materialColorPrimaryFixedDim)
+            )
 
         override fun text(context: Context) =
-            Utils.getColorAttrDefaultColor(context, com.android.internal.R.attr.colorPrimary)
+            context.getColor(com.android.internal.R.color.materialColorOnPrimaryFixed)
 
         override fun outline(context: Context) = null
     }

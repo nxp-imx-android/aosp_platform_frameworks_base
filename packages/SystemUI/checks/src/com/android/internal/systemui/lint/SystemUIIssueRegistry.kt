@@ -50,6 +50,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 ShadeDisplayAwareDialogDetector.ISSUE,
                 RegisterContentObserverSyncViaSettingsProxyDetector.SYNC_WARNING,
                 RegisterContentObserverViaContentResolverDetector.CONTENT_RESOLVER_ERROR,
+                RunBlockingDetector.ISSUE,
             )
 
     override val api: Int

@@ -1847,6 +1847,7 @@ public class KeyguardViewMediator implements CoreStartable,
         // explicitly DO NOT want to call
         // mKeyguardViewControllerLazy.get().setKeyguardGoingAwayState(false)
         // here, since that will mess with the device lock state.
+        mKeyguardStateController.notifyKeyguardGoingAway(false);
         mUpdateMonitor.dispatchKeyguardGoingAway(false);
 
         notifyStartedGoingToSleep();
@@ -2994,7 +2995,6 @@ public class KeyguardViewMediator implements CoreStartable,
                 startKeyguardTransition(showing, aodShowing);
             } else {
                 try {
-
                     mActivityTaskManagerService.setLockScreenShown(showing, aodShowing);
                 } catch (RemoteException ignored) {
                 }
@@ -3650,30 +3650,33 @@ public class KeyguardViewMediator implements CoreStartable,
             return;
         }
 
-        try {
-            int flags = KEYGUARD_GOING_AWAY_FLAG_NO_WINDOW_ANIMATIONS
-                    | KEYGUARD_GOING_AWAY_FLAG_WITH_WALLPAPER;
+        int flags = KEYGUARD_GOING_AWAY_FLAG_NO_WINDOW_ANIMATIONS
+                | KEYGUARD_GOING_AWAY_FLAG_WITH_WALLPAPER;
 
-            // If we are unlocking to the launcher, clear the snapshot so that any changes as part
-            // of the in-window animations are reflected. This is needed even if we're not actually
-            // playing in-window animations for this particular unlock since a previous unlock might
-            // have changed the Launcher state.
-            if (mKeyguardUnlockAnimationControllerLazy.get().isSupportedLauncherUnderneath()) {
-                flags |= KEYGUARD_GOING_AWAY_FLAG_TO_LAUNCHER_CLEAR_SNAPSHOT;
-            }
+        // If we are unlocking to the launcher, clear the snapshot so that any changes as part
+        // of the in-window animations are reflected. This is needed even if we're not actually
+        // playing in-window animations for this particular unlock since a previous unlock might
+        // have changed the Launcher state.
+        if (mKeyguardUnlockAnimationControllerLazy.get().isSupportedLauncherUnderneath()) {
+            flags |= KEYGUARD_GOING_AWAY_FLAG_TO_LAUNCHER_CLEAR_SNAPSHOT;
+        }
 
-            mKeyguardStateController.notifyKeyguardGoingAway(true);
+        mKeyguardStateController.notifyKeyguardGoingAway(true);
 
-            if (!KeyguardWmStateRefactor.isEnabled()) {
-                // Handled in WmLockscreenVisibilityManager.
-                mGoingAwayRequestedForUserId = mSelectedUserInteractor.getSelectedUserId();
+        if (!KeyguardWmStateRefactor.isEnabled()) {
+            // Handled in WmLockscreenVisibilityManager.
+            mGoingAwayRequestedForUserId = mSelectedUserInteractor.getSelectedUserId();
+            final int goingAwayFlags = flags;
+            mUiBgExecutor.execute(() -> {
                 Log.d(TAG, "keyguardGoingAway requested for userId: "
                         + mGoingAwayRequestedForUserId);
-                mActivityTaskManagerService.keyguardGoingAway(flags);
-            }
-        } catch (RemoteException e) {
-            mSurfaceBehindRemoteAnimationRequested = false;
-            Log.e(TAG, "Failed to report keyguardGoingAway", e);
+                try {
+                    mActivityTaskManagerService.keyguardGoingAway(goingAwayFlags);
+                } catch (RemoteException e) {
+                    mSurfaceBehindRemoteAnimationRequested = false;
+                    Log.e(TAG, "Failed to report keyguardGoingAway", e);
+                }
+            });
         }
     }
 

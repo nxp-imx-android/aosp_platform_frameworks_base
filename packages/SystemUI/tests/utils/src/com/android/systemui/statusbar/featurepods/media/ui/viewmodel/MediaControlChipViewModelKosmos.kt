@@ -18,14 +18,19 @@ package com.android.systemui.statusbar.featurepods.media.ui.viewmodel
 
 import android.content.testableContext
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.statusbar.featurepods.media.domain.interactor.mediaControlChipInteractor
 
-val Kosmos.mediaControlChipViewModel: MediaControlChipViewModel by
+private val Kosmos.mediaControlChipViewModel: MediaControlChipViewModel by
     Kosmos.Fixture {
         MediaControlChipViewModel(
-            backgroundScope = applicationCoroutineScope,
             applicationContext = testableContext,
             mediaControlChipInteractor = mediaControlChipInteractor,
         )
+    }
+
+val Kosmos.mediaControlChipViewModelFactory by
+    Kosmos.Fixture {
+        object : MediaControlChipViewModel.Factory {
+            override fun create(): MediaControlChipViewModel = mediaControlChipViewModel
+        }
     }

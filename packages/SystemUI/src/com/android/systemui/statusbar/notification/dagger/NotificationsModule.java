@@ -37,6 +37,8 @@ import com.android.systemui.statusbar.NotificationListener;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.NotificationLaunchAnimatorControllerProvider;
 import com.android.systemui.statusbar.notification.VisibilityLocationProvider;
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.NotifInflaterImpl;
 import com.android.systemui.statusbar.notification.collection.NotifLiveDataStore;
 import com.android.systemui.statusbar.notification.collection.NotifLiveDataStoreImpl;
@@ -81,6 +83,7 @@ import com.android.systemui.statusbar.notification.logging.dagger.NotificationsL
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractorImpl;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
+import com.android.systemui.statusbar.notification.row.NotificationActionClickManager;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactory;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactoryLooperImpl;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
@@ -340,4 +343,9 @@ public interface NotificationsModule {
             return MagneticNotificationRowManager.getEmpty();
         }
     }
+
+    /** Provides an instance of {@link EntryAdapterFactory} */
+    @Binds
+    EntryAdapterFactory provideEntryAdapterFactory(EntryAdapterFactoryImpl impl);
+
 }

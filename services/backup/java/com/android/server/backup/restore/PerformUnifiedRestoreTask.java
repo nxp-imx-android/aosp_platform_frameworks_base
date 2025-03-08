@@ -589,6 +589,7 @@ public class PerformUnifiedRestoreTask implements BackupRestoreTask {
                         monitoringExtras);
                 Slog.e(TAG, "Failure getting next package name");
                 EventLog.writeEvent(EventLogTags.RESTORE_TRANSPORT_FAILURE);
+                mStatus = BackupTransport.TRANSPORT_ERROR;
                 nextState = UnifiedRestoreState.FINAL;
                 return;
             } else if (mRestoreDescription == RestoreDescription.NO_MORE_PACKAGES) {
@@ -1307,7 +1308,7 @@ public class PerformUnifiedRestoreTask implements BackupRestoreTask {
 
         // The app has timed out handling a restoring file
         @Override
-        public void handleCancel(boolean cancelAll) {
+        public void handleCancel(@CancellationReason int cancellationReason) {
             mOperationStorage.removeOperation(mEphemeralOpToken);
             Slog.w(TAG, "Full-data restore target timed out; shutting down");
             Bundle monitoringExtras = addRestoreOperationTypeToEvent(/* extras= */ null);
@@ -1555,7 +1556,7 @@ public class PerformUnifiedRestoreTask implements BackupRestoreTask {
 
     // A call to agent.doRestore() or agent.doRestoreFinished() has timed out
     @Override
-    public void handleCancel(boolean cancelAll) {
+    public void handleCancel(@CancellationReason int cancellationReason) {
         mOperationStorage.removeOperation(mEphemeralOpToken);
         Slog.e(TAG, "Timeout restoring application " + mCurrentPackage.packageName);
         Bundle monitoringExtras = addRestoreOperationTypeToEvent(/* extras= */ null);

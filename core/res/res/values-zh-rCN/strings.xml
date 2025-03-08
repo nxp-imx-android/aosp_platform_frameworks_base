@@ -1803,8 +1803,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"单手模式"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"极暗"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"助听装置"</string>
-    <!-- no translation found for autoclick_feature_name (8149248738736949630) -->
-    <skip />
+    <string name="autoclick_feature_name" msgid="8149248738736949630">"自动点击"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"已断开连接"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"已连接"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"活跃"</string>
@@ -1966,7 +1965,8 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定前要求绘制解锁图案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消时要求输入密码"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"由您的管理员安装。\n前往设置可查看已授予的权限"</string>
-    <string name="package_updated_device_owner" msgid="7560272363805506941">"已由您的管理员更新"</string>
+    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
+    <skip />
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"已由您的管理员删除"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"确定"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
@@ -2274,6 +2274,18 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"滚动"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"暂停"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"位置"</string>
+    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
+    <skip />
+    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
+    <skip />
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> 已被放入受限存储分区"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>："</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"发送了一张图片"</string>
@@ -2481,6 +2493,8 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"工作 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"测试"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"共用"</string>
+    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
+    <skip />
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"工作资料"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"私密空间"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"克隆"</string>

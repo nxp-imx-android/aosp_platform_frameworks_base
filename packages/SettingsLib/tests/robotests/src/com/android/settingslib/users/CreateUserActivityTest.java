@@ -65,23 +65,23 @@ public class CreateUserActivityTest {
     }
 
     @Test
-    public void onTouchEvent_dismissesDialogAndCancelsResult() {
+    public void onTouchEvent_finishesActivityAndCancelsResult() {
         mCreateUserActivity.onTouchEvent(MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0,
                 0));
 
-        assertThat(mCreateUserActivity.mSetupUserDialog.isShowing()).isFalse();
+        assertThat(mCreateUserActivity.isFinishing()).isTrue();
         assertThat(shadowOf(mCreateUserActivity).getResultCode())
                 .isEqualTo(Activity.RESULT_CANCELED);
     }
 
     @Test
-    public void setSuccessResult_dismissesDialogAndSetsSuccessResult() {
+    public void setSuccessResult_finishesActivityAndSetsSuccessResult() {
         Drawable mockDrawable = mock(Drawable.class);
 
         mCreateUserActivity.setSuccessResult(TEST_USER_NAME, mockDrawable, TEST_USER_ICON_PATH,
                 TEST_IS_ADMIN);
 
-        assertThat(mCreateUserActivity.mSetupUserDialog.isShowing()).isFalse();
+        assertThat(mCreateUserActivity.isFinishing()).isTrue();
         assertThat(shadowOf(mCreateUserActivity).getResultCode()).isEqualTo(Activity.RESULT_OK);
 
         Intent resultIntent = shadowOf(mCreateUserActivity).getResultIntent();
@@ -92,10 +92,10 @@ public class CreateUserActivityTest {
     }
 
     @Test
-    public void cancel_dismissesDialogAndSetsCancelResult() {
+    public void cancel_finishesActivityAndSetsCancelResult() {
         mCreateUserActivity.cancel();
 
-        assertThat(mCreateUserActivity.mSetupUserDialog.isShowing()).isFalse();
+        assertThat(mCreateUserActivity.isFinishing()).isTrue();
         assertThat(shadowOf(mCreateUserActivity).getResultCode())
                 .isEqualTo(Activity.RESULT_CANCELED);
     }

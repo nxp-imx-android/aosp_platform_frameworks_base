@@ -16,11 +16,9 @@
 
 package com.android.systemui.qs.panels.ui.viewmodel
 
-
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.FakeQSTile
 import com.android.systemui.qs.pipeline.data.repository.tileSpecRepository
@@ -48,45 +46,43 @@ class DetailsViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun changeTileDetailsViewModel() = with(kosmos) {
-        testScope.runTest {
-            val specs = listOf(
-                spec,
-                specNoDetails,
-            )
-            tileSpecRepository.setTiles(0, specs)
-            runCurrent()
+    fun changeTileDetailsViewModel() =
+        with(kosmos) {
+            testScope.runTest {
+                val specs = listOf(spec, specNoDetails)
+                tileSpecRepository.setTiles(0, specs)
+                runCurrent()
 
-            val tiles = currentTilesInteractor.currentTiles.value
+                val tiles = currentTilesInteractor.currentTiles.value
 
-            assertThat(currentTilesInteractor.currentTilesSpecs.size).isEqualTo(2)
-            assertThat(tiles[1].spec).isEqualTo(specNoDetails)
-            (tiles[1].tile as FakeQSTile).hasDetailsViewModel = false
+                assertThat(currentTilesInteractor.currentTilesSpecs.size).isEqualTo(2)
+                assertThat(tiles[1].spec).isEqualTo(specNoDetails)
+                (tiles[1].tile as FakeQSTile).hasDetailsViewModel = false
 
-            assertThat(underTest.activeTileDetails).isNull()
+                assertThat(underTest.activeTileDetails).isNull()
 
-            // Click on the tile who has the `spec`.
-            assertThat(underTest.onTileClicked(spec)).isTrue()
-            assertThat(underTest.activeTileDetails).isNotNull()
-            assertThat(underTest.activeTileDetails?.getTitle()).isEqualTo("internet")
+                // Click on the tile who has the `spec`.
+                assertThat(underTest.onTileClicked(spec)).isTrue()
+                assertThat(underTest.activeTileDetails).isNotNull()
+                assertThat(underTest.activeTileDetails?.title).isEqualTo("internet")
 
-            // Click on a tile who dose not have a valid spec.
-            assertThat(underTest.onTileClicked(null)).isFalse()
-            assertThat(underTest.activeTileDetails).isNull()
+                // Click on a tile who dose not have a valid spec.
+                assertThat(underTest.onTileClicked(null)).isFalse()
+                assertThat(underTest.activeTileDetails).isNull()
 
-            // Click again on the tile who has the `spec`.
-            assertThat(underTest.onTileClicked(spec)).isTrue()
-            assertThat(underTest.activeTileDetails).isNotNull()
-            assertThat(underTest.activeTileDetails?.getTitle()).isEqualTo("internet")
+                // Click again on the tile who has the `spec`.
+                assertThat(underTest.onTileClicked(spec)).isTrue()
+                assertThat(underTest.activeTileDetails).isNotNull()
+                assertThat(underTest.activeTileDetails?.title).isEqualTo("internet")
 
-            // Click on a tile who dose not have a detailed view.
-            assertThat(underTest.onTileClicked(specNoDetails)).isFalse()
-            assertThat(underTest.activeTileDetails).isNull()
+                // Click on a tile who dose not have a detailed view.
+                assertThat(underTest.onTileClicked(specNoDetails)).isFalse()
+                assertThat(underTest.activeTileDetails).isNull()
 
-            underTest.closeDetailedView()
-            assertThat(underTest.activeTileDetails).isNull()
+                underTest.closeDetailedView()
+                assertThat(underTest.activeTileDetails).isNull()
 
-            assertThat(underTest.onTileClicked(null)).isFalse()
+                assertThat(underTest.onTileClicked(null)).isFalse()
+            }
         }
-    }
 }

@@ -16,6 +16,8 @@
 
 package com.android.systemui.model
 
+import com.android.systemui.shared.system.QuickStepContract.getSystemUiStateString
+
 /**
  * Represents a set of state changes. A bit can either be set to `true` or `false`.
  *
@@ -41,15 +43,16 @@ class StateChange {
         return this
     }
 
-    fun hasChanges() = flagsToSet != 0L || flagsToClear != 0L
-
-    /** Applies all changed flags to [sysUiState]. */
+    /**
+     * Applies all changed flags to [sysUiState].
+     *
+     * Note this doesn't call [SysUiState.commitUpdate].
+     */
     fun applyTo(sysUiState: SysUiState) {
         iterateBits(flagsToSet or flagsToClear) { bit ->
             val isBitSetInNewState = flagsToSet and bit != 0L
             sysUiState.setFlag(bit, isBitSetInNewState)
         }
-        sysUiState.commitUpdate()
     }
 
     fun applyTo(sysUiState: Long): Long {
@@ -69,14 +72,26 @@ class StateChange {
         }
     }
 
-    /** Clears all the flags changed in a [sysUiState] */
-    fun clearAllChangedFlagsIn(sysUiState: SysUiState) {
+    /**
+     * Clears all the flags changed in a [sysUiState].
+     *
+     * Note this doesn't call [SysUiState.commitUpdate].
+     */
+    fun clearFrom(sysUiState: SysUiState) {
         iterateBits(flagsToSet or flagsToClear) { bit -> sysUiState.setFlag(bit, false) }
-        sysUiState.commitUpdate()
     }
 
+    /** Resets all the pending changes. */
     fun clear() {
         flagsToSet = 0
         flagsToClear = 0
+    }
+
+    override fun toString(): String {
+        return """StateChange(flagsToSet=${getSystemUiStateString(flagsToSet)}, flagsToClear=${
+            getSystemUiStateString(
+                flagsToClear
+            )
+        })"""
     }
 }

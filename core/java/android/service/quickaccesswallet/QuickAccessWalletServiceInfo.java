@@ -96,6 +96,10 @@ class QuickAccessWalletServiceInfo {
             defaultAppPackageName = defaultPaymentApp.getPackageName();
         }
 
+        if (defaultAppPackageName == null || defaultAppUser < 0) {
+            return null;
+        }
+
         ServiceInfo serviceInfo = getWalletServiceInfo(context, defaultAppPackageName,
                 defaultAppUser);
         if (serviceInfo == null) {

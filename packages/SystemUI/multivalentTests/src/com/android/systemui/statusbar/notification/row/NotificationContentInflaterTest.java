@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.notification.row;
 
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC;
-import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_SENSITIVE_CONTENT;
+import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP;
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType;
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE;
 import static com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL;
@@ -472,7 +472,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
                 com.android.systemui.res.R.drawable.ic_person).setStyle(messagingStyle).build();
         ExpandableNotificationRow row = mHelper.createRow(messageNotif);
         inflateAndWait(false, mNotificationInflater, FLAG_CONTENT_VIEW_PUBLIC,
-                REDACTION_TYPE_SENSITIVE_CONTENT, row);
+                REDACTION_TYPE_OTP, row);
         NotificationContentView publicView = row.getPublicLayout();
         assertNotNull(publicView);
         // The display name should be included, but not the content or message text
@@ -493,7 +493,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
                 .build();
         ExpandableNotificationRow row = mHelper.createRow(notif);
         inflateAndWait(false, mNotificationInflater, FLAG_CONTENT_VIEW_PUBLIC,
-                REDACTION_TYPE_SENSITIVE_CONTENT, row);
+                REDACTION_TYPE_OTP, row);
         NotificationContentView publicView = row.getPublicLayout();
         assertNotNull(publicView);
         assertFalse(hasText(publicView, contentText));

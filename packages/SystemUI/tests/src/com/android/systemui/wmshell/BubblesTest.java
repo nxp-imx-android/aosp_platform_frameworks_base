@@ -33,6 +33,8 @@ import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -54,8 +56,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 
 import android.app.ActivityManager;
 import android.app.IActivityManager;
@@ -136,7 +136,6 @@ import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
-import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
@@ -166,7 +165,6 @@ import com.android.systemui.statusbar.policy.data.repository.FakeDeviceProvision
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.FakeEventLog;
 import com.android.systemui.util.settings.FakeGlobalSettings;
-import com.android.systemui.util.settings.FakeSettings;
 import com.android.systemui.util.settings.SystemSettings;
 import com.android.systemui.util.time.SystemClock;
 import com.android.wm.shell.Flags;
@@ -206,8 +204,6 @@ import com.android.wm.shell.taskview.TaskViewRepository;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
 
-import kotlin.Lazy;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -218,9 +214,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.stubbing.Answer;
 
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -228,6 +221,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+
+import kotlin.Lazy;
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -451,7 +448,6 @@ public class BubblesTest extends SysuiTestCase {
                 () -> mSelectedUserInteractor,
                 mUserTracker,
                 mNotificationShadeWindowModel,
-                new FakeSettings(),
                 mKosmos::getCommunalInteractor,
                 mKosmos.getShadeLayoutParams()
         );
@@ -605,14 +601,19 @@ public class BubblesTest extends SysuiTestCase {
         // Get a reference to KeyguardStateController.Callback
         verify(mKeyguardStateController, atLeastOnce())
                 .addCallback(mKeyguardStateControllerCallbackCaptor.capture());
+
+        // Make sure mocks are set up for current user
+        switchUser(ActivityManager.getCurrentUser());
     }
 
     @After
     public void tearDown() throws Exception {
-        ArrayList<Bubble> bubbles = new ArrayList<>(mBubbleData.getBubbles());
-        for (int i = 0; i < bubbles.size(); i++) {
-            mBubbleController.removeBubble(bubbles.get(i).getKey(),
-                    Bubbles.DISMISS_NO_LONGER_BUBBLE);
+        if (mBubbleData != null) {
+            ArrayList<Bubble> bubbles = new ArrayList<>(mBubbleData.getBubbles());
+            for (int i = 0; i < bubbles.size(); i++) {
+                mBubbleController.removeBubble(bubbles.get(i).getKey(),
+                        Bubbles.DISMISS_NO_LONGER_BUBBLE);
+            }
         }
         mTestableLooper.processAllMessages();
 
@@ -2054,6 +2055,9 @@ public class BubblesTest extends SysuiTestCase {
 
     @Test
     public void testShowStackEdu_isConversationBubble() {
+        // TODO(b/401025577): Prevent this test from raising a WTF, and remove this exemption
+        mLogWtfRule.addFailureLogExemption(log-> log.getTag().equals("FloatingCoordinator"));
+
         // Setup
         setPrefBoolean(StackEducationView.PREF_STACK_EDUCATION, false);
         BubbleEntry bubbleEntry = createBubbleEntry();

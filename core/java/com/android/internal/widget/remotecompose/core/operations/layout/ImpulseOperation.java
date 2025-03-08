@@ -117,7 +117,7 @@ public class ImpulseOperation extends PaintOperation implements VariableSupport,
     @NonNull
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("LoopOperation\n");
+        StringBuilder builder = new StringBuilder("ImpulseOperation\n");
         for (Operation operation : mList) {
             builder.append("  startAt: ");
             builder.append(mStartAt);

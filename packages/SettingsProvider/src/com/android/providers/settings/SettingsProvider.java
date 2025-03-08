@@ -396,12 +396,15 @@ public class SettingsProvider extends ContentProvider {
 
     private volatile SystemConfigManager mSysConfigManager;
 
+    private PackageMonitor mPackageMonitor;
+
     @GuardedBy("mLock")
     private boolean mSyncConfigDisabledUntilReboot;
 
     @ChangeId
     @EnabledSince(targetSdkVersion=android.os.Build.VERSION_CODES.S)
     private static final long ENFORCE_READ_PERMISSION_FOR_MULTI_SIM_DATA_CALL = 172670679L;
+
 
     @Override
     public boolean onCreate() {
@@ -1036,7 +1039,7 @@ public class SettingsProvider extends ContentProvider {
             }
         }, userFilter);
 
-        PackageMonitor monitor = new PackageMonitor() {
+        mPackageMonitor = new PackageMonitor() {
             @Override
             public void onPackageRemoved(String packageName, int uid) {
                 synchronized (mLock) {
@@ -1062,7 +1065,7 @@ public class SettingsProvider extends ContentProvider {
         };
 
         // package changes
-        monitor.register(getContext(), BackgroundThread.getHandler().getLooper(),
+        mPackageMonitor.register(getContext(), BackgroundThread.getHandler().getLooper(),
                 UserHandle.ALL, true);
     }
 
@@ -4077,7 +4080,7 @@ public class SettingsProvider extends ContentProvider {
 
         @VisibleForTesting
         final class UpgradeController {
-            private static final int SETTINGS_VERSION = 227;
+            private static final int SETTINGS_VERSION = 228;
 
             private final int mUserId;
 
@@ -6314,6 +6317,23 @@ public class SettingsProvider extends ContentProvider {
                     }
 
                     currentVersion = 227;
+                }
+
+                // Version 227: Add default value for DOUBLE_TAP_TO_SLEEP.
+                if (currentVersion == 227) {
+                    final SettingsState secureSettings = getSecureSettingsLocked(userId);
+                    final Setting doubleTapToSleep = secureSettings.getSettingLocked(
+                            Settings.Secure.DOUBLE_TAP_TO_SLEEP);
+                    if (doubleTapToSleep.isNull()) {
+                        secureSettings.insertSettingOverrideableByRestoreLocked(
+                                Settings.Secure.DOUBLE_TAP_TO_SLEEP,
+                                getContext().getResources().getBoolean(
+                                        R.bool.def_double_tap_to_sleep) ? "1" : "0",
+                                null /* tag */,
+                                true /* makeDefault */,
+                                SettingsState.SYSTEM_PACKAGE_NAME);
+                    }
+                    currentVersion = 228;
                 }
 
                 // vXXX: Add new settings above this point.

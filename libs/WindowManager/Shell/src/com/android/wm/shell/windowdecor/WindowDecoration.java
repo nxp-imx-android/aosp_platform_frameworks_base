@@ -361,6 +361,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         outResult.mRootView = rootView;
         final boolean fontScaleChanged = mWindowDecorConfig != null
                 && mWindowDecorConfig.fontScale != mTaskInfo.configuration.fontScale;
+        final boolean localeListChanged = mWindowDecorConfig != null
+                && !mWindowDecorConfig.getLocales()
+                    .equals(mTaskInfo.getConfiguration().getLocales());
         final int oldDensityDpi = mWindowDecorConfig != null
                 ? mWindowDecorConfig.densityDpi : DENSITY_DPI_UNDEFINED;
         final int oldNightMode =  mWindowDecorConfig != null
@@ -376,7 +379,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                 || oldLayoutResId != mLayoutResId
                 || oldNightMode != newNightMode
                 || mDecorWindowContext == null
-                || fontScaleChanged) {
+                || fontScaleChanged
+                || localeListChanged) {
             releaseViews(wct);
 
             if (!obtainDisplayOrRegisterListener()) {
@@ -625,29 +629,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
      */
     private void updateCaptionVisibility(View rootView, @NonNull RelayoutParams params) {
         mIsCaptionVisible = params.mIsCaptionVisible;
-        setCaptionVisibility(rootView, mIsCaptionVisible);
     }
 
     void setTaskDragResizer(TaskDragResizer taskDragResizer) {
         mTaskDragResizer = taskDragResizer;
     }
 
-    // TODO(b/346441962): Move these three methods closer to implementing or View-level classes to
-    //  keep implementation details more encapsulated.
-    private void setCaptionVisibility(View rootView, boolean visible) {
-        if (rootView == null) {
-            return;
-        }
-        final int v = visible ? View.VISIBLE : View.GONE;
-        final View captionView = rootView.findViewById(getCaptionViewId());
-        captionView.setVisibility(v);
-    }
-
     int getCaptionHeightId(@WindowingMode int windowingMode) {
-        return Resources.ID_NULL;
-    }
-
-    int getCaptionViewId() {
         return Resources.ID_NULL;
     }
 

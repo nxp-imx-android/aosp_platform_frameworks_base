@@ -17,11 +17,9 @@
 package com.android.wm.shell.windowdecor;
 
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
-import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
-import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.view.InputDevice.SOURCE_TOUCHSCREEN;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_HOVER_ENTER;
@@ -79,7 +77,6 @@ import android.view.SurfaceControl.Transaction;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewRootImpl;
-import android.view.WindowManager;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
 import android.window.WindowContainerToken;
@@ -121,7 +118,6 @@ import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
-import com.android.wm.shell.desktopmode.DesktopWallpaperActivity;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeUtilsKt;
@@ -146,6 +142,7 @@ import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration.ExclusionRegionListener;
+import com.android.wm.shell.windowdecor.common.AppHandleAndHeaderVisibilityHelper;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
@@ -207,6 +204,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final Optional<DesktopTasksLimiter> mDesktopTasksLimiter;
     private final AppHandleEducationController mAppHandleEducationController;
     private final AppToWebEducationController mAppToWebEducationController;
+    private final AppHandleAndHeaderVisibilityHelper mAppHandleAndHeaderVisibilityHelper;
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
     private boolean mTransitionDragActive;
 
@@ -294,6 +292,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
+            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             FocusTransitionObserver focusTransitionObserver,
@@ -338,6 +337,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desktopTasksLimiter,
                 appHandleEducationController,
                 appToWebEducationController,
+                appHandleAndHeaderVisibilityHelper,
                 windowDecorCaptionHandleRepository,
                 activityOrientationChangeHandler,
                 new TaskPositionerFactory(),
@@ -386,6 +386,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             AppHandleEducationController appHandleEducationController,
             AppToWebEducationController appToWebEducationController,
+            AppHandleAndHeaderVisibilityHelper appHandleAndHeaderVisibilityHelper,
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             Optional<DesktopActivityOrientationChangeHandler> activityOrientationChangeHandler,
             TaskPositionerFactory taskPositionerFactory,
@@ -431,6 +432,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopTasksLimiter = desktopTasksLimiter;
         mAppHandleEducationController = appHandleEducationController;
         mAppToWebEducationController = appToWebEducationController;
+        mAppHandleAndHeaderVisibilityHelper = appHandleAndHeaderVisibilityHelper;
         mWindowDecorCaptionHandleRepository = windowDecorCaptionHandleRepository;
         mActivityOrientationChangeHandler = activityOrientationChangeHandler;
         mAssistContentRequester = assistContentRequester;
@@ -528,6 +530,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     @Override
     public void setSplitScreenController(SplitScreenController splitScreenController) {
         mSplitScreenController = splitScreenController;
+        mAppHandleAndHeaderVisibilityHelper.setSplitScreenController(splitScreenController);
     }
 
     @Override
@@ -1215,7 +1218,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             if (id == R.id.caption_handle) {
                 handleCaptionThroughStatusBar(e, decoration);
                 final boolean wasDragging = mIsDragging;
-                updateDragStatus(e.getActionMasked());
+                updateDragStatus(decoration, e);
                 final boolean upOrCancel = e.getActionMasked() == ACTION_UP
                         || e.getActionMasked() == ACTION_CANCEL;
                 if (wasDragging && upOrCancel) {
@@ -1229,6 +1232,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 return wasDragging;
             }
             return false;
+        }
+
+        private void setIsDragging(
+                @Nullable DesktopModeWindowDecoration decor, boolean isDragging) {
+            mIsDragging = isDragging;
+            if (decor == null) return;
+            decor.setIsDragging(isDragging);
         }
 
         private boolean handleFreeformMotionEvent(DesktopModeWindowDecoration decoration,
@@ -1250,7 +1260,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         final Rect initialBounds = mDragPositioningCallback.onDragPositioningStart(
                                 0 /* ctrlType */, e.getDisplayId(), e.getRawX(0),
                                 e.getRawY(0));
-                        updateDragStatus(e.getActionMasked());
+                        updateDragStatus(decoration, e);
                         mOnDragStartInitialBounds.set(initialBounds);
                     }
                     // Do not consume input event if a button is touched, otherwise it would
@@ -1277,7 +1287,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                             newTaskBounds);
                     //  Flip mIsDragging only if the bounds actually changed.
                     if (mIsDragging || !newTaskBounds.equals(mOnDragStartInitialBounds)) {
-                        updateDragStatus(e.getActionMasked());
+                        updateDragStatus(decoration, e);
                     }
                     return true;
                 }
@@ -1310,7 +1320,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         // onClick call that results.
                         return false;
                     } else {
-                        updateDragStatus(e.getActionMasked());
+                        updateDragStatus(decoration, e);
                         return true;
                     }
                 }
@@ -1318,16 +1328,16 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             return true;
         }
 
-        private void updateDragStatus(int eventAction) {
-            switch (eventAction) {
+        private void updateDragStatus(DesktopModeWindowDecoration decor, MotionEvent e) {
+            switch (e.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL: {
-                    mIsDragging = false;
+                    setIsDragging(decor, false /* isDragging */);
                     break;
                 }
                 case MotionEvent.ACTION_MOVE: {
-                    mIsDragging = true;
+                    setIsDragging(decor, true /* isDragging */);
                     break;
                 }
             }
@@ -1717,32 +1727,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     private boolean shouldShowWindowDecor(RunningTaskInfo taskInfo) {
-        if (mDisplayController.getDisplay(taskInfo.displayId) == null) {
-            // If DisplayController doesn't have it tracked, it could be a private/managed display.
-            return false;
-        }
-        if (taskInfo.getWindowingMode() == WINDOWING_MODE_FREEFORM) return true;
-        if (mSplitScreenController != null
-                && mSplitScreenController.isTaskRootOrStageRoot(taskInfo.taskId)) {
-            return false;
-        }
-        if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(taskInfo)) {
-            return false;
-        }
-        final boolean isOnLargeScreen =
-                mDisplayController.getDisplay(taskInfo.displayId).getMinSizeDimensionDp()
-                        >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP;
-        if (!DesktopModeStatus.canEnterDesktopMode(mContext)
-                && DesktopModeStatus.overridesShowAppHandle(mContext) && !isOnLargeScreen) {
-            // Devices with multiple screens may enable the app handle but it should not show on
-            // small screens
-            return false;
-        }
-        return DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(mContext)
-                && !DesktopWallpaperActivity.isWallpaperTask(taskInfo)
-                && taskInfo.getWindowingMode() != WINDOWING_MODE_PINNED
-                && taskInfo.getActivityType() == ACTIVITY_TYPE_STANDARD
-                && !taskInfo.configuration.windowConfiguration.isAlwaysOnTop();
+        return mAppHandleAndHeaderVisibilityHelper.shouldShowAppHandleOrHeader(taskInfo);
     }
 
     private void createWindowDecoration(

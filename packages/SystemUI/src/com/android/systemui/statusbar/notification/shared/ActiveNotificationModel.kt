@@ -89,7 +89,8 @@ data class ActiveNotificationModel(
     init {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {
             if (promotedContent != null) {
-                Log.wtf(TAG, "passing non-null promoted content without feature flag enabled")
+                // TODO(b/401018545): convert to Log.wtf and fix tests (see: ag/32114199)
+                Log.e(TAG, "passing non-null promoted content without feature flag enabled")
             }
         }
     }

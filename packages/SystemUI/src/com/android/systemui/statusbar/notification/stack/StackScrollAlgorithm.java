@@ -967,9 +967,12 @@ public class StackScrollAlgorithm {
                             childState.setZTranslation(baseZ);
                         }
                         if (isTopEntry && row.isAboveShelf()) {
+                            float headsUpBottom = NotificationsHunSharedAnimationValues.isEnabled()
+                                    ? mHeadsUpAnimator.getHeadsUpAppearHeightBottom()
+                                    : ambientState.getHeadsUpBottom();
                             clampHunToMaxTranslation(
                                     /* headsUpTop =  */ headsUpTranslation,
-                                    /* headsUpBottom =  */ ambientState.getHeadsUpBottom(),
+                                    /* headsUpBottom =  */ headsUpBottom,
                                     /* viewState = */ childState
                             );
                             updateCornerRoundnessForPinnedHun(row, ambientState.getStackTop());
@@ -1059,7 +1062,9 @@ public class StackScrollAlgorithm {
                             shouldHunAppearFromBottom(ambientState, childState);
                     if (NotificationsHunSharedAnimationValues.isEnabled()) {
                         int yTranslation =
-                                mHeadsUpAnimator.getHeadsUpYTranslation(shouldHunAppearFromBottom);
+                                mHeadsUpAnimator.getHeadsUpYTranslation(
+                                        shouldHunAppearFromBottom,
+                                        row.hasStatusBarChipDuringHeadsUpAnimation());
                         childState.setYTranslation(yTranslation);
                     } else {
                         if (shouldHunAppearFromBottom) {

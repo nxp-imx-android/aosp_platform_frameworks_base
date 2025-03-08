@@ -18,6 +18,8 @@ package com.android.wm.shell.desktopmode.multidesks
 import android.app.ActivityManager
 import android.window.TransitionInfo
 import android.window.WindowContainerTransaction
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer.OnCreateCallback
+import kotlin.coroutines.suspendCoroutine
 
 /** An organizer of desk containers in which to host child desktop windows. */
 interface DesksOrganizer {
@@ -40,8 +42,22 @@ interface DesksOrganizer {
         task: ActivityManager.RunningTaskInfo,
     )
 
+    /** Reorders a desk's task to the front. */
+    fun reorderTaskToFront(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: ActivityManager.RunningTaskInfo,
+    )
+
     /** Minimizes the given task of the given deskId. */
     fun minimizeTask(
+        wct: WindowContainerTransaction,
+        deskId: Int,
+        task: ActivityManager.RunningTaskInfo,
+    )
+
+    /** Unminimize the given task of the given desk. */
+    fun unminimizeTask(
         wct: WindowContainerTransaction,
         deskId: Int,
         task: ActivityManager.RunningTaskInfo,
@@ -67,4 +83,10 @@ interface DesksOrganizer {
         /** Calls back when the [deskId] has been created. */
         fun onCreated(deskId: Int)
     }
+}
+
+/** Creates a new desk container in the given display. */
+suspend fun DesksOrganizer.createDesk(displayId: Int): Int = suspendCoroutine { cont ->
+    val onCreateCallback = OnCreateCallback { deskId -> cont.resumeWith(Result.success(deskId)) }
+    createDesk(displayId, onCreateCallback)
 }

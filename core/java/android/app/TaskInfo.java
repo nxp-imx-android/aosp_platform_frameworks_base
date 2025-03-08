@@ -655,8 +655,10 @@ public class TaskInfo {
                 + " effectiveUid=" + effectiveUid
                 + " displayId=" + displayId
                 + " isRunning=" + isRunning
-                + " baseIntent=" + baseIntent + " baseActivity=" + baseActivity
-                + " topActivity=" + topActivity + " origActivity=" + origActivity
+                + " baseIntent=" + baseIntent
+                + " baseActivity=" + baseActivity
+                + " topActivity=" + topActivity
+                + " origActivity=" + origActivity
                 + " realActivity=" + realActivity
                 + " numActivities=" + numActivities
                 + " lastActiveTime=" + lastActiveTime

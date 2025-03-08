@@ -27,7 +27,17 @@ import com.android.systemui.qs.pipeline.shared.TileSpec
 
 /** A layout of tiles, indicating how they should be composed when showing in QS or in edit mode. */
 interface GridLayout {
-    @Composable fun ContentScope.TileGrid(tiles: List<TileViewModel>, modifier: Modifier)
+
+    /**
+     * [listening] can be used to compose the grid but limit when tiles should be listening. It
+     * should be a function tracking a snapshot state.
+     */
+    @Composable
+    fun ContentScope.TileGrid(
+        tiles: List<TileViewModel>,
+        modifier: Modifier,
+        listening: () -> Boolean,
+    )
 
     @Composable
     fun EditTileGrid(

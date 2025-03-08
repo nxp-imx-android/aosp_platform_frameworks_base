@@ -371,22 +371,22 @@ public class NotificationTest {
 
     @Test
     @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
-    public void testHasPromotableStyle_bigPicture() {
-        Notification n = new Notification.Builder(mContext, "test")
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setStyle(new Notification.BigPictureStyle())
-                .build();
-        assertThat(n.hasPromotableStyle()).isTrue();
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
     public void testHasPromotableStyle_bigText() {
         Notification n = new Notification.Builder(mContext, "test")
                 .setSmallIcon(android.R.drawable.sym_def_app_icon)
                 .setStyle(new Notification.BigTextStyle())
                 .build();
         assertThat(n.hasPromotableStyle()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_UI_RICH_ONGOING)
+    public void testHasPromotableStyle_no_bigPictureStyle() {
+        Notification n = new Notification.Builder(mContext, "test")
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setStyle(new Notification.BigPictureStyle())
+                .build();
+        assertThat(n.hasPromotableStyle()).isFalse();
     }
 
     @Test

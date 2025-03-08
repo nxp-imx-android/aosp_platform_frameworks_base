@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
+import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.sysui.ShellInit;
 import com.android.wm.shell.transition.FocusTransitionObserver;
 import com.android.wm.shell.transition.Transitions;
@@ -52,6 +53,7 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
     private final WindowDecorViewModel mWindowDecorViewModel;
     private final Optional<TaskChangeListener> mTaskChangeListener;
     private final FocusTransitionObserver mFocusTransitionObserver;
+    private final Optional<DesksTransitionObserver> mDesksTransitionObserver;
 
     private final Map<IBinder, List<ActivityManager.RunningTaskInfo>> mTransitionToTaskInfo =
             new HashMap<>();
@@ -63,12 +65,14 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             Optional<DesktopImmersiveController> desktopImmersiveController,
             WindowDecorViewModel windowDecorViewModel,
             Optional<TaskChangeListener> taskChangeListener,
-            FocusTransitionObserver focusTransitionObserver) {
+            FocusTransitionObserver focusTransitionObserver,
+            Optional<DesksTransitionObserver> desksTransitionObserver) {
         mTransitions = transitions;
         mDesktopImmersiveController = desktopImmersiveController;
         mWindowDecorViewModel = windowDecorViewModel;
         mTaskChangeListener = taskChangeListener;
         mFocusTransitionObserver = focusTransitionObserver;
+        mDesksTransitionObserver = desksTransitionObserver;
         if (FreeformComponents.requiresFreeformComponents(context)) {
             shellInit.addInitCallback(this::onInit, this);
         }
@@ -85,6 +89,10 @@ public class FreeformTaskTransitionObserver implements Transitions.TransitionObs
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startT,
             @NonNull SurfaceControl.Transaction finishT) {
+        // Update desk state first, otherwise [TaskChangeListener] may update desktop task state
+        // under an outdated active desk if a desk switch and a task update happen in the same
+        // transition, such as when unminimizing a task from an inactive desk.
+        mDesksTransitionObserver.ifPresent(o -> o.onTransitionReady(transition, info));
         if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
             // TODO(b/367268953): Remove when DesktopTaskListener is introduced and the repository
             //  is updated from there **before** the |mWindowDecorViewModel| methods are invoked.

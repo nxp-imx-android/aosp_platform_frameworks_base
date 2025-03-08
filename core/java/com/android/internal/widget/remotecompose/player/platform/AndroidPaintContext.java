@@ -808,6 +808,24 @@ public class AndroidPaintContext extends PaintContext {
     }
 
     @Override
+    public void combinePath(int out, int path1, int path2, byte operation) {
+        Path p1 = getPath(path1, 0, 1);
+        Path p2 = getPath(path2, 0, 1);
+        Path.Op[] op = {
+            Path.Op.DIFFERENCE,
+            Path.Op.INTERSECT,
+            Path.Op.REVERSE_DIFFERENCE,
+            Path.Op.UNION,
+            Path.Op.XOR,
+        };
+        Path p = new Path(p1);
+        p.op(p2, op[operation]);
+
+        AndroidRemoteContext androidContext = (AndroidRemoteContext) mContext;
+        androidContext.mRemoteComposeState.putPath(out, p);
+    }
+
+    @Override
     public void reset() {
         mPaint.reset();
     }

@@ -36,6 +36,8 @@ import com.android.systemui.dock.DockManager;
 import com.android.systemui.dock.DockManagerImpl;
 import com.android.systemui.doze.DozeHost;
 import com.android.systemui.education.dagger.ContextualEducationModule;
+import com.android.systemui.topwindoweffects.dagger.SqueezeEffectRepositoryModule;
+import com.android.systemui.topwindoweffects.dagger.TopLevelWindowEffectsModule;
 import com.android.systemui.emergency.EmergencyGestureModule;
 import com.android.systemui.inputdevice.tutorial.KeyboardTouchpadTutorialModule;
 import com.android.systemui.keyboard.shortcut.ShortcutHelperModule;
@@ -160,12 +162,14 @@ import javax.inject.Named;
         StatusBarPhoneModule.class,
         SystemActionsModule.class,
         ShadeModule.class,
+        SqueezeEffectRepositoryModule.class,
         StartCentralSurfacesModule.class,
         SceneContainerFrameworkModule.class,
         SysUICoroutinesModule.class,
         SysUIUnfoldStartableModule.class,
         UnfoldTransitionModule.Startables.class,
         ToastModule.class,
+        TopLevelWindowEffectsModule.class,
         TouchpadTutorialModule.class,
         VolumeModule.class,
         WallpaperModule.class,

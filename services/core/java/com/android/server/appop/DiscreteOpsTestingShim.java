@@ -48,15 +48,13 @@ class DiscreteOpsTestingShim extends DiscreteOpsRegistry {
     @Override
     void recordDiscreteAccess(int uid, String packageName, @NonNull String deviceId, int op,
             @Nullable String attributionTag, int flags, int uidState, long accessTime,
-            long accessDuration, int attributionFlags, int attributionChainId, int accessType) {
+            long accessDuration, int attributionFlags, int attributionChainId) {
         long start = SystemClock.uptimeMillis();
         mXmlRegistry.recordDiscreteAccess(uid, packageName, deviceId, op, attributionTag, flags,
-                uidState, accessTime, accessDuration, attributionFlags, attributionChainId,
-                accessType);
+                uidState, accessTime, accessDuration, attributionFlags, attributionChainId);
         long start2 = SystemClock.uptimeMillis();
         mSqlRegistry.recordDiscreteAccess(uid, packageName, deviceId, op, attributionTag, flags,
-                uidState, accessTime, accessDuration, attributionFlags, attributionChainId,
-                accessType);
+                uidState, accessTime, accessDuration, attributionFlags, attributionChainId);
         long end = SystemClock.uptimeMillis();
         long xmlTimeTaken = start2 - start;
         long sqlTimeTaken = end - start2;

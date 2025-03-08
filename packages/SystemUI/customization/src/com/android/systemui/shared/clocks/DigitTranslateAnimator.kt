@@ -20,7 +20,8 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
-import com.android.systemui.shared.clocks.VPointF.Companion.times
+import com.android.systemui.plugins.clocks.VPointF
+import com.android.systemui.plugins.clocks.VPointF.Companion.times
 
 class DigitTranslateAnimator(private val updateCallback: (VPointF) -> Unit) {
     var currentTranslation = VPointF.ZERO

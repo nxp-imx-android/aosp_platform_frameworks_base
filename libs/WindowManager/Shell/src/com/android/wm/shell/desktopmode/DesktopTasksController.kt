@@ -22,6 +22,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityOptions
 import android.app.KeyguardManager
 import android.app.PendingIntent
+import android.app.TaskInfo
 import android.app.WindowConfiguration.ACTIVITY_TYPE_HOME
 import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
@@ -31,6 +32,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -47,6 +50,7 @@ import android.view.DragEvent
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
+import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_NONE
@@ -72,6 +76,7 @@ import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_SNAP_RESIZE
 import com.android.internal.jank.InteractionJankMonitor
+import com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.util.LatencyTracker
 import com.android.window.flags.Flags
@@ -83,6 +88,7 @@ import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ExternalInterfaceBinder
+import com.android.wm.shell.common.HomeIntentProvider
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.MultiInstanceHelper.Companion.getComponent
 import com.android.wm.shell.common.RemoteCallable
@@ -110,6 +116,9 @@ import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
+import com.android.wm.shell.desktopmode.multidesks.createDesk
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
@@ -189,6 +198,7 @@ class DesktopTasksController(
     private val dragToDesktopTransitionHandler: DragToDesktopTransitionHandler,
     private val desktopImmersiveController: DesktopImmersiveController,
     private val userRepositories: DesktopUserRepositories,
+    desktopRepositoryInitializer: DesktopRepositoryInitializer,
     private val recentsTransitionHandler: RecentsTransitionHandler,
     private val multiInstanceHelper: MultiInstanceHelper,
     @ShellMainThread private val mainExecutor: ShellExecutor,
@@ -205,9 +215,12 @@ class DesktopTasksController(
     private val overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver,
     private val desksOrganizer: DesksOrganizer,
     private val desksTransitionObserver: DesksTransitionObserver,
+    private val desktopPipTransitionObserver: DesktopPipTransitionObserver,
     private val userProfileContexts: UserProfileContexts,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
+    private val moveToDisplayTransitionHandler: DesktopModeMoveToDisplayTransitionHandler,
+    private val homeIntentProvider: HomeIntentProvider,
 ) :
     RemoteCallable<DesktopTasksController>,
     Transitions.TransitionHandler,
@@ -230,6 +243,10 @@ class DesktopTasksController(
             }
 
             override fun onCancelToDesktopAnimationEnd() {
+                removeVisualIndicator()
+            }
+
+            override fun onTransitionInterrupted() {
                 removeVisualIndicator()
             }
 
@@ -265,6 +282,19 @@ class DesktopTasksController(
         }
         userId = ActivityManager.getCurrentUser()
         taskRepository = userRepositories.getProfile(userId)
+
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desktopRepositoryInitializer.deskRecreationFactory =
+                DeskRecreationFactory { deskUserId, destinationDisplayId, deskId ->
+                    if (deskUserId != userId) {
+                        // TODO: b/400984250 - add multi-user support for multi-desk restoration.
+                        logW("Tried to recreated desk of another user.")
+                        deskId
+                    } else {
+                        desksOrganizer.createDesk(destinationDisplayId)
+                    }
+                }
+        }
     }
 
     private fun onInit() {
@@ -520,7 +550,8 @@ class DesktopTasksController(
             return false
         }
         logV("moveBackgroundTaskToDesktop with taskId=%d", taskId)
-        val taskIdToMinimize = bringDesktopAppsToFront(task.displayId, wct, taskId)
+        val deskId = getDefaultDeskId(task.displayId)
+        val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
@@ -549,9 +580,7 @@ class DesktopTasksController(
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
         )
-        taskIdToMinimize?.let {
-            addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-        }
+        runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
         return true
     }
@@ -585,7 +614,7 @@ class DesktopTasksController(
                 reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
             )
 
-        val taskIdToMinimize = addDeskActivationWithMovingTaskChanges(deskId, wct, task)
+        val runOnTransitStart = addDeskActivationWithMovingTaskChanges(deskId, wct, task)
 
         val transition: IBinder
         if (remoteTransition != null) {
@@ -600,20 +629,9 @@ class DesktopTasksController(
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
         )
-        taskIdToMinimize?.let {
-            addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-        }
+        runOnTransitStart?.invoke(transition)
         exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksTransitionObserver.addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
-                    token = transition,
-                    displayId = displayId,
-                    deskId = deskId,
-                    enterTaskId = task.taskId,
-                )
-            )
-        } else {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             taskRepository.setActiveDesk(displayId = displayId, deskId = deskId)
         }
         return true
@@ -650,6 +668,7 @@ class DesktopTasksController(
         dragToDesktopTransitionHandler.startDragToDesktopTransition(
             taskInfo,
             dragToDesktopValueAnimator,
+            visualIndicator,
         )
     }
 
@@ -676,7 +695,7 @@ class DesktopTasksController(
                 moveHomeTask(context.displayId, wct)
             }
         }
-        val taskIdToMinimize = addDeskActivationWithMovingTaskChanges(deskId, wct, taskInfo)
+        val runOnTransitStart = addDeskActivationWithMovingTaskChanges(deskId, wct, taskInfo)
         val exitResult =
             desktopImmersiveController.exitImmersiveIfApplicable(
                 wct = wct,
@@ -689,20 +708,9 @@ class DesktopTasksController(
             DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS.toInt()
         )
         if (transition != null) {
-            taskIdToMinimize?.let {
-                addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-            }
+            runOnTransitStart?.invoke(transition)
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                desksTransitionObserver.addPendingTransition(
-                    DeskTransition.ActiveDeskWithTask(
-                        token = transition,
-                        displayId = taskInfo.displayId,
-                        deskId = deskId,
-                        enterTaskId = taskInfo.taskId,
-                    )
-                )
-            } else {
+            if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
                 taskRepository.setActiveDesk(displayId = taskInfo.displayId, deskId = deskId)
             }
         } else {
@@ -781,8 +789,30 @@ class DesktopTasksController(
 
     fun minimizeTask(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
         val wct = WindowContainerTransaction()
+        val taskId = taskInfo.taskId
+        val displayId = taskInfo.displayId
+        val deskId =
+            taskRepository.getDeskIdForTask(taskInfo.taskId)
+                ?: if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    logW("minimizeTask: desk not found for task: ${taskInfo.taskId}")
+                    return
+                } else {
+                    getDefaultDeskId(taskInfo.displayId)
+                }
+        val isLastTask =
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                taskRepository.isOnlyVisibleNonClosingTaskInDesk(
+                    taskId = taskId,
+                    deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                    displayId = displayId,
+                )
+            } else {
+                taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
+            }
+        val isMinimizingToPip =
+            DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
+                (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
 
-        val isMinimizingToPip = taskInfo.pictureInPictureParams?.isAutoEnterEnabled() ?: false
         // If task is going to PiP, start a PiP transition instead of a minimize transition
         if (isMinimizingToPip) {
             val requestInfo =
@@ -796,75 +826,60 @@ class DesktopTasksController(
                 )
             val requestRes = transitions.dispatchRequest(Binder(), requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
-            freeformTaskTransitionStarter.startPipTransition(wct)
-            taskRepository.setTaskInPip(taskInfo.displayId, taskInfo.taskId, enterPip = true)
-            taskRepository.setOnPipAbortedCallback { displayId, taskId ->
-                minimizeTaskInner(shellTaskOrganizer.getRunningTaskInfo(taskId)!!, minimizeReason)
-                taskRepository.setTaskInPip(displayId, taskId, enterPip = false)
-            }
-            return
-        }
 
-        minimizeTaskInner(taskInfo, minimizeReason)
-    }
-
-    private fun minimizeTaskInner(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
-        val taskId = taskInfo.taskId
-        val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
-        if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            logW("minimizeTaskInner: desk not found for task: ${taskInfo.taskId}")
-            return
-        }
-        val displayId = taskInfo.displayId
-        val wct = WindowContainerTransaction()
-
-        snapEventHandler.removeTaskIfTiled(displayId, taskId)
-        val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
-        val desktopExitRunnable =
-            performDesktopExitCleanUp(
-                wct = wct,
-                deskId = deskId,
-                displayId = displayId,
-                willExitDesktop = willExitDesktop,
-            )
-        // Notify immersive handler as it might need to exit immersive state.
-        val exitResult =
-            desktopImmersiveController.exitImmersiveIfApplicable(
-                wct = wct,
-                taskInfo = taskInfo,
-                reason = DesktopImmersiveController.ExitReason.MINIMIZED,
-            )
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksOrganizer.minimizeTask(
-                wct = wct,
-                deskId = checkNotNull(deskId) { "Expected non-null deskId" },
-                task = taskInfo,
+            desktopPipTransitionObserver.addPendingPipTransition(
+                DesktopPipTransitionObserver.PendingPipTransition(
+                    token = freeformTaskTransitionStarter.startPipTransition(wct),
+                    taskId = taskInfo.taskId,
+                    onSuccess = {
+                        onDesktopTaskEnteredPip(
+                            taskId = taskId,
+                            deskId = deskId,
+                            displayId = taskInfo.displayId,
+                            taskIsLastVisibleTaskBeforePip = isLastTask,
+                        )
+                    },
+                )
             )
         } else {
-            wct.reorder(taskInfo.token, /* onTop= */ false)
-        }
-        val isLastTask =
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                taskRepository.isOnlyVisibleNonClosingTaskInDesk(
-                    taskId = taskId,
-                    deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+            snapEventHandler.removeTaskIfTiled(displayId, taskId)
+            val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
+            val desktopExitRunnable =
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = deskId,
                     displayId = displayId,
+                    willExitDesktop = willExitDesktop,
+                )
+            // Notify immersive handler as it might need to exit immersive state.
+            val exitResult =
+                desktopImmersiveController.exitImmersiveIfApplicable(
+                    wct = wct,
+                    taskInfo = taskInfo,
+                    reason = DesktopImmersiveController.ExitReason.MINIMIZED,
+                )
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                desksOrganizer.minimizeTask(
+                    wct = wct,
+                    deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                    task = taskInfo,
                 )
             } else {
-                taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
+                wct.reorder(taskInfo.token, /* onTop= */ false)
             }
-        val transition =
-            freeformTaskTransitionStarter.startMinimizedModeTransition(wct, taskId, isLastTask)
-        desktopTasksLimiter.ifPresent {
-            it.addPendingMinimizeChange(
-                transition = transition,
-                displayId = displayId,
-                taskId = taskId,
-                minimizeReason = minimizeReason,
-            )
+            val transition =
+                freeformTaskTransitionStarter.startMinimizedModeTransition(wct, taskId, isLastTask)
+            desktopTasksLimiter.ifPresent {
+                it.addPendingMinimizeChange(
+                    transition = transition,
+                    displayId = displayId,
+                    taskId = taskId,
+                    minimizeReason = minimizeReason,
+                )
+            }
+            exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
+            desktopExitRunnable?.invoke(transition)
         }
-        exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-        desktopExitRunnable?.invoke(transition)
     }
 
     /** Move a task with given `taskId` to fullscreen */
@@ -981,10 +996,13 @@ class DesktopTasksController(
                 .apply { launchWindowingMode = WINDOWING_MODE_FREEFORM }
                 .toBundle(),
         )
+        val deskId = taskRepository.getDeskIdForTask(taskId) ?: getDefaultDeskId(DEFAULT_DISPLAY)
         startLaunchTransition(
             TRANSIT_OPEN,
             wct,
             taskId,
+            deskId = deskId,
+            displayId = DEFAULT_DISPLAY,
             remoteTransition = remoteTransition,
             unminimizeReason = unminimizeReason,
         )
@@ -1002,19 +1020,26 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ) {
-        logV("moveTaskToFront taskId=%s", taskInfo.taskId)
+        val deskId =
+            taskRepository.getDeskIdForTask(taskInfo.taskId) ?: getDefaultDeskId(taskInfo.displayId)
+        logV("moveTaskToFront taskId=%s deskId=%s", taskInfo.taskId, deskId)
         // If a task is tiled, another task should be brought to foreground with it so let
         // tiling controller handle the request.
         if (snapEventHandler.moveTaskToFrontIfTiled(taskInfo)) {
             return
         }
         val wct = WindowContainerTransaction()
-        wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desksOrganizer.reorderTaskToFront(wct, deskId, taskInfo)
+        } else {
+            wct.reorder(taskInfo.token, /* onTop= */ true, /* includingParents= */ true)
+        }
         startLaunchTransition(
             transitionType = TRANSIT_TO_FRONT,
             wct = wct,
             launchingTaskId = taskInfo.taskId,
             remoteTransition = remoteTransition,
+            deskId = deskId,
             displayId = taskInfo.displayId,
             unminimizeReason = unminimizeReason,
         )
@@ -1026,14 +1051,22 @@ class DesktopTasksController(
         wct: WindowContainerTransaction,
         launchingTaskId: Int?,
         remoteTransition: RemoteTransition? = null,
-        displayId: Int = DEFAULT_DISPLAY,
+        deskId: Int,
+        displayId: Int,
         unminimizeReason: UnminimizeReason = UnminimizeReason.UNKNOWN,
     ): IBinder {
+        logV(
+            "startLaunchTransition type=%s launchingTaskId=%d deskId=%d displayId=%d",
+            WindowManager.transitTypeToString(transitionType),
+            launchingTaskId,
+            deskId,
+            displayId,
+        )
         // TODO: b/397619806 - Consolidate sharable logic with [handleFreeformTaskLaunch].
         var launchTransaction = wct
         val taskIdToMinimize =
             addAndGetMinimizeChanges(
-                displayId,
+                deskId,
                 launchTransaction,
                 newTaskId = launchingTaskId,
                 launchingNewIntent = launchingTaskId == null,
@@ -1047,29 +1080,23 @@ class DesktopTasksController(
             )
         var activationRunOnTransitStart: RunOnTransitStart? = null
         val shouldActivateDesk =
-            (DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue ||
-                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) &&
-                !isDesktopModeShowing(displayId)
+            when {
+                DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ->
+                    !taskRepository.isDeskActive(deskId)
+                DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue -> {
+                    !isDesktopModeShowing(displayId)
+                }
+                else -> false
+            }
         if (shouldActivateDesk) {
-            val deskIdToActivate =
-                checkNotNull(
-                    launchingTaskId?.let { taskRepository.getDeskIdForTask(it) }
-                        ?: getDefaultDeskId(displayId)
-                )
             val activateDeskWct = WindowContainerTransaction()
-            addDeskActivationChanges(deskIdToActivate, activateDeskWct)
+            // TODO: b/391485148 - pass in the launching task here to apply task-limit policy,
+            //  but make sure to not do it twice since it is also done at the start of this
+            //  function.
+            activationRunOnTransitStart = addDeskActivationChanges(deskId, activateDeskWct)
             // Desk activation must be handled before app launch-related transactions.
             activateDeskWct.merge(launchTransaction, /* transfer= */ true)
             launchTransaction = activateDeskWct
-            activationRunOnTransitStart = { transition ->
-                desksTransitionObserver.addPendingTransition(
-                    DeskTransition.ActivateDesk(
-                        token = transition,
-                        displayId = displayId,
-                        deskId = deskIdToActivate,
-                    )
-                )
-            }
             desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
                 FREEFORM_ANIMATION_DURATION
             )
@@ -1177,7 +1204,14 @@ class DesktopTasksController(
             }
 
         wct.sendPendingIntent(pendingIntent, intent, ops.toBundle())
-        startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+        val deskId = getDefaultDeskId(displayId)
+        startLaunchTransition(
+            TRANSIT_OPEN,
+            wct,
+            launchingTaskId = null,
+            deskId = deskId,
+            displayId = displayId,
+        )
     }
 
     /**
@@ -1194,42 +1228,15 @@ class DesktopTasksController(
             return
         }
 
+        if (splitScreenController.isTaskInSplitScreen(task.taskId)) {
+            moveSplitPairToDisplay(task, displayId)
+            return
+        }
+
         val wct = WindowContainerTransaction()
         val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
         if (displayAreaInfo == null) {
             logW("moveToDisplay: display not found")
-            return
-        }
-
-        // check if the task is part of splitscreen
-        if (
-            Flags.enableNonDefaultDisplaySplit() &&
-                Flags.enableMoveToNextDisplayShortcut() &&
-                splitScreenController.isTaskInSplitScreen(task.taskId)
-        ) {
-            val activeDeskId = taskRepository.getActiveDeskId(displayId)
-            logV("moveToDisplay: moving split root to displayId=%d", displayId)
-            val stageCoordinatorRootTaskToken =
-                splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(
-                    DEFAULT_DISPLAY
-                )
-            wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
-            val deactivationRunnable =
-                if (activeDeskId != null) {
-                    // Split is being placed on top of an existing desk in the target display. Make
-                    // sure it is cleaned up.
-                    performDesktopExitCleanUp(
-                        wct = wct,
-                        deskId = activeDeskId,
-                        displayId = displayId,
-                        willExitDesktop = true,
-                        shouldEndUpAtHome = false,
-                    )
-                } else {
-                    null
-                }
-            val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
-            deactivationRunnable?.invoke(transition)
             return
         }
 
@@ -1255,17 +1262,8 @@ class DesktopTasksController(
             wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
         }
 
-        addDeskActivationChanges(destinationDeskId, wct)
-        val activationRunnable: RunOnTransitStart = { transition ->
-            desksTransitionObserver.addPendingTransition(
-                DeskTransition.ActiveDeskWithTask(
-                    token = transition,
-                    displayId = displayId,
-                    deskId = destinationDeskId,
-                    enterTaskId = task.taskId,
-                )
-            )
-        }
+        // TODO: b/391485148 - pass in the moving-to-desk |task| here to apply task-limit policy.
+        val activationRunnable = addDeskActivationChanges(destinationDeskId, wct)
 
         if (Flags.enableDisplayFocusInShellTransitions()) {
             // Bring the destination display to top with includingParents=true, so that the
@@ -1296,9 +1294,57 @@ class DesktopTasksController(
             } else {
                 null
             }
-        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        val transition =
+            transitions.startTransition(TRANSIT_CHANGE, wct, moveToDisplayTransitionHandler)
         deactivationRunnable?.invoke(transition)
         activationRunnable?.invoke(transition)
+    }
+
+    /**
+     * Move split pair associated with the [task] to display with [displayId].
+     *
+     * No-op if task is already on that display per [RunningTaskInfo.displayId].
+     */
+    private fun moveSplitPairToDisplay(task: RunningTaskInfo, displayId: Int) {
+        if (!splitScreenController.isTaskInSplitScreen(task.taskId)) {
+            return
+        }
+
+        if (!Flags.enableNonDefaultDisplaySplit() || !Flags.enableMoveToNextDisplayShortcut()) {
+            return
+        }
+
+        val wct = WindowContainerTransaction()
+        val displayAreaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
+        if (displayAreaInfo == null) {
+            logW("moveSplitPairToDisplay: display not found")
+            return
+        }
+
+        val activeDeskId = taskRepository.getActiveDeskId(displayId)
+        logV("moveSplitPairToDisplay: moving split root to displayId=%d", displayId)
+
+        val stageCoordinatorRootTaskToken =
+            splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(DEFAULT_DISPLAY)
+        wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
+
+        val deactivationRunnable =
+            if (activeDeskId != null) {
+                // Split is being placed on top of an existing desk in the target display. Make
+                // sure it is cleaned up.
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = activeDeskId,
+                    displayId = displayId,
+                    willExitDesktop = true,
+                    shouldEndUpAtHome = false,
+                )
+            } else {
+                null
+            }
+        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        deactivationRunnable?.invoke(transition)
+        return
     }
 
     /**
@@ -1661,7 +1707,10 @@ class DesktopTasksController(
         }
     }
 
-    @Deprecated("Use activeDesk() instead.", ReplaceWith("activateDesk()"))
+    @Deprecated(
+        "Use addDeskActivationChanges() instead.",
+        ReplaceWith("addDeskActivationChanges()"),
+    )
     private fun bringDesktopAppsToFront(
         displayId: Int,
         wct: WindowContainerTransaction,
@@ -1693,15 +1742,7 @@ class DesktopTasksController(
                     wct.reorder(runningTaskInfo.token, /* onTop= */ true)
                 } else if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
                     // Task is not running, start it
-                    wct.startTask(
-                        taskId,
-                        ActivityOptions.makeBasic()
-                            .apply {
-                                launchWindowingMode = WINDOWING_MODE_FREEFORM
-                                splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
-                            }
-                            .toBundle(),
-                    )
+                    wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
                 }
             }
 
@@ -1720,34 +1761,7 @@ class DesktopTasksController(
     }
 
     private fun addLaunchHomePendingIntent(wct: WindowContainerTransaction, displayId: Int) {
-        val userHandle = UserHandle.of(userId)
-        val launchHomeIntent =
-            Intent(Intent.ACTION_MAIN).apply {
-                if (displayId != DEFAULT_DISPLAY) {
-                    addCategory(Intent.CATEGORY_SECONDARY_HOME)
-                } else {
-                    addCategory(Intent.CATEGORY_HOME)
-                }
-            }
-        val options =
-            ActivityOptions.makeBasic().apply {
-                launchWindowingMode = WINDOWING_MODE_FULLSCREEN
-                pendingIntentBackgroundActivityStartMode =
-                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
-                if (Flags.enablePerDisplayDesktopWallpaperActivity()) {
-                    launchDisplayId = displayId
-                }
-            }
-        val pendingIntent =
-            PendingIntent.getActivityAsUser(
-                context,
-                /* requestCode= */ 0,
-                launchHomeIntent,
-                PendingIntent.FLAG_IMMUTABLE,
-                /* options= */ null,
-                userHandle,
-            )
-        wct.sendPendingIntent(pendingIntent, launchHomeIntent, options.toBundle())
+        homeIntentProvider.addLaunchHomePendingIntent(wct, displayId, userId)
     }
 
     private fun addWallpaperActivity(displayId: Int, wct: WindowContainerTransaction) {
@@ -1833,7 +1847,11 @@ class DesktopTasksController(
         displayId: Int,
         forceExitDesktop: Boolean,
     ): Boolean {
-        if (forceExitDesktop && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+        if (
+            forceExitDesktop &&
+                (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
+                    DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue)
+        ) {
             // |forceExitDesktop| is true when the callers knows we'll exit desktop, such as when
             // explicitly going fullscreen, so there's no point in checking the desktop state.
             return true
@@ -1848,6 +1866,33 @@ class DesktopTasksController(
             }
         }
         return true
+    }
+
+    /** Potentially perform Desktop cleanup after a task successfully enters PiP. */
+    @VisibleForTesting
+    fun onDesktopTaskEnteredPip(
+        taskId: Int,
+        deskId: Int,
+        displayId: Int,
+        taskIsLastVisibleTaskBeforePip: Boolean,
+    ) {
+        if (
+            !willExitDesktop(taskId, displayId, forceExitDesktop = taskIsLastVisibleTaskBeforePip)
+        ) {
+            return
+        }
+
+        val wct = WindowContainerTransaction()
+        val desktopExitRunnable =
+            performDesktopExitCleanUp(
+                wct = wct,
+                deskId = deskId,
+                displayId = displayId,
+                willExitDesktop = true,
+            )
+
+        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        desktopExitRunnable?.invoke(transition)
     }
 
     private fun performDesktopExitCleanupIfNeeded(
@@ -2132,6 +2177,7 @@ class DesktopTasksController(
         // TODO(b/337915660): Add a transition handler for these; animations
         //  need updates in some cases.
         val baseActivity = callingTaskInfo.baseActivity ?: return
+        val userHandle = UserHandle.of(callingTaskInfo.userId)
         val fillIn: Intent =
             userProfileContexts
                 .getOrCreate(callingTaskInfo.userId)
@@ -2139,11 +2185,13 @@ class DesktopTasksController(
                 .getLaunchIntentForPackage(baseActivity.packageName) ?: return
         fillIn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
         val launchIntent =
-            PendingIntent.getActivity(
+            PendingIntent.getActivityAsUser(
                 context,
                 /* requestCode= */ 0,
                 fillIn,
                 PendingIntent.FLAG_IMMUTABLE,
+                /* options= */ null,
+                userHandle,
             )
         val options = createNewWindowOptions(callingTaskInfo)
         when (options.launchWindowingMode) {
@@ -2170,10 +2218,14 @@ class DesktopTasksController(
             WINDOWING_MODE_FREEFORM -> {
                 val wct = WindowContainerTransaction()
                 wct.sendPendingIntent(launchIntent, fillIn, options.toBundle())
+                val deskId =
+                    taskRepository.getDeskIdForTask(callingTaskInfo.taskId)
+                        ?: getDefaultDeskId(callingTaskInfo.displayId)
                 startLaunchTransition(
                     transitionType = TRANSIT_OPEN,
                     wct = wct,
                     launchingTaskId = null,
+                    deskId = deskId,
                     displayId = callingTaskInfo.displayId,
                 )
             }
@@ -2253,6 +2305,7 @@ class DesktopTasksController(
             logV("skip keyguard is locked")
             return null
         }
+        val deskId = getDefaultDeskId(task.displayId)
         val wct = WindowContainerTransaction()
         if (shouldFreeformTaskLaunchSwitchToFullscreen(task)) {
             logD("Bring desktop tasks to front on transition=taskId=%d", task.taskId)
@@ -2275,15 +2328,24 @@ class DesktopTasksController(
                 runOnTransitStart?.invoke(transition)
                 return wct
             }
-            bringDesktopAppsToFront(task.displayId, wct, task.taskId)
+            val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
+            runOnTransitStart?.invoke(transition)
             wct.reorder(task.token, true)
             return wct
         }
+        val inheritedTaskBounds =
+            getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
+        if (!taskRepository.isActiveTask(task.taskId) && inheritedTaskBounds != null) {
+            // Inherit bounds from closing task instance to prevent application jumping different
+            // cascading positions.
+            wct.setBounds(task.token, inheritedTaskBounds)
+        }
         // TODO(b/365723620): Handle non running tasks that were launched after reboot.
         // If task is already visible, it must have been handled already and added to desktop mode.
-        // Cascade task only if it's not visible yet.
+        // Cascade task only if it's not visible yet and has no inherited bounds.
         if (
-            DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
+            inheritedTaskBounds == null &&
+                DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue() &&
                 !taskRepository.isVisibleTask(task.taskId)
         ) {
             val displayLayout = displayController.getDisplayLayout(task.displayId)
@@ -2315,7 +2377,7 @@ class DesktopTasksController(
             reason = DesktopImmersiveController.ExitReason.TASK_LAUNCH,
         )
         // 2) minimize a Task if needed.
-        val taskIdToMinimize = addAndGetMinimizeChanges(task.displayId, wct, task.taskId)
+        val taskIdToMinimize = addAndGetMinimizeChanges(deskId, wct, task.taskId)
         addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
         if (taskIdToMinimize != null) {
             addPendingMinimizeTransition(transition, taskIdToMinimize, MinimizeReason.TASK_LIMIT)
@@ -2338,25 +2400,42 @@ class DesktopTasksController(
             return WindowContainerTransaction().also { wct ->
                 val deskId = getDefaultDeskId(task.displayId)
                 addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
-                // In some launches home task is moved behind new task being launched. Make sure
-                // that's not the case for launches in desktop. Also, if this launch is the first
-                // one to trigger the desktop mode (e.g., when [forceEnterDesktop()]), activate the
-                // desktop mode here.
-                if (
-                    task.baseIntent.flags.and(Intent.FLAG_ACTIVITY_TASK_ON_HOME) != 0 ||
-                        !isDesktopModeShowing(task.displayId)
-                ) {
-                    bringDesktopAppsToFront(task.displayId, wct, task.taskId)
-                    wct.reorder(task.token, true)
-                }
-
-                // Desktop Mode is already showing and we're launching a new Task - we might need to
-                // minimize another Task.
-                val taskIdToMinimize = addAndGetMinimizeChanges(task.displayId, wct, task.taskId)
-                taskIdToMinimize?.let {
-                    addPendingMinimizeTransition(transition, it, MinimizeReason.TASK_LIMIT)
-                }
-                addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
+                val runOnTransitStart: RunOnTransitStart? =
+                    if (
+                        task.baseIntent.flags.and(Intent.FLAG_ACTIVITY_TASK_ON_HOME) != 0 ||
+                            !isDesktopModeShowing(task.displayId)
+                    ) {
+                        // In some launches home task is moved behind new task being launched. Make
+                        // sure that's not the case for launches in desktop. Also, if this launch is
+                        // the first one to trigger the desktop mode (e.g., when
+                        // [forceEnterDesktop()]), activate the desk here.
+                        val activationRunnable =
+                            addDeskActivationChanges(
+                                deskId = deskId,
+                                wct = wct,
+                                newTask = task,
+                                addPendingLaunchTransition = true,
+                            )
+                        wct.reorder(task.token, true)
+                        activationRunnable
+                    } else {
+                        { transition: IBinder ->
+                            // The desk was already showing and we're launching a new Task - we
+                            // might need to minimize another Task.
+                            val taskIdToMinimize =
+                                addAndGetMinimizeChanges(deskId, wct, task.taskId)
+                            taskIdToMinimize?.let { minimizingTaskId ->
+                                addPendingMinimizeTransition(
+                                    transition,
+                                    minimizingTaskId,
+                                    MinimizeReason.TASK_LIMIT,
+                                )
+                            }
+                            // Also track the pending launching task.
+                            addPendingAppLaunchTransition(transition, task.taskId, taskIdToMinimize)
+                        }
+                    }
+                runOnTransitStart?.invoke(transition)
                 desktopImmersiveController.exitImmersiveIfApplicable(
                     transition,
                     wct,
@@ -2478,10 +2557,10 @@ class DesktopTasksController(
         deskId: Int,
         wct: WindowContainerTransaction,
         task: RunningTaskInfo,
-    ): Int? {
-        val taskIdToMinimize = addDeskActivationChanges(deskId, wct, task)
+    ): RunOnTransitStart? {
+        val runOnTransitStart = addDeskActivationChanges(deskId, wct, task)
         addMoveToDeskTaskChanges(wct = wct, task = task, deskId = deskId)
-        return taskIdToMinimize
+        return runOnTransitStart
     }
 
     /**
@@ -2502,9 +2581,17 @@ class DesktopTasksController(
     ) {
         val targetDisplayId = taskRepository.getDisplayForDesk(deskId)
         val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return
-        val initialBounds = getInitialBounds(displayLayout, task, targetDisplayId)
-        if (canChangeTaskPosition(task)) {
-            wct.setBounds(task.token, initialBounds)
+        val inheritedTaskBounds =
+            getInheritedExistingTaskBounds(taskRepository, shellTaskOrganizer, task, deskId)
+        if (inheritedTaskBounds != null) {
+            // Inherit bounds from closing task instance to prevent application jumping different
+            // cascading positions.
+            wct.setBounds(task.token, inheritedTaskBounds)
+        } else {
+            val initialBounds = getInitialBounds(displayLayout, task, targetDisplayId)
+            if (canChangeTaskPosition(task)) {
+                wct.setBounds(task.token, initialBounds)
+            }
         }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.moveTaskToDesk(wct = wct, deskId = deskId, task = task)
@@ -2582,7 +2669,7 @@ class DesktopTasksController(
                 // Caption insets stay fixed and don't scale with bounds.
                 val captionInsets =
                     if (desktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo)) {
-                        getAppHeaderHeight(context)
+                        getDesktopViewAppHeaderHeightPx(context)
                     } else {
                         0
                     }
@@ -2680,7 +2767,7 @@ class DesktopTasksController(
 
     /** Returns the ID of the Task that will be minimized, or null if no task will be minimized. */
     private fun addAndGetMinimizeChanges(
-        displayId: Int,
+        deskId: Int,
         wct: WindowContainerTransaction,
         newTaskId: Int?,
         launchingNewIntent: Boolean = false,
@@ -2689,7 +2776,7 @@ class DesktopTasksController(
         require(newTaskId == null || !launchingNewIntent)
         return desktopTasksLimiter
             .get()
-            .addAndGetMinimizeTaskChanges(displayId, wct, newTaskId, launchingNewIntent)
+            .addAndGetMinimizeTaskChanges(deskId, wct, newTaskId, launchingNewIntent)
     }
 
     private fun addPendingMinimizeTransition(
@@ -2751,36 +2838,98 @@ class DesktopTasksController(
         activateDesk(deskId, remoteTransition)
     }
 
-    /** Activates the given desk but without starting a transition. */
+    /**
+     * Applies the necessary [wct] changes to activate the given desk.
+     *
+     * When a task is being brought into a desk together with the activation, then [newTask] is not
+     * null and may be used to run other desktop policies, such as minimizing another task if the
+     * task limit has been exceeded.
+     */
     fun addDeskActivationChanges(
         deskId: Int,
         wct: WindowContainerTransaction,
-        newTask: RunningTaskInfo? = null,
-    ): Int? {
+        newTask: TaskInfo? = null,
+        // TODO: b/362720497 - should this be true in other places? Can it be calculated locally
+        //  without having to specify the value?
+        addPendingLaunchTransition: Boolean = false,
+    ): RunOnTransitStart? {
+        logV("addDeskActivationChanges newTaskId=%d deskId=%d", newTask?.taskId, deskId)
+        val newTaskIdInFront = newTask?.taskId
         val displayId = taskRepository.getDisplayForDesk(deskId)
-        return if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            prepareForDeskActivation(displayId, wct)
-            desksOrganizer.activateDesk(wct, deskId)
-            if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue()) {
-                // TODO: 362720497 - do non-running tasks need to be restarted with |wct#startTask|?
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            val taskIdToMinimize = bringDesktopAppsToFront(displayId, wct, newTask?.taskId)
+            return { transition ->
+                taskIdToMinimize?.let { minimizingTaskId ->
+                    addPendingMinimizeTransition(
+                        transition = transition,
+                        taskIdToMinimize = minimizingTaskId,
+                        minimizeReason = MinimizeReason.TASK_LIMIT,
+                    )
+                }
+                if (newTask != null && addPendingLaunchTransition) {
+                    addPendingAppLaunchTransition(transition, newTask.taskId, taskIdToMinimize)
+                }
             }
-            taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
-                doesAnyTaskRequireTaskbarRounding(displayId)
-            )
-            // TODO: b/362720497 - activating a desk with the intention to move a new task to
-            //  it means we may need to minimize something in the activating desk. Do so here
-            //  similar to how it's done in #bringDesktopAppsToFront instead of returning null.
-            null
-        } else {
-            bringDesktopAppsToFront(displayId, wct, newTask?.taskId)
+        }
+        prepareForDeskActivation(displayId, wct)
+        desksOrganizer.activateDesk(wct, deskId)
+        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
+            doesAnyTaskRequireTaskbarRounding(displayId)
+        )
+        val expandedTasksOrderedFrontToBack =
+            taskRepository.getExpandedTasksIdsInDeskOrdered(deskId = deskId)
+        // If we're adding a new Task we might need to minimize an old one
+        val taskIdToMinimize =
+            desktopTasksLimiter
+                .getOrNull()
+                ?.getTaskIdToMinimize(expandedTasksOrderedFrontToBack, newTaskIdInFront)
+        if (taskIdToMinimize != null) {
+            val taskToMinimize = shellTaskOrganizer.getRunningTaskInfo(taskIdToMinimize)
+            // TODO(b/365725441): Handle non running task minimization
+            if (taskToMinimize != null) {
+                desksOrganizer.minimizeTask(wct, deskId, taskToMinimize)
+            }
+        }
+        if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PERSISTENCE.isTrue) {
+            expandedTasksOrderedFrontToBack
+                .filter { taskId -> taskId != taskIdToMinimize }
+                .reversed()
+                .forEach { taskId ->
+                    val runningTaskInfo = shellTaskOrganizer.getRunningTaskInfo(taskId)
+                    if (runningTaskInfo == null) {
+                        wct.startTask(taskId, createActivityOptionsForStartTask().toBundle())
+                    } else {
+                        desksOrganizer.reorderTaskToFront(wct, deskId, runningTaskInfo)
+                    }
+                }
+        }
+        return { transition ->
+            val activateDeskTransition =
+                if (newTaskIdInFront != null) {
+                    DeskTransition.ActiveDeskWithTask(
+                        token = transition,
+                        displayId = displayId,
+                        deskId = deskId,
+                        enterTaskId = newTaskIdInFront,
+                    )
+                } else {
+                    DeskTransition.ActivateDesk(
+                        token = transition,
+                        displayId = displayId,
+                        deskId = deskId,
+                    )
+                }
+            desksTransitionObserver.addPendingTransition(activateDeskTransition)
+            taskIdToMinimize?.let { minimizingTask ->
+                addPendingMinimizeTransition(transition, minimizingTask, MinimizeReason.TASK_LIMIT)
+            }
         }
     }
 
     /** Activates the given desk. */
     fun activateDesk(deskId: Int, remoteTransition: RemoteTransition? = null) {
-        val displayId = taskRepository.getDisplayForDesk(deskId)
         val wct = WindowContainerTransaction()
-        addDeskActivationChanges(deskId, wct)
+        val runOnTransitStart = addDeskActivationChanges(deskId, wct)
 
         val transitionType = transitionType(remoteTransition)
         val handler =
@@ -2790,15 +2939,7 @@ class DesktopTasksController(
 
         val transition = transitions.startTransition(transitionType, wct, handler)
         handler?.setTransition(transition)
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksTransitionObserver.addPendingTransition(
-                DeskTransition.ActivateDesk(
-                    token = transition,
-                    displayId = displayId,
-                    deskId = deskId,
-                )
-            )
-        }
+        runOnTransitStart?.invoke(transition)
 
         desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
             FREEFORM_ANIMATION_DURATION
@@ -3361,7 +3502,14 @@ class DesktopTasksController(
         if (windowingMode == WINDOWING_MODE_FREEFORM) {
             if (DesktopModeFlags.ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX.isTrue()) {
                 // TODO b/376389593: Use a custom tab tearing transition/animation
-                startLaunchTransition(TRANSIT_OPEN, wct, launchingTaskId = null)
+                val deskId = getDefaultDeskId(DEFAULT_DISPLAY)
+                startLaunchTransition(
+                    TRANSIT_OPEN,
+                    wct,
+                    launchingTaskId = null,
+                    deskId = deskId,
+                    displayId = DEFAULT_DISPLAY,
+                )
             } else {
                 desktopModeDragAndDropTransitionHandler.handleDropEvent(wct)
             }
@@ -3403,6 +3551,13 @@ class DesktopTasksController(
                 taskInfo,
                 DesktopImmersiveController.ExitReason.APP_NOT_IMMERSIVE,
             )
+        }
+    }
+
+    private fun createActivityOptionsForStartTask(): ActivityOptions {
+        return ActivityOptions.makeBasic().apply {
+            launchWindowingMode = WINDOWING_MODE_FREEFORM
+            splashScreenStyle = SPLASH_SCREEN_STYLE_ICON
         }
     }
 

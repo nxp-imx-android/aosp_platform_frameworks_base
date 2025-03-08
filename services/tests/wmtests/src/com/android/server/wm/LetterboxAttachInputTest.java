@@ -38,7 +38,6 @@ import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.InputWindowHandle;
-import android.view.SurfaceControl;
 import android.view.WindowManager;
 
 import com.android.server.testutils.StubTransaction;
@@ -76,8 +75,7 @@ public class LetterboxAttachInputTest extends WindowTestsBase {
         doReturn(0.5f).when(letterboxOverrides).getLetterboxWallpaperDarkScrimAlpha();
         mWindowState = createWindowState();
         mLetterbox = new Letterbox(mSurfaces, StubTransaction::new,
-                mock(AppCompatReachabilityPolicy.class), letterboxOverrides,
-                () -> mock(SurfaceControl.class));
+                mock(AppCompatReachabilityPolicy.class), letterboxOverrides);
         mTransaction = spy(StubTransaction.class);
     }
 

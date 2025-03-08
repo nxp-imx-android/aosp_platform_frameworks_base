@@ -214,9 +214,5 @@ class KeyGestureEventHandlerTest {
         ): Boolean {
             return handler(event, focusedToken)
         }
-
-        override fun isKeyGestureSupported(gestureType: Int): Boolean {
-            return true
-        }
     }
 }

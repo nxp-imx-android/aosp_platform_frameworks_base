@@ -16,13 +16,13 @@
 
 package com.android.systemui.shared.clocks
 
-import android.graphics.RectF
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.R
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.AxisType
 import com.android.systemui.plugins.clocks.ClockConfig
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockEventListener
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFontAxis
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
@@ -107,11 +107,11 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
         isDarkTheme: Boolean,
         dozeFraction: Float,
         foldFraction: Float,
-        onBoundsChanged: (RectF) -> Unit,
+        clockListener: ClockEventListener?,
     ) {
         events.onFontAxesChanged(clockCtx.settings.axes)
         smallClock.run {
-            layerController.onViewBoundsChanged = onBoundsChanged
+            layerController.onViewBoundsChanged = { clockListener?.onBoundsChanged(it) }
             events.onThemeChanged(theme.copy(isDarkTheme = isDarkTheme))
             animations.doze(dozeFraction)
             animations.fold(foldFraction)
@@ -119,7 +119,7 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
         }
 
         largeClock.run {
-            layerController.onViewBoundsChanged = onBoundsChanged
+            layerController.onViewBoundsChanged = { clockListener?.onBoundsChanged(it) }
             events.onThemeChanged(theme.copy(isDarkTheme = isDarkTheme))
             animations.doze(dozeFraction)
             animations.fold(foldFraction)

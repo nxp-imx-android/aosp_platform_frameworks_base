@@ -2812,6 +2812,20 @@
     <integer name="config_dreamsBatteryLevelDrainCutoff">5</integer>
     <!-- Limit of how long the device can remain unlocked due to attention checking.  -->
     <integer name="config_attentionMaximumExtension">900000</integer> <!-- 15 minutes.  -->
+
+    <!-- Enables or disables the 'prevent screen timeout' feature, where when a user manually
+         undims the screen, the feature acquires a wakelock to prevent screen timeout.
+         false = disabled, true = enabled. Disabled by default. -->
+    <bool name="config_defaultPreventScreenTimeoutEnabled">false</bool>
+    <!-- Default value (in milliseconds) to prevent the screen timeout after user undims it
+         manually between screen dims, a sign the user is interacting with the device. -->
+    <integer name="config_defaultPreventScreenTimeoutForMillis">300000</integer> <!-- 5 minutes. -->
+    <!-- Default max duration (in milliseconds) of the time between undims to still consider them
+         consecutive. -->
+    <integer name="config_defaultMaxDurationBetweenUndimsMillis">600000</integer> <!-- 10 min.  -->
+    <!-- Default number of user undims required to trigger preventing screen sleep. -->
+    <integer name="config_defaultUndimsRequired">2</integer>
+
     <!-- Whether there is to be a chosen Dock User who is the only user allowed to dream. -->
     <bool name="config_dreamsOnlyEnabledForDockUser">false</bool>
     <!-- Whether dreams are disabled when ambient mode is suppressed. -->
@@ -4170,6 +4184,11 @@
     <!-- Whether device supports double tap to wake -->
     <bool name="config_supportDoubleTapWake">false</bool>
 
+    <!-- Whether device supports double tap to sleep. This will allow the user to enable/disable
+         double tap gestures in non-action areas in the lock screen and launcher workspace to go to
+         sleep. -->
+    <bool name="config_supportDoubleTapSleep">false</bool>
+
     <!-- The RadioAccessFamilies supported by the device.
          Empty is viewed as "all".  Only used on devices which
          don't support RIL_REQUEST_GET_RADIO_CAPABILITY
@@ -4458,6 +4477,10 @@
     <!-- List of comma separated package names for which we the system will not show crash, ANR,
          etc. dialogs. -->
     <string translatable="false" name="config_appsNotReportingCrashes"></string>
+
+    <!-- Specifies the delay in milliseconds for JobScheduler to postpone the running
+         of regular jobs when coming out of doze -->
+    <integer name="config_jobSchedulerBackgroundJobsDelay">3000</integer>
 
     <!-- Inactivity threshold (in milliseconds) used in JobScheduler. JobScheduler will consider
          the device to be "idle" after being inactive for this long. -->

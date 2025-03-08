@@ -225,10 +225,10 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         CrossActivityTestCase testCase = createTopTaskWithTwoActivities();
         IOnBackInvokedCallback callback = withSystemCallback(testCase.task);
         testCase.windowFront.mAttrs.windowAnimations = 0x10;
-        spyOn(mDisplayContent.mAppTransition.mTransitionAnimation);
-        doReturn(0xffff00AB).when(mDisplayContent.mAppTransition.mTransitionAnimation)
+        spyOn(mDisplayContent.mTransitionAnimation);
+        doReturn(0xffff00AB).when(mDisplayContent.mTransitionAnimation)
                 .getAnimationResId(any(), anyInt(), anyInt());
-        doReturn(0xffff00CD).when(mDisplayContent.mAppTransition.mTransitionAnimation)
+        doReturn(0xffff00CD).when(mDisplayContent.mTransitionAnimation)
                 .getDefaultAnimationResId(anyInt(), anyInt());
 
         BackNavigationInfo backNavigationInfo = startBackNavigation();
@@ -343,8 +343,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
 
         // Adjacent + no companion => unable to predict
         // TF1 | TF2
-        tf1.setAdjacentTaskFragment(tf2);
-        tf2.setAdjacentTaskFragment(tf1);
+        tf1.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf1, tf2));
         predictable = BackNavigationController.getAnimatablePrevActivities(task, topAr,
                 outPrevActivities);
         assertTrue(outPrevActivities.isEmpty());
@@ -393,8 +392,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         // Adjacent => predict for previous activity.
         // TF2 | TF3
         // TF1
-        tf2.setAdjacentTaskFragment(tf3);
-        tf3.setAdjacentTaskFragment(tf2);
+        tf2.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf2, tf3));
         predictable = BackNavigationController.getAnimatablePrevActivities(task, topAr,
                 outPrevActivities);
         assertTrue(outPrevActivities.contains(prevAr));
@@ -657,8 +655,7 @@ public class BackNavigationControllerTests extends WindowTestsBase {
         final TaskFragment secondaryTf = createTaskFragmentWithEmbeddedActivity(task, organizer);
         final ActivityRecord primaryActivity = primaryTf.getTopMostActivity();
         final ActivityRecord secondaryActivity = secondaryTf.getTopMostActivity();
-        primaryTf.setAdjacentTaskFragment(secondaryTf);
-        secondaryTf.setAdjacentTaskFragment(primaryTf);
+        primaryTf.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(primaryTf, secondaryTf));
 
         final WindowState primaryWindow = mock(WindowState.class);
         final WindowState secondaryWindow = mock(WindowState.class);

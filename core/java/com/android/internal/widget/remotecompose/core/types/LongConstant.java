@@ -36,7 +36,7 @@ public class LongConstant extends Operation implements Serializable {
 
     private static final int OP_CODE = Operations.DATA_LONG;
     private long mValue;
-    private final int mId;
+    public final int mId;
 
     /**
      * @param id the id of the constant
@@ -45,6 +45,15 @@ public class LongConstant extends Operation implements Serializable {
     public LongConstant(int id, long value) {
         mId = id;
         mValue = value;
+    }
+
+    /**
+     * Copy the value from another longConstant
+     *
+     * @param from the constant to copy from
+     */
+    public void update(LongConstant from) {
+        mValue = from.mValue;
     }
 
     /**

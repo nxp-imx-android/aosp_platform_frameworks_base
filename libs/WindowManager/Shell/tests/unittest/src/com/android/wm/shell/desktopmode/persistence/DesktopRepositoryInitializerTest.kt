@@ -17,7 +17,6 @@
 package com.android.wm.shell.desktopmode.persistence
 
 import android.os.UserManager
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.view.Display.DEFAULT_DISPLAY
@@ -82,10 +81,27 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_DESKTOP_WINDOWING_HSUM)
-    /** TODO: b/362720497 - add multi-desk version when implemented. */
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun initWithPersistence_multipleUsers_addedCorrectly_multiDesksDisabled() =
+    fun init_updatesFlow() =
+        runTest(StandardTestDispatcher()) {
+            whenever(persistentRepository.getUserDesktopRepositoryMap())
+                .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState1))
+            whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
+                .thenReturn(desktopRepositoryState1)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_1)).thenReturn(desktop1)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_2)).thenReturn(desktop2)
+
+            repositoryInitializer.initialize(desktopUserRepositories)
+
+            assertThat(repositoryInitializer.isInitialized.value).isTrue()
+        }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        FLAG_ENABLE_DESKTOP_WINDOWING_HSUM,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun initWithPersistence_multipleUsers_addedCorrectly() =
         runTest(StandardTestDispatcher()) {
             whenever(persistentRepository.getUserDesktopRepositoryMap())
                 .thenReturn(
@@ -104,50 +120,74 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             repositoryInitializer.initialize(desktopUserRepositories)
 
-            // Desktop Repository currently returns all tasks across desktops for a specific user
-            // since the repository currently doesn't handle desktops. This test logic should be
-            // updated
-            // once the repository handles multiple desktops.
             assertThat(
-                    desktopUserRepositories.getProfile(USER_ID_1).getActiveTasks(DEFAULT_DISPLAY)
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_1)
                 )
-                .containsExactly(1, 3, 4, 5)
+                .containsExactly(1, 3)
                 .inOrder()
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getExpandedTasksOrdered(DEFAULT_DISPLAY)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_2)
                 )
-                .containsExactly(5, 1)
+                .containsExactly(4, 5)
                 .inOrder()
             assertThat(
-                    desktopUserRepositories.getProfile(USER_ID_1).getMinimizedTasks(DEFAULT_DISPLAY)
-                )
-                .containsExactly(3, 4)
-                .inOrder()
-
-            assertThat(
-                    desktopUserRepositories.getProfile(USER_ID_2).getActiveTasks(DEFAULT_DISPLAY)
+                    desktopUserRepositories
+                        .getProfile(USER_ID_2)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_3)
                 )
                 .containsExactly(7, 8)
                 .inOrder()
             assertThat(
                     desktopUserRepositories
-                        .getProfile(USER_ID_2)
-                        .getExpandedTasksOrdered(DEFAULT_DISPLAY)
+                        .getProfile(USER_ID_1)
+                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_1)
                 )
-                .contains(7)
+                .containsExactly(1)
+                .inOrder()
             assertThat(
-                    desktopUserRepositories.getProfile(USER_ID_2).getMinimizedTasks(DEFAULT_DISPLAY)
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_2)
+                )
+                .containsExactly(5)
+                .inOrder()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_2)
+                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_3)
+                )
+                .containsExactly(7)
+                .inOrder()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_1)
+                )
+                .containsExactly(3)
+                .inOrder()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_2)
+                )
+                .containsExactly(4)
+                .inOrder()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_2)
+                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_3)
                 )
                 .containsExactly(8)
+                .inOrder()
         }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
-    /** TODO: b/362720497 - add multi-desk version when implemented. */
-    @DisableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
-    fun initWithPersistence_singleUser_addedCorrectly_multiDesksDisabled() =
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE, FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun initWithPersistence_singleUser_addedCorrectly() =
         runTest(StandardTestDispatcher()) {
             whenever(persistentRepository.getUserDesktopRepositoryMap())
                 .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState1))
@@ -161,23 +201,44 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getActiveTaskIdsInDesk(deskId = DEFAULT_DISPLAY)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_1)
                 )
-                .containsExactly(1, 3, 4, 5)
+                .containsExactly(1, 3)
                 .inOrder()
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getExpandedTasksIdsInDeskOrdered(deskId = DEFAULT_DISPLAY)
+                        .getActiveTaskIdsInDesk(DESKTOP_ID_2)
                 )
-                .containsExactly(5, 1)
+                .containsExactly(4, 5)
                 .inOrder()
             assertThat(
                     desktopUserRepositories
                         .getProfile(USER_ID_1)
-                        .getMinimizedTaskIdsInDesk(deskId = DEFAULT_DISPLAY)
+                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_1)
                 )
-                .containsExactly(3, 4)
+                .containsExactly(1)
+                .inOrder()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getExpandedTasksIdsInDeskOrdered(DESKTOP_ID_2)
+                )
+                .containsExactly(5)
+                .inOrder()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_1)
+                )
+                .containsExactly(3)
+                .inOrder()
+            assertThat(
+                    desktopUserRepositories
+                        .getProfile(USER_ID_1)
+                        .getMinimizedTaskIdsInDesk(DESKTOP_ID_2)
+                )
+                .containsExactly(4)
                 .inOrder()
         }
 

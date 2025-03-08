@@ -22,6 +22,8 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.OverlayKey
@@ -241,6 +243,15 @@ sealed interface TransitionState {
         /** Additional gesture context whenever the transition is driven by a user gesture. */
         abstract val gestureContext: GestureContext?
 
+        /**
+         * True when the transition reached the end and the progress won't be updated anymore.
+         *
+         * [isProgressStable] will be `true` before this [Transition] is completed while there are
+         * still custom transition animations settling.
+         */
+        var isProgressStable: Boolean by mutableStateOf(false)
+            private set
+
         /** The CUJ covered by this transition. */
         @CujType
         val cuj: Int?
@@ -372,7 +383,11 @@ sealed interface TransitionState {
             check(_coroutineScope == null) { "A Transition can be started only once." }
             coroutineScope {
                 _coroutineScope = this
-                run()
+                try {
+                    run()
+                } finally {
+                    isProgressStable = true
+                }
             }
         }
 

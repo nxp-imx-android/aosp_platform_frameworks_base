@@ -19,6 +19,8 @@ package com.android.wm.shell.common.pip;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -125,6 +127,31 @@ public class PipBoundsStateTest extends ShellTestCase {
         mPipBoundsState.clearReentryState();
 
         assertNull(mPipBoundsState.getReentryState());
+    }
+
+    @Test
+    public void setLastPipComponentName_notChanged_doesNotCallbackComponentChangedListener() {
+        mPipBoundsState.setLastPipComponentName(mTestComponentName1);
+        PipBoundsState.OnPipComponentChangedListener mockListener =
+                mock(PipBoundsState.OnPipComponentChangedListener.class);
+
+        mPipBoundsState.addOnPipComponentChangedListener(mockListener);
+        mPipBoundsState.setLastPipComponentName(mTestComponentName1);
+
+        verify(mockListener, never()).onPipComponentChanged(any(), any());
+    }
+
+    @Test
+    public void setLastPipComponentName_changed_callbackComponentChangedListener() {
+        mPipBoundsState.setLastPipComponentName(mTestComponentName1);
+        PipBoundsState.OnPipComponentChangedListener mockListener =
+                mock(PipBoundsState.OnPipComponentChangedListener.class);
+
+        mPipBoundsState.addOnPipComponentChangedListener(mockListener);
+        mPipBoundsState.setLastPipComponentName(mTestComponentName2);
+
+        verify(mockListener).onPipComponentChanged(
+                eq(mTestComponentName1), eq(mTestComponentName2));
     }
 
     @Test

@@ -22,6 +22,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.policy.batteryController
 import com.android.systemui.statusbar.policy.fake
 import com.android.systemui.testKosmos
@@ -32,7 +33,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class BatteryInteractorTest : SysuiTestCase() {
-    val kosmos = testKosmos()
+    val kosmos = testKosmos().useUnconfinedTestDispatcher()
     val Kosmos.underTest by Kosmos.Fixture { batteryInteractor }
 
     @Test
@@ -50,11 +51,61 @@ class BatteryInteractorTest : SysuiTestCase() {
 
             assertThat(latest).isEqualTo(BatteryAttributionModel.Defend)
 
+            batteryController.fake._isDefender = false
             batteryController.fake._isPowerSave = true
 
             assertThat(latest).isEqualTo(BatteryAttributionModel.PowerSave)
 
+            batteryController.fake._isPowerSave = false
             batteryController.fake._isPluggedIn = true
+
+            assertThat(latest).isEqualTo(BatteryAttributionModel.Charging)
+        }
+
+    @Test
+    fun attributionType_prioritizesPowerSaveOverCharging() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.batteryAttributionType)
+
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._isDefender = true
+            batteryController.fake._isPowerSave = true
+
+            assertThat(latest).isEqualTo(BatteryAttributionModel.PowerSave)
+        }
+
+    @Test
+    fun attributionType_prioritizesPowerSaveOverDefender() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.batteryAttributionType)
+
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._isPowerSave = true
+            batteryController.fake._isDefender = false
+
+            assertThat(latest).isEqualTo(BatteryAttributionModel.PowerSave)
+        }
+
+    @Test
+    fun attributionType_prioritizesDefenderOverCharging() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.batteryAttributionType)
+
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._isPowerSave = false
+            batteryController.fake._isDefender = true
+
+            assertThat(latest).isEqualTo(BatteryAttributionModel.Defend)
+        }
+
+    @Test
+    fun attributionType_prioritizesChargingOnly() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.batteryAttributionType)
+
+            batteryController.fake._isPluggedIn = true
+            batteryController.fake._isDefender = false
+            batteryController.fake._isPowerSave = false
 
             assertThat(latest).isEqualTo(BatteryAttributionModel.Charging)
         }

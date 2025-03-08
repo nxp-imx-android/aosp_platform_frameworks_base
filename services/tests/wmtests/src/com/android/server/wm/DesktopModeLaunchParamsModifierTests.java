@@ -21,6 +21,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_MEDIUM_VALUE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_SMALL_VALUE;
@@ -40,6 +41,7 @@ import static android.util.DisplayMetrics.DENSITY_DEFAULT;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
 import static com.android.server.wm.DesktopModeBoundsCalculator.DESKTOP_MODE_INITIAL_BOUNDS_SCALE;
 import static com.android.server.wm.DesktopModeBoundsCalculator.DESKTOP_MODE_LANDSCAPE_APP_PADDING;
 import static com.android.server.wm.DesktopModeBoundsCalculator.centerInScreen;
@@ -157,7 +159,7 @@ public class DesktopModeLaunchParamsModifierTests extends
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
             Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX})
-    public void testReturnsContinueIfVisibleFreeformTaskExists() {
+    public void testReturnsContinueIfFreeformTaskExists() {
         setupDesktopModeLaunchParamsModifier();
         when(mTarget.isEnteringDesktopMode(any(), any(), any())).thenCallRealMethod();
 
@@ -165,7 +167,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM).build();
         doReturn(existingFreeformTask.getRootActivity()).when(dc)
-                .getTopMostVisibleFreeformActivity();
+                .getTopMostFreeformActivity();
         final Task launchingTask = new TaskBuilder(mSupervisor).build();
         launchingTask.onDisplayChanged(dc);
 
@@ -266,6 +268,38 @@ public class DesktopModeLaunchParamsModifierTests extends
                 ACTIVITY_TYPE_STANDARD).build();
         mCurrent.mBounds.set(/* left */ 0, /* top */ 0, /* right */ 100, /* bottom */ 100);
         assertEquals(RESULT_SKIP, new CalculateRequestBuilder().setTask(task).calculate());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})
+    public void testInheritTaskBoundsFromExistingInstanceIfClosing() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final String packageName = "com.same.package";
+        // Setup existing task.
+        final DisplayContent dc = spy(createNewDisplay());
+        final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setPackage(packageName).build();
+        existingFreeformTask.setBounds(
+                /* left */ 0,
+                /* top */ 0,
+                /* right */ 500,
+                /* bottom */ 500);
+        doReturn(existingFreeformTask.getRootActivity()).when(dc)
+                .getTopMostVisibleFreeformActivity();
+        // Set up new instance of already existing task. By default multi instance is not supported
+        // so first instance will close.
+        final Task launchingTask = new TaskBuilder(mSupervisor).setPackage(packageName)
+                .setCreateActivity(true).build();
+        launchingTask.onDisplayChanged(dc);
+        launchingTask.intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
+
+        // New instance should inherit task bounds of old instance.
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(launchingTask)
+                        .setActivity(launchingTask.getRootActivity()).calculate());
+        assertEquals(existingFreeformTask.getBounds(), mResult.mBounds);
     }
 
     @Test
@@ -860,9 +894,11 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS})
+            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testDefaultLandscapeBounds_landscapeDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
         final TestDisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
                 LANDSCAPE_DISPLAY_BOUNDS);
@@ -870,11 +906,11 @@ public class DesktopModeLaunchParamsModifierTests extends
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_LANDSCAPE,
                 task, /* ignoreOrientationRequest */ true);
 
-
-        final int desiredWidth =
-                (int) (LANDSCAPE_DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final float displayAspectRatio = (float) LANDSCAPE_DISPLAY_BOUNDS.width()
+                / LANDSCAPE_DISPLAY_BOUNDS.height();
         final int desiredHeight =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final int desiredWidth = (int) ((desiredHeight - captionHeight) * displayAspectRatio);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -883,7 +919,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS)
+    @EnableFlags({Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testUnResizablePortraitBounds_landscapeDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -892,6 +929,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Task task = createTask(display, /* isResizeable */ false);
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_PORTRAIT,
                 task, /* ignoreOrientationRequest */ true);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
@@ -899,7 +937,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         final int desiredHeight =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
-        final int desiredWidth = (int) (desiredHeight / LETTERBOX_ASPECT_RATIO);
+        final int desiredWidth = (int) ((desiredHeight - captionHeight) / LETTERBOX_ASPECT_RATIO);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -1037,7 +1075,8 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
-            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS})
+            Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testDefaultPortraitBounds_portraitDevice_unResizable_portraitOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1046,12 +1085,14 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Task task = createTask(display, /* isResizeable */ false);
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_PORTRAIT,
                 task, /* ignoreOrientationRequest */ true);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
-
-        final int desiredWidth =
-                (int) (PORTRAIT_DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final float displayAspectRatio = (float) PORTRAIT_DISPLAY_BOUNDS.height()
+                / PORTRAIT_DISPLAY_BOUNDS.width();
         final int desiredHeight =
-                (int) (PORTRAIT_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+                (int) (PORTRAIT_DISPLAY_BOUNDS.height()  * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final int desiredWidth =
+                (int) ((desiredHeight - captionHeight) / displayAspectRatio);
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());
@@ -1060,7 +1101,8 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS)
+    @EnableFlags({Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS,
+            Flags.FLAG_EXCLUDE_CAPTION_FROM_APP_BOUNDS})
     public void testUnResizableLandscapeBounds_portraitDevice_unResizable_landscapeOrientation() {
         setupDesktopModeLaunchParamsModifier();
 
@@ -1069,6 +1111,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final Task task = createTask(display, /* isResizeable */ false);
         final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_LANDSCAPE,
                 task, /* ignoreOrientationRequest */ true);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
@@ -1076,7 +1119,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         final int desiredWidth = PORTRAIT_DISPLAY_BOUNDS.width()
                 - (DESKTOP_MODE_LANDSCAPE_APP_PADDING * 2);
-        final int desiredHeight = (int) (desiredWidth / LETTERBOX_ASPECT_RATIO);
+        final int desiredHeight = (int) (desiredWidth / LETTERBOX_ASPECT_RATIO) + captionHeight;
 
         assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
                 .setActivity(activity).calculate());

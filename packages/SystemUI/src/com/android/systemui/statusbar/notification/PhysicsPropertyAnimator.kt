@@ -88,8 +88,8 @@ class PhysicsPropertyAnimator {
         @JvmStatic
         fun createDefaultSpring(): SpringForce {
             return SpringForce()
-                .setStiffness(380f) // MEDIUM LOW STIFFNESS
-                .setDampingRatio(SpringForce.DAMPING_RATIO_LOW_BOUNCY) // LOW BOUNCINESS
+                .setStiffness(380f)
+                .setDampingRatio(0.68f);
         }
 
         @JvmStatic

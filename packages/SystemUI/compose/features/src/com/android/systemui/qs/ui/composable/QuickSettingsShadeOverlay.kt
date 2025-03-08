@@ -49,7 +49,10 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.compose.animation.scene.content.state.TransitionState
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.brightness.ui.compose.BrightnessSliderContainer
+import com.android.systemui.brightness.ui.compose.ContainerColors
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.lifecycle.rememberViewModel
@@ -255,11 +258,18 @@ fun ContentScope.QuickSettingsLayout(
                 modifier = Modifier.padding(horizontal = QuickSettingsShade.Dimensions.Padding),
             )
 
-            BrightnessSliderContainer(
-                viewModel = viewModel.brightnessSliderViewModel,
-                containerColor = OverlayShade.Colors.PanelBackground,
-                modifier = Modifier.systemGestureExclusionInShade().fillMaxWidth(),
-            )
+            Box(
+                Modifier.systemGestureExclusionInShade(
+                    enabled = { layoutState.transitionState is TransitionState.Idle }
+                )
+            ) {
+                BrightnessSliderContainer(
+                    viewModel = viewModel.brightnessSliderViewModel,
+                    containerColors =
+                        ContainerColors.singleColor(OverlayShade.Colors.PanelBackground),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
 
             Box {
                 GridAnchor()
@@ -289,18 +299,20 @@ object QuickSettingsShade {
      * right.
      */
     @Composable
-    fun Modifier.systemGestureExclusionInShade(): Modifier {
+    fun Modifier.systemGestureExclusionInShade(enabled: () -> Boolean): Modifier {
         val density = LocalDensity.current
-        return systemGestureExclusion { layoutCoordinates ->
-            val sidePadding = with(density) { Dimensions.Padding.toPx() }
-            Rect(
-                offset = Offset(x = -sidePadding, y = 0f),
-                size =
-                    Size(
-                        width = layoutCoordinates.size.width.toFloat() + 2 * sidePadding,
-                        height = layoutCoordinates.size.height.toFloat(),
-                    ),
-            )
+        return thenIf(enabled()) {
+            Modifier.systemGestureExclusion { layoutCoordinates ->
+                val sidePadding = with(density) { Dimensions.Padding.toPx() }
+                Rect(
+                    offset = Offset(x = -sidePadding, y = 0f),
+                    size =
+                        Size(
+                            width = layoutCoordinates.size.width.toFloat() + 2 * sidePadding,
+                            height = layoutCoordinates.size.height.toFloat(),
+                        ),
+                )
+            }
         }
     }
 }

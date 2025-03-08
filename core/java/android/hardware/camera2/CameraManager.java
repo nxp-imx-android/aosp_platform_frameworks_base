@@ -1714,7 +1714,7 @@ public final class CameraManager {
                     final TaskInfo taskInfo = appTask.getTaskInfo();
                     final int freeformCameraCompatMode = taskInfo.appCompatTaskInfo
                             .cameraCompatTaskInfo.freeformCameraCompatMode;
-                    if (freeformCameraCompatMode != 0
+                    if (isInCameraCompatMode(freeformCameraCompatMode)
                             && taskInfo.topActivity != null
                             && taskInfo.topActivity.getPackageName().equals(packageName)) {
                         // WindowManager has requested rotation override.
@@ -1739,6 +1739,12 @@ public final class CameraManager {
         return CompatChanges.isChangeEnabled(OVERRIDE_CAMERA_LANDSCAPE_TO_PORTRAIT)
                 ? ICameraService.ROTATION_OVERRIDE_OVERRIDE_TO_PORTRAIT
                 : ICameraService.ROTATION_OVERRIDE_NONE;
+    }
+
+    private static boolean isInCameraCompatMode(@CameraCompatTaskInfo.FreeformCameraCompatMode int
+            freeformCameraCompatMode) {
+        return (freeformCameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_UNSPECIFIED)
+                && (freeformCameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_NONE);
     }
 
     private static int getRotationOverrideForCompatFreeform(

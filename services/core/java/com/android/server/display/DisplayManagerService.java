@@ -674,9 +674,9 @@ public final class DisplayManagerService extends SystemService {
         mConfigParameterProvider = new DeviceConfigParameterProvider(DeviceConfigInterface.REAL);
         mExtraDisplayLoggingPackageName = DisplayProperties.debug_vri_package().orElse(null);
         mExtraDisplayEventLogging = !TextUtils.isEmpty(mExtraDisplayLoggingPackageName);
-
+        // TODO(b/400384229): stats service needs to react to mirror-extended switch
         mExternalDisplayStatsService = new ExternalDisplayStatsService(mContext, mHandler,
-                this::isExtendedDisplayEnabled);
+                this::isExtendedDisplayAllowed);
         mDisplayNotificationManager = new DisplayNotificationManager(mFlags, mContext,
                 mExternalDisplayStatsService);
         mExternalDisplayPolicy = new ExternalDisplayPolicy(new ExternalDisplayPolicyInjector());
@@ -690,7 +690,7 @@ public final class DisplayManagerService extends SystemService {
                         deliverTopologyUpdate(update.first);
                     };
             mDisplayTopologyCoordinator = new DisplayTopologyCoordinator(
-                    this::isExtendedDisplayEnabled, topologyChangedCallback,
+                    this::isExtendedDisplayAllowed, topologyChangedCallback,
                     new HandlerExecutor(mHandler), mSyncRoot, backupManager::dataChanged);
         } else {
             mDisplayTopologyCoordinator = null;
@@ -2411,7 +2411,10 @@ public final class DisplayManagerService extends SystemService {
         updateLogicalDisplayState(display);
     }
 
-    private boolean isExtendedDisplayEnabled() {
+    private boolean isExtendedDisplayAllowed() {
+        if (mFlags.isDisplayContentModeManagementEnabled()) {
+            return true;
+        }
         try {
             return 0 != Settings.Global.getInt(
                     mContext.getContentResolver(),
@@ -2442,7 +2445,10 @@ public final class DisplayManagerService extends SystemService {
             applyDisplayChangedLocked(display);
         }
 
-        if (mDisplayTopologyCoordinator != null) {
+        // The default display should always be added to the topology. Other displays will be added
+        // upon calling onDisplayBelongToTopologyChanged().
+        if (mDisplayTopologyCoordinator != null
+                && display.getDisplayIdLocked() == Display.DEFAULT_DISPLAY) {
             mDisplayTopologyCoordinator.onDisplayAdded(display.getDisplayInfoLocked());
         }
     }
@@ -2618,8 +2624,7 @@ public final class DisplayManagerService extends SystemService {
         // Blank or unblank the display immediately to match the state requested
         // by the display power controller (if known).
         DisplayDeviceInfo info = device.getDisplayDeviceInfoLocked();
-        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
-                || android.companion.virtualdevice.flags.Flags.correctVirtualDisplayPowerState()) {
+        if ((info.flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
             final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(device);
             if (display == null) {
                 return null;
@@ -5580,9 +5585,7 @@ public final class DisplayManagerService extends SystemService {
                     final DisplayDevice displayDevice = mLogicalDisplayMapper.getDisplayLocked(
                             id).getPrimaryDisplayDeviceLocked();
                     final int flags = displayDevice.getDisplayDeviceInfoLocked().flags;
-                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0
-                            || android.companion.virtualdevice.flags.Flags
-                                    .correctVirtualDisplayPowerState()) {
+                    if ((flags & DisplayDeviceInfo.FLAG_NEVER_BLANK) == 0) {
                         final DisplayPowerController displayPowerController =
                                 mDisplayPowerControllers.get(id);
                         if (displayPowerController != null) {
@@ -6037,6 +6040,24 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public boolean isDisplayReadyForMirroring(int displayId) {
             return mExternalDisplayPolicy.isDisplayReadyForMirroring(displayId);
+        }
+
+        @Override
+        public void onDisplayBelongToTopologyChanged(int displayId, boolean inTopology) {
+            if (mDisplayTopologyCoordinator == null) {
+                return;
+            }
+            if (inTopology) {
+                var info = getDisplayInfo(displayId);
+                if (info == null) {
+                    Slog.w(TAG, "onDisplayBelongToTopologyChanged: cancelled displayId="
+                            + displayId + " info=null");
+                    return;
+                }
+                mDisplayTopologyCoordinator.onDisplayAdded(info);
+            } else {
+                mDisplayTopologyCoordinator.onDisplayRemoved(displayId);
+            }
         }
 
         @Override

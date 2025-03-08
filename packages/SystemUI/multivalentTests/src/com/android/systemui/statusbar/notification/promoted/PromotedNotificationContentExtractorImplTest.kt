@@ -57,7 +57,8 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     private val underTest = kosmos.promotedNotificationContentExtractor
     private val systemClock = kosmos.fakeSystemClock
-    private val rowImageInflater = RowImageInflater.newInstance(previousIndex = null)
+    private val rowImageInflater =
+        RowImageInflater.newInstance(previousIndex = null, reinflating = false)
     private val imageModelProvider by lazy { rowImageInflater.useForContentModel() }
 
     @Test

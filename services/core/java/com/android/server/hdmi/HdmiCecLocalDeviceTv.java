@@ -219,7 +219,9 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
                 && reason != HdmiControlService.INITIATED_BY_BOOT_UP;
         List<HdmiCecMessage> bufferedActiveSource = mDelayedMessageBuffer
                 .getBufferedMessagesWithOpcode(Constants.MESSAGE_ACTIVE_SOURCE);
-        if (bufferedActiveSource.isEmpty()) {
+        List<HdmiCecMessage> bufferedActiveSourceFromService = mService.getCecMessageWithOpcode(
+                Constants.MESSAGE_ACTIVE_SOURCE);
+        if (bufferedActiveSource.isEmpty() && bufferedActiveSourceFromService.isEmpty()) {
             addAndStartAction(new RequestActiveSourceAction(this, new IHdmiControlCallback.Stub() {
                 @Override
                 public void onComplete(int result) {
@@ -793,7 +795,7 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
                     @Override
                     public void onDeviceDiscoveryDone(List<HdmiDeviceInfo> deviceInfos) {
                         for (HdmiDeviceInfo info : deviceInfos) {
-                            if (!isInputReady(info.getDeviceId())) {
+                            if (!isInputReady(info.getId())) {
                                 mService.getHdmiCecNetwork().removeCecDevice(
                                         HdmiCecLocalDeviceTv.this, info.getLogicalAddress());
                             }

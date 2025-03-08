@@ -68,7 +68,6 @@ public class LetterboxTest {
     private SurfaceControlMocker mSurfaces;
     private SurfaceControl.Transaction mTransaction;
 
-    private SurfaceControl mParentSurface = mock(SurfaceControl.class);
     private AppCompatLetterboxOverrides mLetterboxOverrides;
     private WindowState mWindowState;
 
@@ -84,7 +83,7 @@ public class LetterboxTest {
         doReturn(0.5f).when(mLetterboxOverrides).getLetterboxWallpaperDarkScrimAlpha();
         mWindowState = mock(WindowState.class);
         mLetterbox = new Letterbox(mSurfaces, StubTransaction::new,
-                mock(AppCompatReachabilityPolicy.class), mLetterboxOverrides, () -> mParentSurface);
+                mock(AppCompatReachabilityPolicy.class), mLetterboxOverrides);
         mTransaction = spy(StubTransaction.class);
     }
 
@@ -256,22 +255,6 @@ public class LetterboxTest {
 
         applySurfaceChanges();
         verify(mTransaction).setAlpha(mSurfaces.fullWindowSurface, /* alpha */ 0.5f);
-    }
-
-    @Test
-    public void testNeedsApplySurfaceChanges_setParentSurface() {
-        mLetterbox.layout(new Rect(0, 0, 10, 10), new Rect(0, 1, 10, 10), new Point(1000, 2000));
-        applySurfaceChanges();
-
-        verify(mTransaction).reparent(mSurfaces.top, mParentSurface);
-        assertFalse(mLetterbox.needsApplySurfaceChanges());
-
-        mParentSurface = mock(SurfaceControl.class);
-
-        assertTrue(mLetterbox.needsApplySurfaceChanges());
-
-        applySurfaceChanges();
-        verify(mTransaction).reparent(mSurfaces.top, mParentSurface);
     }
 
     @Test

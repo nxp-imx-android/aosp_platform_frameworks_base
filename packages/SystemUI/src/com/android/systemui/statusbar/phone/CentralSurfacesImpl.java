@@ -109,6 +109,7 @@ import com.android.systemui.AutoReinflateContainer;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.DejankUtils;
 import com.android.systemui.EventLogTags;
+import com.android.systemui.Flags;
 import com.android.systemui.InitController;
 import com.android.systemui.Prefs;
 import com.android.systemui.accessibility.floatingmenu.AccessibilityFloatingMenuController;
@@ -139,6 +140,7 @@ import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
 import com.android.systemui.keyguard.KeyguardViewMediator;
 import com.android.systemui.keyguard.ScreenLifecycle;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.navigationbar.views.NavigationBarView;
 import com.android.systemui.notetask.NoteTaskController;
@@ -190,7 +192,6 @@ import com.android.systemui.statusbar.LiftReveal;
 import com.android.systemui.statusbar.LightRevealScrim;
 import com.android.systemui.statusbar.LockscreenShadeTransitionController;
 import com.android.systemui.statusbar.NotificationLockscreenUserManager;
-import com.android.systemui.statusbar.NotificationMediaManager;
 import com.android.systemui.statusbar.NotificationPresenter;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.NotificationShadeDepthController;
@@ -3183,12 +3184,27 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             new ActivityTransitionAnimator.Listener() {
                 @Override
                 public void onTransitionAnimationStart() {
-                    mKeyguardViewMediator.setBlursDisabledForAppLaunch(true);
+                    if (!Flags.notificationShadeBlur() || !Flags.moveTransitionAnimationLayer()) {
+                        mKeyguardViewMediator.setBlursDisabledForAppLaunch(true);
+                    }
+                }
+
+                @Override
+                public void onTransitionAnimationProgress(float linearProgress) {
+                    if (Flags.notificationShadeBlur() && Flags.moveTransitionAnimationLayer()) {
+                        mNotificationShadeDepthControllerLazy.get()
+                                .onTransitionAnimationProgress(linearProgress);
+                    }
                 }
 
                 @Override
                 public void onTransitionAnimationEnd() {
-                    mKeyguardViewMediator.setBlursDisabledForAppLaunch(false);
+                    if (Flags.notificationShadeBlur() && Flags.moveTransitionAnimationLayer()) {
+                        mNotificationShadeDepthControllerLazy.get()
+                                .onTransitionAnimationEnd();
+                    } else {
+                        mKeyguardViewMediator.setBlursDisabledForAppLaunch(false);
+                    }
                 }
             };
 

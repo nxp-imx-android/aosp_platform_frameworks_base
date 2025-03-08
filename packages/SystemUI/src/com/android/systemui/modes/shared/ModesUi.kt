@@ -42,7 +42,9 @@ object ModesUi {
      * Caution!! Using this check incorrectly will cause crashes in nextfood builds!
      */
     @JvmStatic
-    inline fun unsafeAssertInNewMode() = RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, Flags.FLAG_MODES_UI)
+    @Deprecated("Avoid crashing.", ReplaceWith("if (this.isUnexpectedlyInLegacyMode()) return"))
+    inline fun unsafeAssertInNewMode() =
+        RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, Flags.FLAG_MODES_UI)
 
     /**
      * Called to ensure code is only run when the flag is disabled. This will throw an exception if

@@ -527,20 +527,11 @@ public class InputMethodService extends AbstractInputMethodService {
     public static final int IME_ACTIVE = 1 << 0;
 
     /**
-     * The IME is perceptibly visible to the user.
+     * The IME is visible.
      *
      * @hide
      */
     public static final int IME_VISIBLE = 1 << 1;
-
-    /**
-     * The IME is visible, but not yet perceptible to the user (e.g. fading in)
-     * by {@link android.view.WindowInsetsController}.
-     *
-     * @see InputMethodManager#reportPerceptible
-     * @hide
-     */
-    public static final int IME_VISIBLE_IMPERCEPTIBLE = 1 << 2;
 
     /**
      * The IME window visibility state.
@@ -550,7 +541,6 @@ public class InputMethodService extends AbstractInputMethodService {
     @IntDef(flag = true, prefix = { "IME_" }, value = {
             IME_ACTIVE,
             IME_VISIBLE,
-            IME_VISIBLE_IMPERCEPTIBLE,
     })
     public @interface ImeWindowVisibility {}
 

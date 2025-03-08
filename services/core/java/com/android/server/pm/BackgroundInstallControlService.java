@@ -392,7 +392,7 @@ public class BackgroundInstallControlService extends SystemService {
 
     private boolean installedByAdb(String initiatingPackageName) {
         // GTS tests needs to adopt shell identity to install apps.
-        if(!SystemProperties.get("gts.transparency.bg-install-apps").isEmpty()) {
+        if(!SystemProperties.get("debug.gts.transparency.bg-install-apps").isEmpty()) {
             Slog.d(TAG, "handlePackageAdd: is GTS tests, skipping ADB check");
         } else if(PackageManagerServiceUtils.isInstalledByAdb(initiatingPackageName)) {
             Slog.d(TAG, "handlePackageAdd: is installed by ADB, skipping");

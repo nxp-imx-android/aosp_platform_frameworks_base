@@ -66,6 +66,28 @@ class AllDisabledFlagsVisitor : public xml::Visitor {
   bool had_flags_ = false;
 };
 
+// An xml visitor that goes through the a doc and determines if any elements are behind a flag.
+class FindFlagsVisitor : public xml::Visitor {
+ public:
+  void Visit(xml::Element* node) override {
+    if (had_flags_) {
+      return;
+    }
+    auto* attr = node->FindAttribute(xml::kSchemaAndroid, xml::kAttrFeatureFlag);
+    if (attr != nullptr) {
+      had_flags_ = true;
+      return;
+    }
+    VisitChildren(node);
+  }
+
+  bool HadFlags() const {
+    return had_flags_;
+  }
+
+  bool had_flags_ = false;
+};
+
 std::vector<std::unique_ptr<xml::XmlResource>> FlaggedXmlVersioner::Process(IAaptContext* context,
                                                                             xml::XmlResource* doc) {
   std::vector<std::unique_ptr<xml::XmlResource>> docs;
@@ -74,15 +96,20 @@ std::vector<std::unique_ptr<xml::XmlResource>> FlaggedXmlVersioner::Process(IAap
     // Support for read/write flags was added in baklava so if the doc will only get used on
     // baklava or later we can just return the original doc.
     docs.push_back(doc->Clone());
+    FindFlagsVisitor visitor;
+    doc->root->Accept(&visitor);
+    docs.back()->file.uses_readwrite_feature_flags = visitor.HadFlags();
   } else {
     auto preBaklavaVersion = doc->Clone();
     AllDisabledFlagsVisitor visitor;
     preBaklavaVersion->root->Accept(&visitor);
+    preBaklavaVersion->file.uses_readwrite_feature_flags = false;
     docs.push_back(std::move(preBaklavaVersion));
 
     if (visitor.HadFlags()) {
       auto baklavaVersion = doc->Clone();
       baklavaVersion->file.config.sdkVersion = SDK_BAKLAVA;
+      baklavaVersion->file.uses_readwrite_feature_flags = true;
       docs.push_back(std::move(baklavaVersion));
     }
   }

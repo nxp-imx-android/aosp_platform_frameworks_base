@@ -25,6 +25,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.View
@@ -49,6 +50,8 @@ import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyZeroInteractions
@@ -121,7 +124,7 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
             DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
         )
         desktopExecutor.flushAll()
-        verify(spyViewContainer).fadeInIndicator(any(), any(), any(), any())
+        verify(spyViewContainer).fadeInIndicatorInternal(any(), any(), any(), any())
     }
 
     @Test
@@ -263,6 +266,35 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                 taskInfo.displayId,
                 snapEventHandler,
             )
+    }
+
+    @Test
+    fun fadeInIndicator_callsFadeIn() {
+        val spyViewContainer = setupSpyViewContainer()
+
+        spyViewContainer.fadeInIndicator(
+            mock<DisplayLayout>(),
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+            DEFAULT_DISPLAY,
+        )
+        desktopExecutor.flushAll()
+
+        verify(spyViewContainer).fadeInIndicatorInternal(any(), any(), any(), any())
+    }
+
+    @Test
+    fun fadeInIndicator_alreadyReleased_doesntCallFadeIn() {
+        val spyViewContainer = setupSpyViewContainer()
+        spyViewContainer.releaseVisualIndicator()
+
+        spyViewContainer.fadeInIndicator(
+            mock<DisplayLayout>(),
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+            DEFAULT_DISPLAY,
+        )
+        desktopExecutor.flushAll()
+
+        verify(spyViewContainer, never()).fadeInIndicatorInternal(any(), any(), any(), any())
     }
 
     private fun setupSpyViewContainer(): VisualIndicatorViewContainer {

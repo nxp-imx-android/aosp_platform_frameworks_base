@@ -28,15 +28,4 @@ interface IKeyGestureHandler {
      * to that gesture.
      */
     boolean handleKeyGesture(in AidlKeyGestureEvent event, in IBinder focusedToken);
-
-    /**
-     * Called to know if a particular gesture type is supported by the handler.
-     *
-     * TODO(b/358569822): Remove this call to reduce the binder calls to single call for
-     *  handleKeyGesture. For this we need to remove dependency of multi-key gestures to identify if
-     *  a key gesture is supported on first relevant key down.
-     *  Also, for now we prioritize handlers in the system server process above external handlers to
-     *  reduce IPC binder calls.
-     */
-    boolean isKeyGestureSupported(int gestureType);
 }

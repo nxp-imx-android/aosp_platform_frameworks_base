@@ -37,13 +37,6 @@ flag {
 }
 
 flag {
-    name: "enable_hide_exclusively_managed_bluetooth_device"
-    namespace: "dck_framework"
-    description: "Hide exclusively managed Bluetooth devices in BT settings menu."
-    bug: "324475542"
-}
-
-flag {
     name: "enable_set_preferred_transport_for_le_audio_device"
     namespace: "bluetooth"
     description: "Enable setting preferred transport for Le Audio device"
@@ -245,6 +238,16 @@ flag {
     namespace: "cross_device_experiences"
     description: "Show audio sharing promote notification or dialog when the second lea device is auto connected"
     bug: "395786392"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "audio_stream_media_service_by_receive_state"
+    namespace: "cross_device_experiences"
+    description: "Start or update audio stream media service by receive state"
+    bug: "398700619"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

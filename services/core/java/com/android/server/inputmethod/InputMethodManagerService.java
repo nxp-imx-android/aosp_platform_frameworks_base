@@ -2902,12 +2902,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         final long ident = Binder.clearCallingIdentity();
         try {
             if (windowPerceptible != null && !windowPerceptible) {
-                if ((vis & InputMethodService.IME_VISIBLE) != 0) {
-                    vis &= ~InputMethodService.IME_VISIBLE;
-                    vis |= InputMethodService.IME_VISIBLE_IMPERCEPTIBLE;
-                }
-            } else {
-                vis &= ~InputMethodService.IME_VISIBLE_IMPERCEPTIBLE;
+                vis &= ~InputMethodService.IME_VISIBLE;
             }
             final var curId = bindingController.getCurId();
             // TODO(b/305849394): Make mMenuController multi-user aware.
@@ -3730,8 +3725,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, int startInputSeq,
-            boolean useAsyncShowHideMethod) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            int startInputSeq, boolean useAsyncShowHideMethod) {
         // implemented by ZeroJankProxy
     }
 
@@ -3744,7 +3739,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
         if (UserHandle.getCallingUserId() != userId) {
             mContext.enforceCallingOrSelfPermission(
                     Manifest.permission.INTERACT_ACROSS_USERS_FULL, null);
@@ -3875,7 +3870,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     result = startInputOrWindowGainedFocusInternalLocked(startInputReason,
                             client, windowToken, startInputFlags, softInputMode, windowFlags,
                             editorInfo, inputConnection, remoteAccessibilityInputConnection,
-                            unverifiedTargetSdkVersion, bindingController, imeDispatcher, cs);
+                            unverifiedTargetSdkVersion, bindingController, imeDispatcher, cs,
+                            imeRequestedVisible);
                 } finally {
                     Binder.restoreCallingIdentity(ident);
                 }
@@ -3904,7 +3900,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             IRemoteInputConnection inputContext,
             @Nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @NonNull InputMethodBindingController bindingController,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, @NonNull ClientState cs) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, @NonNull ClientState cs,
+            boolean imeRequestedVisible) {
         ProtoLog.v(IMMS_DEBUG, "startInputOrWindowGainedFocusInternalLocked: reason=%s"
                     + " client=%s"
                     + " inputContext=%s"
@@ -3915,12 +3912,13 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
                     + " unverifiedTargetSdkVersion=%s"
                     + " bindingController=%s"
                     + " imeDispatcher=%s"
-                    + " cs=%s",
+                    + " cs=%s"
+                    + " imeRequestedVisible=%s",
                 InputMethodDebug.startInputReasonToString(startInputReason), client.asBinder(),
                 inputContext, editorInfo, InputMethodDebug.startInputFlagsToString(startInputFlags),
                 InputMethodDebug.softInputModeToString(softInputMode),
                 Integer.toHexString(windowFlags), unverifiedTargetSdkVersion, bindingController,
-                imeDispatcher, cs);
+                imeDispatcher, cs, imeRequestedVisible);
 
         final int userId = bindingController.getUserId();
         final var userData = getUserData(userId);
@@ -3968,7 +3966,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         InputBindResult res = null;
 
         final ImeVisibilityResult imeVisRes = visibilityStateComputer.computeState(windowState,
-                isSoftInputModeStateVisibleAllowed(unverifiedTargetSdkVersion, startInputFlags));
+                isSoftInputModeStateVisibleAllowed(unverifiedTargetSdkVersion, startInputFlags),
+                imeRequestedVisible);
         if (imeVisRes != null) {
             boolean isShow = false;
             switch (imeVisRes.getReason()) {

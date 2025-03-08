@@ -20,9 +20,10 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
 import android.window.DesktopExperienceFlags;
+import android.window.DesktopModeFlags;
 import android.window.DisplayAreaInfo;
 
-import com.android.window.flags.Flags;
+import com.android.wm.shell.Flags;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
@@ -48,18 +49,23 @@ public class PipDesktopState {
 
     /**
      * Returns whether PiP in Desktop Windowing is enabled by checking the following:
-     * - Desktop Windowing in PiP flag is enabled
+     * - PiP in Desktop Windowing flag is enabled
      * - DesktopUserRepositories is injected
      * - DragToDesktopTransitionHandler is injected
      */
     public boolean isDesktopWindowingPipEnabled() {
-        return Flags.enableDesktopWindowingPip() && mDesktopUserRepositoriesOptional.isPresent()
+        return DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()
+                && mDesktopUserRepositoriesOptional.isPresent()
                 && mDragToDesktopTransitionHandlerOptional.isPresent();
     }
 
-    /** Returns whether PiP in Connected Displays is enabled by checking the flag. */
+    /**
+     * Returns whether PiP in Connected Displays is enabled by checking the following:
+     * - PiP in Connected Displays flag is enabled
+     * - PiP2 flag is enabled
+     */
     public boolean isConnectedDisplaysPipEnabled() {
-        return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue();
+        return DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_PIP.isTrue() && Flags.enablePip2();
     }
 
     /** Returns whether the display with the PiP task is in freeform windowing mode. */

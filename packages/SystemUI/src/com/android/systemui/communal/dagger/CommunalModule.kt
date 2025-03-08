@@ -29,6 +29,7 @@ import com.android.systemui.communal.data.repository.CommunalSmartspaceRepositor
 import com.android.systemui.communal.data.repository.CommunalTutorialRepositoryModule
 import com.android.systemui.communal.data.repository.CommunalWidgetRepositoryModule
 import com.android.systemui.communal.domain.interactor.CommunalSceneTransitionInteractor
+import com.android.systemui.communal.domain.suppression.dagger.CommunalSuppressionModule
 import com.android.systemui.communal.shared.log.CommunalMetricsLogger
 import com.android.systemui.communal.shared.log.CommunalStatsLogProxyImpl
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -70,6 +71,7 @@ import kotlinx.coroutines.CoroutineScope
             CommunalSmartspaceRepositoryModule::class,
             CommunalStartableModule::class,
             GlanceableHubWidgetManagerModule::class,
+            CommunalSuppressionModule::class,
         ]
 )
 interface CommunalModule {

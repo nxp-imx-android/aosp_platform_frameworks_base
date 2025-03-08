@@ -797,7 +797,7 @@ public class ActivityStarterTests extends WindowTestsBase {
         // Create adjacent tasks and put one activity under it
         final Task parent = new TaskBuilder(mSupervisor).build();
         final Task adjacentParent = new TaskBuilder(mSupervisor).build();
-        parent.setAdjacentTaskFragment(adjacentParent);
+        parent.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(parent, adjacentParent));
         final ActivityRecord activity = new ActivityBuilder(mAtm)
                 .setParentTask(parent)
                 .setCreateTask(true).build();

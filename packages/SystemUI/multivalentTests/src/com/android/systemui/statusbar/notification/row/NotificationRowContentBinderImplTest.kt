@@ -36,12 +36,11 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
-import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_SENSITIVE_CONTENT
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
-import com.android.systemui.statusbar.notification.collection.EntryAdapter
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.FakePromotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
@@ -204,7 +203,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
         val result =
             NotificationRowContentBinderImpl.InflationProgress(
                 packageContext = mContext,
-                rowImageInflater = RowImageInflater.newInstance(null),
+                rowImageInflater = RowImageInflater.newInstance(null, reinflating = false),
                 remoteViews = NewRemoteViews(),
                 contentModel = NotificationContentModel(headsUpStatusBarModel),
                 promotedContent = null,
@@ -539,7 +538,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
             false,
             notificationInflater,
             FLAG_CONTENT_VIEW_PUBLIC,
-            REDACTION_TYPE_SENSITIVE_CONTENT,
+            REDACTION_TYPE_OTP,
             newRow,
         )
         // The display name should be included, but not the content or message text
@@ -567,7 +566,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
             false,
             notificationInflater,
             FLAG_CONTENT_VIEW_PUBLIC,
-            REDACTION_TYPE_SENSITIVE_CONTENT,
+            REDACTION_TYPE_OTP,
             newRow,
         )
         var publicView = newRow.publicLayout

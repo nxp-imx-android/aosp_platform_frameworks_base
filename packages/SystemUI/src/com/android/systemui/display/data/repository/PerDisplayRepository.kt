@@ -86,23 +86,8 @@ interface PerDisplayRepository<T> {
     /** Gets the cached instance or create a new one for a given display. */
     operator fun get(displayId: Int): T?
 
-    /** List of display ids for which this repository has an instance. */
-    val displayIds: Set<Int>
-
     /** Debug name for this repository, mainly for tracing and logging. */
     val debugName: String
-
-    /**
-     * Invokes the specified action on each instance held by this repository.
-     *
-     * The action will receive the displayId and the instance associated with that display.
-     * If there is no instance for the display, the action is not called.
-     */
-    fun forEachInstance(action: (Int, T) -> Unit) {
-        displayIds.forEach { displayId ->
-            get(displayId)?.let { instance -> action(displayId, instance) }
-        }
-    }
 }
 
 /**
@@ -134,14 +119,12 @@ constructor(
         backgroundApplicationScope.launch("$debugName#start") { start() }
     }
 
-    override val displayIds: Set<Int>
-        get() = perDisplayInstances.keys
-
     private suspend fun start() {
-        dumpManager.registerDumpable(this)
+        dumpManager.registerNormalDumpable("PerDisplayRepository-${debugName}", this)
         displayRepository.displayIds.collectLatest { displayIds ->
             val toRemove = perDisplayInstances.keys - displayIds
             toRemove.forEach { displayId ->
+                Log.d(TAG, "<$debugName> destroying instance for displayId=$displayId.")
                 perDisplayInstances.remove(displayId)?.let { instance ->
                     (instanceProvider as? PerDisplayInstanceProviderWithTeardown)?.destroyInstance(
                         instance
@@ -159,6 +142,7 @@ constructor(
 
         // If it doesn't exist, create it and put it in the map.
         return perDisplayInstances.computeIfAbsent(displayId) { key ->
+            Log.d(TAG, "<$debugName> creating instance for displayId=$key, as it wasn't available.")
             val instance =
                 traceSection({ "creating instance of $debugName for displayId=$key" }) {
                     instanceProvider.createInstance(key)
@@ -194,8 +178,13 @@ constructor(
  * Provides an instance of a given class **only** for the default display, even if asked for another
  * display.
  *
- * This is useful in case of flag refactors: it can be provided instead of an instance of
+ * This is useful in case of **flag refactors**: it can be provided instead of an instance of
  * [PerDisplayInstanceRepositoryImpl] when a flag related to multi display refactoring is off.
+ *
+ * Note that this still requires all instances to be provided by a [PerDisplayInstanceProvider]. If
+ * you want to provide an existing instance instead for the default display, either implement it in
+ * a custom [PerDisplayInstanceProvider] (e.g. inject it in the constructor and return it if the
+ * displayId is zero), or use [SingleInstanceRepositoryImpl].
  */
 class DefaultDisplayOnlyInstanceRepositoryImpl<T>(
     override val debugName: String,
@@ -204,7 +193,18 @@ class DefaultDisplayOnlyInstanceRepositoryImpl<T>(
     private val lazyDefaultDisplayInstance by lazy {
         instanceProvider.createInstance(Display.DEFAULT_DISPLAY)
     }
-    override val displayIds: Set<Int> = setOf(Display.DEFAULT_DISPLAY)
-
     override fun get(displayId: Int): T? = lazyDefaultDisplayInstance
+}
+
+/**
+ * Always returns [instance] for any display.
+ *
+ * This can be used to provide a single instance based on a flag value during a refactor. Similar to
+ * [DefaultDisplayOnlyInstanceRepositoryImpl], but also avoids creating the
+ * [PerDisplayInstanceProvider]. This is useful when you want to provide an existing instance only,
+ * without even instantiating a [PerDisplayInstanceProvider].
+ */
+class SingleInstanceRepositoryImpl<T>(override val debugName: String, private val instance: T) :
+    PerDisplayRepository<T> {
+    override fun get(displayId: Int): T? = instance
 }

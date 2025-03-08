@@ -17,36 +17,15 @@ package com.android.hoststubgen
 
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.dumper.ApiDumper
-import com.android.hoststubgen.filters.AnnotationBasedFilter
-import com.android.hoststubgen.filters.ClassWidePolicyPropagatingFilter
-import com.android.hoststubgen.filters.ConstantFilter
-import com.android.hoststubgen.filters.DefaultHookInjectingFilter
 import com.android.hoststubgen.filters.FilterPolicy
-import com.android.hoststubgen.filters.FilterRemapper
-import com.android.hoststubgen.filters.ImplicitOutputFilter
-import com.android.hoststubgen.filters.KeepNativeFilter
-import com.android.hoststubgen.filters.OutputFilter
-import com.android.hoststubgen.filters.SanitizationFilter
-import com.android.hoststubgen.filters.TextFileFilterPolicyBuilder
 import com.android.hoststubgen.filters.printAsTextPolicy
-import com.android.hoststubgen.utils.ClassPredicate
-import com.android.hoststubgen.visitors.BaseAdapter
-import com.android.hoststubgen.visitors.PackageRedirectRemapper
 import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
 import java.io.FileOutputStream
-import java.io.InputStream
-import java.io.OutputStream
 import java.io.PrintWriter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.commons.ClassRemapper
-import org.objectweb.asm.commons.Remapper
-import org.objectweb.asm.util.CheckClassAdapter
 
 /**
  * Actual main class.
@@ -76,21 +55,15 @@ class HostStubGen(val options: HostStubGenOptions) {
             }
         }
 
-        // Build the filters.
-        val filter = buildFilter(errors, allClasses, options)
-
-        val filterRemapper = FilterRemapper(filter)
+        // Build the class processor
+        val processor = HostStubGenClassProcessor(options, allClasses, errors, stats)
 
         // Transform the jar.
         convert(
             options.inJar.get,
             options.outJar.get,
-            filter,
+            processor,
             options.enableClassChecker.get,
-            allClasses,
-            errors,
-            stats,
-            filterRemapper,
             options.numShards.get,
             options.shard.get,
         )
@@ -106,95 +79,10 @@ class HostStubGen(val options: HostStubGenOptions) {
                 PrintWriter(it).use { pw ->
                     // TODO, when dumping a jar that's not framework-minus-apex.jar, we need to feed
                     // framework-minus-apex.jar so that we can dump inherited methods from it.
-                    ApiDumper(pw, allClasses, null, filter).dump()
+                    ApiDumper(pw, allClasses, null, processor.filter).dump()
                 }
             }
         }
-    }
-
-    /**
-     * Build the filter, which decides what classes/methods/fields should be put in stub or impl
-     * jars, and "how". (e.g. with substitution?)
-     */
-    private fun buildFilter(
-        errors: HostStubGenErrors,
-        allClasses: ClassNodes,
-        options: HostStubGenOptions,
-    ): OutputFilter {
-        // We build a "chain" of multiple filters here.
-        //
-        // The filters are build in from "inside", meaning the first filter created here is
-        // the last filter used, so it has the least precedence.
-        //
-        // So, for example, the "remove" annotation, which is handled by AnnotationBasedFilter,
-        // can override a class-wide annotation, which is handled by
-        // ClassWidePolicyPropagatingFilter, and any annotations can be overridden by the
-        // text-file based filter, which is handled by parseTextFilterPolicyFile.
-
-        // The first filter is for the default policy from the command line options.
-        var filter: OutputFilter = ConstantFilter(options.defaultPolicy.get, "default-by-options")
-
-        // Next, we build a filter that preserves all native methods by default
-        filter = KeepNativeFilter(allClasses, filter)
-
-        // Next, we need a filter that resolves "class-wide" policies.
-        // This is used when a member (methods, fields, nested classes) don't get any polices
-        // from upper filters. e.g. when a method has no annotations, then this filter will apply
-        // the class-wide policy, if any. (if not, we'll fall back to the above filter.)
-        filter = ClassWidePolicyPropagatingFilter(allClasses, filter)
-
-        // Inject default hooks from options.
-        filter = DefaultHookInjectingFilter(
-            allClasses,
-            options.defaultClassLoadHook.get,
-            options.defaultMethodCallHook.get,
-            filter
-        )
-
-        val annotationAllowedPredicate = options.annotationAllowedClassesFile.get.let { file ->
-            if (file == null) {
-                ClassPredicate.newConstantPredicate(true) // Allow all classes
-            } else {
-                ClassPredicate.loadFromFile(file, false)
-            }
-        }
-
-        // Next, Java annotation based filter.
-        val annotFilter = AnnotationBasedFilter(
-            errors,
-            allClasses,
-            options.keepAnnotations,
-            options.keepClassAnnotations,
-            options.throwAnnotations,
-            options.removeAnnotations,
-            options.ignoreAnnotations,
-            options.substituteAnnotations,
-            options.redirectAnnotations,
-            options.redirectionClassAnnotations,
-            options.classLoadHookAnnotations,
-            options.partiallyAllowedAnnotations,
-            options.keepStaticInitializerAnnotations,
-            annotationAllowedPredicate,
-            filter
-        )
-        filter = annotFilter
-
-        // Next, "text based" filter, which allows to override polices without touching
-        // the target code.
-        if (options.policyOverrideFiles.isNotEmpty()) {
-            val builder = TextFileFilterPolicyBuilder(allClasses, filter)
-            options.policyOverrideFiles.forEach(builder::parse)
-            filter = builder.createOutputFilter()
-            annotFilter.annotationAllowedMembers = builder.annotationAllowedMembersFilter
-        }
-
-        // Apply the implicit filter.
-        filter = ImplicitOutputFilter(errors, allClasses, filter)
-
-        // Add a final sanitization step.
-        filter = SanitizationFilter(errors, allClasses, filter)
-
-        return filter
     }
 
     /**
@@ -203,12 +91,8 @@ class HostStubGen(val options: HostStubGenOptions) {
     private fun convert(
         inJar: String,
         outJar: String?,
-        filter: OutputFilter,
+        processor: HostStubGenClassProcessor,
         enableChecker: Boolean,
-        classes: ClassNodes,
-        errors: HostStubGenErrors,
-        stats: HostStubGenStats,
-        remapper: Remapper?,
         numShards: Int,
         shard: Int
     ) {
@@ -216,8 +100,6 @@ class HostStubGen(val options: HostStubGenOptions) {
         log.i("ASM CheckClassAdapter is %s", if (enableChecker) "enabled" else "disabled")
 
         log.iTime("Transforming jar") {
-            val packageRedirector = PackageRedirectRemapper(options.packageRedirects)
-
             var itemIndex = 0
             var numItemsProcessed = 0
             var numItems = -1 // == Unknown
@@ -240,11 +122,7 @@ class HostStubGen(val options: HostStubGenOptions) {
                             if (!inShard) {
                                 continue
                             }
-                            convertSingleEntry(
-                                inZip, entry, outStream, filter,
-                                packageRedirector, remapper, enableChecker,
-                                classes, errors, stats
-                            )
+                            convertSingleEntry(inZip, entry, outStream, processor)
                             numItemsProcessed++
                         }
                         log.i("Converted all entries.")
@@ -270,13 +148,7 @@ class HostStubGen(val options: HostStubGenOptions) {
         inZip: ZipFile,
         entry: ZipEntry,
         outStream: ZipOutputStream?,
-        filter: OutputFilter,
-        packageRedirector: PackageRedirectRemapper,
-        remapper: Remapper?,
-        enableChecker: Boolean,
-        classes: ClassNodes,
-        errors: HostStubGenErrors,
-        stats: HostStubGenStats
+        processor: HostStubGenClassProcessor
     ) {
         log.d("Entry: %s", entry.name)
         log.withIndent {
@@ -289,10 +161,7 @@ class HostStubGen(val options: HostStubGenOptions) {
 
             // If it's a class, convert it.
             if (name.endsWith(".class")) {
-                processSingleClass(
-                    inZip, entry, outStream, filter, packageRedirector,
-                    remapper, enableChecker, classes, errors, stats
-                )
+                processSingleClass(inZip, entry, outStream, processor)
                 return
             }
 
@@ -332,29 +201,23 @@ class HostStubGen(val options: HostStubGenOptions) {
     }
 
     /**
-     * Convert a single class to "stub" and "impl".
+     * Convert a single class.
      */
     private fun processSingleClass(
         inZip: ZipFile,
         entry: ZipEntry,
         outStream: ZipOutputStream?,
-        filter: OutputFilter,
-        packageRedirector: PackageRedirectRemapper,
-        remapper: Remapper?,
-        enableChecker: Boolean,
-        classes: ClassNodes,
-        errors: HostStubGenErrors,
-        stats: HostStubGenStats
+        processor: HostStubGenClassProcessor
     ) {
         val classInternalName = entry.name.replaceFirst("\\.class$".toRegex(), "")
-        val classPolicy = filter.getPolicyForClass(classInternalName)
+        val classPolicy = processor.filter.getPolicyForClass(classInternalName)
         if (classPolicy.policy == FilterPolicy.Remove) {
             log.d("Removing class: %s %s", classInternalName, classPolicy)
             return
         }
         // If we're applying a remapper, we need to rename the file too.
         var newName = entry.name
-        remapper?.mapType(classInternalName)?.let { remappedName ->
+        processor.remapper.mapType(classInternalName)?.let { remappedName ->
             if (remappedName != classInternalName) {
                 log.d("Renaming class file: %s -> %s", classInternalName, remappedName)
                 newName = "$remappedName.class"
@@ -367,64 +230,11 @@ class HostStubGen(val options: HostStubGenOptions) {
                 BufferedInputStream(inZip.getInputStream(entry)).use { bis ->
                     val newEntry = ZipEntry(newName)
                     outStream.putNextEntry(newEntry)
-                    convertClass(
-                        classInternalName, bis,
-                        outStream, filter, packageRedirector, remapper,
-                        enableChecker, classes, errors, stats
-                    )
+                    val classBytecode = bis.readAllBytes()
+                    outStream.write(processor.processClassBytecode(classBytecode))
                     outStream.closeEntry()
                 }
             }
         }
-    }
-
-    /**
-     * Convert a single class to either "stub" or "impl".
-     */
-    private fun convertClass(
-        classInternalName: String,
-        input: InputStream,
-        out: OutputStream,
-        filter: OutputFilter,
-        packageRedirector: PackageRedirectRemapper,
-        remapper: Remapper?,
-        enableChecker: Boolean,
-        classes: ClassNodes,
-        errors: HostStubGenErrors,
-        stats: HostStubGenStats?
-    ) {
-        val cr = ClassReader(input)
-
-        // COMPUTE_FRAMES wouldn't be happy if code uses
-        val flags = ClassWriter.COMPUTE_MAXS // or ClassWriter.COMPUTE_FRAMES
-        val cw = ClassWriter(flags)
-
-        // Connect to the class writer
-        var outVisitor: ClassVisitor = cw
-        if (enableChecker) {
-            outVisitor = CheckClassAdapter(outVisitor)
-        }
-
-        // Remapping should happen at the end.
-        remapper?.let {
-            outVisitor = ClassRemapper(outVisitor, remapper)
-        }
-
-        val visitorOptions = BaseAdapter.Options(
-            errors = errors,
-            stats = stats,
-            enablePreTrace = options.enablePreTrace.get,
-            enablePostTrace = options.enablePostTrace.get,
-            deleteClassFinals = options.deleteFinals.get,
-            deleteMethodFinals = options.deleteFinals.get,
-        )
-        outVisitor = BaseAdapter.getVisitor(
-            classInternalName, classes, outVisitor, filter,
-            packageRedirector, visitorOptions
-        )
-
-        cr.accept(outVisitor, ClassReader.EXPAND_FRAMES)
-        val data = cw.toByteArray()
-        out.write(data)
     }
 }

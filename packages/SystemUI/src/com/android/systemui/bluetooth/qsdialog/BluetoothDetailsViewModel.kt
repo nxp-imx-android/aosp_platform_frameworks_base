@@ -21,18 +21,14 @@ import com.android.systemui.plugins.qs.TileDetailsViewModel
 class BluetoothDetailsViewModel(
     private val onSettingsClick: () -> Unit,
     val detailsContentViewModel: BluetoothDetailsContentViewModel,
-) : TileDetailsViewModel() {
+) : TileDetailsViewModel {
     override fun clickOnSettingsButton() {
         onSettingsClick()
     }
 
-    override fun getTitle(): String {
-        // TODO: b/378513956 Update the placeholder text
-        return "Bluetooth"
-    }
+    // TODO: b/378513956 Update the placeholder text
+    override val title = "Bluetooth"
 
-    override fun getSubTitle(): String {
-        // TODO: b/378513956 Update the placeholder text
-        return "Tap to connect or disconnect a device"
-    }
+    // TODO: b/378513956 Update the placeholder text
+    override val subTitle = "Tap to connect or disconnect a device"
 }

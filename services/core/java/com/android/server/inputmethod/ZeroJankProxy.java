@@ -234,15 +234,15 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, int startInputSeq,
-            boolean useAsyncShowHideMethod) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            int startInputSeq, boolean useAsyncShowHideMethod) {
         offload(() -> {
             InputBindResult result = mInner.startInputOrWindowGainedFocus(startInputReason, client,
                     windowToken, startInputFlags, softInputMode, windowFlags,
                     editorInfo,
                     inputConnection, remoteAccessibilityInputConnection,
                     unverifiedTargetSdkVersion,
-                    userId, imeDispatcher);
+                    userId, imeDispatcher, imeRequestedVisible);
             sendOnStartInputResult(client, result, startInputSeq);
             // For first-time client bind, MSG_BIND should arrive after MSG_START_INPUT_RESULT.
             if (result.result == InputBindResult.ResultCode.SUCCESS_WAITING_IME_SESSION) {
@@ -269,7 +269,7 @@ final class ZeroJankProxy implements IInputMethodManagerImpl.Callback {
             IRemoteInputConnection inputConnection,
             IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, @UserIdInt int userId,
-            @NonNull ImeOnBackInvokedDispatcher imeDispatcher) {
+            @NonNull ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible) {
         // Should never be called when flag is enabled i.e. when this proxy is used.
         return null;
     }

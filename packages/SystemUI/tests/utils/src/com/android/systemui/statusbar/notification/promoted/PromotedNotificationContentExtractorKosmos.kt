@@ -39,7 +39,8 @@ fun Kosmos.setPromotedContent(entry: NotificationEntry) {
         promotedNotificationContentExtractor.extractContent(
             entry,
             Notification.Builder.recoverBuilder(applicationContext, entry.sbn.notification),
-            RowImageInflater.newInstance(null).useForContentModel(),
+            RowImageInflater.newInstance(previousIndex = null, reinflating = false)
+                .useForContentModel(),
         )
     entry.promotedNotificationContentModel =
         requireNotNull(extractedContent) { "extractContent returned null" }

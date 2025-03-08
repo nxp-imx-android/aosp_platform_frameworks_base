@@ -27,17 +27,17 @@ import android.view.ViewConfiguration
 import android.view.accessibility.AccessibilityNodeInfo
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import com.android.systemui.Flags.doubleTapToSleep
 import com.android.systemui.log.TouchHandlingViewLogger
 import com.android.systemui.shade.TouchLogger
-import kotlin.math.pow
-import kotlin.math.sqrt
 import kotlinx.coroutines.DisposableHandle
 
 /**
- * View designed to handle long-presses.
+ * View designed to handle long-presses and double taps.
  *
- * The view will not handle any long pressed by default. To set it up, set up a listener and, when
- * ready to start consuming long-presses, set [setLongPressHandlingEnabled] to `true`.
+ * The view will not handle any gestures by default. To set it up, set up a listener and, when ready
+ * to start consuming gestures, set the gesture's enable function ([setLongPressHandlingEnabled],
+ * [setDoublePressHandlingEnabled]) to `true`.
  */
 class TouchHandlingView(
     context: Context,
@@ -62,6 +62,9 @@ class TouchHandlingView(
 
         /** Notifies that the gesture was too short for a long press, it is actually a click. */
         fun onSingleTapDetected(view: View, x: Int, y: Int) = Unit
+
+        /** Notifies that a double tap has been detected by the given view. */
+        fun onDoubleTapDetected(view: View) = Unit
     }
 
     var listener: Listener? = null
@@ -70,6 +73,7 @@ class TouchHandlingView(
 
     private val interactionHandler: TouchHandlingViewInteractionHandler by lazy {
         TouchHandlingViewInteractionHandler(
+            context = context,
             postDelayed = { block, timeoutMs ->
                 val dispatchToken = Any()
 
@@ -83,6 +87,9 @@ class TouchHandlingView(
             },
             onSingleTapDetected = { x, y ->
                 listener?.onSingleTapDetected(this@TouchHandlingView, x = x, y = y)
+            },
+            onDoubleTapDetected = {
+                if (doubleTapToSleep()) listener?.onDoubleTapDetected(this@TouchHandlingView)
             },
             longPressDuration = longPressDuration,
             allowedTouchSlop = allowedTouchSlop,
@@ -100,13 +107,17 @@ class TouchHandlingView(
         interactionHandler.isLongPressHandlingEnabled = isEnabled
     }
 
+    fun setDoublePressHandlingEnabled(isEnabled: Boolean) {
+        interactionHandler.isDoubleTapHandlingEnabled = isEnabled
+    }
+
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         return TouchLogger.logDispatchTouch("long_press", event, super.dispatchTouchEvent(event))
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        return interactionHandler.onTouchEvent(event?.toModel())
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return interactionHandler.onTouchEvent(event)
     }
 
     private fun setupAccessibilityDelegate() {
@@ -153,34 +164,4 @@ class TouchHandlingView(
                 }
             }
     }
-}
-
-private fun MotionEvent.toModel(): TouchHandlingViewInteractionHandler.MotionEventModel {
-    return when (actionMasked) {
-        MotionEvent.ACTION_DOWN ->
-            TouchHandlingViewInteractionHandler.MotionEventModel.Down(x = x.toInt(), y = y.toInt())
-        MotionEvent.ACTION_MOVE ->
-            TouchHandlingViewInteractionHandler.MotionEventModel.Move(
-                distanceMoved = distanceMoved()
-            )
-        MotionEvent.ACTION_UP ->
-            TouchHandlingViewInteractionHandler.MotionEventModel.Up(
-                distanceMoved = distanceMoved(),
-                gestureDuration = gestureDuration(),
-            )
-        MotionEvent.ACTION_CANCEL -> TouchHandlingViewInteractionHandler.MotionEventModel.Cancel
-        else -> TouchHandlingViewInteractionHandler.MotionEventModel.Other
-    }
-}
-
-private fun MotionEvent.distanceMoved(): Float {
-    return if (historySize > 0) {
-        sqrt((x - getHistoricalX(0)).pow(2) + (y - getHistoricalY(0)).pow(2))
-    } else {
-        0f
-    }
-}
-
-private fun MotionEvent.gestureDuration(): Long {
-    return eventTime - downTime
 }

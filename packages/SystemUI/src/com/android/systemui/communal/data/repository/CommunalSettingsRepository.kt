@@ -26,12 +26,9 @@ import android.provider.Settings
 import com.android.systemui.Flags.communalHub
 import com.android.systemui.Flags.glanceableHubV2
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.communal.data.model.CommunalEnabledState
-import com.android.systemui.communal.data.model.DisabledReason
-import com.android.systemui.communal.data.model.DisabledReason.DISABLED_REASON_DEVICE_POLICY
-import com.android.systemui.communal.data.model.DisabledReason.DISABLED_REASON_FLAG
-import com.android.systemui.communal.data.model.DisabledReason.DISABLED_REASON_INVALID_USER
-import com.android.systemui.communal.data.model.DisabledReason.DISABLED_REASON_USER_SETTING
+import com.android.systemui.communal.data.model.CommunalFeature
+import com.android.systemui.communal.data.model.FEATURE_ALL
+import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.CommunalSettingsRepositoryModule.Companion.DEFAULT_BACKGROUND_TYPE
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.communal.shared.model.WhenToDream
@@ -43,28 +40,32 @@ import com.android.systemui.flags.Flags
 import com.android.systemui.util.kotlin.emitOnStart
 import com.android.systemui.util.settings.SecureSettings
 import com.android.systemui.util.settings.SettingsProxyExt.observerFlow
-import java.util.EnumSet
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 
 interface CommunalSettingsRepository {
-    /** A [CommunalEnabledState] for the specified user. */
-    fun getEnabledState(user: UserInfo): Flow<CommunalEnabledState>
+    /** Whether a particular feature is enabled */
+    fun isEnabled(@CommunalFeature feature: Int): Flow<Boolean>
 
-    fun getScreensaverEnabledState(user: UserInfo): Flow<Boolean>
+    /**
+     * Suppresses the hub with the given reasons. If there are no reasons, the hub will not be
+     * suppressed.
+     */
+    fun setSuppressionReasons(reasons: List<SuppressionReason>)
 
     /**
      * Returns a [WhenToDream] for the specified user, indicating what state the device should be in
      * to trigger dreams.
      */
     fun getWhenToDreamState(user: UserInfo): Flow<WhenToDream>
+
+    /** Returns whether glanceable hub is enabled by the current user. */
+    fun getSettingEnabledByUser(user: UserInfo): Flow<Boolean>
 
     /**
      * Returns true if any glanceable hub functionality should be enabled via configs and flags.
@@ -123,6 +124,19 @@ constructor(
         resources.getBoolean(com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault)
     }
 
+    private val _suppressionReasons =
+        MutableStateFlow<List<SuppressionReason>>(
+            // Suppress hub by default until we get an initial update.
+            listOf(SuppressionReason.ReasonUnknown(FEATURE_ALL))
+        )
+
+    override fun isEnabled(@CommunalFeature feature: Int): Flow<Boolean> =
+        _suppressionReasons.map { reasons -> reasons.none { it.isSuppressed(feature) } }
+
+    override fun setSuppressionReasons(reasons: List<SuppressionReason>) {
+        _suppressionReasons.value = reasons
+    }
+
     override fun getFlagEnabled(): Boolean {
         return if (getV2FlagEnabled()) {
             true
@@ -137,44 +151,6 @@ constructor(
         return resources.getBoolean(com.android.internal.R.bool.config_glanceableHubEnabled) &&
             glanceableHubV2()
     }
-
-    override fun getEnabledState(user: UserInfo): Flow<CommunalEnabledState> {
-        if (!user.isMain) {
-            return flowOf(CommunalEnabledState(DISABLED_REASON_INVALID_USER))
-        }
-        if (!getFlagEnabled()) {
-            return flowOf(CommunalEnabledState(DISABLED_REASON_FLAG))
-        }
-        return combine(
-                getEnabledByUser(user).mapToReason(DISABLED_REASON_USER_SETTING),
-                getAllowedByDevicePolicy(user).mapToReason(DISABLED_REASON_DEVICE_POLICY),
-            ) { reasons ->
-                reasons.filterNotNull()
-            }
-            .map { reasons ->
-                if (reasons.isEmpty()) {
-                    EnumSet.noneOf(DisabledReason::class.java)
-                } else {
-                    EnumSet.copyOf(reasons)
-                }
-            }
-            .map { reasons -> CommunalEnabledState(reasons) }
-            .flowOn(bgDispatcher)
-    }
-
-    override fun getScreensaverEnabledState(user: UserInfo): Flow<Boolean> =
-        secureSettings
-            .observerFlow(userId = user.id, names = arrayOf(Settings.Secure.SCREENSAVER_ENABLED))
-            // Force an update
-            .onStart { emit(Unit) }
-            .map {
-                secureSettings.getIntForUser(
-                    Settings.Secure.SCREENSAVER_ENABLED,
-                    SCREENSAVER_ENABLED_SETTING_DEFAULT,
-                    user.id,
-                ) == 1
-            }
-            .flowOn(bgDispatcher)
 
     override fun getWhenToDreamState(user: UserInfo): Flow<WhenToDream> =
         secureSettings
@@ -247,11 +223,11 @@ constructor(
                     ?: defaultBackgroundType
             }
 
-    private fun getEnabledByUser(user: UserInfo): Flow<Boolean> =
+    override fun getSettingEnabledByUser(user: UserInfo): Flow<Boolean> =
         secureSettings
             .observerFlow(userId = user.id, names = arrayOf(Settings.Secure.GLANCEABLE_HUB_ENABLED))
             // Force an update
-            .onStart { emit(Unit) }
+            .emitOnStart()
             .map {
                 secureSettings.getIntForUser(
                     Settings.Secure.GLANCEABLE_HUB_ENABLED,
@@ -259,17 +235,13 @@ constructor(
                     user.id,
                 ) == 1
             }
+            .flowOn(bgDispatcher)
 
     companion object {
         const val GLANCEABLE_HUB_BACKGROUND_SETTING = "glanceable_hub_background"
         private const val ENABLED_SETTING_DEFAULT = 1
-        private const val SCREENSAVER_ENABLED_SETTING_DEFAULT = 0
     }
 }
 
 private fun DevicePolicyManager.areKeyguardWidgetsAllowed(userId: Int): Boolean =
     (getKeyguardDisabledFeatures(null, userId) and KEYGUARD_DISABLE_WIDGETS_ALL) == 0
-
-private fun Flow<Boolean>.mapToReason(reason: DisabledReason) = map { enabled ->
-    if (enabled) null else reason
-}

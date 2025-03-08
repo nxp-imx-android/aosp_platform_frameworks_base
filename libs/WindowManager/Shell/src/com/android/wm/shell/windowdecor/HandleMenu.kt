@@ -39,7 +39,6 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Space
-import android.widget.TextView
 import android.window.DesktopModeFlags
 import android.window.SurfaceSyncGroup
 import androidx.annotation.StringRes
@@ -59,10 +58,10 @@ import com.android.wm.shell.splitscreen.SplitScreenController
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewContainer
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
+import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.calculateMenuPosition
-import com.android.wm.shell.windowdecor.common.DrawableInsets
-import com.android.wm.shell.windowdecor.common.createRippleDrawable
+import com.android.wm.shell.windowdecor.common.createBackgroundDrawable
 import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.isPinned
@@ -471,32 +470,20 @@ class HandleMenu(
         val rootView = LayoutInflater.from(context)
             .inflate(R.layout.desktop_mode_window_decor_handle_menu, null /* root */) as View
 
-        private val windowingButtonRippleRadius = context.resources
-            .getDimensionPixelSize(R.dimen.desktop_mode_handle_menu_windowing_action_ripple_radius)
-        private val windowingButtonDrawableInsets = DrawableInsets(
-            vertical = context.resources
-                .getDimensionPixelSize(
-                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base),
-            horizontal = context.resources
-                .getDimensionPixelSize(
-                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base)
-        )
-        private val windowingButtonDrawableInsetsLeft = DrawableInsets(
-            vertical = context.resources
-                .getDimensionPixelSize(
-                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base),
-            horizontalLeft = context.resources
-                .getDimensionPixelSize(
-                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_shift),
-        )
-        private val windowingButtonDrawableInsetsRight = DrawableInsets(
-            vertical = context.resources
-                .getDimensionPixelSize(
-                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_base),
-            horizontalRight = context.resources
-                .getDimensionPixelSize(
-                    R.dimen.desktop_mode_handle_menu_windowing_action_ripple_inset_shift)
-        )
+        // Insets for ripple effect of App Info Pill. and Windowing Pill. buttons
+        val iconButtondrawableShiftInset = context.resources.getDimensionPixelSize(
+            R.dimen.desktop_mode_handle_menu_icon_button_ripple_inset_shift)
+        val iconButtondrawableBaseInset = context.resources.getDimensionPixelSize(
+            R.dimen.desktop_mode_handle_menu_icon_button_ripple_inset_base)
+        private val iconButtonRippleRadius = context.resources.getDimensionPixelSize(
+            R.dimen.desktop_mode_handle_menu_icon_button_ripple_radius)
+        private val iconButtonDrawableInsetsBase = DrawableInsets(t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = iconButtondrawableBaseInset,
+            r = iconButtondrawableBaseInset)
+        private val iconButtonDrawableInsetsLeft = DrawableInsets(t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = iconButtondrawableShiftInset, r = 0)
+        private val iconButtonDrawableInsetsRight = DrawableInsets(t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = 0, r = iconButtondrawableShiftInset)
 
         // App Info Pill.
         private val appInfoPill = rootView.requireViewById<View>(R.id.app_info_pill)
@@ -713,6 +700,12 @@ class HandleMenu(
             collapseMenuButton.apply {
                 imageTintList = ColorStateList.valueOf(style.textColor)
                 this.taskInfo = this@HandleMenuView.taskInfo
+
+                background = createBackgroundDrawable(
+                    color = style.textColor,
+                    cornerRadius = iconButtonRippleRadius,
+                    drawableInsets = iconButtonDrawableInsetsBase
+                )
             }
             appNameView.setTextColor(style.textColor)
             appNameView.startMarquee()
@@ -740,45 +733,39 @@ class HandleMenu(
             desktopBtn.isEnabled = !taskInfo.isFreeform
             desktopBtn.imageTintList = style.windowingButtonColor
 
-            val startInsets = if (context.isRtl) {
-                windowingButtonDrawableInsetsRight
-            } else {
-                windowingButtonDrawableInsetsLeft
-            }
-            val endInsets = if (context.isRtl) {
-                windowingButtonDrawableInsetsLeft
-            } else {
-                windowingButtonDrawableInsetsRight
-            }
+            val startInsets = if (context.isRtl) iconButtonDrawableInsetsRight
+                else iconButtonDrawableInsetsLeft
+            val endInsets = if (context.isRtl) iconButtonDrawableInsetsLeft
+                else iconButtonDrawableInsetsRight
 
             fullscreenBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
-                    cornerRadius = windowingButtonRippleRadius,
+                    cornerRadius = iconButtonRippleRadius,
                     drawableInsets = startInsets
                 )
             }
 
             splitscreenBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
-                    cornerRadius = windowingButtonRippleRadius,
-                    drawableInsets = windowingButtonDrawableInsets
+                    cornerRadius = iconButtonRippleRadius,
+                    drawableInsets = iconButtonDrawableInsetsBase
                 )
             }
 
             floatingBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
-                    cornerRadius = windowingButtonRippleRadius,
-                    drawableInsets = windowingButtonDrawableInsets
+                    cornerRadius = iconButtonRippleRadius,
+                    drawableInsets = iconButtonDrawableInsetsBase
                 )
             }
 
             desktopBtn.apply {
-                background = createRippleDrawable(
+                background = createBackgroundDrawable(
                     color = style.textColor,
-                    cornerRadius = windowingButtonRippleRadius,
+                    cornerRadius = iconButtonRippleRadius,
                     drawableInsets = endInsets
                 )
             }

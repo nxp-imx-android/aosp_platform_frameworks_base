@@ -27,6 +27,7 @@ object SubtitleArrayMapping {
         subtitleIdsMap["cell"] = R.array.tile_states_cell
         subtitleIdsMap["battery"] = R.array.tile_states_battery
         subtitleIdsMap["dnd"] = R.array.tile_states_dnd
+        subtitleIdsMap["modes_dnd"] = R.array.tile_states_modes_dnd
         subtitleIdsMap["flashlight"] = R.array.tile_states_flashlight
         subtitleIdsMap["rotation"] = R.array.tile_states_rotation
         subtitleIdsMap["bt"] = R.array.tile_states_bt

@@ -36,6 +36,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.scene.ui.view.WindowRootView
+import com.android.systemui.shade.data.repository.MutableShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepositoryImpl
 import com.android.systemui.shade.display.ShadeDisplayPolicyModule
@@ -205,7 +206,18 @@ object ShadeDisplayAwareModule {
 
     @SysUISingleton
     @Provides
-    fun provideShadePositionRepository(impl: ShadeDisplaysRepositoryImpl): ShadeDisplaysRepository {
+    fun provideShadePositionRepository(
+        impl: MutableShadeDisplaysRepository
+    ): ShadeDisplaysRepository {
+        ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
+        return impl
+    }
+
+    @SysUISingleton
+    @Provides
+    fun provideMutableShadePositionRepository(
+        impl: ShadeDisplaysRepositoryImpl
+    ): MutableShadeDisplaysRepository {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         return impl
     }

@@ -46,7 +46,7 @@ internal data class BlockedByAdminImpl(
 ) : BlockedByAdmin {
     override fun getSummary(checked: Boolean?) = when (checked) {
         true -> enterpriseRepository.getAdminSummaryString(
-            advancedProtectionStringId = R.string.enabled_by_advanced_protection,
+            advancedProtectionStringId = com.android.settingslib.R.string.enabled,
             updatableStringId = Settings.ENABLED_BY_ADMIN_SWITCH_SUMMARY,
             resId = R.string.enabled_by_admin,
             enforcedAdmin = enforcedAdmin,
@@ -54,7 +54,7 @@ internal data class BlockedByAdminImpl(
         )
 
         false -> enterpriseRepository.getAdminSummaryString(
-            advancedProtectionStringId = R.string.disabled_by_advanced_protection,
+            advancedProtectionStringId = com.android.settingslib.R.string.disabled,
             updatableStringId = Settings.DISABLED_BY_ADMIN_SWITCH_SUMMARY,
             resId = R.string.disabled_by_admin,
             enforcedAdmin = enforcedAdmin,

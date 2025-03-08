@@ -22,6 +22,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.app.WindowConfiguration.WINDOWING_MODE_PINNED
 import android.content.ComponentName
 import android.graphics.Rect
 import android.view.Display.DEFAULT_DISPLAY
@@ -41,6 +42,18 @@ object DesktopTestHelpers {
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_FREEFORM)
             .setLastActiveTime(100)
+            .setUserId(DEFAULT_USER_ID)
+            .apply { bounds?.let { setBounds(it) } }
+            .build()
+
+    fun createPinnedTask(displayId: Int = DEFAULT_DISPLAY, bounds: Rect? = null): RunningTaskInfo =
+        TestRunningTaskInfoBuilder()
+            .setDisplayId(displayId)
+            .setParentTaskId(displayId)
+            .setToken(MockToken().token())
+            .setActivityType(ACTIVITY_TYPE_STANDARD)
+            .setWindowingMode(WINDOWING_MODE_PINNED)
+            .setLastActiveTime(100)
             .apply { bounds?.let { setBounds(it) } }
             .build()
 
@@ -50,6 +63,7 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+            .setUserId(DEFAULT_USER_ID)
             .setLastActiveTime(100)
 
     /** Create a task that has windowing mode set to [WINDOWING_MODE_FULLSCREEN] */
@@ -63,6 +77,7 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_MULTI_WINDOW)
+            .setUserId(DEFAULT_USER_ID)
             .setLastActiveTime(100)
             .build()
 
@@ -72,6 +87,7 @@ object DesktopTestHelpers {
             .setToken(MockToken().token())
             .setActivityType(ACTIVITY_TYPE_HOME)
             .setWindowingMode(WINDOWING_MODE_FULLSCREEN)
+            .setUserId(DEFAULT_USER_ID)
             .setLastActiveTime(100)
             .build()
 
@@ -91,4 +107,6 @@ object DesktopTestHelpers {
         createSystemModalTask().apply {
             baseActivity = ComponentName("com.test.dummypackage", "TestClass")
         }
+
+    const val DEFAULT_USER_ID = 10
 }

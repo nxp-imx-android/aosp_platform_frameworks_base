@@ -16,7 +16,9 @@
 
 package com.android.systemui.statusbar.notification.collection.coordinator;
 
+import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
+import static android.app.NotificationManager.IMPORTANCE_LOW;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST;
 
@@ -45,6 +47,7 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
+import com.android.systemui.statusbar.notification.collection.BundleEntry;
 import com.android.systemui.statusbar.notification.collection.ListEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -273,6 +276,18 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
+    public void testSilentSectioner_acceptsBundle() {
+        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        assertTrue(mSilentSectioner.isInSection(bundleEntry));
+    }
+
+    @Test
+    public void testMinimizedSectioner_rejectsBundle() {
+        BundleEntry bundleEntry = new BundleEntry("testBundleKey");
+        assertFalse(mMinimizedSectioner.isInSection(bundleEntry));
+    }
+
+    @Test
     public void testMinSection() {
         when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(false);
         setRankingAmbient(true);
@@ -327,6 +342,13 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
+    public void testAlertingSectioner_rejectsBundle() {
+        for (String id : SYSTEM_RESERVED_IDS) {
+            assertFalse(mAlertingSectioner.isInSection(makeClassifiedNotifEntry(id)));
+        }
+    }
+
+    @Test
     public void statusBarStateCallbackTest() {
         mStatusBarStateCallback.onDozeAmountChanged(1f, 1f);
         verify(mInvalidationListener, times(1))
@@ -378,5 +400,12 @@ public class RankingCoordinatorTest extends SysuiTestCase {
                         : IMPORTANCE_DEFAULT)
                 .build());
         assertEquals(ambient, mEntry.getRanking().isAmbient());
+    }
+
+    private NotificationEntry makeClassifiedNotifEntry(String channelId) {
+        NotificationChannel channel = new NotificationChannel(channelId, channelId, IMPORTANCE_LOW);
+        return new NotificationEntryBuilder()
+                .updateRanking((rankingBuilder -> rankingBuilder.setChannel(channel)))
+                .build();
     }
 }

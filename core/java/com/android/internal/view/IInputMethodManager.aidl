@@ -105,7 +105,7 @@ interface IInputMethodManager {
             in @nullable EditorInfo editorInfo, in @nullable IRemoteInputConnection inputConnection,
             in @nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, int userId,
-            in ImeOnBackInvokedDispatcher imeDispatcher);
+            in ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible);
 
     // If windowToken is null, this just does startInput().  Otherwise this reports that a window
     // has gained focus, and if 'editorInfo' is non-null then also does startInput.
@@ -120,8 +120,8 @@ interface IInputMethodManager {
             in @nullable EditorInfo editorInfo, in @nullable IRemoteInputConnection inputConnection,
             in @nullable IRemoteAccessibilityInputConnection remoteAccessibilityInputConnection,
             int unverifiedTargetSdkVersion, int userId,
-            in ImeOnBackInvokedDispatcher imeDispatcher, int startInputSeq,
-            boolean useAsyncShowHideMethod);
+            in ImeOnBackInvokedDispatcher imeDispatcher, boolean imeRequestedVisible,
+            int startInputSeq, boolean useAsyncShowHideMethod);
 
     void showInputMethodPickerFromClient(in IInputMethodClient client,
             int auxiliarySubtypeMode);
@@ -224,7 +224,7 @@ interface IInputMethodManager {
      *  async **/
     oneway void acceptStylusHandwritingDelegationAsync(in IInputMethodClient client, in int userId,
             in String delegatePackageName, in String delegatorPackageName, int flags,
-            in IBooleanListener callback);
+                in IBooleanListener callback);
 
     /** Returns {@code true} if currently selected IME supports Stylus handwriting. */
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "

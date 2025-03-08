@@ -33,7 +33,7 @@ import com.android.systemui.bouncer.domain.interactor.SimBouncerInteractor
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.classifier.FalsingCollectorActual
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.DisplayId
@@ -687,7 +687,7 @@ constructor(
                 if (!isDeviceEntered) {
                     coroutineScope {
                         launch {
-                            deviceEntryHapticsInteractor.playSuccessHaptic
+                            deviceEntryHapticsInteractor.playSuccessHapticOnDeviceEntry
                                 .sample(sceneInteractor.currentScene)
                                 .collect { currentScene ->
                                     if (Flags.msdlFeedback()) {

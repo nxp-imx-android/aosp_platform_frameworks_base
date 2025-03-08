@@ -362,7 +362,19 @@ public class DisplayPolicyTests extends WindowTestsBase {
 
     @Test
     public void testSwitchDecorInsets() {
-        createNavBarWithProvidedInsets(mDisplayContent);
+        final WindowState win = createApplicationWindow();
+        final WindowState bar = createNavBarWithProvidedInsets(mDisplayContent);
+        bar.getFrame().set(0, mDisplayContent.mDisplayFrames.mHeight - NAV_BAR_HEIGHT,
+                mDisplayContent.mDisplayFrames.mWidth, mDisplayContent.mDisplayFrames.mHeight);
+        final int insetsId = bar.mAttrs.providedInsets[0].getId();
+        final InsetsSourceProvider provider = mDisplayContent.getInsetsStateController()
+                .getOrCreateSourceProvider(insetsId, bar.mAttrs.providedInsets[0].getType());
+        provider.setServerVisible(true);
+        provider.updateSourceFrame(bar.getFrame());
+
+        final InsetsState prevInsetsState = new InsetsState();
+        prevInsetsState.addSource(new InsetsSource(provider.getSource()));
+
         final DisplayPolicy displayPolicy = mDisplayContent.getDisplayPolicy();
         final DisplayInfo info = mDisplayContent.getDisplayInfo();
         final int w = info.logicalWidth;
@@ -385,6 +397,18 @@ public class DisplayPolicyTests extends WindowTestsBase {
         // The current insets are restored from cache directly.
         assertEquals(prevConfigFrame, displayPolicy.getDecorInsetsInfo(info.rotation,
                 info.logicalWidth, info.logicalHeight).mConfigFrame);
+        // Assume that the InsetsSource in current InsetsState is not updated yet. And it will be
+        // replaced by the one in cache.
+        InsetsState currentInsetsState = new InsetsState();
+        final InsetsSource prevSource = new InsetsSource(provider.getSource());
+        prevSource.getFrame().scale(0.5f);
+        currentInsetsState.addSource(prevSource);
+        currentInsetsState = mDisplayContent.getInsetsPolicy().adjustInsetsForWindow(
+                win, currentInsetsState);
+        if (com.android.window.flags.Flags.useCachedInsetsForDisplaySwitch()) {
+            assertEquals(prevInsetsState.peekSource(insetsId),
+                    currentInsetsState.peekSource(insetsId));
+        }
 
         // If screen is not fully turned on, then the cache should be preserved.
         displayPolicy.screenTurnedOff(false /* acquireSleepToken */);

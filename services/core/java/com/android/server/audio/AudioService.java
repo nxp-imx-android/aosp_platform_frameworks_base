@@ -4997,6 +4997,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\tcom.android.media.audio.disablePrescaleAbsoluteVolume:"
                 + disablePrescaleAbsoluteVolume());
         pw.println("\tcom.android.media.audio.setStreamVolumeOrder - EOL");
+        pw.println("\tandroid.media.audio.ringtoneUserUriCheck:"
+                + android.media.audio.Flags.ringtoneUserUriCheck());
         pw.println("\tandroid.media.audio.roForegroundAudioControl:"
                 + roForegroundAudioControl());
         pw.println("\tandroid.media.audio.scoManagedByAudio:"
@@ -7806,7 +7808,8 @@ public class AudioService extends IAudioService.Stub
                 return AudioSystem.STREAM_RING;
             }
         default:
-            if (isInCommunication()) {
+            if (isInCommunication()
+                    || mAudioSystem.isStreamActive(AudioManager.STREAM_VOICE_CALL, 0)) {
                 if (!replaceStreamBtSco()
                         && mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_SCO) {
                     if (DEBUG_VOL) Log.v(TAG, "getActiveStreamType: Forcing STREAM_BLUETOOTH_SCO");

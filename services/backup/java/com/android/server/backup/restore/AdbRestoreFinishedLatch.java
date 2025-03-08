@@ -79,7 +79,7 @@ public class AdbRestoreFinishedLatch implements BackupRestoreTask {
     }
 
     @Override
-    public void handleCancel(boolean cancelAll) {
+    public void handleCancel(@CancellationReason int cancellationReason) {
         Slog.w(TAG, "adb onRestoreFinished() timed out");
         mLatch.countDown();
         mOperationStorage.removeOperation(mCurrentOpToken);

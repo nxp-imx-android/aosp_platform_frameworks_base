@@ -29,8 +29,6 @@ import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_NOTIFICAT
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_PEEK;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_STATUS_BAR;
 
-import static com.android.systemui.statusbar.notification.collection.BundleEntry.ROOT_BUNDLES;
-import static com.android.systemui.statusbar.notification.collection.GroupEntry.ROOT_ENTRY;
 import static com.android.systemui.statusbar.notification.collection.NotifCollection.REASON_NOT_CANCELED;
 
 import static java.util.Objects.requireNonNull;
@@ -41,7 +39,6 @@ import android.app.Notification;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationManager.Policy;
-import android.app.PendingIntent;
 import android.app.Person;
 import android.app.RemoteInput;
 import android.app.RemoteInputHistoryItem;
@@ -68,7 +65,6 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifDismissInterceptor;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender;
-import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
@@ -81,13 +77,13 @@ import com.android.systemui.statusbar.notification.row.shared.NotificationRowCon
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.util.ListenerSet;
 
-import kotlinx.coroutines.flow.MutableStateFlow;
-import kotlinx.coroutines.flow.StateFlow;
-import kotlinx.coroutines.flow.StateFlowKt;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.flow.StateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 /**
  * Represents a notification that the system UI knows about
@@ -109,7 +105,6 @@ public final class NotificationEntry extends ListEntry {
     private final String mKey;
     private StatusBarNotification mSbn;
     private Ranking mRanking;
-    private final NotifEntryAdapter mEntryAdapter;
 
     /*
      * Bookkeeping members
@@ -270,141 +265,6 @@ public final class NotificationEntry extends ListEntry {
         mKey = sbn.getKey();
         setSbn(sbn);
         setRanking(ranking);
-        mEntryAdapter = new NotifEntryAdapter();
-    }
-
-    public class NotifEntryAdapter implements EntryAdapter {
-        @Override
-        public PipelineEntry getParent() {
-            return NotificationEntry.this.getParent();
-        }
-
-        @Override
-        public boolean isTopLevelEntry() {
-            return getParent() != null
-                    && (getParent() == ROOT_ENTRY || ROOT_BUNDLES.contains(getParent()));
-        }
-
-        @Override
-        public String getKey() {
-            return NotificationEntry.this.getKey();
-        }
-
-        @Override
-        public ExpandableNotificationRow getRow() {
-            return NotificationEntry.this.getRow();
-        }
-
-        @Override
-        public boolean isGroupRoot() {
-            if (isTopLevelEntry() || getParent() == null) {
-                return false;
-            }
-            if (NotificationEntry.this.getParent() instanceof GroupEntry parentGroupEntry) {
-                return parentGroupEntry.getSummary() == NotificationEntry.this;
-            }
-            return false;
-        }
-
-        @Override
-        public StateFlow<Boolean> isSensitive() {
-            return NotificationEntry.this.isSensitive();
-        }
-
-        @Override
-        public boolean isClearable() {
-            return NotificationEntry.this.isClearable();
-        }
-
-        @Override
-        public int getTargetSdk() {
-            return NotificationEntry.this.targetSdk;
-        }
-
-        @Override
-        public String getSummarization() {
-            return getRanking().getSummarization();
-        }
-
-        @Override
-        public void prepareForInflation() {
-            getSbn().clearPackageContext();
-        }
-
-        @Override
-        public int getContrastedColor(Context context, boolean isLowPriority, int backgroundColor) {
-            return NotificationEntry.this.getContrastedColor(
-                    context, isLowPriority, backgroundColor);
-        }
-
-        @Override
-        public boolean canPeek() {
-            return isStickyAndNotDemoted();
-        }
-
-        @Override
-        public long getWhen() {
-            return getSbn().getNotification().getWhen();
-        }
-
-        @Override
-        public IconPack getIcons() {
-            return NotificationEntry.this.getIcons();
-        }
-
-        @Override
-        public boolean isColorized() {
-            return getSbn().getNotification().isColorized();
-        }
-
-        @Override
-        @Nullable
-        public StatusBarNotification getSbn() {
-            return NotificationEntry.this.getSbn();
-        }
-
-        @Override
-        public boolean canDragAndDrop() {
-            boolean canBubble = canBubble();
-            Notification notif = getSbn().getNotification();
-            PendingIntent dragIntent = notif.contentIntent != null ? notif.contentIntent
-                    : notif.fullScreenIntent;
-            if (dragIntent != null && dragIntent.isActivity() && !canBubble) {
-                return true;
-            }
-            return false;
-        }
-
-        @Override
-        public boolean isBubbleCapable() {
-            return NotificationEntry.this.isBubble();
-        }
-
-        @Override
-        @Nullable
-        public String getStyle() {
-            return getNotificationStyle();
-        }
-
-        @Override
-        public int getSectionBucket() {
-            return mBucket;
-        }
-
-        @Override
-        public boolean isAmbient() {
-            return mRanking.isAmbient();
-        }
-
-        @Override
-        public boolean isFullScreenCapable() {
-            return getSbn().getNotification().fullScreenIntent != null;
-        }
-
-    }
-
-    public EntryAdapter getEntryAdapter() {
-        return mEntryAdapter;
     }
 
     @Override
@@ -633,7 +493,8 @@ public final class NotificationEntry extends ListEntry {
     public @Nullable List<NotificationEntry> getAttachedNotifChildren() {
         if (NotificationBundleUi.isEnabled()) {
             if (isGroupSummary()) {
-                return ((GroupEntry) getParent()).getChildren();
+                GroupEntry parent = (GroupEntry) getParent();
+                return parent != null ? new ArrayList<>(parent.getChildren()) : null;
             }
         } else {
             if (row == null) {

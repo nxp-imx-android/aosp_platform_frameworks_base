@@ -68,10 +68,4 @@ constructor(
                 emptyFlow()
             }
         }
-
-    /** Triggered if a face failure occurs regardless of the mode. */
-    val faceFailure: Flow<FailedFaceAuthenticationStatus> =
-        deviceEntryFaceAuthInteractor.authenticationStatus.filterIsInstance<
-            FailedFaceAuthenticationStatus
-        >()
 }

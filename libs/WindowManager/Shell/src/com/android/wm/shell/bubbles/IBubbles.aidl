@@ -58,4 +58,6 @@ interface IBubbles {
     oneway void showExpandedView() = 14;
 
     oneway void showDropTarget(in boolean show, in @nullable BubbleBarLocation location) = 15;
+
+    oneway void moveBubbleToFullscreen(in String key) = 16;
 }

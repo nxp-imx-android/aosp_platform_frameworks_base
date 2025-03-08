@@ -16,6 +16,7 @@
 package com.android.wm.shell.windowdecor.tiling
 
 import android.app.ActivityManager
+import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Rect
@@ -24,8 +25,10 @@ import android.testing.AndroidTestingRunner
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.TransitionInfo
+import android.window.TransitionInfo.Change
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -40,6 +43,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeT
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.createPinnedTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
@@ -114,6 +118,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private val split_divider_width = 10
 
     @Captor private lateinit var wctCaptor: ArgumentCaptor<WindowContainerTransaction>
+    @Captor private lateinit var callbackCaptor: ArgumentCaptor<(() -> Unit)>
 
     @Before
     fun setUp() {
@@ -134,7 +139,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 userRepositories,
                 desktopModeEventLogger,
                 focusTransitionObserver,
-                mainExecutor
+                mainExecutor,
             )
         whenever(context.createContextAsUser(any(), any())).thenReturn(context)
         whenever(userRepositories.current).thenReturn(desktopRepository)
@@ -158,7 +163,8 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             BOUNDS,
         )
 
-        verify(toggleResizeDesktopTaskTransitionHandler).startTransition(capture(wctCaptor), any())
+        verify(toggleResizeDesktopTaskTransitionHandler)
+            .startTransition(capture(wctCaptor), any(), any())
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
             val leftBounds = getLeftTaskBounds()
@@ -185,7 +191,8 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             BOUNDS,
         )
 
-        verify(toggleResizeDesktopTaskTransitionHandler).startTransition(capture(wctCaptor), any())
+        verify(toggleResizeDesktopTaskTransitionHandler)
+            .startTransition(capture(wctCaptor), any(), any())
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
             val leftBounds = getRightTaskBounds()
@@ -220,7 +227,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(toggleResizeDesktopTaskTransitionHandler, times(1))
-            .startTransition(capture(wctCaptor), any())
+            .startTransition(capture(wctCaptor), any(), any())
         verify(returnToDragStartAnimator, times(1)).start(any(), any(), any(), any(), anyOrNull())
         for (change in wctCaptor.value.changes) {
             val bounds = change.value.configuration.windowConfiguration.bounds
@@ -308,9 +315,13 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
         task1.isFocused = true
 
-        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true)).isTrue()
+        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true))
+            .isTrue()
         verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
     }
 
@@ -341,6 +352,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
         task1.isFocused = true
         task3.isFocused = true
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
 
         assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, true)).isFalse()
         assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, true)).isTrue()
@@ -372,9 +386,14 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
+        verify(toggleResizeDesktopTaskTransitionHandler, times(2))
+            .startTransition(capture(wctCaptor), any(), capture(callbackCaptor))
+        (callbackCaptor.value).invoke()
 
-        assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, isFocusedOnDisplay = true)).isFalse()
-        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true)).isTrue()
+        assertThat(tilingDecoration.moveTiledPairToFront(task3.taskId, isFocusedOnDisplay = true))
+            .isFalse()
+        assertThat(tilingDecoration.moveTiledPairToFront(task1.taskId, isFocusedOnDisplay = true))
+            .isTrue()
         verify(transitions, times(1)).startTransition(eq(TRANSIT_TO_FRONT), any(), eq(null))
     }
 
@@ -482,27 +501,29 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         tilingDecoration.onDividerHandleDragStart(motionEvent)
         // Log start event for task1 and task2, but the tasks are the same in
         // this test, so we verify the same log twice.
-        verify(desktopModeEventLogger, times(2)).logTaskResizingStarted(
-            ResizeTrigger.TILING_DIVIDER,
-            DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
-            task1,
-            BOUNDS.width() / 2,
-            BOUNDS.height(),
-            displayController,
-        )
+        verify(desktopModeEventLogger, times(2))
+            .logTaskResizingStarted(
+                ResizeTrigger.TILING_DIVIDER,
+                DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
+                task1,
+                BOUNDS.width() / 2,
+                BOUNDS.height(),
+                displayController,
+            )
 
         tilingDecoration.onDividerHandleMoved(BOUNDS, transaction)
         tilingDecoration.onDividerHandleDragEnd(BOUNDS, transaction, motionEvent)
         // Log end event for task1 and task2, but the tasks are the same in
         // this test, so we verify the same log twice.
-        verify(desktopModeEventLogger, times(2)).logTaskResizingEnded(
-            ResizeTrigger.TILING_DIVIDER,
-            DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
-            task1,
-            BOUNDS.width(),
-            BOUNDS.height(),
-            displayController,
-        )
+        verify(desktopModeEventLogger, times(2))
+            .logTaskResizingEnded(
+                ResizeTrigger.TILING_DIVIDER,
+                DesktopModeEventLogger.Companion.InputMethod.UNKNOWN_INPUT_METHOD,
+                task1,
+                BOUNDS.width(),
+                BOUNDS.height(),
+                displayController,
+            )
     }
 
     @Test
@@ -531,6 +552,37 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         verify(desktopWindowDecoration, times(1)).removeDragResizeListener(any())
         verify(desktopWindowDecoration, times(1))
             .updateDisabledResizingEdge(eq(DragResizeWindowGeometry.DisabledEdge.NONE), eq(false))
+        verify(tiledTaskHelper, times(1)).dispose()
+    }
+
+    @Test
+    fun taskTiled_shouldBeRemoved_whenEnteringPip() {
+        val task1 = createPipTask()
+        val stableBounds = STABLE_BOUNDS_MOCK
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(context.resources).thenReturn(resources)
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
+        whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
+        whenever(tiledTaskHelper.desktopModeWindowDecoration).thenReturn(desktopWindowDecoration)
+        tilingDecoration.onAppTiled(
+            task1,
+            desktopWindowDecoration,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+        )
+        tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
+        val changeInfo = createPipChangeTransition(task1)
+        tilingDecoration.onTransitionReady(
+            transition = mock(),
+            info = changeInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        assertThat(tilingDecoration.leftTaskResizingHelper).isNull()
         verify(tiledTaskHelper, times(1)).dispose()
     }
 
@@ -633,6 +685,23 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private fun createVisibleTask() =
         createFreeformTask().also {
             whenever(userRepositories.current.isVisibleTask(eq(it.taskId))).thenReturn(true)
+        }
+
+    private fun createPipTask() =
+        createPinnedTask().also {
+            whenever(userRepositories.current.isVisibleTask(eq(it.taskId))).thenReturn(true)
+        }
+
+    private fun createPipChangeTransition(task: RunningTaskInfo?, type: Int = TRANSIT_PIP) =
+        TransitionInfo(type, /* flags= */ 0).apply {
+            addChange(
+                Change(mock(), mock()).apply {
+                    mode = TRANSIT_PIP
+                    parent = null
+                    taskInfo = task
+                    flags = flags
+                }
+            )
         }
 
     companion object {

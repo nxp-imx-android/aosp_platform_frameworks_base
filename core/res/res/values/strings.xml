@@ -6226,6 +6226,18 @@
     <string name="accessibility_autoclick_pause">Pause</string>
     <!-- Label for autoclick position button [CHAR LIMIT=NONE] -->
     <string name="accessibility_autoclick_position">Position</string>
+    <!-- Label for autoclick scroll up button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_up">Scroll Up</string>
+    <!-- Label for autoclick scroll down button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_down">Scroll Down</string>
+    <!-- Label for autoclick scroll left button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_left">Scroll Left</string>
+    <!-- Label for autoclick scroll right button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_right">Scroll Right</string>
+    <!-- Label for autoclick scroll exit button [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_exit">Exit Scroll Mode</string>
+    <!-- Label for autoclick scroll panel title [CHAR LIMIT=NONE] -->
+    <string name="accessibility_autoclick_scroll_panel_title">Scroll Panel</string>
 
     <!-- Text to tell the user that a package has been forced by themselves in the RESTRICTED bucket. [CHAR LIMIT=NONE] -->
     <string name="as_app_forced_to_restricted_bucket">
@@ -6698,6 +6710,8 @@ ul.</string>
     <string name="profile_label_test">Test</string>
     <!-- Communal profile label on a screen. This can be used as a tab label for this profile in tabbed views and can be used to represent the profile in sharing surfaces, etc. [CHAR LIMIT=20] -->
     <string name="profile_label_communal">Communal</string>
+    <!-- Supervising profile label on a screen. This can be used as a tab label for this profile in tabbed views and can be used to represent the profile in sharing surfaces, etc. [CHAR LIMIT=20] -->
+    <string name="profile_label_supervising">Supervising</string>
 
     <!-- Accessibility label for managed profile user type [CHAR LIMIT=30] -->
     <string name="accessibility_label_managed_profile">Work profile</string>

@@ -247,6 +247,7 @@ public class VibrationThreadTest {
         assertThat(mVibratorProviders.get(VIBRATOR_ID).getAmplitudes()).isEmpty();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorWaveform_runsVibrationAndChangesAmplitudes() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -269,7 +270,10 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
+    @EnableFlags({
+            Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED,
+            Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING,
+    })
     public void vibrate_singleWaveformWithAdaptiveHapticsScaling_scalesAmplitudesProperly() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,
@@ -296,7 +300,10 @@ public class VibrationThreadTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED)
+    @EnableFlags({
+            Flags.FLAG_ADAPTIVE_HAPTICS_ENABLED,
+            Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING,
+    })
     public void vibrate_withVibrationParamsRequestStalling_timeoutRequestAndApplyNoScaling() {
         // No user settings scale.
         setUserSetting(Settings.System.RING_VIBRATION_INTENSITY,
@@ -357,6 +364,7 @@ public class VibrationThreadTest {
         }
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorRepeatingShortAlwaysOnWaveform_turnsVibratorOnForLonger()
             throws Exception {
@@ -380,6 +388,7 @@ public class VibrationThreadTest {
                 .containsExactly(expectedOneShot(5000)).inOrder();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorPatternWithZeroDurationSteps_skipsZeroDurationSteps() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -399,6 +408,7 @@ public class VibrationThreadTest {
                 .containsExactlyElementsIn(expectedOneShots(100L, 150L)).inOrder();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorPatternWithZeroDurationAndAmplitude_skipsZeroDurationSteps() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -537,6 +547,7 @@ public class VibrationThreadTest {
         assertThat(fakeVibrator.getEffectSegments(vibration.id)).hasSize(10);
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorRepeatingLongAlwaysOnWaveform_turnsVibratorOnForACycle()
             throws Exception {
@@ -700,6 +711,7 @@ public class VibrationThreadTest {
                 .containsExactly(expectedPrebaked(VibrationEffect.EFFECT_THUD)).inOrder();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_singleVibratorPrebakedAndUnsupportedEffectWithFallback_runsFallback() {
         mVibratorProviders.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
@@ -1247,6 +1259,7 @@ public class VibrationThreadTest {
                 .containsExactly(expected).inOrder();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_multipleStereo_runsVibrationOnRightVibrators() {
         mockVibrators(1, 2, 3, 4);
@@ -1479,6 +1492,7 @@ public class VibrationThreadTest {
         assertThat(mVibratorProviders.get(1).getAmplitudes()).isEmpty();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_multipleWaveforms_playsWaveformsInParallel() throws Exception {
         mockVibrators(1, 2, 3);
@@ -1544,8 +1558,8 @@ public class VibrationThreadTest {
                         VibrationEffect.createOneShot(
                                 expectedDuration, VibrationEffect.DEFAULT_AMPLITUDE)));
 
-        startThreadAndDispatcher(vibration);
         long startTime = SystemClock.elapsedRealtime();
+        startThreadAndDispatcher(vibration);
 
         vibration.waitForEnd();
         long vibrationEndTime = SystemClock.elapsedRealtime();
@@ -1554,15 +1568,13 @@ public class VibrationThreadTest {
         long completionTime = SystemClock.elapsedRealtime();
 
         verify(mControllerCallbacks).onComplete(eq(VIBRATOR_ID), eq(vibration.id), anyLong());
-        // Vibration ends after duration, thread completed after ramp down
-        assertThat(vibrationEndTime - startTime).isAtLeast(expectedDuration);
+        // Vibration ends before ramp down, thread completed after ramp down
         assertThat(vibrationEndTime - startTime).isLessThan(expectedDuration + rampDownDuration);
         assertThat(completionTime - startTime).isAtLeast(expectedDuration + rampDownDuration);
     }
 
     @Test
-    public void vibrate_withVibratorCallbackDelayShorterThanTimeout_vibrationFinishedAfterDelay()
-            throws Exception {
+    public void vibrate_withVibratorCallbackDelayShorterThanTimeout_vibrationFinishedAfterDelay() {
         long expectedDuration = 10;
         long callbackDelay = VibrationStepConductor.CALLBACKS_EXTRA_TIMEOUT / 2;
 
@@ -1577,10 +1589,8 @@ public class VibrationThreadTest {
         long startTime = SystemClock.elapsedRealtime();
         startThreadAndDispatcher(vibration);
 
-        vibration.waitForEnd();
-        long vibrationEndTime = SystemClock.elapsedRealtime();
-
         waitForCompletion(TEST_TIMEOUT_MILLIS);
+        long vibrationEndTime = SystemClock.elapsedRealtime();
 
         verify(mControllerCallbacks).onComplete(eq(VIBRATOR_ID), eq(vibration.id), anyLong());
         assertThat(vibrationEndTime - startTime).isAtLeast(expectedDuration + callbackDelay);
@@ -1588,8 +1598,7 @@ public class VibrationThreadTest {
 
     @LargeTest
     @Test
-    public void vibrate_withVibratorCallbackDelayLongerThanTimeout_vibrationFinishedAfterTimeout()
-            throws Exception {
+    public void vibrate_withVibratorCallbackDelayLongerThanTimeout_vibrationFinishedAfterTimeout() {
         long expectedDuration = 10;
         long callbackTimeout = VibrationStepConductor.CALLBACKS_EXTRA_TIMEOUT;
         long callbackDelay = callbackTimeout * 2;
@@ -1602,21 +1611,17 @@ public class VibrationThreadTest {
                         VibrationEffect.createOneShot(
                                 expectedDuration, VibrationEffect.DEFAULT_AMPLITUDE)));
 
-        startThreadAndDispatcher(vibration);
         long startTime = SystemClock.elapsedRealtime();
-
-        vibration.waitForEnd();
-        long vibrationEndTime = SystemClock.elapsedRealtime();
+        startThreadAndDispatcher(vibration);
 
         waitForCompletion(callbackDelay + TEST_TIMEOUT_MILLIS);
-        long completionTime = SystemClock.elapsedRealtime();
+        long vibrationEndTime = SystemClock.elapsedRealtime();
 
         verify(mControllerCallbacks, never())
                 .onComplete(eq(VIBRATOR_ID), eq(vibration.id), anyLong());
         // Vibration ends and thread completes after timeout, before the HAL callback
         assertThat(vibrationEndTime - startTime).isAtLeast(expectedDuration + callbackTimeout);
         assertThat(vibrationEndTime - startTime).isLessThan(expectedDuration + callbackDelay);
-        assertThat(completionTime - startTime).isLessThan(expectedDuration + callbackDelay);
     }
 
     @LargeTest
@@ -1637,8 +1642,8 @@ public class VibrationThreadTest {
         Arrays.fill(amplitudes, VibrationEffect.DEFAULT_AMPLITUDE);
         VibrationEffect effect = VibrationEffect.createWaveform(timings, amplitudes, -1);
 
-        startThreadAndDispatcher(effect);
         long startTime = SystemClock.elapsedRealtime();
+        startThreadAndDispatcher(effect);
 
         waitForCompletion(totalDuration + TEST_TIMEOUT_MILLIS);
         long delay = Math.abs(SystemClock.elapsedRealtime() - startTime - totalDuration);
@@ -1806,6 +1811,7 @@ public class VibrationThreadTest {
         assertThat(mControllers.get(VIBRATOR_ID).isVibrating()).isFalse();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_waveformWithRampDown_addsRampDownAfterVibrationCompleted() {
         when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
@@ -1833,6 +1839,7 @@ public class VibrationThreadTest {
         }
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_waveformWithRampDown_triggersCallbackWhenOriginalVibrationEnds()
             throws Exception {
@@ -1863,6 +1870,7 @@ public class VibrationThreadTest {
         verify(mManagerHooks).onVibrationThreadReleased(vibration.id);
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_waveformCancelledWithRampDown_addsRampDownAfterVibrationCancelled()
             throws Exception {
@@ -2057,6 +2065,7 @@ public class VibrationThreadTest {
                 .containsExactly(expectedPrebaked(EFFECT_CLICK)).inOrder();
     }
 
+    @EnableFlags(Flags.FLAG_FIX_VIBRATION_THREAD_CALLBACK_HANDLING)
     @Test
     public void vibrate_multipleVibratorsSequentialInSession_runsInOrderWithoutDelaysAndNoOffs() {
         mockVibrators(1, 2, 3);

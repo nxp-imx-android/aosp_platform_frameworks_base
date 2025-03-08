@@ -107,7 +107,6 @@ constructor(
     private val primaryBouncerInteractor: PrimaryBouncerInteractor,
     private val alternateBouncerInteractor: AlternateBouncerInteractor,
     private val isDebuggable: Boolean = Build.IS_DEBUGGABLE,
-    private val udfpsKeyguardAccessibilityDelegate: UdfpsKeyguardAccessibilityDelegate,
     private val transitionInteractor: KeyguardTransitionInteractor,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val deviceEntryUdfpsTouchOverlayViewModel: Lazy<DeviceEntryUdfpsTouchOverlayViewModel>,

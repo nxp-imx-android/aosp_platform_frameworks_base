@@ -21,15 +21,20 @@ import android.platform.test.flag.junit.FlagsParameterization
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.BrokenWithSceneContainer
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.andSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.ui.transitions.blurConfig
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -43,6 +48,7 @@ class OccludedToPrimaryBouncerTransitionViewModelTest(flags: FlagsParameterizati
     SysuiTestCase() {
     private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
+    private val repository = kosmos.fakeKeyguardTransitionRepository
     private lateinit var underTest: OccludedToPrimaryBouncerTransitionViewModel
 
     companion object {
@@ -61,6 +67,25 @@ class OccludedToPrimaryBouncerTransitionViewModelTest(flags: FlagsParameterizati
     fun setup() {
         underTest = kosmos.occludedToPrimaryBouncerTransitionViewModel
     }
+
+    @Test
+    @DisableSceneContainer
+    fun lockscreenAlphaImmediatelyToZero() =
+        testScope.runTest {
+            val alpha by collectLastValue(underTest.lockscreenAlpha)
+
+            repository.sendTransitionStep(step(0f, TransitionState.STARTED))
+            runCurrent()
+            assertThat(alpha).isEqualTo(0f)
+
+            repository.sendTransitionStep(step(0.1f, TransitionState.RUNNING))
+            runCurrent()
+            assertThat(alpha).isEqualTo(0f)
+
+            repository.sendTransitionStep(step(1f, TransitionState.FINISHED))
+            runCurrent()
+            assertThat(alpha).isEqualTo(0f)
+        }
 
     @Test
     @BrokenWithSceneContainer(388068805)

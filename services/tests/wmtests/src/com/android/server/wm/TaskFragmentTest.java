@@ -67,7 +67,6 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Binder;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.view.SurfaceControl;
 import android.view.View;
@@ -363,7 +362,7 @@ public class TaskFragmentTest extends WindowTestsBase {
         doReturn(true).when(primaryActivity).supportsPictureInPicture();
         doReturn(false).when(secondaryActivity).supportsPictureInPicture();
 
-        primaryTf.setAdjacentTaskFragment(secondaryTf);
+        primaryTf.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(primaryTf, secondaryTf));
         primaryActivity.setState(RESUMED, "test");
         secondaryActivity.setState(RESUMED, "test");
 
@@ -390,7 +389,8 @@ public class TaskFragmentTest extends WindowTestsBase {
         task.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
         taskFragment0.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         taskFragment0.setBounds(taskFragmentBounds);
-        taskFragment0.setAdjacentTaskFragment(taskFragment1);
+        taskFragment0.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(taskFragment0, taskFragment1));
         taskFragment0.setCompanionTaskFragment(taskFragment1);
         taskFragment0.setAnimationParams(new TaskFragmentAnimationParams.Builder()
                 .setAnimationBackgroundColor(Color.GREEN)
@@ -779,7 +779,7 @@ public class TaskFragmentTest extends WindowTestsBase {
                 .setOrganizer(mOrganizer)
                 .setFragmentToken(new Binder())
                 .build();
-        tf0.setAdjacentTaskFragment(tf1);
+        tf0.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf0, tf1));
         tf0.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         tf1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         task.setBounds(0, 0, 1200, 1000);
@@ -834,7 +834,7 @@ public class TaskFragmentTest extends WindowTestsBase {
         final Task task = createTask(mDisplayContent);
         final TaskFragment tf0 = createTaskFragmentWithActivity(task);
         final TaskFragment tf1 = createTaskFragmentWithActivity(task);
-        tf0.setAdjacentTaskFragment(tf1);
+        tf0.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(tf0, tf1));
         tf0.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         tf1.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         task.setBounds(0, 0, 1200, 1000);
@@ -982,7 +982,8 @@ public class TaskFragmentTest extends WindowTestsBase {
                 .setOrganizer(mOrganizer)
                 .setFragmentToken(new Binder())
                 .build();
-        taskFragmentLeft.setAdjacentTaskFragment(taskFragmentRight);
+        taskFragmentLeft.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(taskFragmentLeft, taskFragmentRight));
         taskFragmentLeft.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         taskFragmentRight.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         task.setBounds(0, 0, 1200, 1000);
@@ -1051,8 +1052,8 @@ public class TaskFragmentTest extends WindowTestsBase {
                 .setParentTask(task)
                 .createActivityCount(1)
                 .build();
-        taskFragmentRight.setAdjacentTaskFragment(taskFragmentLeft);
-        taskFragmentLeft.setAdjacentTaskFragment(taskFragmentRight);
+        taskFragmentRight.setAdjacentTaskFragments(
+                new TaskFragment.AdjacentSet(taskFragmentLeft, taskFragmentRight));
         final ActivityRecord appLeftTop = taskFragmentLeft.getTopMostActivity();
         final ActivityRecord appRightTop = taskFragmentRight.getTopMostActivity();
 
@@ -1103,7 +1104,6 @@ public class TaskFragmentTest extends WindowTestsBase {
                 Math.min(outConfig.screenWidthDp, outConfig.screenHeightDp));
     }
 
-    @EnableFlags(Flags.FLAG_ALLOW_MULTIPLE_ADJACENT_TASK_FRAGMENTS)
     @Test
     public void testAdjacentSetForTaskFragments() {
         final Task task = createTask(mDisplayContent);
@@ -1119,7 +1119,6 @@ public class TaskFragmentTest extends WindowTestsBase {
                 () -> new TaskFragment.AdjacentSet(tf0, tf1, tf2));
     }
 
-    @EnableFlags(Flags.FLAG_ALLOW_MULTIPLE_ADJACENT_TASK_FRAGMENTS)
     @Test
     public void testSetAdjacentTaskFragments() {
         final Task task0 = createTask(mDisplayContent);
@@ -1148,7 +1147,6 @@ public class TaskFragmentTest extends WindowTestsBase {
         assertFalse(task2.hasAdjacentTaskFragment());
     }
 
-    @EnableFlags(Flags.FLAG_ALLOW_MULTIPLE_ADJACENT_TASK_FRAGMENTS)
     @Test
     public void testClearAdjacentTaskFragments() {
         final Task task0 = createTask(mDisplayContent);
@@ -1167,7 +1165,6 @@ public class TaskFragmentTest extends WindowTestsBase {
         assertFalse(task2.hasAdjacentTaskFragment());
     }
 
-    @EnableFlags(Flags.FLAG_ALLOW_MULTIPLE_ADJACENT_TASK_FRAGMENTS)
     @Test
     public void testRemoveFromAdjacentTaskFragments() {
         final Task task0 = createTask(mDisplayContent);
@@ -1190,7 +1187,6 @@ public class TaskFragmentTest extends WindowTestsBase {
         assertFalse(task1.isAdjacentTo(task1));
     }
 
-    @EnableFlags(Flags.FLAG_ALLOW_MULTIPLE_ADJACENT_TASK_FRAGMENTS)
     @Test
     public void testRemoveFromAdjacentTaskFragmentsWhenRemove() {
         final Task task0 = createTask(mDisplayContent);

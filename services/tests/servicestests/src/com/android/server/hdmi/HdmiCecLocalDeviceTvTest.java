@@ -2295,6 +2295,38 @@ public class HdmiCecLocalDeviceTvTest {
                 .hasSize(1);
     }
 
+    @Test
+    public void onOneTouchPlay_wakeUp_exist_device() {
+        HdmiCecMessage requestActiveSource =
+                HdmiCecMessageBuilder.buildRequestActiveSource(ADDR_TV);
+
+        // Go to standby to trigger RequestActiveSourceAction for playback_1
+        mHdmiControlService.onStandby(STANDBY_SCREEN_OFF);
+        mTestLooper.dispatchAll();
+
+        mNativeWrapper.setPollAddressResponse(ADDR_PLAYBACK_1, SendMessageResult.SUCCESS);
+        mHdmiControlService.onWakeUp(WAKE_UP_SCREEN_ON);
+        mTestLooper.dispatchAll();
+
+        // Skip the LauncherX API timeout.
+        mTestLooper.moveTimeForward(TIMEOUT_WAIT_FOR_TV_ASSERT_ACTIVE_SOURCE_MS);
+        mTestLooper.dispatchAll();
+
+        assertThat(mNativeWrapper.getResultMessages()).contains(requestActiveSource);
+        mNativeWrapper.clearResultMessages();
+
+        // turn off TV and wake up with one touch play
+        mHdmiControlService.onStandby(STANDBY_SCREEN_OFF);
+        mTestLooper.dispatchAll();
+
+        // FakePowerManagerWrapper#wakeUp() doesn't broadcast Intent.ACTION_SCREEN_ON
+        // manually trigger onWakeUp to mock OTP
+        mHdmiControlService.onWakeUp(WAKE_UP_SCREEN_ON);
+        mTestLooper.dispatchAll();
+
+        assertThat(mNativeWrapper.getResultMessages()).doesNotContain(requestActiveSource);
+    }
+
 
     @Test
     public void handleReportAudioStatus_SamOnAvrStandby_startSystemAudioActionFromTv() {

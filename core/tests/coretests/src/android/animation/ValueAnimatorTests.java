@@ -922,6 +922,36 @@ public class ValueAnimatorTests {
     }
 
     @Test
+    public void testCancelOnPendingEndListener() throws Throwable {
+        final CountDownLatch endLatch = new CountDownLatch(1);
+        final Handler handler = new Handler(Looper.getMainLooper());
+        final boolean[] endCalledRightAfterCancel = new boolean[1];
+        final MyListener listener = new MyListener();
+        final ValueAnimator va = new ValueAnimator();
+        va.setFloatValues(0f, 1f);
+        va.setDuration(30);
+        va.addUpdateListener(animation -> {
+            if (animation.getAnimatedFraction() == 1f) {
+                handler.post(() -> {
+                    va.cancel();
+                    endCalledRightAfterCancel[0] = listener.endCalled;
+                    endLatch.countDown();
+                });
+            }
+        });
+        va.addListener(listener);
+
+        ValueAnimator.setPostNotifyEndListenerEnabled(true);
+        try {
+            handler.post(va::start);
+            assertThat(endLatch.await(1, TimeUnit.SECONDS)).isTrue();
+            assertThat(endCalledRightAfterCancel[0]).isTrue();
+        } finally {
+            ValueAnimator.setPostNotifyEndListenerEnabled(false);
+        }
+    }
+
+    @Test
     public void testZeroDuration() throws Throwable {
         // Run two animators with zero duration, with one running forward and the other one
         // backward. Check that the animations start and finish with the correct end fractions.
@@ -1182,6 +1212,7 @@ public class ValueAnimatorTests {
             assertEquals(A1_START_VALUE, a1.getAnimatedValue());
         });
     }
+
     class MyUpdateListener implements ValueAnimator.AnimatorUpdateListener {
         boolean wasRunning = false;
         long firstRunningFrameTime = -1;
@@ -1207,7 +1238,7 @@ public class ValueAnimatorTests {
         }
     }
 
-    class MyListener implements Animator.AnimatorListener {
+    static class MyListener implements Animator.AnimatorListener {
         boolean startCalled = false;
         boolean cancelCalled = false;
         boolean endCalled = false;

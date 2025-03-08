@@ -66,6 +66,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.media.NotificationMediaManager.isPlayingState
 import com.android.systemui.media.controls.data.repository.MediaDataRepository
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager.Companion.isMediaNotification
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
@@ -85,7 +86,6 @@ import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.statusbar.NotificationMediaManager.isPlayingState
 import com.android.systemui.statusbar.notification.row.HybridGroupManager
 import com.android.systemui.util.Assert
 import com.android.systemui.util.Utils
@@ -1193,7 +1193,7 @@ class MediaDataProcessor(
         return MediaAction(
             Icon.createWithResource(context, iconId).setTint(themeText).loadDrawable(context),
             action,
-            context.getString(R.string.controls_media_resume),
+            context.getString(R.string.controls_media_button_play),
             if (Flags.mediaControlsUiUpdate()) {
                 context.getDrawable(R.drawable.ic_media_play_button_container)
             } else {

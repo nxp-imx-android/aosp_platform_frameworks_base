@@ -24,6 +24,8 @@ per-file *Blur* = set noparent
 per-file *Blur* = shanh@google.com, rahulbanerjee@google.com
 # Not setting noparent here, since *Mode* matches many other classes (e.g., *ViewModel*)
 per-file *Mode* = file:notification/OWNERS
+per-file *SmartReply* = set noparent
+per-file *SmartReply* = file:notification/OWNERS
 per-file *RemoteInput* = set noparent
 per-file *RemoteInput* = file:notification/OWNERS
 per-file *EmptyShadeView* = set noparent

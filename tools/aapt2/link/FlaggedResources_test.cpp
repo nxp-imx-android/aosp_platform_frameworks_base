@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+#include <regex>
+#include <string>
+
 #include "LoadedApk.h"
 #include "cmd/Dump.h"
 #include "io/StringStream.h"
@@ -181,6 +184,51 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagInPathFails) {
 
   ASSERT_TRUE(diag.GetLog().contains(
       "Only read only flags may be used with resources: test.package.rwFlag"));
+}
+
+TEST_F(FlaggedResourcesTest, ReadWriteFlagInXmlGetsFlagged) {
+  auto apk_path = file::BuildPath({android::base::GetExecutableDirectory(), "resapp.apk"});
+  auto loaded_apk = LoadedApk::LoadApkFromPath(apk_path, &noop_diag);
+
+  std::string output;
+  DumpChunksToString(loaded_apk.get(), &output);
+
+  // The actual line looks something like:
+  // [ResTable_entry] id: 0x0000 name: layout1 keyIndex: 14 size: 8 flags: 0x0010
+  //
+  // This regex matches that line and captures the name and the flag value for checking.
+  std::regex regex("[0-9a-zA-Z:_\\]\\[ ]+name: ([0-9a-zA-Z]+)[0-9a-zA-Z: ]+flags: (0x\\d{4})");
+  std::smatch match;
+
+  std::stringstream ss(output);
+  std::string line;
+  bool found = false;
+  int fields_flagged = 0;
+  while (std::getline(ss, line)) {
+    bool first_line = false;
+    if (line.contains("config: v36")) {
+      std::getline(ss, line);
+      first_line = true;
+    }
+    if (!line.contains("flags")) {
+      continue;
+    }
+    if (std::regex_search(line, match, regex) && (match.size() == 3)) {
+      unsigned int hex_value;
+      std::stringstream hex_ss;
+      hex_ss << std::hex << match[2];
+      hex_ss >> hex_value;
+      if (hex_value & android::ResTable_entry::FLAG_USES_FEATURE_FLAGS) {
+        fields_flagged++;
+        if (first_line && match[1] == "layout1") {
+          found = true;
+        }
+      }
+    }
+  }
+  ASSERT_TRUE(found) << "No entry for layout1 at v36 with FLAG_USES_FEATURE_FLAGS bit set";
+  // There should only be 1 entry that has the FLAG_USES_FEATURE_FLAGS bit of flags set to 1
+  ASSERT_EQ(fields_flagged, 1);
 }
 
 }  // namespace aapt

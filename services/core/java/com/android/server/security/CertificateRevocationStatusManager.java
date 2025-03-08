@@ -23,6 +23,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
+import android.os.Binder;
 import android.os.Environment;
 import android.util.AtomicFile;
 import android.util.Slog;
@@ -119,7 +120,7 @@ class CertificateRevocationStatusManager {
         } catch (IOException | JSONException ex) {
             Slog.d(TAG, "Fallback to check stored revocation status", ex);
             if (ex instanceof IOException && mShouldScheduleJob) {
-                scheduleJobToFetchRemoteRevocationJob();
+                Binder.withCleanCallingIdentity(this::scheduleJobToFetchRemoteRevocationJob);
             }
             try {
                 revocationList = getStoredRevocationList();
@@ -210,7 +211,7 @@ class CertificateRevocationStatusManager {
             return;
         }
         Slog.d(TAG, "Scheduling job to fetch remote CRL.");
-        jobScheduler.schedule(
+        jobScheduler.forNamespace(TAG).schedule(
                 new JobInfo.Builder(
                                 JOB_ID,
                                 new ComponentName(

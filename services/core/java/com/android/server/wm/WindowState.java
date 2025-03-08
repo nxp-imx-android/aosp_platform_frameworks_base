@@ -100,7 +100,6 @@ import static android.view.WindowManagerGlobal.RELAYOUT_RES_FIRST_TIME;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_MULTIPLIER;
 import static android.view.WindowManagerPolicyConstants.TYPE_LAYER_OFFSET;
 
-import static com.android.input.flags.Flags.removeInputChannelFromWindowstate;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ADD_REMOVE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ANIM;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_APP_TRANSITIONS;
@@ -613,10 +612,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     // Input channel and input window handle used by the input dispatcher.
     final InputWindowHandleWrapper mInputWindowHandle;
-    /**
-     * Only populated if flag REMOVE_INPUT_CHANNEL_FROM_WINDOWSTATE is disabled.
-     */
-    private InputChannel mInputChannel;
 
     /**
      * The token will be assigned to {@link InputWindowHandle#token} if this window can receive
@@ -862,6 +857,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mWmService.scheduleAnimationLocked();
 
             mAnimatingTypes = animatingTypes;
+
+            if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
+                final InsetsStateController insetsStateController =
+                        getDisplayContent().getInsetsStateController();
+                insetsStateController.onAnimatingTypesChanged(this);
+            }
         }
     }
 
@@ -1824,12 +1825,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * Input Manager uses when discarding windows from input consideration.
      */
     boolean isPotentialDragTarget(boolean targetInterceptsGlobalDrag) {
-        if (removeInputChannelFromWindowstate()) {
-            return (targetInterceptsGlobalDrag || isVisibleNow()) && !mRemoved
-                    && mInputChannelToken != null && mInputWindowHandle != null;
-        }
         return (targetInterceptsGlobalDrag || isVisibleNow()) && !mRemoved
-                && mInputChannel != null && mInputWindowHandle != null;
+                && mInputChannelToken != null && mInputWindowHandle != null;
     }
 
     /**
@@ -2577,25 +2574,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mInputChannelToken != null) {
             throw new IllegalStateException("Window already has an input channel token.");
         }
-        if (removeInputChannelFromWindowstate()) {
-            String name = getName();
-            InputChannel channel = mWmService.mInputManager.createInputChannel(name);
-            mInputChannelToken = channel.getToken();
-            mInputWindowHandle.setToken(mInputChannelToken);
-            mWmService.mInputToWindowMap.put(mInputChannelToken, this);
-            channel.copyTo(outInputChannel);
-            channel.dispose();
-            return;
-        }
-        if (mInputChannel != null) {
-            throw new IllegalStateException("Window already has an input channel.");
-        }
         String name = getName();
-        mInputChannel = mWmService.mInputManager.createInputChannel(name);
-        mInputChannelToken = mInputChannel.getToken();
+        InputChannel channel = mWmService.mInputManager.createInputChannel(name);
+        mInputChannelToken = channel.getToken();
         mInputWindowHandle.setToken(mInputChannelToken);
         mWmService.mInputToWindowMap.put(mInputChannelToken, this);
-        mInputChannel.copyTo(outInputChannel);
+        channel.copyTo(outInputChannel);
+        channel.dispose();
     }
 
     /**
@@ -2618,12 +2603,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mInputChannelToken = null;
         }
 
-        if (!removeInputChannelFromWindowstate()) {
-            if (mInputChannel != null) {
-                mInputChannel.dispose();
-                mInputChannel = null;
-            }
-        }
         mInputWindowHandle.setToken(null);
     }
 
@@ -5447,7 +5426,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     @Override
     void assignLayer(Transaction t, int layer) {
         if (mStartingData != null) {
-            if (Flags.useSelfSyncTransactionForLayer() && mSyncState != SYNC_STATE_NONE) {
+            if (mSyncState != SYNC_STATE_NONE) {
                 // When this container needs to be synced, assign layer with its own sync
                 // transaction to avoid out of ordering when merge.
                 // Still use the passed-in transaction for non-sync case, such as building finish

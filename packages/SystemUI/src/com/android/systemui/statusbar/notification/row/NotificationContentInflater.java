@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.notification.row;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
-import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_SENSITIVE_CONTENT;
+import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP;
 import static com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_CONTRACTED;
 import static com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_EXPANDED;
 import static com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_HEADSUP;
@@ -57,10 +57,8 @@ import com.android.systemui.statusbar.notification.ConversationNotificationProce
 import com.android.systemui.statusbar.notification.InflationException;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationUtils;
-import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
@@ -238,7 +236,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                     );
         }
         if (LockscreenOtpRedaction.isSingleLineViewEnabled()) {
-            if (bindParams.redactionType == REDACTION_TYPE_SENSITIVE_CONTENT) {
+            if (bindParams.redactionType == REDACTION_TYPE_OTP) {
                 result.mPublicInflatedSingleLineViewModel =
                         SingleLineViewInflater.inflateSingleLineViewModel(
                                 entry.getSbn().getNotification(),
@@ -441,8 +439,12 @@ public class NotificationContentInflater implements NotificationRowContentBinder
             NotificationRowContentBinderLogger logger) {
         return TraceUtils.trace("NotificationContentInflater.createRemoteViews", () -> {
             InflationProgress result = new InflationProgress();
+
+            // inflating the contracted view is the legacy invalidation trigger
+            boolean reinflating = (reInflateFlags & FLAG_CONTENT_VIEW_CONTRACTED) != 0;
             // create an image inflater
-            result.mRowImageInflater = RowImageInflater.newInstance(row.mImageModelIndex);
+            result.mRowImageInflater = RowImageInflater.newInstance(row.mImageModelIndex,
+                    reinflating);
 
             if ((reInflateFlags & FLAG_CONTENT_VIEW_CONTRACTED) != 0) {
                 logger.logAsyncTaskProgress(row.getLoggingKey(), "creating contracted remote view");
@@ -467,7 +469,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
             if ((reInflateFlags & FLAG_CONTENT_VIEW_PUBLIC) != 0) {
                 logger.logAsyncTaskProgress(row.getLoggingKey(), "creating public remote view");
                 if (LockscreenOtpRedaction.isEnabled()
-                        && bindParams.redactionType == REDACTION_TYPE_SENSITIVE_CONTENT) {
+                        && bindParams.redactionType == REDACTION_TYPE_OTP) {
                     result.newPublicView = createSensitiveContentMessageNotification(
                             NotificationBundleUi.isEnabled()
                                     ? row.getEntryAdapter().getSbn().getNotification()
@@ -1003,10 +1005,6 @@ public class NotificationContentInflater implements NotificationRowContentBinder
             entry.setPromotedNotificationContentModel(result.mPromotedContent);
         }
 
-        if (PromotedNotificationUiForceExpanded.isEnabled()) {
-            row.setPromotedOngoing(entry.isOngoingPromoted());
-        }
-
         boolean setRepliesAndActions = true;
         if ((reInflateFlags & FLAG_CONTENT_VIEW_CONTRACTED) != 0) {
             if (result.inflatedContentView != null) {
@@ -1357,7 +1355,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
             }
 
             if (LockscreenOtpRedaction.isSingleLineViewEnabled()) {
-                if (mBindParams.redactionType == REDACTION_TYPE_SENSITIVE_CONTENT) {
+                if (mBindParams.redactionType == REDACTION_TYPE_OTP) {
                     result.mPublicInflatedSingleLineViewModel =
                             SingleLineViewInflater.inflateSingleLineViewModel(
                                     mEntry.getSbn().getNotification(),

@@ -21,10 +21,18 @@ import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import android.graphics.PixelFormat;
+import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.RequiresFlagsEnabled;
+import android.view.WindowInsets;
 import android.view.inputmethod.Flags;
 import android.view.inputmethod.ImeTracker;
 
@@ -210,5 +218,30 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         // visible state updated.
         mImeProvider.setFrozen(false);
         assertFalse(mImeProvider.getSource().isVisible());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
+    public void testUpdateControlForTarget_remoteInsetsControlTarget() throws RemoteException {
+        final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
+        makeWindowVisibleAndDrawn(ime);
+        mImeProvider.setWindowContainer(ime, null, null);
+        mImeProvider.setServerVisible(true);
+        mImeProvider.setClientVisible(true);
+        final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
+        final var displayWindowInsetsController = spy(createDisplayWindowInsetsController());
+        mDisplayContent.setRemoteInsetsController(displayWindowInsetsController);
+        final var controlTarget = mDisplayContent.mRemoteInsetsControlTarget;
+
+        inputTarget.setRequestedVisibleTypes(
+                WindowInsets.Type.defaultVisible() | WindowInsets.Type.ime());
+        mDisplayContent.setImeInputTarget(inputTarget);
+        mDisplayContent.setImeControlTarget(controlTarget);
+
+        assertTrue(inputTarget.isRequestedVisible(WindowInsets.Type.ime()));
+        assertFalse(controlTarget.isRequestedVisible(WindowInsets.Type.ime()));
+        mImeProvider.updateControlForTarget(controlTarget, true /* force */, null /* statsToken */);
+        verify(displayWindowInsetsController, times(1)).setImeInputTargetRequestedVisibility(
+                eq(true), any());
     }
 }

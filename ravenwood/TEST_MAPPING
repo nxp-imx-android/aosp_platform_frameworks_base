@@ -150,6 +150,10 @@
       "host": true
     },
     {
+      "name": "RavenwoodCoreTest-light",
+      "host": true
+    },
+    {
       "name": "RavenwoodMinimumTest",
       "host": true
     },
@@ -167,6 +171,10 @@
     },
     {
       "name": "RavenwoodServicesTest",
+      "host": true
+    },
+    {
+      "name": "UinputTestsRavenwood",
       "host": true
     }
     // AUTO-GENERATED-END

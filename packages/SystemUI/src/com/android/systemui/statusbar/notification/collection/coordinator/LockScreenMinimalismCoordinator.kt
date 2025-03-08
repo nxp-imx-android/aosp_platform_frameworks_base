@@ -26,6 +26,7 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.StatusBarState
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
@@ -193,6 +194,7 @@ constructor(
                     when (it) {
                         is NotificationEntry -> listOfNotNull(it)
                         is GroupEntry -> it.children
+                        is BundleEntry -> emptyList()
                         else -> error("unhandled type of $it")
                     }
                 }

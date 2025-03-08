@@ -171,7 +171,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * complete backup should be performed.
  *
  * <p>This task is designed to run on a dedicated thread, with the exception of the {@link
- * #handleCancel(boolean)} method, which can be called from any thread.
+ * BackupRestoreTask#handleCancel(int)} method, which can be called from any thread.
  */
 // TODO: Stop poking into BMS state and doing things for it (e.g. synchronizing on public locks)
 // TODO: Consider having the caller responsible for some clean-up (like resetting state)
@@ -1208,13 +1208,13 @@ public class KeyValueBackupTask implements BackupRestoreTask, Runnable {
      *
      * <p>Note: This method is inherently racy since there are no guarantees about how much of the
      * task will be executed after you made the call.
-     *
-     * @param cancelAll MUST be {@code true}. Will be removed.
      */
     @Override
-    public void handleCancel(boolean cancelAll) {
+    public void handleCancel(@CancellationReason int cancellationReason) {
         // This is called in a thread different from the one that executes method run().
-        Preconditions.checkArgument(cancelAll, "Can't partially cancel a key-value backup task");
+        Preconditions.checkArgument(
+                cancellationReason != CancellationReason.TIMEOUT,
+                "Key-value backup task cannot time out");
         markCancel();
         waitCancel();
     }

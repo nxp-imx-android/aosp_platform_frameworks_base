@@ -33,7 +33,7 @@ import static android.provider.Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS;
 
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE;
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC;
-import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_SENSITIVE_CONTENT;
+import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_OTP;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -82,7 +82,6 @@ import com.android.systemui.flags.DisableSceneContainer;
 import com.android.systemui.flags.EnableSceneContainer;
 import com.android.systemui.flags.FakeFeatureFlagsClassic;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
-import com.android.systemui.log.LogWtfHandlerRule;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.settings.UserTracker;
@@ -108,7 +107,6 @@ import kotlinx.coroutines.flow.StateFlow;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -206,8 +204,6 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
     private final FakeSystemClock mFakeSystemClock = new FakeSystemClock();
     private final FakeExecutor mBackgroundExecutor = new FakeExecutor(mFakeSystemClock);
     private final Executor mMainExecutor = Runnable::run; // Direct executor
-
-    @Rule public final LogWtfHandlerRule wtfHandlerRule = new LogWtfHandlerRule();
 
     @Before
     public void setUp() {
@@ -697,7 +693,7 @@ public class NotificationLockscreenUserManagerTest extends SysuiTestCase {
         mLockscreenUserManager.mConnectedToWifi.set(false);
 
         // Sensitive Content notifications are always redacted
-        assertEquals(REDACTION_TYPE_SENSITIVE_CONTENT,
+        assertEquals(REDACTION_TYPE_OTP,
                 mLockscreenUserManager.getRedactionType(mSensitiveContentNotif));
     }
 

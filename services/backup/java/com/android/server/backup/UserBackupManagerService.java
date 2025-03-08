@@ -102,6 +102,7 @@ import com.android.internal.util.Preconditions;
 import com.android.server.AppWidgetBackupBridge;
 import com.android.server.EventLogTags;
 import com.android.server.LocalServices;
+import com.android.server.backup.BackupRestoreTask.CancellationReason;
 import com.android.server.backup.OperationStorage.OpState;
 import com.android.server.backup.OperationStorage.OpType;
 import com.android.server.backup.fullbackup.FullBackupEntry;
@@ -168,6 +169,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntConsumer;
 
 /** System service that performs backup/restore operations. */
 public class UserBackupManagerService {
@@ -1816,11 +1818,9 @@ public class UserBackupManagerService {
 
             for (Integer token : operationsToCancel) {
                 mOperationStorage.cancelOperation(
-                        token, /* cancelAll */
-                        true,
-                        operationType -> {
-                            /* no callback needed here */
-                        });
+                        token,
+                        operationType -> {}, // no callback needed here
+                        CancellationReason.EXTERNAL);
             }
             // We don't want the backup jobs to kick in any time soon.
             // Reschedules them to run in the distant future.
@@ -1897,19 +1897,17 @@ public class UserBackupManagerService {
     }
 
     /** Cancel the operation associated with {@code token}. */
-    public void handleCancel(int token, boolean cancelAll) {
+    public void handleCancel(int token, @CancellationReason int cancellationReason) {
         // Remove all pending timeout messages of types OpType.BACKUP_WAIT and
         // OpType.RESTORE_WAIT. On the other hand, OP_TYPE_BACKUP cannot time out and
         // doesn't require cancellation.
-        mOperationStorage.cancelOperation(
-                token,
-                cancelAll,
-                operationType -> {
-                    if (operationType == OpType.BACKUP_WAIT
-                            || operationType == OpType.RESTORE_WAIT) {
-                        mBackupHandler.removeMessages(getMessageIdForOperationType(operationType));
+        IntConsumer timeoutCallback =
+                opType -> {
+                    if (opType == OpType.BACKUP_WAIT || opType == OpType.RESTORE_WAIT) {
+                        mBackupHandler.removeMessages(getMessageIdForOperationType(opType));
                     }
-                });
+                };
+        mOperationStorage.cancelOperation(token, timeoutCallback, cancellationReason);
     }
 
     /** Returns {@code true} if a backup is currently running, else returns {@code false}. */
@@ -2219,19 +2217,16 @@ public class UserBackupManagerService {
         // offload the mRunningFullBackupTask.handleCancel() call to another thread,
         // as we might have to wait for mCancelLock
         Runnable endFullBackupRunnable =
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        PerformFullTransportBackupTask pftbt = null;
-                        synchronized (mQueueLock) {
-                            if (mRunningFullBackupTask != null) {
-                                pftbt = mRunningFullBackupTask;
-                            }
+                () -> {
+                    PerformFullTransportBackupTask pftbt = null;
+                    synchronized (mQueueLock) {
+                        if (mRunningFullBackupTask != null) {
+                            pftbt = mRunningFullBackupTask;
                         }
-                        if (pftbt != null) {
-                            Slog.i(TAG, mLogIdMsg + "Telling running backup to stop");
-                            pftbt.handleCancel(true);
-                        }
+                    }
+                    if (pftbt != null) {
+                        Slog.i(TAG, mLogIdMsg + "Telling running backup to stop");
+                        pftbt.handleCancel(CancellationReason.SCHEDULED_JOB_STOPPED);
                     }
                 };
         new Thread(endFullBackupRunnable, "end-full-backup").start();

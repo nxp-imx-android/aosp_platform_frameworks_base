@@ -21,10 +21,12 @@ import static android.view.MotionEvent.BUTTON_SECONDARY;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_DELAY_DEFAULT;
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
+import static android.view.accessibility.AccessibilityManager.AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
 
 import static com.android.server.accessibility.autoclick.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AutoclickType;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.ClickPanelControllerInterface;
 
@@ -87,6 +89,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
     @VisibleForTesting AutoclickIndicatorScheduler mAutoclickIndicatorScheduler;
     @VisibleForTesting AutoclickIndicatorView mAutoclickIndicatorView;
     @VisibleForTesting AutoclickTypePanel mAutoclickTypePanel;
+    @VisibleForTesting AutoclickScrollPanel mAutoclickScrollPanel;
     private WindowManager mWindowManager;
 
     // Default click type is left-click.
@@ -98,6 +101,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 @Override
                 public void handleAutoclickTypeChange(@AutoclickType int clickType) {
                     mActiveClickType = clickType;
+
+                    // Hide scroll panel when type is not scroll.
+                    if (clickType != AUTOCLICK_TYPE_SCROLL && mAutoclickScrollPanel != null) {
+                        mAutoclickScrollPanel.hide();
+                    }
                 }
 
                 @Override
@@ -113,6 +121,22 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     // autoclick is still paused.
                     if (!hovered && isPaused()) {
                         cancelPendingClick();
+                    }
+                }
+            };
+
+    @VisibleForTesting
+    final AutoclickScrollPanel.ScrollPanelControllerInterface mScrollPanelController =
+            new AutoclickScrollPanel.ScrollPanelControllerInterface() {
+                @Override
+                public void handleScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
+                    // TODO(b/388845721): Perform actual scroll.
+                }
+
+                @Override
+                public void exitScrollMode() {
+                    if (mAutoclickScrollPanel != null) {
+                        mAutoclickScrollPanel.hide();
                     }
                 }
             };
@@ -136,7 +160,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     initiateAutoclickIndicator(handler);
                 }
 
-                mClickScheduler = new ClickScheduler(handler, AUTOCLICK_DELAY_DEFAULT);
+                mClickScheduler = new ClickScheduler(
+                            handler, AUTOCLICK_DELAY_DEFAULT);
                 mAutoclickSettingsObserver = new AutoclickSettingsObserver(mUserId, handler);
                 mAutoclickSettingsObserver.start(
                         mContext.getContentResolver(),
@@ -161,6 +186,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
         mWindowManager = mContext.getSystemService(WindowManager.class);
         mAutoclickTypePanel =
                 new AutoclickTypePanel(mContext, mWindowManager, mUserId, clickPanelController);
+        mAutoclickScrollPanel = new AutoclickScrollPanel(mContext, mWindowManager,
+                mScrollPanelController);
 
         mAutoclickTypePanel.show();
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
@@ -189,6 +216,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mClickScheduler.cancel();
         }
 
+        if (mAutoclickScrollPanel != null) {
+            mAutoclickScrollPanel.hide();
+        }
+
         super.clearEvents(inputSource);
     }
 
@@ -208,6 +239,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mAutoclickIndicatorScheduler = null;
             mWindowManager.removeView(mAutoclickIndicatorView);
             mAutoclickTypePanel.hide();
+        }
+
+        if (mAutoclickScrollPanel != null) {
+            mAutoclickScrollPanel.hide();
+            mAutoclickScrollPanel = null;
         }
     }
 
@@ -231,7 +267,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     private boolean isPaused() {
         return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isPaused()
-                && !mAutoclickTypePanel.isHovered();
+                && !isHovered();
+    }
+
+    private boolean isHovered() {
+        return Flags.enableAutoclickIndicator() && mAutoclickTypePanel.isHovered();
     }
 
     private void cancelPendingClick() {
@@ -265,6 +305,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
         private final Uri mAutoclickIgnoreMinorCursorMovementSettingUri =
                 Settings.Secure.getUriFor(
                         Settings.Secure.ACCESSIBILITY_AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT);
+
+        private final Uri mAutoclickRevertToLeftClickSettingUri =
+                Settings.Secure.getUriFor(
+                        Settings.Secure.ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK);
 
         private ContentResolver mContentResolver;
         private ClickScheduler mClickScheduler;
@@ -330,6 +374,13 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         /* observer= */ this,
                         mUserId);
                 onChange(/* selfChange= */ true, mAutoclickIgnoreMinorCursorMovementSettingUri);
+
+                mContentResolver.registerContentObserver(
+                        mAutoclickRevertToLeftClickSettingUri,
+                        /* notifyForDescendants= */ false,
+                        /* observer= */ this,
+                        mUserId);
+                onChange(/* selfChange= */ true, mAutoclickRevertToLeftClickSettingUri);
             }
         }
 
@@ -385,6 +436,20 @@ public class AutoclickController extends BaseEventStreamTransformation {
                                     mUserId)
                             == AccessibilityUtils.State.ON;
                     mClickScheduler.setIgnoreMinorCursorMovement(ignoreMinorCursorMovement);
+                }
+
+                if (mAutoclickRevertToLeftClickSettingUri.equals(uri)) {
+                    boolean revertToLeftClick =
+                            Settings.Secure.getIntForUser(
+                                    mContentResolver,
+                                    Settings.Secure
+                                            .ACCESSIBILITY_AUTOCLICK_REVERT_TO_LEFT_CLICK,
+                                    AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT
+                                            ? AccessibilityUtils.State.ON
+                                            : AccessibilityUtils.State.OFF,
+                                    mUserId)
+                            == AccessibilityUtils.State.ON;
+                    mClickScheduler.setRevertToLeftClick(revertToLeftClick);
                 }
             }
         }
@@ -467,6 +532,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
         /** Whether the minor cursor movement should be ignored. */
         private boolean mIgnoreMinorCursorMovement = AUTOCLICK_IGNORE_MINOR_CURSOR_MOVEMENT_DEFAULT;
 
+        /** Whether the autoclick type reverts to left click once performing an action. */
+        private boolean mRevertToLeftClick = AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
+
         /** Whether there is pending click. */
         private boolean mActive;
         /** If active, time at which pending click is scheduled. */
@@ -478,6 +546,8 @@ public class AutoclickController extends BaseEventStreamTransformation {
         private int mEventPolicyFlags;
         /** Current meta state. This value will be used as meta state for click event sequence. */
         private int mMetaState;
+        /** Last observed panel hovered state when click was scheduled. */
+        private boolean mHoveredState;
 
         /**
          * The current anchor's coordinates. Should be ignored if #mLastMotionEvent is null.
@@ -515,6 +585,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             sendClick();
             resetInternalState();
+            resetSelectedClickTypeIfNecessary();
         }
 
         /**
@@ -593,6 +664,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
             return mDelay;
         }
 
+        @VisibleForTesting
+        boolean getRevertToLeftClickForTesting() {
+            return mRevertToLeftClick;
+        }
+
         /**
          * Updates the time at which click sequence should occur.
          *
@@ -631,6 +707,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
             }
             mLastMotionEvent = MotionEvent.obtain(event);
             mEventPolicyFlags = policyFlags;
+            mHoveredState = isHovered();
 
             if (useAsAnchor) {
                 final int pointerIndex = mLastMotionEvent.getActionIndex();
@@ -648,6 +725,12 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             if (Flags.enableAutoclickIndicator() && mAutoclickIndicatorView != null) {
                 mAutoclickIndicatorView.clearIndicator();
+            }
+        }
+
+        private void resetSelectedClickTypeIfNecessary() {
+            if (mRevertToLeftClick && mActiveClickType != AUTOCLICK_TYPE_LEFT_CLICK) {
+                mAutoclickTypePanel.resetSelectedClickType();
             }
         }
 
@@ -675,6 +758,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
             mIgnoreMinorCursorMovement = ignoreMinorCursorMovement;
         }
 
+        public void setRevertToLeftClick(boolean revertToLeftClick) {
+            mRevertToLeftClick = revertToLeftClick;
+        }
+
         private void updateMovementSlop(double slop) {
             mMovementSlop = slop;
         }
@@ -684,6 +771,14 @@ public class AutoclickController extends BaseEventStreamTransformation {
          */
         private void sendClick() {
             if (mLastMotionEvent == null || getNext() == null) {
+                return;
+            }
+
+            // Handle scroll type specially, show scroll panel instead of sending click events.
+            if (mActiveClickType == AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL) {
+                if (mAutoclickScrollPanel != null) {
+                    mAutoclickScrollPanel.show();
+                }
                 return;
             }
 
@@ -704,14 +799,18 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             final long now = SystemClock.uptimeMillis();
 
-            // TODO(b/395094903): always triggers left-click when the cursor hovers over the
-            // autoclick type panel, to always allow users to change a different click type.
-            // Otherwise, if one chooses the right-click, this user won't be able to rely on
-            // autoclick to select other click types.
-            final int actionButton =
-                    mActiveClickType == AUTOCLICK_TYPE_RIGHT_CLICK
-                            ? BUTTON_SECONDARY
-                            : BUTTON_PRIMARY;
+            int actionButton;
+            if (mHoveredState) {
+                // Always triggers left-click when the cursor hovers over the autoclick type
+                // panel, to always allow users to change a different click type. Otherwise, if
+                // one chooses the right-click, this user won't be able to rely on autoclick to
+                // select other click types.
+                actionButton = BUTTON_PRIMARY;
+            } else {
+                actionButton = mActiveClickType == AUTOCLICK_TYPE_RIGHT_CLICK
+                        ? BUTTON_SECONDARY
+                        : BUTTON_PRIMARY;
+            }
 
             MotionEvent downEvent =
                     MotionEvent.obtain(

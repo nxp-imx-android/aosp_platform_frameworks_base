@@ -85,6 +85,7 @@
         android:paddingVertical="@dimen/overlay_action_container_padding_vertical"
         android:elevation="4dp"
         android:scrollbars="none"
+        android:importantForAccessibility="no"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintWidth_percent="1.0"
         app:layout_constraintWidth_max="wrap"
@@ -176,6 +177,8 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="4dp"
         android:layout_marginBottom="2dp"
+        android:importantForAccessibility="yes"
+        android:contentDescription="@string/clipboard_overlay_window_name"
         android:background="@drawable/clipboard_minimized_background_inset">
         <ImageView
             android:src="@drawable/ic_content_paste"

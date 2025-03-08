@@ -45,11 +45,13 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.PrintWriter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -203,15 +205,6 @@ public class BatteryStatsHistory {
         BatteryHistoryFragment getLatestFragment();
 
         /**
-         * Given a fragment, returns the earliest fragment that follows it whose monotonic
-         * start time falls within the specified range. `startTimeMs` is inclusive, `endTimeMs`
-         * is exclusive.
-         */
-        @Nullable
-        BatteryHistoryFragment getNextFragment(BatteryHistoryFragment current, long startTimeMs,
-                long endTimeMs);
-
-        /**
          * Acquires a lock on the entire store.
          */
         void lock();
@@ -266,6 +259,60 @@ public class BatteryStatsHistory {
          * Removes all persistent fragments
          */
         void reset();
+    }
+
+    class BatteryHistoryParcelContainer {
+        private boolean mParcelReadyForReading;
+        private Parcel mParcel;
+        private BatteryStatsHistory.BatteryHistoryFragment mFragment;
+        private long mMonotonicStartTime;
+
+        BatteryHistoryParcelContainer(@NonNull Parcel parcel, long monotonicStartTime) {
+            mParcel = parcel;
+            mMonotonicStartTime = monotonicStartTime;
+            mParcelReadyForReading = true;
+        }
+
+        BatteryHistoryParcelContainer(@NonNull BatteryHistoryFragment fragment) {
+            mFragment = fragment;
+            mMonotonicStartTime = fragment.monotonicTimeMs;
+            mParcelReadyForReading = false;
+        }
+
+        @Nullable
+        Parcel getParcel() {
+            if (mParcelReadyForReading) {
+                return mParcel;
+            }
+
+            Parcel parcel = Parcel.obtain();
+            if (readFragmentToParcel(parcel, mFragment)) {
+                parcel.readInt();       // skip buffer size
+                mParcel = parcel;
+            } else {
+                parcel.recycle();
+            }
+            mParcelReadyForReading = true;
+            return mParcel;
+        }
+
+        long getMonotonicStartTime() {
+            return mMonotonicStartTime;
+        }
+
+        /**
+         * Recycles the parcel (if appropriate). Should be called after the parcel has been
+         * processed by the iterator.
+         */
+        void close() {
+            if (mParcel != null && mFragment != null) {
+                mParcel.recycle();
+            }
+            // ParcelContainers are not meant to be reusable. To prevent any unintentional
+            // access to the parcel after it has been recycled, clear the references to it.
+            mParcel = null;
+            mFragment = null;
+        }
     }
 
     private final Parcel mHistoryBuffer;
@@ -447,6 +494,7 @@ public class BatteryStatsHistory {
         mWritableHistory = writableHistory;
         if (mWritableHistory != null) {
             mMutable = false;
+            mHistoryBufferStartTime = mWritableHistory.mHistoryBufferStartTime;
             mHistoryMonotonicEndTime = mWritableHistory.mHistoryMonotonicEndTime;
         }
 
@@ -689,95 +737,66 @@ public class BatteryStatsHistory {
     }
 
     /**
-     * When iterating history files and history buffer, always start from the lowest numbered
-     * history file, when reached the mActiveFile (highest numbered history file), do not read from
-     * mActiveFile, read from history buffer instead because the buffer has more updated data.
-     *
-     * @return The parcel that has next record. null if finished all history files and history
-     * buffer
+     * Returns all chunks of accumulated history that contain items within the range between
+     * `startTimeMs` (inclusive) and `endTimeMs` (exclusive)
      */
-    @Nullable
-    public Parcel getNextParcel(long startTimeMs, long endTimeMs) {
-        checkImmutable();
-
-        // First iterate through all records in current parcel.
-        if (mCurrentParcel != null) {
-            if (mCurrentParcel.dataPosition() < mCurrentParcelEnd) {
-                // There are more records in current parcel.
-                return mCurrentParcel;
-            } else if (mHistoryBuffer == mCurrentParcel) {
-                // finished iterate through all history files and history buffer.
-                return null;
-            } else if (mHistoryParcels == null
-                    || !mHistoryParcels.contains(mCurrentParcel)) {
-                // current parcel is from history file.
-                mCurrentParcel.recycle();
-            }
-        }
-
-        if (mStore != null) {
-            BatteryHistoryFragment next = mStore.getNextFragment(mCurrentFragment, startTimeMs,
-                    endTimeMs);
-            while (next != null) {
-                mCurrentParcel = null;
-                mCurrentParcelEnd = 0;
-                final Parcel p = Parcel.obtain();
-                if (readFragmentToParcel(p, next)) {
-                    int bufSize = p.readInt();
-                    int curPos = p.dataPosition();
-                    mCurrentParcelEnd = curPos + bufSize;
-                    mCurrentParcel = p;
-                    if (curPos < mCurrentParcelEnd) {
-                        mCurrentFragment = next;
-                        return mCurrentParcel;
-                    }
-                } else {
-                    p.recycle();
-                }
-                next = mStore.getNextFragment(next, startTimeMs, endTimeMs);
-            }
-        }
-
-        // mHistoryParcels is created when BatteryStatsImpl object is created from deserialization
-        // of a parcel, such as Settings app or checkin file.
-        if (mHistoryParcels != null) {
-            while (mParcelIndex < mHistoryParcels.size()) {
-                final Parcel p = mHistoryParcels.get(mParcelIndex++);
-                if (!verifyVersion(p)) {
-                    continue;
-                }
-                // skip monotonic time field.
-                p.readLong();
-                // skip monotonic end time field
-                p.readLong();
-                // skip monotonic size field
-                p.readLong();
-
-                final int bufSize = p.readInt();
-                final int curPos = p.dataPosition();
-                mCurrentParcelEnd = curPos + bufSize;
-                mCurrentParcel = p;
-                if (curPos < mCurrentParcelEnd) {
-                    return mCurrentParcel;
-                }
-            }
-        }
-
-        // finished iterator through history files (except the last one), now history buffer.
-        if (mHistoryBuffer.dataSize() <= 0) {
-            // buffer is empty.
-            return null;
-        }
-        mHistoryBuffer.setDataPosition(0);
-        mCurrentParcel = mHistoryBuffer;
-        mCurrentParcelEnd = mCurrentParcel.dataSize();
-        return mCurrentParcel;
-    }
-
-    private void checkImmutable() {
+    Queue<BatteryHistoryParcelContainer> getParcelContainers(long startTimeMs, long endTimeMs) {
         if (mMutable) {
             throw new IllegalStateException("Iterating over a mutable battery history");
         }
+
+        if (endTimeMs == MonotonicClock.UNDEFINED || endTimeMs == 0) {
+            endTimeMs = Long.MAX_VALUE;
+        }
+
+        Queue<BatteryHistoryParcelContainer> containers = new ArrayDeque<>();
+
+        if (mStore != null) {
+            List<BatteryHistoryFragment> fragments = mStore.getFragments();
+            for (int i = 0; i < fragments.size(); i++) {
+                BatteryHistoryFragment fragment = fragments.get(i);
+                if (fragment.monotonicTimeMs >= endTimeMs) {
+                    break;
+                }
+
+                if (fragment.monotonicTimeMs >= startTimeMs && fragment != mActiveFragment) {
+                    containers.add(new BatteryHistoryParcelContainer(fragment));
+                }
+            }
+        }
+
+        if (mHistoryParcels != null) {
+            for (int i = 0; i < mHistoryParcels.size(); i++) {
+                final Parcel p = mHistoryParcels.get(i);
+                if (!verifyVersion(p)) {
+                    continue;
+                }
+
+                long monotonicStartTime = p.readLong();
+                if (monotonicStartTime >= endTimeMs) {
+                    continue;
+                }
+
+                long monotonicEndTime = p.readLong();
+                if (monotonicEndTime < startTimeMs) {
+                    continue;
+                }
+
+                // skip monotonic size field
+                p.readLong();
+                // skip buffer size field
+                p.readInt();
+
+                containers.add(new BatteryHistoryParcelContainer(p, monotonicStartTime));
+            }
+        }
+
+        if (mHistoryBufferStartTime < endTimeMs) {
+            mHistoryBuffer.setDataPosition(0);
+            containers.add(
+                    new BatteryHistoryParcelContainer(mHistoryBuffer, mHistoryBufferStartTime));
+        }
+        return containers;
     }
 
     /**
@@ -815,21 +834,6 @@ public class BatteryStatsHistory {
         p.setDataPosition(0);
         final int version = p.readInt();
         return version == VERSION;
-    }
-
-    /**
-     * Extracts the monotonic time, as per {@link MonotonicClock}, from the supplied battery history
-     * buffer.
-     */
-    public long getHistoryBufferStartTime(Parcel p) {
-        int pos = p.dataPosition();
-        p.setDataPosition(0);
-        p.readInt();        // Skip the version field
-        long monotonicTime = p.readLong();
-        p.readLong();       // Skip monotonic end time field
-        p.readLong();       // Skip monotonic size field
-        p.setDataPosition(pos);
-        return monotonicTime;
     }
 
     /**

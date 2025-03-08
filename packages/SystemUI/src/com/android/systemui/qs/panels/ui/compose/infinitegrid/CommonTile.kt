@@ -26,12 +26,14 @@ import androidx.compose.animation.graphics.res.animatedVectorResource
 import androidx.compose.animation.graphics.res.rememberAnimatedVectorPainter
 import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -39,6 +41,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -49,8 +52,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorProducer
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -60,7 +71,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.toggleableState
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.compose.modifiers.size
@@ -73,6 +84,9 @@ import com.android.systemui.common.ui.compose.load
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.SideIconHeight
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.SideIconWidth
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TILE_INITIAL_DELAY_MILLIS
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TILE_MARQUEE_ITERATIONS
+import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.TileLabelBlurWidth
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.longPressLabel
 import com.android.systemui.qs.panels.ui.viewmodel.AccessibilityUiState
 import com.android.systemui.qs.ui.compose.borderOnFocus
@@ -104,30 +118,31 @@ fun LargeTileContent(
         val focusBorderColor = MaterialTheme.colorScheme.secondary
         Box(
             modifier =
-                Modifier.size(CommonTileDefaults.ToggleTargetSize).thenIf(toggleClick != null) {
-                    Modifier.borderOnFocus(color = focusBorderColor, iconShape.topEnd)
-                        .clip(iconShape)
-                        .verticalSquish(squishiness)
-                        .drawBehind { drawRect(animatedBackgroundColor) }
-                        .combinedClickable(
-                            onClick = toggleClick!!,
-                            onLongClick = onLongClick,
-                            onLongClickLabel = longPressLabel,
-                            hapticFeedbackEnabled = !Flags.msdlFeedback(),
-                        )
-                        .thenIf(accessibilityUiState != null) {
-                            Modifier.semantics {
-                                    accessibilityUiState as AccessibilityUiState
-                                    contentDescription = accessibilityUiState.contentDescription
-                                    stateDescription = accessibilityUiState.stateDescription
-                                    accessibilityUiState.toggleableState?.let {
-                                        toggleableState = it
+                Modifier.size(CommonTileDefaults.ToggleTargetSize)
+                    .clip(iconShape)
+                    .verticalSquish(squishiness)
+                    .drawBehind { drawRect(animatedBackgroundColor) }
+                    .thenIf(toggleClick != null) {
+                        Modifier.borderOnFocus(color = focusBorderColor, iconShape.topEnd)
+                            .combinedClickable(
+                                onClick = toggleClick!!,
+                                onLongClick = onLongClick,
+                                onLongClickLabel = longPressLabel,
+                                hapticFeedbackEnabled = !Flags.msdlFeedback(),
+                            )
+                            .thenIf(accessibilityUiState != null) {
+                                Modifier.semantics {
+                                        accessibilityUiState as AccessibilityUiState
+                                        contentDescription = accessibilityUiState.contentDescription
+                                        stateDescription = accessibilityUiState.stateDescription
+                                        accessibilityUiState.toggleableState?.let {
+                                            toggleableState = it
+                                        }
+                                        role = Role.Switch
                                     }
-                                    role = Role.Switch
-                                }
-                                .sysuiResTag(TEST_TAG_TOGGLE)
-                        }
-                }
+                                    .sysuiResTag(TEST_TAG_TOGGLE)
+                            }
+                    }
         ) {
             SmallTileContent(
                 iconProvider = iconProvider,
@@ -167,18 +182,15 @@ fun LargeTileLabels(
     val animatedSecondaryLabelColor by
         animateColorAsState(colors.secondaryLabel, label = "QSTileSecondaryLabelColor")
     Column(verticalArrangement = Arrangement.Center, modifier = modifier.fillMaxHeight()) {
-        BasicText(
-            label,
+        TileLabel(
+            text = label,
             style = MaterialTheme.typography.labelLarge,
             color = { animatedLabelColor },
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
         )
         if (!TextUtils.isEmpty(secondaryLabel)) {
-            BasicText(
+            TileLabel(
                 secondaryLabel ?: "",
                 color = { animatedSecondaryLabelColor },
-                maxLines = 1,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier =
                     Modifier.thenIf(
@@ -194,9 +206,9 @@ fun LargeTileLabels(
 
 @Composable
 fun SmallTileContent(
-    modifier: Modifier = Modifier,
     iconProvider: Context.() -> Icon,
     color: Color,
+    modifier: Modifier = Modifier,
     size: () -> Dp = { CommonTileDefaults.IconSize },
     animateToEnd: Boolean = false,
 ) {
@@ -212,31 +224,39 @@ fun SmallTileContent(
             }
         }
     if (loadedDrawable is Animatable) {
+        // Skip initial animation, icons should animate only as the state change
+        // and not when first composed
+        var shouldSkipInitialAnimation by remember { mutableStateOf(true) }
+        LaunchedEffect(Unit) { shouldSkipInitialAnimation = animateToEnd }
+
         val painter =
             when (icon) {
                 is Icon.Resource -> {
                     val image = AnimatedImageVector.animatedVectorResource(id = icon.res)
                     key(icon) {
-                        if (animateToEnd) {
-                            rememberAnimatedVectorPainter(animatedImageVector = image, atEnd = true)
-                        } else {
-                            var atEnd by remember(icon.res) { mutableStateOf(false) }
-                            LaunchedEffect(key1 = icon.res) { atEnd = true }
-                            rememberAnimatedVectorPainter(
-                                animatedImageVector = image,
-                                atEnd = atEnd,
-                            )
-                        }
+                        var atEnd by remember(icon) { mutableStateOf(shouldSkipInitialAnimation) }
+                        LaunchedEffect(key1 = icon.res) { atEnd = true }
+
+                        rememberAnimatedVectorPainter(animatedImageVector = image, atEnd = atEnd)
                     }
                 }
 
                 is Icon.Loaded -> {
-                    LaunchedEffect(loadedDrawable) {
+                    val painter = rememberDrawablePainter(loadedDrawable)
+
+                    // rememberDrawablePainter automatically starts the animation. Using
+                    // SideEffect here to immediately stop it if needed
+                    DisposableEffect(painter) {
                         if (loadedDrawable is AnimatedVectorDrawable) {
                             loadedDrawable.forceAnimationOnUI()
                         }
+                        if (shouldSkipInitialAnimation) {
+                            loadedDrawable.stop()
+                        }
+                        onDispose {}
                     }
-                    rememberDrawablePainter(loadedDrawable)
+
+                    painter
                 }
             }
 
@@ -251,6 +271,45 @@ fun SmallTileContent(
     }
 }
 
+@Composable
+private fun TileLabel(
+    text: String,
+    color: ColorProducer,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+) {
+    BasicText(
+        text = text,
+        color = color,
+        style = style,
+        maxLines = 1,
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                .drawWithContent {
+                    drawContent()
+                    // Draw a blur over the end of the text
+                    val edgeWidthPx = TileLabelBlurWidth.toPx()
+                    drawRect(
+                        topLeft = Offset(size.width - edgeWidthPx, 0f),
+                        size = Size(edgeWidthPx, size.height),
+                        brush =
+                            Brush.horizontalGradient(
+                                colors = listOf(Color.Transparent, Color.Black),
+                                startX = size.width,
+                                endX = size.width - edgeWidthPx,
+                            ),
+                        blendMode = BlendMode.DstIn,
+                    )
+                }
+                .basicMarquee(
+                    iterations = TILE_MARQUEE_ITERATIONS,
+                    initialDelayMillis = TILE_INITIAL_DELAY_MILLIS,
+                ),
+    )
+}
+
 object CommonTileDefaults {
     val IconSize = 32.dp
     val LargeTileIconSize = 28.dp
@@ -258,9 +317,13 @@ object CommonTileDefaults {
     val SideIconHeight = 20.dp
     val ToggleTargetSize = 56.dp
     val TileHeight = 72.dp
-    val TilePadding = 8.dp
+    val TileStartPadding = 8.dp
+    val TileEndPadding = 16.dp
     val TileArrangementPadding = 6.dp
     val InactiveCornerRadius = 50.dp
+    val TileLabelBlurWidth = 32.dp
+    const val TILE_MARQUEE_ITERATIONS = 1
+    const val TILE_INITIAL_DELAY_MILLIS = 2000
 
     @Composable fun longPressLabel() = stringResource(id = R.string.accessibility_long_click_tile)
 }

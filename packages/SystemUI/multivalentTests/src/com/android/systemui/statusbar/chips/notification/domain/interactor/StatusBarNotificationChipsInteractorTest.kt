@@ -34,6 +34,8 @@ import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
+import com.android.systemui.statusbar.notification.data.repository.addNotif
+import com.android.systemui.statusbar.notification.data.repository.removeNotif
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
@@ -405,6 +407,63 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
             // THEN notif1 is now ranked first
             assertThat(latest!!.map { it.key }).containsExactly("notif1", "notif2").inOrder()
+        }
+
+    @Test
+    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    fun shownNotificationChips_lastAppVisibleTimeMaintainedAcrossNotifAddsAndRemoves() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.shownNotificationChips)
+
+            val notif1Info = NotifInfo("notif1", mock<StatusBarIconView>(), uid = 100)
+            val notif2Info = NotifInfo("notif2", mock<StatusBarIconView>(), uid = 200)
+
+            // Have notif1's app start as showing and then hide later so we get the chip
+            activityManagerRepository.fake.startingIsAppVisibleValue = true
+            fakeSystemClock.setCurrentTimeMillis(9_000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = notif1Info.key,
+                    uid = notif1Info.uid,
+                    statusBarChipIcon = notif1Info.icon,
+                    promotedContent =
+                        PromotedNotificationContentModel.Builder(notif1Info.key).build(),
+                )
+            )
+            activityManagerRepository.fake.setIsAppVisible(notif1Info.uid, isAppVisible = false)
+
+            assertThat(latest!![0].key).isEqualTo(notif1Info.key)
+            assertThat(latest!![0].lastAppVisibleTime).isEqualTo(9_000)
+
+            // WHEN a new notification is added
+            activityManagerRepository.fake.startingIsAppVisibleValue = true
+            fakeSystemClock.setCurrentTimeMillis(10_000)
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = notif2Info.key,
+                    uid = notif2Info.uid,
+                    statusBarChipIcon = notif2Info.icon,
+                    promotedContent =
+                        PromotedNotificationContentModel.Builder(notif2Info.key).build(),
+                )
+            )
+            activityManagerRepository.fake.setIsAppVisible(notif2Info.uid, isAppVisible = false)
+
+            // THEN the new notification is first
+            assertThat(latest!![0].key).isEqualTo(notif2Info.key)
+            assertThat(latest!![0].lastAppVisibleTime).isEqualTo(10_000)
+
+            // And THEN the original notification maintains its lastAppVisibleTime
+            assertThat(latest!![1].key).isEqualTo(notif1Info.key)
+            assertThat(latest!![1].lastAppVisibleTime).isEqualTo(9_000)
+
+            // WHEN notif1 is removed
+            fakeSystemClock.setCurrentTimeMillis(11_000)
+            activeNotificationListRepository.removeNotif(notif1Info.key)
+
+            // THEN notif2 still has its lastAppVisibleTime
+            assertThat(latest!![0].key).isEqualTo(notif2Info.key)
+            assertThat(latest!![0].lastAppVisibleTime).isEqualTo(10_000)
         }
 
     @Test

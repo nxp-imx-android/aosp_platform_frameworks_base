@@ -37,6 +37,7 @@ import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.log.logcatLogBuffer
+import com.android.systemui.media.NotificationMediaManager
 import com.android.systemui.media.controls.util.MediaFeatureFlag
 import com.android.systemui.media.dialog.MediaOutputDialogManager
 import com.android.systemui.plugins.ActivityStarter
@@ -45,7 +46,6 @@ import com.android.systemui.settings.UserTracker
 import com.android.systemui.shared.system.ActivityManagerWrapper
 import com.android.systemui.shared.system.DevicePolicyManagerWrapper
 import com.android.systemui.shared.system.PackageManagerWrapper
-import com.android.systemui.statusbar.NotificationMediaManager
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.statusbar.RankingBuilder
@@ -53,8 +53,11 @@ import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
 import com.android.systemui.statusbar.notification.ConversationNotificationManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
+import com.android.systemui.statusbar.notification.NotificationActivityStarter
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider
@@ -76,6 +79,7 @@ import com.android.systemui.statusbar.notification.row.NotificationRowContentBin
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_HEADS_UP
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag
 import com.android.systemui.statusbar.notification.row.icon.AppIconProviderImpl
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProviderImpl
 import com.android.systemui.statusbar.notification.row.icon.NotificationRowIconViewInflaterFactory
 import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor
@@ -364,11 +368,23 @@ class ExpandableNotificationRowBuilder(
             )
         val row = rowInflaterTask.inflateSynchronously(context, null, entry)
 
+        val entryAdapter =
+            EntryAdapterFactoryImpl(
+                    Mockito.mock(NotificationActivityStarter::class.java),
+                    Mockito.mock(MetricsLogger::class.java),
+                    Mockito.mock(PeopleNotificationIdentifier::class.java),
+                    Mockito.mock(NotificationIconStyleProvider::class.java),
+                    Mockito.mock(VisualStabilityCoordinator::class.java),
+                    Mockito.mock(NotificationActionClickManager::class.java),
+                )
+                .create(entry)
+
         entry.row = row
         mIconManager.createIcons(entry)
         mBindPipelineEntryListener.onEntryInit(entry)
         mBindPipeline.manageRow(entry, row)
         row.initialize(
+            entryAdapter,
             entry,
             Mockito.mock(RemoteInputViewSubcomponent.Factory::class.java, STUB_ONLY),
             APP_NAME,

@@ -161,6 +161,9 @@ final class AppCompatUtils {
                 top.mAppCompatController.getLetterboxOverrides()
                         .isLetterboxEducationEnabled());
 
+        appCompatTaskInfo.setRestartMenuEnabledForDisplayMove(top.mAppCompatController
+                .getDisplayCompatModePolicy().isRestartMenuEnabledForDisplayMove());
+
         final AppCompatAspectRatioOverrides aspectRatioOverrides =
                 top.mAppCompatController.getAspectRatioOverrides();
         appCompatTaskInfo.setUserFullscreenOverrideEnabled(
@@ -213,6 +216,7 @@ final class AppCompatUtils {
                 AppCompatCameraPolicy.getCameraCompatFreeformMode(top);
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
+        appCompatTaskInfo.setOptOutEdgeToEdge(top.mOptOutEdgeToEdge);
     }
 
     /**

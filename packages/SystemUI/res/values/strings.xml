@@ -1042,6 +1042,8 @@
     <string name="hearing_devices_tools_label">Tools</string>
     <!-- QuickSettings: Tool name for hearing devices dialog related tools [CHAR LIMIT=40] [BACKUP_MESSAGE_ID=8916875614623730005]-->
     <string name="quick_settings_hearing_devices_live_caption_title">Live Caption</string>
+    <!-- QuickSettings: Label for button to go to hearing devices settings page [CHAR_LIMIT=20] -->
+    <string name="hearing_devices_settings_button">Settings</string>
 
     <!-- QuickSettings: Notes tile. The label of a quick settings tile for launching the default notes taking app. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_notes_label">Note</string>
@@ -2355,8 +2357,8 @@
     <string name="system_multitasking_lhs">Use split screen with app on the left</string>
     <!-- User visible title for the keyboard shortcut that switches from split screen to full screen [CHAR LIMIT=70] -->
     <string name="system_multitasking_full_screen">Use full screen</string>
-    <!-- User visible title for the keyboard shortcut that switches to desktop view [CHAR LIMIT=70] -->
-    <string name="system_multitasking_desktop_view">Use desktop view</string>
+    <!-- User visible title for the keyboard shortcut that switches to desktop windowing [CHAR LIMIT=70] -->
+    <string name="system_multitasking_desktop_view">Use desktop windowing</string>
     <!-- User visible title for the keyboard shortcut that switches to app on right or below while using split screen [CHAR LIMIT=70] -->
     <string name="system_multitasking_splitscreen_focus_rhs">Switch to app on right or below while using split screen</string>
     <!-- User visible title for the keyboard shortcut that switches to app on left or above while using split screen [CHAR LIMIT=70] -->
@@ -2598,6 +2600,9 @@
 
     <!-- Accessibility description indicating the currently selected tile's position. Only used for tiles that are currently in use [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_position">Position <xliff:g id="position" example="5">%1$d</xliff:g></string>
+
+    <!-- Accessibility description indicating the currently selected tile is already added [CHAR LIMIT=NONE] -->
+    <string name="accessibility_qs_edit_tile_already_added">Tile already added</string>
 
     <!-- Accessibility announcement after a tile has been added [CHAR LIMIT=NONE] -->
     <string name="accessibility_qs_edit_tile_added">Tile added</string>
@@ -3176,8 +3181,6 @@
     <string name="controls_media_active_session">The current media session cannot be hidden.</string>
     <!-- Label for a button that will hide media controls [CHAR_LIMIT=30] -->
     <string name="controls_media_dismiss_button">Hide</string>
-    <!-- Label for button to resume media playback [CHAR_LIMIT=NONE] -->
-    <string name="controls_media_resume">Resume</string>
     <!-- Label for button to go to media control settings screen [CHAR_LIMIT=30] -->
     <string name="controls_media_settings_button">Settings</string>
     <!-- Description for media control's playing media item, including information for the media's title, the artist, and source app [CHAR LIMIT=NONE]-->

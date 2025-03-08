@@ -17,7 +17,6 @@
 package com.android.systemui.shared.clocks.view
 
 import android.graphics.Canvas
-import android.graphics.RectF
 import android.icu.text.NumberFormat
 import android.util.MathUtils.constrainedMap
 import android.view.View
@@ -29,14 +28,15 @@ import com.android.app.animation.Interpolators
 import com.android.systemui.customization.R
 import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.plugins.clocks.VPoint
+import com.android.systemui.plugins.clocks.VPointF
+import com.android.systemui.plugins.clocks.VPointF.Companion.max
+import com.android.systemui.plugins.clocks.VPointF.Companion.times
+import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.shared.clocks.CanvasUtil.translate
 import com.android.systemui.shared.clocks.CanvasUtil.use
 import com.android.systemui.shared.clocks.ClockContext
 import com.android.systemui.shared.clocks.DigitTranslateAnimator
-import com.android.systemui.shared.clocks.VPoint
-import com.android.systemui.shared.clocks.VPointF
-import com.android.systemui.shared.clocks.VPointF.Companion.max
-import com.android.systemui.shared.clocks.VPointF.Companion.times
 import com.android.systemui.shared.clocks.ViewUtils.measuredSize
 import java.util.Locale
 import kotlin.collections.filterNotNull
@@ -101,7 +101,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         updateLocale(Locale.getDefault())
     }
 
-    var onViewBoundsChanged: ((RectF) -> Unit)? = null
+    var onViewBoundsChanged: ((VRectF) -> Unit)? = null
     private val digitOffsets = mutableMapOf<Int, Float>()
 
     protected fun calculateSize(
@@ -189,13 +189,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
 
     fun updateLocation() {
         val layoutBounds = this.layoutBounds ?: return
-        val bounds =
-            RectF(
-                layoutBounds.centerX() - measuredWidth / 2f,
-                layoutBounds.centerY() - measuredHeight / 2f,
-                layoutBounds.centerX() + measuredWidth / 2f,
-                layoutBounds.centerY() + measuredHeight / 2f,
-            )
+        val bounds = VRectF.fromCenter(layoutBounds.center, this.measuredSize)
         setFrame(
             bounds.left.roundToInt(),
             bounds.top.roundToInt(),
@@ -215,16 +209,11 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         onAnimateDoze = null
     }
 
-    private val layoutBounds = RectF()
+    private var layoutBounds = VRectF.ZERO
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         logger.onLayout(changed, left, top, right, bottom)
-
-        layoutBounds.left = left.toFloat()
-        layoutBounds.top = top.toFloat()
-        layoutBounds.right = right.toFloat()
-        layoutBounds.bottom = bottom.toFloat()
-
+        layoutBounds = VRectF(left.toFloat(), top.toFloat(), right.toFloat(), bottom.toFloat())
         updateChildFrames(isLayout = true)
     }
 

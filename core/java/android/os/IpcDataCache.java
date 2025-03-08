@@ -718,7 +718,7 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
     }
 
     /**
-     * Enable or disable testing.  The protocol requires that the mode toggle: for instance, it is
+     * Enable or disable test mode.  The protocol requires that the mode toggle: for instance, it is
      * illegal to clear the test mode if the test mode is already off.  Enabling test mode puts
      * all caches in the process into test mode; all nonces are initialized to UNSET and
      * subsequent reads and writes are to process memory.  This has the effect of disabling all
@@ -726,8 +726,11 @@ public class IpcDataCache<Query, Result> extends PropertyInvalidatedCache<Query,
      * operation.
      * @param mode The desired test mode.
      * @throws IllegalStateException if the supplied mode is already set.
+     * @throws IllegalStateException if the process is not running an instrumentation test.
      * @hide
      */
+    @FlaggedApi(android.os.Flags.FLAG_IPC_DATA_CACHE_TEST_APIS)
+    @SystemApi(client=SystemApi.Client.MODULE_LIBRARIES)
     @TestApi
     public static void setTestMode(boolean mode) {
         PropertyInvalidatedCache.setTestMode(mode);

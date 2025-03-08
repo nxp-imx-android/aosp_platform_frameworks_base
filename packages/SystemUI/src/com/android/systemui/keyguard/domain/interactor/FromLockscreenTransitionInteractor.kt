@@ -20,7 +20,6 @@ import android.animation.ValueAnimator
 import android.util.MathUtils
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -69,7 +68,6 @@ constructor(
     private val shadeRepository: ShadeRepository,
     powerInteractor: PowerInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
-    private val communalInteractor: CommunalInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
     private val swipeToDismissInteractor: SwipeToDismissInteractor,
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
@@ -355,7 +353,7 @@ constructor(
 
     private fun listenForLockscreenToGlanceableHubV2() {
         scope.launch {
-            communalInteractor.shouldShowCommunal
+            communalSettingsInteractor.autoOpenEnabled
                 .filterRelevantKeyguardStateAnd { shouldShow -> shouldShow }
                 .collect {
                     communalSceneInteractor.changeScene(

@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR;
@@ -32,6 +33,7 @@ import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.view.Display;
 import android.view.SurfaceControl;
 import android.window.DesktopModeFlags;
 
@@ -103,6 +105,10 @@ public class DesktopModeVisualIndicator {
                 return null;
             }
         }
+
+        private static boolean isDragToDesktopStartState(DragStartState startState) {
+            return startState == FROM_FULLSCREEN || startState == FROM_SPLIT;
+        }
     }
 
     private final VisualIndicatorViewContainer mVisualIndicatorViewContainer;
@@ -110,6 +116,7 @@ public class DesktopModeVisualIndicator {
     private final Context mContext;
     private final DisplayController mDisplayController;
     private final ActivityManager.RunningTaskInfo mTaskInfo;
+    private final Display mDisplay;
 
     private IndicatorType mCurrentType;
     private final DragStartState mDragStartState;
@@ -125,7 +132,12 @@ public class DesktopModeVisualIndicator {
             @Nullable BubbleDropTargetBoundsProvider bubbleBoundsProvider,
             SnapEventHandler snapEventHandler) {
         SurfaceControl.Builder builder = new SurfaceControl.Builder();
-        taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
+        if (!DragStartState.isDragToDesktopStartState(dragStartState)
+                || !DesktopModeFlags.ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX.isTrue()) {
+            // In the DragToDesktop transition we attach the indicator to the transition root once
+            // that is available - for all other cases attach the indicator here.
+            taskDisplayAreaOrganizer.attachToDisplayArea(taskInfo.displayId, builder);
+        }
         mVisualIndicatorViewContainer = new VisualIndicatorViewContainer(
                 DesktopModeFlags.ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX.isTrue()
                         ? desktopExecutor : mainExecutor,
@@ -136,9 +148,10 @@ public class DesktopModeVisualIndicator {
         mCurrentType = NO_INDICATOR;
         mDragStartState = dragStartState;
         mSnapEventHandler = snapEventHandler;
+        mDisplay = mDisplayController.getDisplay(mTaskInfo.displayId);
         mVisualIndicatorViewContainer.createView(
                 mContext,
-                mDisplayController.getDisplay(mTaskInfo.displayId),
+                mDisplay,
                 mDisplayController.getDisplayLayout(mTaskInfo.displayId),
                 mTaskInfo,
                 taskSurface
@@ -159,6 +172,19 @@ public class DesktopModeVisualIndicator {
         mVisualIndicatorViewContainer.releaseVisualIndicator();
     }
 
+    /** Reparent the visual indicator to {@code newParent}. */
+    void reparentLeash(SurfaceControl.Transaction t, SurfaceControl newParent) {
+        mVisualIndicatorViewContainer.reparentLeash(t, newParent);
+    }
+
+    /** Start the fade-in animation. */
+    void fadeInIndicator() {
+        if (mCurrentType == NO_INDICATOR) return;
+        mVisualIndicatorViewContainer.fadeInIndicator(
+                mDisplayController.getDisplayLayout(mTaskInfo.displayId), mCurrentType,
+                mTaskInfo.displayId);
+    }
+
     /**
      * Based on the coordinates of the current drag event, determine which indicator type we should
      * display, including no visible indicator.
@@ -172,7 +198,7 @@ public class DesktopModeVisualIndicator {
         if (inputCoordinates.x > layout.width()) return TO_SPLIT_RIGHT_INDICATOR;
         IndicatorType result;
         if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
-                && !DesktopModeStatus.canEnterDesktopMode(mContext)) {
+                && !DesktopModeStatus.isDesktopModeSupportedOnDisplay(mContext, mDisplay)) {
             // If desktop is not available, default to "no indicator"
             result = NO_INDICATOR;
         } else {
@@ -187,8 +213,7 @@ public class DesktopModeVisualIndicator {
                 com.android.wm.shell.R.dimen.desktop_mode_transition_region_thickness);
         // Because drags in freeform use task position for indicator calculation, we need to
         // account for the possibility of the task going off the top of the screen by captionHeight
-        final int captionHeight = mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.desktop_mode_freeform_decor_caption_height);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
         final Region fullscreenRegion = calculateFullscreenRegion(layout, captionHeight);
         final Region splitLeftRegion = calculateSplitLeftRegion(layout, transitionAreaWidth,
                 captionHeight);

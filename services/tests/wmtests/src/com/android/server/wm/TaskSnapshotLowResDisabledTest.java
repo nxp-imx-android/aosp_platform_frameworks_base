@@ -68,11 +68,8 @@ public class TaskSnapshotLowResDisabledTest extends TaskSnapshotPersisterTestBas
     public void testPersistAndLoadSnapshot() {
         mPersister.persistSnapshot(1, mTestUserId, createSnapshot());
         mSnapshotPersistQueue.waitForQueueEmpty();
-        final File[] files = new File[]{
-                new File(FILES_DIR.getPath() + "/snapshots/1.proto"),
-                new File(FILES_DIR.getPath() + "/snapshots/1.jpg")};
-        final File[] nonExistsFiles = new File[]{
-                new File(FILES_DIR.getPath() + "/snapshots/1_reduced.jpg")};
+        final File[] files = convertFilePath("1.proto", "1.jpg");
+        final File[] nonExistsFiles = convertFilePath("1_reduced.proto");
         assertTrueForFiles(files, File::exists, " must exist");
         assertTrueForFiles(nonExistsFiles, file -> !file.exists(), " must not exist");
         final TaskSnapshot snapshot = mLoader.loadTask(1, mTestUserId, false /* isLowResolution */);
@@ -92,14 +89,9 @@ public class TaskSnapshotLowResDisabledTest extends TaskSnapshotPersisterTestBas
         taskIds.add(1);
         mPersister.removeObsoleteFiles(taskIds, new int[]{mTestUserId});
         mSnapshotPersistQueue.waitForQueueEmpty();
-        final File[] existsFiles = new File[]{
-                new File(FILES_DIR.getPath() + "/snapshots/1.proto"),
-                new File(FILES_DIR.getPath() + "/snapshots/1.jpg")};
-        final File[] nonExistsFiles = new File[]{
-                new File(FILES_DIR.getPath() + "/snapshots/1_reduced.jpg"),
-                new File(FILES_DIR.getPath() + "/snapshots/2.proto"),
-                new File(FILES_DIR.getPath() + "/snapshots/2.jpg"),
-                new File(FILES_DIR.getPath() + "/snapshots/2_reduced.jpg")};
+        final File[] existsFiles = convertFilePath("1.proto", "1.jpg");
+        final File[] nonExistsFiles = convertFilePath("1_reduced.proto", "2.proto", "2.jpg",
+                "2_reduced.jpg");
         assertTrueForFiles(existsFiles, File::exists, " must exist");
         assertTrueForFiles(nonExistsFiles, file -> !file.exists(), " must not exist");
     }
@@ -112,14 +104,8 @@ public class TaskSnapshotLowResDisabledTest extends TaskSnapshotPersisterTestBas
         mPersister.removeObsoleteFiles(taskIds, new int[]{mTestUserId});
         mPersister.persistSnapshot(2, mTestUserId, createSnapshot());
         mSnapshotPersistQueue.waitForQueueEmpty();
-        final File[] existsFiles = new File[]{
-                new File(FILES_DIR.getPath() + "/snapshots/1.proto"),
-                new File(FILES_DIR.getPath() + "/snapshots/1.jpg"),
-                new File(FILES_DIR.getPath() + "/snapshots/2.proto"),
-                new File(FILES_DIR.getPath() + "/snapshots/2.jpg")};
-        final File[] nonExistsFiles = new File[]{
-                new File(FILES_DIR.getPath() + "/snapshots/1_reduced.jpg"),
-                new File(FILES_DIR.getPath() + "/snapshots/2_reduced.jpg")};
+        final File[] existsFiles = convertFilePath("1.proto", "1.jpg", "2.proto", "2.jpg");
+        final File[] nonExistsFiles = convertFilePath("1_reduced.jpg", "2_reduced.jpg");
         assertTrueForFiles(existsFiles, File::exists, " must exist");
         assertTrueForFiles(nonExistsFiles, file -> !file.exists(), " must not exist");
     }

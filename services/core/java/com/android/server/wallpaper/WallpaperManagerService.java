@@ -1173,12 +1173,19 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     return;
                 }
 
-                final ComponentName wpService = mWallpaper.getComponent();
                 // The broadcast of package update could be delayed after service disconnected. Try
                 // to re-bind the service for 10 seconds.
                 mWallpaper.mBindSource = BindSource.CONNECTION_TRY_TO_REBIND;
-                if (bindWallpaperComponentLocked(
-                        wpService, true, false, mWallpaper, null)) {
+                boolean success;
+                if (liveWallpaperContentHandling()) {
+                    success = bindWallpaperDescriptionLocked(
+                            mWallpaper.getDescription(), /* force= */ true,
+                            /* fromUser= */ false, mWallpaper, /* reply= */ null);
+                } else {
+                    success = bindWallpaperComponentLocked(mWallpaper.getComponent(), /* force= */
+                            true, /* fromUser= */false, mWallpaper, /* reply= */ null);
+                }
+                if (success) {
                     mWallpaper.connection.scheduleTimeoutLocked();
                 } else if (SystemClock.uptimeMillis() - mWallpaper.lastDiedTime
                         < WALLPAPER_RECONNECT_TIMEOUT_MS) {
@@ -1189,7 +1196,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
                     // Timeout
                     Slog.w(TAG, "Reverting to built-in wallpaper!");
                     clearWallpaperLocked(mWallpaper.mWhich, mWallpaper.userId, false, null);
-                    final String flattened = wpService.flattenToString();
+                    final String flattened = mWallpaper.getComponent().flattenToString();
                     EventLog.writeEvent(EventLogTags.WP_WALLPAPER_CRASHED,
                             flattened.substring(0, Math.min(flattened.length(),
                                     MAX_WALLPAPER_COMPONENT_LOG_LENGTH)));
@@ -1659,12 +1666,9 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         DisplayManager displayManager = mContext.getSystemService(DisplayManager.class);
         displayManager.registerDisplayListener(mDisplayListener, null /* handler */);
         WindowManager windowManager = mContext.getSystemService(WindowManager.class);
-        boolean isFoldable = mContext.getResources()
-                .getIntArray(R.array.config_foldedDeviceStates).length > 0;
         mWallpaperDisplayHelper = new WallpaperDisplayHelper(
-                displayManager, windowManager, mWindowManagerInternal, isFoldable);
+                displayManager, windowManager, mWindowManagerInternal, mContext.getResources());
         mWallpaperCropper = new WallpaperCropper(mWallpaperDisplayHelper);
-        mWindowManagerInternal.setWallpaperCropUtils(mWallpaperCropper::getCrop);
         mActivityManager = mContext.getSystemService(ActivityManager.class);
 
         if (mContext.getResources().getBoolean(
@@ -2503,9 +2507,11 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
             List<Rect> result = new ArrayList<>();
             boolean rtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
                     == View.LAYOUT_DIRECTION_RTL;
+            WallpaperDefaultDisplayInfo defaultDisplayInfo =
+                    mWallpaperDisplayHelper.getDefaultDisplayInfo();
             for (Point displaySize : displaySizes) {
-                result.add(mWallpaperCropper.getCrop(
-                        displaySize, croppedBitmapSize, adjustedRelativeSuggestedCrops, rtl));
+                result.add(WallpaperCropper.getCrop(displaySize, defaultDisplayInfo,
+                        croppedBitmapSize, adjustedRelativeSuggestedCrops, rtl));
             }
             if (originalBitmap) result = WallpaperCropper.getOriginalCropHints(wallpaper, result);
             return result;
@@ -2541,8 +2547,11 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         List<Rect> result = new ArrayList<>();
         boolean rtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
                 == View.LAYOUT_DIRECTION_RTL;
+        WallpaperDefaultDisplayInfo defaultDisplayInfo =
+                mWallpaperDisplayHelper.getDefaultDisplayInfo();
         for (Point displaySize : displaySizes) {
-            result.add(mWallpaperCropper.getCrop(displaySize, bitmapSize, defaultCrops, rtl));
+            result.add(WallpaperCropper.getCrop(displaySize, defaultDisplayInfo, bitmapSize,
+                    defaultCrops, rtl));
         }
         return result;
     }

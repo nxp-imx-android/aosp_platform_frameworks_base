@@ -82,7 +82,6 @@ import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
 import static android.view.WindowManager.LayoutParams.TYPE_WALLPAPER;
 import static android.view.WindowManager.REMOVE_CONTENT_MODE_DESTROY;
 import static android.view.WindowManager.TRANSIT_CHANGE;
-import static android.view.WindowManager.TRANSIT_NONE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.view.inputmethod.ImeTracker.DEBUG_IME_VISIBILITY;
@@ -100,7 +99,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.internal.util.LatencyTracker.ACTION_ROTATE_SCREEN;
-import static com.android.server.display.feature.flags.Flags.enableDisplayContentModeManagement;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_ANIM;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_CONFIG;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_LAYOUT;
@@ -156,7 +154,6 @@ import static com.android.server.wm.utils.DisplayInfoOverrides.WM_OVERRIDE_FIELD
 import static com.android.server.wm.utils.DisplayInfoOverrides.copyDisplayInfoFields;
 import static com.android.server.wm.utils.RegionUtils.forEachRectReverse;
 import static com.android.server.wm.utils.RegionUtils.rectListToRegion;
-import static com.android.window.flags.Flags.enablePersistingDensityScaleForConnectedDisplays;
 import static com.android.window.flags.Flags.enablePresentationForConnectedDisplays;
 
 import android.annotation.IntDef;
@@ -237,6 +234,7 @@ import android.view.WindowManager;
 import android.view.WindowManager.DisplayImePolicy;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 import android.view.inputmethod.ImeTracker;
+import android.window.DesktopExperienceFlags;
 import android.window.DisplayWindowPolicyController;
 import android.window.IDisplayAreaOrganizer;
 import android.window.ScreenCapture;
@@ -248,6 +246,7 @@ import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
+import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ToBooleanFunction;
 import com.android.internal.util.function.pooled.PooledLambda;
@@ -365,7 +364,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private boolean mTmpInitial;
     private int mMaxUiWidth = 0;
 
-    final AppTransition mAppTransition;
+    // TODO(b/400335290): extract the needed methods and remove this field.
+    final TransitionAnimation mTransitionAnimation;
 
     final UnknownAppVisibilityController mUnknownAppVisibilityController;
 
@@ -1180,7 +1180,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mHoldScreenWakeLock.setReferenceCounted(false);
 
         mFixedRotationTransitionListener = new FixedRotationTransitionListener(mDisplayId);
-        mAppTransition = new AppTransition(mWmService.mContext, mWmService, this);
+        mTransitionAnimation = new TransitionAnimation(mWmService.mContext, false /* debug */, TAG);
         mTransitionController.registerLegacyListener(mFixedRotationTransitionListener);
         mUnknownAppVisibilityController = new UnknownAppVisibilityController(mWmService, this);
         mRemoteDisplayChangeController = new RemoteDisplayChangeController(this);
@@ -3154,7 +3154,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             }
         }
         // Update the base density if there is a forced density ratio.
-        if (enablePersistingDensityScaleForConnectedDisplays()
+        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
                 && mIsDensityForced && mExternalDisplayForcedDensityRatio != 0.0f) {
             mBaseDisplayDensity = (int)
                     (mInitialDisplayDensity * mExternalDisplayForcedDensityRatio + 0.5);
@@ -3189,7 +3189,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             density = 0;
         }
         // Save the new density ratio to settings for external displays.
-        if (enablePersistingDensityScaleForConnectedDisplays()
+        if (DesktopExperienceFlags.ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS.isTrue()
                 && mDisplayInfo.type == TYPE_EXTERNAL) {
             mExternalDisplayForcedDensityRatio = (float)
                     mBaseDisplayDensity / getInitialDisplayDensity();
@@ -3258,16 +3258,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     void onDisplayInfoChangeApplied() {
-        if (!enableDisplayContentModeManagement()) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
             Slog.e(TAG, "ShouldShowSystemDecors shouldn't be updated when the flag is off.");
         }
 
-        final boolean shouldShowContent;
         if (!allowContentModeSwitch()) {
             return;
         }
-        shouldShowContent = mDisplay.canHostTasks();
 
+        final boolean shouldShowContent = mDisplay.canHostTasks();
         if (shouldShowContent == mWmService.mDisplayWindowSettings
                 .shouldShowSystemDecorsLocked(this)) {
             return;
@@ -3277,9 +3276,21 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if (!shouldShowContent) {
             clearAllTasksOnDisplay(null /* clearTasksCallback */, false /* isRemovingDisplay */);
         }
+
+        // If the display is allowed to show content, then it belongs to the display topology;
+        // vice versa.
+        mWmService.mDisplayManagerInternal.onDisplayBelongToTopologyChanged(mDisplayId,
+                /* inTopology= */ shouldShowContent);
     }
 
      /**
+      * Whether the display is allowed to switch the content mode between extended and mirroring.
+      * If the content mode is extended, the display will start home activity and show system
+      * decorations, such as wallpapaer, status bar and navigation bar.
+      * If the content mode is mirroring, the display will not show home activity or system
+      * decorations.
+      * The content mode is switched when {@link Display#canHostTasks()} changes.
+      *
       * Note that we only allow displays that are able to show system decorations to use the content
       * mode switch; however, not all displays that are able to show system decorations are allowed
       * to use the content mode switch.
@@ -3292,6 +3303,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         // Private display should never show system decorations.
         if (isPrivate()) {
+            return false;
+        }
+
+        if (shouldNeverShowSystemDecorations()) {
             return false;
         }
 
@@ -5636,29 +5651,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     }
 
     /**
-     * @deprecated new transition should use {@link #requestTransitionAndLegacyPrepare(int, int)}
-     */
-    @Deprecated
-    void prepareAppTransition(@WindowManager.TransitionType int transit) {
-        prepareAppTransition(transit, 0 /* flags */);
-    }
-
-    /**
-     * @deprecated new transition should use {@link #requestTransitionAndLegacyPrepare(int, int)}
-     */
-    @Deprecated
-    void prepareAppTransition(@WindowManager.TransitionType int transit,
-            @WindowManager.TransitionFlags int flags) {
-        mAppTransition.prepareAppTransition(transit, flags);
-    }
-
-    /**
      * Helper that both requests a transition (using the new transition system) and prepares
      * the legacy transition system. Use this when both systems have the same start-point.
      *
      * @see TransitionController#requestTransitionIfNeeded(int, int, WindowContainer,
      *      WindowContainer)
-     * @see AppTransition#prepareAppTransition
      */
     void requestTransitionAndLegacyPrepare(@WindowManager.TransitionType int transit,
             @WindowManager.TransitionFlags int flags, @Nullable WindowContainer trigger) {
@@ -5677,16 +5674,23 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return type == TRANSIT_OPEN || type == TRANSIT_TO_FRONT;
     }
 
+    private boolean shouldNeverShowSystemDecorations() {
+        if (mDisplayId == mWmService.mVr2dDisplayId) {
+            // VR virtual display will be used to run and render 2D app within a VR experience.
+            return true;
+        }
+        if (!isTrusted()) {
+            // Do not show system decorations on untrusted virtual display.
+            return true;
+        }
+        return false;
+    }
+
     /**
      * @see Display#FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS
      */
     boolean isSystemDecorationsSupported() {
-        if (mDisplayId == mWmService.mVr2dDisplayId) {
-            // VR virtual display will be used to run and render 2D app within a VR experience.
-            return false;
-        }
-        if (!isTrusted()) {
-            // Do not show system decorations on untrusted virtual display.
+        if (shouldNeverShowSystemDecorations()) {
             return false;
         }
         if (mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(this)
@@ -6546,19 +6550,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // If keyguard is not locked, the change of flags won't affect activity visibility.
             return;
         }
-        // We might change the visibilities here, so prepare an empty app transition which might be
-        // overridden later if we actually change visibilities.
-        final boolean wasTransitionSet = mAppTransition.isTransitionSet();
-        if (!wasTransitionSet) {
-            prepareAppTransition(TRANSIT_NONE);
-        }
         mRootWindowContainer.ensureActivitiesVisible();
-
-        // If there was a transition set already we don't want to interfere with it as we might be
-        // starting it too early.
-        if (!wasTransitionSet) {
-            executeAppTransition();
-        }
+        // In case there is a visibility change.
+        executeAppTransition();
     }
 
     /**
@@ -7110,6 +7104,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         public void setAnimatingTypes(@InsetsType int animatingTypes) {
             if (mAnimatingTypes != animatingTypes) {
                 mAnimatingTypes = animatingTypes;
+
+                if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
+                    getInsetsStateController().onAnimatingTypesChanged(this);
+                }
             }
         }
     }

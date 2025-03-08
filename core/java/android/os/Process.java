@@ -1347,12 +1347,19 @@ public class Process {
      * Return the name of this process. By default, the process name is the same as the app's
      * package name, but this can be changed using {@code android:process}.
      */
+    @RavenwoodReplace
     @NonNull
     public static String myProcessName() {
         // Note this could be different from the actual process name if someone changes the
         // process name using native code (using pthread_setname_np()). But sArgV0
         // is the name that the system thinks this process has.
         return sArgV0;
+    }
+
+    /** @hide */
+    @NonNull
+    public static String myProcessName$ravenwood() {
+        return "ravenwood";
     }
 
     /**

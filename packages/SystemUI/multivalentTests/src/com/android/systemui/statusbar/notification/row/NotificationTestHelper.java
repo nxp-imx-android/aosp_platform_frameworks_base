@@ -29,6 +29,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -60,20 +61,24 @@ import com.android.systemui.TestableDependency;
 import com.android.systemui.classifier.FalsingManagerFake;
 import com.android.systemui.flags.FakeFeatureFlagsClassic;
 import com.android.systemui.flags.FeatureFlagsClassic;
+import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.media.controls.util.MediaFeatureFlag;
 import com.android.systemui.media.dialog.MediaOutputDialogManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
-import com.android.systemui.statusbar.NotificationMediaManager;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
+import com.android.systemui.statusbar.notification.NotificationActivityStarter;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
+import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
@@ -87,6 +92,7 @@ import com.android.systemui.statusbar.notification.promoted.FakePromotedNotifica
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.ExpandableNotificationRowLogger;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow.OnExpandClickListener;
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag;
+import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.row.shared.NotificationRowContentBinderRefactor;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -101,11 +107,6 @@ import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.util.time.SystemClockImpl;
 import com.android.systemui.wmshell.BubblesTestActivity;
 
-import kotlin.coroutines.CoroutineContext;
-
-import kotlinx.coroutines.flow.StateFlowKt;
-import kotlinx.coroutines.test.TestScope;
-
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
@@ -113,6 +114,10 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+
+import kotlin.coroutines.CoroutineContext;
+import kotlinx.coroutines.flow.StateFlowKt;
+import kotlinx.coroutines.test.TestScope;
 
 /**
  * A helper class to create {@link ExpandableNotificationRow} (for both individual and group
@@ -359,6 +364,7 @@ public class NotificationTestHelper {
                 .setUid(UID)
                 .setInitialPid(2000)
                 .setNotification(summary)
+                .setUser(USER_HANDLE)
                 .setParent(GroupEntry.ROOT_ENTRY)
                 .build();
         GroupEntryBuilder groupEntry = new GroupEntryBuilder()
@@ -734,7 +740,17 @@ public class NotificationTestHelper {
         mBindPipelineEntryListener.onEntryInit(entry);
         mBindPipeline.manageRow(entry, row);
 
+        EntryAdapter entryAdapter = new EntryAdapterFactoryImpl(
+                mock(NotificationActivityStarter.class),
+                mock(MetricsLogger.class),
+                mock(PeopleNotificationIdentifier.class),
+                mock(NotificationIconStyleProvider.class),
+                mock(VisualStabilityCoordinator.class),
+                mock(NotificationActionClickManager.class)
+        ).create(entry);
+
         row.initialize(
+                spy(entryAdapter),
                 entry,
                 mock(RemoteInputViewSubcomponent.Factory.class),
                 APP_NAME,

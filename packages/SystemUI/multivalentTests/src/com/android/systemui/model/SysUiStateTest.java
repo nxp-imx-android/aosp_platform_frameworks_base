@@ -140,6 +140,8 @@ public class SysUiStateTest extends SysuiTestCase {
 
     @Test
     public void init_registersWithDumpManager() {
+        mFlagsContainer.start();
+
         verify(mDumpManager).registerNormalDumpable(any(), eq(mFlagsContainer));
     }
 

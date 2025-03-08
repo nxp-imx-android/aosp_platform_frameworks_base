@@ -77,6 +77,8 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
@@ -1294,6 +1296,14 @@ public class InputMethodServiceTest {
         mInstrumentation.waitForIdleSync();
         final var postScreenshot = mInstrumentation.getUiAutomation().takeScreenshot();
         mDumpOnFailure.dumpOnFailure("post-getUiObject", postScreenshot);
+        try {
+            final var outputStream = new ByteArrayOutputStream();
+            mUiDevice.dumpWindowHierarchy(outputStream);
+            final String windowHierarchy = outputStream.toString(StandardCharsets.UTF_8);
+            mDumpOnFailure.dumpOnFailure("post-getUiObject", windowHierarchy);
+        } catch (Exception e) {
+            Log.i(TAG, "Failed to dump windowHierarchy", e);
+        }
         assertWithMessage("UiObject with " + bySelector + " was found").that(uiObject).isNotNull();
         return uiObject;
     }

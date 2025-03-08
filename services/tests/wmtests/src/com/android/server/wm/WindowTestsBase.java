@@ -122,7 +122,6 @@ import android.window.WindowContainerTransaction;
 import com.android.internal.policy.AttributeCache;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.test.FakeSettingsProvider;
-import com.android.server.wallpaper.WallpaperCropper.WallpaperCropUtils;
 import com.android.server.wm.DisplayWindowSettings.SettingsProvider.SettingsEntry;
 
 import org.junit.After;
@@ -288,18 +287,6 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         // some device form factors.
         mAtm.mWindowManager.mAppCompatConfiguration
                 .setIsDisplayAspectRatioEnabledForFixedOrientationLetterbox(false);
-
-        // Setup WallpaperController crop utils with a simple center-align strategy
-        WallpaperCropUtils cropUtils = (displaySize, bitmapSize, suggestedCrops, rtl) -> {
-            Rect crop = new Rect(0, 0, displaySize.x, displaySize.y);
-            crop.scale(Math.min(
-                    ((float) bitmapSize.x) / displaySize.x,
-                    ((float) bitmapSize.y) / displaySize.y));
-            crop.offset((bitmapSize.x - crop.width()) / 2, (bitmapSize.y - crop.height()) / 2);
-            return crop;
-        };
-        mDisplayContent.mWallpaperController.setWallpaperCropUtils(cropUtils);
-        mDefaultDisplay.mWallpaperController.setWallpaperCropUtils(cropUtils);
 
         checkDeviceSpecificOverridesNotApplied();
     }
@@ -1890,7 +1877,7 @@ public class WindowTestsBase extends SystemServiceTestsBase {
             mSecondary = mService.mTaskOrganizerController.createRootTask(
                     display, WINDOWING_MODE_MULTI_WINDOW, null);
 
-            mPrimary.setAdjacentTaskFragment(mSecondary);
+            mPrimary.setAdjacentTaskFragments(new TaskFragment.AdjacentSet(mPrimary, mSecondary));
             display.getDefaultTaskDisplayArea().setLaunchAdjacentFlagRootTask(mSecondary);
 
             final Rect primaryBounds = new Rect();

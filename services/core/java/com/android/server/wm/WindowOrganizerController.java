@@ -472,6 +472,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         transition.setAllReady();
     }
 
+    // TODO(b/365884835): remove this method and callers.
     @Override
     public int startLegacyTransition(int type, @NonNull RemoteAnimationAdapter adapter,
             @NonNull IWindowContainerTransactionCallback callback,
@@ -489,16 +490,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     throw new IllegalArgumentException("Can't use legacy transitions in"
                             + " when shell transitions are enabled.");
                 }
-                final DisplayContent dc =
-                        mService.mRootWindowContainer.getDisplayContent(DEFAULT_DISPLAY);
-                if (dc.mAppTransition.isTransitionSet()) {
-                    // a transition already exists, so the callback probably won't be called.
-                    return -1;
-                }
-                adapter.setCallingPidUid(caller.mPid, caller.mUid);
-                dc.prepareAppTransition(type);
-                dc.mAppTransition.overridePendingAppTransitionRemote(adapter, true /* sync */,
-                        false /* isActivityEmbedding */);
                 syncId = startSyncWithOrganizer(callback);
                 applyTransaction(t, syncId, mService.mChainTracker.startLegacy("legacyTransit"),
                         caller);
@@ -1680,13 +1671,9 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 if (!taskFragment.isAdjacentTo(secondaryTaskFragment)) {
                     // Only have lifecycle effect if the adjacent changed.
-                    if (Flags.allowMultipleAdjacentTaskFragments()) {
-                        // Activity Embedding only set two TFs adjacent.
-                        taskFragment.setAdjacentTaskFragments(
-                                new TaskFragment.AdjacentSet(taskFragment, secondaryTaskFragment));
-                    } else {
-                        taskFragment.setAdjacentTaskFragment(secondaryTaskFragment);
-                    }
+                    // Activity Embedding only set two TFs adjacent.
+                    taskFragment.setAdjacentTaskFragments(
+                            new TaskFragment.AdjacentSet(taskFragment, secondaryTaskFragment));
                     effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
 
@@ -2229,30 +2216,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
     }
 
     private int setAdjacentRootsHierarchyOp(WindowContainerTransaction.HierarchyOp hop) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final WindowContainer wc1 = WindowContainer.fromBinder(hop.getContainer());
-            if (wc1 == null || !wc1.isAttached()) {
-                Slog.e(TAG, "Attempt to operate on unknown or detached container: " + wc1);
-                return TRANSACT_EFFECTS_NONE;
-            }
-            final TaskFragment root1 = wc1.asTaskFragment();
-            final WindowContainer wc2 = WindowContainer.fromBinder(hop.getAdjacentRoot());
-            if (wc2 == null || !wc2.isAttached()) {
-                Slog.e(TAG, "Attempt to operate on unknown or detached container: " + wc2);
-                return TRANSACT_EFFECTS_NONE;
-            }
-            final TaskFragment root2 = wc2.asTaskFragment();
-            if (!root1.mCreatedByOrganizer || !root2.mCreatedByOrganizer) {
-                throw new IllegalArgumentException("setAdjacentRootsHierarchyOp: Not created by"
-                        + " organizer root1=" + root1 + " root2=" + root2);
-            }
-            if (root1.isAdjacentTo(root2)) {
-                return TRANSACT_EFFECTS_NONE;
-            }
-            root1.setAdjacentTaskFragment(root2);
-            return TRANSACT_EFFECTS_LIFECYCLE;
-        }
-
         final IBinder[] containers = hop.getContainers();
         final ArraySet<TaskFragment> adjacentRoots = new ArraySet<>();
         for (IBinder container : containers) {

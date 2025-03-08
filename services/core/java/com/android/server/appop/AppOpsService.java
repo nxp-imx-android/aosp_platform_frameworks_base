@@ -367,7 +367,7 @@ public class AppOpsService extends IAppOpsService.Stub {
     private static final Duration RATE_LIMITER_WINDOW = Duration.ofMillis(10);
     private final RateLimiter mRateLimiter = new RateLimiter(RATE_LIMITER_WINDOW);
 
-    volatile @NonNull HistoricalRegistry mHistoricalRegistry;
+    volatile @NonNull HistoricalRegistryInterface mHistoricalRegistry;
 
     /*
      * These are app op restrictions imposed per user from various parties.
@@ -1056,7 +1056,11 @@ public class AppOpsService extends IAppOpsService.Stub {
         AppOpsManager.invalidateAppOpModeCache();
         AppOpsManager.disableAppOpModeCache();
 
-        mHistoricalRegistry = new HistoricalRegistry(this, context);
+        if (Flags.enableAllSqliteAppopsAccesses()) {
+            mHistoricalRegistry = new HistoricalRegistrySql(context);
+        } else {
+            mHistoricalRegistry = new HistoricalRegistry(this, context);
+        }
     }
 
     public void publish() {
@@ -1424,7 +1428,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
     @GuardedBy("this")
     private void packageRemovedLocked(int uid, String packageName) {
-        getIoHandler().post(PooledLambda.obtainRunnable(HistoricalRegistry::clearHistory,
+        getIoHandler().post(PooledLambda.obtainRunnable(HistoricalRegistryInterface::clearHistory,
                 mHistoricalRegistry, uid, packageName));
 
         UidState uidState = mUidStates.get(uid);
@@ -1992,10 +1996,12 @@ public class AppOpsService extends IAppOpsService.Stub {
                         new String[attributionChainExemptPackages.size()]) : null;
 
         // Must not hold the appops lock
-        getIoHandler().post(PooledLambda.obtainRunnable(HistoricalRegistry::getHistoricalOps,
+        getIoHandler().post(PooledLambda.obtainRunnable(
+                HistoricalRegistryInterface::getHistoricalOps,
                 mHistoricalRegistry, uid, packageName, attributionTag, opNamesArray, dataType,
                 filter, beginTimeMillis, endTimeMillis, flags, chainExemptPkgArray,
-                callback).recycleOnUse());
+                callback
+        ).recycleOnUse());
     }
 
     @Override
@@ -2024,7 +2030,7 @@ public class AppOpsService extends IAppOpsService.Stub {
 
         // Must not hold the appops lock
         getIoHandler().post(PooledLambda.obtainRunnable(
-                HistoricalRegistry::getHistoricalOpsFromDiskRaw,
+                HistoricalRegistryInterface::getHistoricalOpsFromDiskRaw,
                 mHistoricalRegistry, uid, packageName, attributionTag, opNamesArray, dataType,
                 filter, beginTimeMillis, endTimeMillis, flags, chainExemptPkgArray,
                 callback).recycleOnUse());
@@ -6961,7 +6967,6 @@ public class AppOpsService extends IAppOpsService.Stub {
         offsetHistory_enforcePermission();
         // Must not hold the appops lock
         mHistoricalRegistry.offsetHistory(offsetMillis);
-        mHistoricalRegistry.offsetDiscreteHistory(offsetMillis);
     }
 
     @android.annotation.EnforcePermission(android.Manifest.permission.MANAGE_APPOPS)
@@ -7002,7 +7007,13 @@ public class AppOpsService extends IAppOpsService.Stub {
             SystemClock.sleep(offlineDurationMillis);
         }
 
-        mHistoricalRegistry = new HistoricalRegistry(mHistoricalRegistry);
+        if (Flags.enableAllSqliteAppopsAccesses()) {
+            mHistoricalRegistry = new HistoricalRegistrySql(
+                    (HistoricalRegistrySql) mHistoricalRegistry);
+        } else {
+            mHistoricalRegistry = new HistoricalRegistry((HistoricalRegistry) mHistoricalRegistry);
+        }
+
         mHistoricalRegistry.systemReady(mContext.getContentResolver());
         mHistoricalRegistry.persistPendingHistory();
     }

@@ -24,7 +24,6 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_RECENTS;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.ROTATION_UNDEFINED;
-import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
@@ -88,6 +87,7 @@ import android.graphics.Insets;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.DisplayMetrics;
@@ -233,11 +233,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
     /** This task fragment will be removed when the cleanup of its children are done. */
     private boolean mIsRemovalRequested;
-
-    /** @deprecated b/373709676 replace with {@link #mAdjacentTaskFragments} */
-    @Deprecated
-    @Nullable
-    private TaskFragment mAdjacentTaskFragment;
 
     /**
      * The TaskFragments that are adjacent to each other, including this TaskFragment.
@@ -454,22 +449,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return service.mWindowOrganizerController.getTaskFragment(token);
     }
 
-    /** @deprecated b/373709676 replace with {@link #setAdjacentTaskFragments}. */
-    @Deprecated
-    void setAdjacentTaskFragment(@NonNull TaskFragment taskFragment) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            if (mAdjacentTaskFragment == taskFragment) {
-                return;
-            }
-            resetAdjacentTaskFragment();
-            mAdjacentTaskFragment = taskFragment;
-            taskFragment.setAdjacentTaskFragment(this);
-            return;
-        }
-
-        setAdjacentTaskFragments(new AdjacentSet(this, taskFragment));
-    }
-
     void setAdjacentTaskFragments(@NonNull AdjacentSet adjacentTaskFragments) {
         adjacentTaskFragments.setAsAdjacent();
     }
@@ -482,54 +461,16 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         return mCompanionTaskFragment;
     }
 
-    /** @deprecated b/373709676 replace with {@link #clearAdjacentTaskFragments()}. */
-    @Deprecated
-    private void resetAdjacentTaskFragment() {
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalStateException("resetAdjacentTaskFragment shouldn't be called when"
-                    + " allowMultipleAdjacentTaskFragments is enabled. Use either"
-                    + " #clearAdjacentTaskFragments or #removeFromAdjacentTaskFragments");
-        }
-        // Reset the adjacent TaskFragment if its adjacent TaskFragment is also this TaskFragment.
-        if (mAdjacentTaskFragment != null && mAdjacentTaskFragment.mAdjacentTaskFragment == this) {
-            mAdjacentTaskFragment.mAdjacentTaskFragment = null;
-            mAdjacentTaskFragment.mDelayLastActivityRemoval = false;
-        }
-        mAdjacentTaskFragment = null;
-        mDelayLastActivityRemoval = false;
-    }
-
     void clearAdjacentTaskFragments() {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            resetAdjacentTaskFragment();
-            return;
-        }
-
         if (mAdjacentTaskFragments != null) {
             mAdjacentTaskFragments.clear();
         }
     }
 
     void removeFromAdjacentTaskFragments() {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            resetAdjacentTaskFragment();
-            return;
-        }
-
         if (mAdjacentTaskFragments != null) {
             mAdjacentTaskFragments.remove(this);
         }
-    }
-
-    /** @deprecated b/373709676 replace with {@link #getAdjacentTaskFragments()}. */
-    @Deprecated
-    @Nullable
-    TaskFragment getAdjacentTaskFragment() {
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            throw new IllegalStateException("allowMultipleAdjacentTaskFragments is enabled. "
-                    + "Use #getAdjacentTaskFragments instead");
-        }
-        return mAdjacentTaskFragment;
     }
 
     @Nullable
@@ -560,16 +501,10 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     }
 
     boolean hasAdjacentTaskFragment() {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            return mAdjacentTaskFragment != null;
-        }
         return mAdjacentTaskFragments != null;
     }
 
     boolean isAdjacentTo(@NonNull TaskFragment other) {
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            return mAdjacentTaskFragment == other;
-        }
         return other != this
                 && mAdjacentTaskFragments != null
                 && mAdjacentTaskFragments.contains(other);
@@ -1376,21 +1311,12 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                         if (taskFragment.isAdjacentTo(this)) {
                             continue;
                         }
-                        if (Flags.allowMultipleAdjacentTaskFragments()) {
-                            final boolean isOccluding = mTmpRect.intersect(taskFragment.getBounds())
-                                    || taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
-                                        return mTmpRect.intersect(adjacentTf.getBounds());
-                                    });
-                            if (isOccluding) {
-                                return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                            }
-                        } else {
-                            final TaskFragment adjacentTaskFragment =
-                                    taskFragment.mAdjacentTaskFragment;
-                            if (mTmpRect.intersect(taskFragment.getBounds())
-                                    || mTmpRect.intersect(adjacentTaskFragment.getBounds())) {
-                                return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                            }
+                        final boolean isOccluding = mTmpRect.intersect(taskFragment.getBounds())
+                                || taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
+                                    return mTmpRect.intersect(adjacentTf.getBounds());
+                                });
+                        if (isOccluding) {
+                            return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
                         }
                     }
                 }
@@ -1426,37 +1352,22 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 // 2. Adjacent TaskFragments do not overlap, so that if this TaskFragment is behind
                 // any translucent TaskFragment in the adjacent set, then this TaskFragment is
                 // visible behind translucent.
-                if (Flags.allowMultipleAdjacentTaskFragments()) {
-                    final boolean hasTraversedAdj = otherTaskFrag.forOtherAdjacentTaskFragments(
-                            adjacentTaskFragments::contains);
-                    if (hasTraversedAdj) {
-                        final boolean isTranslucent =
-                                isBehindTransparentTaskFragment(otherTaskFrag, starting)
-                                || otherTaskFrag.forOtherAdjacentTaskFragments(
-                                        (Predicate<TaskFragment>) tf ->
-                                                isBehindTransparentTaskFragment(tf, starting));
-                        if (isTranslucent) {
-                            // Can be visible behind a translucent adjacent TaskFragments.
-                            gotTranslucentFullscreen = true;
-                            gotTranslucentAdjacent = true;
-                            continue;
-                        }
-                        // Can not be visible behind adjacent TaskFragments.
-                        return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
+                final boolean hasTraversedAdj = otherTaskFrag.forOtherAdjacentTaskFragments(
+                        adjacentTaskFragments::contains);
+                if (hasTraversedAdj) {
+                    final boolean isTranslucent =
+                            isBehindTransparentTaskFragment(otherTaskFrag, starting)
+                                    || otherTaskFrag.forOtherAdjacentTaskFragments(
+                                    (Predicate<TaskFragment>) tf ->
+                                            isBehindTransparentTaskFragment(tf, starting));
+                    if (isTranslucent) {
+                        // Can be visible behind a translucent adjacent TaskFragments.
+                        gotTranslucentFullscreen = true;
+                        gotTranslucentAdjacent = true;
+                        continue;
                     }
-                } else {
-                    if (adjacentTaskFragments.contains(otherTaskFrag.mAdjacentTaskFragment)) {
-                        if (isBehindTransparentTaskFragment(otherTaskFrag, starting)
-                                || isBehindTransparentTaskFragment(
-                                        otherTaskFrag.mAdjacentTaskFragment, starting)) {
-                            // Can be visible behind a translucent adjacent TaskFragments.
-                            gotTranslucentFullscreen = true;
-                            gotTranslucentAdjacent = true;
-                            continue;
-                        }
-                        // Can not be visible behind adjacent TaskFragments.
-                        return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
-                    }
+                    // Can not be visible behind adjacent TaskFragments.
+                    return TASK_FRAGMENT_VISIBILITY_INVISIBLE;
                 }
                 adjacentTaskFragments.add(otherTaskFrag);
             }
@@ -1751,66 +1662,79 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 }
             }
 
-            try {
-                final IApplicationThread appThread = next.app.getThread();
-                // Deliver all pending results.
-                final ArrayList<ResultInfo> a = next.results;
-                if (a != null) {
-                    final int size = a.size();
-                    if (!next.finishing && size > 0) {
-                        if (DEBUG_RESULTS) {
-                            Slog.v(TAG_RESULTS, "Delivering results to " + next + ": " + a);
-                        }
-                        final ActivityResultItem item = new ActivityResultItem(next.token, a);
-                        mAtmService.getLifecycleManager().scheduleTransactionItem(appThread, item);
+            final IApplicationThread appThread = next.app.getThread();
+            // Deliver all pending results.
+            final ArrayList<ResultInfo> a = next.results;
+            if (a != null) {
+                final int size = a.size();
+                if (!next.finishing && size > 0) {
+                    if (DEBUG_RESULTS) {
+                        Slog.v(TAG_RESULTS, "Delivering results to " + next + ": " + a);
+                    }
+                    final ActivityResultItem item = new ActivityResultItem(next.token, a);
+                    boolean isSuccessful;
+                    try {
+                        isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                                appThread, item);
+                    } catch (RemoteException e) {
+                        // TODO(b/323801078): remove Exception when cleanup
+                        isSuccessful = false;
+                    }
+                    if (!isSuccessful) {
+                        onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
+                                lastFocusedRootTask);
+                        return true;
                     }
                 }
+            }
 
-                if (next.newIntents != null) {
-                    final NewIntentItem item =
-                            new NewIntentItem(next.token, next.newIntents, true /* resume */);
-                    mAtmService.getLifecycleManager().scheduleTransactionItem(appThread, item);
+            if (next.newIntents != null) {
+                final NewIntentItem item =
+                        new NewIntentItem(next.token, next.newIntents, true /* resume */);
+                boolean isSuccessful;
+                try {
+                    isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                            appThread, item);
+                } catch (RemoteException e) {
+                    // TODO(b/323801078): remove Exception when cleanup
+                    isSuccessful = false;
                 }
+                if (!isSuccessful) {
+                    onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
+                            lastFocusedRootTask);
+                    return true;
+                }
+            }
 
-                // Well the app will no longer be stopped.
-                // Clear app token stopped state in window manager if needed.
-                next.notifyAppResumed();
+            // Well the app will no longer be stopped.
+            // Clear app token stopped state in window manager if needed.
+            next.notifyAppResumed();
 
-                EventLogTags.writeWmResumeActivity(next.mUserId, System.identityHashCode(next),
-                        next.getTask().mTaskId, next.shortComponentName);
+            EventLogTags.writeWmResumeActivity(next.mUserId, System.identityHashCode(next),
+                    next.getTask().mTaskId, next.shortComponentName);
 
-                mAtmService.getAppWarningsLocked().onResumeActivity(next);
-                final int topProcessState = mAtmService.mTopProcessState;
-                next.app.setPendingUiCleanAndForceProcessStateUpTo(topProcessState);
-                next.abortAndClearOptionsAnimation();
-                final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
-                        next.token, topProcessState, dc.isNextTransitionForward(),
-                        next.shouldSendCompatFakeFocus());
-                mAtmService.getLifecycleManager().scheduleTransactionItem(
+            mAtmService.getAppWarningsLocked().onResumeActivity(next);
+            final int topProcessState = mAtmService.mTopProcessState;
+            next.app.setPendingUiCleanAndForceProcessStateUpTo(topProcessState);
+            next.abortAndClearOptionsAnimation();
+            final ResumeActivityItem resumeActivityItem = new ResumeActivityItem(
+                    next.token, topProcessState, dc.isNextTransitionForward(),
+                    next.shouldSendCompatFakeFocus());
+            boolean isSuccessful;
+            try {
+                isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
                         appThread, resumeActivityItem);
-
-                ProtoLog.d(WM_DEBUG_STATES, "resumeTopActivity: Resumed %s", next);
-            } catch (Exception e) {
-                // Whoops, need to restart this activity!
-                ProtoLog.v(WM_DEBUG_STATES, "Resume failed; resetting state to %s: "
-                        + "%s", lastState, next);
-                next.setState(lastState, "resumeTopActivityInnerLocked");
-
-                // lastResumedActivity being non-null implies there is a lastStack present.
-                if (lastResumedActivity != null) {
-                    lastResumedActivity.setState(RESUMED, "resumeTopActivityInnerLocked");
-                }
-
-                Slog.i(TAG, "Restarting because process died: " + next);
-                if (!next.hasBeenLaunched) {
-                    next.hasBeenLaunched = true;
-                } else if (SHOW_APP_STARTING_PREVIEW && lastFocusedRootTask != null
-                        && lastFocusedRootTask.isTopRootTaskInDisplayArea()) {
-                    next.showStartingWindow(false /* taskSwitch */);
-                }
-                mTaskSupervisor.startSpecificActivity(next, true, false);
+            } catch (RemoteException e) {
+                // TODO(b/323801078): remove Exception when cleanup
+                isSuccessful = false;
+            }
+            if (!isSuccessful) {
+                onResumeTopActivityRemoteFailure(lastState, next, lastResumedActivity,
+                        lastFocusedRootTask);
                 return true;
             }
+
+            ProtoLog.d(WM_DEBUG_STATES, "resumeTopActivity: Resumed %s", next);
 
             next.completeResumeLocked();
         } else {
@@ -1828,6 +1752,29 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         }
 
         return true;
+    }
+
+    /** Likely app process has been killed. Needs to restart this activity. */
+    private void onResumeTopActivityRemoteFailure(@NonNull ActivityRecord.State lastState,
+            @NonNull ActivityRecord next, @Nullable ActivityRecord lastResumedActivity,
+            @Nullable Task lastFocusedRootTask) {
+        ProtoLog.v(WM_DEBUG_STATES, "Resume failed; resetting state to %s: "
+                + "%s", lastState, next);
+        next.setState(lastState, "resumeTopActivityInnerLocked");
+
+        // lastResumedActivity being non-null implies there is a lastStack present.
+        if (lastResumedActivity != null) {
+            lastResumedActivity.setState(RESUMED, "resumeTopActivityInnerLocked");
+        }
+
+        Slog.i(TAG, "Restarting because process died: " + next);
+        if (!next.hasBeenLaunched) {
+            next.hasBeenLaunched = true;
+        } else if (SHOW_APP_STARTING_PREVIEW && lastFocusedRootTask != null
+                && lastFocusedRootTask.isTopRootTaskInDisplayArea()) {
+            next.showStartingWindow(false /* taskSwitch */);
+        }
+        mTaskSupervisor.startSpecificActivity(next, true, false);
     }
 
     boolean shouldSleepOrShutDownActivities() {
@@ -2034,17 +1981,23 @@ class TaskFragment extends WindowContainer<WindowContainer> {
     void schedulePauseActivity(ActivityRecord prev, boolean userLeaving,
             boolean pauseImmediately, boolean autoEnteringPip, String reason) {
         ProtoLog.v(WM_DEBUG_STATES, "Enqueueing pending pause: %s", prev);
-        try {
-            prev.mPauseSchedulePendingForPip = false;
-            EventLogTags.writeWmPauseActivity(prev.mUserId, System.identityHashCode(prev),
-                    prev.shortComponentName, "userLeaving=" + userLeaving, reason);
+        prev.mPauseSchedulePendingForPip = false;
+        EventLogTags.writeWmPauseActivity(prev.mUserId, System.identityHashCode(prev),
+                prev.shortComponentName, "userLeaving=" + userLeaving, reason);
 
-            final PauseActivityItem item = new PauseActivityItem(prev.token, prev.finishing,
-                    userLeaving, pauseImmediately, autoEnteringPip);
-            mAtmService.getLifecycleManager().scheduleTransactionItem(prev.app.getThread(), item);
-        } catch (Exception e) {
+        final PauseActivityItem item = new PauseActivityItem(prev.token, prev.finishing,
+                userLeaving, pauseImmediately, autoEnteringPip);
+        boolean isSuccessful;
+        try {
+            isSuccessful = mAtmService.getLifecycleManager().scheduleTransactionItem(
+                    prev.app.getThread(), item);
+        } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             // Ignore exception, if process died other code will cleanup.
             Slog.w(TAG, "Exception thrown during pause", e);
+            isSuccessful = false;
+        }
+        if (!isSuccessful) {
             mPausingActivity = null;
             mLastPausedActivity = null;
             mTaskSupervisor.mNoHistoryActivities.remove(prev);
@@ -2499,7 +2452,8 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             inOutConfig.windowConfiguration.setAppBounds(mTmpFullBounds);
             outAppBounds = inOutConfig.windowConfiguration.getAppBounds();
 
-            if (!customContainerPolicy && windowingMode != WINDOWING_MODE_FREEFORM) {
+            // Floating tasks shouldn't be restricted by containing app bounds.
+            if (!customContainerPolicy && !isFloating(windowingMode)) {
                 final Rect containingAppBounds;
                 if (insideParentBounds) {
                     containingAppBounds = useOverrideInsetsForConfig
@@ -3256,40 +3210,23 @@ class TaskFragment extends WindowContainer<WindowContainer> {
 
         final ArrayList<WindowContainer> siblings = getParent().mChildren;
         final int zOrder = siblings.indexOf(this);
-
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            if (siblings.indexOf(getAdjacentTaskFragment()) < zOrder) {
-                // early return if this TF already has higher z-ordering.
-                return false;
-            }
-        } else {
-            final boolean hasAdjacentOnTop = forOtherAdjacentTaskFragments(
-                    tf -> siblings.indexOf(tf) > zOrder);
-            if (!hasAdjacentOnTop) {
-                // early return if this TF already has higher z-ordering.
-                return false;
-            }
+        final boolean hasAdjacentOnTop = forOtherAdjacentTaskFragments(
+                tf -> siblings.indexOf(tf) > zOrder);
+        if (!hasAdjacentOnTop) {
+            // early return if this TF already has higher z-ordering.
+            return false;
         }
 
         final ToBooleanFunction<WindowState> getDimBehindWindow =
                 (w) -> (w.mAttrs.flags & FLAG_DIM_BEHIND) != 0 && w.mActivityRecord != null
                         && w.mActivityRecord.isEmbedded() && (w.mActivityRecord.isVisibleRequested()
                         || w.mActivityRecord.isVisible());
-
-        if (!Flags.allowMultipleAdjacentTaskFragments()) {
-            final TaskFragment adjacentTf = getAdjacentTaskFragment();
-            if (adjacentTf.forAllWindows(getDimBehindWindow, true)) {
-                // early return if the adjacent Tf has a dimming window.
-                return false;
-            }
-        } else {
-            final boolean adjacentHasDimmingWindow = forOtherAdjacentTaskFragments(tf -> {
-                return tf.forAllWindows(getDimBehindWindow, true);
-            });
-            if (adjacentHasDimmingWindow) {
-                // early return if the adjacent Tf has a dimming window.
-                return false;
-            }
+        final boolean adjacentHasDimmingWindow = forOtherAdjacentTaskFragments(tf -> {
+            return tf.forAllWindows(getDimBehindWindow, true);
+        });
+        if (adjacentHasDimmingWindow) {
+            // early return if the adjacent Tf has a dimming window.
+            return false;
         }
 
         // boost if there's an Activity window that has FLAG_DIM_BEHIND flag.
@@ -3413,16 +3350,9 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             sb.append(" organizerProc=");
             sb.append(mTaskFragmentOrganizerProcessName);
         }
-        if (Flags.allowMultipleAdjacentTaskFragments()) {
-            if (mAdjacentTaskFragments != null) {
-                sb.append(" adjacent=");
-                sb.append(mAdjacentTaskFragments);
-            }
-        } else {
-            if (mAdjacentTaskFragment != null) {
-                sb.append(" adjacent=");
-                sb.append(mAdjacentTaskFragment);
-            }
+        if (mAdjacentTaskFragments != null) {
+            sb.append(" adjacent=");
+            sb.append(mAdjacentTaskFragments);
         }
         sb.append('}');
         return sb.toString();
@@ -3548,10 +3478,6 @@ class TaskFragment extends WindowContainer<WindowContainer> {
         }
 
         AdjacentSet(@NonNull ArraySet<TaskFragment> taskFragments) {
-            if (!Flags.allowMultipleAdjacentTaskFragments()) {
-                throw new IllegalStateException("allowMultipleAdjacentTaskFragments must be"
-                        + " enabled to set more than two TaskFragments adjacent to each other.");
-            }
             final int size = taskFragments.size();
             if (size < 2) {
                 throw new IllegalArgumentException("Adjacent TaskFragments must contain at least"

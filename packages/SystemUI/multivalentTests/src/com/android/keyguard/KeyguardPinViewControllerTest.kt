@@ -16,6 +16,7 @@
 
 package com.android.keyguard
 
+import android.hardware.input.InputManager
 import android.testing.TestableLooper
 import android.view.View
 import android.view.ViewGroup
@@ -104,6 +105,7 @@ class KeyguardPinViewControllerTest : SysuiTestCase() {
     @Mock lateinit var enterButton: View
     @Mock lateinit var uiEventLogger: UiEventLogger
     @Mock lateinit var mUserActivityNotifier: UserActivityNotifier
+    @Mock lateinit var inputManager: InputManager
 
     @Captor lateinit var postureCallbackCaptor: ArgumentCaptor<DevicePostureController.Callback>
 
@@ -154,6 +156,7 @@ class KeyguardPinViewControllerTest : SysuiTestCase() {
             keyguardKeyboardInteractor,
             kosmos.bouncerHapticPlayer,
             mUserActivityNotifier,
+            inputManager,
         )
     }
 

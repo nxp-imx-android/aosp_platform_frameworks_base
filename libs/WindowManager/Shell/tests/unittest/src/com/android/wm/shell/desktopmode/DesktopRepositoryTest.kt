@@ -88,7 +88,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         datastoreScope = CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
         shellInit = spy(ShellInit(testExecutor))
 
-        repo = DesktopRepository(persistentRepository, datastoreScope, DEFAULT_USER_ID)
+        repo = spy(DesktopRepository(persistentRepository, datastoreScope, DEFAULT_USER_ID))
         whenever(runBlocking { persistentRepository.readDesktop(any(), any()) })
             .thenReturn(Desktop.getDefaultInstance())
         shellInit.init()
@@ -1171,6 +1171,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         val tasksBeforeRemoval = repo.removeDesk(deskId = DEFAULT_DISPLAY)
 
+        verify(repo, times(1)).notifyVisibleTaskListeners(DEFAULT_DISPLAY, visibleTasksCount = 0)
         assertThat(tasksBeforeRemoval).containsExactly(1, 2, 3).inOrder()
         assertThat(repo.getActiveTasks(displayId = DEFAULT_DISPLAY)).isEmpty()
     }
@@ -1184,6 +1185,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         repo.removeDesk(deskId = 3)
 
+        verify(repo, times(1)).notifyVisibleTaskListeners(DEFAULT_DISPLAY, visibleTasksCount = 0)
         assertThat(repo.getDeskIds(displayId = DEFAULT_DISPLAY)).doesNotContain(3)
     }
 
@@ -1196,8 +1198,20 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         repo.removeDesk(deskId = 2)
 
+        verify(repo, times(1)).notifyVisibleTaskListeners(DEFAULT_DISPLAY, visibleTasksCount = 0)
         assertThat(repo.getDeskIds(displayId = DEFAULT_DISPLAY)).doesNotContain(2)
     }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND, FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE)
+    fun removeDesk_removesFromPersistence() =
+        runTest(StandardTestDispatcher()) {
+            repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = 2)
+
+            repo.removeDesk(deskId = 2)
+
+            verify(persistentRepository).removeDesktop(DEFAULT_USER_ID, 2)
+        }
 
     @Test
     fun getTaskInFullImmersiveState_byDisplay() {
@@ -1208,36 +1222,6 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
         assertThat(repo.getTaskInFullImmersiveState(DEFAULT_DESKTOP_ID)).isEqualTo(1)
         assertThat(repo.getTaskInFullImmersiveState(SECOND_DISPLAY)).isEqualTo(2)
-    }
-
-    @Test
-    fun setTaskInPip_savedAsMinimizedPipInDisplay() {
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isFalse()
-
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isTrue()
-    }
-
-    @Test
-    fun removeTaskInPip_removedAsMinimizedPipInDisplay() {
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isTrue()
-
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = false)
-
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isFalse()
-    }
-
-    @Test
-    fun setTaskInPip_multipleDisplays_bothAreInPip() {
-        repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        repo.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        repo.setTaskInPip(DEFAULT_DESKTOP_ID, taskId = 1, enterPip = true)
-        repo.setTaskInPip(SECOND_DISPLAY, taskId = 2, enterPip = true)
-
-        assertThat(repo.isTaskMinimizedPipInDisplay(DEFAULT_DESKTOP_ID, taskId = 1)).isTrue()
-        assertThat(repo.isTaskMinimizedPipInDisplay(SECOND_DISPLAY, taskId = 2)).isTrue()
     }
 
     @Test
@@ -1424,6 +1408,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.removeDesk(deskId = 1)
         executor.flushAll()
 
+        verify(repo, times(1)).notifyVisibleTaskListeners(DEFAULT_DISPLAY, visibleTasksCount = 0)
         val lastRemoval = assertNotNull(listener.lastRemoval)
         assertThat(lastRemoval.displayId).isEqualTo(0)
         assertThat(lastRemoval.deskId).isEqualTo(1)
@@ -1440,6 +1425,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.removeDesk(deskId = 2)
         executor.flushAll()
 
+        verify(repo, times(0)).notifyVisibleTaskListeners(DEFAULT_DISPLAY, visibleTasksCount = 0)
         assertThat(listener.lastRemoval).isNull()
     }
 
@@ -1455,6 +1441,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.removeDesk(deskId = 1)
         executor.flushAll()
 
+        verify(repo, times(1)).notifyVisibleTaskListeners(DEFAULT_DISPLAY, visibleTasksCount = 0)
         val lastActivationChange = assertNotNull(listener.lastActivationChange)
         assertThat(lastActivationChange.displayId).isEqualTo(0)
         assertThat(lastActivationChange.oldActive).isEqualTo(1)

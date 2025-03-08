@@ -662,14 +662,14 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             return;
         }
 
-        // Check to see if insets changed in such a way that the divider algorithm needs to be
-        // recalculated.
+        // Check to see if insets changed in such a way that the divider needs to be animated to
+        // a new position. (We only do this when switching to pinned taskbar mode and back).
         Insets pinnedTaskbarInsets = calculatePinnedTaskbarInsets(insetsState);
         if (!mPinnedTaskbarInsets.equals(pinnedTaskbarInsets)) {
             mPinnedTaskbarInsets = pinnedTaskbarInsets;
             // Refresh the DividerSnapAlgorithm.
             updateLayouts();
-            // If the divider is no longer placed on a snap point, animate it to the nearest one.
+            // If the divider is no longer placed on a snap point, animate it to the nearest one
             DividerSnapAlgorithm.SnapTarget snapTarget =
                     findSnapTarget(mDividerPosition, 0, false /* hardDismiss */);
             if (snapTarget.position != mDividerPosition) {
@@ -683,18 +683,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
     }
 
     /**
-     * Calculates the insets that might trigger a divider algorithm recalculation. Currently, only
-     * pinned Taskbar does this, and only when the IME is not showing.
+     * Calculates the insets that might trigger a divider algorithm recalculation.
      */
     private Insets calculatePinnedTaskbarInsets(InsetsState insetsState) {
-        if (insetsState.isSourceOrDefaultVisible(InsetsSource.ID_IME, WindowInsets.Type.ime())) {
-            return Insets.NONE;
-        }
-
-        // If IME is not showing...
         for (int i = insetsState.sourceSize() - 1; i >= 0; i--) {
             final InsetsSource source = insetsState.sourceAt(i);
-            // and Taskbar is pinned...
+            // If Taskbar is pinned...
             if (source.getType() == WindowInsets.Type.navigationBars()
                     && source.hasFlags(InsetsSource.FLAG_INSETS_ROUNDED_CORNER)) {
                 // Return Insets representing the pinned taskbar state.
@@ -1472,11 +1466,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 // Freeze the configuration size with offset to prevent app get a configuration
                 // changed or relaunch. This is required to make sure client apps will calculate
                 // insets properly after layout shifted.
-                if (mTargetYOffset == 0) {
-                    mSplitLayoutHandler.setLayoutOffsetTarget(0, 0, SplitLayout.this);
-                } else {
-                    mSplitLayoutHandler.setLayoutOffsetTarget(0, mTargetYOffset, SplitLayout.this);
-                }
+                mSplitLayoutHandler.setLayoutOffsetTarget(0, mTargetYOffset, SplitLayout.this);
             }
 
             // Make {@link DividerView} non-interactive while IME showing in split mode. Listen to
@@ -1543,11 +1533,28 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             }
         }
 
+        /**
+         * When IME is triggered on the bottom app in split screen, we want to translate the bottom
+         * app up by a certain amount so that it's not covered too much by the IME. But there's also
+         * an upper limit to the amount we want to translate (since we still need some of the top
+         * app to be visible too). So this function essentially says "try to translate the bottom
+         * app up, but stop before you make the top app too small."
+         */
         private int getTargetYOffset() {
-            final int desireOffset = Math.abs(mEndImeTop - mStartImeTop);
-            // Make sure to keep at least 30% visible for the top split.
-            final int maxOffset = (int) (getTopLeftBounds().height() * ADJUSTED_SPLIT_FRACTION_MAX);
-            return -Math.min(desireOffset, maxOffset);
+            // We want to translate up the bottom app by this amount.
+            final int desiredOffset = Math.abs(mEndImeTop - mStartImeTop);
+
+            // But we also want to keep this much of the top app visible.
+            final float amountOfTopAppToKeepVisible =
+                    getTopLeftBounds().height() * (1 - ADJUSTED_SPLIT_FRACTION_MAX);
+
+            // So the current onscreen size of the top app, minus the minimum size, is the max
+            // translation we will allow.
+            final float currentOnScreenSizeOfTopApp = getTopLeftBounds().bottom;
+            final int maxOffset =
+                    (int) Math.max(currentOnScreenSizeOfTopApp - amountOfTopAppToKeepVisible, 0);
+
+            return -Math.min(desiredOffset, maxOffset);
         }
 
         @SplitPosition

@@ -88,11 +88,6 @@ class KeyguardQuickAffordanceInteractorSceneContainerTest : SysuiTestCase() {
 
     companion object {
         private val INTENT = Intent("some.intent.action")
-        private val DRAWABLE =
-            mock<Icon> {
-                whenever(this.contentDescription)
-                    .thenReturn(ContentDescription.Resource(res = CONTENT_DESCRIPTION_RESOURCE_ID))
-            }
         private const val CONTENT_DESCRIPTION_RESOURCE_ID = 1337
 
         @Parameters(
@@ -337,7 +332,17 @@ class KeyguardQuickAffordanceInteractorSceneContainerTest : SysuiTestCase() {
 
             homeControls.setState(
                 lockScreenState =
-                    KeyguardQuickAffordanceConfig.LockScreenState.Visible(icon = DRAWABLE)
+                    KeyguardQuickAffordanceConfig.LockScreenState.Visible(
+                        icon =
+                            mock<Icon> {
+                                whenever(contentDescription)
+                                    .thenReturn(
+                                        ContentDescription.Resource(
+                                            res = CONTENT_DESCRIPTION_RESOURCE_ID
+                                        )
+                                    )
+                            }
+                    )
             )
             homeControls.onTriggeredResult =
                 if (startActivity) {

@@ -125,6 +125,7 @@ import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.DeadObjectException;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
@@ -163,7 +164,6 @@ import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
 import com.android.server.pm.SaferIntentUtils;
 import com.android.server.utils.Slogf;
 import com.android.server.wm.ActivityMetricsLogger.LaunchingState;
-import com.android.window.flags.Flags;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -1045,15 +1045,22 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             // transaction.
             mService.getLifecycleManager().dispatchPendingTransaction(proc.getThread());
         }
+        final boolean isSuccessful;
         try {
-            mService.getLifecycleManager().scheduleTransactionItems(
+            isSuccessful = mService.getLifecycleManager().scheduleTransactionItems(
                     proc.getThread(),
                     // Immediately dispatch the transaction, so that if it fails, the server can
                     // restart the process and retry now.
                     true /* shouldDispatchImmediately */,
                     launchActivityItem, lifecycleItem);
         } catch (RemoteException e) {
+            // TODO(b/323801078): remove Exception when cleanup
             return e;
+        }
+        if (com.android.window.flags.Flags.cleanupDispatchPendingTransactionsRemoteException()
+                && !isSuccessful) {
+            return new DeadObjectException("Failed to dispatch the ClientTransaction to dead"
+                    + " process. See earlier log for more details.");
         }
 
         if (procConfig.seq > mRootWindowContainer.getConfiguration().seq) {
@@ -2983,17 +2990,9 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
 
                 if (child.asTaskFragment() != null
                         && child.asTaskFragment().hasAdjacentTaskFragment()) {
-                    final boolean isAnyTranslucent;
-                    if (Flags.allowMultipleAdjacentTaskFragments()) {
-                        final TaskFragment.AdjacentSet set =
-                                child.asTaskFragment().getAdjacentTaskFragments();
-                        isAnyTranslucent = set.forAllTaskFragments(
-                                tf -> !isOpaque(tf), null);
-                    } else {
-                        final TaskFragment adjacent = child.asTaskFragment()
-                                .getAdjacentTaskFragment();
-                        isAnyTranslucent = !isOpaque(child) || !isOpaque(adjacent);
-                    }
+                    final boolean isAnyTranslucent = !isOpaque(child)
+                            || child.asTaskFragment().forOtherAdjacentTaskFragments(
+                                    tf -> !isOpaque(tf));
                     if (!isAnyTranslucent) {
                         // This task fragment and all its adjacent task fragments are opaque,
                         // consider it opaque even if it doesn't fill its parent.

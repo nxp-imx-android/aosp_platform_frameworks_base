@@ -38,6 +38,7 @@ import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 import com.android.systemui.res.R;
 import com.android.systemui.shared.clocks.AnimatableClockView;
 import com.android.systemui.statusbar.NotificationShelf;
+import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
@@ -289,6 +290,10 @@ public class StackStateAnimator {
             long delayPerElement = ANIMATION_DELAY_PER_ELEMENT_INTERRUPTING;
             switch (event.animationType) {
                 case NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_ADD: {
+                    if (physicalNotificationMovement()) {
+                        // We don't want any delays when adding anymore
+                        continue;
+                    }
                     int ownIndex = viewState.notGoneIndex;
                     int changingIndex =
                             ((ExpandableView) (event.mChangingView)).getViewState().notGoneIndex;
@@ -302,6 +307,10 @@ public class StackStateAnimator {
                 case NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_REMOVE_SWIPED_OUT:
                     delayPerElement = ANIMATION_DELAY_PER_ELEMENT_MANUAL;
                 case NotificationStackScrollLayout.AnimationEvent.ANIMATION_TYPE_REMOVE: {
+                    if (physicalNotificationMovement()) {
+                        // We don't want any delays when removing anymore
+                        continue;
+                    }
                     int ownIndex = viewState.notGoneIndex;
                     boolean noNextView = event.viewAfterChangingView == null;
                     ExpandableView viewAfterChangingView = noNextView
@@ -552,7 +561,9 @@ public class StackStateAnimator {
                 mHeadsUpAppearChildren.add(changingView);
 
                 mTmpState.copyFrom(changingView.getViewState());
-                mTmpState.setYTranslation(getHeadsUpYTranslationStart(event.headsUpFromBottom));
+                mTmpState.setYTranslation(
+                        getHeadsUpYTranslationStart(
+                                event.headsUpFromBottom, event.headsUpHasStatusBarChip));
                 // set the height and the initial position
                 mTmpState.applyToView(changingView);
                 mAnimationProperties.setCustomInterpolator(View.TRANSLATION_Y,
@@ -664,7 +675,9 @@ public class StackStateAnimator {
                     // StackScrollAlgorithm cannot find this view because it has been removed
                     // from the NSSL. To correctly translate the view to the top or bottom of
                     // the screen (where it animated from), we need to update its translation.
-                    mTmpState.setYTranslation(getHeadsUpYTranslationStart(event.headsUpFromBottom));
+                    mTmpState.setYTranslation(
+                            getHeadsUpYTranslationStart(
+                                    event.headsUpFromBottom, event.headsUpHasStatusBarChip));
                     endRunnable = changingView::removeFromTransientContainer;
                 }
 
@@ -735,9 +748,9 @@ public class StackStateAnimator {
         return needsCustomAnimation;
     }
 
-    private float getHeadsUpYTranslationStart(boolean headsUpFromBottom) {
+    private float getHeadsUpYTranslationStart(boolean headsUpFromBottom, boolean hasStatusBarChip) {
         if (NotificationsHunSharedAnimationValues.isEnabled()) {
-            return mHeadsUpAnimator.getHeadsUpYTranslation(headsUpFromBottom);
+            return mHeadsUpAnimator.getHeadsUpYTranslation(headsUpFromBottom, hasStatusBarChip);
         }
 
         if (headsUpFromBottom) {

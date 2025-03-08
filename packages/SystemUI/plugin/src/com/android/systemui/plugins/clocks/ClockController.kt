@@ -13,7 +13,6 @@
  */
 package com.android.systemui.plugins.clocks
 
-import android.graphics.RectF
 import com.android.systemui.plugins.annotations.ProtectedInterface
 import com.android.systemui.plugins.annotations.SimpleProperty
 import java.io.PrintWriter
@@ -42,9 +41,13 @@ interface ClockController {
         isDarkTheme: Boolean,
         dozeFraction: Float,
         foldFraction: Float,
-        onBoundsChanged: (RectF) -> Unit,
+        clockListener: ClockEventListener?,
     )
 
     /** Optional method for dumping debug information */
     fun dump(pw: PrintWriter)
+}
+
+interface ClockEventListener {
+    fun onBoundsChanged(bounds: VRectF)
 }

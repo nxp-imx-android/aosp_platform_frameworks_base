@@ -1265,6 +1265,9 @@ struct ResTable_config
     // Varies in length from 3 to 8 chars. Zero-filled value.
     char localeNumberingSystem[8];
 
+    // Mark all padding explicitly so it's clear how much we can expand it.
+    char endPadding[3];
+
     void copyFromDeviceNoSwap(const ResTable_config& o) {
       const auto o_size = dtohl(o.size);
       if (o_size >= sizeof(ResTable_config)) [[likely]] {
@@ -1421,6 +1424,13 @@ struct ResTable_config
     void copyFromDtoH_slow(const ResTable_config& o);
     void swapHtoD_slow();
 };
+
+// Fix the struct size for backward compatibility
+static_assert(sizeof(ResTable_config) == 64);
+
+// Make sure there's no unaccounted padding in the structure.
+static_assert(offsetof(ResTable_config, endPadding) +
+                  sizeof(ResTable_config::endPadding) == sizeof(ResTable_config));
 
 /**
  * A specification of the resources defined by a particular type.
@@ -1583,6 +1593,8 @@ union ResTable_entry
         // If set, this is a compact entry with data type and value directly
         // encoded in the this entry, see ResTable_entry::compact
         FLAG_COMPACT = 0x0008,
+        // If set, this entry relies on read write android feature flags
+        FLAG_USES_FEATURE_FLAGS = 0x0010,
     };
 
     struct Full {
@@ -1612,6 +1624,7 @@ union ResTable_entry
     uint16_t flags()  const { return dtohs(full.flags); };
     bool is_compact() const { return flags() & FLAG_COMPACT; }
     bool is_complex() const { return flags() & FLAG_COMPLEX; }
+    bool uses_feature_flags() const { return flags() & FLAG_USES_FEATURE_FLAGS; }
 
     size_t size() const {
         return is_compact() ? sizeof(ResTable_entry) : dtohs(this->full.size);
@@ -2028,6 +2041,8 @@ public:
     bool getResourceName(uint32_t resID, bool allowUtf8, resource_name* outName) const;
 
     bool getResourceFlags(uint32_t resID, uint32_t* outFlags) const;
+
+    bool getResourceEntryFlags(uint32_t resID, uint32_t* outFlags) const;
 
     /**
      * Returns whether or not the package for the given resource has been dynamically assigned.

@@ -30,6 +30,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.data.repository.displayRepository
 import com.android.systemui.display.data.repository.fake
@@ -57,6 +58,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
+import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
@@ -64,6 +66,7 @@ import com.android.systemui.statusbar.chips.mediaprojection.domain.model.MediaPr
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel.shareToAppChipViewModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.assertIsCallChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.assertIsScreenRecordChip
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModelTest.Companion.assertIsShareToAppChip
 import com.android.systemui.statusbar.core.StatusBarRootModernization
@@ -88,6 +91,7 @@ import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.phone.data.repository.fakeDarkIconRepository
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarIconBlockList
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.setHomeStatusBarInteractorShowOperatorName
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
@@ -95,7 +99,6 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runCurrent
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -500,9 +503,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneLockscreen_notOccluded_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneLockscreen_notOccluded_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
@@ -511,9 +515,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneLockscreen_occluded_true() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneLockscreen_occluded_true() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, taskInfo = null)
@@ -522,9 +527,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_overlayBouncer_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_overlayBouncer_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
             kosmos.sceneContainerRepository.showOverlay(Overlays.Bouncer)
@@ -533,9 +539,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneCommunal_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneCommunal_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Communal)
 
@@ -543,9 +550,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneShade_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneShade_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Shade)
 
@@ -553,9 +561,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneGone_true() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneGone_true() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
 
@@ -563,9 +572,10 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneGoneWithNotificationsShadeOverlay_false() =
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_sceneGoneWithNotificationsShadeOverlay_false() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.NotificationsShade)
@@ -575,12 +585,102 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun isHomeStatusBarAllowedByScene_sceneGoneWithQuickSettingsShadeOverlay_false() =
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_QsVisibleButInExternalDisplay_defaultStatusBarVisible() =
         kosmos.runTest {
-            val latest by collectLastValue(underTest.isHomeStatusBarAllowedByScene)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
 
             kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
             kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.fakeShadeDisplaysRepository.setDisplayId(EXTERNAL_DISPLAY)
+            runCurrent()
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_QsVisibleButInExternalDisplay_withFlagOff_defaultStatusBarInvisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.fakeShadeDisplaysRepository.setDisplayId(EXTERNAL_DISPLAY)
+            runCurrent()
+
+            // Shade position is ignored.
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_qsVisibleInThisDisplay_thisStatusBarInvisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            kosmos.fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+            runCurrent()
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_qsExpandedOnDefaultDisplay_statusBarInAnotherDisplay_visible() =
+        kosmos.runTest {
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Gone)
+            kosmos.sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            runCurrent()
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_onDefaultDisplayLockscreen_invisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            runCurrent()
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableSceneContainer
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    fun isHomeStatusBarAllowed_onExternalDispalyWithLocksceren_invisible() =
+        kosmos.runTest {
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            runCurrent()
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun isHomeStatusBarAllowed_legacy_onDefaultDisplayLockscreen_invisible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            kosmos.fakeKeyguardTransitionRepository.transitionTo(
+                KeyguardState.GONE,
+                KeyguardState.LOCKSCREEN,
+            )
+
             runCurrent()
 
             assertThat(latest).isFalse()
@@ -716,7 +816,26 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         }
 
     @Test
-    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hun_false() =
+    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOff_false() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
+                )
+            )
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOff_true() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.canShowOngoingActivityChips)
 
@@ -729,7 +848,177 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(latest).isFalse()
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOn_true() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
+                )
+            )
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun canShowOngoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOn_true() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.canShowOngoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableChipsModernization
+    fun ongoingActivityChips_statusBarHidden_noSecureCamera_noHun_notAllowed() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+
+            // home status bar not allowed
+            kosmos.sceneContainerRepository.snapToScene(Scenes.Lockscreen)
+            kosmos.keyguardOcclusionRepository.setShowWhenLockedActivityInfo(false, taskInfo = null)
+
+            assertThat(latest!!.areChipsAllowed).isFalse()
+        }
+
+    @Test
+    @EnableChipsModernization
+    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_noHun_isAllowed() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            assertThat(latest!!.areChipsAllowed).isTrue()
+        }
+
+    @Test
+    @EnableChipsModernization
+    fun ongoingActivityChips_statusBarNotHidden_secureCamera_noHun_notAllowed() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+
+            fakeKeyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.OCCLUDED,
+                testScope = testScope,
+            )
+            kosmos.keyguardInteractor.onCameraLaunchDetected(CAMERA_LAUNCH_SOURCE_POWER_DOUBLE_TAP)
+
+            assertThat(latest!!.areChipsAllowed).isFalse()
+        }
+
+    @Test
+    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    @EnableChipsModernization
+    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOff_notAllowed() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
+                )
+            )
+
+            assertThat(latest!!.areChipsAllowed).isFalse()
+        }
+
+    @Test
+    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    @EnableChipsModernization
+    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOff_isAllowed() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest!!.areChipsAllowed).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    @EnableChipsModernization
+    fun ongoingActivityChips_tatusBarNotHidden_noSecureCamera_hunBySystem_noHunFlagOn_isAllowed() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
+                )
+            )
+
+            assertThat(latest!!.areChipsAllowed).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    @EnableChipsModernization
+    fun ongoingActivityChips_statusBarNotHidden_noSecureCamera_hunByUser_noHunFlagOn_isAllowed() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+
+            transitionKeyguardToGone()
+
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest!!.areChipsAllowed).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
+    @EnableChipsModernization
+    fun ongoingActivityChips_followsChipsViewModel() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.ongoingActivityChips)
+            transitionKeyguardToGone()
+
+            screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
+
+            assertIsScreenRecordChip(latest!!.chips.active[0])
+
+            addOngoingCallState(key = "call")
+
+            assertIsScreenRecordChip(latest!!.chips.active[0])
+            assertIsCallChip(latest!!.chips.active[1], "call", context)
         }
 
     @Test
@@ -892,7 +1181,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
 
     @Test
     @EnableChipsModernization
-    fun isNotificationIconContainerVisible_anyChipShowing_ChipsModernizationOn() =
+    fun isNotificationIconContainerVisible_anyChipShowing_chipsModernizationOn() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
@@ -909,7 +1198,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
     @Test
     @DisableFlags(StatusBarRootModernization.FLAG_NAME, StatusBarChipsModernization.FLAG_NAME)
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun isNotificationIconContainerVisible_anyChipShowing_PromotedNotifsOn() =
+    fun isNotificationIconContainerVisible_anyChipShowing_promotedNotifsOn() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
@@ -929,7 +1218,7 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
         StatusBarRootModernization.FLAG_NAME,
         StatusBarChipsModernization.FLAG_NAME,
     )
-    fun isNotificationIconContainerVisible_anyChipShowing_ChipsModernizationAndPromotedNotifsOff() =
+    fun isNotificationIconContainerVisible_anyChipShowing_chipsModernizationAndPromotedNotifsOff() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
             transitionKeyguardToGone()
@@ -941,6 +1230,86 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.DoingNothing
 
             assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
+        }
+
+    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunBySystem_noHunFlagOff_visible() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
+            transitionKeyguardToGone()
+
+            // Chip
+            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
+
+            // HUN, PinnedBySystem
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
+                )
+            )
+
+            assertThat(latest!!.visibility).isEqualTo(View.VISIBLE)
+        }
+
+    @DisableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunByUser_noHunFlagOff_gone() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
+            transitionKeyguardToGone()
+
+            // Chip
+            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
+
+            // HUN, PinnedByUser
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest!!.visibility).isEqualTo(View.GONE)
+        }
+
+    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunBySystem_noHunFlagOn_gone() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
+            transitionKeyguardToGone()
+
+            // Chip
+            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
+
+            // HUN, PinnedBySystem
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedBySystem),
+                )
+            )
+
+            assertThat(latest!!.visibility).isEqualTo(View.GONE)
+        }
+
+    @EnableFlags(StatusBarNoHunBehavior.FLAG_NAME)
+    fun isNotificationIconContainerVisible_hasChipButAlsoHun_hunByUser_noHunFlagOn_gone() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isNotificationIconContainerVisible)
+            transitionKeyguardToGone()
+
+            // Chip
+            kosmos.screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
+
+            // HUN, PinnedByUser
+            headsUpNotificationRepository.setNotifications(
+                UnconfinedFakeHeadsUpRowRepository(
+                    key = "key",
+                    pinnedStatus = MutableStateFlow(PinnedStatus.PinnedByUser),
+                )
+            )
+
+            assertThat(latest!!.visibility).isEqualTo(View.GONE)
         }
 
     @Test
@@ -1144,7 +1513,39 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
 
     @Test
     @DisableSceneContainer
-    fun shadeShown_sceneFlagOff_noStatusBarViewsShown() =
+    fun shadeSlightlyShown_sceneFlagOff_statusBarViewsShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeExpansion(0.1f)
+
+            assertThat(clockVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.VISIBLE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.VISIBLE)
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun shadeHalfShown_sceneFlagOff_noStatusBarViewsShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeExpansion(0.5f)
+
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun shadeFullyShown_sceneFlagOff_noStatusBarViewsShown() =
         kosmos.runTest {
             val clockVisible by collectLastValue(underTest.isClockVisible)
             val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
@@ -1153,6 +1554,83 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
 
             kosmos.shadeTestUtil.setShadeExpansion(1f)
 
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+        }
+
+    /** Regression test for b/394257529#comment24. */
+    @Test
+    @DisableSceneContainer
+    fun qqsToQsTransition_sceneFlagOff_statusBarViewsNeverShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 1f, qsExpansion = 0f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.9f, qsExpansion = 0.1f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.6f, qsExpansion = 0.4f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.5f, qsExpansion = 0.5f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.2f, qsExpansion = 0.8f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0f, qsExpansion = 1f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+        }
+
+    /** Regression test for b/394257529#comment24. */
+    @Test
+    @DisableSceneContainer
+    fun qsToQqsTransition_sceneFlagOff_statusBarViewsNeverShown() =
+        kosmos.runTest {
+            val clockVisible by collectLastValue(underTest.isClockVisible)
+            val notifIconsVisible by collectLastValue(underTest.isNotificationIconContainerVisible)
+            val systemInfoVisible by collectLastValue(underTest.systemInfoCombinedVis)
+            transitionKeyguardToGone()
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0f, qsExpansion = 1f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.3f, qsExpansion = 0.7f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.5f, qsExpansion = 0.5f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 0.7f, qsExpansion = 0.3f)
+            assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
+            assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
+            assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
+
+            kosmos.shadeTestUtil.setShadeAndQsExpansion(shadeExpansion = 1f, qsExpansion = 0f)
             assertThat(clockVisible!!.visibility).isEqualTo(View.INVISIBLE)
             assertThat(notifIconsVisible!!.visibility).isEqualTo(View.GONE)
             assertThat(systemInfoVisible!!.baseVisibility.visibility).isEqualTo(View.GONE)
@@ -1288,5 +1766,9 @@ class HomeStatusBarViewModelImplTest : SysuiTestCase() {
             to = KeyguardState.GONE,
             testScope = testScope,
         )
+    }
+
+    private companion object {
+        const val EXTERNAL_DISPLAY = 1
     }
 }
