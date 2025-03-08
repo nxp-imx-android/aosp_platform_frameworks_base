@@ -17,7 +17,7 @@
 package com.android.systemui.qs.tiles.impl.flashlight.domain.interactor
 
 import android.os.UserHandle
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
 import com.android.systemui.qs.tiles.base.interactor.QSTileDataInteractor
 import com.android.systemui.qs.tiles.impl.flashlight.domain.model.FlashlightTileModel

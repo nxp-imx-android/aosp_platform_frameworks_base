@@ -24,7 +24,7 @@ import com.android.systemui.brightness.shared.model.BrightnessLog
 import com.android.systemui.brightness.shared.model.LinearBrightness
 import com.android.systemui.brightness.shared.model.formatBrightness
 import com.android.systemui.brightness.shared.model.logDiffForTable
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background

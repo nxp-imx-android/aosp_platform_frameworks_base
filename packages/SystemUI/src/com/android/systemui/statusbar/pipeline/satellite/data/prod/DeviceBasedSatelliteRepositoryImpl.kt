@@ -28,7 +28,7 @@ import android.telephony.satellite.SatelliteModemStateCallback
 import android.telephony.satellite.SatelliteProvisionStateCallback
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.common.coroutine.ConflatedCallbackFlow.conflatedCallbackFlow
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
