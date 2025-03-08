@@ -86,8 +86,7 @@ public class PipDesktopState {
             return false;
         }
         final int displayId = mPipDisplayLayoutState.getDisplayId();
-        return mDesktopUserRepositoriesOptional.get().getCurrent().isAnyDeskActive(displayId)
-                || isDisplayInFreeform();
+        return mDesktopUserRepositoriesOptional.get().getCurrent().isAnyDeskActive(displayId);
     }
 
     /**
