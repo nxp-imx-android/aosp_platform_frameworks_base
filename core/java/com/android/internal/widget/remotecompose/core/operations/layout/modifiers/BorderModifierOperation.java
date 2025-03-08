@@ -250,7 +250,7 @@ public class BorderModifierOperation extends DecoratorModifierOperation {
         context.savePaint();
         paint.reset();
         paint.setColor(mR, mG, mB, mA);
-        paint.setStrokeWidth(mBorderWidth);
+        paint.setStrokeWidth(mBorderWidth * context.getContext().getDensity());
         paint.setStyle(PaintBundle.STYLE_STROKE);
         context.replacePaint(paint);
         if (mShapeType == ShapeType.RECTANGLE) {

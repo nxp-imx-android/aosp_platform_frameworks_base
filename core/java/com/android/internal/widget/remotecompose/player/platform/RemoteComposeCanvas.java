@@ -154,7 +154,11 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
                 param.leftMargin = (int) area.getLeft();
                 param.topMargin = (int) area.getTop();
                 viewArea.setOnClickListener(
-                        view1 -> mDocument.getDocument().performClick(mARContext, area.getId()));
+                        view1 ->
+                                mDocument
+                                        .getDocument()
+                                        .performClick(
+                                                mARContext, area.getId(), area.getMetadata()));
                 addView(viewArea, param);
             }
             if (!clickAreas.isEmpty()) {

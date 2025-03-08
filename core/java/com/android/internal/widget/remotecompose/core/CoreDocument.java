@@ -19,8 +19,10 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.widget.remotecompose.core.operations.BitmapData;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
 import com.android.internal.widget.remotecompose.core.operations.DrawContent;
+import com.android.internal.widget.remotecompose.core.operations.FloatConstant;
 import com.android.internal.widget.remotecompose.core.operations.FloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.Header;
 import com.android.internal.widget.remotecompose.core.operations.IntegerExpression;
@@ -29,6 +31,7 @@ import com.android.internal.widget.remotecompose.core.operations.RootContentBeha
 import com.android.internal.widget.remotecompose.core.operations.ShaderData;
 import com.android.internal.widget.remotecompose.core.operations.TextData;
 import com.android.internal.widget.remotecompose.core.operations.Theme;
+import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.layout.CanvasOperations;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.Container;
@@ -42,6 +45,8 @@ import com.android.internal.widget.remotecompose.core.operations.utilities.IntMa
 import com.android.internal.widget.remotecompose.core.operations.utilities.StringSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 import com.android.internal.widget.remotecompose.core.serialize.Serializable;
+import com.android.internal.widget.remotecompose.core.types.IntegerConstant;
+import com.android.internal.widget.remotecompose.core.types.LongConstant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,7 +73,7 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.4f;
+    static final float BUILD = 0.5f;
 
     @NonNull ArrayList<Operation> mOperations = new ArrayList<>();
 
@@ -440,6 +445,94 @@ public class CoreDocument implements Serializable {
             return null;
         }
         return mDocProperties.get(key);
+    }
+
+    /**
+     * Apply a collection of operations to the document
+     *
+     * @param delta the delta to apply
+     */
+    public void applyUpdate(CoreDocument delta) {
+        HashMap<Integer, TextData> txtData = new HashMap<Integer, TextData>();
+        HashMap<Integer, BitmapData> imgData = new HashMap<Integer, BitmapData>();
+        HashMap<Integer, FloatConstant> fltData = new HashMap<Integer, FloatConstant>();
+        HashMap<Integer, IntegerConstant> intData = new HashMap<Integer, IntegerConstant>();
+        HashMap<Integer, LongConstant> longData = new HashMap<Integer, LongConstant>();
+        recursiveTreverse(
+                mOperations,
+                (op) -> {
+                    if (op instanceof TextData) {
+                        TextData d = (TextData) op;
+                        txtData.put(d.mTextId, d);
+                    } else if (op instanceof BitmapData) {
+                        BitmapData d = (BitmapData) op;
+                        imgData.put(d.mImageId, d);
+                    } else if (op instanceof FloatConstant) {
+                        FloatConstant d = (FloatConstant) op;
+                        fltData.put(d.mId, d);
+                    } else if (op instanceof IntegerConstant) {
+                        IntegerConstant d = (IntegerConstant) op;
+                        intData.put(d.mId, d);
+                    } else if (op instanceof LongConstant) {
+                        LongConstant d = (LongConstant) op;
+                        longData.put(d.mId, d);
+                    }
+                });
+
+        recursiveTreverse(
+                delta.mOperations,
+                (op) -> {
+                    if (op instanceof TextData) {
+                        TextData t = (TextData) op;
+                        TextData txtInDoc = txtData.get(t.mTextId);
+                        if (txtInDoc != null) {
+                            txtInDoc.update(t);
+                            Utils.log("update" + t.mText);
+                            txtInDoc.markDirty();
+                        }
+                    } else if (op instanceof BitmapData) {
+                        BitmapData b = (BitmapData) op;
+                        BitmapData imgInDoc = imgData.get(b.mImageId);
+                        if (imgInDoc != null) {
+                            imgInDoc.update(b);
+                            imgInDoc.markDirty();
+                        }
+                    } else if (op instanceof FloatConstant) {
+                        FloatConstant f = (FloatConstant) op;
+                        FloatConstant fltInDoc = fltData.get(f.mId);
+                        if (fltInDoc != null) {
+                            fltInDoc.update(f);
+                            fltInDoc.markDirty();
+                        }
+                    } else if (op instanceof IntegerConstant) {
+                        IntegerConstant ic = (IntegerConstant) op;
+                        IntegerConstant intInDoc = intData.get(ic.mId);
+                        if (intInDoc != null) {
+                            intInDoc.update(ic);
+                            intInDoc.markDirty();
+                        }
+                    } else if (op instanceof LongConstant) {
+                        LongConstant lc = (LongConstant) op;
+                        LongConstant longInDoc = longData.get(lc.mId);
+                        if (longInDoc != null) {
+                            longInDoc.update(lc);
+                            longInDoc.markDirty();
+                        }
+                    }
+                });
+    }
+
+    private interface Visitor {
+        void visit(Operation op);
+    }
+
+    private void recursiveTreverse(ArrayList<Operation> mOperations, Visitor visitor) {
+        for (Operation op : mOperations) {
+            if (op instanceof Container) {
+                recursiveTreverse(((Component) op).mList, visitor);
+            }
+            visitor.visit(op);
+        }
     }
 
     // ============== Haptic support ==================
@@ -911,7 +1004,7 @@ public class CoreDocument implements Serializable {
      *
      * @param id the click area id
      */
-    public void performClick(@NonNull RemoteContext context, int id) {
+    public void performClick(@NonNull RemoteContext context, int id, @NonNull String metadata) {
         for (ClickAreaRepresentation clickArea : mClickAreas) {
             if (clickArea.mId == id) {
                 warnClickListeners(clickArea);
@@ -920,7 +1013,7 @@ public class CoreDocument implements Serializable {
         }
 
         for (IdActionCallback listener : mIdActionListeners) {
-            listener.onAction(id, "");
+            listener.onAction(id, metadata);
         }
 
         Component component = getComponent(id);

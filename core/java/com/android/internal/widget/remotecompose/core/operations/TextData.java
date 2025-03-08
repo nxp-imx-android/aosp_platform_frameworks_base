@@ -37,12 +37,21 @@ public class TextData extends Operation implements SerializableToString, Seriali
     private static final int OP_CODE = Operations.DATA_TEXT;
     private static final String CLASS_NAME = "TextData";
     public final int mTextId;
-    @NonNull public final String mText;
+    @NonNull public String mText;
     public static final int MAX_STRING_SIZE = 4000;
 
     public TextData(int textId, @NonNull String text) {
         this.mTextId = textId;
         this.mText = text;
+    }
+
+    /**
+     * Copy the data from another text data
+     *
+     * @param from source to copy from
+     */
+    public void update(TextData from) {
+        mText = from.mText;
     }
 
     @Override
