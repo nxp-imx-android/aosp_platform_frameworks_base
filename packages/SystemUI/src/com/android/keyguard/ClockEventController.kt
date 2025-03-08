@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.res.Resources
-import android.graphics.RectF
 import android.os.Trace
 import android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS
 import android.provider.Settings.Global.ZEN_MODE_OFF
@@ -60,6 +59,7 @@ import com.android.systemui.plugins.clocks.ClockEventListener
 import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockTickRate
+import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.plugins.clocks.ZenData.ZenMode
@@ -250,7 +250,7 @@ constructor(
     private var largeClockOnSecondaryDisplay = false
 
     val dozeAmount = MutableStateFlow(0f)
-    val onClockBoundsChanged = MutableStateFlow<RectF?>(null)
+    val onClockBoundsChanged = MutableStateFlow<VRectF>(VRectF.ZERO)
 
     private fun isDarkTheme(): Boolean {
         val isLightTheme = TypedValue()
@@ -315,7 +315,7 @@ constructor(
 
     private val clockListener =
         object : ClockEventListener {
-            override fun onBoundsChanged(bounds: RectF) {
+            override fun onBoundsChanged(bounds: VRectF) {
                 onClockBoundsChanged.value = bounds
             }
         }

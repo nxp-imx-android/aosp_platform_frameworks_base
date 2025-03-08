@@ -73,7 +73,11 @@ class DropTargetManager(
         val newDragZone = state.getMatchingDragZone(x = x, y = y)
         state.currentDragZone = newDragZone
         if (oldDragZone != newDragZone) {
-            dragZoneChangedListener.onDragZoneChanged(from = oldDragZone, to = newDragZone)
+            dragZoneChangedListener.onDragZoneChanged(
+                draggedObject = state.draggedObject,
+                from = oldDragZone,
+                to = newDragZone
+            )
             updateDropTarget()
         }
     }
@@ -136,7 +140,7 @@ class DropTargetManager(
     /** Stores the current drag state. */
     private inner class DragState(
         private val dragZones: List<DragZone>,
-        draggedObject: DraggedObject
+        val draggedObject: DraggedObject
     ) {
         val initialDragZone =
             if (draggedObject.initialLocation.isOnLeft(isLayoutRtl)) {
@@ -157,7 +161,7 @@ class DropTargetManager(
         fun onInitialDragZoneSet(dragZone: DragZone)
 
         /** Called when the object was dragged to a different drag zone. */
-        fun onDragZoneChanged(from: DragZone, to: DragZone)
+        fun onDragZoneChanged(draggedObject: DraggedObject, from: DragZone, to: DragZone)
 
         /** Called when the drag has ended with the zone it ended in. */
         fun onDragEnded(zone: DragZone)

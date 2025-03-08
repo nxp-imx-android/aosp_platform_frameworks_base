@@ -33,7 +33,8 @@ import androidx.annotation.VisibleForTesting;
 import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.collection.listbuilder.NotifSection;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
-
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -51,9 +52,26 @@ public class BundleEntry extends PipelineEntry {
     // TODO (b/389839319): implement the row
     private ExpandableNotificationRow mRow;
 
+    private final List<ListEntry> mChildren = new ArrayList<>();
+
+    private final List<ListEntry> mUnmodifiableChildren = Collections.unmodifiableList(mChildren);
+
     public BundleEntry(String key) {
         super(key);
     }
+
+    void addChild(ListEntry child) {
+        mChildren.add(child);
+    }
+
+    @NonNull
+    public List<ListEntry> getChildren() {
+        return mUnmodifiableChildren;
+    }
+
+    /**
+     * @return Null because bundles do not have an associated NotificationEntry.
+     */
 
     @Nullable
     @Override

@@ -22,6 +22,8 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
 import android.content.Context
+import android.hardware.input.InputManager
+import android.os.Handler
 import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
 import android.view.Display.DEFAULT_DISPLAY
@@ -29,11 +31,13 @@ import android.view.IWindowManager
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
+import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.transition.Transitions
 
 /** Controls the display windowing mode in desktop mode */
@@ -44,7 +48,25 @@ class DesktopDisplayModeController(
     private val windowManager: IWindowManager,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
+    private val inputManager: InputManager,
+    @ShellMainThread private val mainHandler: Handler,
 ) {
+
+    private val onTabletModeChangedListener =
+        object : InputManager.OnTabletModeChangedListener {
+            override fun onTabletModeChanged(whenNanos: Long, inTabletMode: Boolean) {
+                refreshDisplayWindowingMode()
+            }
+        }
+
+    init {
+        if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
+            inputManager.registerOnTabletModeChangedListener(
+                onTabletModeChangedListener,
+                mainHandler,
+            )
+        }
+    }
 
     fun refreshDisplayWindowingMode() {
         if (!DesktopExperienceFlags.ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING.isTrue) return
@@ -89,10 +111,20 @@ class DesktopDisplayModeController(
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
     }
 
-    private fun getTargetWindowingModeForDefaultDisplay(): Int {
+    @VisibleForTesting
+    fun getTargetWindowingModeForDefaultDisplay(): Int {
         if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
             return WINDOWING_MODE_FREEFORM
         }
+        if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
+            if (isInClamshellMode()) {
+                return WINDOWING_MODE_FREEFORM
+            }
+            return WINDOWING_MODE_FULLSCREEN
+        }
+
+        // If form factor-based desktop first switch is disabled, use the default display windowing
+        // mode here to keep the freeform mode for some form factors (e.g., FEATURE_PC).
         return windowManager.getWindowingMode(DEFAULT_DISPLAY)
     }
 
@@ -107,6 +139,8 @@ class DesktopDisplayModeController(
 
     private fun hasExternalDisplay() =
         rootTaskDisplayAreaOrganizer.getDisplayIds().any { it != DEFAULT_DISPLAY }
+
+    private fun isInClamshellMode() = inputManager.isInTabletMode() == InputManager.SWITCH_STATE_OFF
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

@@ -639,7 +639,7 @@ public class BubbleTransitions {
         @Override
         public void continueCollapse() {
             mBubble.cleanupTaskView();
-            if (mTaskLeash == null) return;
+            if (mTaskLeash == null || !mTaskLeash.isValid()) return;
             SurfaceControl.Transaction t = new SurfaceControl.Transaction();
             t.reparent(mTaskLeash, mRootLeash);
             t.apply();

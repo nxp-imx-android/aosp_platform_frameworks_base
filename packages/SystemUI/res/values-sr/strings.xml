@@ -435,6 +435,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Укључи звук окружења"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Алатке"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Титл уживо"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Белешка"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Желите да одблокирате микрофон уређаја?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Желите да одблокирате камеру уређаја?"</string>
@@ -907,7 +909,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Користи подељени екран са апликацијом с десне стране"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Користи подељени екран са апликацијом с леве стране"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Користи приказ преко целог екрана"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Користи приказ за рачунаре"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Пређи у апликацију здесна или испод док је подељен екран"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Пређите у апликацију слева или изнад док користите подељени екран"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"У режиму подељеног екрана: замена једне апликације другом"</string>

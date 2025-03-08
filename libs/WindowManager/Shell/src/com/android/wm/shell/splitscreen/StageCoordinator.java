@@ -93,7 +93,6 @@ import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.IActivityTaskManager;
 import android.app.PendingIntent;
-import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -2249,10 +2248,10 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
         setRootForceTranslucent(true, wct);
         if (!enableFlexibleSplit()) {
-            //TODO(b/373709676) Need to figure out how adjacentRoots work for flex split
+            // TODO: consider support 3 splits
 
             // Make the stages adjacent to each other so they occlude what's behind them.
-            wct.setAdjacentRoots(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
+            wct.setAdjacentRootSet(mMainStage.mRootTaskInfo.token, mSideStage.mRootTaskInfo.token);
             mSplitLayout.getInvisibleBounds(mTempRect1);
             wct.setBounds(mSideStage.mRootTaskInfo.token, mTempRect1);
         }
@@ -2263,7 +2262,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             });
             mLaunchAdjacentController.setLaunchAdjacentRoot(mSideStage.mRootTaskInfo.token);
         } else {
-            // TODO(b/373709676) Need to figure out how adjacentRoots work for flex split
+            // TODO: consider support 3 splits
         }
     }
 

@@ -35,10 +35,10 @@ class SysUiStateExtTest : SysuiTestCase() {
 
     @Test
     fun updateFlags() {
-        underTest.updateFlags(Display.DEFAULT_DISPLAY, 1L to true, 2L to false, 3L to true)
+        underTest.updateFlags(Display.DEFAULT_DISPLAY, 1L to true, 2L to false, 4L to true)
 
         assertThat(underTest.flags and 1L).isNotEqualTo(0L)
         assertThat(underTest.flags and 2L).isEqualTo(0L)
-        assertThat(underTest.flags and 3L).isNotEqualTo(0L)
+        assertThat(underTest.flags and 4L).isNotEqualTo(0L)
     }
 }

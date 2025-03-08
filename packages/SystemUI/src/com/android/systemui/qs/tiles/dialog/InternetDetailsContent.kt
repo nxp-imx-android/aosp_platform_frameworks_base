@@ -19,26 +19,14 @@ package com.android.systemui.qs.tiles.dialog
 import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.systemui.res.R
 
 @Composable
 fun InternetDetailsContent(viewModel: InternetDetailsViewModel) {
     val coroutineScope = rememberCoroutineScope()
-    val context = LocalContext.current
-
-    val internetDetailsContentManager = remember {
-        viewModel.contentManagerFactory.create(
-            canConfigMobileData = viewModel.getCanConfigMobileData(),
-            canConfigWifi = viewModel.getCanConfigWifi(),
-            coroutineScope = coroutineScope,
-            context = context,
-        )
-    }
 
     AndroidView(
         modifier = Modifier.fillMaxSize(),
@@ -46,11 +34,11 @@ fun InternetDetailsContent(viewModel: InternetDetailsViewModel) {
             // Inflate with the existing dialog xml layout and bind it with the manager
             val view =
                 LayoutInflater.from(context).inflate(R.layout.internet_connectivity_dialog, null)
-            internetDetailsContentManager.bind(view)
+            viewModel.internetDetailsContentManager.bind(view, coroutineScope)
 
             view
             // TODO: b/377388104 - Polish the internet details view UI
         },
-        onRelease = { internetDetailsContentManager.unBind() },
+        onRelease = { viewModel.internetDetailsContentManager.unBind() },
     )
 }

@@ -502,7 +502,8 @@ class PackageFlattener {
         // Group values by configuration.
         for (auto& config_value : entry.values) {
           config_to_entry_list_map[config_value->config].push_back(
-              FlatEntry{&entry, config_value->value.get(), local_key_index});
+              FlatEntry{&entry, config_value->value.get(), local_key_index,
+                        config_value->uses_readwrite_feature_flags});
         }
       }
 

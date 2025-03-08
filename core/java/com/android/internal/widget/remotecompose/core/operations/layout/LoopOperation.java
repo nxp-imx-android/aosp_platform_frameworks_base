@@ -211,7 +211,6 @@ public class LoopOperation extends PaintOperation
                 .add("until", mUntil, mUntilOut)
                 .add("from", mFrom, mFromOut)
                 .add("step", mStep, mStepOut)
-                .add("untilOut", mUntilOut)
                 .add("list", mList);
     }
 }

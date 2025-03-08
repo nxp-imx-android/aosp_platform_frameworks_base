@@ -266,8 +266,6 @@ class BubbleTaskViewListenerTest {
             optionsCaptor.capture(),
             any())
 
-        assertThat((intentCaptor.lastValue.flags
-                and Intent.FLAG_ACTIVITY_MULTIPLE_TASK) != 0).isTrue()
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
@@ -295,8 +293,6 @@ class BubbleTaskViewListenerTest {
             optionsCaptor.capture(),
             any())
 
-        assertThat((intentCaptor.lastValue.flags
-                and Intent.FLAG_ACTIVITY_MULTIPLE_TASK) != 0).isTrue()
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()
@@ -324,8 +320,6 @@ class BubbleTaskViewListenerTest {
             optionsCaptor.capture(),
             any())
 
-        assertThat((intentCaptor.lastValue.flags
-                and Intent.FLAG_ACTIVITY_MULTIPLE_TASK) != 0).isTrue()
         assertThat(optionsCaptor.lastValue.launchedFromBubble).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.isApplyActivityFlagsForBubbles).isFalse() // chat only
         assertThat(optionsCaptor.lastValue.taskAlwaysOnTop).isTrue()

@@ -16,10 +16,10 @@
 package com.android.platform.test.ravenwood.ravenhelper.policytoannot
 
 import com.android.hoststubgen.ArgumentsException
-import com.android.hoststubgen.ensureFileExists
 import com.android.hoststubgen.utils.ArgIterator
 import com.android.hoststubgen.utils.BaseOptions
 import com.android.hoststubgen.utils.SetOnce
+import com.android.hoststubgen.utils.ensureFileExists
 
 /**
  * Options for the "ravenhelper pta" subcommand.
@@ -41,8 +41,8 @@ class PtaOptions(
     var dumpOperations: SetOnce<Boolean> = SetOnce(false),
 ) : BaseOptions() {
 
-    override fun parseOption(option: String, ai: ArgIterator): Boolean {
-        fun nextArg(): String = ai.nextArgRequired(option)
+    override fun parseOption(option: String, args: ArgIterator): Boolean {
+        fun nextArg(): String = args.nextArgRequired(option)
 
         when (option) {
             // TODO: Write help

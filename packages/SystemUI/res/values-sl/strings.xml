@@ -423,18 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Okolica"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Levo"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Desno"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Okolica"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Okolica na levi"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Okolica na desni"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Razširitev na ločene kontrolnike za levo in desno stran"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Strnitev v enotni kontrolnik"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Izklop okoliškega zvoka"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Vklop okoliškega zvoka"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Orodja"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Samodejni podnapisi"</string>
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Nastavitve"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Opomba"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Želite odblokirati mikrofon v napravi?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Želite odblokirati fotoaparat v napravi?"</string>
@@ -907,7 +905,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Uporaba razdeljenega zaslona z aplikacijo na desni"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Uporaba razdeljenega zaslona z aplikacijo na levi"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Uporaba celozaslonskega načina"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"Uporaba pogleda za namizni računalnik"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Preklop na aplikacijo desno ali spodaj med uporabo razdeljenega zaslona"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Preklop na aplikacijo levo ali zgoraj med uporabo razdeljenega zaslona"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Pri razdeljenem zaslonu: medsebojna zamenjava aplikacij"</string>
@@ -1003,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Dodajanje na položaj <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Položaj je neveljaven."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Položaj <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Ploščica je že dodana"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Ploščica je bila dodana"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Ploščica je bila odstranjena"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Urejevalnik hitrih nastavitev."</string>

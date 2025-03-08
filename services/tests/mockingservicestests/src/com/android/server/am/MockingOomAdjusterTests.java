@@ -746,6 +746,36 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @Test
     @EnableFlags(Flags.FLAG_USE_CPU_TIME_CAPABILITY)
+    public void testUpdateOomAdjFreezeState_bindingWithAllowFreeze() {
+        ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
+        WindowProcessController wpc = app.getWindowProcessController();
+        doReturn(true).when(wpc).hasVisibleActivities();
+
+        final ProcessRecord app2 = spy(makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
+                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false));
+
+        // App with a visible activity binds to app2 without any special flag.
+        bindService(app2, app, null, null, 0, mock(IBinder.class));
+
+        final ProcessRecord app3 = spy(makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
+                MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false));
+
+        // App with a visible activity binds to app3 with ALLOW_FREEZE.
+        bindService(app3, app, null, null, Context.BIND_ALLOW_FREEZE, mock(IBinder.class));
+
+        setProcessesToLru(app, app2, app3);
+
+        updateOomAdj(app);
+
+        assertCpuTime(app);
+        assertCpuTime(app2);
+        assertNoCpuTime(app3);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_USE_CPU_TIME_CAPABILITY)
     @DisableFlags(Flags.FLAG_PROTOTYPE_AGGRESSIVE_FREEZING)
     public void testUpdateOomAdjFreezeState_bindingFromFgs() {
         final ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,

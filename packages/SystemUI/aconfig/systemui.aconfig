@@ -1401,6 +1401,16 @@ flag {
 }
 
 flag {
+    name: "media_controls_device_manager_background_execution"
+    namespace: "systemui"
+    description: "Sends some instances creation to background thread"
+    bug: "400200474"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "output_switcher_redesign"
   namespace: "systemui"
   description: "Enables visual update for Media Output Switcher"
@@ -1833,6 +1843,16 @@ flag {
     namespace: "systemui"
     description: "Updates to button animations and font changes for bouncer, bouncer_ui_revamp will cover only the blur changes."
     bug: "376491880"
+}
+
+flag {
+  name: "disable_blurred_shade_visible"
+  namespace: "systemui"
+  description: "Removes the check for a blur radius when determining shade window visibility"
+  bug: "394977231"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
 }
 
 flag {

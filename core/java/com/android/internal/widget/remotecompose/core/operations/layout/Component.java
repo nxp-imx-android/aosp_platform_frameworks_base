@@ -556,6 +556,7 @@ public class Component extends PaintOperation
         ComponentMeasure m = measure.get(this);
         if (!mFirstLayout
                 && context.isAnimationEnabled()
+                && mAnimationSpec.isAnimationEnabled()
                 && !(this instanceof LayoutComponentContent)) {
             if (mAnimateMeasure == null) {
                 ComponentMeasure origin =
@@ -1127,17 +1128,6 @@ public class Component extends PaintOperation
                 components.add((Component) op);
             }
         }
-    }
-
-    /** Extract CanvasOperations if present */
-    public @Nullable CanvasOperations getCanvasOperations(LayoutComponent layoutComponent) {
-        for (Operation op : mList) {
-            if (op instanceof CanvasOperations) {
-                ((CanvasOperations) op).setComponent(layoutComponent);
-                return (CanvasOperations) op;
-            }
-        }
-        return null;
     }
 
     /**

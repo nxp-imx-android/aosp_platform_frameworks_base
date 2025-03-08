@@ -28,6 +28,7 @@ import com.android.internal.widget.remotecompose.core.operations.ClipRect;
 import com.android.internal.widget.remotecompose.core.operations.ColorConstant;
 import com.android.internal.widget.remotecompose.core.operations.ColorExpression;
 import com.android.internal.widget.remotecompose.core.operations.ComponentValue;
+import com.android.internal.widget.remotecompose.core.operations.ConditionalOperations;
 import com.android.internal.widget.remotecompose.core.operations.DataListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DataListIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapIds;
@@ -53,6 +54,7 @@ import com.android.internal.widget.remotecompose.core.operations.FloatConstant;
 import com.android.internal.widget.remotecompose.core.operations.FloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.FloatFunctionCall;
 import com.android.internal.widget.remotecompose.core.operations.FloatFunctionDefine;
+import com.android.internal.widget.remotecompose.core.operations.HapticFeedback;
 import com.android.internal.widget.remotecompose.core.operations.Header;
 import com.android.internal.widget.remotecompose.core.operations.ImageAttribute;
 import com.android.internal.widget.remotecompose.core.operations.IntegerExpression;
@@ -67,6 +69,7 @@ import com.android.internal.widget.remotecompose.core.operations.PaintData;
 import com.android.internal.widget.remotecompose.core.operations.ParticlesCreate;
 import com.android.internal.widget.remotecompose.core.operations.ParticlesLoop;
 import com.android.internal.widget.remotecompose.core.operations.PathAppend;
+import com.android.internal.widget.remotecompose.core.operations.PathCombine;
 import com.android.internal.widget.remotecompose.core.operations.PathCreate;
 import com.android.internal.widget.remotecompose.core.operations.PathData;
 import com.android.internal.widget.remotecompose.core.operations.PathTween;
@@ -890,7 +893,7 @@ public class RemoteComposeBuffer {
      * @return new id that merges the two text
      */
     public int textMerge(int id1, int id2) {
-        int textId = addText(id1 + "+" + id2);
+        int textId = nextId();
         TextMerge.apply(mBuffer, textId, id1, id2);
         return textId;
     }
@@ -2273,8 +2276,6 @@ public class RemoteComposeBuffer {
         return mRemoteComposeState.nextId();
     }
 
-    private boolean mInImpulseProcess = false;
-
     /**
      * add an impulse. (must be followed by impulse end)
      *
@@ -2283,22 +2284,16 @@ public class RemoteComposeBuffer {
      */
     public void addImpulse(float duration, float start) {
         ImpulseOperation.apply(mBuffer, duration, start);
-        mInImpulseProcess = false;
     }
 
     /** add an impulse process */
     public void addImpulseProcess() {
         ImpulseProcess.apply(mBuffer);
-        mInImpulseProcess = true;
     }
 
     /** Add an impulse end */
     public void addImpulseEnd() {
         ContainerEnd.apply(mBuffer);
-        if (mInImpulseProcess) {
-            ContainerEnd.apply(mBuffer);
-        }
-        mInImpulseProcess = false;
     }
 
     /**
@@ -2421,5 +2416,38 @@ public class RemoteComposeBuffer {
         }
 
         return imageId;
+    }
+
+    /**
+     * Combine two paths
+     *
+     * @param id output id
+     * @param path1 first path
+     * @param path2 second path
+     * @param op operation to perform OP_DIFFERENCE, OP_INTERSECT, OP_REVERSE_DIFFERENCE, OP_UNION,
+     *     OP_XOR
+     */
+    public void pathCombine(int id, int path1, int path2, byte op) {
+        PathCombine.apply(mBuffer, id, path1, path2, op);
+    }
+
+    /**
+     * Perform a haptic feedback
+     *
+     * @param feedbackConstant
+     */
+    public void performHaptic(int feedbackConstant) {
+        HapticFeedback.apply(mBuffer, feedbackConstant);
+    }
+
+    /**
+     * Add a conditional operation
+     *
+     * @param type type of comparison
+     * @param a first value
+     * @param b second value
+     */
+    public void addConditionalOperations(byte type, float a, float b) {
+        ConditionalOperations.apply(mBuffer, type, a, b);
     }
 }

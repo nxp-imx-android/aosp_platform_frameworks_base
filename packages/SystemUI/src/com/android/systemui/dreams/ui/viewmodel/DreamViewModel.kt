@@ -61,7 +61,7 @@ constructor(
     fun startTransitionFromDream() {
         val showGlanceableHub =
             if (communalSettingsInteractor.isV2FlagEnabled()) {
-                communalInteractor.shouldShowCommunal.value
+                communalSettingsInteractor.autoOpenEnabled.value
             } else {
                 communalInteractor.isCommunalEnabled.value &&
                     !keyguardUpdateMonitor.isEncryptedOrLockdown(userTracker.userId)

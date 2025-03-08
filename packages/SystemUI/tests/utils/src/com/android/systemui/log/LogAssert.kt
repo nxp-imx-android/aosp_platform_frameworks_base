@@ -18,7 +18,6 @@ package com.android.systemui.log
 import android.util.Log
 import android.util.Log.TerribleFailureHandler
 import com.google.common.truth.Truth.assertWithMessage
-import java.util.concurrent.Callable
 
 /** Asserts that [notLoggingBlock] does not make a call to [Log.wtf] */
 fun <T> assertDoesNotLogWtf(
@@ -65,28 +64,12 @@ fun <T> assertLogsWtf(
     return WtfBlockResult(caught, result)
 }
 
-/** Assert that [loggingCallable] makes a call to [Log.wtf] */
-@JvmOverloads
-fun <T> assertLogsWtf(
-    message: String = "Expected Log.wtf to be called",
-    allowMultiple: Boolean = false,
-    loggingCallable: Callable<T>,
-): WtfBlockResult<T> =
-    assertLogsWtf(message = message, allowMultiple = allowMultiple, loggingCallable::call)
-
 /** Assert that [loggingBlock] makes at least one call to [Log.wtf] */
 @JvmOverloads
 fun <T> assertLogsWtfs(
     message: String = "Expected Log.wtf to be called once or more",
     loggingBlock: () -> T,
 ): WtfBlockResult<T> = assertLogsWtf(message, allowMultiple = true, loggingBlock)
-
-/** Assert that [loggingCallable] makes at least one call to [Log.wtf] */
-@JvmOverloads
-fun <T> assertLogsWtfs(
-    message: String = "Expected Log.wtf to be called once or more",
-    loggingCallable: Callable<T>,
-): WtfBlockResult<T> = assertLogsWtf(message, allowMultiple = true, loggingCallable)
 
 /** The data passed to [TerribleFailureHandler.onTerribleFailure] */
 data class TerribleFailureLog(

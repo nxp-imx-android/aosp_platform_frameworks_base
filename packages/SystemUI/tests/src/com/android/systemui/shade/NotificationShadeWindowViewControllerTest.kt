@@ -51,6 +51,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.log.assertLogsWtf
 import com.android.systemui.qs.flags.QSComposeFragment
 import com.android.systemui.res.R
 import com.android.systemui.scene.ui.view.WindowRootViewKeyEventHandler
@@ -413,7 +414,9 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
 
             // THEN move is ignored, down is handled, and window is notified
             assertThat(interactionEventHandler.handleDispatchTouchEvent(MOVE_EVENT)).isFalse()
-            assertThat(interactionEventHandler.handleDispatchTouchEvent(DOWN_EVENT)).isTrue()
+            assertLogsWtf {
+                assertThat(interactionEventHandler.handleDispatchTouchEvent(DOWN_EVENT)).isTrue()
+            }
             verify(notificationShadeWindowController).setLaunchingActivity(false)
         }
 

@@ -443,7 +443,8 @@ public final class ImeVisibilityStateComputer {
     }
 
     @GuardedBy("ImfLock.class")
-    ImeVisibilityResult computeState(ImeTargetWindowState state, boolean allowVisible) {
+    ImeVisibilityResult computeState(ImeTargetWindowState state, boolean allowVisible,
+            boolean imeRequestedVisible) {
         // TODO: Output the request IME visibility state according to the requested window state
         final int softInputVisibility = state.mSoftInputModeState & SOFT_INPUT_MASK_STATE;
         // Should we auto-show the IME even if the caller has not
@@ -576,7 +577,8 @@ public final class ImeVisibilityStateComputer {
                         SoftInputShowHideReason.HIDE_SAME_WINDOW_FOCUSED_WITHOUT_EDITOR);
             }
         }
-        if (!state.hasEditorFocused() && mInputShown && state.isStartInputByGainFocus()
+        if (!state.hasEditorFocused() && (mInputShown || (Flags.refactorInsetsController()
+                && imeRequestedVisible)) && state.isStartInputByGainFocus()
                 && mService.mInputMethodDeviceConfigs.shouldHideImeWhenNoEditorFocus()) {
             // Hide the soft-keyboard when the system do nothing for softInputModeState
             // of the window being gained focus without an editor. This behavior benefits

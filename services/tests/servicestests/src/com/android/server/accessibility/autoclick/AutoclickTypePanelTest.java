@@ -198,6 +198,72 @@ public class AutoclickTypePanelTest {
     }
 
     @Test
+    public void clickLeftClickButton_resumeAutoClick() {
+        // Pause autoclick.
+        mPauseButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        // Click the button and verify autoclick resumes.
+        mLeftClickButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+    }
+
+    @Test
+    public void clickRightClickButton_resumeAutoClick() {
+        // Pause autoclick.
+        mPauseButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        // Click the button and verify autoclick resumes.
+        mRightClickButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+    }
+
+    @Test
+    public void clickDoubleClickButton_resumeAutoClick() {
+        // Pause autoclick.
+        mPauseButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        // Click the button and verify autoclick resumes.
+        mDoubleClickButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+    }
+
+    @Test
+    public void clickDragButton_resumeAutoClick() {
+        // Pause autoclick.
+        mPauseButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        // Click the button and verify autoclick resumes.
+        mDragButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+    }
+
+    @Test
+    public void clickScrollButton_resumeAutoClick() {
+        // Pause autoclick.
+        mPauseButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        // Click the button and verify autoclick resumes.
+        mScrollButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+    }
+
+    @Test
+    public void clickPositionButton_resumeAutoClick() {
+        // Pause autoclick.
+        mPauseButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isTrue();
+
+        // Click the button and verify autoclick resumes.
+        mPositionButton.callOnClick();
+        assertThat(mAutoclickTypePanel.isPaused()).isFalse();
+    }
+
+    @Test
     public void moveToNextCorner_positionButton_rotatesThroughAllPositions() {
         // Define all positions in sequence
         int[][] expectedPositions = {

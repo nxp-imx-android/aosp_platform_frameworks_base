@@ -340,6 +340,17 @@ public abstract class PaintContext {
     public abstract void tweenPath(int out, int path1, int path2, float tween);
 
     /**
+     * Perform a between two path and return the resulting path
+     *
+     * @param out the interpolated path
+     * @param path1 start path
+     * @param path2 end path
+     * @param operation 0 = difference , 1 = intersection, 2 = reverse_difference, 3 = union, 4 =
+     *     xor
+     */
+    public abstract void combinePath(int out, int path1, int path2, byte operation);
+
+    /**
      * This applies changes to the current paint
      *
      * @param mPaintData the list of changes

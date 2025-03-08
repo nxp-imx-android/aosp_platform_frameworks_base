@@ -684,7 +684,10 @@ public final class WindowContainerTransaction implements Parcelable {
      * organizer.
      * @param root1 the first root.
      * @param root2 the second root.
+     * @deprecated replace with {@link #setAdjacentRootSet}
      */
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    @Deprecated
     @NonNull
     public WindowContainerTransaction setAdjacentRoots(
             @NonNull WindowContainerToken root1, @NonNull WindowContainerToken root2) {
@@ -704,7 +707,7 @@ public final class WindowContainerTransaction implements Parcelable {
      *
      * @param roots the Tasks that should be adjacent to each other.
      * @throws IllegalArgumentException if roots have size < 2.
-     * @hide // TODO(b/373709676) Rename to setAdjacentRoots and update CTS.
+     * @hide // TODO(b/373709676) Rename to setAdjacentRoots and update CTS in 25Q4.
      */
     @NonNull
     public WindowContainerTransaction setAdjacentRootSet(@NonNull WindowContainerToken... roots) {
@@ -1003,7 +1006,7 @@ public final class WindowContainerTransaction implements Parcelable {
     /**
      * Sets to TaskFragments adjacent to each other. Containers below two visible adjacent
      * TaskFragments will be made invisible. This is similar to
-     * {@link #setAdjacentRoots(WindowContainerToken, WindowContainerToken)}, but can be used with
+     * {@link #setAdjacentRootSet(WindowContainerToken...)}, but can be used with
      * fragmentTokens when that TaskFragments haven't been created (but will be created in the same
      * {@link WindowContainerTransaction}).
      * @param fragmentToken1    client assigned unique token to create TaskFragment with specified

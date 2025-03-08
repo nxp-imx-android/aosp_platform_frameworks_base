@@ -81,6 +81,13 @@ import static com.android.server.autofill.PresentationStatsEventLogger.AUTHENTIC
 import static com.android.server.autofill.PresentationStatsEventLogger.AUTHENTICATION_RESULT_SUCCESS;
 import static com.android.server.autofill.PresentationStatsEventLogger.AUTHENTICATION_TYPE_DATASET_AUTHENTICATION;
 import static com.android.server.autofill.PresentationStatsEventLogger.AUTHENTICATION_TYPE_FULL_AUTHENTICATION;
+import static com.android.server.autofill.PresentationStatsEventLogger.FILL_DIALOG_NOT_SHOWN_REASON_DELAY_AFTER_ANIMATION_END;
+import static com.android.server.autofill.PresentationStatsEventLogger.FILL_DIALOG_NOT_SHOWN_REASON_FILL_DIALOG_DISABLED;
+import static com.android.server.autofill.PresentationStatsEventLogger.FILL_DIALOG_NOT_SHOWN_REASON_LAST_TRIGGERED_ID_CHANGED;
+import static com.android.server.autofill.PresentationStatsEventLogger.FILL_DIALOG_NOT_SHOWN_REASON_SCREEN_HAS_CREDMAN_FIELD;
+import static com.android.server.autofill.PresentationStatsEventLogger.FILL_DIALOG_NOT_SHOWN_REASON_TIMEOUT_SINCE_IME_ANIMATED;
+import static com.android.server.autofill.PresentationStatsEventLogger.FILL_DIALOG_NOT_SHOWN_REASON_UNKNOWN;
+import static com.android.server.autofill.PresentationStatsEventLogger.FILL_DIALOG_NOT_SHOWN_REASON_WAIT_FOR_IME_ANIMATION;
 import static com.android.server.autofill.PresentationStatsEventLogger.NOT_SHOWN_REASON_ANY_SHOWN;
 import static com.android.server.autofill.PresentationStatsEventLogger.NOT_SHOWN_REASON_NO_FOCUS;
 import static com.android.server.autofill.PresentationStatsEventLogger.NOT_SHOWN_REASON_REQUEST_FAILED;
@@ -5622,6 +5629,10 @@ final class Session
                 synchronized (mLock) {
                     final ViewState currentView = mViewStates.get(mCurrentViewId);
                     currentView.setState(ViewState.STATE_FILL_DIALOG_SHOWN);
+                    // Set fill_dialog_not_shown_reason to unknown (a.k.a shown). It is needed due
+                    // to possible SHOW_FILL_DIALOG_WAIT.
+                    mPresentationStatsEventLogger.maybeSetFillDialogNotShownReason(
+                            FILL_DIALOG_NOT_SHOWN_REASON_UNKNOWN);
                 }
                 // Just show fill dialog once per fill request, so disabled after shown.
                 // Note: Cannot disable before requestShowFillDialog() because the method
@@ -5725,6 +5736,15 @@ final class Session
 
     private boolean isFillDialogUiEnabled() {
         synchronized (mLock) {
+            if (mSessionFlags.mFillDialogDisabled) {
+                mPresentationStatsEventLogger.maybeSetFillDialogNotShownReason(
+                        FILL_DIALOG_NOT_SHOWN_REASON_FILL_DIALOG_DISABLED);
+            }
+            if (mSessionFlags.mScreenHasCredmanField) {
+                // Prefer to log "HAS_CREDMAN_FIELD" over "FILL_DIALOG_DISABLED".
+                mPresentationStatsEventLogger.maybeSetFillDialogNotShownReason(
+                        FILL_DIALOG_NOT_SHOWN_REASON_SCREEN_HAS_CREDMAN_FIELD);
+            }
             return !mSessionFlags.mFillDialogDisabled && !mSessionFlags.mScreenHasCredmanField;
         }
     }
@@ -5789,6 +5809,8 @@ final class Session
                     || !ArrayUtils.contains(mLastFillDialogTriggerIds, filledId)) {
                 // Last fill dialog triggered ids are changed.
                 if (sDebug) Log.w(TAG, "Last fill dialog triggered ids are changed.");
+                mPresentationStatsEventLogger.maybeSetFillDialogNotShownReason(
+                        FILL_DIALOG_NOT_SHOWN_REASON_LAST_TRIGGERED_ID_CHANGED);
                 return SHOW_FILL_DIALOG_NO;
             }
 
@@ -5815,6 +5837,8 @@ final class Session
                     // we need to wait for animation to happen. We can't return from here yet.
                     // This is the situation #2 described above.
                     Log.d(TAG, "Waiting for ime animation to complete before showing fill dialog");
+                    mPresentationStatsEventLogger.maybeSetFillDialogNotShownReason(
+                            FILL_DIALOG_NOT_SHOWN_REASON_WAIT_FOR_IME_ANIMATION);
                     mFillDialogRunnable = createFillDialogEvalRunnable(
                             response, filledId, filterText, flags);
                     return SHOW_FILL_DIALOG_WAIT;
@@ -5824,9 +5848,15 @@ final class Session
                 // max of start input time or the ime finish time
                 long effectiveDuration = currentTimestampMs
                         - Math.max(mLastInputStartTime, mImeAnimationFinishTimeMs);
+                mPresentationStatsEventLogger.maybeSetFillDialogReadyToShowMs(
+                        currentTimestampMs);
+                mPresentationStatsEventLogger.maybeSetImeAnimationFinishMs(
+                        Math.max(mLastInputStartTime, mImeAnimationFinishTimeMs));
                 if (effectiveDuration >= mFillDialogTimeoutMs) {
                     Log.d(TAG, "Fill dialog not shown since IME has been up for more time than "
                             + mFillDialogTimeoutMs + "ms");
+                    mPresentationStatsEventLogger.maybeSetFillDialogNotShownReason(
+                            FILL_DIALOG_NOT_SHOWN_REASON_TIMEOUT_SINCE_IME_ANIMATED);
                     return SHOW_FILL_DIALOG_NO;
                 } else if (effectiveDuration < mFillDialogMinWaitAfterImeAnimationMs) {
                     // we need to wait for some time after animation ends
@@ -5834,6 +5864,8 @@ final class Session
                             response, filledId, filterText, flags);
                     mHandler.postDelayed(runnable,
                             mFillDialogMinWaitAfterImeAnimationMs - effectiveDuration);
+                    mPresentationStatsEventLogger.maybeSetFillDialogNotShownReason(
+                            FILL_DIALOG_NOT_SHOWN_REASON_DELAY_AFTER_ANIMATION_END);
                     return SHOW_FILL_DIALOG_WAIT;
                 }
             }

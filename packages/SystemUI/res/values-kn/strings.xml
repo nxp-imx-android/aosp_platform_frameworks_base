@@ -423,18 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ಎಡ"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ಬಲ"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"ಎಡಭಾಗದ ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"ಬಲಭಾಗದ ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ಪ್ರತ್ಯೇಕ ಎಡ ಮತ್ತು ಬಲ ಕಂಟ್ರೋಲ್‌ಗಳಿಗಾಗಿ ವಿಸ್ತರಿಸಿ"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ಯೂನಿಫೈಡ್ ಕಂಟ್ರೋಲ್‌ಗಾಗಿ ಕುಗ್ಗಿಸಿ"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್ ಅನ್ನು ಮ್ಯೂಟ್ ಮಾಡಿ"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"ಆ್ಯಂಬಿಯೆಂಟ್ ವಾಲ್ಯೂಮ್ ಅನ್ನು ಅನ್‌ಮ್ಯೂಟ್ ಮಾಡಿ"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"ಟೂಲ್‌ಗಳು"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"ಲೈವ್ ಕ್ಯಾಪ್ಶನ್"</string>
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"ಟಿಪ್ಪಣಿ"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"ಸಾಧನದ ಮೈಕ್ರೋಫೋನ್ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆಯಬೇಕೆ?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"ಸಾಧನದ ಕ್ಯಾಮರಾ ನಿರ್ಬಂಧವನ್ನು ತೆಗೆಯಬೇಕೆ?"</string>
@@ -907,7 +905,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ಬಲಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ಎಡಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ಫುಲ್‌ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬಳಸಿ"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"ಡೆಸ್ಕ್‌ಟಾಪ್ ವೀಕ್ಷಣೆಯನ್ನು ಬಳಸಿ"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಬಲಭಾಗ ಅಥವಾ ಕೆಳಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಎಡಭಾಗ ಅಥವಾ ಮೇಲ್ಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸುವ ಸಮಯದಲ್ಲಿ: ಒಂದು ಆ್ಯಪ್‌ನಿಂದ ಮತ್ತೊಂದು ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
@@ -1003,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"<xliff:g id="POSITION">%1$d</xliff:g> ಸ್ಥಾನಕ್ಕೆ ಸೇರಿಸಿ"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"ಸ್ಥಾನವು ಅಮಾನ್ಯವಾಗಿದೆ."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"ಸ್ಥಾನ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"ಟೈಲ್ ಅನ್ನು ಈಗಾಗಲೇ ಸೇರಿಸಲಾಗಿದೆ"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"ಟೈಲ್ ಸೇರಿಸಲಾಗಿದೆ"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"ಟೈಲ್ ತೆಗೆದುಹಾಕಲಾಗಿದೆ"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‍ಗಳ ಎಡಿಟರ್."</string>

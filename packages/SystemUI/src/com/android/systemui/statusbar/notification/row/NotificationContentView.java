@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.row;
 
+import static android.app.Flags.notificationsRedesignTemplates;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.Flags;
@@ -293,8 +295,8 @@ public class NotificationContentView extends FrameLayout implements Notification
                 useExactly = true;
             }
             int spec = MeasureSpec.makeMeasureSpec(size, useExactly
-                            ? MeasureSpec.EXACTLY
-                            : MeasureSpec.AT_MOST);
+                    ? MeasureSpec.EXACTLY
+                    : MeasureSpec.AT_MOST);
             measureChildWithMargins(mExpandedChild, widthMeasureSpec, 0, spec, 0);
             maxChildHeight = Math.max(maxChildHeight, mExpandedChild.getMeasuredHeight());
         }
@@ -719,16 +721,19 @@ public class NotificationContentView extends FrameLayout implements Notification
      *         height, the notification is clipped instead of being further shrunk.
      */
     private int getMinContentHeightHint() {
+        int actionListHeight = mContext.getResources().getDimensionPixelSize(
+                notificationsRedesignTemplates()
+                        ? com.android.internal.R.dimen.notification_2025_action_list_height
+                        : com.android.internal.R.dimen.notification_action_list_height);
         if (mIsChildInGroup && isVisibleOrTransitioning(VISIBLE_TYPE_SINGLELINE)) {
-            return mContext.getResources().getDimensionPixelSize(
-                        com.android.internal.R.dimen.notification_action_list_height);
+            return actionListHeight;
         }
 
         // Transition between heads-up & expanded, or pinned.
         if (mHeadsUpChild != null && mExpandedChild != null) {
             boolean transitioningBetweenHunAndExpanded =
                     isTransitioningFromTo(VISIBLE_TYPE_HEADSUP, VISIBLE_TYPE_EXPANDED) ||
-                    isTransitioningFromTo(VISIBLE_TYPE_EXPANDED, VISIBLE_TYPE_HEADSUP);
+                            isTransitioningFromTo(VISIBLE_TYPE_EXPANDED, VISIBLE_TYPE_HEADSUP);
             boolean pinned = !isVisibleOrTransitioning(VISIBLE_TYPE_CONTRACTED)
                     && (mIsHeadsUp || mHeadsUpAnimatingAway)
                     && mContainingNotification.canShowHeadsUp();
@@ -756,9 +761,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         } else if (mExpandedChild != null) {
             hint = getViewHeight(VISIBLE_TYPE_EXPANDED);
         } else if (mContractedChild != null) {
-            hint = getViewHeight(VISIBLE_TYPE_CONTRACTED)
-                    + mContext.getResources().getDimensionPixelSize(
-                            com.android.internal.R.dimen.notification_action_list_height);
+            hint = getViewHeight(VISIBLE_TYPE_CONTRACTED) + actionListHeight;
         } else {
             hint = getMinHeight();
         }
@@ -1053,8 +1056,8 @@ public class NotificationContentView extends FrameLayout implements Notification
         // the original type
         final int visibleType = (
                 isGroupExpanded() || mContainingNotification.isUserLocked())
-                    ? calculateVisibleType()
-                    : getVisibleType();
+                ? calculateVisibleType()
+                : getVisibleType();
         return getBackgroundColor(visibleType);
     }
 
@@ -1240,7 +1243,14 @@ public class NotificationContentView extends FrameLayout implements Notification
                 height = mContentHeight;
             }
             int expandedVisualType = getVisualTypeForHeight(height);
-            int collapsedVisualType = mIsChildInGroup && !isGroupExpanded()
+            final boolean shouldShowSingleLineView = mIsChildInGroup && !isGroupExpanded();
+            final boolean isSingleLineViewPresent = mSingleLineView != null;
+
+            if (shouldShowSingleLineView && !isSingleLineViewPresent) {
+                Log.wtf(TAG, "calculateVisibleType: SingleLineView is not available!");
+            }
+
+            final int collapsedVisualType = shouldShowSingleLineView && isSingleLineViewPresent
                     ? VISIBLE_TYPE_SINGLELINE
                     : getVisualTypeForHeight(mContainingNotification.getCollapsedHeight());
             return mTransformationStartVisibleType == collapsedVisualType
@@ -1261,7 +1271,13 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (!noExpandedChild && viewHeight == getViewHeight(VISIBLE_TYPE_EXPANDED)) {
             return VISIBLE_TYPE_EXPANDED;
         }
-        if (!mUserExpanding && mIsChildInGroup && !isGroupExpanded()) {
+        final boolean shouldShowSingleLineView = mIsChildInGroup && !isGroupExpanded();
+        final boolean isSingleLinePresent =  mSingleLineView != null;
+        if (shouldShowSingleLineView && !isSingleLinePresent) {
+            Log.wtf(TAG, "getVisualTypeForHeight: singleLineView is not available.");
+        }
+
+        if (!mUserExpanding && shouldShowSingleLineView && isSingleLinePresent) {
             return VISIBLE_TYPE_SINGLELINE;
         }
 
@@ -1276,7 +1292,7 @@ public class NotificationContentView extends FrameLayout implements Notification
             if (noExpandedChild || (mContractedChild != null
                     && viewHeight <= getViewHeight(VISIBLE_TYPE_CONTRACTED)
                     && (!mIsChildInGroup || isGroupExpanded()
-                            || !mContainingNotification.isExpanded(true /* allowOnKeyguard */)))) {
+                    || !mContainingNotification.isExpanded(true /* allowOnKeyguard */)))) {
                 return VISIBLE_TYPE_CONTRACTED;
             } else if (!noExpandedChild) {
                 return VISIBLE_TYPE_EXPANDED;
@@ -1600,16 +1616,28 @@ public class NotificationContentView extends FrameLayout implements Notification
             actionContainer.setVisibility(VISIBLE);
             // Set notification_action_list_margin_target's bottom margin to 0 when showing bubble
             if (actionListMarginTarget != null) {
-                ViewGroup.LayoutParams lp = actionListMarginTarget.getLayoutParams();
-                if (lp instanceof ViewGroup.MarginLayoutParams) {
-                    final ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) lp;
-                    if (mlp.bottomMargin > 0) {
-                        mlp.setMargins(mlp.leftMargin, mlp.topMargin, mlp.rightMargin, 0);
-                    }
+                removeBottomMargin(actionListMarginTarget);
+            }
+            if (notificationsRedesignTemplates()) {
+                // Similar treatment for smart reply margin
+                LinearLayout smartReplyContainer = layout.findViewById(
+                        com.android.internal.R.id.smart_reply_container);
+                if (smartReplyContainer != null) {
+                    removeBottomMargin(smartReplyContainer);
                 }
             }
         } else  {
             bubbleButton.setVisibility(GONE);
+        }
+    }
+
+    private static void removeBottomMargin(ViewGroup actionListMarginTarget) {
+        ViewGroup.LayoutParams lp = actionListMarginTarget.getLayoutParams();
+        if (lp instanceof MarginLayoutParams) {
+            final MarginLayoutParams mlp = (MarginLayoutParams) lp;
+            if (mlp.bottomMargin > 0) {
+                mlp.setMargins(mlp.leftMargin, mlp.topMargin, mlp.rightMargin, 0);
+            }
         }
     }
 
@@ -1687,7 +1715,7 @@ public class NotificationContentView extends FrameLayout implements Notification
                             : smartReplies.fromAssistant;
                     boolean editBeforeSending = smartReplies != null
                             && mSmartReplyConstants.getEffectiveEditChoicesBeforeSending(
-                                    smartReplies.remoteInput.getEditChoicesBeforeSending());
+                            smartReplies.remoteInput.getEditChoicesBeforeSending());
 
                     mSmartReplyController.smartSuggestionsAdded(mNotificationEntry, numSmartReplies,
                             numSmartActions, fromAssistant, editBeforeSending);
@@ -2114,8 +2142,8 @@ public class NotificationContentView extends FrameLayout implements Notification
     public boolean shouldClipToRounding(boolean topRounded, boolean bottomRounded) {
         boolean needsPaddings = shouldClipToRounding(getVisibleType(), topRounded, bottomRounded);
         if (mUserExpanding) {
-             needsPaddings |= shouldClipToRounding(mTransformationStartVisibleType, topRounded,
-                     bottomRounded);
+            needsPaddings |= shouldClipToRounding(mTransformationStartVisibleType, topRounded,
+                    bottomRounded);
         }
         return needsPaddings;
     }

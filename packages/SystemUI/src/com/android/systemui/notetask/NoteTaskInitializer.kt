@@ -162,10 +162,6 @@ constructor(
             ): Boolean {
                 return this@NoteTaskInitializer.handleKeyGestureEvent(event)
             }
-
-            override fun isKeyGestureSupported(gestureType: Int): Boolean {
-                return this@NoteTaskInitializer.isKeyGestureSupported(gestureType)
-            }
         }
 
     /**
@@ -223,10 +219,6 @@ constructor(
         }
         backgroundExecutor.execute { controller.showNoteTask(KEYBOARD_SHORTCUT) }
         return true
-    }
-
-    private fun isKeyGestureSupported(gestureType: Int): Boolean {
-        return gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_NOTES
     }
 
     companion object {

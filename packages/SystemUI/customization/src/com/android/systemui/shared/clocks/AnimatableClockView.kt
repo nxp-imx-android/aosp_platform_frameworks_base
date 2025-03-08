@@ -38,8 +38,9 @@ import com.android.systemui.animation.TypefaceVariantCacheImpl
 import com.android.systemui.customization.R
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.LogcatOnlyMessageBuffer
-import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
+import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.plugins.clocks.ClockLogger.Companion.escapeTime
 import java.io.PrintWriter
 import java.util.Calendar
 import java.util.Locale
@@ -67,7 +68,7 @@ constructor(
     var messageBuffer: MessageBuffer
         get() = logger.buffer
         set(value) {
-            logger = Logger(value, TAG)
+            logger = ClockLogger(this, value, TAG)
         }
 
     var hasCustomPositionUpdatedAnimation: Boolean = false
@@ -185,7 +186,9 @@ constructor(
         time.timeInMillis = timeOverrideInMillis ?: System.currentTimeMillis()
         contentDescription = DateFormat.format(descFormat, time)
         val formattedText = DateFormat.format(format, time)
-        logger.d({ "refreshTime: new formattedText=$str1" }) { str1 = formattedText?.toString() }
+        logger.d({ "refreshTime: new formattedText=${escapeTime(str1)}" }) {
+            str1 = formattedText?.toString()
+        }
 
         // Setting text actually triggers a layout pass in TextView (because the text view is set to
         // wrap_content width and TextView always relayouts for this). This avoids needless relayout
@@ -195,7 +198,7 @@ constructor(
         }
 
         text = formattedText
-        logger.d({ "refreshTime: done setting new time text to: $str1" }) {
+        logger.d({ "refreshTime: done setting new time text to: ${escapeTime(str1)}" }) {
             str1 = formattedText?.toString()
         }
 
@@ -225,7 +228,7 @@ constructor(
 
     @SuppressLint("DrawAllocation")
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        logger.d("onMeasure")
+        logger.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
         if (!isSingleLineInternal && MeasureSpec.getMode(heightMeasureSpec) == EXACTLY) {
             // Call straight into TextView.setTextSize to avoid setting lastUnconstrainedTextSize
@@ -263,14 +266,14 @@ constructor(
             canvas.translate(parentWidth / 4f, 0f)
         }
 
-        logger.d({ "onDraw($str1)" }) { str1 = text.toString() }
+        logger.onDraw("$text")
         // intentionally doesn't call super.onDraw here or else the text will be rendered twice
         textAnimator?.draw(canvas)
         canvas.restore()
     }
 
     override fun invalidate() {
-        logger.d("invalidate")
+        logger.invalidate()
         super.invalidate()
     }
 
@@ -280,7 +283,7 @@ constructor(
         lengthBefore: Int,
         lengthAfter: Int,
     ) {
-        logger.d({ "onTextChanged($str1)" }) { str1 = text.toString() }
+        logger.d({ "onTextChanged(${escapeTime(str1)})" }) { str1 = "$text" }
         super.onTextChanged(text, start, lengthBefore, lengthAfter)
     }
 
@@ -370,7 +373,7 @@ constructor(
             return
         }
 
-        logger.d("animateCharge")
+        logger.animateCharge()
         val startAnimPhase2 = Runnable {
             setTextStyle(
                 weight = if (isDozing()) dozingWeight else lockScreenWeight,
@@ -394,7 +397,7 @@ constructor(
     }
 
     fun animateDoze(isDozing: Boolean, animate: Boolean) {
-        logger.d("animateDoze")
+        logger.animateDoze(isDozing, animate)
         setTextStyle(
             weight = if (isDozing) dozingWeight else lockScreenWeight,
             color = if (isDozing) dozingColor else lockScreenColor,
@@ -484,7 +487,7 @@ constructor(
                 isSingleLineInternal && !use24HourFormat -> Patterns.sClockView12
                 else -> DOUBLE_LINE_FORMAT_12_HOUR
             }
-        logger.d({ "refreshFormat($str1)" }) { str1 = format?.toString() }
+        logger.d({ "refreshFormat(${escapeTime(str1)})" }) { str1 = format?.toString() }
 
         descFormat = if (use24HourFormat) Patterns.sClockView24 else Patterns.sClockView12
         refreshTime()
@@ -634,7 +637,7 @@ constructor(
 
     companion object {
         private val TAG = AnimatableClockView::class.simpleName!!
-        private val DEFAULT_LOGGER = Logger(LogcatOnlyMessageBuffer(LogLevel.WARNING), TAG)
+        private val DEFAULT_LOGGER = ClockLogger(null, LogcatOnlyMessageBuffer(LogLevel.DEBUG), TAG)
 
         const val ANIMATION_DURATION_FOLD_TO_AOD: Int = 600
         private const val DOUBLE_LINE_FORMAT_12_HOUR = "hh\nmm"

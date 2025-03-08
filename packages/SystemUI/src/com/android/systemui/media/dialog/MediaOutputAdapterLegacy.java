@@ -68,7 +68,6 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
     private final Executor mMainExecutor;
     private final Executor mBackgroundExecutor;
     View mHolderView;
-    private boolean mIsInitVolumeFirstTime;
 
     public MediaOutputAdapterLegacy(
             MediaSwitchingController controller,
@@ -78,7 +77,6 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
         super(controller);
         mMainExecutor = mainExecutor;
         mBackgroundExecutor = backgroundExecutor;
-        mIsInitVolumeFirstTime = true;
     }
 
     @Override
@@ -261,10 +259,9 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
                     updateSeekbarProgressBackground();
                 }
             }
-            boolean isCurrentSeekbarInvisible = mSeekBar.getVisibility() == View.GONE;
             mSeekBar.setVisibility(showSeekBar ? View.VISIBLE : View.GONE);
             if (showSeekBar) {
-                initSeekbar(device, isCurrentSeekbarInvisible);
+                initSeekbar(device);
                 updateContainerContentA11yImportance(false /* isImportant */);
                 mSeekBar.setContentDescription(contentDescription);
             } else {
@@ -274,9 +271,8 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
 
         void updateGroupSeekBar(String contentDescription) {
             updateSeekbarProgressBackground();
-            boolean isCurrentSeekbarInvisible = mSeekBar.getVisibility() == View.GONE;
             mSeekBar.setVisibility(View.VISIBLE);
-            initGroupSeekbar(isCurrentSeekbarInvisible);
+            initGroupSeekbar();
             updateContainerContentA11yImportance(false /* isImportant */);
             mSeekBar.setContentDescription(contentDescription);
         }
@@ -364,31 +360,21 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
                             mActiveRadius, 0, 0});
         }
 
-        private void initializeSeekbarVolume(
-                @Nullable MediaDevice device, int currentVolume,
-                boolean isCurrentSeekbarInvisible) {
+        private void initializeSeekbarVolume(@Nullable MediaDevice device, int currentVolume) {
             if (!isDragging()) {
                 if (mSeekBar.getVolume() != currentVolume && (mLatestUpdateVolume == -1
                         || currentVolume == mLatestUpdateVolume)) {
                     // Update only if volume of device and value of volume bar doesn't match.
                     // Check if response volume match with the latest request, to ignore obsolete
                     // response
-                    if (isCurrentSeekbarInvisible && !mIsInitVolumeFirstTime) {
+                    if (!mVolumeAnimator.isStarted()) {
                         if (currentVolume == 0) {
                             updateMutedVolumeIcon(device);
                         } else {
                             updateUnmutedVolumeIcon(device);
                         }
-                    } else {
-                        if (!mVolumeAnimator.isStarted()) {
-                            if (currentVolume == 0) {
-                                updateMutedVolumeIcon(device);
-                            } else {
-                                updateUnmutedVolumeIcon(device);
-                            }
-                            mSeekBar.setVolume(currentVolume);
-                            mLatestUpdateVolume = -1;
-                        }
+                        mSeekBar.setVolume(currentVolume);
+                        mLatestUpdateVolume = -1;
                     }
                 } else if (currentVolume == 0) {
                     mSeekBar.resetVolume();
@@ -398,12 +384,9 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
                     mLatestUpdateVolume = -1;
                 }
             }
-            if (mIsInitVolumeFirstTime) {
-                mIsInitVolumeFirstTime = false;
-            }
         }
 
-        void initSeekbar(@NonNull MediaDevice device, boolean isCurrentSeekbarInvisible) {
+        void initSeekbar(@NonNull MediaDevice device) {
             SeekBarVolumeControl volumeControl = new SeekBarVolumeControl() {
                 @Override
                 public int getVolume() {
@@ -432,7 +415,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             }
             mSeekBar.setMaxVolume(device.getMaxVolume());
             final int currentVolume = device.getCurrentVolume();
-            initializeSeekbarVolume(device, currentVolume, isCurrentSeekbarInvisible);
+            initializeSeekbarVolume(device, currentVolume);
 
             mSeekBar.setOnSeekBarChangeListener(new MediaSeekBarChangedListener(
                     device, volumeControl) {
@@ -445,7 +428,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
         }
 
         // Initializes the seekbar for a group of devices.
-        void initGroupSeekbar(boolean isCurrentSeekbarInvisible) {
+        void initGroupSeekbar() {
             SeekBarVolumeControl volumeControl = new SeekBarVolumeControl() {
                 @Override
                 public int getVolume() {
@@ -472,7 +455,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mSeekBar.setMaxVolume(mController.getSessionVolumeMax());
 
             final int currentVolume = mController.getSessionVolume();
-            initializeSeekbarVolume(null, currentVolume, isCurrentSeekbarInvisible);
+            initializeSeekbarVolume(null, currentVolume);
             mSeekBar.setOnSeekBarChangeListener(new MediaSeekBarChangedListener(
                     null, volumeControl) {
                 @Override

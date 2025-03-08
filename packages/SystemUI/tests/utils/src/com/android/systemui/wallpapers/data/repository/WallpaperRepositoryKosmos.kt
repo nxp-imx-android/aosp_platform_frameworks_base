@@ -19,6 +19,7 @@ package com.android.systemui.wallpapers.data.repository
 import android.content.applicationContext
 import com.android.app.wallpaperManager
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.common.ui.domain.interactor.configurationInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testDispatcher
@@ -35,5 +36,6 @@ val Kosmos.wallpaperRepository by Fixture {
         userRepository = userRepository,
         wallpaperManager = wallpaperManager,
         secureSettings = fakeSettings,
+        configurationInteractor = configurationInteractor,
     )
 }

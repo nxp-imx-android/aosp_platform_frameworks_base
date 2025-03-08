@@ -22,6 +22,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.PerDisplayInstanceProviderWithTeardown
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.model.SysUiState.SysUiStateCallback
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.shared.system.QuickStepContract.SystemUiStateFlags
 import dagger.assisted.Assisted
@@ -29,6 +30,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dalvik.annotation.optimization.NeverCompile
 import java.io.PrintWriter
+import java.lang.Long.bitCount
 import javax.inject.Inject
 
 /** Contains sysUi state flags and notifies registered listeners whenever changes happen. */
@@ -111,8 +113,7 @@ constructor(
         get() = _flags
 
     private var _flags: Long = 0
-    private var flagsToSet: Long = 0
-    private var flagsToClear: Long = 0
+    private val stateChange = StateChange()
 
     /**
      * Add listener to be notified of changes made to SysUI state. The callback will also be called
@@ -132,13 +133,11 @@ constructor(
 
     /** Methods to this call can be chained together before calling [.commitUpdate]. */
     override fun setFlag(@SystemUiStateFlags flag: Long, enabled: Boolean): SysUiState {
-        val toSet = flagWithOptionalOverrides(flag, enabled, displayId, sceneContainerPlugin)
-
-        if (toSet) {
-            flagsToSet = flagsToSet or flag
-        } else {
-            flagsToClear = flagsToClear or flag
+        if (ShadeWindowGoesAround.isEnabled && bitCount(flag) > 1) {
+            error("Flags should be a single bit.")
         }
+        val toSet = flagWithOptionalOverrides(flag, enabled, displayId, sceneContainerPlugin)
+        stateChange.setFlag(flag, toSet)
         return this
     }
 
@@ -147,27 +146,19 @@ constructor(
         ReplaceWith("commitUpdate()"),
     )
     override fun commitUpdate(displayId: Int) {
-        // TODO b/398011576 - handle updates for different displays.
         commitUpdate()
     }
 
     override fun commitUpdate() {
-        updateFlags()
-        flagsToSet = 0
-        flagsToClear = 0
-    }
-
-    private fun updateFlags() {
-        var newState = flags
-        newState = newState or flagsToSet
-        newState = newState and flagsToClear.inv()
+        val newState = stateChange.applyTo(flags)
         notifyAndSetSystemUiStateChanged(newState, flags)
+        stateChange.clear()
     }
 
     /** Notify all those who are registered that the state has changed. */
     private fun notifyAndSetSystemUiStateChanged(newFlags: Long, oldFlags: Long) {
         if (SysUiState.DEBUG) {
-            Log.d(TAG, "SysUiState changed: old=$oldFlags new=$newFlags")
+            Log.d(TAG, "SysUiState changed for displayId=$displayId: old=$oldFlags new=$newFlags")
         }
         if (newFlags != oldFlags) {
             _flags = newFlags
@@ -185,6 +176,8 @@ constructor(
         pw.println(QuickStepContract.isBackGestureDisabled(flags, false /* forTrackpad */))
         pw.print("    assistantGestureDisabled=")
         pw.println(QuickStepContract.isAssistantGestureDisabled(flags))
+        pw.print("    pendingStateChanges=")
+        pw.println(stateChange.toString())
     }
 
     override fun destroy() {

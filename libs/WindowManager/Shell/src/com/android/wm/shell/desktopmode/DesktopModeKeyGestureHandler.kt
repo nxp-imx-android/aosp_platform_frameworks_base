@@ -56,7 +56,6 @@ class DesktopModeKeyGestureHandler(
 
     override fun handleKeyGestureEvent(event: KeyGestureEvent, focusedToken: IBinder?): Boolean {
         if (
-            !isKeyGestureSupported(event.keyGestureType) ||
                 !desktopTasksController.isPresent ||
                 !desktopModeWindowDecorViewModel.isPresent
         ) {
@@ -135,19 +134,6 @@ class DesktopModeKeyGestureHandler(
             else -> return false
         }
     }
-
-    override fun isKeyGestureSupported(gestureType: Int): Boolean =
-        when (gestureType) {
-            KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY ->
-                enableMoveToNextDisplayShortcut()
-            KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_LEFT_FREEFORM_WINDOW,
-            KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_RIGHT_FREEFORM_WINDOW,
-            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW,
-            KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW ->
-                DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue &&
-                    manageKeyGestures()
-            else -> false
-        }
 
     //  TODO: b/364154795 - wait for the completion of moveToNextDisplay transition, otherwise it
     //  will pick a wrong task when a user quickly perform other actions with keyboard shortcuts

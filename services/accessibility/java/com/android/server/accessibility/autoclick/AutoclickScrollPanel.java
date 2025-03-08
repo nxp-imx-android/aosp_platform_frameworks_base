@@ -18,6 +18,7 @@ package com.android.server.accessibility.autoclick;
 
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
+import android.annotation.IntDef;
 import android.content.Context;
 import android.graphics.PixelFormat;
 import android.view.Gravity;
@@ -25,23 +26,97 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 public class AutoclickScrollPanel {
+    public static final int DIRECTION_UP = 0;
+    public static final int DIRECTION_DOWN = 1;
+    public static final int DIRECTION_LEFT = 2;
+    public static final int DIRECTION_RIGHT = 3;
+
+    @IntDef({
+            DIRECTION_UP,
+            DIRECTION_DOWN,
+            DIRECTION_LEFT,
+            DIRECTION_RIGHT
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ScrollDirection {}
+
     private final Context mContext;
     private final View mContentView;
     private final WindowManager mWindowManager;
+    private ScrollPanelControllerInterface mScrollPanelController;
+
+    // Scroll panel buttons.
+    private final ImageButton mUpButton;
+    private final ImageButton mDownButton;
+    private final ImageButton mLeftButton;
+    private final ImageButton mRightButton;
+    private final ImageButton mExitButton;
+
     private boolean mInScrollMode = false;
 
-    public AutoclickScrollPanel(Context context, WindowManager windowManager) {
+    /**
+     * Interface for handling scroll operations.
+     */
+    public interface ScrollPanelControllerInterface {
+        /**
+         * Called when a scroll direction is hovered.
+         *
+         * @param direction The direction to scroll: one of {@link ScrollDirection} values.
+         */
+        void handleScroll(@ScrollDirection int direction);
+
+        /**
+         * Called when the exit button is hovered.
+         */
+        void exitScrollMode();
+    }
+
+    public AutoclickScrollPanel(Context context, WindowManager windowManager,
+            ScrollPanelControllerInterface controller) {
         mContext = context;
         mWindowManager = windowManager;
+        mScrollPanelController = controller;
         mContentView = LayoutInflater.from(context).inflate(
                 R.layout.accessibility_autoclick_scroll_panel, null);
+
+        // Initialize buttons.
+        mUpButton = mContentView.findViewById(R.id.scroll_up);
+        mLeftButton = mContentView.findViewById(R.id.scroll_left);
+        mRightButton = mContentView.findViewById(R.id.scroll_right);
+        mDownButton = mContentView.findViewById(R.id.scroll_down);
+        mExitButton = mContentView.findViewById(R.id.scroll_exit);
+
+        initializeButtonState();
+    }
+
+    /**
+     * Sets up hover listeners for scroll panel buttons.
+     */
+    private void initializeButtonState() {
+        // Set up hover listeners for direction buttons.
+        setupHoverListenerForDirectionButton(mUpButton, DIRECTION_UP);
+        setupHoverListenerForDirectionButton(mLeftButton, DIRECTION_LEFT);
+        setupHoverListenerForDirectionButton(mRightButton, DIRECTION_RIGHT);
+        setupHoverListenerForDirectionButton(mDownButton, DIRECTION_DOWN);
+
+        // Set up hover listener for exit button.
+        mExitButton.setOnHoverListener((v, event) -> {
+            if (mScrollPanelController != null) {
+                mScrollPanelController.exitScrollMode();
+            }
+            return true;
+        });
     }
 
     /**
@@ -64,6 +139,19 @@ public class AutoclickScrollPanel {
         }
         mWindowManager.removeView(mContentView);
         mInScrollMode = false;
+    }
+
+    /**
+     * Sets up a hover listener for a direction button.
+     */
+    private void setupHoverListenerForDirectionButton(ImageButton button,
+            @ScrollDirection int direction) {
+        button.setOnHoverListener((v, event) -> {
+            if (mScrollPanelController != null) {
+                mScrollPanelController.handleScroll(direction);
+            }
+            return true;
+        });
     }
 
     /**

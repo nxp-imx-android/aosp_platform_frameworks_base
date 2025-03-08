@@ -82,6 +82,7 @@ fun DismissibleHorizontalPager(
     modifier: Modifier = Modifier,
     key: ((Int) -> Any)? = null,
     pageSpacing: Dp = 0.dp,
+    isFalseTouchDetected: Boolean,
     indicator: @Composable BoxScope.() -> Unit,
     pageContent: @Composable PagerScope.(page: Int) -> Unit,
 ) {
@@ -142,7 +143,7 @@ fun DismissibleHorizontalPager(
     Box(modifier = modifier) {
         HorizontalPager(
             state = state.pagerState,
-            userScrollEnabled = state.isScrollingEnabled,
+            userScrollEnabled = state.isScrollingEnabled && !isFalseTouchDetected,
             key = key,
             pageSpacing = pageSpacing,
             pageContent = pageContent,

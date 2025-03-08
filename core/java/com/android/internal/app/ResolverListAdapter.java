@@ -680,6 +680,10 @@ public class ResolverListAdapter extends BaseAdapter {
         }
     }
 
+    protected void onIconLoaded(DisplayResolveInfo info) {
+        notifyDataSetChanged();
+    }
+
     private void loadLabel(DisplayResolveInfo info) {
         LoadLabelTask task = mLabelLoaders.get(info);
         if (task == null) {
@@ -1004,7 +1008,7 @@ public class ResolverListAdapter extends BaseAdapter {
                 mResolverListCommunicator.updateProfileViewButton();
             } else if (!mDisplayResolveInfo.hasDisplayIcon()) {
                 mDisplayResolveInfo.setDisplayIcon(d);
-                notifyDataSetChanged();
+                onIconLoaded(mDisplayResolveInfo);
             }
         }
     }

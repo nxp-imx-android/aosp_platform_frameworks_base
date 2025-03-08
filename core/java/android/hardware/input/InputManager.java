@@ -1758,13 +1758,6 @@ public final class InputManager {
          */
         boolean handleKeyGestureEvent(@NonNull KeyGestureEvent event,
                 @Nullable IBinder focusedToken);
-
-        /**
-         * Called to identify if a particular gesture is of interest to a handler.
-         *
-         * NOTE: If no active handler supports certain gestures, the gestures will not be captured.
-         */
-        boolean isKeyGestureSupported(@KeyGestureEvent.KeyGestureType int gestureType);
     }
 
     /** @hide */

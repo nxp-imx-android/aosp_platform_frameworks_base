@@ -150,7 +150,7 @@
     <string name="cast_to_other_device_stop_dialog_title" msgid="7836517190930357326">"停止投屏吗？"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen_with_device" msgid="1474703115926205251">"您正在将整个屏幕投放到“<xliff:g id="DEVICE_NAME">%1$s</xliff:g>”上"</string>
     <string name="cast_to_other_device_stop_dialog_message_entire_screen" msgid="8419219169553867625">"您正在将整个屏幕投放到附近的设备上"</string>
-    <string name="cast_to_other_device_stop_dialog_message_specific_app_with_device" msgid="2715934698604085519">"您正在将“<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>”投放到“<xliff:g id="DEVICE_NAME">%2$s</xliff:g>”上"</string>
+    <string name="cast_to_other_device_stop_dialog_message_specific_app_with_device" msgid="2715934698604085519">"目前正在将“<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>”投放到“<xliff:g id="DEVICE_NAME">%2$s</xliff:g>”"</string>
     <string name="cast_to_other_device_stop_dialog_message_specific_app" msgid="8616103075630934513">"您正在将“<xliff:g id="APP_BEING_SHARED_NAME">%1$s</xliff:g>”投放到附近的设备上"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic_with_device" msgid="9213582497852420203">"您正在向“<xliff:g id="DEVICE_NAME">%1$s</xliff:g>”上投放内容"</string>
     <string name="cast_to_other_device_stop_dialog_message_generic" msgid="4100272100480415076">"您正在向附近的设备投放内容"</string>
@@ -435,6 +435,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"取消周围声音静音"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"工具"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"实时字幕"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"记事"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"要解锁设备麦克风吗？"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"要解锁设备摄像头吗？"</string>
@@ -907,7 +909,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"使用分屏模式，并将应用置于右侧"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"使用分屏模式，并将应用置于左侧"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"使用全屏"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"使用桌面版视图"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"使用分屏模式时，切换到右侧或下方的应用"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"使用分屏模式时，切换到左侧或上方的应用"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"在分屏期间：将一个应用替换为另一个应用"</string>

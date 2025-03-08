@@ -6981,6 +6981,8 @@ public class DevicePolicyManager {
      * <p>The caller must hold the
      * {@link android.Manifest.permission#TRIGGER_LOST_MODE} permission.
      *
+     * <p>This API accesses the device's location and will only be used when a device is lost.
+     *
      * <p>Register a broadcast receiver to receive lost mode location updates. This receiver should
      * subscribe to the {@link #ACTION_LOST_MODE_LOCATION_UPDATE} action and receive the location
      * from an intent extra {@link #EXTRA_LOST_MODE_LOCATION}.

@@ -28,10 +28,12 @@ class InMemoryOutputFilter(
     private val classes: ClassNodes,
     fallback: OutputFilter,
 ) : DelegatingFilter(fallback) {
-    private val mPolicies: MutableMap<String, FilterPolicyWithReason> = mutableMapOf()
-    private val mRenames: MutableMap<String, String> = mutableMapOf()
-    private val mRedirectionClasses: MutableMap<String, String> = mutableMapOf()
-    private val mClassLoadHooks: MutableMap<String, String> = mutableMapOf()
+    private val mPolicies = mutableMapOf<String, FilterPolicyWithReason>()
+    private val mRenames = mutableMapOf<String, String>()
+    private val mRedirectionClasses = mutableMapOf<String, String>()
+    private val mClassLoadHooks = mutableMapOf<String, String>()
+    private val mMethodCallReplaceSpecs = mutableListOf<MethodCallReplaceSpec>()
+    private val mTypeRenameSpecs = mutableListOf<TypeRenameSpec>()
 
     private fun getClassKey(className: String): String {
         return className.toHumanReadableClassName()
@@ -43,10 +45,6 @@ class InMemoryOutputFilter(
 
     private fun getMethodKey(className: String, methodName: String, signature: String): String {
         return getClassKey(className) + "." + methodName + ";" + signature
-    }
-
-    override fun getPolicyForClass(className: String): FilterPolicyWithReason {
-        return mPolicies[getClassKey(className)] ?: super.getPolicyForClass(className)
     }
 
     private fun checkClass(className: String) {
@@ -74,6 +72,10 @@ class InMemoryOutputFilter(
         }
     }
 
+    override fun getPolicyForClass(className: String): FilterPolicyWithReason {
+        return mPolicies[getClassKey(className)] ?: super.getPolicyForClass(className)
+    }
+
     fun setPolicyForClass(className: String, policy: FilterPolicyWithReason) {
         checkClass(className)
         mPolicies[getClassKey(className)] = policy
@@ -81,7 +83,7 @@ class InMemoryOutputFilter(
 
     override fun getPolicyForField(className: String, fieldName: String): FilterPolicyWithReason {
         return mPolicies[getFieldKey(className, fieldName)]
-                ?: super.getPolicyForField(className, fieldName)
+            ?: super.getPolicyForField(className, fieldName)
     }
 
     fun setPolicyForField(className: String, fieldName: String, policy: FilterPolicyWithReason) {
@@ -90,21 +92,21 @@ class InMemoryOutputFilter(
     }
 
     override fun getPolicyForMethod(
-            className: String,
-            methodName: String,
-            descriptor: String,
-            ): FilterPolicyWithReason {
+        className: String,
+        methodName: String,
+        descriptor: String,
+    ): FilterPolicyWithReason {
         return mPolicies[getMethodKey(className, methodName, descriptor)]
             ?: mPolicies[getMethodKey(className, methodName, "*")]
             ?: super.getPolicyForMethod(className, methodName, descriptor)
     }
 
     fun setPolicyForMethod(
-            className: String,
-            methodName: String,
-            descriptor: String,
-            policy: FilterPolicyWithReason,
-            ) {
+        className: String,
+        methodName: String,
+        descriptor: String,
+        policy: FilterPolicyWithReason,
+    ) {
         checkMethod(className, methodName, descriptor)
         mPolicies[getMethodKey(className, methodName, descriptor)] = policy
     }
@@ -123,7 +125,7 @@ class InMemoryOutputFilter(
 
     override fun getRedirectionClass(className: String): String? {
         return mRedirectionClasses[getClassKey(className)]
-                ?: super.getRedirectionClass(className)
+            ?: super.getRedirectionClass(className)
     }
 
     fun setRedirectionClass(from: String, to: String) {
@@ -135,11 +137,52 @@ class InMemoryOutputFilter(
     }
 
     override fun getClassLoadHooks(className: String): List<String> {
-        return addNonNullElement(super.getClassLoadHooks(className),
-            mClassLoadHooks[getClassKey(className)])
+        return addNonNullElement(
+            super.getClassLoadHooks(className),
+            mClassLoadHooks[getClassKey(className)]
+        )
     }
 
     fun setClassLoadHook(className: String, methodName: String) {
         mClassLoadHooks[getClassKey(className)] = methodName.toHumanReadableMethodName()
+    }
+
+    override fun hasAnyMethodCallReplace(): Boolean {
+        return mMethodCallReplaceSpecs.isNotEmpty() || super.hasAnyMethodCallReplace()
+    }
+
+    override fun getMethodCallReplaceTo(
+        className: String,
+        methodName: String,
+        descriptor: String,
+    ): MethodReplaceTarget? {
+        // Maybe use 'Tri' if we end up having too many replacements.
+        mMethodCallReplaceSpecs.forEach {
+            if (className == it.fromClass &&
+                methodName == it.fromMethod
+            ) {
+                if (it.fromDescriptor == "*" || descriptor == it.fromDescriptor) {
+                    return MethodReplaceTarget(it.toClass, it.toMethod)
+                }
+            }
+        }
+        return super.getMethodCallReplaceTo(className, methodName, descriptor)
+    }
+
+    fun setMethodCallReplaceSpec(spec: MethodCallReplaceSpec) {
+        mMethodCallReplaceSpecs.add(spec)
+    }
+
+    override fun remapType(className: String): String? {
+        mTypeRenameSpecs.forEach {
+            if (it.typeInternalNamePattern.matcher(className).matches()) {
+                return it.typeInternalNamePrefix + className
+            }
+        }
+        return super.remapType(className)
+    }
+
+    fun setRemapTypeSpec(spec: TypeRenameSpec) {
+        mTypeRenameSpecs.add(spec)
     }
 }

@@ -107,6 +107,16 @@ constructor(
      */
     // TODO(b/301385865): Remove this flag.
     private val disableWmTimeout: Boolean = false,
+
+    /**
+     * Whether we should disable the reparent transaction that puts the opening/closing window above
+     * the view's window. This should be set to true in tests only, where we can't currently use a
+     * valid leash.
+     *
+     * TODO(b/397180418): Remove this flag when we don't have the RemoteAnimation wrapper anymore
+     *   and we can just inject a fake transaction.
+     */
+    private val skipReparentTransaction: Boolean = false,
 ) {
     @JvmOverloads
     constructor(
@@ -1140,6 +1150,7 @@ constructor(
                     DelegatingAnimationCompletionListener(listener, this::dispose),
                     transitionAnimator,
                     disableWmTimeout,
+                    skipReparentTransaction,
                 )
         }
 
@@ -1173,6 +1184,16 @@ constructor(
          */
         // TODO(b/301385865): Remove this flag.
         disableWmTimeout: Boolean = false,
+
+        /**
+         * Whether we should disable the reparent transaction that puts the opening/closing window
+         * above the view's window. This should be set to true in tests only, where we can't
+         * currently use a valid leash.
+         *
+         * TODO(b/397180418): Remove this flag when we don't have the RemoteAnimation wrapper
+         *   anymore and we can just inject a fake transaction.
+         */
+        private val skipReparentTransaction: Boolean = false,
     ) : RemoteAnimationDelegate<IRemoteAnimationFinishedCallback> {
         private val transitionContainer = controller.transitionContainer
         private val context = transitionContainer.context
@@ -1515,7 +1536,7 @@ constructor(
                             )
                         }
 
-                        if (moveTransitionAnimationLayer()) {
+                        if (moveTransitionAnimationLayer() && !skipReparentTransaction) {
                             // Ensure that the launching window is rendered above the view's window,
                             // so it is not obstructed.
                             // TODO(b/397180418): re-use the start transaction once the

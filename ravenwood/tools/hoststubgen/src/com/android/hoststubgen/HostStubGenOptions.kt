@@ -18,6 +18,7 @@ package com.android.hoststubgen
 import com.android.hoststubgen.utils.ArgIterator
 import com.android.hoststubgen.utils.IntSetOnce
 import com.android.hoststubgen.utils.SetOnce
+import com.android.hoststubgen.utils.ensureFileExists
 
 /**
  * Options that can be set from command line arguments.
@@ -61,9 +62,9 @@ class HostStubGenOptions(
         }
     }
 
-    override fun parseOption(option: String, ai: ArgIterator): Boolean {
+    override fun parseOption(option: String, args: ArgIterator): Boolean {
         // Define some shorthands...
-        fun nextArg(): String = ai.nextArgRequired(option)
+        fun nextArg(): String = args.nextArgRequired(option)
 
         when (option) {
             // TODO: Write help
@@ -94,7 +95,7 @@ class HostStubGenOptions(
                 }
             }
 
-            else -> return super.parseOption(option, ai)
+            else -> return super.parseOption(option, args)
         }
 
         return true

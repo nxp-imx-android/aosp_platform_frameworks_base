@@ -110,7 +110,7 @@ public class DrawRoundRect extends DrawBase6 {
                         "The x-radius of the oval used to round the corners")
                 .field(
                         DocumentedOperation.FLOAT,
-                        "sweepAngle",
+                        "ry",
                         "The y-radius of the oval used to round the corners");
     }
 
@@ -126,7 +126,6 @@ public class DrawRoundRect extends DrawBase6 {
 
     @Override
     public void serialize(MapSerializer serializer) {
-        serialize(serializer, "left", "top", "right", "bottom", "rx", "sweepAngle")
-                .addType(CLASS_NAME);
+        serialize(serializer, "left", "top", "right", "bottom", "rx", "ry").addType(CLASS_NAME);
     }
 }

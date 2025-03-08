@@ -193,6 +193,7 @@ class FromDozingTransitionInteractorTest(flags: FlagsParameterization?) : SysuiT
 
     @Test
     @EnableFlags(FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    @DisableFlags(FLAG_GLANCEABLE_HUB_V2)
     fun testTransitionToLockscreen_onWake_canNotDream_glanceableHubAvailable() =
         kosmos.runTest {
             whenever(dreamManager.canStartDreaming(anyBoolean())).thenReturn(false)

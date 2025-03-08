@@ -1593,6 +1593,8 @@ union ResTable_entry
         // If set, this is a compact entry with data type and value directly
         // encoded in the this entry, see ResTable_entry::compact
         FLAG_COMPACT = 0x0008,
+        // If set, this entry relies on read write android feature flags
+        FLAG_USES_FEATURE_FLAGS = 0x0010,
     };
 
     struct Full {
@@ -1622,6 +1624,7 @@ union ResTable_entry
     uint16_t flags()  const { return dtohs(full.flags); };
     bool is_compact() const { return flags() & FLAG_COMPACT; }
     bool is_complex() const { return flags() & FLAG_COMPLEX; }
+    bool uses_feature_flags() const { return flags() & FLAG_USES_FEATURE_FLAGS; }
 
     size_t size() const {
         return is_compact() ? sizeof(ResTable_entry) : dtohs(this->full.size);
@@ -2038,6 +2041,8 @@ public:
     bool getResourceName(uint32_t resID, bool allowUtf8, resource_name* outName) const;
 
     bool getResourceFlags(uint32_t resID, uint32_t* outFlags) const;
+
+    bool getResourceEntryFlags(uint32_t resID, uint32_t* outFlags) const;
 
     /**
      * Returns whether or not the package for the given resource has been dynamically assigned.

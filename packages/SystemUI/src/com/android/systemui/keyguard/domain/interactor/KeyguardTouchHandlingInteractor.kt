@@ -20,11 +20,14 @@ package com.android.systemui.keyguard.domain.interactor
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.PowerManager
+import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEvent
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags.doubleTapToSleep
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -36,10 +39,13 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.PulsingGestureListener
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
+import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
+import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -66,15 +72,42 @@ constructor(
     private val accessibilityManager: AccessibilityManagerWrapper,
     private val pulsingGestureListener: PulsingGestureListener,
     private val faceAuthInteractor: DeviceEntryFaceAuthInteractor,
+    private val secureSettingsRepository: UserAwareSecureSettingsRepository,
+    private val powerManager: PowerManager,
+    private val systemClock: SystemClock,
 ) {
     /** Whether the long-press handling feature should be enabled. */
     val isLongPressHandlingEnabled: StateFlow<Boolean> =
-        if (isFeatureEnabled()) {
+        if (isLongPressFeatureEnabled()) {
                 combine(
                     transitionInteractor.isFinishedIn(KeyguardState.LOCKSCREEN),
                     repository.isQuickSettingsVisible,
                 ) { isFullyTransitionedToLockScreen, isQuickSettingsVisible ->
                     isFullyTransitionedToLockScreen && !isQuickSettingsVisible
+                }
+            } else {
+                flowOf(false)
+            }
+            .stateIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
+    /** Whether the double tap handling handling feature should be enabled. */
+    val isDoubleTapHandlingEnabled: StateFlow<Boolean> =
+        if (isDoubleTapFeatureEnabled()) {
+                combine(
+                    transitionInteractor.transitionValue(KeyguardState.LOCKSCREEN),
+                    repository.isQuickSettingsVisible,
+                    isDoubleTapSettingEnabled(),
+                ) {
+                    isFullyTransitionedToLockScreen,
+                    isQuickSettingsVisible,
+                    isDoubleTapSettingEnabled ->
+                    isFullyTransitionedToLockScreen == 1f &&
+                        !isQuickSettingsVisible &&
+                        isDoubleTapSettingEnabled
                 }
             } else {
                 flowOf(false)
@@ -116,7 +149,7 @@ constructor(
     private var delayedHideMenuJob: Job? = null
 
     init {
-        if (isFeatureEnabled()) {
+        if (isLongPressFeatureEnabled()) {
             broadcastDispatcher
                 .broadcastFlow(IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
                 .onEach { hideMenu() }
@@ -175,15 +208,28 @@ constructor(
 
     /** Notifies that the lockscreen has been double clicked. */
     fun onDoubleClick() {
-        pulsingGestureListener.onDoubleTapEvent()
+        if (isDoubleTapHandlingEnabled.value) {
+            powerManager.goToSleep(systemClock.uptimeMillis())
+        } else {
+            pulsingGestureListener.onDoubleTapEvent()
+        }
+    }
+
+    private fun isDoubleTapSettingEnabled(): Flow<Boolean> {
+        return secureSettingsRepository.boolSetting(Settings.Secure.DOUBLE_TAP_TO_SLEEP)
     }
 
     private fun showSettings() {
         _shouldOpenSettings.value = true
     }
 
-    private fun isFeatureEnabled(): Boolean {
+    private fun isLongPressFeatureEnabled(): Boolean {
         return context.resources.getBoolean(R.bool.long_press_keyguard_customize_lockscreen_enabled)
+    }
+
+    private fun isDoubleTapFeatureEnabled(): Boolean {
+        return doubleTapToSleep() &&
+            context.resources.getBoolean(com.android.internal.R.bool.config_supportDoubleTapSleep)
     }
 
     /** Updates application state to ask to show the menu. */

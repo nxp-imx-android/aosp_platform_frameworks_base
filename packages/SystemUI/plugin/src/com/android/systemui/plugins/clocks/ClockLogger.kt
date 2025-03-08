@@ -16,7 +16,6 @@
 
 package com.android.systemui.plugins.clocks
 
-import android.graphics.Rect
 import android.view.View
 import android.view.View.MeasureSpec
 import com.android.systemui.log.core.LogLevel
@@ -56,12 +55,9 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
     }
 
     fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        d({ "onLayout($bool1, ${Rect(int1, int2, long1.toInt(), long2.toInt())})" }) {
+        d({ "onLayout($bool1, ${VRect(long1.toULong())})" }) {
             bool1 = changed
-            int1 = left
-            int2 = top
-            long1 = right.toLong()
-            long2 = bottom.toLong()
+            long1 = VRect(left, top, right, bottom).data.toLong()
         }
     }
 
@@ -108,8 +104,11 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
         }
     }
 
-    fun animateDoze() {
-        d("animateDoze()")
+    fun animateDoze(isDozing: Boolean, isAnimated: Boolean) {
+        d({ "animateDoze(isDozing=$bool1, isAnimated=$bool2)" }) {
+            bool1 = isDozing
+            bool2 = isAnimated
+        }
     }
 
     fun animateCharge() {
@@ -117,10 +116,7 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
     }
 
     fun animateFidget(x: Float, y: Float) {
-        d({ "animateFidget($str1, $str2)" }) {
-            str1 = x.toString()
-            str2 = y.toString()
-        }
+        d({ "animateFidget(${VPointF(long1.toULong())})" }) { long1 = VPointF(x, y).data.toLong() }
     }
 
     companion object {

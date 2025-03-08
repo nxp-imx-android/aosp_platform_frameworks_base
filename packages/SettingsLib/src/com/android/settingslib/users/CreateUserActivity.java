@@ -93,16 +93,8 @@ public class CreateUserActivity extends Activity {
 
     @Override
     public boolean onTouchEvent(@Nullable MotionEvent event) {
-        onBackInvoked();
+        cancel();
         return super.onTouchEvent(event);
-    }
-
-    private void onBackInvoked() {
-        if (mSetupUserDialog != null) {
-            mSetupUserDialog.dismiss();
-        }
-        setResult(RESULT_CANCELED);
-        finish();
     }
 
     @VisibleForTesting
@@ -112,14 +104,12 @@ public class CreateUserActivity extends Activity {
         intent.putExtra(EXTRA_IS_ADMIN, isAdmin);
         intent.putExtra(EXTRA_USER_ICON_PATH, path);
 
-        mSetupUserDialog.dismiss();
         setResult(RESULT_OK, intent);
         finish();
     }
 
     @VisibleForTesting
     void cancel() {
-        mSetupUserDialog.dismiss();
         setResult(RESULT_CANCELED);
         finish();
     }

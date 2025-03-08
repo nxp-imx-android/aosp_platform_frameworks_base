@@ -1986,7 +1986,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             // report its requested visibility at the end of the animation, otherwise we would
             // lose the leash, and it would disappear during the animation
             // TODO(b/326377046) revisit this part and see if we can make it more general
-            typesToReport = mRequestedVisibleTypes | (mAnimatingTypes & ime());
+            if (Flags.reportAnimatingInsetsTypes()) {
+                typesToReport = mRequestedVisibleTypes;
+            } else {
+                typesToReport = mRequestedVisibleTypes | (mAnimatingTypes & ime());
+            }
         } else {
             typesToReport = mRequestedVisibleTypes;
         }

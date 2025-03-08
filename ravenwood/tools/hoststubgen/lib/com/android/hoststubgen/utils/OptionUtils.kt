@@ -16,11 +16,16 @@
 package com.android.hoststubgen.utils
 
 import com.android.hoststubgen.ArgumentsException
-import com.android.hoststubgen.ensureFileExists
+import com.android.hoststubgen.InputFileNotFoundException
+import com.android.hoststubgen.JarResourceNotFoundException
 import com.android.hoststubgen.log
 import com.android.hoststubgen.normalizeTextLine
-import java.io.BufferedReader
+import java.io.File
 import java.io.FileReader
+import java.io.InputStreamReader
+import java.io.Reader
+
+const val JAR_RESOURCE_PREFIX = "jar:"
 
 /**
  * Base class for parsing arguments from commandline.
@@ -73,7 +78,7 @@ abstract class BaseOptions {
      *
      * Subclasses override/extend this method to support more options.
      */
-    abstract fun parseOption(option: String, ai: ArgIterator): Boolean
+    abstract fun parseOption(option: String, args: ArgIterator): Boolean
 
     abstract fun dumpFields(): String
 }
@@ -112,7 +117,9 @@ class ArgIterator(
 
     companion object {
         fun withAtFiles(args: List<String>): ArgIterator {
-            return ArgIterator(expandAtFiles(args))
+            val expanded = mutableListOf<String>()
+            expandAtFiles(args.asSequence(), expanded)
+            return ArgIterator(expanded)
         }
 
         /**
@@ -125,34 +132,30 @@ class ArgIterator(
          *
          * The file can contain '#' as comments.
          */
-        private fun expandAtFiles(args: List<String>): List<String> {
-            val ret = mutableListOf<String>()
-
+        private fun expandAtFiles(args: Sequence<String>, out: MutableList<String>) {
             args.forEach { arg ->
                 if (arg.startsWith("@@")) {
-                    ret += arg.substring(1)
+                    out.add(arg.substring(1))
                     return@forEach
                 } else if (!arg.startsWith('@')) {
-                    ret += arg
+                    out.add(arg)
                     return@forEach
                 }
+
                 // Read from the file, and add each line to the result.
-                val filename = arg.substring(1).ensureFileExists()
+                val file = FileOrResource(arg.substring(1))
 
-                log.v("Expanding options file $filename")
+                log.v("Expanding options file ${file.path}")
 
-                BufferedReader(FileReader(filename)).use { reader ->
-                    while (true) {
-                        var line = reader.readLine() ?: break // EOF
+                val fileArgs = file
+                    .open()
+                    .buffered()
+                    .lineSequence()
+                    .map(::normalizeTextLine)
+                    .filter(CharSequence::isNotEmpty)
 
-                        line = normalizeTextLine(line)
-                        if (line.isNotEmpty()) {
-                            ret += line
-                        }
-                    }
-                }
+                expandAtFiles(fileArgs, out)
             }
-            return ret
         }
     }
 }
@@ -203,4 +206,38 @@ class IntSetOnce(value: Int) : SetOnce<Int>(value) {
             throw ArgumentsException("Invalid integer $v")
         }
     }
+}
+
+/**
+ * A path either points to a file in filesystem, or an entry in the JAR.
+ */
+class FileOrResource(val path: String) {
+    init {
+        path.ensureFileExists()
+    }
+
+    /**
+     * Either read from filesystem, or read from JAR resources.
+     */
+    fun open(): Reader {
+        return if (path.startsWith(JAR_RESOURCE_PREFIX)) {
+            val path = path.removePrefix(JAR_RESOURCE_PREFIX)
+            InputStreamReader(this::class.java.classLoader.getResourceAsStream(path)!!)
+        } else {
+            FileReader(path)
+        }
+    }
+}
+
+fun String.ensureFileExists(): String {
+    if (this.startsWith(JAR_RESOURCE_PREFIX)) {
+        val cl = FileOrResource::class.java.classLoader
+        val path = this.removePrefix(JAR_RESOURCE_PREFIX)
+        if (cl.getResource(path) == null) {
+            throw JarResourceNotFoundException(path)
+        }
+    } else if (!File(this).exists()) {
+        throw InputFileNotFoundException(this)
+    }
+    return this
 }

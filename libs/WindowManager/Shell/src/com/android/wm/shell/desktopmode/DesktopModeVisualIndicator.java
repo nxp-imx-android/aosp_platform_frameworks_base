@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 
+import static com.android.internal.policy.SystemBarUtils.getDesktopViewAppHeaderHeightPx;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_DESKTOP_INDICATOR;
 import static com.android.wm.shell.desktopmode.DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR;
@@ -212,8 +213,7 @@ public class DesktopModeVisualIndicator {
                 com.android.wm.shell.R.dimen.desktop_mode_transition_region_thickness);
         // Because drags in freeform use task position for indicator calculation, we need to
         // account for the possibility of the task going off the top of the screen by captionHeight
-        final int captionHeight = mContext.getResources().getDimensionPixelSize(
-                com.android.wm.shell.R.dimen.desktop_mode_freeform_decor_caption_height);
+        final int captionHeight = getDesktopViewAppHeaderHeightPx(mContext);
         final Region fullscreenRegion = calculateFullscreenRegion(layout, captionHeight);
         final Region splitLeftRegion = calculateSplitLeftRegion(layout, transitionAreaWidth,
                 captionHeight);

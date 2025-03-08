@@ -85,6 +85,15 @@ constructor(
 
         val pagerState = rememberPagerState(0) { pages.size }
 
+        LaunchedEffect(listening, pagerState) {
+            snapshotFlow { listening() }
+                .collect {
+                    if (!listening()) {
+                        pagerState.scrollToPage(0)
+                    }
+                }
+        }
+
         // Used to track if this is currently in the first page or not, for animations
         LaunchedEffect(key1 = pagerState) {
             snapshotFlow { pagerState.currentPage == 0 }.collect { viewModel.inFirstPage = it }

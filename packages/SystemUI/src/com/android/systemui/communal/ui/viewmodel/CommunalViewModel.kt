@@ -369,12 +369,10 @@ constructor(
 
     val swipeToHubEnabled: Flow<Boolean> by lazy {
         val inAllowedDeviceState =
-            if (swipeToHub) {
-                MutableStateFlow(true)
-            } else if (v2FlagEnabled()) {
-                communalInteractor.shouldShowCommunal
+            if (v2FlagEnabled()) {
+                communalSettingsInteractor.manualOpenEnabled
             } else {
-                MutableStateFlow(false)
+                MutableStateFlow(swipeToHub)
             }
 
         if (v2FlagEnabled()) {

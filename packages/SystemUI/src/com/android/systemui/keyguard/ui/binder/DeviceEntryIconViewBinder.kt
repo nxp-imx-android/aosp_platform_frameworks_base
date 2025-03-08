@@ -48,7 +48,7 @@ object DeviceEntryIconViewBinder {
     /**
      * Updates UI for:
      * - device entry containing view (parent view for the below views)
-     *     - long-press handling view (transparent, no UI)
+     *     - touch handling view (transparent, no UI)
      *     - foreground icon view (lock/unlock/fingerprint)
      *     - background view (optional)
      */

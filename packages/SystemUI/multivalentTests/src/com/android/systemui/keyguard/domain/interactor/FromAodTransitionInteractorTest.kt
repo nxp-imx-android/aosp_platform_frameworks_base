@@ -35,7 +35,6 @@ package com.android.systemui.keyguard.domain.interactor
 import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags
@@ -43,8 +42,6 @@ import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.FakeKeyguardBouncerRepository
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
-import com.android.systemui.common.data.repository.batteryRepository
-import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.setCommunalV2Available
@@ -72,7 +69,6 @@ import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.domain.interactor.keyguardOcclusionInteractor
 import com.android.systemui.testKosmos
-import com.android.systemui.util.settings.fakeSettings
 import com.google.common.truth.Truth
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.runBlocking
@@ -433,9 +429,7 @@ class FromAodTransitionInteractorTest : SysuiTestCase() {
     @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
     fun testTransitionToGlanceableHub_onWakeUpFromAod() =
         kosmos.runTest {
-            val user = setCommunalV2Available(true)
-            fakeSettings.putIntForUser(Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, 1, user.id)
-            batteryRepository.fake.setDevicePluggedIn(true)
+            setCommunalV2Available(true)
 
             val currentScene by collectLastValue(communalSceneInteractor.currentScene)
             fakeCommunalSceneRepository.changeScene(CommunalScenes.Blank)

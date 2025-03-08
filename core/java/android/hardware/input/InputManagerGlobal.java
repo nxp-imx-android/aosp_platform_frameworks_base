@@ -1193,23 +1193,6 @@ public final class InputManagerGlobal {
             }
             return false;
         }
-
-        @Override
-        public boolean isKeyGestureSupported(@KeyGestureEvent.KeyGestureType int gestureType) {
-            synchronized (mKeyGestureEventHandlerLock) {
-                if (mKeyGestureEventHandlers == null) {
-                    return false;
-                }
-                final int numHandlers = mKeyGestureEventHandlers.size();
-                for (int i = 0; i < numHandlers; i++) {
-                    KeyGestureEventHandler handler = mKeyGestureEventHandlers.get(i);
-                    if (handler.isKeyGestureSupported(gestureType)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
     }
 
     /**

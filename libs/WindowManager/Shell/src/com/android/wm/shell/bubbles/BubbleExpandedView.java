@@ -238,7 +238,6 @@ public class BubbleExpandedView extends LinearLayout {
                                 mContext.createContextAsUser(
                                         mBubble.getUser(), Context.CONTEXT_RESTRICTED);
                         Intent fillInIntent = new Intent();
-                        fillInIntent.addFlags(FLAG_ACTIVITY_MULTIPLE_TASK);
                         PendingIntent pi = PendingIntent.getActivity(
                                 context,
                                 /* requestCode= */ 0,
@@ -467,6 +466,11 @@ public class BubbleExpandedView extends LinearLayout {
                         new BubbleTaskViewListener.Callback() {
                             @Override
                             public void onTaskCreated() {
+                                // The taskId is saved to use for removeTask,
+                                // preventing appearance in recent tasks.
+                                mTaskId = ((BubbleTaskViewListener) mCurrentTaskViewListener)
+                                    .getTaskId();
+
                                 setContentVisibility(true);
                             }
 

@@ -267,7 +267,8 @@ public class ImeVisibilityStateComputerTest extends InputMethodManagerServiceTes
             // visibility state will be preserved to the current window state.
             final ImeTargetWindowState stateWithUnChangedFlag = initImeTargetWindowState(
                     mWindowToken);
-            mComputer.computeState(stateWithUnChangedFlag, true /* allowVisible */);
+            mComputer.computeState(stateWithUnChangedFlag, true /* allowVisible */,
+                    true /* imeRequestedVisible */);
             assertThat(stateWithUnChangedFlag.isRequestedImeVisible()).isEqualTo(
                     lastState.isRequestedImeVisible());
         }

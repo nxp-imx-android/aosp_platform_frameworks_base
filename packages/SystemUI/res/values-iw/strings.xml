@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"התבצע חיבור אל <xliff:g id="BLUETOOTH">%s</xliff:g>."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"מחובר אל <xliff:g id="CAST">%s</xliff:g>."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"הרחבת הקבוצה."</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"הוספת מכשיר לקבוצה"</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"הסרת מכשיר מקבוצה"</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"פתיחת האפליקציה."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"אין חיבור."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"נדידה"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"קלט"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"מכשירי שמיעה"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ההפעלה מתבצעת…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"אי אפשר לשנות את הבהירות כי היא נקבעת על ידי האפליקציה העליונה"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"סיבוב אוטומטי"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"סיבוב אוטומטי של המסך"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"מיקום"</string>
@@ -438,6 +435,8 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"ביטול השתקת הרעשים בסביבה"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"כלים"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"כתוביות מיידיות"</string>
+    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
+    <skip />
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"פתק"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"לבטל את חסימת המיקרופון של המכשיר?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"לבטל את חסימת המצלמה של המכשיר?"</string>
@@ -910,7 +909,8 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"שימוש במסך מפוצל כשהאפליקציה בצד ימין"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"שימוש במסך מפוצל כשהאפליקציה בצד שמאל"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"שימוש במסך מלא"</string>
-    <string name="system_multitasking_desktop_view" msgid="8829838918507805921">"שימוש בתצוגה למחשב"</string>
+    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
+    <skip />
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"מעבר לאפליקציה משמאל או למטה בזמן שימוש במסך מפוצל"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"מעבר לאפליקציה מימין או למעלה בזמן שימוש במסך מפוצל"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"כשהמסך מפוצל: החלפה בין אפליקציה אחת לאחרת"</string>

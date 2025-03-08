@@ -92,6 +92,7 @@ public abstract class QSTileImpl<TState extends State> implements QSTile, Lifecy
 
     private static final long DEFAULT_STALE_TIMEOUT = 10 * DateUtils.MINUTE_IN_MILLIS;
     protected static final Object ARG_SHOW_TRANSIENT_ENABLING = new Object();
+    protected static final Object ARG_SHOW_TRANSIENT_DISABLING = new Object();
 
     private static final int READY_STATE_NOT_READY = 0;
     private static final int READY_STATE_READYING = 1;

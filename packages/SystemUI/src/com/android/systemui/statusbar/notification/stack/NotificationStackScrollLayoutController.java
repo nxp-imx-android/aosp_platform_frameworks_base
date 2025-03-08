@@ -1735,6 +1735,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      *                 they remain until the next lockscreen-to-shade transition.
      */
     public void setTransitionToFullShadeAmount(float fraction) {
+        SceneContainerFlag.assertInLegacyMode();
         mView.setFractionToShade(fraction);
     }
 
