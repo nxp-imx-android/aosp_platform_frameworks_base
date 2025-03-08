@@ -102,6 +102,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.CollapsibleRowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.ColumnLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.FitBoxLayout;
+import com.android.internal.widget.remotecompose.core.operations.layout.managers.ImageLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.RowLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.StateLayout;
 import com.android.internal.widget.remotecompose.core.operations.layout.managers.TextLayout;
@@ -2091,6 +2092,19 @@ public class RemoteComposeBuffer {
     public void addFitBoxStart(int componentId, int animationId, int horizontal, int vertical) {
         mLastComponentId = getComponentId(componentId);
         FitBoxLayout.apply(mBuffer, mLastComponentId, animationId, horizontal, vertical);
+    }
+
+    /**
+     * Add an imagelayout command
+     *
+     * @param componentId component id
+     * @param animationId animation id
+     * @param bitmapId bitmap id
+     */
+    public void addImage(
+            int componentId, int animationId, int bitmapId, int scaleType, float alpha) {
+        mLastComponentId = getComponentId(componentId);
+        ImageLayout.apply(mBuffer, componentId, animationId, bitmapId, scaleType, alpha);
     }
 
     /**

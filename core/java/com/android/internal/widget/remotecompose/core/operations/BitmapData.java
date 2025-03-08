@@ -41,12 +41,12 @@ import java.util.List;
 public class BitmapData extends Operation implements SerializableToString, Serializable {
     private static final int OP_CODE = Operations.DATA_BITMAP;
     private static final String CLASS_NAME = "BitmapData";
-    int mImageId;
+    public final int mImageId;
     int mImageWidth;
     int mImageHeight;
     short mType;
     short mEncoding;
-    @NonNull final byte[] mBitmap;
+    @NonNull byte[] mBitmap;
 
     /** The max size of width or height */
     public static final int MAX_IMAGE_DIMENSION = 8000;
@@ -88,6 +88,19 @@ public class BitmapData extends Operation implements SerializableToString, Seria
         this.mImageWidth = width;
         this.mImageHeight = height;
         this.mBitmap = bitmap;
+    }
+
+    /**
+     * Update the bitmap data
+     *
+     * @param from the bitmap to copy
+     */
+    public void update(BitmapData from) {
+        this.mImageWidth = from.mImageWidth;
+        this.mImageHeight = from.mImageHeight;
+        this.mBitmap = from.mBitmap;
+        this.mType = from.mType;
+        this.mEncoding = from.mEncoding;
     }
 
     /**
