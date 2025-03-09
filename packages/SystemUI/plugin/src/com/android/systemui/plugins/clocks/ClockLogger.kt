@@ -55,9 +55,9 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
     }
 
     fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
-        d({ "onLayout($bool1, ${VRect(long1.toULong())})" }) {
+        d({ "onLayout($bool1, ${VRect.fromLong(long1)})" }) {
             bool1 = changed
-            long1 = VRect(left, top, right, bottom).data.toLong()
+            long1 = VRect(left, top, right, bottom).toLong()
         }
     }
 
@@ -116,7 +116,7 @@ class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :
     }
 
     fun animateFidget(x: Float, y: Float) {
-        d({ "animateFidget(${VPointF(long1.toULong())})" }) { long1 = VPointF(x, y).data.toLong() }
+        d({ "animateFidget(${VPointF.fromLong(long1)})" }) { long1 = VPointF(x, y).toLong() }
     }
 
     companion object {
