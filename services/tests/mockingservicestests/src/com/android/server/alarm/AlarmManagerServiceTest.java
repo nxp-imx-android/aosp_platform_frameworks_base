@@ -109,7 +109,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.Manifest;
 import android.app.ActivityManager;
@@ -3724,8 +3724,8 @@ public final class AlarmManagerServiceTest {
         setDeviceConfigInt(KEY_TEMPORARY_QUOTA_BUMP, 0);
 
         mAppStandbyListener.triggerTemporaryQuotaBump(TEST_CALLING_PACKAGE, TEST_CALLING_USER);
-        verifyZeroInteractions(mPackageManagerInternal);
-        verifyZeroInteractions(mService.mHandler);
+        verifyNoMoreInteractions(mPackageManagerInternal);
+        verifyNoMoreInteractions(mService.mHandler);
     }
 
     private void testTemporaryQuota_bumpedAfterDeferral(int standbyBucket) throws Exception {

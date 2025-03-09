@@ -23,7 +23,7 @@ import com.android.dx.mockito.inline.extended.ExtendedMockito.clearInvocations
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
 import com.android.dx.mockito.inline.extended.ExtendedMockito.staticMockMarker
 import com.android.dx.mockito.inline.extended.ExtendedMockito.verify
-import com.android.dx.mockito.inline.extended.ExtendedMockito.verifyZeroInteractions
+import com.android.dx.mockito.inline.extended.ExtendedMockito.verifyNoMoreInteractions
 import com.android.internal.util.FrameworkStatsLog
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.window.flags.Flags
@@ -102,7 +102,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(sessionId),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -127,7 +127,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(sessionId),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -135,7 +135,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
         desktopModeEventLogger.logSessionExit(ExitReason.DRAG_TO_EXIT)
 
         verifyNoLogging()
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -157,7 +157,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(sessionId),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
         assertThat(desktopModeEventLogger.currentSessionId.get()).isEqualTo(NO_SESSION_ID)
     }
 
@@ -166,7 +166,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
         desktopModeEventLogger.logTaskAdded(TASK_UPDATE)
 
         verifyNoLogging()
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -205,7 +205,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(UNSET_FOCUS_REASON),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -213,7 +213,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
         desktopModeEventLogger.logTaskRemoved(TASK_UPDATE)
 
         verifyNoLogging()
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -252,7 +252,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(UNSET_FOCUS_REASON),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -260,7 +260,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
         desktopModeEventLogger.logTaskInfoChanged(TASK_UPDATE)
 
         verifyNoLogging()
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -302,7 +302,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(UNSET_FOCUS_REASON),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -346,7 +346,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(UNSET_FOCUS_REASON),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -390,7 +390,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(UNSET_FOCUS_REASON),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -434,7 +434,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
                 eq(FocusReason.UNKNOWN.reason),
             )
         }
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -446,7 +446,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
         )
 
         verifyNoLogging()
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test
@@ -485,7 +485,7 @@ class DesktopModeEventLoggerTest : ShellTestCase() {
         )
 
         verifyNoLogging()
-        verifyZeroInteractions(staticMockMarker(EventLogTags::class.java))
+        verifyNoMoreInteractions(staticMockMarker(EventLogTags::class.java))
     }
 
     @Test

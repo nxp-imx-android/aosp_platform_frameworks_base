@@ -64,7 +64,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyZeroInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
@@ -438,7 +438,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         )
 
         // No need to animate the cancel since the start animation couldn't even start.
-        verifyZeroInteractions(dragAnimator)
+        verifyNoMoreInteractions(dragAnimator)
     }
 
     @Test
@@ -489,7 +489,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         )
 
         // Should NOT have any transaction changes
-        verifyZeroInteractions(mergedStartTransaction)
+        verifyNoMoreInteractions(mergedStartTransaction)
         // Should NOT merge animation
         verify(finishCallback, never()).onTransitionFinished(any())
     }

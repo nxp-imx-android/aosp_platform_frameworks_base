@@ -28,7 +28,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.Notification;
@@ -804,7 +803,7 @@ public class BubbleDataTest extends ShellTestCase {
         mBubbleData.setListener(mListener);
 
         changeExpandedStateAtTime(true, 2000L);
-        verifyZeroInteractions(mListener);
+        verifyNoMoreInteractions(mListener);
     }
 
     /**

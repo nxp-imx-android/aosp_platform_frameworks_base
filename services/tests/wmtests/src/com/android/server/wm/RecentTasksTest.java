@@ -52,7 +52,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import static java.lang.Integer.MAX_VALUE;
 
@@ -1293,7 +1293,7 @@ public class RecentTasksTest extends WindowTestsBase {
 
         // Add secondTask to top again
         mRecentTasks.add(secondTask);
-        verifyZeroInteractions(controller);
+        verifyNoMoreInteractions(controller);
     }
 
     @Test

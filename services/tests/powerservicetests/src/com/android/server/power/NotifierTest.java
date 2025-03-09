@@ -39,7 +39,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManagerInternal;
@@ -205,7 +204,7 @@ public class NotifierTest {
         mTestExecutor.simulateAsyncExecutionOfLastCommand();
 
         // THEN the device doesn't vibrate
-        verifyZeroInteractions(mVibrator);
+        verifyNoMoreInteractions(mVibrator);
     }
 
     @Test
@@ -238,7 +237,7 @@ public class NotifierTest {
         mTestExecutor.simulateAsyncExecutionOfLastCommand();
 
         // THEN the device doesn't vibrate
-        verifyZeroInteractions(mVibrator);
+        verifyNoMoreInteractions(mVibrator);
     }
 
     @Test
@@ -728,7 +727,7 @@ public class NotifierTest {
         mNotifier.onWakeLockReleased(PowerManager.PARTIAL_WAKE_LOCK, "wakelockTag",
                 "my.package.name", uid, pid, /* workSource= */ null, /* historyTag= */ null,
                 exceptingCallback);
-        verifyZeroInteractions(mWakeLockLog);
+        verifyNoMoreInteractions(mWakeLockLog);
         mTestLooper.dispatchAll();
         verify(mWakeLockLog).onWakeLockReleased("wakelockTag", uid, 1);
         clearInvocations(mBatteryStats);
@@ -845,7 +844,7 @@ public class NotifierTest {
                 exceptingCallback);
 
         // No interaction because we expect that to happen in async
-        verifyZeroInteractions(mWakeLockLog, mBatteryStats, mAppOpsManager);
+        verifyNoMoreInteractions(mWakeLockLog, mBatteryStats, mAppOpsManager);
 
         // Progressing the looper, and validating all the interactions
         mTestLooper.dispatchAll();

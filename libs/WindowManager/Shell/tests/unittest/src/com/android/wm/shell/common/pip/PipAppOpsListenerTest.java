@@ -21,7 +21,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.AppOpsManager;
@@ -157,7 +157,7 @@ public class PipAppOpsListenerTest {
         opChangedListener.onOpChanged(String.valueOf(AppOpsManager.OP_PICTURE_IN_PICTURE),
                 packageName);
 
-        verifyZeroInteractions(mMockExecutor);
+        verifyNoMoreInteractions(mMockExecutor);
     }
 
     @Test

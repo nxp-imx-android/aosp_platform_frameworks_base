@@ -33,7 +33,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
@@ -120,7 +120,7 @@ public class UsbServiceTest {
 
         verify(mUsbPortManager).enableUsbData(TEST_PORT_ID,
                 enable, TEST_TRANSACTION_ID, mCallback, null);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
 
         clearInvocations(mUsbPortManager);
         clearInvocations(mCallback);
@@ -131,7 +131,7 @@ public class UsbServiceTest {
         assertFalse(mUsbService.enableUsbDataInternal(TEST_PORT_ID, enable,
                 TEST_TRANSACTION_ID, mCallback, requester, isInternalRequest));
 
-        verifyZeroInteractions(mUsbPortManager);
+        verifyNoMoreInteractions(mUsbPortManager);
         verify(mCallback).onOperationComplete(USB_OPERATION_ERROR_INTERNAL);
 
         clearInvocations(mUsbPortManager);
@@ -188,7 +188,7 @@ public class UsbServiceTest {
         mUsbService.enableUsbDataWhileDockedInternal(TEST_PORT_ID, TEST_TRANSACTION_ID,
                 mCallback, TEST_SECOND_CALLER_ID, false);
 
-        verifyZeroInteractions(mUsbPortManager);
+        verifyNoMoreInteractions(mUsbPortManager);
         verify(mCallback).onOperationComplete(USB_OPERATION_ERROR_INTERNAL);
     }
 
@@ -203,7 +203,7 @@ public class UsbServiceTest {
 
         verify(mUsbPortManager).enableUsbDataWhileDocked(TEST_PORT_ID, TEST_TRANSACTION_ID,
                         mCallback, null);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     /**
