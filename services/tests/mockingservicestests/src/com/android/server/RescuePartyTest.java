@@ -67,6 +67,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Test RescueParty.
+ * TODO: b/354112511 delete this file
+ * Moved to frameworks/base/tests/PackageWatchdog/src/com/android/server/RescuePartyTest
+ *
  */
 public class RescuePartyTest {
     private static final long CURRENT_NETWORK_TIME_MILLIS = 0L;
