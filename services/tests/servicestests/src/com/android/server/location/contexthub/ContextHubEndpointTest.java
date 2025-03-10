@@ -80,6 +80,10 @@ public class ContextHubEndpointTest {
             new HubMessage.Builder(SAMPLE_MESSAGE_TYPE, new byte[] {1, 2, 3, 4, 5})
                     .setResponseRequired(true)
                     .build();
+    private static final HubMessage SAMPLE_UNRELIABLE_MESSAGE =
+            new HubMessage.Builder(SAMPLE_MESSAGE_TYPE, new byte[] {1, 2, 3, 4, 5})
+                    .setResponseRequired(false)
+                    .build();
 
     private ContextHubClientManager mClientManager;
     private ContextHubEndpointManager mEndpointManager;
@@ -256,6 +260,24 @@ public class ContextHubEndpointTest {
         assertThat(statusCaptor.getValue().messageSequenceNumber)
                 .isEqualTo(SAMPLE_MESSAGE.getMessageSequenceNumber());
         assertThat(statusCaptor.getValue().errorCode).isEqualTo(ErrorCode.TRANSIENT_ERROR);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testUnreliableMessage() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        int sessionId = openTestSession(endpoint);
+
+        mEndpointManager.onMessageReceived(sessionId, SAMPLE_UNRELIABLE_MESSAGE);
+        ArgumentCaptor<HubMessage> messageCaptor = ArgumentCaptor.forClass(HubMessage.class);
+        verify(mMockCallback).onMessageReceived(eq(sessionId), messageCaptor.capture());
+        assertThat(messageCaptor.getValue()).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE);
+
+        // Confirm we can send another message
+        mEndpointManager.onMessageReceived(sessionId, SAMPLE_UNRELIABLE_MESSAGE);
+        verify(mMockCallback, times(2)).onMessageReceived(eq(sessionId), messageCaptor.capture());
+        assertThat(messageCaptor.getValue()).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE);
 
         unregisterExampleEndpoint(endpoint);
     }
