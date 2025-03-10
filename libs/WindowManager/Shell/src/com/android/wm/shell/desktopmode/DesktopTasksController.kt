@@ -213,7 +213,7 @@ class DesktopTasksController(
     private val overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver,
     private val desksOrganizer: DesksOrganizer,
     private val desksTransitionObserver: DesksTransitionObserver,
-    private val desktopPipTransitionObserver: DesktopPipTransitionObserver,
+    private val desktopPipTransitionObserver: Optional<DesktopPipTransitionObserver>,
     private val userProfileContexts: UserProfileContexts,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
@@ -811,6 +811,7 @@ class DesktopTasksController(
             }
         val isMinimizingToPip =
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
+                desktopPipTransitionObserver.isPresent &&
                 (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
 
         // If task is going to PiP, start a PiP transition instead of a minimize transition
@@ -827,7 +828,7 @@ class DesktopTasksController(
             val requestRes = transitions.dispatchRequest(Binder(), requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
 
-            desktopPipTransitionObserver.addPendingPipTransition(
+            desktopPipTransitionObserver.get().addPendingPipTransition(
                 DesktopPipTransitionObserver.PendingPipTransition(
                     token = freeformTaskTransitionStarter.startPipTransition(wct),
                     taskId = taskInfo.taskId,

@@ -825,7 +825,7 @@ public abstract class WMShellModule {
                 overviewToDesktopTransitionObserver,
                 desksOrganizer,
                 desksTransitionObserver.get(),
-                desktopPipTransitionObserver.get(),
+                desktopPipTransitionObserver,
                 userProfileContexts,
                 desktopModeCompatPolicy,
                 dragToDisplayTransitionHandler,
@@ -1241,7 +1241,7 @@ public abstract class WMShellModule {
                                         transitions,
                                         shellTaskOrganizer,
                                         desktopMixedTransitionHandler.get(),
-                                        desktopPipTransitionObserver.get(),
+                                        desktopPipTransitionObserver,
                                         backAnimationController.get(),
                                         desktopWallpaperActivityTokenProvider,
                                         shellInit)));
@@ -1266,7 +1266,7 @@ public abstract class WMShellModule {
     static Optional<DesktopPipTransitionObserver> provideDesktopPipTransitionObserver(
             Context context
     ) {
-        if (DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)
+        if (DesktopModeStatus.canEnterDesktopMode(context)
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()) {
             return Optional.of(
                     new DesktopPipTransitionObserver());

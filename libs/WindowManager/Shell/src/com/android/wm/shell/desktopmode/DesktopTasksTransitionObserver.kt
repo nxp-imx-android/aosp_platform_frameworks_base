@@ -40,6 +40,7 @@ import com.android.wm.shell.shared.TransitionUtil
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import java.util.Optional
 
 /**
  * A [Transitions.TransitionObserver] that observes shell transitions and updates the
@@ -52,7 +53,7 @@ class DesktopTasksTransitionObserver(
     private val transitions: Transitions,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
-    private val desktopPipTransitionObserver: DesktopPipTransitionObserver,
+    private val desktopPipTransitionObserver: Optional<DesktopPipTransitionObserver>,
     private val backAnimationController: BackAnimationController,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     shellInit: ShellInit,
@@ -94,7 +95,7 @@ class DesktopTasksTransitionObserver(
             removeTaskIfNeeded(info)
         }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
-        desktopPipTransitionObserver.onTransitionReady(transition, info)
+        desktopPipTransitionObserver.ifPresent { it.onTransitionReady(transition, info) }
     }
 
     private fun removeTaskIfNeeded(info: TransitionInfo) {

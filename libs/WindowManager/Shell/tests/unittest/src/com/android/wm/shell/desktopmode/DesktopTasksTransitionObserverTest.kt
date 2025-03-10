@@ -50,6 +50,7 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
+import java.util.Optional
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -110,7 +111,7 @@ class DesktopTasksTransitionObserverTest {
                 transitions,
                 shellTaskOrganizer,
                 mixedHandler,
-                pipTransitionObserver,
+                Optional.of(pipTransitionObserver),
                 backAnimationController,
                 desktopWallpaperActivityTokenProvider,
                 shellInit,

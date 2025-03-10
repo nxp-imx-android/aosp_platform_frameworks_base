@@ -458,7 +458,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             overviewToDesktopTransitionObserver,
             desksOrganizer,
             desksTransitionsObserver,
-            desktopPipTransitionObserver,
+            Optional.of(desktopPipTransitionObserver),
             userProfileContexts,
             desktopModeCompatPolicy,
             dragToDisplayTransitionHandler,
