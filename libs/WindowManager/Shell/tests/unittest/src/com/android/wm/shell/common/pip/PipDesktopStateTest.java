@@ -22,6 +22,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_PIP;
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP;
+import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -119,9 +120,25 @@ public class PipDesktopStateTest {
     }
 
     @Test
-    @EnableFlags(FLAG_ENABLE_CONNECTED_DISPLAYS_PIP)
+    @EnableFlags({
+            FLAG_ENABLE_CONNECTED_DISPLAYS_PIP, FLAG_ENABLE_PIP2
+    })
     public void isConnectedDisplaysPipEnabled_returnsTrue() {
         assertTrue(mPipDesktopState.isConnectedDisplaysPipEnabled());
+    }
+
+    @Test
+    public void isPipInDesktopMode_anyDeskActive_returnsTrue() {
+        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(true);
+
+        assertTrue(mPipDesktopState.isPipInDesktopMode());
+    }
+
+    @Test
+    public void isPipInDesktopMode_noDeskActive_returnsFalse() {
+        when(mMockDesktopRepository.isAnyDeskActive(DISPLAY_ID)).thenReturn(false);
+
+        assertFalse(mPipDesktopState.isPipInDesktopMode());
     }
 
     @Test
