@@ -931,7 +931,40 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun visibleChipKeys_fourPromotedNotifs_topThreeInList() =
+    @DisableChipsModernization
+    fun visibleChipKeys_chipsModOff_threePromotedNotifs_topTwoInList() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleChipKeys)
+
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "firstNotif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("firstNotif").build(),
+                    ),
+                    activeNotificationModel(
+                        key = "secondNotif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("secondNotif").build(),
+                    ),
+                    activeNotificationModel(
+                        key = "thirdNotif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent =
+                            PromotedNotificationContentModel.Builder("thirdNotif").build(),
+                    ),
+                )
+            )
+
+            assertThat(latest).containsExactly("firstNotif", "secondNotif").inOrder()
+        }
+
+    @Test
+    @EnableChipsModernization
+    fun visibleChipKeys_chipsModOn_fourPromotedNotifs_topThreeInList() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.visibleChipKeys)
 
@@ -1069,7 +1102,37 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun visibleChipKeys_screenRecordAndCallAndPromotedNotifs_topThreeInList() =
+    @DisableChipsModernization
+    fun visibleChipKeys_chipsModOff_screenRecordAndCallAndPromotedNotifs_topTwoInList() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.visibleChipKeys)
+
+            val callNotificationKey = "call"
+            addOngoingCallState(callNotificationKey)
+            screenRecordState.value = ScreenRecordModel.Recording
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif1",
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                )
+            )
+            activeNotificationListRepository.addNotif(
+                activeNotificationModel(
+                    key = "notif2",
+                    statusBarChipIcon = createStatusBarIconViewOrNull(),
+                    promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
+                )
+            )
+
+            assertThat(latest)
+                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey)
+                .inOrder()
+        }
+
+    @Test
+    @EnableChipsModernization
+    fun visibleChipKeys_chipsModOn_screenRecordAndCallAndPromotedNotifs_topThreeInList() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.visibleChipKeys)
 
