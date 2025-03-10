@@ -32,6 +32,7 @@ import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.getPreferenceIcon
+import com.android.settingslib.metadata.getPreferenceScreenTitle
 import com.android.settingslib.metadata.getPreferenceSummary
 import com.android.settingslib.metadata.getPreferenceTitle
 
@@ -77,17 +78,22 @@ interface PreferenceBinding {
                 preference.icon = null
             }
             val isPreferenceScreen = preference is PreferenceScreen
+            val screenMetadata = this as? PreferenceScreenMetadata
             // extras
             preference.peekExtras()?.clear()
             extras(context)?.let { preference.extras.putAll(it) }
-            if (!isPreferenceScreen && this is PreferenceScreenMetadata) {
+            if (!isPreferenceScreen && screenMetadata != null) {
                 val extras = preference.extras
                 // Pass the preference key to fragment, so that the fragment could find associated
                 // preference screen registered in PreferenceScreenRegistry
                 extras.putString(EXTRA_BINDING_SCREEN_KEY, preference.key)
-                arguments?.let { extras.putBundle(EXTRA_BINDING_SCREEN_ARGS, it) }
+                screenMetadata.arguments?.let { extras.putBundle(EXTRA_BINDING_SCREEN_ARGS, it) }
             }
-            preference.title = getPreferenceTitle(context)
+            preference.title =
+                when {
+                    isPreferenceScreen -> screenMetadata?.getPreferenceScreenTitle(context)
+                    else -> getPreferenceTitle(context)
+                }
             if (!isPreferenceScreen) {
                 preference.summary = getPreferenceSummary(context)
             }
@@ -100,7 +106,7 @@ interface PreferenceBinding {
             // IllegalStateException when call Preference.setDependency
             preference.dependency = null
             if (!isPreferenceScreen) { // avoid recursive loop when build graph
-                preference.fragment = (this as? PreferenceScreenMetadata)?.fragmentClass()?.name
+                preference.fragment = screenMetadata?.fragmentClass()?.name
                 preference.intent = intent(context)
             }
             if (preference is DialogPreference) {

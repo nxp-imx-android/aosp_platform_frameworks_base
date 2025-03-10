@@ -18,6 +18,13 @@ package com.android.settingslib.metadata
 
 import android.content.Context
 
+/** Returns the preference screen title. */
+fun PreferenceScreenMetadata.getPreferenceScreenTitle(context: Context): CharSequence? =
+    when {
+        screenTitle != 0 -> context.getString(screenTitle)
+        else -> getScreenTitle(context) ?: (this as? PreferenceTitleProvider)?.getTitle(context)
+    }
+
 /** Returns the preference title. */
 fun PreferenceMetadata.getPreferenceTitle(context: Context): CharSequence? =
     when {
