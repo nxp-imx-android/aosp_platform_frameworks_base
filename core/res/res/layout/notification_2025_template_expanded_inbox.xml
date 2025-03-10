@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="top"
             android:paddingStart="@dimen/notification_2025_content_margin_start"
-            android:paddingEnd="@dimen/notification_content_margin_end"
+            android:paddingEnd="@dimen/notification_2025_margin"
             android:layout_weight="1"
             android:clipToPadding="false"
             android:orientation="vertical"
@@ -125,7 +125,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/notification_2025_content_margin_start"
-            android:layout_marginEnd="@dimen/notification_content_margin_end"
+            android:layout_marginEnd="@dimen/notification_2025_margin"
             android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin" />
         <include layout="@layout/notification_2025_action_list" />
     </LinearLayout>

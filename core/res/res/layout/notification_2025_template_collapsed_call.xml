@@ -149,7 +149,7 @@
                     android:id="@+id/expand_button_touch_container"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:minWidth="@dimen/notification_content_margin_end"
+                    android:minWidth="@dimen/notification_2025_margin"
                     >
 
                     <include layout="@layout/notification_2025_expand_button"
@@ -175,7 +175,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin"
             android:layout_marginStart="@dimen/notification_2025_content_margin_start"
-            android:layout_marginEnd="@dimen/notification_content_margin_end" />
+            android:layout_marginEnd="@dimen/notification_2025_margin" />
         <include layout="@layout/notification_2025_action_list" />
     </LinearLayout>
 
