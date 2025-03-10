@@ -25,9 +25,10 @@ import com.android.systemui.common.data.repository.fake
 import com.android.systemui.communal.data.model.FEATURE_AUTO_OPEN
 import com.android.systemui.communal.data.model.FEATURE_MANUAL_OPEN
 import com.android.systemui.communal.data.model.SuppressionReason
+import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.communal.posturing.data.repository.fake
 import com.android.systemui.communal.posturing.data.repository.posturingRepository
-import com.android.systemui.communal.posturing.shared.model.PosturedState
+import com.android.systemui.communal.posturing.domain.interactor.advanceTimeBySlidingWindowAndRun
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dock.fakeDockManager
 import com.android.systemui.kosmos.Kosmos
@@ -127,7 +128,12 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             )
 
             batteryRepository.fake.setDevicePluggedIn(true)
-            posturingRepository.fake.setPosturedState(PosturedState.NotPostured)
+            posturingRepository.fake.emitPositionState(
+                PositionState(
+                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
+                    orientation = PositionState.OrientationState.NotPostured(confidence = 1f),
+                )
+            )
 
             assertThat(shouldAutoOpen).isFalse()
             assertThat(suppressionReason)
@@ -135,7 +141,13 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
                     SuppressionReason.ReasonWhenToAutoShow(FEATURE_AUTO_OPEN or FEATURE_MANUAL_OPEN)
                 )
 
-            posturingRepository.fake.setPosturedState(PosturedState.Postured(1f))
+            posturingRepository.fake.emitPositionState(
+                PositionState(
+                    stationary = PositionState.StationaryState.Stationary(confidence = 1f),
+                    orientation = PositionState.OrientationState.Postured(confidence = 1f),
+                )
+            )
+            advanceTimeBySlidingWindowAndRun()
             assertThat(shouldAutoOpen).isTrue()
             assertThat(suppressionReason).isNull()
         }
@@ -153,7 +165,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             )
 
             batteryRepository.fake.setDevicePluggedIn(true)
-            posturingRepository.fake.setPosturedState(PosturedState.Postured(1f))
+            posturingRepository.fake.emitPositionState(PositionState())
             fakeDockManager.setIsDocked(true)
 
             assertThat(shouldAutoOpen).isFalse()
