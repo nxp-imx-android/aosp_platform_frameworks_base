@@ -29,6 +29,9 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.RankingBuilder
+import com.android.systemui.statusbar.notification.collection.coordinator.mockVisualStabilityCoordinator
+import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
+import com.android.systemui.statusbar.notification.collection.provider.mockHighPriorityProvider
 import com.android.systemui.statusbar.notification.mockNotificationActivityStarter
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_FULL_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
@@ -41,9 +44,12 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -257,6 +263,109 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getRanking() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+        assertThat(underTest.ranking).isEqualTo(entry.ranking)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun endLifetimeExtension() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        val callback =
+            Mockito.mock(NotifLifetimeExtender.OnEndLifetimeExtensionCallback::class.java)
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+        underTest.endLifetimeExtension(callback, Mockito.mock(NotifLifetimeExtender::class.java))
+        verify(callback).onEndLifetimeExtension(any(), eq(entry))
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun onImportanceChanged() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        underTest.onImportanceChanged()
+        verify(kosmos.mockVisualStabilityCoordinator)
+            .temporarilyAllowSectionChanges(eq(entry), anyLong())
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun markForUserTriggeredMovement() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        assertThat(underTest.isMarkedForUserTriggeredMovement)
+            .isEqualTo(entry.isMarkedForUserTriggeredMovement)
+
+        underTest.markForUserTriggeredMovement()
+        assertThat(underTest.isMarkedForUserTriggeredMovement)
+            .isEqualTo(entry.isMarkedForUserTriggeredMovement)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isHighPriority() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        underTest.isHighPriority
+
+        verify(kosmos.mockHighPriorityProvider).isHighPriority(entry)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun isBlockable() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(Mockito.mock(Notification.Action::class.java))
+                .build()
+
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        assertThat(underTest.isBlockable).isEqualTo(entry.isBlockable)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun canDragAndDrop() {
         val pi = mock(PendingIntent::class.java)
         Mockito.`when`(pi.isActivity).thenReturn(true)
@@ -435,7 +544,6 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         val row = mock(ExpandableNotificationRow::class.java)
 
         underTest = factory.create(entry) as NotificationEntryAdapter
-
 
         underTest.onEntryClicked(row)
         verify(kosmos.mockNotificationActivityStarter).onNotificationClicked(entry, row)

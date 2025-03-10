@@ -49,6 +49,7 @@ import android.os.Handler;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 import android.transition.ChangeBounds;
@@ -72,7 +73,9 @@ import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.statusbar.notification.NmSummarizationUiFlag;
 import com.android.systemui.statusbar.notification.NotificationChannelHelper;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.StackStateAnimator;
 import com.android.systemui.wmshell.BubblesManager;
 
@@ -104,6 +107,8 @@ public class NotificationConversationInfo extends LinearLayout implements
     private ShortcutInfo mShortcutInfo;
     private NotificationEntry mEntry;
     private StatusBarNotification mSbn;
+    private EntryAdapter mEntryAdapter;
+    private NotificationListenerService.Ranking mRanking;
     @Nullable private Notification.BubbleMetadata mBubbleMetadata;
     private Context mUserContext;
     private boolean mIsDeviceProvisioned;
@@ -200,9 +205,10 @@ public class NotificationConversationInfo extends LinearLayout implements
             INotificationManager iNotificationManager,
             OnUserInteractionCallback onUserInteractionCallback,
             String pkg,
-            NotificationChannel notificationChannel,
             NotificationEntry entry,
-            Notification.BubbleMetadata bubbleMetadata,
+            EntryAdapter entryAdapter,
+            NotificationListenerService.Ranking ranking,
+            StatusBarNotification sbn,
             OnSettingsClickListener onSettingsClick,
             NotificationInfo.OnFeedbackClickListener onFeedbackClickListener,
             ConversationIconFactory conversationIconFactory,
@@ -218,25 +224,27 @@ public class NotificationConversationInfo extends LinearLayout implements
         mOnUserInteractionCallback = onUserInteractionCallback;
         mPackageName = pkg;
         mEntry = entry;
-        mSbn = entry.getSbn();
+        mSbn = sbn;
+        mRanking = ranking;
+        mEntryAdapter = entryAdapter;
         mPm = pm;
         mUm = um;
         mAppName = mPackageName;
         mOnSettingsClickListener = onSettingsClick;
-        mNotificationChannel = notificationChannel;
+        mNotificationChannel = ranking.getChannel();
         mAppUid = mSbn.getUid();
         mDelegatePkg = mSbn.getOpPkg();
         mIsDeviceProvisioned = isDeviceProvisioned;
         mOnConversationSettingsClickListener = onConversationSettingsClickListener;
         mIconFactory = conversationIconFactory;
         mUserContext = userContext;
-        mBubbleMetadata = bubbleMetadata;
+        mBubbleMetadata = sbn.getNotification().getBubbleMetadata();
         mBubblesManagerOptional = bubblesManagerOptional;
         mShadeController = shadeController;
         mMainHandler = mainHandler;
         mBgHandler = bgHandler;
         mShortcutManager = shortcutManager;
-        mShortcutInfo = entry.getRanking().getConversationShortcutInfo();
+        mShortcutInfo = ranking.getConversationShortcutInfo();
         mFeedbackClickListener = onFeedbackClickListener;
         if (mShortcutInfo == null) {
             throw new IllegalArgumentException("Does not have required information");
@@ -308,11 +316,11 @@ public class NotificationConversationInfo extends LinearLayout implements
     private void bindFeedback() {
         View feedbackButton = findViewById(R.id.feedback);
         if (!NmSummarizationUiFlag.isEnabled()
-                || TextUtils.isEmpty(mEntry.getRanking().getSummarization())) {
+                || TextUtils.isEmpty(mRanking.getSummarization())) {
             feedbackButton.setVisibility(GONE);
         } else {
             Intent intent = NotificationInfo.getAssistantFeedbackIntent(
-                    mINotificationManager, mPm, mEntry);
+                    mINotificationManager, mPm, mSbn.getKey(), mRanking);
             if (intent == null) {
                 feedbackButton.setVisibility(GONE);
             } else {
@@ -551,10 +559,17 @@ public class NotificationConversationInfo extends LinearLayout implements
         mBgHandler.post(
                 new UpdateChannelRunnable(mINotificationManager, mPackageName,
                         mAppUid, mSelectedAction, mNotificationChannel));
-        mEntry.markForUserTriggeredMovement(true);
-        mMainHandler.postDelayed(
-                () -> mOnUserInteractionCallback.onImportanceChanged(mEntry),
-                StackStateAnimator.ANIMATION_DURATION_STANDARD);
+        if (NotificationBundleUi.isEnabled()) {
+            mEntryAdapter.markForUserTriggeredMovement();
+            mMainHandler.postDelayed(
+                    () -> mEntryAdapter.onImportanceChanged(),
+                    StackStateAnimator.ANIMATION_DURATION_STANDARD);
+        } else {
+            mEntry.markForUserTriggeredMovement(true);
+            mMainHandler.postDelayed(
+                    () -> mOnUserInteractionCallback.onImportanceChanged(mEntry),
+                    StackStateAnimator.ANIMATION_DURATION_STANDARD);
+        }
     }
 
     private boolean willBypassDnd() {
@@ -658,8 +673,13 @@ public class NotificationConversationInfo extends LinearLayout implements
                                         BUBBLE_PREFERENCE_SELECTED);
                             }
                             if (mBubblesManagerOptional.isPresent()) {
-                                post(() -> mBubblesManagerOptional.get()
-                                        .onUserSetImportantConversation(mEntry));
+                                if (NotificationBundleUi.isEnabled()) {
+                                    post(() -> mBubblesManagerOptional.get()
+                                            .onUserSetImportantConversation(mEntryAdapter));
+                                } else {
+                                    post(() -> mBubblesManagerOptional.get()
+                                            .onUserSetImportantConversation(mEntry));
+                                }
                             }
                         }
                         mChannelToUpdate.setImportance(Math.max(

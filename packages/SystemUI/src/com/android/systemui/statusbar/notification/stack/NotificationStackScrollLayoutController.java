@@ -420,10 +420,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 return;
             }
             if (view instanceof ExpandableNotificationRow row) {
-                mMetricsLogger.write(row.getEntry().getSbn().getLogMaker()
-                        .setCategory(MetricsEvent.ACTION_TOUCH_GEAR)
-                        .setType(MetricsEvent.TYPE_ACTION)
-                );
+                StatusBarNotification sbn = NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().getSbn()
+                        : row.getEntryLegacy().getSbn();
+                if (sbn != null) {
+                    mMetricsLogger.write(row.getEntry().getSbn().getLogMaker()
+                            .setCategory(MetricsEvent.ACTION_TOUCH_GEAR)
+                            .setType(MetricsEvent.TYPE_ACTION)
+                    );
+                }
             }
             mNotificationGutsManager.openGuts(view, x, y, item);
         }
@@ -440,9 +445,14 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         @Override
         public void onMenuShown(View row) {
             if (row instanceof ExpandableNotificationRow notificationRow) {
-                mMetricsLogger.write(notificationRow.getEntry().getSbn().getLogMaker()
-                        .setCategory(MetricsEvent.ACTION_REVEAL_GEAR)
-                        .setType(MetricsEvent.TYPE_ACTION));
+                StatusBarNotification sbn = NotificationBundleUi.isEnabled()
+                        ? notificationRow.getEntryAdapter().getSbn()
+                        : notificationRow.getEntryLegacy().getSbn();
+                if (sbn != null) {
+                    mMetricsLogger.write(notificationRow.getEntry().getSbn().getLogMaker()
+                            .setCategory(MetricsEvent.ACTION_REVEAL_GEAR)
+                            .setType(MetricsEvent.TYPE_ACTION));
+                }
                 mSwipeHelper.onMenuShown(row);
                 mNotificationGutsManager.closeAndSaveGuts(true /* removeLeavebehind */,
                         false /* force */, false /* removeControls */, -1 /* x */, -1 /* y */,

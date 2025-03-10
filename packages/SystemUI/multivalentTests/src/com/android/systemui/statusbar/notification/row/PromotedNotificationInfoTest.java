@@ -31,6 +31,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.telecom.TelecomManager;
 import android.testing.TestableLooper;
@@ -46,9 +47,16 @@ import com.android.systemui.Dependency;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
+import com.android.systemui.statusbar.notification.NotificationActivityStarter;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
+import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
+import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
@@ -74,6 +82,8 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     private NotificationChannel mNotificationChannel;
     private StatusBarNotification mSbn;
     private NotificationEntry mEntry;
+    private NotificationListenerService.Ranking mRanking;
+    private EntryAdapter mEntryAdapter;
     private UiEventLoggerFake mUiEventLogger = new UiEventLoggerFake();
 
     @Rule
@@ -110,7 +120,20 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
         notification.extras.putParcelable(EXTRA_BUILDER_APPLICATION_INFO, applicationInfo);
         mSbn = new StatusBarNotification(TEST_PACKAGE_NAME, TEST_PACKAGE_NAME, 0, null, TEST_UID, 0,
                 notification, UserHandle.getUserHandleForUid(TEST_UID), null, 0);
-        mEntry = new NotificationEntryBuilder().setSbn(mSbn).build();
+        mEntry = new NotificationEntryBuilder().setSbn(mSbn).updateRanking(rankingBuilder -> {
+            rankingBuilder.setChannel(mNotificationChannel);
+        }).build();
+        mEntryAdapter = new EntryAdapterFactoryImpl(
+                mock(NotificationActivityStarter.class),
+                mock(MetricsLogger.class),
+                mock(PeopleNotificationIdentifier.class),
+                mock(NotificationIconStyleProvider.class),
+                mock(VisualStabilityCoordinator.class),
+                mock(NotificationActionClickManager.class),
+                mock(HighPriorityProvider.class),
+                mock(HeadsUpManager.class)
+        ).create(mEntry);
+        mRanking = mEntry.getRanking();
         when(mAssistantFeedbackController.isFeedbackEnabled()).thenReturn(false);
 
         mTestableLooper = TestableLooper.get(this);
@@ -143,8 +166,10 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 mChannelEditorDialogController,
                 mPackageDemotionInteractor,
                 TEST_PACKAGE_NAME,
-                mNotificationChannel,
+                mRanking,
+                mSbn,
                 mEntry,
+                mEntryAdapter,
                 null,
                 null,
                 null,

@@ -17,10 +17,15 @@
 package com.android.systemui.statusbar.notification.collection
 
 import android.content.Context
+import android.os.SystemClock
+import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.android.internal.logging.MetricsLogger
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
+import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.icon.IconPack
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
@@ -35,6 +40,8 @@ class NotificationEntryAdapter(
     private val iconStyleProvider: NotificationIconStyleProvider,
     private val visualStabilityCoordinator: VisualStabilityCoordinator,
     private val notificationActionClickManager: NotificationActionClickManager,
+    private val highPriorityProvider: HighPriorityProvider,
+    private val headsUpManager: HeadsUpManager,
     private val entry: NotificationEntry,
 ) : EntryAdapter {
 
@@ -108,6 +115,41 @@ class NotificationEntryAdapter(
 
     override fun getSbn(): StatusBarNotification {
         return entry.sbn
+    }
+
+    override fun getRanking(): NotificationListenerService.Ranking? {
+        return entry.ranking
+    }
+
+    override fun endLifetimeExtension(
+        callback: NotifLifetimeExtender.OnEndLifetimeExtensionCallback?,
+        extender: NotifLifetimeExtender,
+    ) {
+        callback?.onEndLifetimeExtension(extender, entry)
+    }
+
+    override fun onImportanceChanged() {
+        visualStabilityCoordinator.temporarilyAllowSectionChanges(entry, SystemClock.uptimeMillis())
+    }
+
+    override fun markForUserTriggeredMovement() {
+        entry.markForUserTriggeredMovement(true)
+    }
+
+    override fun isMarkedForUserTriggeredMovement(): Boolean {
+        return entry.isMarkedForUserTriggeredMovement
+    }
+
+    override fun isHighPriority(): Boolean {
+        return highPriorityProvider.isHighPriority(entry)
+    }
+
+    override fun setInlineControlsShown(currentlyVisible: Boolean) {
+        headsUpManager.setGutsShown(entry, currentlyVisible)
+    }
+
+    override fun isBlockable(): Boolean {
+        return entry.isBlockable
     }
 
     override fun canDragAndDrop(): Boolean {

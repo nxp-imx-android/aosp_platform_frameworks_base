@@ -1029,7 +1029,7 @@ public final class NotificationEntry extends ListEntry {
     }
 
     /**
-     * Mark this entry for movement triggered by a user action (ex: changing the priorirty of a
+     * Mark this entry for movement triggered by a user action (ex: changing the priority of a
      * conversation). This can then be used for custom animations.
      */
     public void markForUserTriggeredMovement(boolean marked) {

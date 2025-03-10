@@ -21,6 +21,7 @@ import android.app.NotificationChannel;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.RemoteException;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -30,6 +31,7 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
@@ -60,8 +62,10 @@ public class PromotedNotificationInfo extends NotificationInfo {
             ChannelEditorDialogController channelEditorDialogController,
             PackageDemotionInteractor packageDemotionInteractor,
             String pkg,
-            NotificationChannel notificationChannel,
+            NotificationListenerService.Ranking ranking,
+            StatusBarNotification sbn,
             NotificationEntry entry,
+            EntryAdapter entryAdapter,
             OnSettingsClickListener onSettingsClick,
             OnAppSettingsClickListener onAppSettingsClick,
             OnFeedbackClickListener feedbackClickListener,
@@ -73,17 +77,17 @@ public class PromotedNotificationInfo extends NotificationInfo {
             AssistantFeedbackController assistantFeedbackController,
             MetricsLogger metricsLogger, OnClickListener onCloseClick) throws RemoteException {
         super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
-                onUserInteractionCallback, channelEditorDialogController, packageDemotionInteractor,
-                pkg, notificationChannel,
-                entry, onSettingsClick, onAppSettingsClick, feedbackClickListener, uiEventLogger,
-                isDeviceProvisioned, isNonblockable, isDismissable, wasShownHighPriority,
-                assistantFeedbackController, metricsLogger, onCloseClick);
+                onUserInteractionCallback, channelEditorDialogController,
+                 packageDemotionInteractor,pkg, ranking, sbn,
+                entry, entryAdapter, onSettingsClick, onAppSettingsClick, feedbackClickListener,
+                uiEventLogger, isDeviceProvisioned, isDismissable, isNonblockable,
+                wasShownHighPriority, assistantFeedbackController, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;
 
         mPackageDemotionInteractor = packageDemotionInteractor;
 
-        bindDemote(entry.getSbn(), pkg);
+        bindDemote(sbn, pkg);
     }
 
     protected void bindDemote(StatusBarNotification sbn, String packageName) {
