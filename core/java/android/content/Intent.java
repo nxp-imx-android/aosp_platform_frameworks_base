@@ -12426,6 +12426,8 @@ public class Intent implements Parcelable, Cloneable {
     }
 
     private void collectNestedIntentKeysRecur(Set<Intent> visited, boolean forceUnparcel) {
+        // if forceUnparcel is false, do not unparcel the mExtras bundle.
+        // forceUnparcel will only be true when this method is called from system server.
         if (mExtras != null && (forceUnparcel || !mExtras.isParcelled()) && !mExtras.isEmpty()) {
             addExtendedFlags(EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED);
             for (String key : mExtras.keySet()) {
@@ -12440,6 +12442,7 @@ public class Intent implements Parcelable, Cloneable {
                         value = mExtras.get(key);
                     } else {
                         value = null;
+                        removeExtendedFlags(EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED);
                     }
                 } catch (BadParcelableException e) {
                     // This may still happen if the keys are collected on the system server side, in
@@ -12457,6 +12460,13 @@ public class Intent implements Parcelable, Cloneable {
                     handleParcelableList(parcelables, key, visited, forceUnparcel);
                 }
             }
+        }
+
+        // if there is no extras in the bundle, we also mark the intent as keys are collected.
+        // isDefinitelyEmpty() will not unparceled the mExtras. This is the best we can do without
+        // unparceling the extra bundle.
+        if (mExtras == null ||  mExtras.isDefinitelyEmpty()) {
+            addExtendedFlags(EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED);
         }
 
         if (mClipData != null) {
