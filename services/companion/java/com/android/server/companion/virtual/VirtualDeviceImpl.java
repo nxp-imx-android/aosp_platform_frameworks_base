@@ -193,6 +193,7 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
     private final InputController mInputController;
     private final SensorController mSensorController;
     private final CameraAccessController mCameraAccessController;
+    @Nullable private final ViewConfigurationController mViewConfigurationController;
     @Nullable // Null if virtual camera flag is off.
     private final VirtualCameraController mVirtualCameraController;
     private VirtualAudioController mVirtualAudioController;
@@ -404,7 +405,10 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
                 isVirtualCameraEnabled()
                         ? new VirtualCameraController(
                                 params.getDevicePolicy(POLICY_TYPE_CAMERA), deviceId)
-                        : null);
+                        : null,
+                android.content.res.Flags.rroConstraints()
+                        && Flags.viewconfigurationApis()
+                        ? new ViewConfigurationController(context) : null);
     }
 
     @VisibleForTesting
@@ -424,7 +428,8 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             Consumer<ArraySet<Integer>> runningAppsChangedCallback,
             VirtualDeviceParams params,
             DisplayManagerGlobal displayManager,
-            VirtualCameraController virtualCameraController) {
+            VirtualCameraController virtualCameraController,
+            ViewConfigurationController viewConfigurationController) {
         mVirtualDeviceLog = virtualDeviceLog;
         mOwnerPackageName = attributionSource.getPackageName();
         mAttributionSource = attributionSource;
@@ -482,6 +487,11 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
             mCameraAccessController.startObservingIfNeeded();
         }
         mVirtualCameraController = virtualCameraController;
+        mViewConfigurationController = viewConfigurationController;
+        if (mViewConfigurationController != null) {
+            mViewConfigurationController.applyViewConfigurationParams(deviceId,
+                    params.getViewConfigurationParams());
+        }
         try {
             token.linkToDeath(this, 0);
         } catch (RemoteException e) {
@@ -826,6 +836,9 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         }
         if (mVirtualCameraController != null) {
             mVirtualCameraController.close();
+        }
+        if (mViewConfigurationController != null) {
+            mViewConfigurationController.close();
         }
     }
 

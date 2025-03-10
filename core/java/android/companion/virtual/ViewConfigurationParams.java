@@ -1,0 +1,388 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.companion.virtual;
+
+import android.annotation.FlaggedApi;
+import android.annotation.FloatRange;
+import android.annotation.NonNull;
+import android.annotation.SystemApi;
+import android.companion.virtualdevice.flags.Flags;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.view.ViewConfiguration;
+
+import java.time.Duration;
+import java.util.Objects;
+
+/**
+ * Parameters related to {@link ViewConfiguration} that can be configured when creating a virtual
+ * device. When these parameters are set, {@link ViewConfiguration} methods would return the
+ * configured values for any context associated with the virtual device.
+ *
+ * @hide
+ */
+@SystemApi
+@FlaggedApi(Flags.FLAG_VIEWCONFIGURATION_APIS)
+public final class ViewConfigurationParams implements Parcelable {
+
+    /**
+     * @hide
+     */
+    public static final int INVALID_VALUE = -1;
+
+    private final float mTouchSlopDp;
+    private final float mMinimumFlingVelocityDpPerSecond;
+    private final float mMaximumFlingVelocityDpPerSecond;
+    private final float mScrollFriction;
+    private final int mTapTimeoutMillis;
+    private final int mDoubleTapTimeoutMillis;
+    private final int mDoubleTapMinTimeMillis;
+
+    private ViewConfigurationParams(float touchSlopDp, float minimumFlingVelocityDpPerSecond,
+            float maximumFlingVelocityDpPerSecond, float scrollFriction, int tapTimeoutMillis,
+            int doubleTapTimeoutMillis, int doubleTapMinTimeMillis) {
+        mTouchSlopDp = touchSlopDp;
+        mMinimumFlingVelocityDpPerSecond = minimumFlingVelocityDpPerSecond;
+        mMaximumFlingVelocityDpPerSecond = maximumFlingVelocityDpPerSecond;
+        mScrollFriction = scrollFriction;
+        mTapTimeoutMillis = tapTimeoutMillis;
+        mDoubleTapTimeoutMillis = doubleTapTimeoutMillis;
+        mDoubleTapMinTimeMillis = doubleTapMinTimeMillis;
+    }
+
+    private ViewConfigurationParams(Parcel in) {
+        mTouchSlopDp = in.readFloat();
+        mMinimumFlingVelocityDpPerSecond = in.readFloat();
+        mMaximumFlingVelocityDpPerSecond = in.readFloat();
+        mScrollFriction = in.readFloat();
+        mTapTimeoutMillis = in.readInt();
+        mDoubleTapTimeoutMillis = in.readInt();
+        mDoubleTapMinTimeMillis = in.readInt();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeFloat(mTouchSlopDp);
+        dest.writeFloat(mMinimumFlingVelocityDpPerSecond);
+        dest.writeFloat(mMaximumFlingVelocityDpPerSecond);
+        dest.writeFloat(mScrollFriction);
+        dest.writeInt(mTapTimeoutMillis);
+        dest.writeInt(mDoubleTapTimeoutMillis);
+        dest.writeInt(mDoubleTapMinTimeMillis);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ViewConfigurationParams that)) return false;
+        return Float.compare(mTouchSlopDp, that.mTouchSlopDp) == 0
+                && Float.compare(mMinimumFlingVelocityDpPerSecond,
+                    that.mMinimumFlingVelocityDpPerSecond) == 0
+                && Float.compare(mMaximumFlingVelocityDpPerSecond,
+                    that.mMaximumFlingVelocityDpPerSecond) == 0
+                && Float.compare(mScrollFriction, that.mScrollFriction) == 0
+                && mTapTimeoutMillis == that.mTapTimeoutMillis
+                && mDoubleTapTimeoutMillis == that.mDoubleTapTimeoutMillis
+                && mDoubleTapMinTimeMillis == that.mDoubleTapMinTimeMillis;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(mTouchSlopDp, mMinimumFlingVelocityDpPerSecond,
+                mMaximumFlingVelocityDpPerSecond, mScrollFriction, mTapTimeoutMillis,
+                mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis);
+    }
+
+    @Override
+    @NonNull
+    public String toString() {
+        return "ViewConfigurationParams("
+                + "mTouchSlopDp=" + mTouchSlopDp
+                + ", mMinimumFlingVelocityDpPerSecond=" + mMinimumFlingVelocityDpPerSecond
+                + ", mMaximumFlingVelocityDpPerSecond=" + mMaximumFlingVelocityDpPerSecond
+                + ", mScrollFriction=" + mScrollFriction
+                + ", mTapTimeoutMillis=" + mTapTimeoutMillis
+                + ", mDoubleTapTimeoutMillis=" + mDoubleTapTimeoutMillis
+                + ", mDoubleTapMinTimeMillis=" + mDoubleTapMinTimeMillis
+                + ')';
+    }
+
+    /**
+     * Returns the touch slop in density independent pixels (dp).
+     *
+     * @see ViewConfiguration#getScaledTouchSlop()
+     */
+    @FloatRange(from = 0)
+    public float getTouchSlopDp() {
+        return mTouchSlopDp;
+    }
+
+    /**
+     * Returns the minimum fling velocity in density independent pixels (dp) per second.
+     *
+     * @see ViewConfiguration#getScaledMinimumFlingVelocity()
+     */
+    @FloatRange(from = 0)
+    public float getMinimumFlingVelocityDpPerSecond() {
+        return mMinimumFlingVelocityDpPerSecond;
+    }
+
+    /**
+     * Returns the maximum fling velocity in density independent pixels (dp) per second.
+     *
+     * @see ViewConfiguration#getScaledMaximumFlingVelocity()
+     */
+    @FloatRange(from = 0)
+    public float getMaximumFlingVelocityDpPerSecond() {
+        return mMaximumFlingVelocityDpPerSecond;
+    }
+
+    /**
+     * Returns the scroll friction.
+     *
+     * @see ViewConfiguration#getScrollFrictionAmount()
+     */
+    @FloatRange(from = 0)
+    public float getScrollFriction() {
+        return mScrollFriction;
+    }
+
+    /**
+     * Returns a {@link Duration} representing the tap timeout.
+     *
+     * @see ViewConfiguration#getTapTimeoutMillis()
+     */
+    @NonNull
+    public Duration getTapTimeoutDuration() {
+        return Duration.ofMillis(mTapTimeoutMillis);
+    }
+
+    /**
+     * Returns a {@link Duration} representing the double tap timeout.
+     *
+     * @see ViewConfiguration#getDoubleTapTimeoutMillis()
+     */
+    @NonNull
+    public Duration getDoubleTapTimeoutDuration() {
+        return Duration.ofMillis(mDoubleTapTimeoutMillis);
+    }
+
+    /**
+     * Returns a {@link Duration} representing the double tap minimum time.
+     */
+    @NonNull
+    public Duration getDoubleTapMinTimeDuration() {
+        return Duration.ofMillis(mDoubleTapMinTimeMillis);
+    }
+
+    @NonNull
+    public static final Creator<ViewConfigurationParams> CREATOR =
+            new Creator<>() {
+                @Override
+                public ViewConfigurationParams createFromParcel(Parcel in) {
+                    return new ViewConfigurationParams(in);
+                }
+
+                @Override
+                public ViewConfigurationParams[] newArray(int size) {
+                    return new ViewConfigurationParams[size];
+                }
+            };
+
+    /**
+     * Builder for {@link ViewConfigurationParams}.
+     */
+    @FlaggedApi(Flags.FLAG_VIEWCONFIGURATION_APIS)
+    public static final class Builder {
+
+        private float mTouchSlopDp = INVALID_VALUE;
+        private float mMinimumFlingVelocityDpPerSecond = INVALID_VALUE;
+        private float mMaximumFlingVelocityDpPerSecond = INVALID_VALUE;
+        private float mScrollFriction = INVALID_VALUE;
+        private int mTapTimeoutMillis = INVALID_VALUE;
+        private int mDoubleTapTimeoutMillis = INVALID_VALUE;
+        private int mDoubleTapMinTimeMillis = INVALID_VALUE;
+
+        /**
+         * Sets the touch slop in density independent pixels (dp). When this is set,
+         * {@link ViewConfiguration#getScaledTouchSlop()} would return this value multiplied by
+         * the display density for any context associated with the virtual device.
+         *
+         * @throws IllegalArgumentException if the value is negative.
+         * @see ViewConfiguration#getScaledTouchSlop()
+         */
+        @NonNull
+        public Builder setTouchSlopDp(@FloatRange(from = 0) float touchSlopDp) {
+            if (touchSlopDp < 0) {
+                throw new IllegalArgumentException("Touch slop cannot be negative");
+            }
+            mTouchSlopDp = touchSlopDp;
+            return this;
+        }
+
+        /**
+         * Sets the minimum fling velocity in density independent pixels (dp) per second. When
+         * this is set, {@link ViewConfiguration#getScaledMinimumFlingVelocity()} would return this
+         * value multiplied by the display density for any context associated with the virtual
+         * device.
+         *
+         * @throws IllegalArgumentException if the value is negative.
+         * @see ViewConfiguration#getScaledMinimumFlingVelocity()
+         */
+        @NonNull
+        public Builder setMinimumFlingVelocityDpPerSecond(
+                @FloatRange(from = 0) float minimumFlingVelocityDpPerSecond) {
+            if (minimumFlingVelocityDpPerSecond < 0) {
+                throw new IllegalArgumentException("Minimum ling velocity cannot be negative");
+            }
+            mMinimumFlingVelocityDpPerSecond = minimumFlingVelocityDpPerSecond;
+            return this;
+        }
+
+        /**
+         * Sets the maximum fling velocity in density independent pixels (dp) per second. When
+         * this is set, {@link ViewConfiguration#getScaledMaximumFlingVelocity()} would return this
+         * value multiplied by the display density for any context associated with the virtual
+         * device.
+         *
+         * @throws IllegalArgumentException if the value is negative.
+         * @see ViewConfiguration#getScaledMaximumFlingVelocity()
+         */
+        @NonNull
+        public Builder setMaximumFlingVelocityDpPerSecond(
+                @FloatRange(from = 0) float maximumFlingVelocityDpPerSecond) {
+            if (maximumFlingVelocityDpPerSecond < 0) {
+                throw new IllegalArgumentException("Maximum fling velocity cannot be negative");
+            }
+            mMaximumFlingVelocityDpPerSecond = maximumFlingVelocityDpPerSecond;
+            return this;
+        }
+
+        /**
+         * Sets the scroll friction.
+         *
+         * @throws IllegalArgumentException if the value is negative.
+         * @see ViewConfiguration#getScrollFrictionAmount()
+         */
+        @NonNull
+        public Builder setScrollFriction(@FloatRange(from = 0) float scrollFriction) {
+            if (scrollFriction < 0) {
+                throw new IllegalArgumentException("Scroll friction cannot be negative");
+            }
+            mScrollFriction = scrollFriction;
+            return this;
+        }
+
+        /**
+         * Sets the tap timeout as {@link Duration}.
+         *
+         * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
+         * greater than {@link Integer#MAX_VALUE}.
+         * @see ViewConfiguration#getTapTimeoutMillis()
+         */
+        @NonNull
+        public Builder setTapTimeoutDuration(@NonNull Duration duration) {
+            Objects.requireNonNull(duration);
+            if (duration.isNegative()) {
+                throw new IllegalArgumentException("Tap timeout cannot be negative");
+            }
+            long millis = duration.toMillis();
+            if (millis > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(
+                        "Tap timeout cannot be larger than " + Integer.MAX_VALUE);
+            }
+            mTapTimeoutMillis = (int) millis;
+            return this;
+        }
+
+        /**
+         * Sets the double tap timeout as {@link Duration}.
+         *
+         * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
+         * greater than {@link Integer#MAX_VALUE}.
+         * @see ViewConfiguration#getDoubleTapTimeoutMillis()
+         */
+        @NonNull
+        public Builder setDoubleTapTimeoutDuration(@NonNull Duration duration) {
+            Objects.requireNonNull(duration);
+            if (duration.isNegative()) {
+                throw new IllegalArgumentException("Double tap timeout cannot be negative");
+            }
+            long millis = duration.toMillis();
+            if (millis > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(
+                        "Double tap timeout cannot be larger than " + Integer.MAX_VALUE);
+            }
+            mDoubleTapTimeoutMillis = (int) millis;
+            return this;
+        }
+
+        /**
+         * Sets the double tap minimum time as {@link Duration}.
+         *
+         * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
+         * greater than {@link Integer#MAX_VALUE}.
+         */
+        @NonNull
+        public Builder setDoubleTapMinTimeDuration(@NonNull Duration duration) {
+            Objects.requireNonNull(duration);
+            if (duration.isNegative()) {
+                throw new IllegalArgumentException("Double tap min time cannot be negative");
+            }
+            long millis = duration.toMillis();
+            if (millis > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(
+                        "Double tap min time cannot be larger than " + Integer.MAX_VALUE);
+            }
+            mDoubleTapMinTimeMillis = (int) millis;
+            return this;
+        }
+
+        /**
+         * Builds the {@link ViewConfigurationParams} instance.
+         *
+         * @throws IllegalArgumentException if there's no parameter set, or if the minimum fling
+         *                                  velocity is greater than the maximum fling velocity.
+         */
+        @NonNull
+        public ViewConfigurationParams build() {
+            if (mTouchSlopDp == INVALID_VALUE
+                    && mMinimumFlingVelocityDpPerSecond == INVALID_VALUE
+                    && mMaximumFlingVelocityDpPerSecond == INVALID_VALUE
+                    && mScrollFriction == INVALID_VALUE
+                    && mTapTimeoutMillis == INVALID_VALUE
+                    && mDoubleTapTimeoutMillis == INVALID_VALUE
+                    && mDoubleTapMinTimeMillis == INVALID_VALUE) {
+                throw new IllegalArgumentException("None of the parameters are set");
+            }
+            if (mMinimumFlingVelocityDpPerSecond != INVALID_VALUE
+                    && mMaximumFlingVelocityDpPerSecond != INVALID_VALUE
+                    && mMinimumFlingVelocityDpPerSecond > mMaximumFlingVelocityDpPerSecond) {
+                throw new IllegalArgumentException(
+                        "Minimum fling velocity cannot be greater than the maximum fling velocity");
+            }
+            return new ViewConfigurationParams(mTouchSlopDp, mMinimumFlingVelocityDpPerSecond,
+                    mMaximumFlingVelocityDpPerSecond, mScrollFriction, mTapTimeoutMillis,
+                    mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis);
+        }
+    }
+}
