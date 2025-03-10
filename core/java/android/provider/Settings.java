@@ -20799,6 +20799,24 @@ public final class Settings {
             @Readable
             public static final String WEAR_LAUNCHER_UI_MODE = "wear_launcher_ui_mode";
 
+            /**
+             * Setting indicating whether the primary gesture input action has been enabled by the
+             * user.
+             *
+             * @hide
+             */
+            public static final String GESTURE_PRIMARY_ACTION_USER_PREFERENCE =
+                    "gesture_primary_action_user_preference";
+
+            /**
+             * Setting indicating whether the dismiss gesture input action has been enabled by the
+             * user.
+             *
+             * @hide
+             */
+            public static final String GESTURE_DISMISS_ACTION_USER_PREFERENCE =
+                    "gesture_dismiss_action_user_preference";
+
             /** Whether Wear Power Anomaly Service is enabled.
              *
              * (0 = false, 1 = true)

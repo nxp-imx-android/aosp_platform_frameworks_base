@@ -118,6 +118,8 @@ public class GlobalSettings {
         Settings.Global.Wearable.CHARGING_SOUNDS_ENABLED,
         Settings.Global.Wearable.WRIST_DETECTION_AUTO_LOCKING_ENABLED,
         Settings.Global.Wearable.AUTO_BEDTIME_MODE,
+        Settings.Global.Wearable.GESTURE_PRIMARY_ACTION_USER_PREFERENCE,
+        Settings.Global.Wearable.GESTURE_DISMISS_ACTION_USER_PREFERENCE,
         Settings.Global.FORCE_ENABLE_PSS_PROFILING,
         Settings.Global.Wearable.ACCESSIBILITY_VIBRATION_WATCH_ENABLED,
         Settings.Global.Wearable.ACCESSIBILITY_VIBRATION_WATCH_TYPE,
