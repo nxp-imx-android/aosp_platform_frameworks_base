@@ -31,6 +31,7 @@ import android.app.appsearch.AppSearchManager;
 import android.app.appsearch.AppSearchResult;
 import android.app.appsearch.GlobalSearchSession;
 import android.app.appsearch.JoinSpec;
+import android.app.appsearch.PropertyPath;
 import android.app.appsearch.SearchResult;
 import android.app.appsearch.SearchResults;
 import android.app.appsearch.SearchSpec;
@@ -141,6 +142,9 @@ public class AppFunctionManagerHelper {
                         .addFilterSchemas(
                                 AppFunctionStaticMetadataHelper.getStaticSchemaNameForPackage(
                                         targetPackage))
+                        .addProjectionPaths(
+                                SearchSpec.SCHEMA_TYPE_WILDCARD,
+                                List.of(new PropertyPath(STATIC_PROPERTY_ENABLED_BY_DEFAULT)))
                         .setJoinSpec(joinSpec)
                         .setVerbatimSearchEnabled(true)
                         .build();
