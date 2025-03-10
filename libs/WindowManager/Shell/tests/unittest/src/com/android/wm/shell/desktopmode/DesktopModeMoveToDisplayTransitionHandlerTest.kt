@@ -43,8 +43,7 @@ class DesktopModeMoveToDisplayTransitionHandlerTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        handler =
-            DesktopModeMoveToDisplayTransitionHandler(StubTransaction(), mock(), mock(), mock())
+        handler = DesktopModeMoveToDisplayTransitionHandler(StubTransaction())
     }
 
     @Test

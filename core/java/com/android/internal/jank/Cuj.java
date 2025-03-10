@@ -313,17 +313,8 @@ public class Cuj {
      */
     public static final int CUJ_DEFAULT_TASK_TO_TASK_ANIMATION = 128;
 
-    /**
-     * Track moving a window to another display in Desktop Windowing mode.
-     *
-     * <p>Tracking starts when the DesktopModeMoveToDisplayTransitionHandler starts animating the
-     * task to move it to another display. This is triggered when the user presses a keyboard
-     * shortcut or clicks the menu in the overview. Tracking ends when the animation completes.</p>
-     */
-    public static final int CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY = 129;
-
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_DEFAULT_TASK_TO_TASK_ANIMATION;
 
     /** @hide */
     @IntDef({
@@ -443,8 +434,7 @@ public class Cuj {
             CUJ_DESKTOP_MODE_KEYBOARD_QUICK_SWITCH_APP_LAUNCH,
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_EXPAND,
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK,
-            CUJ_DEFAULT_TASK_TO_TASK_ANIMATION,
-            CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY
+            CUJ_DEFAULT_TASK_TO_TASK_ANIMATION
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -827,8 +817,6 @@ public class Cuj {
                 return "LAUNCHER_WORK_UTILITY_VIEW_SHRINK";
             case CUJ_DEFAULT_TASK_TO_TASK_ANIMATION:
                 return "DEFAULT_TASK_TO_TASK_ANIMATION";
-            case CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY:
-                return "DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY";
         }
         return "UNKNOWN";
     }
