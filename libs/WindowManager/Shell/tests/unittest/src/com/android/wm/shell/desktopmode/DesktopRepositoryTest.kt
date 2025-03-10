@@ -275,6 +275,18 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     }
 
     @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun removeActiveTask_excludingDesk_leavesTaskInDesk() {
+        repo.addDesk(displayId = 2, deskId = 11)
+        repo.addDesk(displayId = 3, deskId = 12)
+        repo.addTaskToDesk(displayId = 3, deskId = 12, taskId = 100, isVisible = true)
+
+        repo.removeActiveTask(taskId = 100, excludedDeskId = 12)
+
+        assertThat(repo.getActiveTaskIdsInDesk(12)).contains(100)
+    }
+
+    @Test
     fun isActiveTask_nonExistingTask_returnsFalse() {
         assertThat(repo.isActiveTask(99)).isFalse()
     }
