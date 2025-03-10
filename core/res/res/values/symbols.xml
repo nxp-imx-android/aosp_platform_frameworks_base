@@ -5963,6 +5963,8 @@
   <!-- Device CMF Theming Settings -->
   <java-symbol type="array" name="theming_defaults" />
 
+  <java-symbol type="string" name="config_help_url_action_disabled_by_advanced_protection" />
+
   <!-- Advanced Protection Service USB feature -->
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_title" />
   <java-symbol type="string" name="usb_apm_usb_plugged_in_when_locked_notification_text" />
