@@ -2943,6 +2943,11 @@ class DesktopTasksController(
         removeDesk(displayId = displayId, deskId = deskId)
     }
 
+    /** Removes all the available desks on all displays. */
+    fun removeAllDesks() {
+        taskRepository.getAllDeskIds().forEach { deskId -> removeDesk(deskId) }
+    }
+
     private fun removeDesk(displayId: Int, deskId: Int) {
         if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue()) return
         logV("removeDesk deskId=%d from displayId=%d", deskId, displayId)
@@ -3709,6 +3714,18 @@ class DesktopTasksController(
             }
         }
 
+        override fun removeDesk(deskId: Int) {
+            executeRemoteCallWithTaskPermission(controller, "removeDesk") { c ->
+                c.removeDesk(deskId)
+            }
+        }
+
+        override fun removeAllDesks() {
+            executeRemoteCallWithTaskPermission(controller, "removeAllDesks") { c ->
+                c.removeAllDesks()
+            }
+        }
+
         override fun activateDesk(deskId: Int, remoteTransition: RemoteTransition?) {
             executeRemoteCallWithTaskPermission(controller, "activateDesk") { c ->
                 c.activateDesk(deskId, remoteTransition)
@@ -3772,8 +3789,8 @@ class DesktopTasksController(
             }
         }
 
-        override fun removeDesktop(displayId: Int) {
-            executeRemoteCallWithTaskPermission(controller, "removeDesktop") { c ->
+        override fun removeDefaultDeskInDisplay(displayId: Int) {
+            executeRemoteCallWithTaskPermission(controller, "removeDefaultDeskInDisplay") { c ->
                 c.removeDefaultDeskInDisplay(displayId)
             }
         }
