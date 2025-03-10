@@ -21,6 +21,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.android.server.am.ActivityManagerService.Injector;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -623,6 +624,60 @@ public class ApplicationStartInfoTest {
         // not to the correct fields.
         assertEquals(0, parcel.dataAvail());
         assertTrue(startInfo.equals(startInfoFromParcel));
+    }
+
+    /** Test that new timestamps are added to the correct record (the most recently created one). */
+    @Test
+    public void testTimestampAddedToCorrectRecord() throws Exception {
+        // Use a different start timestamp for each record so we can identify which was added to.
+        final long startTimeRecord1 = 123L;
+        final long startTimeRecord2 = 456L;
+
+        final long forkTime = 789L;
+
+        // Create a process record to use with all starts.
+        ProcessRecord app = makeProcessRecord(
+                APP_1_PID_1,                     // pid
+                APP_1_UID,                       // uid
+                APP_1_UID,                       // packageUid
+                null,                            // definingUid
+                APP_1_PROCESS_NAME,              // processName
+                APP_1_PACKAGE_NAME);             // packageName
+
+        // Trigger a start info record.
+        mAppStartInfoTracker.handleProcessBroadcastStart(startTimeRecord1, app,
+                buildIntent(COMPONENT), false /* isAlarm */);
+
+        // Wait at least 1 ms for monotonic time to increase.
+        sleep(1);
+
+        // Verify the record was added successfully.
+        ArrayList<ApplicationStartInfo> list = new ArrayList<ApplicationStartInfo>();
+        mAppStartInfoTracker.getStartInfo(null, APP_1_UID, 0, 0, list);
+        assertEquals(1, list.size());
+        assertEquals(startTimeRecord1, list.get(0).getStartupTimestamps().get(0).longValue());
+
+        // Now trigger another start info record.
+        mAppStartInfoTracker.handleProcessBroadcastStart(startTimeRecord2, app,
+                buildIntent(COMPONENT), false /* isAlarm */);
+
+        // Add a timestamp to the most recent record.
+        mAppStartInfoTracker.addTimestampToStart(
+                app, forkTime, ApplicationStartInfo.START_TIMESTAMP_FORK);
+
+        // Verify the record was added successfully.
+        list.clear();
+        mAppStartInfoTracker.getStartInfo(null, APP_1_UID, 0, 0, list);
+        assertEquals(2, list.size());
+        assertEquals(startTimeRecord2, list.get(0).getStartupTimestamps().get(0).longValue());
+        assertEquals(startTimeRecord1, list.get(1).getStartupTimestamps().get(0).longValue());
+
+        // Verify that the new timestamp is set correctly on the 2nd record that was added and not
+        // on the first.
+        assertEquals(forkTime, list.get(0).getStartupTimestamps()
+                .get(ApplicationStartInfo.START_TIMESTAMP_FORK).longValue());
+        assertFalse(list.get(1).getStartupTimestamps().containsKey(
+                ApplicationStartInfo.START_TIMESTAMP_FORK));
     }
 
     private static <T> void setFieldValue(Class clazz, Object obj, String fieldName, T val) {
