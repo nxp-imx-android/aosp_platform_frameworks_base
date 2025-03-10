@@ -70,9 +70,12 @@ public final class DesktopModeBoundsCalculator {
         final Rect stableBounds = new Rect();
         task.getDisplayArea().getStableRect(stableBounds);
 
-        // If the options bounds size is flexible, update size with calculated desired size.
+        final boolean hasFullscreenOverride = activity != null
+                && activity.mAppCompatController.getAspectRatioOverrides().hasFullscreenOverride();
+        // If the options bounds size is flexible and no fullscreen override has been applied,
+        // update size with calculated desired size.
         final boolean updateOptionBoundsSize = options != null
-                && options.getFlexibleLaunchSize();
+                && options.getFlexibleLaunchSize() && !hasFullscreenOverride;
         // If cascading is also enabled, the position of the options bounds must be respected
         // during the size update.
         final boolean shouldRespectOptionPosition =
