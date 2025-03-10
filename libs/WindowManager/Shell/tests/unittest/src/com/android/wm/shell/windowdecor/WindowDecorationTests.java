@@ -1186,6 +1186,11 @@ public class WindowDecorationTests extends ShellTestCase {
         }
 
         @Override
+        int getCaptionViewId() {
+            return R.id.caption;
+        }
+
+        @Override
         TestView inflateLayout(Context context, int layoutResId) {
             if (layoutResId == R.layout.caption_layout) {
                 return mMockView;
