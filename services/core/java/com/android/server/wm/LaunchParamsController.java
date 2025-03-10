@@ -37,6 +37,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * {@link LaunchParamsController} calculates the {@link LaunchParams} by coordinating between
@@ -97,18 +98,18 @@ class LaunchParamsController {
             mTmpResult.reset();
             final LaunchParamsModifier modifier = mModifiers.get(i);
 
-            switch(modifier.onCalculate(task, layout, activity, source, options, request, phase,
+            switch (modifier.onCalculate(task, layout, activity, source, options, request, phase,
                     mTmpCurrent, mTmpResult)) {
                 case RESULT_SKIP:
                     // Do not apply any results when we are told to skip
                     continue;
                 case RESULT_DONE:
                     // Set result and return immediately.
-                    result.set(mTmpResult);
+                    result.merge(mTmpResult);
                     return;
                 case RESULT_CONTINUE:
                     // Set result and continue
-                    result.set(mTmpResult);
+                    result.merge(mTmpResult);
                     break;
             }
         }
@@ -173,6 +174,7 @@ class LaunchParamsController {
      */
     static class LaunchParams {
         /** The bounds within the parent container. */
+        @NonNull
         final Rect mBounds = new Rect();
         /** The bounds within the parent container respecting insets. Usually empty. */
         @NonNull
@@ -186,12 +188,17 @@ class LaunchParamsController {
         @WindowingMode
         int mWindowingMode;
 
+        /** Whether the Activity needs the safe region bounds. A {@code null} value means unset. */
+        @Nullable
+        Boolean mNeedsSafeRegionBounds = null;
+
         /** Sets values back to default. {@link #isEmpty} will return {@code true} once called. */
         void reset() {
             mBounds.setEmpty();
             mAppBounds.setEmpty();
             mPreferredTaskDisplayArea = null;
             mWindowingMode = WINDOWING_MODE_UNDEFINED;
+            mNeedsSafeRegionBounds = null;
         }
 
         /** Copies the values set on the passed in {@link LaunchParams}. */
@@ -200,12 +207,26 @@ class LaunchParamsController {
             mAppBounds.set(params.mAppBounds);
             mPreferredTaskDisplayArea = params.mPreferredTaskDisplayArea;
             mWindowingMode = params.mWindowingMode;
+            mNeedsSafeRegionBounds = params.mNeedsSafeRegionBounds;
+        }
+
+        /** Merges the values set on the passed in {@link LaunchParams}. */
+        void merge(LaunchParams params) {
+            mBounds.set(params.mBounds);
+            mAppBounds.set(params.mAppBounds);
+            mPreferredTaskDisplayArea = params.mPreferredTaskDisplayArea;
+            mWindowingMode = params.mWindowingMode;
+            // Only update mNeedsSafeRegionBounds if a modifier updates it by setting a non null
+            // value. Otherwise, carry over from previous modifiers
+            if (params.mNeedsSafeRegionBounds != null) {
+                mNeedsSafeRegionBounds = params.mNeedsSafeRegionBounds;
+            }
         }
 
         /** Returns {@code true} if no values have been explicitly set. */
         boolean isEmpty() {
             return mBounds.isEmpty() && mAppBounds.isEmpty() && mPreferredTaskDisplayArea == null
-                    && mWindowingMode == WINDOWING_MODE_UNDEFINED;
+                    && mWindowingMode == WINDOWING_MODE_UNDEFINED && mNeedsSafeRegionBounds == null;
         }
 
         boolean hasWindowingMode() {
@@ -226,16 +247,19 @@ class LaunchParamsController {
             if (mPreferredTaskDisplayArea != that.mPreferredTaskDisplayArea) return false;
             if (mWindowingMode != that.mWindowingMode) return false;
             if (!mAppBounds.equals(that.mAppBounds)) return false;
-            return mBounds != null ? mBounds.equals(that.mBounds) : that.mBounds == null;
+            if (!Objects.equals(mNeedsSafeRegionBounds, that.mNeedsSafeRegionBounds)) return false;
+            return !mBounds.isEmpty() ? mBounds.equals(that.mBounds) : that.mBounds.isEmpty();
         }
 
         @Override
         public int hashCode() {
-            int result = mBounds != null ? mBounds.hashCode() : 0;
+            int result = !mBounds.isEmpty() ? mBounds.hashCode() : 0;
             result = 31 * result + mAppBounds.hashCode();
             result = 31 * result + (mPreferredTaskDisplayArea != null
                     ? mPreferredTaskDisplayArea.hashCode() : 0);
             result = 31 * result + mWindowingMode;
+            result = 31 * result + (mNeedsSafeRegionBounds != null
+                    ? Boolean.hashCode(mNeedsSafeRegionBounds) : 0);
             return result;
         }
     }

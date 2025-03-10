@@ -1431,6 +1431,93 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testSetSafeRegionBounds_appliedOnNodeAndChildren() {
+        final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
+        final TestWindowContainer root = builder.setLayer(0).build();
+
+        final TestWindowContainer child1 = root.addChildWindow();
+        final TestWindowContainer child2 = root.addChildWindow();
+        final TestWindowContainer child11 = child1.addChildWindow();
+        final TestWindowContainer child12 = child1.addChildWindow();
+        final TestWindowContainer child21 = child2.addChildWindow();
+
+        assertNull(root.getSafeRegionBounds());
+        assertNull(child1.getSafeRegionBounds());
+        assertNull(child11.getSafeRegionBounds());
+        assertNull(child12.getSafeRegionBounds());
+        assertNull(child2.getSafeRegionBounds());
+        assertNull(child21.getSafeRegionBounds());
+
+        final Rect tempSafeRegionBounds1 = new Rect(50, 50, 200, 300);
+        child1.setSafeRegionBounds(tempSafeRegionBounds1);
+
+        assertNull(root.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child1.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child11.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child12.getSafeRegionBounds());
+        assertNull(child2.getSafeRegionBounds());
+        assertNull(child21.getSafeRegionBounds());
+
+        // Set different safe region bounds on child11
+        final Rect tempSafeRegionBounds2 = new Rect(30, 30, 200, 200);
+        child11.setSafeRegionBounds(tempSafeRegionBounds2);
+
+        assertNull(root.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child1.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds2, child11.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child12.getSafeRegionBounds());
+        assertNull(child2.getSafeRegionBounds());
+        assertNull(child21.getSafeRegionBounds());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    public void testSetSafeRegionBounds_resetSafeRegionBounds() {
+        final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
+        final TestWindowContainer root = builder.setLayer(0).build();
+
+        final TestWindowContainer child1 = root.addChildWindow();
+        final TestWindowContainer child2 = root.addChildWindow();
+        final TestWindowContainer child11 = child1.addChildWindow();
+        final TestWindowContainer child12 = child1.addChildWindow();
+        final TestWindowContainer child21 = child2.addChildWindow();
+
+        assertNull(root.getSafeRegionBounds());
+        assertNull(child1.getSafeRegionBounds());
+        assertNull(child11.getSafeRegionBounds());
+        assertNull(child12.getSafeRegionBounds());
+        assertNull(child2.getSafeRegionBounds());
+        assertNull(child21.getSafeRegionBounds());
+
+        final Rect tempSafeRegionBounds1 = new Rect(50, 50, 200, 300);
+        child1.setSafeRegionBounds(tempSafeRegionBounds1);
+
+        assertNull(root.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child1.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child11.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child12.getSafeRegionBounds());
+        assertNull(child2.getSafeRegionBounds());
+        assertNull(child21.getSafeRegionBounds());
+
+        // Set different safe region bounds on child11
+        final Rect tempSafeRegionBounds2 = new Rect(30, 30, 200, 200);
+        child11.setSafeRegionBounds(tempSafeRegionBounds2);
+
+        assertEquals(tempSafeRegionBounds2, child11.getSafeRegionBounds());
+
+        // Reset safe region bounds on child11. Now child11 will use child1 safe region bounds.
+        child11.setSafeRegionBounds(/* safeRegionBounds */null);
+
+        assertNull(root.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child1.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child11.getSafeRegionBounds());
+        assertEquals(tempSafeRegionBounds1, child12.getSafeRegionBounds());
+        assertNull(child2.getSafeRegionBounds());
+        assertNull(child21.getSafeRegionBounds());
+    }
+
+    @Test
     public void testSetExcludeInsetsTypes_appliedOnNodeAndChildren() {
         final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
         final TestWindowContainer root = builder.setLayer(0).build();
