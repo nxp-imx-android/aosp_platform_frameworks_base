@@ -49,15 +49,21 @@ class DesktopModeCompatPolicy(private val context: Context) {
      */
     fun isTopActivityExemptFromDesktopWindowing(task: TaskInfo) =
         isTopActivityExemptFromDesktopWindowing(task.baseActivity?.packageName,
-            task.numActivities, task.isTopActivityNoDisplay, task.isActivityStackTransparent)
+            task.numActivities, task.isTopActivityNoDisplay, task.isActivityStackTransparent,
+            task.userId)
 
-    fun isTopActivityExemptFromDesktopWindowing(packageName: String?,
-        numActivities: Int, isTopActivityNoDisplay: Boolean, isActivityStackTransparent: Boolean) =
+    fun isTopActivityExemptFromDesktopWindowing(
+        packageName: String?,
+        numActivities: Int,
+        isTopActivityNoDisplay: Boolean,
+        isActivityStackTransparent: Boolean,
+        userId: Int
+    ) =
         DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY.isTrue &&
                 ((isSystemUiTask(packageName) ||
                         isPartOfDefaultHomePackageOrNoHomeAvailable(packageName) ||
                         (isTransparentTask(isActivityStackTransparent, numActivities) &&
-                                hasFullscreenTransparentPermission(packageName))) &&
+                                hasFullscreenTransparentPermission(packageName, userId))) &&
                         !isTopActivityNoDisplay)
 
     /**
@@ -91,16 +97,17 @@ class DesktopModeCompatPolicy(private val context: Context) {
     private fun isSystemUiTask(packageName: String?) = packageName == systemUiPackage
 
     // Checks if the app for the given package has the SYSTEM_ALERT_WINDOW permission.
-    private fun hasFullscreenTransparentPermission(packageName: String?): Boolean {
+    private fun hasFullscreenTransparentPermission(packageName: String?, userId: Int): Boolean {
         if (DesktopModeFlags.ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS.isTrue) {
             if (packageName == null) {
                 return false
             }
-            return packageInfoCache.getOrPut(packageName) {
+            return packageInfoCache.getOrPut("$userId@$packageName") {
                 try {
-                    val packageInfo = pkgManager.getPackageInfo(
+                    val packageInfo = pkgManager.getPackageInfoAsUser(
                         packageName,
-                        PackageManager.GET_PERMISSIONS
+                        PackageManager.GET_PERMISSIONS,
+                        userId
                     )
                     packageInfo?.requestedPermissions?.contains(SYSTEM_ALERT_WINDOW) == true
                 } catch (e: PackageManager.NameNotFoundException) {
