@@ -19,37 +19,10 @@ package com.android.settingslib.preference
 import android.content.Context
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
-import androidx.preference.PreferenceScreen
 import androidx.preference.SwitchPreferenceCompat
 import androidx.preference.TwoStatePreference
 import com.android.settingslib.metadata.PreferenceMetadata
-import com.android.settingslib.metadata.PreferenceScreenMetadata
-import com.android.settingslib.metadata.PreferenceTitleProvider
 import com.android.settingslib.widget.MainSwitchPreference
-
-/** Binding of preference group associated with [PreferenceCategory]. */
-interface PreferenceScreenBinding : PreferenceBinding {
-
-    override fun bind(preference: Preference, metadata: PreferenceMetadata) {
-        super.bind(preference, metadata)
-        if (preference is PreferenceScreen) {
-            val context = preference.context
-            val screenMetadata = metadata as PreferenceScreenMetadata
-            val screenTitle = screenMetadata.screenTitle
-            preference.title =
-                if (screenTitle != 0) {
-                    context.getString(screenTitle)
-                } else {
-                    screenMetadata.getScreenTitle(context)
-                        ?: (screenMetadata as? PreferenceTitleProvider)?.getTitle(context)
-                }
-        }
-    }
-
-    companion object {
-        @JvmStatic val INSTANCE = object : PreferenceScreenBinding {}
-    }
-}
 
 /** Binding of preference category associated with [PreferenceCategory]. */
 interface PreferenceCategoryBinding : PreferenceBinding {

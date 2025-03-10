@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@file:Suppress("ktlint:standard:filename") // remove once we have more bindings
 
 package com.android.settingslib
 
@@ -29,7 +28,8 @@ interface PrimarySwitchPreferenceBinding : PreferenceBinding {
 
     override fun bind(preference: Preference, metadata: PreferenceMetadata) {
         super.bind(preference, metadata)
-        (preference as PrimarySwitchPreference).apply {
+        // Could bind on PreferenceScreen
+        (preference as? PrimarySwitchPreference)?.apply {
             isChecked = preferenceDataStore!!.getBoolean(key, false)
             isSwitchEnabled = isEnabled
         }
