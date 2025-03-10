@@ -137,44 +137,6 @@ interface PreferenceMetadata {
 
     /** Returns preference intent. */
     fun intent(context: Context): Intent? = null
-
-    /**
-     * Returns the preference title.
-     *
-     * Implement [PreferenceTitleProvider] interface if title content is generated dynamically.
-     */
-    fun getPreferenceTitle(context: Context): CharSequence? =
-        when {
-            title != 0 -> context.getText(title)
-            this is PreferenceTitleProvider -> getTitle(context)
-            else -> null
-        }
-
-    /**
-     * Returns the preference summary.
-     *
-     * Implement [PreferenceSummaryProvider] interface if summary content is generated dynamically
-     * (e.g. summary is provided per preference value).
-     */
-    fun getPreferenceSummary(context: Context): CharSequence? =
-        when {
-            summary != 0 -> context.getText(summary)
-            this is PreferenceSummaryProvider -> getSummary(context)
-            else -> null
-        }
-
-    /**
-     * Returns the preference icon.
-     *
-     * Implement [PreferenceIconProvider] interface if icon is provided dynamically (e.g. icon is
-     * provided based on flag value).
-     */
-    fun getPreferenceIcon(context: Context): Int =
-        when {
-            icon != 0 -> icon
-            this is PreferenceIconProvider -> getIcon(context)
-            else -> 0
-        }
 }
 
 /** Metadata of preference group. */
