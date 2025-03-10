@@ -2111,6 +2111,12 @@ class SettingsProtoDumpUtil {
         dumpSetting(s, p,
                 Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED,
                 SecureSettingsProto.ADAPTIVE_CONNECTIVITY_ENABLED);
+        dumpSetting(s, p,
+                Settings.Secure.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED,
+                SecureSettingsProto.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED);
+        dumpSetting(s, p,
+                Settings.Secure.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED,
+                SecureSettingsProto.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED);
 
         final long controlsToken = p.start(SecureSettingsProto.CONTROLS);
         dumpSetting(s, p,
