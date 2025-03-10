@@ -1570,6 +1570,7 @@ package android.hardware.biometrics {
     method @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public android.hardware.biometrics.BiometricTestSession createTestSession(int);
     method @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public java.util.List<android.hardware.biometrics.SensorProperties> getSensorProperties();
     method @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public String getUiPackage();
+    method @FlaggedApi("android.hardware.biometrics.identity_check_test_api") @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void setIdentityCheckTestStatus(@NonNull android.hardware.biometrics.IdentityCheckStatus);
   }
 
   public class BiometricPrompt {
@@ -1592,6 +1593,21 @@ package android.hardware.biometrics {
     method @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void notifyError(int, int);
     method @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void rejectAuthentication(int);
     method @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public void startEnroll(int);
+  }
+
+  @FlaggedApi("android.hardware.biometrics.identity_check_test_api") public final class IdentityCheckStatus implements android.os.Parcelable {
+    method public int describeContents();
+    method public boolean isIdentityCheckActive();
+    method public boolean isIdentityCheckValueForTestAvailable();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.hardware.biometrics.IdentityCheckStatus> CREATOR;
+  }
+
+  public static final class IdentityCheckStatus.Builder {
+    ctor public IdentityCheckStatus.Builder();
+    method @NonNull public android.hardware.biometrics.IdentityCheckStatus build();
+    method @NonNull public android.hardware.biometrics.IdentityCheckStatus.Builder setIdentityCheckActive(boolean);
+    method @NonNull public android.hardware.biometrics.IdentityCheckStatus.Builder setIdentityCheckValueForTestAvailable(boolean);
   }
 
   public class SensorProperties {

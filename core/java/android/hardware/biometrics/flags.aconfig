@@ -72,3 +72,10 @@ flag {
   description: "Feature flag for moving some FingerprintManager APIs to BiometricManager to unblock FM removal."
   bug: "323957939"
 }
+
+flag {
+  name: "identity_check_test_api"
+  namespace: "biometrics_framework"
+  description: "This flag is for test API changes related to Identity Check"
+  bug: "347123256"
+}
