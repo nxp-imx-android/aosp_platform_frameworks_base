@@ -94,6 +94,8 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
@@ -663,11 +665,20 @@ private fun ContentScope.Navigation(
                 if (isSeekBarVisible) {
                     // To allow the seek bar slider to fade in and out, it's tagged as an element.
                     Element(key = Media.Elements.SeekBarSlider, modifier = Modifier.weight(1f)) {
+                        val sliderDragDelta = remember {
+                            // Not a mutableStateOf - this is never accessed in composition and
+                            // using an anonymous object avoids generics boxing of inline Offset.
+                            object {
+                                var value = Offset.Zero
+                            }
+                        }
                         Slider(
                             interactionSource = interactionSource,
                             value = viewModel.progress,
                             onValueChange = { progress -> viewModel.onScrubChange(progress) },
-                            onValueChangeFinished = { viewModel.onScrubFinished() },
+                            onValueChangeFinished = {
+                                viewModel.onScrubFinished(sliderDragDelta.value)
+                            },
                             colors = colors,
                             thumb = {
                                 SeekBarThumb(interactionSource = interactionSource, colors = colors)
@@ -681,9 +692,43 @@ private fun ContentScope.Navigation(
                                 )
                             },
                             modifier =
-                                Modifier.fillMaxWidth().clearAndSetSemantics {
-                                    contentDescription = viewModel.contentDescription
-                                },
+                                Modifier.fillMaxWidth()
+                                    .clearAndSetSemantics {
+                                        contentDescription = viewModel.contentDescription
+                                    }
+                                    .pointerInput(Unit) {
+                                        // Track and report the drag delta to the view-model so it
+                                        // can
+                                        // decide whether to accept the next onValueChangeFinished
+                                        // or
+                                        // reject it if the drag was overly vertical.
+                                        awaitPointerEventScope {
+                                            var down: PointerInputChange? = null
+                                            while (true) {
+                                                val event =
+                                                    awaitPointerEvent(PointerEventPass.Initial)
+                                                when (event.type) {
+                                                    PointerEventType.Press -> {
+                                                        // A new gesture has begun. Record the
+                                                        // initial
+                                                        // down input change.
+                                                        down = event.changes.last()
+                                                    }
+
+                                                    PointerEventType.Move -> {
+                                                        // The pointer has moved. If it's the same
+                                                        // pointer as the latest down, calculate and
+                                                        // report the drag delta.
+                                                        val change = event.changes.last()
+                                                        if (change.id == down?.id) {
+                                                            sliderDragDelta.value =
+                                                                change.position - down.position
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
                         )
                     }
                 }

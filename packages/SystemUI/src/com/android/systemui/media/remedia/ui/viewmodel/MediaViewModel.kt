@@ -26,9 +26,9 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ImageBitmap
 import com.android.systemui.classifier.Classifier
-import com.android.systemui.classifier.domain.interactor.runIfNotFalseTap
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -42,6 +42,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.awaitCancellation
@@ -114,8 +115,11 @@ constructor(
                                     isScrubbing = true
                                     seekProgress = progress
                                 },
-                                onScrubFinished = {
-                                    if (!falsingSystem.isFalseTouch(Classifier.MEDIA_SEEKBAR)) {
+                                onScrubFinished = { dragDelta ->
+                                    if (
+                                        dragDelta.isHorizontal() &&
+                                            !falsingSystem.isFalseTouch(Classifier.MEDIA_SEEKBAR)
+                                    ) {
                                         interactor.seek(
                                             sessionKey = session.key,
                                             to = (seekProgress * session.durationMs).roundToLong(),
@@ -344,6 +348,14 @@ constructor(
 
         return MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
             .formatMeasures(*measures.toTypedArray())
+    }
+
+    /**
+     * Returns `true` if this [Offset] is the same or larger on the horizontal axis than the
+     * vertical axis.
+     */
+    private fun Offset.isHorizontal(): Boolean {
+        return abs(x) >= abs(y)
     }
 
     interface FalsingSystem {
