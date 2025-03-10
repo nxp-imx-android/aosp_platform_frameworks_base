@@ -280,7 +280,7 @@ public class AudioDeviceVolumeManager {
                 android.Manifest.permission.BLUETOOTH_PRIVILEGED })
         public void register(boolean register, @NonNull AudioDeviceAttributes device,
                 @NonNull List<VolumeInfo> volumes, boolean handlesVolumeAdjustment,
-                @AbsoluteDeviceVolumeBehavior int behavior) {
+                @DeviceVolumeBehaviorState int behavior) {
             try {
                 getService().registerDeviceVolumeDispatcherForAbsoluteVolume(register,
                         this, mPackageName,
@@ -569,6 +569,29 @@ public class AudioDeviceVolumeManager {
     }
 
     /**
+     * @hide
+     * Resets any set volume behavior to
+     * {@link AudioDeviceVolumeManager#DEVICE_VOLUME_BEHAVIOR_VARIABLE} for the given device
+     */
+    @TestApi
+    @RequiresPermission(anyOf = { android.Manifest.permission.MODIFY_AUDIO_ROUTING,
+            android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED,
+            android.Manifest.permission.BLUETOOTH_PRIVILEGED,
+            android.Manifest.permission.BLUETOOTH_STACK})
+    @FlaggedApi(FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT)
+    public void resetDeviceAbsoluteVolumeBehavior(@NonNull AudioDeviceAttributes device) {
+        synchronized (mDeviceVolumeListenerLock) {
+            if (mDeviceVolumeDispatcherStub == null) {
+                mDeviceVolumeDispatcherStub = new DeviceVolumeDispatcherStub();
+            }
+
+            mDeviceVolumeDispatcherStub.register(/*register=*/false, device,
+                    new ArrayList<>(), /*handlesVolumeAdjustment=*/false,
+                    DEVICE_VOLUME_BEHAVIOR_VARIABLE);
+        }
+    }
+
+    /**
      * Base method for configuring a device to use absolute volume behavior, or one of its variants.
      * See {@link AbsoluteDeviceVolumeBehavior} for a list of allowed behaviors.
      *
@@ -676,6 +699,28 @@ public class AudioDeviceVolumeManager {
     public void setDeviceVolume(@NonNull VolumeInfo vi, @NonNull AudioDeviceAttributes ada) {
         try {
             getService().setDeviceVolume(vi, ada, mPackageName);
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     * Notifies the audio framework that the volume on the given absolute volume device has changed.
+     * @param vi the volume information, only stream-based volumes are supported
+     * @param ada the device for which volume is to be modified. Must have been registered before
+     *            as an absolute volume device
+     */
+    @SystemApi
+    @RequiresPermission(anyOf = {
+            Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED,
+            Manifest.permission.BLUETOOTH_PRIVILEGED
+    })
+    @FlaggedApi(FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT)
+    public void notifyAbsoluteVolumeChanged(@NonNull VolumeInfo vi,
+            @NonNull AudioDeviceAttributes ada) {
+        try {
+            getService().notifyAbsoluteVolumeChanged(vi, ada, mPackageName);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }

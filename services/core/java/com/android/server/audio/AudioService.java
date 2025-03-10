@@ -43,6 +43,7 @@ import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_FULL
 import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_UNSET;
 import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE;
 import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_HEADPHONES;
+import static android.media.AudioManager.FLAG_ABSOLUTE_VOLUME;
 import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
@@ -4693,19 +4694,11 @@ public class AudioService extends IAudioService.Stub
     public void setDeviceVolume(@NonNull VolumeInfo vi, @NonNull AudioDeviceAttributes ada,
             @NonNull String callingPackage) {
         super.setDeviceVolume_enforcePermission();
-        Objects.requireNonNull(vi);
         Objects.requireNonNull(ada);
         Objects.requireNonNull(callingPackage);
 
-        if (!vi.hasStreamType()) {
-            Log.e(TAG, "Unsupported non-stream type based VolumeInfo", new Exception());
+        if (!isVolumeInfoValid(vi)) {
             return;
-        }
-
-        int index = vi.getVolumeIndex();
-        if (index == VolumeInfo.INDEX_NOT_SET && !vi.hasMuteCommand()) {
-            throw new IllegalArgumentException(
-                    "changing device volume requires a volume index or mute command");
         }
 
         // force a cache clear to force reevaluating stream type to audio device selection
@@ -4724,29 +4717,94 @@ public class AudioService extends IAudioService.Stub
                 (unifyAbsoluteVolumeManagement() ? currDevAttr.equalTypeAddress(ada)
                         : currDevAttr.getInternalType() == ada.getInternalType()) || (vss == null);
 
-        AudioService.sVolumeLogger.enqueue(new DeviceVolumeEvent(streamType, index, ada,
-                currDevAttr.getInternalType(), callingPackage, skipping));
+        AudioService.sVolumeLogger.enqueue(
+                new DeviceVolumeEvent(streamType, vi.getVolumeIndex(), ada,
+                        currDevAttr.getInternalType(), callingPackage, skipping));
 
         if (skipping) {
             // setDeviceVolume was called on a device currently being used or stream state is null
             return;
         }
 
-        // TODO handle unmuting of current audio device
+        setDeviceVolumeInt(vi, vss, ada, callingPackage, /*flags=*/0, /*changeMute=*/false,
+                "setDeviceVolume");
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(anyOf = {MODIFY_AUDIO_SETTINGS_PRIVILEGED,
+            BLUETOOTH_PRIVILEGED})
+    /** @see AudioDeviceVolumeManager#notifyAbsoluteVolumeChanged(VolumeInfo, AudioDeviceAttributes)
+     * Part of service interface, check permissions and parameters here
+     * Note calling package is for logging purposes only, not to be trusted
+     */
+    public void notifyAbsoluteVolumeChanged(@NonNull VolumeInfo vi,
+            @NonNull AudioDeviceAttributes ada,
+            @NonNull String callingPackage) {
+        super.notifyAbsoluteVolumeChanged_enforcePermission();
+        Objects.requireNonNull(ada);
+        Objects.requireNonNull(callingPackage);
+
+        if (!isVolumeInfoValid(vi)) {
+            return;
+        }
+        if (!isAbsoluteVolumeDevice(ada.getInternalType())) {
+            Slog.e(TAG, "notifyAbsoluteVolumeChanged(): device " + ada
+                    + " is not registered as an absolute volume device");
+            return;
+        }
+
+        int streamType = replaceBtScoStreamWithVoiceCall(vi.getStreamType(),
+                "notifyAbsoluteVolumeChanged");
+
+        final VolumeStreamState vss = getVssForStream(streamType);
+        if (vss == null) {
+            Slog.e(TAG, "No VolumeStreamState for stream type " + streamType);
+            return;
+        }
+
+        final int currDev = getDeviceForStream(streamType);
+
+        AudioService.sVolumeLogger.enqueue(
+                new DeviceVolumeEvent(streamType, vi.getVolumeIndex(), ada, callingPackage,
+                        currDev == ada.getInternalType()));
+
+        setDeviceVolumeInt(vi, vss, ada, callingPackage,
+                FLAG_ABSOLUTE_VOLUME, currDev == ada.getInternalType(),
+                "notifyAbsoluteVolumeChanged");
+    }
+
+    private static boolean isVolumeInfoValid(VolumeInfo vi) {
+        Objects.requireNonNull(vi);
+
+        // TODO(b/409634289): for now we only allow stream volume info commands, this needs to be
+        //    adapted for volume groups.
+        if (!vi.hasStreamType()) {
+            Log.e(TAG, "Unsupported non-stream type based VolumeInfo", new Exception());
+            return false;
+        }
+
+        int index = vi.getVolumeIndex();
+        if (index == VolumeInfo.INDEX_NOT_SET && !vi.hasMuteCommand()) {
+            throw new IllegalArgumentException(
+                    "changing device volume requires a volume index or mute command");
+        }
+        return true;
+    }
+
+    private void setDeviceVolumeInt(VolumeInfo vi, VolumeStreamState vss, AudioDeviceAttributes ada,
+            String callingPackage, int flags, boolean changeMute, String caller) {
+        int streamType = vss.getStreamType();
+        int index = vi.getVolumeIndex();
         // if a stream is not muted but the VolumeInfo is for muting, set the volume index
         // for the device to min volume
         if (vi.hasMuteCommand() && vi.isMuted() && !isStreamMute(streamType)) {
             setStreamVolumeWithAttributionInt(streamType,
                     vss.getMinIndex(),
-                    /*flags*/ 0,
+                    flags,
                     ada, callingPackage, null,
-                    //TODO handle unmuting of current audio device
-                    false /*canChangeMuteAndUpdateController*/);
+                    changeMute);
             return;
         }
-
-        AudioService.sVolumeLogger.enqueueAndLog("setDeviceVolume" + " from:" + callingPackage
-                + " " + vi + " " + ada, EventLogger.Event.ALOGI, TAG);
 
         if (vi.getMinVolumeIndex() == VolumeInfo.INDEX_NOT_SET
                 || vi.getMaxVolumeIndex() == VolumeInfo.INDEX_NOT_SET) {
@@ -4766,9 +4824,9 @@ public class AudioService extends IAudioService.Stub
                         /*dstMin*/ min, /*dstMax*/ max);
             }
         }
-        setStreamVolumeWithAttributionInt(streamType, index, /*flags*/ 0,
+        setStreamVolumeWithAttributionInt(streamType, index, flags,
                 ada, callingPackage, null,
-                false /*canChangeMuteAndUpdateController*/);
+                changeMute);
     }
 
     /** Retain API for unsupported app usage */

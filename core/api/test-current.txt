@@ -1958,6 +1958,7 @@ package android.media {
 
   public class AudioDeviceVolumeManager {
     method @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.QUERY_AUDIO_STATE, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public boolean isFullVolumeDevice();
+    method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED, android.Manifest.permission.BLUETOOTH_PRIVILEGED, "android.permission.BLUETOOTH_STACK"}) public void resetDeviceAbsoluteVolumeBehavior(@NonNull android.media.AudioDeviceAttributes);
   }
 
   public final class AudioFocusRequest {
