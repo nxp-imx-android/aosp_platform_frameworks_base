@@ -74,6 +74,7 @@ import androidx.compose.ui.util.trace
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.Expandable
 import com.android.compose.animation.bounceable
+import com.android.compose.animation.rememberExpandableController
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
@@ -260,8 +261,7 @@ private fun TileExpandable(
     content: @Composable (Expandable) -> Unit,
 ) {
     Expandable(
-        color = color(),
-        shape = shape,
+        controller = rememberExpandableController(color = color, shape = shape),
         modifier = modifier.clip(shape).verticalSquish(squishiness),
         useModifierBasedImplementation = true,
     ) {
