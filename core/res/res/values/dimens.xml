@@ -521,6 +521,9 @@
     <!-- The spacing between messages in Notification.MessagingStyle -->
     <dimen name="notification_messaging_spacing">6dp</dimen>
 
+    <!-- The spacing between messages in Notification.MessagingStyle (2025 redesign version) -->
+    <dimen name="notification_2025_messaging_spacing">14dp</dimen>
+
     <!-- The spacing between messages in Notification.MessagingStyle -->
     <dimen name="notification_messaging_spacing_conversation_group">24dp</dimen>
 
