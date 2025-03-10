@@ -25,6 +25,8 @@ import androidx.preference.PreferenceScreen
 import androidx.preference.SeekBarPreference
 import com.android.settingslib.metadata.DiscreteIntValue
 import com.android.settingslib.metadata.DiscreteValue
+import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_ARGS
+import com.android.settingslib.metadata.EXTRA_BINDING_SCREEN_KEY
 import com.android.settingslib.metadata.IntRangeValuePreference
 import com.android.settingslib.metadata.PreferenceAvailabilityProvider
 import com.android.settingslib.metadata.PreferenceMetadata
@@ -72,8 +74,16 @@ interface PreferenceBinding {
                 preference.icon = null
             }
             val isPreferenceScreen = preference is PreferenceScreen
+            // extras
             preference.peekExtras()?.clear()
             extras(context)?.let { preference.extras.putAll(it) }
+            if (!isPreferenceScreen && this is PreferenceScreenMetadata) {
+                val extras = preference.extras
+                // Pass the preference key to fragment, so that the fragment could find associated
+                // preference screen registered in PreferenceScreenRegistry
+                extras.putString(EXTRA_BINDING_SCREEN_KEY, preference.key)
+                arguments?.let { extras.putBundle(EXTRA_BINDING_SCREEN_ARGS, it) }
+            }
             preference.title = getPreferenceTitle(context)
             if (!isPreferenceScreen) {
                 preference.summary = getPreferenceSummary(context)
@@ -82,12 +92,12 @@ interface PreferenceBinding {
             preference.isVisible =
                 (this as? PreferenceAvailabilityProvider)?.isAvailable(context) != false
             preference.isPersistent = isPersistent(context)
-            // PreferenceRegistry will notify dependency change, so we do not need to set
+            // PreferenceScreenBindingHelper will notify dependency change, so we do not need to set
             // dependency here. This simplifies dependency management and avoid the
             // IllegalStateException when call Preference.setDependency
             preference.dependency = null
             if (!isPreferenceScreen) { // avoid recursive loop when build graph
-                preference.fragment = (this as? PreferenceScreenCreator)?.fragmentClass()?.name
+                preference.fragment = (this as? PreferenceScreenMetadata)?.fragmentClass()?.name
                 preference.intent = intent(context)
             }
             if (preference is DialogPreference) {
