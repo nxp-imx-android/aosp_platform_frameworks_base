@@ -25,3 +25,11 @@ fun PreferenceMetadata.getPreferenceSummary(context: Context): CharSequence? =
         this is PreferenceSummaryProvider -> getSummary(context)
         else -> null
     }
+
+/** Returns the preference icon. */
+fun PreferenceMetadata.getPreferenceIcon(context: Context): Int =
+    when {
+        icon != 0 -> icon
+        this is PreferenceIconProvider -> getIcon(context)
+        else -> 0
+    }
