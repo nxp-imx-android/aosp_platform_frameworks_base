@@ -21,6 +21,8 @@ import android.graphics.Rect
 import android.view.Display
 import android.view.View
 import androidx.compose.runtime.getValue
+import com.android.app.tracing.FlowTracing.traceEach
+import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -386,11 +388,9 @@ constructor(
         }
 
     override val isHomeStatusBarAllowed =
-        isHomeStatusBarAllowedCompat.stateIn(
-            bgScope,
-            SharingStarted.WhileSubscribed(),
-            initialValue = false,
-        )
+        isHomeStatusBarAllowedCompat
+            .traceEach(trackGroup(TRACK_GROUP, "isHomeStatusBarAllowed"), logcat = true)
+            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     private val shouldHomeStatusBarBeVisible =
         combine(
@@ -463,9 +463,12 @@ constructor(
 
     private val chipsVisibilityModel: Flow<ChipsVisibilityModel> =
         combine(ongoingActivityChipsViewModel.chips, canShowOngoingActivityChips) { chips, canShow
-            ->
-            ChipsVisibilityModel(chips, areChipsAllowed = canShow)
-        }
+                ->
+                ChipsVisibilityModel(chips, areChipsAllowed = canShow)
+            }
+            .traceEach(trackGroup(TRACK_GROUP, "chips"), logcat = true) {
+                "Chips[allowed=${it.areChipsAllowed} numChips=${it.chips.active.size}]"
+            }
 
     override val ongoingActivityChips: ChipsVisibilityModel by
         hydrator.hydratedStateOf(
@@ -608,6 +611,8 @@ constructor(
         private const val COL_PREFIX_CLOCK = "clock"
         private const val COL_PREFIX_NOTIF_CONTAINER = "notifContainer"
         private const val COL_PREFIX_SYSTEM_INFO = "systemInfo"
+
+        private const val TRACK_GROUP = "StatusBar"
 
         fun tableLogBufferName(displayId: Int) = "HomeStatusBarViewModel[$displayId]"
     }
