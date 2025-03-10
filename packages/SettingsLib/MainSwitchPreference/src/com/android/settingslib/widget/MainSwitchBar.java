@@ -112,26 +112,6 @@ public class MainSwitchBar extends LinearLayout implements OnCheckedChangeListen
         if (mSwitch.getVisibility() == VISIBLE) {
             mSwitch.setOnCheckedChangeListener(this);
         }
-
-        setChecked(mSwitch.isChecked());
-
-        if (attrs != null) {
-            final TypedArray a = context.obtainStyledAttributes(attrs,
-                    androidx.preference.R.styleable.Preference, 0 /*defStyleAttr*/,
-                    0 /*defStyleRes*/);
-            final CharSequence title = a.getText(
-                    androidx.preference.R.styleable.Preference_android_title);
-            setTitle(title);
-            //TODO(b/369470034): update to next version
-            if (isExpressive && Build.VERSION.SDK_INT >= VERSION_CODES.VANILLA_ICE_CREAM) {
-                CharSequence summary = a.getText(
-                        androidx.preference.R.styleable.Preference_android_summary);
-                setSummary(summary);
-            }
-            a.recycle();
-        }
-
-        setBackground(mSwitch.isChecked());
     }
 
     @Override
