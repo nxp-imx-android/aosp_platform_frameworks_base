@@ -105,6 +105,12 @@ sealed class OngoingActivityChipModel {
              * [android.widget.Chronometer.setBase].
              */
             @ElapsedRealtimeLong val startTimeMs: Long,
+            /**
+             * True if this chip represents an event starting in the future and false if this chip
+             * represents an event that has already started. If true, [startTimeMs] should be in the
+             * future. Otherwise, [startTimeMs] should be in the past.
+             */
+            val isEventInFuture: Boolean = false,
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
             override val isHidden: Boolean = false,

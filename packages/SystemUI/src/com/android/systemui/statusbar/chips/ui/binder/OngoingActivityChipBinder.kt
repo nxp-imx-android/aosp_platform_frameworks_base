@@ -315,7 +315,11 @@ object OngoingActivityChipBinder {
                 chipShortTimeDeltaView.visibility = View.GONE
             }
             is OngoingActivityChipModel.Active.Timer -> {
-                ChipChronometerBinder.bind(chipModel.startTimeMs, chipTimeView)
+                ChipChronometerBinder.bind(
+                    chipModel.startTimeMs,
+                    chipModel.isEventInFuture,
+                    chipTimeView,
+                )
                 chipTimeView.visibility = View.VISIBLE
 
                 chipTextView.visibility = View.GONE
