@@ -26,6 +26,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.flags.BrokenWithSceneContainer
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.Flags
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.flags.fakeFeatureFlagsClassic
@@ -44,7 +45,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
 import com.google.common.collect.Range
-import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runCurrent
@@ -101,20 +102,30 @@ class LockscreenToPrimaryBouncerTransitionViewModelTest(flags: FlagsParameteriza
 
             // immediately 0f
             repository.sendTransitionStep(step(0f, TransitionState.STARTED))
-            runCurrent()
-            Truth.assertThat(actual).isEqualTo(0f)
+            assertThat(actual).isEqualTo(0f)
 
             repository.sendTransitionStep(step(.2f))
-            runCurrent()
-            Truth.assertThat(actual).isEqualTo(0f)
+            assertThat(actual).isEqualTo(0f)
 
             repository.sendTransitionStep(step(0.8f))
-            runCurrent()
-            Truth.assertThat(actual).isEqualTo(0f)
+            assertThat(actual).isEqualTo(0f)
 
             repository.sendTransitionStep(step(1f, TransitionState.FINISHED))
+            assertThat(actual).isEqualTo(0f)
+        }
+
+    @Test
+    @DisableSceneContainer
+    fun lockscreenAlphaEndsWithZero() =
+        testScope.runTest {
+            val alpha by collectLastValue(underTest.lockscreenAlpha)
+
+            repository.sendTransitionStep(step(0f, TransitionState.STARTED))
             runCurrent()
-            Truth.assertThat(actual).isEqualTo(0f)
+
+            // Jump right to the end and validate the value
+            repository.sendTransitionStep(step(1f, TransitionState.FINISHED))
+            assertThat(alpha).isEqualTo(0f)
         }
 
     @Test
@@ -138,21 +149,17 @@ class LockscreenToPrimaryBouncerTransitionViewModelTest(flags: FlagsParameteriza
             runCurrent()
             // fade out
             repository.sendTransitionStep(step(0f, TransitionState.STARTED))
-            runCurrent()
-            Truth.assertThat(actual).isEqualTo(1f)
+            assertThat(actual).isEqualTo(1f)
 
             repository.sendTransitionStep(step(.1f))
-            runCurrent()
-            Truth.assertThat(actual).isIn(Range.open(.1f, .9f))
+            assertThat(actual).isIn(Range.open(.1f, .9f))
 
             // alpha is 1f before the full transition starts ending
             repository.sendTransitionStep(step(0.8f))
-            runCurrent()
-            Truth.assertThat(actual).isEqualTo(0f)
+            assertThat(actual).isEqualTo(0f)
 
             repository.sendTransitionStep(step(1f, TransitionState.FINISHED))
-            runCurrent()
-            Truth.assertThat(actual).isEqualTo(0f)
+            assertThat(actual).isEqualTo(0f)
         }
 
     @Test
