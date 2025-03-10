@@ -134,7 +134,6 @@ import com.android.keyguard.ViewMediatorCallback;
 import com.android.keyguard.mediator.ScreenOnCoordinator;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.DejankUtils;
-import com.android.systemui.Dumpable;
 import com.android.systemui.EventLogTags;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.TransitionAnimator;
@@ -194,7 +193,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -4129,14 +4127,14 @@ public class KeyguardViewMediator implements CoreStartable,
 
     private void notifyLockNowCallback() {
         List<LockNowCallback> callbacks;
+
         synchronized (mLockNowCallbacks) {
-            callbacks = new ArrayList<LockNowCallback>(mLockNowCallbacks);
+            callbacks = new ArrayList<>(mLockNowCallbacks);
             mLockNowCallbacks.clear();
         }
-        Iterator<LockNowCallback> iter = callbacks.listIterator();
-        while (iter.hasNext()) {
-            LockNowCallback callback = iter.next();
-            iter.remove();
+
+        for (int i = 0; i < callbacks.size(); i++) {
+            final LockNowCallback callback = callbacks.get(i);
             if (callback.mUserId != mSelectedUserInteractor.getSelectedUserId()) {
                 Log.i(TAG, "Not notifying lockNowCallback due to user mismatch");
                 continue;
