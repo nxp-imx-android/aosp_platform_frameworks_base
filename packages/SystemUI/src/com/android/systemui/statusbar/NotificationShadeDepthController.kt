@@ -435,6 +435,7 @@ constructor(
                 }
             }
         }
+        initBlurListeners()
     }
 
     private fun initBlurListeners() {
