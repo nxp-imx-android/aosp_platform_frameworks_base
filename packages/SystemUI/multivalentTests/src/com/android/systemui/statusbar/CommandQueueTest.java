@@ -36,7 +36,9 @@ import android.hardware.biometrics.IBiometricSysuiReceiver;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.fingerprint.IUdfpsRefreshRateRequestCallback;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.WindowInsets;
 import android.view.WindowInsets.Type.InsetsType;
@@ -46,6 +48,7 @@ import android.view.WindowInsetsController.Behavior;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.statusbar.DisableStates;
 import com.android.internal.statusbar.LetterboxDetails;
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.view.AppearanceRegion;
@@ -58,11 +61,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class CommandQueueTest extends SysuiTestCase {
 
-    private static final LetterboxDetails[] TEST_LETTERBOX_DETAILS = new LetterboxDetails[] {
+    private static final LetterboxDetails[] TEST_LETTERBOX_DETAILS = new LetterboxDetails[]{
             new LetterboxDetails(
                     /* letterboxInnerBounds= */ new Rect(100, 0, 200, 500),
                     /* letterboxFullBounds= */ new Rect(0, 0, 500, 100),
@@ -117,6 +123,27 @@ public class CommandQueueTest extends SysuiTestCase {
         waitForIdleSync();
         verify(mCallbacks).disable(eq(SECONDARY_DISPLAY), eq(state1), eq(state2), eq(true));
     }
+
+    @Test
+    public void testDisableForAllDisplays() throws RemoteException {
+        int state1 = 14;
+        int state2 = 42;
+        int secondaryDisplayState1 = 16;
+        int secondaryDisplayState2 = 44;
+        Map<Integer, Pair<Integer, Integer>> displaysWithStates = new HashMap<>();
+        displaysWithStates.put(DEFAULT_DISPLAY, new Pair<>(state1, state2)); // Example values
+        displaysWithStates.put(SECONDARY_DISPLAY,
+                new Pair<>(secondaryDisplayState1, secondaryDisplayState2)); // Example values
+        DisableStates expectedDisableStates = new DisableStates(displaysWithStates, true);
+
+        mCommandQueue.disableForAllDisplays(expectedDisableStates);
+        waitForIdleSync();
+
+        verify(mCallbacks).disable(eq(DEFAULT_DISPLAY), eq(state1), eq(state2), eq(true));
+        verify(mCallbacks).disable(eq(SECONDARY_DISPLAY), eq(secondaryDisplayState1),
+                eq(secondaryDisplayState2), eq(true));
+    }
+
 
     @Test
     public void testExpandNotifications() {
@@ -475,7 +502,8 @@ public class CommandQueueTest extends SysuiTestCase {
         final long requestId = 10;
 
         mCommandQueue.showAuthenticationDialog(promptInfo, receiver, sensorIds,
-                credentialAllowed, requireConfirmation, userId, operationId, packageName, requestId);
+                credentialAllowed, requireConfirmation, userId, operationId, packageName,
+                requestId);
         waitForIdleSync();
         verify(mCallbacks).showAuthenticationDialog(eq(promptInfo), eq(receiver), eq(sensorIds),
                 eq(credentialAllowed), eq(requireConfirmation), eq(userId), eq(operationId),
