@@ -95,11 +95,6 @@ constructor(
                     view.setExpandFraction(it.coerceIn(0f, 1f))
                 }
             }
-            launch {
-                viewModel.lockScreenToShadeTransitionProgress.collectTraced {
-                    view.setFractionToShade(it.coerceIn(0f, 1f))
-                }
-            }
             launch { viewModel.qsExpandFraction.collectTraced { view.setQsExpandFraction(it) } }
             launch { viewModel.blurRadius(maxBlurRadius).collect(view::setBlurRadius) }
             launch {
