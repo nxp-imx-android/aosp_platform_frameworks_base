@@ -1776,6 +1776,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return loadDimensionPixelSize(mContext.getResources(), getCaptionHeightId(windowingMode));
     }
 
+    @Override
+    int getCaptionViewId() {
+        return R.id.desktop_mode_caption;
+    }
+
     void setAnimatingTaskResizeOrReposition(boolean animatingTaskResizeOrReposition) {
         if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_handle) return;
         final boolean inFullImmersive =

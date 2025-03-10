@@ -108,6 +108,11 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
         return new Rect();
     }
 
+    @Override
+    int getCaptionViewId() {
+        return R.id.caption;
+    }
+
     private void updateRelayoutParams(
             RelayoutParams relayoutParams,
             ActivityManager.RunningTaskInfo taskInfo,
