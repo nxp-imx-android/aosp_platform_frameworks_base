@@ -9,16 +9,6 @@ flag {
 }
 
 flag {
-    name: "wait_for_transition_on_display_switch"
-    namespace: "windowing_frontend"
-    description: "Waits for Shell transition to start before unblocking the screen after display switch"
-    bug: "301420598"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "apply_lifecycle_on_pip_change"
     namespace: "windowing_frontend"
     description: "Make pip activity lifecyle change with windowing mode"
