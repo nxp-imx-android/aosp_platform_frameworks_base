@@ -36,18 +36,18 @@ fun OngoingActivityChips(
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxHeight()
-                .padding(start = dimensionResource(R.dimen.ongoing_activity_chip_margin_start)),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement =
-            Arrangement.spacedBy(dimensionResource(R.dimen.ongoing_activity_chip_margin_start)),
-    ) {
-        chips.active
-            .filter { !it.isHidden }
-            .forEach {
+    val shownChips = chips.active.filter { !it.isHidden }
+    if (shownChips.isNotEmpty()) {
+        Row(
+            modifier =
+                modifier
+                    .fillMaxHeight()
+                    .padding(start = dimensionResource(R.dimen.ongoing_activity_chip_margin_start)),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement =
+                Arrangement.spacedBy(dimensionResource(R.dimen.ongoing_activity_chip_margin_start)),
+        ) {
+            shownChips.forEach {
                 key(it.key) {
                     OngoingActivityChip(
                         model = it,
@@ -56,5 +56,6 @@ fun OngoingActivityChips(
                     )
                 }
             }
+        }
     }
 }
