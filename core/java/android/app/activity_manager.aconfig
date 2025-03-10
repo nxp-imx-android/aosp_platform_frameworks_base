@@ -170,3 +170,13 @@ flag {
     description: "Holdback study for jank_perceptible_narrow"
     bug: "304837972"
 }
+
+flag {
+     namespace: "system_performance"
+     name: "app_start_info_cleanup_old_records"
+     description: "Cleanup old records to reduce size of in memory store."
+     bug: "384539178"
+     metadata {
+         purpose: PURPOSE_BUGFIX
+     }
+}

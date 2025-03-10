@@ -98,6 +98,9 @@ public final class AppStartInfoTracker {
 
     @VisibleForTesting static final int APP_START_INFO_HISTORY_LIST_SIZE = 16;
 
+    @VisibleForTesting
+    static final long APP_START_INFO_HISTORY_LENGTH_MS = TimeUnit.DAYS.toMillis(14);
+
     /**
      * The max number of records that can be present in {@link mInProgressRecords}.
      *
@@ -120,9 +123,13 @@ public final class AppStartInfoTracker {
      * Monotonic clock which does not reset on reboot.
      *
      * Time for offset is persisted along with records, see {@link #persistProcessStartInfo}.
-     * This does not follow the recommendation of {@link MonotonicClock} to persist on shutdown as
-     * it's ok in this case to lose any time change past the last persist as records added since
-     * then will be lost as well and the purpose of this clock is to keep records in order.
+     * This does not currently follow the recommendation of {@link MonotonicClock} to persist on
+     * shutdown as it's ok in this case to lose any time change past the last persist as records
+     * added since then will be lost as well. Since this time is used for cleanup as well, the
+     * potential old offset may result in the cleanup window being extended slightly beyond the
+     * targeted 14 days.
+     *
+     * TODO: b/402794215 - Persist on shutdown once persist performance is sufficiently improved.
      */
     @VisibleForTesting MonotonicClock mMonotonicClock = null;
 
@@ -296,7 +303,7 @@ public final class AppStartInfoTracker {
             if (!mEnabled) {
                 return;
             }
-            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTime());
+            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
             start.setIntent(intent);
             start.setStartType(ApplicationStartInfo.START_TYPE_UNSET);
@@ -454,7 +461,7 @@ public final class AppStartInfoTracker {
             if (!mEnabled) {
                 return;
             }
-            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTime());
+            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
             start.addStartupTimestamp(
@@ -484,7 +491,7 @@ public final class AppStartInfoTracker {
             if (!mEnabled) {
                 return;
             }
-            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTime());
+            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
             start.addStartupTimestamp(
@@ -511,7 +518,7 @@ public final class AppStartInfoTracker {
             if (!mEnabled) {
                 return;
             }
-            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTime());
+            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
             start.addStartupTimestamp(
@@ -533,7 +540,7 @@ public final class AppStartInfoTracker {
             if (!mEnabled) {
                 return;
             }
-            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTime());
+            ApplicationStartInfo start = new ApplicationStartInfo(getMonotonicTimeMs());
             addBaseFieldsFromProcessRecord(start, app);
             start.setStartupState(ApplicationStartInfo.STARTUP_STATE_STARTED);
             start.addStartupTimestamp(
@@ -1098,7 +1105,7 @@ public final class AppStartInfoTracker {
                     mLastAppStartInfoPersistTimestamp = now;
                 }
             }
-            proto.write(AppsStartInfoProto.MONOTONIC_TIME, getMonotonicTime());
+            proto.write(AppsStartInfoProto.MONOTONIC_TIME, getMonotonicTimeMs());
             if (succeeded) {
                 proto.flush();
                 af.finishWrite(out);
@@ -1219,7 +1226,11 @@ public final class AppStartInfoTracker {
         }
     }
 
-    private long getMonotonicTime() {
+    /**
+     * Monotonic time that doesn't change with reboot or device time change for ordering records.
+     */
+    @VisibleForTesting
+    public long getMonotonicTimeMs() {
         if (mMonotonicClock == null) {
             // This should never happen. Return 0 to not interfere with past or future records.
             return 0;
@@ -1439,9 +1450,25 @@ public final class AppStartInfoTracker {
             long token = proto.start(fieldId);
             proto.write(AppsStartInfoProto.Package.User.UID, mUid);
             int size = mInfos.size();
-            for (int i = 0; i < size; i++) {
-                mInfos.get(i).writeToProto(proto, AppsStartInfoProto.Package.User.APP_START_INFO,
-                        byteArrayOutputStream, objectOutputStream, typedXmlSerializer);
+            if (android.app.Flags.appStartInfoCleanupOldRecords()) {
+                long removeOlderThan = getMonotonicTimeMs() - APP_START_INFO_HISTORY_LENGTH_MS;
+                // Iterate backwards so we can remove old records as we go.
+                for (int i = size - 1; i >= 0; i--) {
+                    if (mInfos.get(i).getMonoticCreationTimeMs() < removeOlderThan) {
+                        // Remove the record.
+                        mInfos.remove(i);
+                    } else {
+                        mInfos.get(i).writeToProto(
+                                proto, AppsStartInfoProto.Package.User.APP_START_INFO,
+                                byteArrayOutputStream, objectOutputStream, typedXmlSerializer);
+                    }
+                }
+            } else {
+                for (int i = 0; i < size; i++) {
+                    mInfos.get(i).writeToProto(
+                            proto, AppsStartInfoProto.Package.User.APP_START_INFO,
+                            byteArrayOutputStream, objectOutputStream, typedXmlSerializer);
+                }
             }
             proto.write(AppsStartInfoProto.Package.User.MONITORING_ENABLED, mMonitoringModeEnabled);
             proto.end(token);
