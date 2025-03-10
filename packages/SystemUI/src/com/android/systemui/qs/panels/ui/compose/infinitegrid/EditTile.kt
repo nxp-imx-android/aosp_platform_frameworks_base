@@ -113,6 +113,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastMap
+import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.modifiers.height
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.qs.panels.shared.model.SizedTile
@@ -215,7 +216,9 @@ fun DefaultEditTileGrid(
         containerColor = Color.Transparent,
         topBar = { EditModeTopBar(onStopEditing = onStopEditing, onReset = reset) },
     ) { innerPadding ->
-        CompositionLocalProvider(LocalOverscrollFactory provides null) {
+        CompositionLocalProvider(
+            LocalOverscrollFactory provides rememberOffsetOverscrollEffectFactory()
+        ) {
             val scrollState = rememberScrollState()
 
             AutoScrollGrid(listState, scrollState, innerPadding)
