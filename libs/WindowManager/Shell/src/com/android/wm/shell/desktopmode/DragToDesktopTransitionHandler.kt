@@ -2,6 +2,7 @@ package com.android.wm.shell.desktopmode
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
 import android.animation.RectEvaluator
 import android.animation.ValueAnimator
 import android.app.ActivityManager.RunningTaskInfo
@@ -23,6 +24,7 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.os.SystemProperties
 import android.os.UserHandle
+import android.view.Choreographer
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CLOSE
@@ -48,6 +50,7 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKT
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
+import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.animation.PhysicsAnimator
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
@@ -122,6 +125,7 @@ sealed class DragToDesktopTransitionHandler(
         taskInfo: RunningTaskInfo,
         dragToDesktopAnimator: MoveToDesktopAnimator,
         visualIndicator: DesktopModeVisualIndicator?,
+        dragCancelCallback: Runnable,
     ) {
         if (inProgress) {
             logV("Drag to desktop transition already in progress.")
@@ -168,6 +172,7 @@ sealed class DragToDesktopTransitionHandler(
                     startTransitionToken = startTransitionToken,
                     otherSplitTask = otherTask,
                     visualIndicator = visualIndicator,
+                    dragCancelCallback = dragCancelCallback,
                 )
             } else {
                 TransitionState.FromFullscreen(
@@ -175,6 +180,7 @@ sealed class DragToDesktopTransitionHandler(
                     dragAnimator = dragToDesktopAnimator,
                     startTransitionToken = startTransitionToken,
                     visualIndicator = visualIndicator,
+                    dragCancelCallback = dragCancelCallback,
                 )
             }
     }
@@ -203,8 +209,9 @@ sealed class DragToDesktopTransitionHandler(
         }
         if (state.startInterrupted) {
             logV("finishDragToDesktop: start was interrupted, returning")
-            // We should only have interrupted the start transition after receiving a cancel/end
-            // request, let that existing request play out and just return here.
+            // If start was interrupted we've either already requested a cancel/end transition - so
+            // we should let that request play out, or we're cancelling the drag-to-desktop
+            // transition altogether, so just return here.
             return null
         }
         state.endTransitionToken =
@@ -221,6 +228,7 @@ sealed class DragToDesktopTransitionHandler(
      */
     fun cancelDragToDesktopTransition(cancelState: CancelState) {
         if (!inProgress) {
+            logV("cancelDragToDesktop: not in progress, returning")
             // Don't attempt to cancel a drag to desktop transition since there is no transition in
             // progress which means that the drag to desktop transition was never successfully
             // started.
@@ -228,14 +236,17 @@ sealed class DragToDesktopTransitionHandler(
         }
         val state = requireTransitionState()
         if (state.startAborted) {
+            logV("cancelDragToDesktop: start was aborted, clearing state")
             // Don't attempt to cancel the drag-to-desktop since the start transition didn't
             // succeed as expected. Just reset the state as if nothing happened.
             clearState()
             return
         }
         if (state.startInterrupted) {
-            // We should only have interrupted the start transition after receiving a cancel/end
-            // request, let that existing request play out and just return here.
+            logV("cancelDragToDesktop: start was interrupted, returning")
+            // If start was interrupted we've either already requested a cancel/end transition - so
+            // we should let that request play out, or we're cancelling the drag-to-desktop
+            // transition altogether, so just return here.
             return
         }
         state.cancelState = cancelState
@@ -706,11 +717,7 @@ sealed class DragToDesktopTransitionHandler(
         // end-transition, or if the end-transition is running on its own, then just wait until that
         // finishes instead. If we've merged the cancel-transition we've finished the
         // start-transition and won't reach this code.
-        if (
-            mergeTarget == state.startTransitionToken &&
-                isCancelOrEndTransitionRequested(state) &&
-                !state.mergedEndTransition
-        ) {
+        if (mergeTarget == state.startTransitionToken && !state.mergedEndTransition) {
             interruptStartTransition(state)
         }
     }
@@ -722,9 +729,23 @@ sealed class DragToDesktopTransitionHandler(
         if (!ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX.isTrue) {
             return
         }
-        logV("interruptStartTransition")
-        state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
-        state.dragAnimator.cancelAnimator()
+        if (isCancelOrEndTransitionRequested(state)) {
+            logV("interruptStartTransition, bookend requested -> finish start transition")
+            // Finish the start-drag transition, we will finish the overall transition properly when
+            // receiving #startAnimation for Cancel/End.
+            state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
+            state.dragAnimator.cancelAnimator()
+        } else {
+            logV("interruptStartTransition, bookend not requested -> animate to Home")
+            // Animate to Home, and then finish the start-drag transition. Since there is no other
+            // (end/cancel) transition requested that will be the end of the overall transition.
+            state.dragAnimator.cancelAnimator()
+            state.dragCancelCallback?.run()
+            createInterruptToHomeAnimator(transactionSupplier.get(), state) {
+                state.startTransitionFinishCb?.onTransitionFinished(/* wct= */ null)
+                clearState()
+            }
+        }
         state.activeCancelAnimation?.removeAllListeners()
         state.activeCancelAnimation?.cancel()
         state.activeCancelAnimation = null
@@ -737,6 +758,46 @@ sealed class DragToDesktopTransitionHandler(
         LatencyTracker.getInstance(context)
             .onActionCancel(LatencyTracker.ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG)
     }
+
+    private fun createInterruptToHomeAnimator(
+        transaction: Transaction,
+        state: TransitionState,
+        endCallback: Runnable,
+    ) {
+        val homeLeash = state.homeChange?.leash ?: error("Expected home leash to be non-null")
+        val draggedTaskLeash =
+            state.draggedTaskChange?.leash ?: error("Expected dragged leash to be non-null")
+        val homeAnimator = createInterruptAlphaAnimator(transaction, homeLeash, toShow = true)
+        val draggedTaskAnimator =
+            createInterruptAlphaAnimator(transaction, draggedTaskLeash, toShow = false)
+        val animatorSet = AnimatorSet()
+        animatorSet.playTogether(homeAnimator, draggedTaskAnimator)
+        animatorSet.addListener(
+            object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    endCallback.run()
+                }
+            }
+        )
+        animatorSet.start()
+    }
+
+    private fun createInterruptAlphaAnimator(
+        transaction: Transaction,
+        leash: SurfaceControl,
+        toShow: Boolean,
+    ) =
+        ValueAnimator.ofFloat(if (toShow) 0f else 1f, if (toShow) 1f else 0f).apply {
+            transaction.show(leash)
+            duration = DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
+            interpolator = Interpolators.LINEAR
+            addUpdateListener { animation ->
+                transaction
+                    .setAlpha(leash, animation.animatedValue as Float)
+                    .setFrameTimeline(Choreographer.getInstance().vsyncId)
+                    .apply()
+            }
+        }
 
     protected open fun setupEndDragToDesktop(
         info: TransitionInfo,
@@ -1060,6 +1121,7 @@ sealed class DragToDesktopTransitionHandler(
         abstract var endTransitionToken: IBinder?
         abstract var mergedEndTransition: Boolean
         abstract var activeCancelAnimation: Animator?
+        abstract var dragCancelCallback: Runnable?
 
         data class FromFullscreen(
             override val draggedTaskId: Int,
@@ -1079,6 +1141,7 @@ sealed class DragToDesktopTransitionHandler(
             override var endTransitionToken: IBinder? = null,
             override var mergedEndTransition: Boolean = false,
             override var activeCancelAnimation: Animator? = null,
+            override var dragCancelCallback: Runnable? = null,
             var otherRootChanges: MutableList<Change> = mutableListOf(),
         ) : TransitionState()
 
@@ -1100,6 +1163,7 @@ sealed class DragToDesktopTransitionHandler(
             override var endTransitionToken: IBinder? = null,
             override var mergedEndTransition: Boolean = false,
             override var activeCancelAnimation: Animator? = null,
+            override var dragCancelCallback: Runnable? = null,
             var splitRootChange: Change? = null,
             var otherSplitTask: Int,
         ) : TransitionState()

@@ -5698,7 +5698,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             // This display is configured to show system decorations.
             return true;
         }
-        if (isPublicSecondaryDisplayWithDesktopModeForceEnabled()) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                && isPublicSecondaryDisplayWithDesktopModeForceEnabled()) {
             if (com.android.window.flags.Flags.rearDisplayDisableForceDesktopSystemDecorations()) {
                 // System decorations should not be forced on a rear display due to security
                 // policies.

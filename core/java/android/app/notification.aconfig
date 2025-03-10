@@ -367,6 +367,7 @@ flag {
   namespace: "systemui"
   description: "Allows the NAS to summarize notifications"
   bug: "390417189"
+  is_exported: true
 }
 
 flag {

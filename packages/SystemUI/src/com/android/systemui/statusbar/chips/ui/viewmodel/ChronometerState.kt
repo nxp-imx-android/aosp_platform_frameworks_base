@@ -15,6 +15,7 @@
  */
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
+import android.annotation.ElapsedRealtimeLong
 import android.os.SystemClock
 import android.text.format.DateUtils.formatElapsedTime
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import kotlin.math.absoluteValue
 import kotlinx.coroutines.delay
 
 /** Platform-optimized interface for getting current time */
@@ -34,18 +36,50 @@ fun interface TimeSource {
     fun getCurrentTime(): Long
 }
 
-/** Holds and manages the state for a Chronometer */
-class ChronometerState(private val timeSource: TimeSource, private val startTimeMillis: Long) {
-    private var currentTimeMillis by mutableLongStateOf(0L)
+/**
+ * Holds and manages the state for a Chronometer, which shows a timer in a format like "MM:SS" or
+ * "H:MM:SS".
+ *
+ * If [isEventInFuture] is false, then this Chronometer is counting up from an event that started in
+ * the past, like a phone call that was answered. [eventTimeMillis] represents the time the event
+ * started and the timer will tick up: 04:00, 04:01, ... No timer is shown if [eventTimeMillis] is
+ * in the future and [isEventInFuture] is false.
+ *
+ * If [isEventInFuture] is true, then this Chronometer is counting down to an event that will occur
+ * in the future, like a future meeting. [eventTimeMillis] represents the time the event will occur
+ * and the timer will tick down: 04:00, 03:59, ... No timer is shown if [eventTimeMillis] is in the
+ * past and [isEventInFuture] is true.
+ */
+class ChronometerState(
+    private val timeSource: TimeSource,
+    @ElapsedRealtimeLong private val eventTimeMillis: Long,
+    private val isEventInFuture: Boolean,
+) {
+    private var currentTimeMillis by mutableLongStateOf(timeSource.getCurrentTime())
     private val elapsedTimeMillis: Long
-        get() = maxOf(0L, currentTimeMillis - startTimeMillis)
+        get() =
+            if (isEventInFuture) {
+                eventTimeMillis - currentTimeMillis
+            } else {
+                currentTimeMillis - eventTimeMillis
+            }
 
-    val currentTimeText: String by derivedStateOf { formatElapsedTime(elapsedTimeMillis / 1000) }
+    /**
+     * The current timer string in a format like "MM:SS" or "H:MM:SS", or null if we shouldn't show
+     * the timer string.
+     */
+    val currentTimeText: String? by derivedStateOf {
+        if (elapsedTimeMillis < 0) {
+            null
+        } else {
+            formatElapsedTime(elapsedTimeMillis / 1000)
+        }
+    }
 
     suspend fun run() {
         while (true) {
             currentTimeMillis = timeSource.getCurrentTime()
-            val delaySkewMillis = (currentTimeMillis - startTimeMillis) % 1000L
+            val delaySkewMillis = (eventTimeMillis - currentTimeMillis).absoluteValue % 1000L
             delay(1000L - delaySkewMillis)
         }
     }
@@ -54,13 +88,16 @@ class ChronometerState(private val timeSource: TimeSource, private val startTime
 /** Remember and manage the ChronometerState */
 @Composable
 fun rememberChronometerState(
-    startTimeMillis: Long,
+    eventTimeMillis: Long,
+    isCountDown: Boolean,
     timeSource: TimeSource = remember { TimeSource { SystemClock.elapsedRealtime() } },
 ): ChronometerState {
     val state =
-        remember(timeSource, startTimeMillis) { ChronometerState(timeSource, startTimeMillis) }
+        remember(timeSource, eventTimeMillis, isCountDown) {
+            ChronometerState(timeSource, eventTimeMillis, isCountDown)
+        }
     val lifecycleOwner = LocalLifecycleOwner.current
-    LaunchedEffect(lifecycleOwner, timeSource, startTimeMillis) {
+    LaunchedEffect(lifecycleOwner, timeSource, eventTimeMillis) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) { state.run() }
     }
 

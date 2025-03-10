@@ -31,8 +31,8 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.brightness.ui.viewmodel.BrightnessSliderViewModel
 import com.android.systemui.common.shared.model.asIcon
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.motion.createSysUiComposeMotionTestRule
+import com.android.systemui.testKosmos
 import com.android.systemui.utils.PolicyRestriction
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
@@ -61,7 +61,7 @@ import platform.test.screenshot.Displays.Phone
 class BrightnessSliderMotionTest : SysuiTestCase() {
 
     private val deviceSpec = DeviceEmulationSpec(Phone)
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
 
     @get:Rule val motionTestRule = createSysUiComposeMotionTestRule(kosmos, deviceSpec)
 

@@ -27,6 +27,7 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.window.flags.Flags.FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX;
 import static com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
@@ -44,6 +45,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
 import android.window.TransitionInfo;
@@ -193,6 +195,73 @@ public class HomeTransitionObserverTest extends ShellTestCase {
                 mock(SurfaceControl.Transaction.class));
 
         verify(mListener, times(0)).onHomeVisibilityChanged(anyBoolean());
+    }
+
+    @Test
+    @DisableFlags({FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX})
+    public void startDragToDesktopFinished_flagDisabled_doesNotTriggerCallback()
+            throws RemoteException {
+        TransitionInfo info = mock(TransitionInfo.class);
+        TransitionInfo.Change change = mock(TransitionInfo.Change.class);
+        ActivityManager.RunningTaskInfo taskInfo = mock(ActivityManager.RunningTaskInfo.class);
+        when(change.getTaskInfo()).thenReturn(taskInfo);
+        when(info.getChanges()).thenReturn(new ArrayList<>(List.of(change)));
+        when(info.getType()).thenReturn(TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP);
+        setupTransitionInfo(taskInfo, change, ACTIVITY_TYPE_HOME, TRANSIT_OPEN, true);
+        IBinder transition = mock(IBinder.class);
+        mHomeTransitionObserver.onTransitionReady(
+                transition,
+                info,
+                mock(SurfaceControl.Transaction.class),
+                mock(SurfaceControl.Transaction.class));
+
+        mHomeTransitionObserver.onTransitionFinished(transition, /* aborted= */ false);
+
+        verify(mListener, never()).onHomeVisibilityChanged(/* isVisible= */ anyBoolean());
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX})
+    public void startDragToDesktopAborted_doesNotTriggerCallback() throws RemoteException {
+        TransitionInfo info = mock(TransitionInfo.class);
+        TransitionInfo.Change change = mock(TransitionInfo.Change.class);
+        ActivityManager.RunningTaskInfo taskInfo = mock(ActivityManager.RunningTaskInfo.class);
+        when(change.getTaskInfo()).thenReturn(taskInfo);
+        when(info.getChanges()).thenReturn(new ArrayList<>(List.of(change)));
+        when(info.getType()).thenReturn(TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP);
+        setupTransitionInfo(taskInfo, change, ACTIVITY_TYPE_HOME, TRANSIT_OPEN, true);
+        IBinder transition = mock(IBinder.class);
+        mHomeTransitionObserver.onTransitionReady(
+                transition,
+                info,
+                mock(SurfaceControl.Transaction.class),
+                mock(SurfaceControl.Transaction.class));
+
+        mHomeTransitionObserver.onTransitionFinished(transition, /* aborted= */ true);
+
+        verify(mListener, never()).onHomeVisibilityChanged(/* isVisible= */ anyBoolean());
+    }
+
+    @Test
+    @EnableFlags({FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX})
+    public void startDragToDesktopFinished_triggersCallback() throws RemoteException {
+        TransitionInfo info = mock(TransitionInfo.class);
+        TransitionInfo.Change change = mock(TransitionInfo.Change.class);
+        ActivityManager.RunningTaskInfo taskInfo = mock(ActivityManager.RunningTaskInfo.class);
+        when(change.getTaskInfo()).thenReturn(taskInfo);
+        when(info.getChanges()).thenReturn(new ArrayList<>(List.of(change)));
+        when(info.getType()).thenReturn(TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP);
+        setupTransitionInfo(taskInfo, change, ACTIVITY_TYPE_HOME, TRANSIT_OPEN, true);
+        IBinder transition = mock(IBinder.class);
+        mHomeTransitionObserver.onTransitionReady(
+                transition,
+                info,
+                mock(SurfaceControl.Transaction.class),
+                mock(SurfaceControl.Transaction.class));
+
+        mHomeTransitionObserver.onTransitionFinished(transition, /* aborted= */ false);
+
+        verify(mListener).onHomeVisibilityChanged(/* isVisible= */ true);
     }
 
     @Test

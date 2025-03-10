@@ -34,9 +34,9 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.EmptyTestActivity
 import com.android.systemui.concurrency.fakeExecutor
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.runOnMainThreadAndWaitForIdleSync
+import com.android.systemui.testKosmos
 import kotlin.test.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -77,7 +77,7 @@ class TransitionAnimatorTest(
         }
     }
 
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val pathManager =
         GoldenPathManager(
             context,

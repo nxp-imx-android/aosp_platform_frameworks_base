@@ -26,9 +26,8 @@ import com.android.internal.util.LatencyTracker
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.foldedDeviceStateList
-import com.android.systemui.halfFoldedDeviceState
 import com.android.systemui.keyguard.ScreenLifecycle
-import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.testKosmos
 import com.android.systemui.unfold.util.FoldableDeviceStates
 import com.android.systemui.unfold.util.FoldableTestUtils
 import com.android.systemui.unfoldedDeviceState
@@ -70,12 +69,10 @@ class UnfoldLatencyTrackerTest : SysuiTestCase() {
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
-        whenever(deviceStateManager.supportedDeviceStates).thenReturn(
-            listOf(
-                Kosmos().foldedDeviceStateList[0],
-                Kosmos().unfoldedDeviceState
+        whenever(deviceStateManager.supportedDeviceStates)
+            .thenReturn(
+                listOf(testKosmos().foldedDeviceStateList[0], testKosmos().unfoldedDeviceState)
             )
-        )
 
         unfoldLatencyTracker =
             UnfoldLatencyTracker(
@@ -85,7 +82,7 @@ class UnfoldLatencyTrackerTest : SysuiTestCase() {
                     context.mainExecutor,
                     context,
                     context.contentResolver,
-                    screenLifecycle
+                    screenLifecycle,
                 )
                 .apply { init() }
 
@@ -206,7 +203,7 @@ class UnfoldLatencyTrackerTest : SysuiTestCase() {
         Settings.Global.putString(
             context.contentResolver,
             Settings.Global.ANIMATOR_DURATION_SCALE,
-            durationScale.toString()
+            durationScale.toString(),
         )
     }
 }

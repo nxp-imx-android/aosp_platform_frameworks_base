@@ -17,6 +17,7 @@
 package com.android.systemui.media.remedia.ui.viewmodel
 
 import androidx.annotation.FloatRange
+import androidx.compose.ui.geometry.Offset
 
 /**
  * Models UI state for the navigation component of the UI (potentially containing the seek bar and
@@ -58,7 +59,7 @@ sealed interface MediaNavigationViewModel {
          * A callback to invoke once the user finishes "scrubbing" (e.g. stopped moving the thumb of
          * the seek bar). The position/progress should be committed.
          */
-        val onScrubFinished: () -> Unit,
+        val onScrubFinished: (delta: Offset) -> Unit,
         /** Accessibility string to attach to the seekbar UI element. */
         val contentDescription: String,
     ) : MediaNavigationViewModel

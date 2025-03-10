@@ -171,7 +171,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             }
         }
 
-        public boolean isInMessageHistory(HubMessage message) {
+        public boolean isInReliableMessageHistory(HubMessage message) {
+            if (!message.isResponseRequired()) return false;
             // Clean up the history
             Iterator<Map.Entry<Integer, Long>> iterator =
                     mRxMessageHistoryMap.entrySet().iterator();
@@ -188,7 +189,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             return mRxMessageHistoryMap.containsKey(message.getMessageSequenceNumber());
         }
 
-        public void addMessageToHistory(HubMessage message) {
+        public void addReliableMessageToHistory(HubMessage message) {
+            if (!message.isResponseRequired()) return;
             if (mRxMessageHistoryMap.containsKey(message.getMessageSequenceNumber())) {
                 long value = mRxMessageHistoryMap.get(message.getMessageSequenceNumber());
                 Log.w(
@@ -623,7 +625,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 return ErrorCode.PERMANENT_ERROR;
             }
             HubEndpointInfo remote = mSessionMap.get(sessionId).getRemoteEndpointInfo();
-            if (mSessionMap.get(sessionId).isInMessageHistory(message)) {
+            if (mSessionMap.get(sessionId).isInReliableMessageHistory(message)) {
                 Log.e(TAG, "Dropping duplicate message: " + message);
                 return ErrorCode.TRANSIENT_ERROR;
             }
@@ -648,7 +650,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             boolean success =
                     invokeCallback((consumer) -> consumer.onMessageReceived(sessionId, message));
             if (success) {
-                mSessionMap.get(sessionId).addMessageToHistory(message);
+                mSessionMap.get(sessionId).addReliableMessageToHistory(message);
             }
             return success ? ErrorCode.OK : ErrorCode.TRANSIENT_ERROR;
         }

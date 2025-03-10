@@ -46,6 +46,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,6 +55,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -94,6 +96,8 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
@@ -402,7 +406,7 @@ private fun ContentScope.CardForegroundContent(
             )
     ) {
         // Always add the first/top row, regardless of presentation style.
-        Box(modifier = Modifier.fillMaxWidth()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // Icon.
             Icon(
                 icon = viewModel.icon,
@@ -419,7 +423,20 @@ private fun ContentScope.CardForegroundContent(
                 modifier = Modifier.align(Alignment.TopEnd),
             ) {
                 viewModel.outputSwitcherChips.fastForEach { chip ->
-                    OutputSwitcherChip(viewModel = chip, colorScheme = colorScheme)
+                    OutputSwitcherChip(
+                        viewModel = chip,
+                        colorScheme = colorScheme,
+                        modifier =
+                            Modifier
+                                // Each chip must be limited to 40% of the width of the card at
+                                // most.
+                                //
+                                // The underlying assumption is that there'll never be more than one
+                                // chip with text and one more icon-only chip. Only the one with
+                                // text
+                                // can ever end up being too wide.
+                                .widthIn(max = this@BoxWithConstraints.maxWidth * 0.4f),
+                    )
                 }
             }
         }
@@ -663,11 +680,20 @@ private fun ContentScope.Navigation(
                 if (isSeekBarVisible) {
                     // To allow the seek bar slider to fade in and out, it's tagged as an element.
                     Element(key = Media.Elements.SeekBarSlider, modifier = Modifier.weight(1f)) {
+                        val sliderDragDelta = remember {
+                            // Not a mutableStateOf - this is never accessed in composition and
+                            // using an anonymous object avoids generics boxing of inline Offset.
+                            object {
+                                var value = Offset.Zero
+                            }
+                        }
                         Slider(
                             interactionSource = interactionSource,
                             value = viewModel.progress,
                             onValueChange = { progress -> viewModel.onScrubChange(progress) },
-                            onValueChangeFinished = { viewModel.onScrubFinished() },
+                            onValueChangeFinished = {
+                                viewModel.onScrubFinished(sliderDragDelta.value)
+                            },
                             colors = colors,
                             thumb = {
                                 SeekBarThumb(interactionSource = interactionSource, colors = colors)
@@ -681,9 +707,43 @@ private fun ContentScope.Navigation(
                                 )
                             },
                             modifier =
-                                Modifier.fillMaxWidth().clearAndSetSemantics {
-                                    contentDescription = viewModel.contentDescription
-                                },
+                                Modifier.fillMaxWidth()
+                                    .clearAndSetSemantics {
+                                        contentDescription = viewModel.contentDescription
+                                    }
+                                    .pointerInput(Unit) {
+                                        // Track and report the drag delta to the view-model so it
+                                        // can
+                                        // decide whether to accept the next onValueChangeFinished
+                                        // or
+                                        // reject it if the drag was overly vertical.
+                                        awaitPointerEventScope {
+                                            var down: PointerInputChange? = null
+                                            while (true) {
+                                                val event =
+                                                    awaitPointerEvent(PointerEventPass.Initial)
+                                                when (event.type) {
+                                                    PointerEventType.Press -> {
+                                                        // A new gesture has begun. Record the
+                                                        // initial
+                                                        // down input change.
+                                                        down = event.changes.last()
+                                                    }
+
+                                                    PointerEventType.Move -> {
+                                                        // The pointer has moved. If it's the same
+                                                        // pointer as the latest down, calculate and
+                                                        // report the drag delta.
+                                                        val change = event.changes.last()
+                                                        if (change.id == down?.id) {
+                                                            sliderDragDelta.value =
+                                                                change.position - down.position
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    },
                         )
                     }
                 }
@@ -979,6 +1039,8 @@ private fun OutputSwitcherChip(
                     text = viewModel.text,
                     style = MaterialTheme.typography.bodySmall,
                     color = colorScheme.onPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

@@ -866,31 +866,18 @@ public final class AccessibilityManager {
     }
 
     /**
-     * Returns the {@link AccessibilityServiceInfo}s of the enabled accessibility services
-     * for a given feedback type.
-     *
-     * @param feedbackTypeFlags The feedback type flags.
-     * @return An unmodifiable list with {@link AccessibilityServiceInfo}s.
-     *
-     * @see AccessibilityServiceInfo#FEEDBACK_AUDIBLE
-     * @see AccessibilityServiceInfo#FEEDBACK_GENERIC
-     * @see AccessibilityServiceInfo#FEEDBACK_HAPTIC
-     * @see AccessibilityServiceInfo#FEEDBACK_SPOKEN
-     * @see AccessibilityServiceInfo#FEEDBACK_VISUAL
-     * @see AccessibilityServiceInfo#FEEDBACK_BRAILLE
+     * @see #getEnabledAccessibilityServiceList(int)
+     * @hide
      */
     public List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList(
-            int feedbackTypeFlags) {
+            int feedbackTypeFlags, int userId) {
         final IAccessibilityManager service;
-        final int userId;
         synchronized (mLock) {
             service = getServiceLocked();
             if (service == null) {
                 return Collections.emptyList();
             }
-            userId = mUserId;
         }
-
         List<AccessibilityServiceInfo> services = null;
         try {
             services = service.getEnabledAccessibilityServiceList(feedbackTypeFlags, userId);
@@ -909,6 +896,29 @@ public final class AccessibilityManager {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Returns the {@link AccessibilityServiceInfo}s of the enabled accessibility services
+     * for a given feedback type.
+     *
+     * @param feedbackTypeFlags The feedback type flags.
+     * @return An unmodifiable list with {@link AccessibilityServiceInfo}s.
+     *
+     * @see AccessibilityServiceInfo#FEEDBACK_AUDIBLE
+     * @see AccessibilityServiceInfo#FEEDBACK_GENERIC
+     * @see AccessibilityServiceInfo#FEEDBACK_HAPTIC
+     * @see AccessibilityServiceInfo#FEEDBACK_SPOKEN
+     * @see AccessibilityServiceInfo#FEEDBACK_VISUAL
+     * @see AccessibilityServiceInfo#FEEDBACK_BRAILLE
+     */
+    public List<AccessibilityServiceInfo> getEnabledAccessibilityServiceList(
+            int feedbackTypeFlags) {
+        final int userId;
+        synchronized (mLock) {
+            userId = mUserId;
+        }
+        return getEnabledAccessibilityServiceList(feedbackTypeFlags, userId);
     }
 
     /**

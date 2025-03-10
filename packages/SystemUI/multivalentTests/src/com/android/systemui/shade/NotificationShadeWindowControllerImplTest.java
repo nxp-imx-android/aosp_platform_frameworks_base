@@ -41,6 +41,8 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.flag.junit.CheckFlagsRule;
+import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.platform.test.flag.junit.FlagsParameterization;
 import android.testing.TestableLooper.RunWithLooper;
 import android.view.View;
@@ -76,6 +78,7 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -94,6 +97,9 @@ import java.util.concurrent.Executor;
 @RunWithLooper(setAsMainLooper = true)
 @SmallTest
 public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
+    @Rule public final CheckFlagsRule checkFlagsRule =
+        DeviceFlagsValueProvider.createCheckFlagsRule();
+
     @Mock private ViewCaptureAwareWindowManager mWindowManager;
     @Mock private DozeParameters mDozeParameters;
     @Spy private final NotificationShadeWindowView mNotificationShadeWindowView = spy(

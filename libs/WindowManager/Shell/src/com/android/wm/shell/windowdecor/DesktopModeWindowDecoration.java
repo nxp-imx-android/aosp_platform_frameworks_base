@@ -1683,6 +1683,17 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
     }
 
+    /**
+     * Indicates that an app handle drag has been interrupted, this can happen e.g. if we receive an
+     * unknown transition during the drag-to-desktop transition.
+     */
+    void handleDragInterrupted() {
+        if (mResult.mRootView == null) return;
+        final View handle = mResult.mRootView.findViewById(R.id.caption_handle);
+        handle.setHovered(false);
+        handle.setPressed(false);
+    }
+
     private boolean pointInView(View v, float x, float y) {
         return v != null && v.getLeft() <= x && v.getRight() >= x
                 && v.getTop() <= y && v.getBottom() >= y;
@@ -1774,6 +1785,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
     private int getCaptionHeight(@WindowingMode int windowingMode) {
         return loadDimensionPixelSize(mContext.getResources(), getCaptionHeightId(windowingMode));
+    }
+
+    @Override
+    int getCaptionViewId() {
+        return R.id.desktop_mode_caption;
     }
 
     void setAnimatingTaskResizeOrReposition(boolean animatingTaskResizeOrReposition) {

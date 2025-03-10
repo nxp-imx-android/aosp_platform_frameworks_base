@@ -153,7 +153,7 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
             path = FILES_DIR.getPath() + "/snapshots/";
         }
         for (int i = 0; i < fileNames.length; i++) {
-            files[i] = new File(path + fileNames[i]);
+            files[i] = new File(path, fileNames[i]);
         }
         return files;
     }

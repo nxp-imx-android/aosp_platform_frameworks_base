@@ -255,7 +255,7 @@ fun StatusBarRoot(
                             expandedMatchesParentHeight = true
                             showsOnlyActiveMedia = true
                             falsingProtectionNeeded = false
-                            disablePagination = true
+                            disableScrolling = true
                             init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
                         }
 

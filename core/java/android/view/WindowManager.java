@@ -1514,6 +1514,44 @@ public interface WindowManager extends ViewManager {
             "android.window.PROPERTY_COMPAT_ALLOW_RESTRICTED_RESIZABILITY";
 
     /**
+     * Application or Activity level
+     * {@link android.content.pm.PackageManager.Property PackageManager.Property} that specifies
+     * whether this package or activity wants to allow safe region letterboxing. A safe
+     * region policy may be applied by the system to improve the user experience by ensuring that
+     * the activity does not have any content that is occluded and has the correct current
+     * window metrics.
+     *
+     * <p>Not setting the property at all defaults it to {@code true}. In such a case, the activity
+     * will be letterboxed in the safe region.
+     *
+     * <p>To not allow the safe region letterboxing, add this property to your app
+     * manifest and set the value to {@code false}. An app should ignore safe region
+     * letterboxing if it can handle bounds and insets from all four directions correctly when a
+     * request to go immersive is denied by the system. If the application does not allow safe
+     * region letterboxing, the system will not override this behavior.
+     *
+     * <p><b>Syntax:</b>
+     * <pre>
+     * &lt;application&gt;
+     *   &lt;property
+     *     android:name="android.window.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING"
+     *     android:value="false"/&gt;
+     * &lt;/application&gt;
+     * </pre>or
+     * <pre>
+     * &lt;activity&gt;
+     *   &lt;property
+     *     android:name="android.window.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING"
+     *     android:value="false"/&gt;
+     * &lt;/activity&gt;
+     * </pre>
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    String PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING =
+            "android.window.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING";
+
+    /**
      * @hide
      */
     public static final String PARCEL_KEY_SHORTCUTS_ARRAY = "shortcuts_array";

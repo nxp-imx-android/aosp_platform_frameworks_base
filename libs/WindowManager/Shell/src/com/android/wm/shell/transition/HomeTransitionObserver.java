@@ -18,6 +18,7 @@ package com.android.wm.shell.transition;
 
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_HOME;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.window.DesktopModeFlags.ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX;
 import static android.window.TransitionInfo.FLAG_BACK_GESTURE_ANIMATED;
 
 import static com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP;
@@ -50,6 +51,7 @@ public class HomeTransitionObserver implements TransitionObserver,
 
     private @NonNull final Context mContext;
     private @NonNull final ShellExecutor mMainExecutor;
+    private IBinder mPendingStartDragTransition;
     private Boolean mPendingHomeVisibilityUpdate;
 
     public HomeTransitionObserver(@NonNull Context context,
@@ -63,31 +65,42 @@ public class HomeTransitionObserver implements TransitionObserver,
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction) {
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
-            handleTransitionReadyWithBubbleAnything(info);
-        } else {
-            handleTransitionReady(info);
+        Boolean homeVisibilityUpdate = getHomeVisibilityUpdate(info);
+
+        if (info.getType() == TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP) {
+            // Do not apply at the start of desktop drag as that updates launcher UI visibility.
+            // Store the value and apply with a next transition or when cancelling the
+            // desktop-drag transition.
+            storePendingHomeVisibilityUpdate(transition, homeVisibilityUpdate);
+            return;
+        }
+
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+                && info.getType() == TRANSIT_CONVERT_TO_BUBBLE
+                && homeVisibilityUpdate == null) {
+            // We are converting to bubble and we did not get a change to home visibility in this
+            // transition. Apply the value from start of drag.
+            homeVisibilityUpdate = mPendingHomeVisibilityUpdate;
+        }
+
+        if (homeVisibilityUpdate != null) {
+            mPendingHomeVisibilityUpdate = null;
+            mPendingStartDragTransition = null;
+            notifyHomeVisibilityChanged(homeVisibilityUpdate);
         }
     }
 
-    private void handleTransitionReady(@NonNull TransitionInfo info) {
-        for (TransitionInfo.Change change : info.getChanges()) {
-            final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
-            if (taskInfo == null
-                    || info.getType() == TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
-                    || taskInfo.displayId != DEFAULT_DISPLAY
-                    || taskInfo.taskId == -1
-                    || !taskInfo.isRunning) {
-                continue;
-            }
-            Boolean homeVisibilityUpdate = getHomeVisibilityUpdate(info, change, taskInfo);
-            if (homeVisibilityUpdate != null) {
-                notifyHomeVisibilityChanged(homeVisibilityUpdate);
-            }
+    private void storePendingHomeVisibilityUpdate(
+            IBinder transition, Boolean homeVisibilityUpdate) {
+        if (!BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+                && !ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX.isTrue()) {
+            return;
         }
+        mPendingHomeVisibilityUpdate = homeVisibilityUpdate;
+        mPendingStartDragTransition = transition;
     }
 
-    private void handleTransitionReadyWithBubbleAnything(@NonNull TransitionInfo info) {
+    private Boolean getHomeVisibilityUpdate(TransitionInfo info) {
         Boolean homeVisibilityUpdate = null;
         for (TransitionInfo.Change change : info.getChanges()) {
             final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
@@ -97,29 +110,12 @@ public class HomeTransitionObserver implements TransitionObserver,
                     || !taskInfo.isRunning) {
                 continue;
             }
-
             Boolean update = getHomeVisibilityUpdate(info, change, taskInfo);
             if (update != null) {
                 homeVisibilityUpdate = update;
             }
         }
-
-        if (info.getType() == TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP) {
-            // Do not apply at the start of desktop drag as that updates launcher UI visibility.
-            // Store the value and apply with a next transition if needed.
-            mPendingHomeVisibilityUpdate = homeVisibilityUpdate;
-            return;
-        }
-
-        if (info.getType() == TRANSIT_CONVERT_TO_BUBBLE && homeVisibilityUpdate == null) {
-            // We are converting to bubble and we did not get a change to home visibility in this
-            // transition. Apply the value from start of drag.
-            homeVisibilityUpdate = mPendingHomeVisibilityUpdate;
-        }
-        if (homeVisibilityUpdate != null) {
-            mPendingHomeVisibilityUpdate = null;
-            notifyHomeVisibilityChanged(homeVisibilityUpdate);
-        }
+        return homeVisibilityUpdate;
     }
 
     private Boolean getHomeVisibilityUpdate(TransitionInfo info,
@@ -146,7 +142,24 @@ public class HomeTransitionObserver implements TransitionObserver,
 
     @Override
     public void onTransitionFinished(@NonNull IBinder transition,
-            boolean aborted) {}
+            boolean aborted) {
+        if (!ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX.isTrue()) {
+            return;
+        }
+        // Handle the case where the DragToDesktop START transition is interrupted and we never
+        // receive a CANCEL/END transition.
+        if (mPendingStartDragTransition == null
+                || mPendingStartDragTransition != transition) {
+            return;
+        }
+        mPendingStartDragTransition = null;
+        if (aborted) return;
+
+        if (mPendingHomeVisibilityUpdate != null) {
+            notifyHomeVisibilityChanged(mPendingHomeVisibilityUpdate);
+            mPendingHomeVisibilityUpdate = null;
+        }
+    }
 
     /**
      * Sets the home transition listener that receives any transitions resulting in a change of

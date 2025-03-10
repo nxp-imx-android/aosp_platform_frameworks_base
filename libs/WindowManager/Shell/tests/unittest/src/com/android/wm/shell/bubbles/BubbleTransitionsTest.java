@@ -16,6 +16,7 @@
 package com.android.wm.shell.bubbles;
 
 import static android.view.WindowManager.TRANSIT_CHANGE;
+import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE;
 
@@ -52,6 +53,7 @@ import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestSyncExecutor;
+import com.android.wm.shell.bubbles.BubbleTransitions.DraggedBubbleIconToFullscreen;
 import com.android.wm.shell.bubbles.bar.BubbleBarExpandedView;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
 import com.android.wm.shell.common.ShellExecutor;
@@ -136,6 +138,7 @@ public class BubbleTransitionsTest extends ShellTestCase {
         when(tvtc.getTaskInfo()).thenReturn(taskInfo);
         when(tv.getController()).thenReturn(tvtc);
         when(mBubble.getTaskView()).thenReturn(tv);
+        when(tv.getTaskInfo()).thenReturn(taskInfo);
         mRepository.add(tvtc);
         return taskInfo;
     }
@@ -283,6 +286,29 @@ public class BubbleTransitionsTest extends ShellTestCase {
         // The actual functioning of this is tightly-coupled with SurfaceFlinger and renderthread
         // in order to properly synchronize surface manipulation with drawing and thus can't be
         // directly tested.
+        assertFalse(mTaskViewTransitions.hasPending());
+    }
+
+    @Test
+    public void convertDraggedBubbleToFullscreen() {
+        ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        final DraggedBubbleIconToFullscreen bt =
+                (DraggedBubbleIconToFullscreen) mBubbleTransitions
+                        .startDraggedBubbleIconToFullscreen(mBubble);
+        verify(mTransitions).startTransition(anyInt(), any(), eq(bt));
+
+        final TransitionInfo info = new TransitionInfo(TRANSIT_TO_FRONT, 0);
+        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
+                mock(SurfaceControl.class));
+        chg.setMode(TRANSIT_TO_FRONT);
+        chg.setTaskInfo(taskInfo);
+        info.addChange(chg);
+        info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
+        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        Transitions.TransitionFinishCallback finishCb = wct -> {};
+        bt.startAnimation(bt.mTransition, info, startT, finishT, finishCb);
+        verify(startT).apply();
         assertFalse(mTaskViewTransitions.hasPending());
     }
 }

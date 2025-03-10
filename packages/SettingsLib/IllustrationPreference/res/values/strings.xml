@@ -20,8 +20,6 @@
     <string name="settingslib_action_label_resume">resume</string>
     <!-- Label for an accessibility action that stops an animation [CHAR LIMIT=30] -->
     <string name="settingslib_action_label_pause">pause</string>
-    <!-- Label for an accessibility action that stops an animation [CHAR LIMIT=50] -->
-    <string name="settingslib_state_animation_playing">Animation playing</string>
-    <!-- Label for an accessibility action that stops an animation [CHAR LIMIT=50] -->
-    <string name="settingslib_state_animation_paused">Animation paused</string>
+    <!-- Default content description attached to the illustration if there is no content description. [CHAR LIMIT=NONE] -->
+    <string name="settingslib_illustration_content_description">Animation</string>
 </resources>

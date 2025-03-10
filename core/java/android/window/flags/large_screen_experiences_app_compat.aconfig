@@ -156,3 +156,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "backup_and_restore_for_user_aspect_ratio_settings"
+  namespace: "large_screen_experiences_app_compat"
+  description: "Whether B&R for user aspect ratio settings is enabled"
+  bug: "396650383"
+  is_fixed_read_only: true
+}

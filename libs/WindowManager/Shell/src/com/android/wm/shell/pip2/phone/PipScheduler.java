@@ -180,10 +180,17 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
             return;
         }
         WindowContainerTransaction wct = new WindowContainerTransaction();
-        wct.setBounds(pipTaskToken, toBounds);
         if (configAtEnd) {
             wct.deferConfigToTransitionEnd(pipTaskToken);
+
+            if (mPipBoundsState.getBounds().width() == toBounds.width()
+                    && mPipBoundsState.getBounds().height() == toBounds.height()) {
+                // TODO (b/393159816): Config-at-End causes a flicker without size change.
+                // If PiP size isn't changing enforce a minimal one-pixel change as a workaround.
+                --toBounds.bottom;
+            }
         }
+        wct.setBounds(pipTaskToken, toBounds);
         mPipTransitionController.startResizeTransition(wct, duration);
     }
 

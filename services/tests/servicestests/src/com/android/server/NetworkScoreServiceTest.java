@@ -23,10 +23,10 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyListOf;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -328,8 +328,8 @@ public class NetworkScoreServiceTest {
         // updateScores should update both caches
         mNetworkScoreService.updateScores(new ScoredNetwork[]{SCORED_NETWORK});
 
-        verify(mNetworkScoreCache).updateScores(anyListOf(ScoredNetwork.class));
-        verify(mNetworkScoreCache2).updateScores(anyListOf(ScoredNetwork.class));
+        verify(mNetworkScoreCache).updateScores(anyList());
+        verify(mNetworkScoreCache2).updateScores(anyList());
 
         mNetworkScoreService.unregisterNetworkScoreCache(
                 NetworkKey.TYPE_WIFI, mNetworkScoreCache2);
@@ -337,7 +337,7 @@ public class NetworkScoreServiceTest {
         // updateScores should only update the first cache since the 2nd has been unregistered
         mNetworkScoreService.updateScores(new ScoredNetwork[]{SCORED_NETWORK});
 
-        verify(mNetworkScoreCache, times(2)).updateScores(anyListOf(ScoredNetwork.class));
+        verify(mNetworkScoreCache, times(2)).updateScores(anyList());
 
         mNetworkScoreService.unregisterNetworkScoreCache(
                 NetworkKey.TYPE_WIFI, mNetworkScoreCache);

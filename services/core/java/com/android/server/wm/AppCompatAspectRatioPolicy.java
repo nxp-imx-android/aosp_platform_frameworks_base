@@ -240,7 +240,7 @@ class AppCompatAspectRatioPolicy {
         final Configuration resolvedConfig = mActivityRecord.getResolvedOverrideConfiguration();
         final Rect parentAppBounds =
                 mActivityRecord.mResolveConfigHint.mParentAppBoundsOverride;
-        final Rect parentBounds = newParentConfiguration.windowConfiguration.getBounds();
+        final Rect parentBounds = mActivityRecord.mResolveConfigHint.mParentBoundsOverride;
         final Rect resolvedBounds = resolvedConfig.windowConfiguration.getBounds();
         // Use tmp bounds to calculate aspect ratio so we can know whether the activity should
         // use restricted size (resolved bounds may be the requested override bounds).

@@ -44,7 +44,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spy;
 import static com.android.server.policy.WindowManagerPolicy.ACTION_PASS_TO_USER;
 
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 import static java.util.Collections.unmodifiableMap;
@@ -111,7 +111,7 @@ class ShortcutKeyTestBase {
         mContext = spy(getInstrumentation().getTargetContext());
         mResources = spy(mContext.getResources());
         mPackageManager = spy(mContext.getPackageManager());
-        doReturn(mContext).when(mContext).createContextAsUser(anyObject(), anyInt());
+        doReturn(mContext).when(mContext).createContextAsUser(any(), anyInt());
         doReturn(mResources).when(mContext).getResources();
         doReturn(mSettingsProviderRule.mockContentResolver(mContext))
                 .when(mContext).getContentResolver();

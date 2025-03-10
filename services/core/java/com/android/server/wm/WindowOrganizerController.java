@@ -78,6 +78,7 @@ import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ADJACENT_FLAG_ROOT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_LAUNCH_ROOT;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_REPARENT_LEAF_TASK_IF_RELAUNCH;
+import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_START_SHORTCUT;
 import static android.window.WindowContainerTransaction.HierarchyOp.REACHABILITY_EVENT_X;
 import static android.window.WindowContainerTransaction.HierarchyOp.REACHABILITY_EVENT_Y;
@@ -1543,6 +1544,19 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 container.setExcludeInsetsTypes(hop.getExcludeInsetsTypes());
                 break;
+            }
+            case HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS: {
+                final WindowContainer container = WindowContainer.fromBinder(hop.getContainer());
+                if (container == null || !container.isAttached()) {
+                    Slog.e(TAG,
+                            "Attempt to operate on unknown or detached container: " + container);
+                    break;
+                }
+                if (chain.mTransition != null) {
+                    chain.mTransition.collect(container);
+                }
+                container.setSafeRegionBounds(hop.getSafeRegionBounds());
+                effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
             }
         }
         return effects;

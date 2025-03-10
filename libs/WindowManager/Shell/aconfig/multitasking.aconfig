@@ -114,7 +114,7 @@ flag {
     name: "enable_shell_top_task_tracking"
     namespace: "multitasking"
     description: "Enables tracking top tasks from the shell"
-    bug: "342627272"
+    bug: "346588978"
     metadata {
         purpose: PURPOSE_BUGFIX
     }

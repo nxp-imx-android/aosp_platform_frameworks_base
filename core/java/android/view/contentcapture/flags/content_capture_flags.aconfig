@@ -21,6 +21,7 @@ flag {
     namespace: "pixel_state_server"
     description: "Feature flag to send a flush event after each frame"
     bug: "380381249"
+    is_exported: true
     is_fixed_read_only: true
     metadata {
         purpose: PURPOSE_BUGFIX

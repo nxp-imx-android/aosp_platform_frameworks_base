@@ -137,8 +137,7 @@ public class DefaultSurfaceAnimator {
             if (mClipRect != null) {
                 boolean needCrop = false;
                 mAnimClipRect.set(mClipRect);
-                if (transformation.hasClipRect()
-                        && com.android.window.flags.Flags.respectAnimationClip()) {
+                if (transformation.hasClipRect()) {
                     mAnimClipRect.intersectUnchecked(transformation.getClipRect());
                     needCrop = true;
                 }
