@@ -948,6 +948,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
     public void dump(@NonNull PrintWriter pw, @NonNull String[] args) {
         pw.println("mSystemColors=" + mCurrentColors);
         pw.println("mMainWallpaperColor=" + Integer.toHexString(mMainWallpaperColor));
+        pw.println("mContrast=" + mContrast);
         pw.println("mSecondaryOverlay=" + mSecondaryOverlay);
         pw.println("mNeutralOverlay=" + mNeutralOverlay);
         pw.println("mDynamicOverlay=" + mDynamicOverlay);

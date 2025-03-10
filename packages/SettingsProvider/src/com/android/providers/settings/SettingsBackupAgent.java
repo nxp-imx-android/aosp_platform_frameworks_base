@@ -1085,6 +1085,21 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                 Log.d(TAG, "Restored font scale from: " + toRestore + " to " + value);
             }
 
+            if (Settings.Secure.CONTRAST_LEVEL.equals(key)) {
+                boolean increaseMinContrast = getBaseContext().getResources()
+                        .getBoolean(R.bool.config_increaseMinContrast);
+
+                float valueFloat;
+                try {
+                    valueFloat = Float.parseFloat(value);
+                } catch (NumberFormatException e) {
+                    valueFloat = 0.0f;
+                }
+
+                float newValue = Math.max(valueFloat, increaseMinContrast ? 0.0f : -1.0f);
+                value = String.valueOf(newValue);
+            }
+
             settingsHelper.restoreValue(this, cr, contentValues, destination, key, value,
                     mRestoredFromSdkInt);
 
