@@ -25,10 +25,13 @@ import android.view.IRemoteAnimationFinishedCallback
 import android.view.RemoteAnimationTarget
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.keyguard.WindowManagerLockscreenVisibilityManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissTransitionInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardShowWhileAwakeInteractor
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.window.flags.Flags
@@ -63,6 +66,9 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     @Mock
     private lateinit var keyguardDismissTransitionInteractor: KeyguardDismissTransitionInteractor
     @Mock private lateinit var keyguardTransitions: KeyguardTransitions
+    @Mock private lateinit var lockPatternUtils: LockPatternUtils
+    @Mock private lateinit var keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor
+    @Mock private lateinit var selectedUserInteractor: SelectedUserInteractor
 
     @Before
     fun setUp() {
@@ -77,6 +83,9 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
                 keyguardSurfaceBehindAnimator = keyguardSurfaceBehindAnimator,
                 keyguardDismissTransitionInteractor = keyguardDismissTransitionInteractor,
                 keyguardTransitions = keyguardTransitions,
+                selectedUserInteractor = selectedUserInteractor,
+                lockPatternUtils = lockPatternUtils,
+                keyguardShowWhileAwakeInteractor = keyguardShowWhileAwakeInteractor,
             )
     }
 
@@ -235,6 +244,8 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
         doAnswer { invocation -> (invocation.getArgument(1) as (() -> Unit)).invoke() }
             .whenever(keyguardDismissTransitionInteractor)
             .startDismissKeyguardTransition(any(), any())
+
+        whenever(selectedUserInteractor.getSelectedUserId()).thenReturn(-1)
 
         underTest.onKeyguardGoingAwayRemoteAnimationStart(
             transit = 0,
