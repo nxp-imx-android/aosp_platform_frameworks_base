@@ -66,6 +66,7 @@ class FakePerDisplayInstanceProviderWithTeardown :
 val Kosmos.fakePerDisplayInstanceProviderWithTeardown by
     Kosmos.Fixture { FakePerDisplayInstanceProviderWithTeardown() }
 
+val Kosmos.perDisplayDumpHelper by Kosmos.Fixture { PerDisplayRepoDumpHelper(dumpManager) }
 val Kosmos.fakePerDisplayInstanceRepository by
     Kosmos.Fixture {
         PerDisplayInstanceRepositoryImpl(
@@ -73,6 +74,6 @@ val Kosmos.fakePerDisplayInstanceRepository by
             instanceProvider = fakePerDisplayInstanceProviderWithTeardown,
             testScope.backgroundScope,
             displayRepository,
-            dumpManager,
+            perDisplayDumpHelper,
         )
     }
