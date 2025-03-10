@@ -962,3 +962,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "show_home_behind_desktop"
+    namespace: "lse_desktop_experience"
+    description: "Enables the home to be shown behind the desktop."
+    bug: "375644149"
+}
