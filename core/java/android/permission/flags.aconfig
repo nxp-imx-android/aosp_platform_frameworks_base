@@ -554,3 +554,12 @@ flag {
     description: "This flag is used to add role protection to READ_BLOCKED_NUMBERS for SYSTEM_UI_INTELLIGENCE"
     bug: "354758615"
 }
+
+flag {
+    name: "enable_system_supervision_role_behavior"
+    is_fixed_read_only: true
+    is_exported: true
+    namespace: "supervision"
+    description: "This flag is used to enable the role behavior for the system supervision role"
+    bug: "378102594"
+}
