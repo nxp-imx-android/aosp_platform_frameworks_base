@@ -200,8 +200,8 @@ constructor(
                     colors,
                     startTimeMs = this.promotedContent.time.elapsedRealtimeMillis,
                     isEventInFuture = this.promotedContent.time.isCountDown,
-                    onClickListenerLegacy,
-                    clickBehavior,
+                    onClickListenerLegacy = onClickListenerLegacy,
+                    clickBehavior = clickBehavior,
                 )
             }
         }

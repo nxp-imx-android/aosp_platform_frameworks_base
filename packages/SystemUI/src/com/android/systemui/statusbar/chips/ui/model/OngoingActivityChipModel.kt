@@ -18,12 +18,14 @@ package com.android.systemui.statusbar.chips.ui.model
 
 import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
+import android.os.SystemClock
 import android.view.View
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
+import com.android.systemui.statusbar.chips.ui.viewmodel.TimeSource
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 
 /** Model representing the display of an ongoing activity as a chip in the status bar. */
@@ -105,6 +107,13 @@ sealed class OngoingActivityChipModel {
              * [android.widget.Chronometer.setBase].
              */
             @ElapsedRealtimeLong val startTimeMs: Long,
+
+            /**
+             * The [TimeSource] that should be used to track the current time for this timer. Should
+             * be compatible with [startTimeMs].
+             */
+            val timeSource: TimeSource = TimeSource { SystemClock.elapsedRealtime() },
+
             /**
              * True if this chip represents an event starting in the future and false if this chip
              * represents an event that has already started. If true, [startTimeMs] should be in the

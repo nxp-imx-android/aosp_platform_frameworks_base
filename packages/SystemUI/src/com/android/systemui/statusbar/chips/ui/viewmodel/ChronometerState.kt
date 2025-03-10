@@ -16,7 +16,6 @@
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.annotation.ElapsedRealtimeLong
-import android.os.SystemClock
 import android.text.format.DateUtils.formatElapsedTime
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -90,7 +89,7 @@ class ChronometerState(
 fun rememberChronometerState(
     eventTimeMillis: Long,
     isCountDown: Boolean,
-    timeSource: TimeSource = remember { TimeSource { SystemClock.elapsedRealtime() } },
+    timeSource: TimeSource,
 ): ChronometerState {
     val state =
         remember(timeSource, eventTimeMillis, isCountDown) {
