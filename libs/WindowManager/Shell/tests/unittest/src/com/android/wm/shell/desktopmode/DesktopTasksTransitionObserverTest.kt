@@ -22,6 +22,7 @@ import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Binder
 import android.os.IBinder
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -29,6 +30,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.WindowManager
 import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_OPEN
+import android.view.WindowManager.TRANSIT_PIP
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.IWindowContainerToken
@@ -39,6 +41,7 @@ import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.window.flags.Flags
+import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.back.BackAnimationController
@@ -48,6 +51,8 @@ import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpape
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.transition.Transitions.TRANSIT_EXIT_PIP
+import com.android.wm.shell.transition.Transitions.TRANSIT_REMOVE_PIP
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Before
@@ -85,7 +90,6 @@ class DesktopTasksTransitionObserverTest {
     private val userRepositories = mock<DesktopUserRepositories>()
     private val taskRepository = mock<DesktopRepository>()
     private val mixedHandler = mock<DesktopMixedTransitionHandler>()
-    private val pipTransitionObserver = mock<DesktopPipTransitionObserver>()
     private val backAnimationController = mock<BackAnimationController>()
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
@@ -110,7 +114,6 @@ class DesktopTasksTransitionObserverTest {
                 transitions,
                 shellTaskOrganizer,
                 mixedHandler,
-                pipTransitionObserver,
                 backAnimationController,
                 desktopWallpaperActivityTokenProvider,
                 shellInit,
@@ -344,6 +347,56 @@ class DesktopTasksTransitionObserverTest {
         )
 
         verify(desktopWallpaperActivityTokenProvider).removeToken(wallpaperTask.displayId)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    fun pendingPipTransitionAborted_taskRepositoryOnPipAbortedInvoked() {
+        val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
+        val pipTransition = Binder()
+        whenever(taskRepository.isTaskMinimizedPipInDisplay(any(), any())).thenReturn(true)
+
+        transitionObserver.onTransitionReady(
+            transition = pipTransition,
+            info = createOpenChangeTransition(task, type = TRANSIT_PIP),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+        transitionObserver.onTransitionFinished(transition = pipTransition, aborted = true)
+
+        verify(taskRepository).onPipAborted(task.displayId, task.taskId)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    fun exitPipTransition_taskRepositoryClearTaskInPip() {
+        val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
+        whenever(taskRepository.isTaskMinimizedPipInDisplay(any(), any())).thenReturn(true)
+
+        transitionObserver.onTransitionReady(
+            transition = mock(),
+            info = createOpenChangeTransition(task, type = TRANSIT_EXIT_PIP),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(taskRepository).setTaskInPip(task.displayId, task.taskId, enterPip = false)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    fun removePipTransition_taskRepositoryClearTaskInPip() {
+        val task = createTaskInfo(1, WINDOWING_MODE_FREEFORM)
+        whenever(taskRepository.isTaskMinimizedPipInDisplay(any(), any())).thenReturn(true)
+
+        transitionObserver.onTransitionReady(
+            transition = mock(),
+            info = createOpenChangeTransition(task, type = TRANSIT_REMOVE_PIP),
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(taskRepository).setTaskInPip(task.displayId, task.taskId, enterPip = false)
     }
 
     private fun createBackNavigationTransition(
