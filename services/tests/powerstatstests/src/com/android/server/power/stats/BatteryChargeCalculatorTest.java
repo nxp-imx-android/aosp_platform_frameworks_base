@@ -23,7 +23,6 @@ import static org.mockito.Mockito.mock;
 import android.content.Context;
 import android.os.BatteryManager;
 import android.os.BatteryUsageStats;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -38,14 +37,9 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public class BatteryChargeCalculatorTest {
-    @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
     private static final double PRECISION = 0.00001;
 
-    @Rule(order = 1)
+    @Rule(order = 0)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
                     .setAveragePower(PowerProfile.POWER_BATTERY_CAPACITY, 4000.0);
 

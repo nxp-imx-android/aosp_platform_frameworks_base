@@ -74,18 +74,13 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class WifiPowerStatsProcessorTest {
-    @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
     private static final double PRECISION = 0.00001;
     private static final int APP_UID1 = Process.FIRST_APPLICATION_UID + 42;
     private static final int APP_UID2 = Process.FIRST_APPLICATION_UID + 101;
     private static final int WIFI_ENERGY_CONSUMER_ID = 1;
     private static final int VOLTAGE_MV = 3500;
 
-    @Rule(order = 1)
+    @Rule(order = 0)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
             .setAveragePower(PowerProfile.POWER_WIFI_CONTROLLER_IDLE, 360.0)
             .setAveragePower(PowerProfile.POWER_WIFI_CONTROLLER_RX, 480.0)

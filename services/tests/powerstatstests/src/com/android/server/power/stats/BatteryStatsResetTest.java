@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.os.BatteryManager;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -40,11 +39,6 @@ import java.io.IOException;
 public class BatteryStatsResetTest {
 
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
             .createTempDirectory();
 
