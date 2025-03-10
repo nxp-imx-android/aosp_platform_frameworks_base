@@ -338,9 +338,9 @@
 
     <!-- The spacing between the content and the header text above it, scaling with text size.
          This value is chosen so that, taking into account the text spacing for both the text in the
-         top line and the text in the content, the distance between them is 4dp with the default
+         top line and the text in the content, the distance between them is ~2dp with the default
          screen configuration (and will grow accordingly for larger font sizes) -->
-    <dimen name="notification_2025_content_margin_top">10sp</dimen>
+    <dimen name="notification_2025_content_margin_top">8sp</dimen>
 
     <!-- height of the content margin that is applied at the end of the notification content -->
     <dimen name="notification_content_margin">20dp</dimen>
