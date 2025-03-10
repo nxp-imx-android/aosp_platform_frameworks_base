@@ -409,7 +409,7 @@ public class IntrusionDetectionServiceTest {
         final String TAG = "startTestService";
         final CountDownLatch latch = new CountDownLatch(1);
         LocalIntrusionDetectionEventTransport transport =
-                new LocalIntrusionDetectionEventTransport();
+                new LocalIntrusionDetectionEventTransport(mContext);
 
         ServiceConnection serviceConnection = new ServiceConnection() {
             // Called when connection with the service is established.
