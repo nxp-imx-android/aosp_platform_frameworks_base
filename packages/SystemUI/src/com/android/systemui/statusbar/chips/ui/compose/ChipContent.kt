@@ -78,6 +78,7 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
                 rememberChronometerState(
                     eventTimeMillis = viewModel.startTimeMs,
                     isCountDown = viewModel.isEventInFuture,
+                    timeSource = viewModel.timeSource,
                 )
             timerState.currentTimeText?.let { text ->
                 Text(
