@@ -64,6 +64,7 @@ import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
@@ -105,6 +106,7 @@ class NotificationInfoTest : SysuiTestCase() {
     private val onUserInteractionCallback = mock<OnUserInteractionCallback>()
     private val mockINotificationManager = mock<INotificationManager>()
     private val channelEditorDialogController = mock<ChannelEditorDialogController>()
+    private val packageDemotionInteractor = mock<PackageDemotionInteractor>()
     private val assistantFeedbackController = mock<AssistantFeedbackController>()
 
     @Before
@@ -871,6 +873,7 @@ class NotificationInfoTest : SysuiTestCase() {
         onUserInteractionCallback: OnUserInteractionCallback = this.onUserInteractionCallback,
         channelEditorDialogController: ChannelEditorDialogController =
             this.channelEditorDialogController,
+        packageDemotionInteractor: PackageDemotionInteractor = this.packageDemotionInteractor,
         pkg: String = TEST_PACKAGE_NAME,
         notificationChannel: NotificationChannel = this.notificationChannel,
         entry: NotificationEntry = this.entry,
@@ -892,6 +895,7 @@ class NotificationInfoTest : SysuiTestCase() {
             iconStyleProvider,
             onUserInteractionCallback,
             channelEditorDialogController,
+            packageDemotionInteractor,
             pkg,
             notificationChannel,
             entry,

@@ -67,6 +67,7 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
@@ -146,6 +147,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     @Mock private lateinit var notificationManager: INotificationManager
     @Mock private lateinit var shortcutManager: ShortcutManager
     @Mock private lateinit var channelEditorDialogController: ChannelEditorDialogController
+    @Mock private lateinit var packageDemotionInteractor: PackageDemotionInteractor
     @Mock private lateinit var peopleNotificationIdentifier: PeopleNotificationIdentifier
     @Mock private lateinit var contextTracker: UserContextProvider
     @Mock private lateinit var bubblesManager: BubblesManager
@@ -185,6 +187,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 launcherApps,
                 shortcutManager,
                 channelEditorDialogController,
+                packageDemotionInteractor,
                 contextTracker,
                 assistantFeedbackController,
                 Optional.of(bubblesManager),
@@ -438,6 +441,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                eq(packageDemotionInteractor),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),
@@ -473,6 +477,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                eq(packageDemotionInteractor),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),
@@ -508,6 +513,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                eq(packageDemotionInteractor),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),

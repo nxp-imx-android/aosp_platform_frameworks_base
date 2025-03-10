@@ -74,6 +74,7 @@ import com.android.systemui.Dependency;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
@@ -193,6 +194,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             NotificationIconStyleProvider iconStyleProvider,
             OnUserInteractionCallback onUserInteractionCallback,
             ChannelEditorDialogController channelEditorDialogController,
+            PackageDemotionInteractor packageDemotionInteractor,
             String pkg,
             NotificationChannel notificationChannel,
             NotificationEntry entry,
