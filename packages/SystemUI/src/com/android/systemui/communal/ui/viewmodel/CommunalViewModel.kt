@@ -247,7 +247,7 @@ constructor(
                 showsOnlyActiveMedia = false
             }
             falsingProtectionNeeded = false
-            disablePagination = true
+            disableScrolling = true
             init(MediaHierarchyManager.LOCATION_COMMUNAL_HUB)
         }
     }
