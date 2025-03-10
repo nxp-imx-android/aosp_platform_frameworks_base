@@ -28,6 +28,7 @@ import static com.android.systemui.theme.ThemeOverlayApplier.COLOR_SOURCE_PRESET
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_ACCENT_COLOR;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_DYNAMIC_COLOR;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_SYSTEM_PALETTE;
+import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_CATEGORY_THEME_STYLE;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_BOTH;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_INDEX;
 import static com.android.systemui.theme.ThemeOverlayApplier.OVERLAY_COLOR_SOURCE;
@@ -106,6 +107,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -507,18 +509,52 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         mUserTracker.addCallback(mUserTrackerCallback, mMainExecutor);
         mDeviceProvisionedController.addCallback(mDeviceProvisionedListener);
 
+
+        // Condition only applies when booting to Setup Wizard.
+        // We should check if the device has specific hardware color styles, load the relative
+        // color palette and more also save the setting in our shared setting with ThemePicker.
         WallpaperColors systemColor;
         if (hardwareColorStyles() && !mDeviceProvisionedController.isCurrentUserSetup()) {
-            Pair<Integer, Color> defaultSettings = getThemeSettingsDefaults();
-            mThemeStyle = defaultSettings.first;
-            Color seedColor = defaultSettings.second;
+            HardwareDefaultSetting defaultSettings = getThemeSettingsDefaults();
+            mThemeStyle = defaultSettings.style;
 
             // we only use the first color anyway, so we can pass only the single color we have
             systemColor = new WallpaperColors(
-                    /*primaryColor*/ seedColor,
-                    /*secondaryColor*/ seedColor,
-                    /*tertiaryColor*/ seedColor
+                    /*primaryColor*/ defaultSettings.seedColor,
+                    /*secondaryColor*/ defaultSettings.seedColor,
+                    /*tertiaryColor*/ defaultSettings.seedColor
             );
+
+            /* We update the json in THEME_CUSTOMIZATION_OVERLAY_PACKAGES to reflect the preset. */
+            final int currentUser = mUserTracker.getUserId();
+            final String overlayPackageJson = Objects.requireNonNullElse(
+                    mSecureSettings.getStringForUser(
+                            Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES,
+                            currentUser),
+                    "{}"
+            );
+
+            try {
+                JSONObject object = new JSONObject(overlayPackageJson);
+                String seedColorStr = Integer.toHexString(defaultSettings.seedColor.toArgb());
+                object.put(OVERLAY_CATEGORY_SYSTEM_PALETTE, seedColorStr);
+                object.put(OVERLAY_CATEGORY_ACCENT_COLOR, seedColorStr);
+                object.put(OVERLAY_COLOR_SOURCE, defaultSettings.colorSource);
+                object.put(OVERLAY_CATEGORY_THEME_STYLE, Style.toString(mThemeStyle));
+
+                mSecureSettings.putStringForUser(
+                        Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, object.toString(),
+                        UserHandle.USER_CURRENT);
+
+                Log.d(TAG, "Hardware Color Defaults loaded: " + object.toString());
+
+            } catch (JSONException e) {
+                Log.d(TAG, "Failed to store hardware color defaults in "
+                    + "THEME_CUSTOMIZATION_OVERLAY_PACKAGES.", e);
+            }
+
+            // now we have to update
+
         } else {
             systemColor = mWallpaperManager.getWallpaperColors(
                     getDefaultWallpaperColorsSource(mUserTracker.getUserId()));
@@ -863,7 +899,7 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
             try {
                 JSONObject object = new JSONObject(overlayPackageJson);
                 style = Style.valueOf(
-                        object.getString(ThemeOverlayApplier.OVERLAY_CATEGORY_THEME_STYLE));
+                        object.getString(OVERLAY_CATEGORY_THEME_STYLE));
                 if (!validStyles.contains(style)) {
                     style = Style.TONAL_SPOT;
                 }
@@ -899,26 +935,29 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
         }
 
         String deviceColorPropertyValue = mSystemPropertiesHelper.get(deviceColorProperty);
-        Pair<Integer, String> selectedTheme = themeMap.get(deviceColorPropertyValue);
-        if (selectedTheme == null) {
+        Pair<Integer, String> styleAndSource = themeMap.get(deviceColorPropertyValue);
+        if (styleAndSource == null) {
             Log.d(TAG, "Sysprop `" + deviceColorProperty + "` of value '" + deviceColorPropertyValue
                     + "' not found in theming_defaults: " + Arrays.toString(themeData));
-            selectedTheme = fallbackTheme;
+            styleAndSource = fallbackTheme;
         }
 
-        return selectedTheme;
+        return styleAndSource;
+    }
+
+    record HardwareDefaultSetting(Color seedColor, @Style.Type int style, String colorSource) {
     }
 
     @VisibleForTesting
-    protected Pair<Integer, Color> getThemeSettingsDefaults() {
+    protected HardwareDefaultSetting getThemeSettingsDefaults() {
 
-        Pair<Integer, String> selectedTheme = getHardwareColorSetting();
+        Pair<Integer, String> styleAndSource = getHardwareColorSetting();
 
         // Last fallback color
         Color defaultSeedColor = Color.valueOf(GOOGLE_BLUE);
 
         // defaultColor will come from wallpaper or be parsed from a string
-        boolean isWallpaper = selectedTheme.second.equals(COLOR_SOURCE_HOME);
+        boolean isWallpaper = styleAndSource.second.equals(COLOR_SOURCE_HOME);
 
         if (isWallpaper) {
             WallpaperColors wallpaperColors = mWallpaperManager.getWallpaperColors(
@@ -932,16 +971,17 @@ public class ThemeOverlayController implements CoreStartable, Dumpable {
                     defaultSeedColor.toArgb()));
         } else {
             try {
-                defaultSeedColor = Color.valueOf(Color.parseColor(selectedTheme.second));
+                defaultSeedColor = Color.valueOf(Color.parseColor(styleAndSource.second));
                 Log.d(TAG, "Default seed color read from resource: " + Integer.toHexString(
                         defaultSeedColor.toArgb()));
             } catch (IllegalArgumentException e) {
-                Log.e(TAG, "Error parsing color: " + selectedTheme.second, e);
+                Log.e(TAG, "Error parsing color: " + styleAndSource.second, e);
                 // defaultSeedColor remains unchanged in this case
             }
         }
 
-        return new Pair<>(selectedTheme.first, defaultSeedColor);
+        return new HardwareDefaultSetting(defaultSeedColor, styleAndSource.first,
+                isWallpaper ? COLOR_SOURCE_HOME : COLOR_SOURCE_PRESET);
     }
 
     @Override
