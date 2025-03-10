@@ -224,7 +224,7 @@ interface INotificationManager
     void setNotificationPolicyAccessGrantedForUser(String pkg, int userId, boolean granted);
     ZenPolicy getDefaultZenPolicy();
     AutomaticZenRule getAutomaticZenRule(String id);
-    Map<String, AutomaticZenRule> getAutomaticZenRules();
+    ParceledListSlice getAutomaticZenRules();
     String addAutomaticZenRule(in AutomaticZenRule automaticZenRule, String pkg, boolean fromUser);
     boolean updateAutomaticZenRule(String id, in AutomaticZenRule automaticZenRule, boolean fromUser);
     boolean removeAutomaticZenRule(String id, boolean fromUser);

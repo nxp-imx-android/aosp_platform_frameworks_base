@@ -6163,10 +6163,15 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public Map<String, AutomaticZenRule> getAutomaticZenRules() {
+        public ParceledListSlice getAutomaticZenRules() {
             int callingUid = Binder.getCallingUid();
             enforcePolicyAccess(callingUid, "getAutomaticZenRules");
-            return mZenModeHelper.getAutomaticZenRules(getCallingZenUser(), callingUid);
+            List<AutomaticZenRule.AzrWithId> ruleList = new ArrayList<>();
+            for (Map.Entry<String, AutomaticZenRule> rule : mZenModeHelper.getAutomaticZenRules(
+                    getCallingZenUser(), callingUid).entrySet()) {
+                ruleList.add(new AutomaticZenRule.AzrWithId(rule.getKey(), rule.getValue()));
+            }
+            return new ParceledListSlice<>(ruleList);
         }
 
         @Override
