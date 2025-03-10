@@ -28,7 +28,6 @@ import com.android.systemui.common.shared.model.ContentDescription.Companion.loa
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.shared.model.Text
 import com.android.systemui.common.shared.model.Text.Companion.loadText
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.impl.custom.QSTileStateSubject
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
 import com.android.systemui.qs.tiles.impl.internet.qsInternetTileConfig
@@ -38,13 +37,14 @@ import com.android.systemui.statusbar.connectivity.WifiIcons.WIFI_FULL_ICONS
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.statusbar.pipeline.satellite.ui.model.SatelliteIconModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.InternetTileIconModel
+import com.android.systemui.testKosmos
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class InternetTileMapperTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val internetTileConfig = kosmos.qsInternetTileConfig
     private val handler = kosmos.fakeExecutorHandler
     private val mapper by lazy {

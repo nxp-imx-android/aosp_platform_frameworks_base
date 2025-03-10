@@ -29,7 +29,6 @@ import com.android.systemui.common.shared.model.Text.Companion.loadText
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.Flags
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
@@ -54,6 +53,7 @@ import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkMode
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiScanEntry
 import com.android.systemui.statusbar.pipeline.wifi.ui.model.WifiIcon
 import com.android.systemui.statusbar.policy.data.repository.FakeUserSetupRepository
+import com.android.systemui.testKosmos
 import com.android.systemui.util.CarrierConfigTracker
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
@@ -67,7 +67,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class InternetTileDataInteractorTest : SysuiTestCase() {
     private val testUser = UserHandle.of(1)
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
 
     private lateinit var underTest: InternetTileDataInteractor

@@ -57,7 +57,6 @@ import com.android.internal.logging.metricsLogger
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Dependency
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.RankingBuilder
@@ -68,6 +67,7 @@ import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
+import com.android.systemui.testKosmos
 import com.android.telecom.telecomManager
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
@@ -89,7 +89,7 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 class NotificationInfoTest : SysuiTestCase() {
-    private val kosmos = Kosmos().also { it.testCase = this }
+    private val kosmos = testKosmos().also { it.testCase = this }
 
     private lateinit var underTest: NotificationInfo
     private lateinit var notificationChannel: NotificationChannel

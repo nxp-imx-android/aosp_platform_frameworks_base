@@ -26,12 +26,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.impl.custom.QSTileStateSubject
 import com.android.systemui.qs.tiles.impl.work.domain.model.WorkModeTileModel
 import com.android.systemui.qs.tiles.impl.work.qsWorkModeTileConfig
 import com.android.systemui.qs.tiles.viewmodel.QSTileState
 import com.android.systemui.res.R
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.mock
@@ -43,7 +43,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class WorkModeTileMapperTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val qsTileConfig = kosmos.qsWorkModeTileConfig
     private val devicePolicyManager = kosmos.devicePolicyManager
     private val testLabel = context.getString(R.string.quick_settings_work_mode_label)

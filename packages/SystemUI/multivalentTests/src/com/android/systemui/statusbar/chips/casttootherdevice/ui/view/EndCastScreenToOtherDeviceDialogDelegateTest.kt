@@ -30,7 +30,6 @@ import android.view.Window
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.mediaprojection.data.model.MediaProjectionState
@@ -41,6 +40,7 @@ import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.me
 import com.android.systemui.statusbar.chips.mediaprojection.domain.model.ProjectionChipModel
 import com.android.systemui.statusbar.chips.mediaprojection.ui.view.endMediaProjectionDialogHelper
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import kotlinx.coroutines.test.runCurrent
@@ -57,7 +57,7 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class EndCastScreenToOtherDeviceDialogDelegateTest : SysuiTestCase() {
-    private val kosmos = Kosmos().also { it.testCase = this }
+    private val kosmos = testKosmos().also { it.testCase = this }
     private val sysuiDialog = mock<SystemUIDialog>()
     private lateinit var underTest: EndCastScreenToOtherDeviceDialogDelegate
 

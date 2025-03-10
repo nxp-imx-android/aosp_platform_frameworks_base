@@ -22,7 +22,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.dialogTransitionAnimator
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -39,6 +38,7 @@ import com.android.systemui.settings.userFileManager
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
 import com.android.systemui.statusbar.policy.keyguardStateController
+import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.fakeGlobalSettings
 import com.google.common.truth.Truth
 import kotlinx.coroutines.test.runTest
@@ -56,7 +56,7 @@ class IssueRecordingUserActionInteractorTest : SysuiTestCase() {
     @Mock private lateinit var recordingController: RecordingController
 
     val user = UserHandle(1)
-    val kosmos = Kosmos().also { it.testCase = this }
+    val kosmos = testKosmos().also { it.testCase = this }
 
     private lateinit var userContextProvider: UserContextProvider
     private lateinit var underTest: IssueRecordingUserActionInteractor

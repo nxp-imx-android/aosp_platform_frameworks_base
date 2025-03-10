@@ -28,9 +28,9 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.camera.data.repository.fakeCameraAutoRotateRepository
 import com.android.systemui.camera.data.repository.fakeCameraSensorPrivacyRepository
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.utils.leaks.FakeBatteryController
@@ -48,7 +48,7 @@ import org.junit.runner.RunWith
 @EnabledOnRavenwood
 @RunWith(AndroidJUnit4::class)
 class RotationLockTileDataInteractorTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val batteryController = FakeBatteryController(LeakCheck())
     private val rotationController = FakeRotationLockController(LeakCheck())
@@ -65,7 +65,7 @@ class RotationLockTileDataInteractorTest : SysuiTestCase() {
         whenever(
                 packageManager.checkPermission(
                     eq(Manifest.permission.CAMERA),
-                    eq(TEST_PACKAGE_NAME)
+                    eq(TEST_PACKAGE_NAME),
                 )
             )
             .thenReturn(PackageManager.PERMISSION_GRANTED)
@@ -81,7 +81,7 @@ class RotationLockTileDataInteractorTest : SysuiTestCase() {
                     .apply {
                         addOverride(com.android.internal.R.bool.config_allowRotationResolver, true)
                     }
-                    .resources
+                    .resources,
             )
     }
 
@@ -182,7 +182,7 @@ class RotationLockTileDataInteractorTest : SysuiTestCase() {
             whenever(
                     packageManager.checkPermission(
                         eq(Manifest.permission.CAMERA),
-                        eq(TEST_PACKAGE_NAME)
+                        eq(TEST_PACKAGE_NAME),
                     )
                 )
                 .thenReturn(PackageManager.PERMISSION_DENIED)

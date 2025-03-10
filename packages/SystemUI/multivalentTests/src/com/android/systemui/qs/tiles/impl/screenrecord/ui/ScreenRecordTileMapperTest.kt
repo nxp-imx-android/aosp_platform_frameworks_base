@@ -23,13 +23,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.impl.custom.QSTileStateSubject
 import com.android.systemui.qs.tiles.impl.screenrecord.domain.ui.ScreenRecordTileMapper
 import com.android.systemui.qs.tiles.impl.screenrecord.qsScreenRecordTileConfig
 import com.android.systemui.qs.tiles.viewmodel.QSTileState
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
+import com.android.systemui.testKosmos
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class ScreenRecordTileMapperTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val config = kosmos.qsScreenRecordTileConfig
 
     private lateinit var mapper: ScreenRecordTileMapper

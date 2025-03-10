@@ -21,11 +21,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.impl.location.domain.model.LocationTileModel
 import com.android.systemui.qs.tiles.impl.location.qsLocationTileConfig
 import com.android.systemui.qs.tiles.viewmodel.QSTileState
 import com.android.systemui.res.R
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth
 import junit.framework.Assert
 import org.junit.Test
@@ -34,7 +34,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class LocationTileMapperTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val qsTileConfig = kosmos.qsLocationTileConfig
 
     private val mapper by lazy {

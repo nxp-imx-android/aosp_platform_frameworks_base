@@ -24,13 +24,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.util.FakeSubscriptionManagerProxy
 import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
+import com.android.systemui.testKosmos
 import com.android.systemui.tuner.TunerService
 import com.android.systemui.util.CarrierConfigTracker
 import com.android.systemui.util.kotlin.JavaAdapter
@@ -54,7 +54,7 @@ class OperatorNameViewControllerTest : SysuiTestCase() {
     private lateinit var underTest: OperatorNameViewController
     private lateinit var airplaneModeInteractor: AirplaneModeInteractor
 
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val testScope = TestScope()
 
     private val view = OperatorNameView(mContext)
