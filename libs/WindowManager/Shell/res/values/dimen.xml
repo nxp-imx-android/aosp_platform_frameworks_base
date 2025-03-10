@@ -291,6 +291,9 @@
     <!-- Corner radius for expanded view drop target -->
     <dimen name="bubble_bar_expanded_view_drop_target_corner">28dp</dimen>
     <dimen name="bubble_bar_expanded_view_drop_target_padding">24dp</dimen>
+    <dimen name="bubble_bar_expanded_view_drop_target_padding_top">60dp</dimen>
+    <dimen name="bubble_bar_expanded_view_drop_target_padding_bottom">24dp</dimen>
+    <dimen name="bubble_bar_expanded_view_drop_target_padding_horizontal">48dp</dimen>
     <!-- Width of the box around bottom center of the screen where drag only leads to dismiss -->
     <dimen name="bubble_bar_dismiss_zone_width">192dp</dimen>
     <!-- Height of the box around bottom center of the screen where drag only leads to dismiss -->

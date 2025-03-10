@@ -103,7 +103,9 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
     private int mManageButtonHeight;
     private int mOverflowHeight;
     private int mMinimumFlyoutWidthLargeScreen;
-    private int mBubbleBarExpandedViewDropTargetPadding;
+    private int mBarExpViewDropTargetPaddingTop;
+    private int mBarExpViewDropTargetPaddingBottom;
+    private int mBarExpViewDropTargetPaddingHorizontal;
 
     private PointF mRestingStackPosition;
 
@@ -173,8 +175,12 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
                 res.getDimensionPixelSize(R.dimen.bubble_bar_expanded_view_width),
                 mPositionRect.width() - 2 * mExpandedViewPadding
         );
-        mBubbleBarExpandedViewDropTargetPadding = res.getDimensionPixelSize(
-                R.dimen.bubble_bar_expanded_view_drop_target_padding);
+        mBarExpViewDropTargetPaddingTop = res.getDimensionPixelSize(
+                R.dimen.bubble_bar_expanded_view_drop_target_padding_top);
+        mBarExpViewDropTargetPaddingBottom = res.getDimensionPixelSize(
+                R.dimen.bubble_bar_expanded_view_drop_target_padding_bottom);
+        mBarExpViewDropTargetPaddingHorizontal = res.getDimensionPixelSize(
+                R.dimen.bubble_bar_expanded_view_drop_target_padding_horizontal);
 
         if (mShowingInBubbleBar) {
             mExpandedViewLargeScreenWidth = mExpandedViewBubbleBarWidth;
@@ -986,8 +992,15 @@ public class BubblePositioner implements BubbleDropTargetBoundsProvider {
     public Rect getBubbleBarExpandedViewDropTargetBounds(boolean onLeft) {
         Rect bounds = new Rect();
         getBubbleBarExpandedViewBounds(onLeft, false, bounds);
-        bounds.inset(mBubbleBarExpandedViewDropTargetPadding,
-                mBubbleBarExpandedViewDropTargetPadding);
+        // Drop target bounds are based on expanded view bounds with some padding added
+        int leftPadding = onLeft ? 0 : mBarExpViewDropTargetPaddingHorizontal;
+        int rightPadding = onLeft ? mBarExpViewDropTargetPaddingHorizontal : 0;
+        bounds.inset(
+                leftPadding,
+                mBarExpViewDropTargetPaddingTop,
+                rightPadding,
+                mBarExpViewDropTargetPaddingBottom
+        );
         return bounds;
     }
 }
