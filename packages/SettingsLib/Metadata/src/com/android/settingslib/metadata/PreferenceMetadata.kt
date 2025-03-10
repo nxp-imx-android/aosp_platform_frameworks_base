@@ -137,18 +137,6 @@ interface PreferenceMetadata {
 
     /** Returns preference intent. */
     fun intent(context: Context): Intent? = null
-
-    /**
-     * Returns the preference title.
-     *
-     * Implement [PreferenceTitleProvider] interface if title content is generated dynamically.
-     */
-    fun getPreferenceTitle(context: Context): CharSequence? =
-        when {
-            title != 0 -> context.getText(title)
-            this is PreferenceTitleProvider -> getTitle(context)
-            else -> null
-        }
 }
 
 /** Metadata of preference group. */

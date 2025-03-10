@@ -33,6 +33,7 @@ import com.android.settingslib.metadata.PreferenceMetadata
 import com.android.settingslib.metadata.PreferenceScreenMetadata
 import com.android.settingslib.metadata.getPreferenceIcon
 import com.android.settingslib.metadata.getPreferenceSummary
+import com.android.settingslib.metadata.getPreferenceTitle
 
 /** Binding of preference widget and preference metadata. */
 interface PreferenceBinding {

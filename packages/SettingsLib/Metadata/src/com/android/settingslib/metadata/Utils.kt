@@ -18,6 +18,14 @@ package com.android.settingslib.metadata
 
 import android.content.Context
 
+/** Returns the preference title. */
+fun PreferenceMetadata.getPreferenceTitle(context: Context): CharSequence? =
+    when {
+        title != 0 -> context.getText(title)
+        this is PreferenceTitleProvider -> getTitle(context)
+        else -> null
+    }
+
 /** Returns the preference summary. */
 fun PreferenceMetadata.getPreferenceSummary(context: Context): CharSequence? =
     when {
