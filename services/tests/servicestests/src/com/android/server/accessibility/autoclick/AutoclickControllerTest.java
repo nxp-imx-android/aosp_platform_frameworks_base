@@ -25,6 +25,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -809,6 +810,57 @@ public class AutoclickControllerTest {
         assertThat(motionEventCaptor.downEvent).isNotNull();
         assertThat(motionEventCaptor.downEvent.getButtonState()).isEqualTo(
                 MotionEvent.BUTTON_SECONDARY);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void sendClick_clickType_scroll_showsScrollPanelOnlyOnce() {
+        MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
+        mController.setNext(motionEventCaptor);
+
+        injectFakeMouseActionHoverMoveEvent();
+        // Set delay to zero so click is scheduled to run immediately.
+        mController.mClickScheduler.updateDelay(0);
+
+        // Set click type to scroll.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Mock the scroll panel to verify interactions.
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // First hover move event.
+        MotionEvent hoverMove1 = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 100,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 30f,
+                /* y= */ 0f,
+                /* metaState= */ 0);
+        hoverMove1.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove1, hoverMove1, /* policyFlags= */ 0);
+        mTestableLooper.processAllMessages();
+
+        // Verify scroll panel is shown once.
+        verify(mockScrollPanel, times(1)).show();
+        assertThat(motionEventCaptor.downEvent).isNull();
+
+        // Second significant hover move event to trigger another autoclick.
+        MotionEvent hoverMove2 = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 200,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 100f,
+                /* y= */ 100f,
+                /* metaState= */ 0);
+        hoverMove2.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove2, hoverMove2, /* policyFlags= */ 0);
+        mTestableLooper.processAllMessages();
+
+        // Verify scroll panel is still only shown once (not called again).
+        verify(mockScrollPanel, times(1)).show();
+        assertThat(motionEventCaptor.downEvent).isNull();
     }
 
     @Test
