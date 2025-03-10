@@ -366,7 +366,7 @@ public class JankDataProcessor {
                 30, 40, 50, 60, 70, 80, 90, 100, 150, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
                 Integer.MAX_VALUE
         };
-        private final int[] mFrameOverrunBuckets = new int[sFrameOverrunHistogramBounds.length];
+        private final int[] mFrameOverrunBuckets = new int[sFrameOverrunHistogramBounds.length - 1];
 
         // Histogram of frame duration overruns encoded in predetermined buckets.
         public PendingJankStat() {
@@ -511,7 +511,7 @@ public class JankDataProcessor {
             if (overrunTime <= 1000) {
                 return (overrunTime - 200) / 100 + 43;
             }
-            return sFrameOverrunHistogramBounds.length - 1;
+            return mFrameOverrunBuckets.length - 1;
         }
 
     }
