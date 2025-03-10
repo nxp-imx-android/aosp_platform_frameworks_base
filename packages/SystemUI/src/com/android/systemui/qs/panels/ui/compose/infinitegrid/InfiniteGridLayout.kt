@@ -112,6 +112,7 @@ constructor(
                             isLastInRow = isLastInColumn,
                         ),
                     detailsViewModel = detailsViewModel,
+                    isVisible = listening,
                 )
             }
         }

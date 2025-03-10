@@ -82,6 +82,7 @@ fun ContentScope.QuickQuickSettings(
                         viewModel.tileHapticsViewModelFactoryProvider,
                     // There should be no QuickQuickSettings when the details view is enabled.
                     detailsViewModel = null,
+                    isVisible = listening,
                 )
             }
         }

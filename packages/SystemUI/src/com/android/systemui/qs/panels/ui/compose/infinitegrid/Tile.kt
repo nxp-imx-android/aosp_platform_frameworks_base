@@ -138,6 +138,7 @@ fun Tile(
     bounceableInfo: BounceableInfo,
     tileHapticsViewModelFactoryProvider: TileHapticsViewModelFactoryProvider,
     modifier: Modifier = Modifier,
+    isVisible: () -> Boolean = { true },
     detailsViewModel: DetailsViewModel?,
 ) {
     trace(tile.traceName) {
@@ -248,6 +249,7 @@ fun Tile(
                         onLongClick = longClick,
                         accessibilityUiState = uiState.accessibilityUiState,
                         squishiness = squishiness,
+                        isVisible = isVisible,
                     )
                 }
             }
