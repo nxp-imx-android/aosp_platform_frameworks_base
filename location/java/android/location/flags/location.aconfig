@@ -186,3 +186,11 @@ flag {
     bug: "398254728"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "gnss_assistance_interface_jni"
+    namespace: "location"
+    description: "Flag for GNSS assistance interface JNI"
+    bug: "209078566"
+}
+
