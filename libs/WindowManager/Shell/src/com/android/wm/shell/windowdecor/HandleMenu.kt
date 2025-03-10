@@ -108,12 +108,9 @@ class HandleMenu(
     private val isViewAboveStatusBar: Boolean
         get() = (DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue() && !taskInfo.isFreeform)
 
-    private val pillElevation: Int = loadDimensionPixelSize(
-        R.dimen.desktop_mode_handle_menu_pill_elevation)
     private val pillTopMargin: Int = loadDimensionPixelSize(
         R.dimen.desktop_mode_handle_menu_pill_spacing_margin)
-    private val menuWidth = loadDimensionPixelSize(
-        R.dimen.desktop_mode_handle_menu_width) + pillElevation
+    private val menuWidth = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_width)
     private val menuHeight = getHandleMenuHeight()
     private val marginMenuTop = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_top)
     private val marginMenuStart = loadDimensionPixelSize(
@@ -398,8 +395,7 @@ class HandleMenu(
      * Determines handle menu height based the max size and the visibility of pills.
      */
     private fun getHandleMenuHeight(): Int {
-        var menuHeight = loadDimensionPixelSize(
-            R.dimen.desktop_mode_handle_menu_height) + pillElevation
+        var menuHeight = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_height)
         if (!shouldShowWindowingPill) {
             menuHeight -= loadDimensionPixelSize(
                 R.dimen.desktop_mode_handle_menu_windowing_pill_height)
