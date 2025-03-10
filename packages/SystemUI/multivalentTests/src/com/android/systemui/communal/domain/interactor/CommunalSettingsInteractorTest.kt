@@ -21,10 +21,12 @@ import android.app.admin.devicePolicyManager
 import android.content.Intent
 import android.content.pm.UserInfo
 import android.os.UserManager
+import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.communal.shared.model.WhenToStartHub
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -32,6 +34,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
+import com.android.systemui.util.settings.fakeSettings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -80,6 +83,19 @@ class CommunalSettingsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.workProfileUserDisallowedByDevicePolicy)
             assertNotNull(disallowedUser)
             assertEquals(USER_INFO_WORK.id, disallowedUser!!.id)
+        }
+
+    @Test
+    fun whenToStartHub_matchesRepository() =
+        kosmos.runTest {
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_CHARGING,
+                MAIN_USER_INFO.id,
+            )
+
+            val startCondition by collectLastValue(underTest.whenToStartHub)
+            assertEquals(startCondition, WhenToStartHub.WHILE_CHARGING)
         }
 
     private fun setKeyguardFeaturesDisabled(user: UserInfo, disabledFlags: Int) {

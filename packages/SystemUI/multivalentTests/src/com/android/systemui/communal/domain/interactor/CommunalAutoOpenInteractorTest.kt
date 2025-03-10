@@ -55,9 +55,11 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
     fun setUp() {
         runBlocking { kosmos.fakeUserRepository.asMainUser() }
         with(kosmos.fakeSettings) {
-            putBoolForUser(Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP, false, MAIN_USER_ID)
-            putBoolForUser(Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK, false, MAIN_USER_ID)
-            putBoolForUser(Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED, false, MAIN_USER_ID)
+            putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_NEVER,
+                MAIN_USER_ID,
+            )
         }
     }
 
@@ -67,9 +69,9 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
 
-            fakeSettings.putBoolForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                true,
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_CHARGING,
                 MAIN_USER_ID,
             )
 
@@ -91,9 +93,9 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
 
-            fakeSettings.putBoolForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
-                true,
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_DOCKED,
                 MAIN_USER_ID,
             )
 
@@ -118,9 +120,9 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
 
-            fakeSettings.putBoolForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                true,
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_CHARGING_UPRIGHT,
                 MAIN_USER_ID,
             )
 
@@ -144,19 +146,9 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
             val shouldAutoOpen by collectLastValue(underTest.shouldAutoOpen)
             val suppressionReason by collectLastValue(underTest.suppressionReason)
 
-            fakeSettings.putBoolForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
-                false,
-                MAIN_USER_ID,
-            )
-            fakeSettings.putBoolForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
-                false,
-                MAIN_USER_ID,
-            )
-            fakeSettings.putBoolForUser(
-                Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
-                false,
+            fakeSettings.putIntForUser(
+                Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                Settings.Secure.GLANCEABLE_HUB_START_NEVER,
                 MAIN_USER_ID,
             )
 

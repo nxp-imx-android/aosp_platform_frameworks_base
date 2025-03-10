@@ -17,7 +17,6 @@
 package com.android.systemui.communal.domain.interactor
 
 import android.content.pm.UserInfo
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.communal.data.model.FEATURE_AUTO_OPEN
 import com.android.systemui.communal.data.model.FEATURE_ENABLED
 import com.android.systemui.communal.data.model.FEATURE_MANUAL_OPEN
@@ -25,10 +24,12 @@ import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.CommunalSettingsRepository
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.communal.shared.model.WhenToDream
+import com.android.systemui.communal.shared.model.WhenToStartHub
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -77,6 +78,12 @@ constructor(
     val whenToDream: Flow<WhenToDream> =
         userInteractor.selectedUserInfo.flatMapLatestConflated { user ->
             repository.getWhenToDreamState(user)
+        }
+
+    /** When to automatically start hub for the currently selected user. */
+    val whenToStartHub: Flow<WhenToStartHub> =
+        userInteractor.selectedUserInfo.flatMapLatest { user ->
+            repository.getWhenToStartHubState(user)
         }
 
     /** Whether communal hub is allowed by device policy for the current user */
