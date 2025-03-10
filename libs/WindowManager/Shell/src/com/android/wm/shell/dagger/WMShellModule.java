@@ -1273,7 +1273,7 @@ public abstract class WMShellModule {
     static Optional<DesktopPipTransitionObserver> provideDesktopPipTransitionObserver(
             Context context
     ) {
-        if (DesktopModeStatus.canEnterDesktopMode(context)
+        if (DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()) {
             return Optional.of(
                     new DesktopPipTransitionObserver());
