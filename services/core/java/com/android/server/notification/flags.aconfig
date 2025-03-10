@@ -212,16 +212,6 @@ flag {
 }
 
 flag {
-  name: "limit_zen_config_size"
-  namespace: "systemui"
-  description: "Enforce a maximum (serialized) size for the Zen configuration"
-  bug: "387498139"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "managed_services_concurrent_multiuser"
   namespace: "systemui"
   description: "Enables ManagedServices to support Concurrent multi user environment"
