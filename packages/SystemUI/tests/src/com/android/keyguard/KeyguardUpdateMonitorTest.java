@@ -50,7 +50,6 @@ import static kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
@@ -1878,7 +1877,7 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
         verify(callback, never()).onTrustGrantedForCurrentUser(
                 anyBoolean() /* dismissKeyguard */,
                 eq(true) /* newlyUnlocked */,
-                anyObject() /* flags */,
+                any() /* flags */,
                 anyString() /* message */
         );
     }

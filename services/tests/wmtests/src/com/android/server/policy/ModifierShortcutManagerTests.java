@@ -21,7 +21,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static org.junit.Assert.assertEquals;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyObject;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
@@ -90,7 +90,7 @@ public class ModifierShortcutManagerTests {
         XmlResourceParser testBookmarks = mResources.getXml(
                 com.android.frameworks.wmtests.R.xml.bookmarks);
 
-        doReturn(mContext).when(mContext).createContextAsUser(anyObject(), anyInt());
+        doReturn(mContext).when(mContext).createContextAsUser(any(), anyInt());
         when(mContext.getResources()).thenReturn(mResources);
         when(mContext.getPackageManager()).thenReturn(mPackageManager);
         when(mResources.getXml(R.xml.bookmarks)).thenReturn(testBookmarks);
@@ -106,7 +106,7 @@ public class ModifierShortcutManagerTests {
 
             doReturn(testActivityInfo).when(mPackageManager).getActivityInfo(
                     eq(new ComponentName("com.test", "com.test.BookmarkTest")), anyInt());
-            doReturn(testResolveInfo).when(mPackageManager).resolveActivity(anyObject(), anyInt());
+            doReturn(testResolveInfo).when(mPackageManager).resolveActivity(any(), anyInt());
             doThrow(new PackageManager.NameNotFoundException("com.test3")).when(mPackageManager)
                     .getActivityInfo(eq(new ComponentName("com.test3", "com.test.BookmarkTest")),
                         anyInt());
@@ -140,10 +140,10 @@ public class ModifierShortcutManagerTests {
     public void test_shortcutInfoFromIntent_appIntent() {
         Intent mockIntent = mock(Intent.class);
         ActivityInfo mockActivityInfo = mock(ActivityInfo.class);
-        when(mockActivityInfo.loadLabel(anyObject())).thenReturn("label");
+        when(mockActivityInfo.loadLabel(any())).thenReturn("label");
         mockActivityInfo.packageName = "android";
         when(mockActivityInfo.getIconResource()).thenReturn(R.drawable.sym_def_app_icon);
-        when(mockIntent.resolveActivityInfo(anyObject(), anyInt())).thenReturn(mockActivityInfo);
+        when(mockIntent.resolveActivityInfo(any(), anyInt())).thenReturn(mockActivityInfo);
 
         KeyboardShortcutInfo info = mModifierShortcutManager.shortcutInfoFromIntent(
                 'a', mockIntent, true);
@@ -161,7 +161,7 @@ public class ModifierShortcutManagerTests {
         Intent mockSelector = mock(Intent.class);
         ActivityInfo mockActivityInfo = mock(ActivityInfo.class);
         mockActivityInfo.name = com.android.internal.app.ResolverActivity.class.getName();
-        when(mockIntent.resolveActivityInfo(anyObject(), anyInt())).thenReturn(mockActivityInfo);
+        when(mockIntent.resolveActivityInfo(any(), anyInt())).thenReturn(mockActivityInfo);
         when(mockIntent.getSelector()).thenReturn(mockSelector);
         when(mockSelector.getCategories()).thenReturn(
                 Collections.singleton(Intent.CATEGORY_APP_BROWSER));

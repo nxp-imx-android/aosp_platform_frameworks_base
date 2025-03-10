@@ -23,9 +23,9 @@ import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.parceled;
 import static com.android.server.pm.shortcutmanagertest.ShortcutManagerTestUtils.set;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
