@@ -24,6 +24,7 @@ import android.database.DatabaseErrorHandler;
 import android.database.DefaultDatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
+import android.database.sqlite.SQLiteFullException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteRawStatement;
 import android.os.Environment;
@@ -174,11 +175,16 @@ class DiscreteOpsDbHelper extends SQLiteOpenHelper {
         if (DEBUG) {
             Slog.i(LOG_TAG, "DB execSQL, sql: " + sql);
         }
-        SQLiteDatabase db = getWritableDatabase();
-        if (bindArgs == null) {
-            db.execSQL(sql);
-        } else {
-            db.execSQL(sql, bindArgs);
+        try {
+            SQLiteDatabase db = getWritableDatabase();
+            if (bindArgs == null) {
+                db.execSQL(sql);
+            } else {
+                db.execSQL(sql, bindArgs);
+            }
+        } catch (SQLiteFullException exception) {
+            Slog.e(LOG_TAG, "Couldn't exec sql command, disk is full. Discrete ops "
+                    + "db file size (bytes) : " + getDatabaseFile().length(), exception);
         }
     }
 
