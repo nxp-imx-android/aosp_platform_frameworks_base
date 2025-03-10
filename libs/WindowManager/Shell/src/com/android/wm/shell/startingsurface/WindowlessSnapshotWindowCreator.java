@@ -85,8 +85,8 @@ class WindowlessSnapshotWindowCreator {
         final ActivityManager.TaskDescription taskDescription =
                 SnapshotDrawerUtils.getOrCreateTaskDescription(runningTaskInfo);
 
-        final SnapshotWindowRecord record = new SnapshotWindowRecord(mViewHost, wlw.mChildSurface,
-                taskDescription.getBackgroundColor(), snapshot.hasImeSurface(),
+        final SnapshotWindowRecord record = new SnapshotWindowRecord(mViewHost, rootSurface,
+                wlw.mChildSurface, taskDescription.getBackgroundColor(), snapshot.hasImeSurface(),
                 runningTaskInfo.topActivityType, removeExecutor,
                 taskId, mStartingWindowRecordManager);
         mStartingWindowRecordManager.addRecord(taskId, record);
@@ -96,14 +96,16 @@ class WindowlessSnapshotWindowCreator {
     private class SnapshotWindowRecord extends StartingSurfaceDrawer.SnapshotRecord {
         private SurfaceControlViewHost mViewHost;
         private SurfaceControl mChildSurface;
+        private SurfaceControl mRootSurface;
         private final boolean mHasImeSurface;
 
-        SnapshotWindowRecord(SurfaceControlViewHost viewHost, SurfaceControl childSurface,
-                int bgColor, boolean hasImeSurface, int activityType,
+        SnapshotWindowRecord(SurfaceControlViewHost viewHost, SurfaceControl rootSurface,
+                SurfaceControl childSurface, int bgColor, boolean hasImeSurface, int activityType,
                 ShellExecutor removeExecutor, int id,
                 StartingSurfaceDrawer.StartingWindowRecordManager recordManager) {
             super(activityType, removeExecutor, id, recordManager);
             mViewHost = viewHost;
+            mRootSurface = rootSurface;
             mChildSurface = childSurface;
             mBGColor = bgColor;
             mHasImeSurface = hasImeSurface;
@@ -145,6 +147,10 @@ class WindowlessSnapshotWindowCreator {
                         mTransactionPool.release(t);
                         mChildSurface = null;
                     }
+                    if (mRootSurface != null && mRootSurface.isValid()) {
+                        mRootSurface.release();
+                    }
+                    mRootSurface = null;
                     if (mViewHost != null) {
                         mViewHost.release();
                         mViewHost = null;
