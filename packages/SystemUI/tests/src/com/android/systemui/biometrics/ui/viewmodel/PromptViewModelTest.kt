@@ -73,9 +73,9 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.keyguard.shared.model.AcquiredFingerprintAuthenticationStatus
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
@@ -189,7 +189,7 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
     private lateinit var promptContentViewWithMoreOptionsButton:
         PromptContentViewWithMoreOptionsButton
 
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
 
     @Before
     fun setup() {

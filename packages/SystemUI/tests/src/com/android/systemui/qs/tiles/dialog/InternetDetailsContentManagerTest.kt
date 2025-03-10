@@ -40,9 +40,9 @@ import com.android.settingslib.wifi.WifiEnterpriseRestrictionUtils
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.wifitrackerlib.WifiEntry
@@ -66,7 +66,7 @@ import org.mockito.kotlin.whenever
 @EnableFlags(Flags.FLAG_QS_TILE_DETAILED_VIEW)
 @UiThreadTest
 class InternetDetailsContentManagerTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val handler: Handler = kosmos.fakeExecutorHandler
     private val scope: CoroutineScope = mock<CoroutineScope>()
     private val telephonyManager: TelephonyManager = kosmos.telephonyManager
