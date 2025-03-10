@@ -32,7 +32,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
-import android.service.notification.StatusBarNotification;
 import android.util.ArrayMap;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -358,7 +357,9 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             final float dismissThreshold = getDismissThreshold();
             final boolean snappingToDismiss = delta < -dismissThreshold || delta > dismissThreshold;
             if (mSnappingToDismiss != snappingToDismiss) {
-                getMenuView().performHapticFeedback(CLOCK_TICK);
+                if (!Flags.magneticNotificationSwipes()) {
+                    getMenuView().performHapticFeedback(CLOCK_TICK);
+                }
             }
             mSnappingToDismiss = snappingToDismiss;
         }
