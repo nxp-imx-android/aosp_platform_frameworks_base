@@ -46,6 +46,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -54,6 +55,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -404,7 +406,7 @@ private fun ContentScope.CardForegroundContent(
             )
     ) {
         // Always add the first/top row, regardless of presentation style.
-        Box(modifier = Modifier.fillMaxWidth()) {
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
             // Icon.
             Icon(
                 icon = viewModel.icon,
@@ -421,7 +423,20 @@ private fun ContentScope.CardForegroundContent(
                 modifier = Modifier.align(Alignment.TopEnd),
             ) {
                 viewModel.outputSwitcherChips.fastForEach { chip ->
-                    OutputSwitcherChip(viewModel = chip, colorScheme = colorScheme)
+                    OutputSwitcherChip(
+                        viewModel = chip,
+                        colorScheme = colorScheme,
+                        modifier =
+                            Modifier
+                                // Each chip must be limited to 40% of the width of the card at
+                                // most.
+                                //
+                                // The underlying assumption is that there'll never be more than one
+                                // chip with text and one more icon-only chip. Only the one with
+                                // text
+                                // can ever end up being too wide.
+                                .widthIn(max = this@BoxWithConstraints.maxWidth * 0.4f),
+                    )
                 }
             }
         }
@@ -1024,6 +1039,8 @@ private fun OutputSwitcherChip(
                     text = viewModel.text,
                     style = MaterialTheme.typography.bodySmall,
                     color = colorScheme.onPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
