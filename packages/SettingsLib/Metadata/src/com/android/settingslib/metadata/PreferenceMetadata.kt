@@ -151,19 +151,6 @@ interface PreferenceMetadata {
         }
 
     /**
-     * Returns the preference summary.
-     *
-     * Implement [PreferenceSummaryProvider] interface if summary content is generated dynamically
-     * (e.g. summary is provided per preference value).
-     */
-    fun getPreferenceSummary(context: Context): CharSequence? =
-        when {
-            summary != 0 -> context.getText(summary)
-            this is PreferenceSummaryProvider -> getSummary(context)
-            else -> null
-        }
-
-    /**
      * Returns the preference icon.
      *
      * Implement [PreferenceIconProvider] interface if icon is provided dynamically (e.g. icon is
