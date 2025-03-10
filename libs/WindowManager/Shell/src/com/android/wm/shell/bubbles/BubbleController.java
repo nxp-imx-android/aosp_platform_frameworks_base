@@ -2644,7 +2644,8 @@ public class BubbleController implements ConfigurationChangeListener,
     }
 
     private void moveBubbleToFullscreen(String key) {
-        // TODO b/388858013: convert the bubble to full screen
+        Bubble b = mBubbleData.getBubbleInStackWithKey(key);
+        mBubbleTransitions.startDraggedBubbleIconToFullscreen(b);
     }
 
     private boolean isDeviceLocked() {
