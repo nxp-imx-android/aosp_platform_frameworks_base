@@ -3852,8 +3852,6 @@ public class NotificationStackScrollLayout
                         // existing overScroll, we have to scroll the view
                         customOverScrollBy((int) scrollAmount, getOwnScrollY(),
                                 range, getHeight() / 2);
-                        // If we're scrolling, leavebehinds should be dismissed
-                        mController.checkSnoozeLeavebehind();
                     }
                 }
                 break;
