@@ -127,7 +127,6 @@ open class SeekBarObserver(private val holder: MediaViewHolder) :
         }
 
         holder.seekBar.setMax(data.duration)
-        val totalTimeDescription = data.durationDescription
         if (data.scrubbing) {
             holder.scrubbingTotalTimeView.text = formatTimeLabel(data.duration)
         }
@@ -147,23 +146,27 @@ open class SeekBarObserver(private val holder: MediaViewHolder) :
                 }
             }
 
-            val elapsedTimeDescription = data.elapsedTimeDescription
             if (data.scrubbing) {
                 holder.scrubbingElapsedTimeView.text = formatTimeLabel(it)
             }
-
-            holder.seekBar.contentDescription =
-                holder.seekBar.context.getString(
-                    R.string.controls_media_seekbar_description,
-                    elapsedTimeDescription,
-                    totalTimeDescription,
-                )
         }
     }
 
     /** Returns a time string suitable for display, e.g. "12:34" */
     private fun formatTimeLabel(milliseconds: Int): CharSequence {
         return DateUtils.formatElapsedTime(milliseconds / DateUtils.SECOND_IN_MILLIS)
+    }
+
+    fun updateContentDescription(
+        elapsedTimeDescription: CharSequence,
+        durationDescription: CharSequence,
+    ) {
+        holder.seekBar.contentDescription =
+            holder.seekBar.context.getString(
+                R.string.controls_media_seekbar_description,
+                elapsedTimeDescription,
+                durationDescription,
+            )
     }
 
     @VisibleForTesting

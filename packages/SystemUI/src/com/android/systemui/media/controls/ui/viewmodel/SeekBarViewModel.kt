@@ -104,19 +104,20 @@ constructor(
         )
         set(value) {
             val enabledChanged = value.enabled != field.enabled
+            field = value
             if (enabledChanged) {
                 enabledChangeListener?.onEnabledChanged(value.enabled)
             }
+            _progress.postValue(value)
+
             bgExecutor.execute {
                 val durationDescription = formatTimeContentDescription(value.duration)
                 val elapsedDescription =
                     value.elapsedTime?.let { formatTimeContentDescription(it) } ?: ""
-                field =
-                    value.copy(
-                        durationDescription = durationDescription,
-                        elapsedTimeDescription = elapsedDescription,
-                    )
-                _progress.postValue(field)
+                contentDescriptionListener?.onContentDescriptionChanged(
+                    elapsedDescription,
+                    durationDescription,
+                )
             }
         }
 
@@ -175,6 +176,7 @@ constructor(
 
     private var scrubbingChangeListener: ScrubbingChangeListener? = null
     private var enabledChangeListener: EnabledChangeListener? = null
+    private var contentDescriptionListener: ContentDescriptionListener? = null
 
     /** Set to true when the user is touching the seek bar to change the position. */
     private var scrubbing = false
@@ -394,6 +396,16 @@ constructor(
         }
     }
 
+    fun setContentDescriptionListener(listener: ContentDescriptionListener) {
+        contentDescriptionListener = listener
+    }
+
+    fun removeContentDescriptionListener(listener: ContentDescriptionListener) {
+        if (listener == contentDescriptionListener) {
+            contentDescriptionListener = null
+        }
+    }
+
     /** returns a pair of whether seekbar is enabled and the duration of media. */
     private fun getEnabledStateAndDuration(metadata: MediaMetadata?): Pair<Boolean, Int> {
         val duration = metadata?.getLong(MediaMetadata.METADATA_KEY_DURATION)?.toInt() ?: 0
@@ -466,6 +478,13 @@ constructor(
     /** Listener interface to be notified when the seekbar's enabled status changes. */
     interface EnabledChangeListener {
         fun onEnabledChanged(enabled: Boolean)
+    }
+
+    interface ContentDescriptionListener {
+        fun onContentDescriptionChanged(
+            elapsedTimeDescription: CharSequence,
+            durationDescription: CharSequence,
+        )
     }
 
     private class SeekBarChangeListener(
@@ -639,7 +658,5 @@ constructor(
         val duration: Int,
         /** whether seekBar is listening to progress updates */
         val listening: Boolean,
-        val elapsedTimeDescription: CharSequence = "",
-        val durationDescription: CharSequence = "",
     )
 }
