@@ -612,8 +612,7 @@ public class BubbleTransitions {
             mTaskLeash = taskChg.getLeash();
             mRootLeash = info.getRoot(0).getLeash();
 
-            SurfaceControl dest =
-                    mBubble.getBubbleBarExpandedView().getViewRootImpl().getSurfaceControl();
+            SurfaceControl dest = getExpandedView(mBubble).getViewRootImpl().getSurfaceControl();
             final Runnable onPlucked = () -> {
                 // Need to remove the taskview AFTER applying the startTransaction because
                 // it isn't synchronized.
@@ -623,12 +622,12 @@ public class BubbleTransitions {
                 mBubbleData.setExpanded(false /* expanded */);
             };
             if (dest != null) {
-                pluck(mTaskLeash, mBubble.getBubbleBarExpandedView(), dest,
+                pluck(mTaskLeash, getExpandedView(mBubble), dest,
                         taskChg.getStartAbsBounds().left - info.getRoot(0).getOffset().x,
                         taskChg.getStartAbsBounds().top - info.getRoot(0).getOffset().y,
-                        mBubble.getBubbleBarExpandedView().getCornerRadius(), startTransaction,
+                        getCornerRadius(mBubble), startTransaction,
                         onPlucked);
-                mBubble.getBubbleBarExpandedView().post(() -> mTransitions.dispatchTransition(
+                getExpandedView(mBubble).post(() -> mTransitions.dispatchTransition(
                         mTransition, info, startTransaction, finishTransaction, finishCallback,
                         null));
             } else {
@@ -648,6 +647,20 @@ public class BubbleTransitions {
             SurfaceControl.Transaction t = new SurfaceControl.Transaction();
             t.reparent(mTaskLeash, mRootLeash);
             t.apply();
+        }
+
+        private View getExpandedView(@NonNull Bubble bubble) {
+            if (bubble.getBubbleBarExpandedView() != null) {
+                return bubble.getBubbleBarExpandedView();
+            }
+            return bubble.getExpandedView();
+        }
+
+        private float getCornerRadius(@NonNull Bubble bubble) {
+            if (bubble.getBubbleBarExpandedView() != null) {
+                return bubble.getBubbleBarExpandedView().getCornerRadius();
+            }
+            return bubble.getExpandedView().getCornerRadius();
         }
     }
 
