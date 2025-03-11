@@ -16,6 +16,8 @@
 
 package com.android.internal.widget;
 
+import static android.app.Flags.notificationsRedesignTemplates;
+
 import android.annotation.AttrRes;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -270,7 +272,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     }
 
     private static int getMessagingGroupLayoutResource() {
-        if (Flags.notificationsRedesignTemplates()) {
+        if (notificationsRedesignTemplates()) {
             return R.layout.notification_2025_messaging_group;
         } else {
             return R.layout.notification_template_messaging_group;
@@ -433,6 +435,11 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
         }
     }
 
+    /** Whether the sender name is hidden to avoid duplication with the header. */
+    public boolean hasSenderNameHidden() {
+        return mSenderView.getVisibility() == GONE;
+    }
+
     /**
      * @param canHide true if the sender can be hidden if it is first
      */
@@ -450,7 +457,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
     }
 
     private void updateIconVisibility() {
-        if (Flags.notificationsRedesignTemplates()) {
+        if (notificationsRedesignTemplates()) {
             // We don't show any icon (other than the app or person icon) in the collapsed form.
             mMessagingIconContainer.setVisibility(mIsCollapsed ? GONE : VISIBLE);
         }
@@ -740,7 +747,7 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
         if (mIsInConversation != isInConversation) {
             mIsInConversation = isInConversation;
 
-            if (Flags.notificationsRedesignTemplates()) {
+            if (notificationsRedesignTemplates()) {
                 updateIconVisibility();
                 // No other alignment adjustments are necessary in the redesign, as the size of the
                 // icons in both conversations and old messaging notifications are the same.
