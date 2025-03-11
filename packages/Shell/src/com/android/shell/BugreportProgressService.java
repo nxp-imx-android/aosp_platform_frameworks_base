@@ -255,10 +255,10 @@ public class BugreportProgressService extends Service {
     /** Always keep remote bugreport files created in the last day. */
     private static final long REMOTE_MIN_KEEP_AGE = DateUtils.DAY_IN_MILLIS;
 
-    /** Minimum delay for sending last update notification */
-    private static final int DELAY_NOTIFICATION_MS = 250;
-
     private final Object mLock = new Object();
+
+/** Minimum delay between percentage points before sending an update notification */
+    private static final int MIN_NOTIFICATION_GAP = 10;
 
     /** Managed bugreport info (keyed by id) */
     @GuardedBy("mLock")
@@ -1460,17 +1460,6 @@ public class BugreportProgressService extends Service {
      * Sends a notification indicating the bugreport has finished so use can share it.
      */
     private void sendBugreportNotification(BugreportInfo info, boolean takingScreenshot) {
-
-        final long lastUpdate = System.currentTimeMillis() - info.lastUpdate.longValue();
-        if (lastUpdate < DELAY_NOTIFICATION_MS) {
-            Log.d(TAG, "Delaying final notification for "
-                    + (DELAY_NOTIFICATION_MS - lastUpdate) + " ms ");
-            mMainThreadHandler.postDelayed(() -> {
-                sendBugreportNotification(info, takingScreenshot);
-            }, DELAY_NOTIFICATION_MS - lastUpdate);
-            return;
-        }
-
         // Since adding the details can take a while, do it before notifying user.
         addDetailsToZipFile(info);
 
@@ -1523,7 +1512,7 @@ public class BugreportProgressService extends Service {
             builder.setSubText(info.getName());
         }
 
-        Log.v(TAG, "Sending 'Share' notification for ID " + info.id + ": " + title);
+        Log.d(TAG, "Sending 'Share' notification for ID " + info.id + ": " + title);
         NotificationManager.from(mContext).notify(info.id, builder.build());
     }
 
@@ -2753,6 +2742,11 @@ public class BugreportProgressService extends Service {
         if (progress > CAPPED_PROGRESS) {
             progress = CAPPED_PROGRESS;
         }
+
+        if ((progress - info.lastProgress.intValue()) < MIN_NOTIFICATION_GAP) {
+            return;
+        }
+
         if (DEBUG) {
             if (progress != info.progress.intValue()) {
                 Log.v(TAG, "Updating progress for name " + info.getName() + "(id: " + info.id
