@@ -311,20 +311,6 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             assertThat(isDismissible).isTrue()
         }
 
-    @Test
-    fun setMagneticRowTranslation_whenDetached_belowAttachThreshold_reattaches() =
-        kosmos.testScope.runTest {
-            // GIVEN that the swiped view has been detached
-            setDetachedState()
-
-            // WHEN setting a new translation above the attach threshold
-            val translation = 50f
-            underTest.setMagneticRowTranslation(swipedRow, translation)
-
-            // THEN the swiped view reattaches magnetically and the state becomes PULLING
-            assertThat(underTest.currentState).isEqualTo(State.PULLING)
-        }
-
     @After
     fun tearDown() {
         // We reset the manager so that all MagneticRowListener can cancel all animations
@@ -360,8 +346,8 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
     private fun MagneticRowListener.asTestableListener(rowIndex: Int): MagneticRowListener {
         val delegate = this
         return object : MagneticRowListener {
-            override fun setMagneticTranslation(translation: Float, trackEagerly: Boolean) {
-                delegate.setMagneticTranslation(translation, trackEagerly)
+            override fun setMagneticTranslation(translation: Float) {
+                delegate.setMagneticTranslation(translation)
             }
 
             override fun triggerMagneticForce(

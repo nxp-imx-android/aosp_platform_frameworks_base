@@ -107,9 +107,6 @@ interface MagneticNotificationRowManager {
         /** Detaching threshold in dp */
         const val MAGNETIC_DETACH_THRESHOLD_DP = 56
 
-        /** Re-attaching threshold in dp */
-        const val MAGNETIC_ATTACH_THRESHOLD_DP = 40
-
         /* An empty implementation of a manager */
         @JvmStatic
         val Empty: MagneticNotificationRowManager
