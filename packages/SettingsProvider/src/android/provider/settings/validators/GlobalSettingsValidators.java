@@ -474,5 +474,7 @@ public class GlobalSettingsValidators {
                                 String.valueOf(
                                         Global.Wearable.STATUS_TRAY_CONFIGURATION_SYSTEM_HIDDEN)
                         }));
+        VALIDATORS.put(Global.Wearable.GESTURE_PRIMARY_ACTION_USER_PREFERENCE, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Global.Wearable.GESTURE_DISMISS_ACTION_USER_PREFERENCE, BOOLEAN_VALIDATOR);
     }
 }
