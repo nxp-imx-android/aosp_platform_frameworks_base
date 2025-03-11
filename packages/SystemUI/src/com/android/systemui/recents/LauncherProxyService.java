@@ -89,6 +89,8 @@ import com.android.systemui.broadcast.BroadcastDispatcher;
 import com.android.systemui.contextualeducation.GestureType;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.display.data.repository.DisplayRepository;
+import com.android.systemui.display.data.repository.PerDisplayRepository;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
 import com.android.systemui.keyguard.KeyguardWmStateRefactor;
@@ -109,6 +111,7 @@ import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeViewController;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.recents.ILauncherProxy;
 import com.android.systemui.shared.recents.ISystemUiProxy;
 import com.android.systemui.shared.system.QuickStepContract;
@@ -156,7 +159,9 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private final Executor mMainExecutor;
     private final ShellInterface mShellInterface;
     private final Lazy<ShadeViewController> mShadeViewControllerLazy;
-    private SysUiState mSysUiState;
+    private final PerDisplayRepository<SysUiState> mPerDisplaySysUiStateRepository;
+    private final DisplayRepository mDisplayRepository;
+    private SysUiState mDefaultDisplaySysUIState;
     private final Handler mHandler;
     private final Lazy<NavigationBarController> mNavBarControllerLazy;
     private final ScreenPinningRequest mScreenPinningRequest;
@@ -586,9 +591,12 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
             // Force-update the systemui state flags
             updateSystemUiStateFlags();
-            // TODO b/398011576 - send the state for all displays.
-            notifySystemUiStateFlags(mSysUiState.getFlags(), Display.DEFAULT_DISPLAY);
-
+            if (ShadeWindowGoesAround.isEnabled()) {
+               notifySysUiStateFlagsForAllDisplays();
+            } else {
+                notifySystemUiStateFlags(mDefaultDisplaySysUIState.getFlags(),
+                        Display.DEFAULT_DISPLAY);
+            }
             notifyConnectionChanged();
         }
 
@@ -613,6 +621,18 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             mCurrentBoundedUserId = -1;
         }
     };
+
+    /** Propagates the flags for all displays to be notified to Launcher. */
+    @VisibleForTesting
+    public void notifySysUiStateFlagsForAllDisplays() {
+        var displays = mDisplayRepository.getDisplayIds().getValue();
+        for (int displayId : displays) {
+            var state = mPerDisplaySysUiStateRepository.get(displayId);
+            if (state != null) {
+                notifySystemUiStateFlags(state.getFlags(), displayId);
+            }
+        }
+    }
 
     private final StatusBarWindowCallback mStatusBarWindowCallback = this::onStatusBarStateChanged;
 
@@ -671,7 +691,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             ScreenPinningRequest screenPinningRequest,
             NavigationModeController navModeController,
             NotificationShadeWindowController statusBarWinController,
-            SysUiState sysUiState,
+            PerDisplayRepository<SysUiState> perDisplaySysUiStateRepository,
             Provider<SceneInteractor> sceneInteractor,
             Provider<ShadeInteractor> shadeInteractor,
             UserTracker userTracker,
@@ -686,7 +706,8 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             Optional<UnfoldTransitionProgressForwarder> unfoldTransitionProgressForwarder,
             BroadcastDispatcher broadcastDispatcher,
             Optional<BackAnimation> backAnimation,
-            ProcessWrapper processWrapper
+            ProcessWrapper processWrapper,
+            DisplayRepository displayRepository
     ) {
         // b/241601880: This component should only be running for primary users or
         // secondaryUsers when visibleBackgroundUsers are supported.
@@ -718,10 +739,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 com.android.internal.R.string.config_recentsComponentName));
         mQuickStepIntent = new Intent(ACTION_QUICKSTEP)
                 .setPackage(mRecentsComponentName.getPackageName());
-        // TODO b/398011576 - Here we're still only handling the default display state. We should
-        //  have a callback for any sysuiState change.
-        mSysUiState = sysUiState;
-        mSysUiState.addCallback(mSysUiStateCallback);
+        mPerDisplaySysUiStateRepository = perDisplaySysUiStateRepository;
+        mDisplayRepository = displayRepository;
+        mDefaultDisplaySysUIState = perDisplaySysUiStateRepository.get(Display.DEFAULT_DISPLAY);
+        mDefaultDisplaySysUIState.addCallback(mSysUiStateCallback);
         mUiEventLogger = uiEventLogger;
         mDisplayTracker = displayTracker;
         mUnfoldTransitionProgressForwarder = unfoldTransitionProgressForwarder;
@@ -770,7 +791,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                 if (mLauncherProxy != null) {
                     try {
                         if (DesktopModeStatus.canEnterDesktopMode(mContext)
-                                && (sysUiState.getFlags()
+                                && (mDefaultDisplaySysUIState.getFlags()
                                 & SYSUI_STATE_FREEFORM_ACTIVE_IN_DESKTOP_MODE) != 0) {
                             return;
                         }
@@ -795,7 +816,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     }
 
     public void onVoiceSessionWindowVisibilityChanged(boolean visible) {
-        mSysUiState.setFlag(SYSUI_STATE_VOICE_INTERACTION_WINDOW_SHOWING, visible)
+        mDefaultDisplaySysUIState.setFlag(SYSUI_STATE_VOICE_INTERACTION_WINDOW_SHOWING, visible)
                 .commitUpdate(mContext.getDisplayId());
     }
 
@@ -805,6 +826,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     }
 
     private void updateSystemUiStateFlags() {
+        // TODO b/398011576 - We should update flags for all navigation bars.
         final NavigationBar navBarFragment =
                 mNavBarControllerLazy.get().getDefaultNavigationBar();
         final NavigationBarView navBarView =
@@ -819,7 +841,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             navBarFragment.updateSystemUiStateFlags();
         }
         if (navBarView != null) {
-            navBarView.updateDisabledSystemUiStateFlags(mSysUiState);
+            navBarView.updateDisabledSystemUiStateFlags(mDefaultDisplaySysUIState);
         }
         mShadeViewControllerLazy.get().updateSystemUiStateFlags();
         if (mStatusBarWinController != null) {
@@ -845,7 +867,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private void onStatusBarStateChanged(boolean keyguardShowing, boolean keyguardOccluded,
             boolean keyguardGoingAway, boolean bouncerShowing, boolean isDozing,
             boolean panelExpanded, boolean isDreaming, boolean communalShowing) {
-        mSysUiState.setFlag(SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING,
+        mDefaultDisplaySysUIState.setFlag(SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING,
                         keyguardShowing && !keyguardOccluded)
                 .setFlag(SYSUI_STATE_STATUS_BAR_KEYGUARD_SHOWING_OCCLUDED,
                         keyguardShowing && keyguardOccluded)
@@ -1122,7 +1144,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             new WakefulnessLifecycle.Observer() {
                 @Override
                 public void onStartedWakingUp() {
-                    mSysUiState
+                    mDefaultDisplaySysUIState
                             .setFlag(SYSUI_STATE_AWAKE, true)
                             .setFlag(SYSUI_STATE_WAKEFULNESS_TRANSITION, true)
                             .commitUpdate(mContext.getDisplayId());
@@ -1130,7 +1152,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
                 @Override
                 public void onFinishedWakingUp() {
-                    mSysUiState
+                    mDefaultDisplaySysUIState
                             .setFlag(SYSUI_STATE_AWAKE, true)
                             .setFlag(SYSUI_STATE_WAKEFULNESS_TRANSITION, false)
                             .commitUpdate(mContext.getDisplayId());
@@ -1138,7 +1160,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
                 @Override
                 public void onStartedGoingToSleep() {
-                    mSysUiState
+                    mDefaultDisplaySysUIState
                             .setFlag(SYSUI_STATE_AWAKE, false)
                             .setFlag(SYSUI_STATE_WAKEFULNESS_TRANSITION, true)
                             .commitUpdate(mContext.getDisplayId());
@@ -1146,7 +1168,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
 
                 @Override
                 public void onFinishedGoingToSleep() {
-                    mSysUiState
+                    mDefaultDisplaySysUIState
                             .setFlag(SYSUI_STATE_AWAKE, false)
                             .setFlag(SYSUI_STATE_WAKEFULNESS_TRANSITION, false)
                             .commitUpdate(mContext.getDisplayId());
@@ -1247,7 +1269,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         pw.print("  mActiveNavBarRegion="); pw.println(mActiveNavBarRegion);
         pw.print("  mNavBarMode="); pw.println(mNavBarMode);
         pw.print("  mIsPrevServiceCleanedUp="); pw.println(mIsPrevServiceCleanedUp);
-        mSysUiState.dump(pw, args);
+        mDefaultDisplaySysUIState.dump(pw, args);
     }
 
     public interface LauncherProxyListener {
