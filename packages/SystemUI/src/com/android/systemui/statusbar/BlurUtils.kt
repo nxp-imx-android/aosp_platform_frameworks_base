@@ -86,7 +86,7 @@ open class BlurUtils @Inject constructor(
      */
     fun prepareBlur(viewRootImpl: ViewRootImpl?, radius: Int) {
         if (viewRootImpl == null || !viewRootImpl.surfaceControl.isValid ||
-            !supportsBlursOnWindows() || earlyWakeupEnabled
+            !shouldBlur(radius) || earlyWakeupEnabled
         ) {
             return
         }
@@ -113,7 +113,7 @@ open class BlurUtils @Inject constructor(
             return
         }
         createTransaction().use {
-            if (supportsBlursOnWindows()) {
+            if (shouldBlur(radius)) {
                 it.setBackgroundBlurRadius(viewRootImpl.surfaceControl, radius)
                 if (!earlyWakeupEnabled && lastAppliedBlur == 0 && radius != 0) {
                     Trace.asyncTraceForTrackBegin(
@@ -142,6 +142,14 @@ open class BlurUtils @Inject constructor(
         return SurfaceControl.Transaction()
     }
 
+    private fun shouldBlur(radius: Int): Boolean {
+        return supportsBlursOnWindows() ||
+                ((Flags.notificationShadeBlur() || Flags.bouncerUiRevamp()) &&
+                        supportsBlursOnWindowsBase() &&
+                        lastAppliedBlur > 0 &&
+                        radius == 0)
+    }
+
     /**
      * If this device can render blurs.
      *
@@ -149,8 +157,11 @@ open class BlurUtils @Inject constructor(
      * @return {@code true} when supported.
      */
     open fun supportsBlursOnWindows(): Boolean {
+        return supportsBlursOnWindowsBase() && crossWindowBlurListeners.isCrossWindowBlurEnabled
+    }
+
+    private fun supportsBlursOnWindowsBase(): Boolean {
         return CROSS_WINDOW_BLUR_SUPPORTED && ActivityManager.isHighEndGfx() &&
-                crossWindowBlurListeners.isCrossWindowBlurEnabled() &&
                 !SystemProperties.getBoolean("persist.sysui.disableBlur", false)
     }
 
