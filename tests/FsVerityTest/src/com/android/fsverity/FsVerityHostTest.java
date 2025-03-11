@@ -18,11 +18,7 @@ package com.android.fsverity;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.annotations.RootPermissionTest;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.host.HostFlagsValueProvider;
-import android.security.Flags;
 
 import com.android.blockdevicewriter.BlockDeviceWriter;
 import com.android.tradefed.device.DeviceNotAvailableException;
@@ -31,7 +27,6 @@ import com.android.tradefed.testtype.DeviceJUnit4ClassRunner;
 import com.android.tradefed.testtype.junit4.BaseHostJUnit4Test;
 import com.android.tradefed.testtype.junit4.DeviceTestRunOptions;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -48,15 +43,10 @@ import org.junit.runner.RunWith;
  */
 @RootPermissionTest
 @RunWith(DeviceJUnit4ClassRunner.class)
-@RequiresFlagsEnabled(Flags.FLAG_FSVERITY_API)
 public class FsVerityHostTest extends BaseHostJUnit4Test {
     private static final String TARGET_PACKAGE = "com.android.fsverity";
 
     private static final String BASENAME = "test.file";
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule =
-            HostFlagsValueProvider.createCheckFlagsRule(this::getDevice);
 
     @Test
     public void testFsVeritySmallFile() throws Exception {
