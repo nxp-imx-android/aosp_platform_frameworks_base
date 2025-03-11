@@ -168,6 +168,12 @@ public final class WallpaperDescription implements Parcelable {
         return mSampleSize;
     }
 
+    @Override
+    public String toString() {
+        String component = (mComponent != null) ? mComponent.toString() : "{null}";
+        return  component + ":" + mId;
+    }
+
     ////// Comparison overrides
 
     @Override
