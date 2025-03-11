@@ -42,6 +42,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -87,7 +88,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptWithPermission_onlyTransparentActivitiesInStack() {
-        allowOverlayPermission(arrayOf(SYSTEM_ALERT_WINDOW))
+        allowOverlayPermissionForAllUsers(arrayOf(SYSTEM_ALERT_WINDOW))
         assertTrue(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
@@ -101,7 +102,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptWithNoPermission_onlyTransparentActivitiesInStack() {
-        allowOverlayPermission(arrayOf())
+        allowOverlayPermissionForAllUsers(arrayOf())
         assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
@@ -115,7 +116,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MODALS_FULLSCREEN_WITH_PERMISSION)
     fun testIsTopActivityExemptCachedPermissionCheckIsUsed() {
-        allowOverlayPermission(arrayOf())
+        allowOverlayPermissionForAllUsers(arrayOf())
         assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
                 .apply {
@@ -123,6 +124,7 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                     isTopActivityNoDisplay = false
                     numActivities = 1
                     baseActivity = baseActivityTest
+                    userId = 10
                 }))
         assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
             createFreeformTask(/* displayId */ 0)
@@ -131,10 +133,26 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
                     isTopActivityNoDisplay = false
                     numActivities = 1
                     baseActivity = baseActivityTest
+                    userId = 10
                 }))
-        verify(packageManager, times(1)).getPackageInfo(
+        assertFalse(desktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+            createFreeformTask(/* displayId */ 0)
+                .apply {
+                    isActivityStackTransparent = true
+                    isTopActivityNoDisplay = false
+                    numActivities = 1
+                    baseActivity = baseActivityTest
+                    userId = 0
+                }))
+        verify(packageManager, times(1)).getPackageInfoAsUser(
             eq("com.test.dummypackage"),
-            eq(PackageManager.GET_PERMISSIONS)
+            eq(PackageManager.GET_PERMISSIONS),
+            eq(10)
+        )
+        verify(packageManager, times(1)).getPackageInfoAsUser(
+            eq("com.test.dummypackage"),
+            eq(PackageManager.GET_PERMISSIONS),
+            eq(0)
         )
     }
 
@@ -284,13 +302,14 @@ class DesktopModeCompatPolicyTest : ShellTestCase() {
             }
         }
 
-    fun allowOverlayPermission(permissions: Array<String>) {
+    fun allowOverlayPermissionForAllUsers(permissions: Array<String>) {
         val packageInfo = mock<PackageInfo>()
         packageInfo.requestedPermissions = permissions
         whenever(
-            packageManager.getPackageInfo(
+            packageManager.getPackageInfoAsUser(
                 anyString(),
-                eq(PackageManager.GET_PERMISSIONS)
+                eq(PackageManager.GET_PERMISSIONS),
+                anyInt(),
             )
         ).thenReturn(packageInfo)
     }
