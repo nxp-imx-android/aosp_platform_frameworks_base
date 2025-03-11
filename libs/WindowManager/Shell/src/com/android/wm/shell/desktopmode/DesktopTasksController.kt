@@ -886,6 +886,9 @@ class DesktopTasksController(
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
             desktopExitRunnable?.invoke(transition)
         }
+        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
+            doesAnyTaskRequireTaskbarRounding(displayId, taskId)
+        )
     }
 
     /** Move a task with given `taskId` to fullscreen */

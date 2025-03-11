@@ -3540,6 +3540,19 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    fun onPipTaskMinimize_autoEnterEnabled_sendsTaskbarRoundingUpdate() {
+        val task = setUpPipTask(autoEnterEnabled = true)
+        val handler = mock(TransitionHandler::class.java)
+        whenever(transitions.dispatchRequest(any(), any(), anyOrNull()))
+            .thenReturn(android.util.Pair(handler, WindowContainerTransaction()))
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
@@ -3838,6 +3851,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
 
         verify(snapEventHandler).removeTaskIfTiled(eq(DEFAULT_DISPLAY), eq(task.taskId))
+    }
+
+    @Test
+    fun onDesktopWindowMinimize_sendsTaskbarRoundingUpdate() {
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        val transition = Binder()
+        whenever(
+                freeformTaskTransitionStarter.startMinimizedModeTransition(
+                    any(),
+                    anyInt(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn(transition)
+
+        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+
+        verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
     }
 
     @Test
