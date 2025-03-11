@@ -20,13 +20,10 @@ import android.util.Log
 import android.view.Display
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.traceSection
-import com.android.systemui.Dumpable
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.dump.DumpManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import java.io.PrintWriter
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
@@ -88,6 +85,20 @@ interface PerDisplayRepository<T> {
 
     /** Debug name for this repository, mainly for tracing and logging. */
     val debugName: String
+
+    /**
+     * Callback to run when a given repository is initialized.
+     *
+     * This allows the caller to perform custom logic when the repository is ready to be used, e.g.
+     * register to dumpManager.
+     *
+     * Note that the instance is *leaked* outside of this class, so it should only be done when
+     * repository is meant to live as long as the caller. In systemUI this is ok because the
+     * repository lives as long as the process itself.
+     */
+    interface InitCallback {
+        fun onInit(debugName: String, instance: Any)
+    }
 }
 
 /**
@@ -110,8 +121,8 @@ constructor(
     @Assisted private val instanceProvider: PerDisplayInstanceProvider<T>,
     @Background private val backgroundApplicationScope: CoroutineScope,
     private val displayRepository: DisplayRepository,
-    private val dumpManager: DumpManager,
-) : PerDisplayRepository<T>, Dumpable {
+    private val initCallback: PerDisplayRepository.InitCallback,
+) : PerDisplayRepository<T> {
 
     private val perDisplayInstances = ConcurrentHashMap<Int, T?>()
 
@@ -120,7 +131,7 @@ constructor(
     }
 
     private suspend fun start() {
-        dumpManager.registerNormalDumpable("PerDisplayRepository-${debugName}", this)
+        initCallback.onInit(debugName, this)
         displayRepository.displayIds.collectLatest { displayIds ->
             val toRemove = perDisplayInstances.keys - displayIds
             toRemove.forEach { displayId ->
@@ -169,8 +180,9 @@ constructor(
         private const val TAG = "PerDisplayInstanceRepo"
     }
 
-    override fun dump(pw: PrintWriter, args: Array<out String>) {
-        pw.println(perDisplayInstances)
+    override fun toString(): String {
+        return "PerDisplayInstanceRepositoryImpl(" +
+            "debugName='$debugName', instances=$perDisplayInstances)"
     }
 }
 
@@ -193,6 +205,7 @@ class DefaultDisplayOnlyInstanceRepositoryImpl<T>(
     private val lazyDefaultDisplayInstance by lazy {
         instanceProvider.createInstance(Display.DEFAULT_DISPLAY)
     }
+
     override fun get(displayId: Int): T? = lazyDefaultDisplayInstance
 }
 

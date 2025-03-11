@@ -31,7 +31,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.kotlin.eq
+import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
@@ -105,7 +105,7 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
 
     @Test
     fun start_registersDumpable() {
-        verify(kosmos.dumpManager).registerNormalDumpable(anyString(), eq(underTest))
+        verify(kosmos.dumpManager).registerNormalDumpable(anyString(), any())
     }
 
     private fun createDisplay(displayId: Int): Display =

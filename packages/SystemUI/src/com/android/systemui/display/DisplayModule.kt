@@ -33,6 +33,8 @@ import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepos
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepositoryImpl
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepositoryImpl
+import com.android.systemui.display.data.repository.PerDisplayRepoDumpHelper
+import com.android.systemui.display.data.repository.PerDisplayRepository
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractorImpl
 import com.android.systemui.display.domain.interactor.DisplayWindowPropertiesInteractorModule
@@ -79,6 +81,9 @@ interface DisplayModule {
     fun displayWindowPropertiesRepository(
         impl: DisplayWindowPropertiesRepositoryImpl
     ): DisplayWindowPropertiesRepository
+
+    @Binds
+    fun dumpRegistrationLambda(helper: PerDisplayRepoDumpHelper): PerDisplayRepository.InitCallback
 
     companion object {
         @Provides
