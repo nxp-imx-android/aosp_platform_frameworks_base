@@ -226,6 +226,10 @@ constructor(
         }
 
     fun handleFidgetTap(x: Float, y: Float) {
+        if (!com.android.systemui.Flags.clockFidgetAnimation()) {
+            return
+        }
+
         if (selectedClockSize.value == ClockSizeSetting.DYNAMIC) {
             clockEventController.handleFidgetTap(x, y)
         } else {
