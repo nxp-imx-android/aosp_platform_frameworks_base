@@ -192,3 +192,14 @@ flag {
     description: "Metrics for Activity Embedding usage in WM Extensions"
     bug: "399465821"
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "enable_window_context_override_type"
+    description: "Enable WindowContext to attach parent window and override window type"
+    bug: "398759994"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

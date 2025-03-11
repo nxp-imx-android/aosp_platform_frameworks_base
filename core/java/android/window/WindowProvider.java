@@ -15,6 +15,9 @@
  */
 package android.window;
 
+import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
+import static android.view.WindowManager.LayoutParams.isSubWindowType;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Bundle;
@@ -45,4 +48,28 @@ public interface WindowProvider {
      */
     @NonNull
     IBinder getWindowContextToken();
+
+    /**
+     * Gets the window type to be overridden when {@link android.view.WindowManager#addView}
+     */
+    @WindowType
+    default int getWindowTypeOverride() {
+        return INVALID_WINDOW_TYPE;
+    }
+
+    /**
+     * Returns {@code true} if the given type is a valid window type for this
+     * {@link WindowProvider}.
+     *
+     * @param type the requested window type
+     */
+    default boolean isValidWindowType(@WindowType int type) {
+        if (type == getWindowType()) {
+            // Valid. The requested window type is the type of WindowContext.
+            return true;
+        }
+        // Don't need to check sub-window type because sub window should be allowed to be attached
+        // to the parent window.
+        return isSubWindowType(type);
+    }
 }
