@@ -286,7 +286,7 @@ public final class Display {
     /**
      * Display flag: Indicates that the display should show system decorations.
      * <p>
-     * This flag identifies secondary displays that should show system decorations, such as
+     * This flag identifies secondary displays that should always show system decorations, such as
      * navigation bar, home activity or wallpaper.
      * </p>
      * <p>Note that this flag doesn't work without {@link #FLAG_TRUSTED}</p>
@@ -399,6 +399,18 @@ public final class Display {
      * @hide
      */
     public static final int FLAG_ROTATES_WITH_CONTENT = 1 << 14;
+
+    /**
+     * Display flag: Indicates that the display is allowed to switch the content mode between
+     * projected/extended and mirroring. This allows the display to dynamically add or remove the
+     * home and system decorations.
+     *
+     * Note that this flag shouldn't be enabled with {@link #FLAG_PRIVATE} or
+     * {@link #FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS} at the same time; otherwise it will be ignored.
+     *
+     * @hide
+     */
+    public static final int FLAG_ALLOWS_CONTENT_MODE_SWITCH = 1 << 15;
 
     /**
      * Display flag: Indicates that the contents of the display should not be scaled

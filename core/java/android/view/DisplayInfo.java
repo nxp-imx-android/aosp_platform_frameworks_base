@@ -1125,6 +1125,9 @@ public final class DisplayInfo implements Parcelable {
         if ((flags & Display.FLAG_REAR) != 0) {
             result.append(", FLAG_REAR_DISPLAY");
         }
+        if ((flags & Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH) != 0) {
+            result.append(", FLAG_ALLOWS_CONTENT_MODE_SWITCH");
+        }
         return result.toString();
     }
 }

@@ -15522,7 +15522,8 @@ public final class Settings {
          * <ul>
          * <li><pre>secure</pre>: creates a secure display</li>
          * <li><pre>own_content_only</pre>: only shows this display's own content</li>
-         * <li><pre>should_show_system_decorations</pre>: supports system decorations</li>
+         * <li><pre>should_show_system_decorations</pre>: always shows system decorations</li>
+         * <li><pre>fixed_content_mode</pre>: does not allow the content mode switch</li>
          * </ul>
          * </p><p>
          * Example:
