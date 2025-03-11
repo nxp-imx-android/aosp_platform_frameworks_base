@@ -65,9 +65,6 @@ public class WindowAnimator {
     /** Time of current animation step. Reset on each iteration */
     long mCurrentTime;
 
-    int mBulkUpdateParams = 0;
-    Object mLastWindowFreezeSource;
-
     private boolean mInitialized = false;
 
     private Choreographer mChoreographer;
@@ -145,7 +142,6 @@ public class WindowAnimator {
         final int animationFlags = useShellTransition ? CHILDREN : (TRANSITION | CHILDREN);
         boolean rootAnimating = false;
         mCurrentTime = frameTimeNs / TimeUtils.NANOS_PER_MS;
-        mBulkUpdateParams = 0;
         if (DEBUG_WINDOW_TRACE) {
             Slog.i(TAG, "!!! animate: entry time=" + mCurrentTime);
         }
@@ -202,8 +198,7 @@ public class WindowAnimator {
         }
 
         final boolean hasPendingLayoutChanges = root.hasPendingLayoutChanges(this);
-        final boolean doRequest = mBulkUpdateParams != 0 && root.copyAnimToLayoutParams();
-        if (hasPendingLayoutChanges || doRequest) {
+        if (hasPendingLayoutChanges) {
             mService.mWindowPlacerLocked.requestTraversal();
         }
 
@@ -245,7 +240,6 @@ public class WindowAnimator {
 
         if (DEBUG_WINDOW_TRACE) {
             Slog.i(TAG, "!!! animate: exit"
-                    + " mBulkUpdateParams=" + Integer.toHexString(mBulkUpdateParams)
                     + " hasPendingLayoutChanges=" + hasPendingLayoutChanges);
         }
     }
@@ -265,17 +259,6 @@ public class WindowAnimator {
         mRunningExpensiveAnimations = runningExpensiveAnimations;
     }
 
-    private static String bulkUpdateParamsToString(int bulkUpdateParams) {
-        StringBuilder builder = new StringBuilder(128);
-        if ((bulkUpdateParams & WindowSurfacePlacer.SET_UPDATE_ROTATION) != 0) {
-            builder.append(" UPDATE_ROTATION");
-        }
-        if ((bulkUpdateParams & WindowSurfacePlacer.SET_WALLPAPER_ACTION_PENDING) != 0) {
-            builder.append(" SET_WALLPAPER_ACTION_PENDING");
-        }
-        return builder.toString();
-    }
-
     public void dumpLocked(PrintWriter pw, String prefix, boolean dumpAll) {
         final String subPrefix = "  " + prefix;
 
@@ -291,11 +274,6 @@ public class WindowAnimator {
         if (dumpAll) {
             pw.print(prefix); pw.print("mCurrentTime=");
                     pw.println(TimeUtils.formatUptime(mCurrentTime));
-        }
-        if (mBulkUpdateParams != 0) {
-            pw.print(prefix); pw.print("mBulkUpdateParams=0x");
-                    pw.print(Integer.toHexString(mBulkUpdateParams));
-                    pw.println(bulkUpdateParamsToString(mBulkUpdateParams));
         }
     }
 
