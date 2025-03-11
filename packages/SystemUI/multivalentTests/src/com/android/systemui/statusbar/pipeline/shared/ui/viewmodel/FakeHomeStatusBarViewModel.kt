@@ -54,9 +54,7 @@ class FakeHomeStatusBarViewModel(
         MutableStateFlow(OngoingActivityChipModel.Inactive())
 
     override val ongoingActivityChips =
-        MutableStateFlow(
-            ChipsVisibilityModel(MultipleOngoingActivityChipsModel(), areChipsAllowed = false)
-        )
+        ChipsVisibilityModel(MultipleOngoingActivityChipsModel(), areChipsAllowed = false)
 
     override val ongoingActivityChipsLegacy =
         MutableStateFlow(MultipleOngoingActivityChipsModelLegacy())
