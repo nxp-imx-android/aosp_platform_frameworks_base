@@ -16,6 +16,7 @@
 
 package com.android.wallpaperbackup;
 
+import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
@@ -27,6 +28,8 @@ import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_INELIGIBLE;
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_NO_METADATA;
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_NO_WALLPAPER;
 import static com.android.wallpaperbackup.WallpaperEventLogger.ERROR_QUOTA_EXCEEDED;
+import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_DESCRIPTION_LOCK;
+import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_DESCRIPTION_SYSTEM;
 import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_IMG_LOCK;
 import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_IMG_SYSTEM;
 import static com.android.wallpaperbackup.WallpaperEventLogger.WALLPAPER_LIVE_LOCK;
@@ -54,6 +57,7 @@ import android.app.backup.BackupManager;
 import android.app.backup.BackupRestoreEventLogger;
 import android.app.backup.BackupRestoreEventLogger.DataTypeResult;
 import android.app.backup.FullBackupDataOutput;
+import android.app.wallpaper.WallpaperDescription;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -63,7 +67,10 @@ import android.graphics.Rect;
 import android.os.FileUtils;
 import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.wallpaper.WallpaperService;
+import android.util.Pair;
 import android.util.SparseArray;
 import android.util.Xml;
 
@@ -79,6 +86,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
@@ -113,12 +121,15 @@ public class WallpaperBackupAgentTest {
     @Mock
     private BackupManager mBackupManager;
 
-    @Rule
-    public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
-
     private ContextWithServiceOverrides mContext;
     private IsolatedWallpaperBackupAgent mWallpaperBackupAgent;
     private ComponentName mWallpaperComponent;
+    private WallpaperDescription mWallpaperDescription;
+
+    private final TemporaryFolder mTemporaryFolder = new TemporaryFolder();
+
+    @Rule
+    public RuleChain mRuleChain = RuleChain.outerRule(new SetFlagsRule()).around(mTemporaryFolder);
 
     @Before
     public void setUp() {
@@ -135,6 +146,8 @@ public class WallpaperBackupAgentTest {
                 BackupAnnotations.OperationType.BACKUP);
 
         mWallpaperComponent = new ComponentName(TEST_WALLPAPER_PACKAGE, "");
+        mWallpaperDescription = new WallpaperDescription.Builder().setComponent(
+                mWallpaperComponent).setId("id").build();
     }
 
     @After
@@ -369,7 +382,7 @@ public class WallpaperBackupAgentTest {
     public void testUpdateWallpaperComponent_immediate_systemAndLock() throws IOException {
         mWallpaperBackupAgent.mPackageExists = true;
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM);
 
         assertThat(mWallpaperBackupAgent.mGetPackageMonitorCallCount).isEqualTo(0);
@@ -387,7 +400,7 @@ public class WallpaperBackupAgentTest {
             throws IOException {
         mWallpaperBackupAgent.mPackageExists = true;
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_SYSTEM);
 
         assertThat(mWallpaperBackupAgent.mGetPackageMonitorCallCount).isEqualTo(0);
@@ -401,10 +414,92 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
+    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
+    public void testUpdateWallpaperDescription_immediate_systemAndLock()
+            throws IOException {
+        mWallpaperBackupAgent.mPackageExists = true;
+
+        mWallpaperBackupAgent.updateWallpaperComponent(
+                new Pair<>(mWallpaperComponent, mWallpaperDescription), /* which */
+                FLAG_LOCK | FLAG_SYSTEM);
+
+        verify(mWallpaperManager, times(1))
+                .setWallpaperComponentWithDescription(mWallpaperDescription,
+                        FLAG_LOCK | FLAG_SYSTEM);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_SYSTEM);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_LOCK);
+        verify(mWallpaperManager, never()).clear(anyInt());
+    }
+
+    @Test
+    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
+    public void testUpdateWallpaperDescription_immediate_systemOnly() throws IOException {
+        mWallpaperBackupAgent.mPackageExists = true;
+
+        mWallpaperBackupAgent.updateWallpaperComponent(
+                new Pair<>(mWallpaperComponent, mWallpaperDescription), /* which */ FLAG_SYSTEM);
+
+        verify(mWallpaperManager, times(1))
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_SYSTEM);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_LOCK);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription,
+                        FLAG_LOCK | FLAG_SYSTEM);
+        verify(mWallpaperManager, never()).clear(anyInt());
+    }
+
+    @Test
+    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
+    public void testUpdateWallpaperDescription_delayed_systemAndLock()
+            throws IOException {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+        mWallpaperBackupAgent.updateWallpaperComponent(
+                new Pair<>(mWallpaperComponent, mWallpaperDescription), /* which */
+                FLAG_LOCK | FLAG_SYSTEM);
+
+        // Imitate wallpaper component installation.
+        mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
+                /* uid */0);
+        verify(mWallpaperManager, times(1))
+                .setWallpaperComponentWithDescription(mWallpaperDescription,
+                        FLAG_LOCK | FLAG_SYSTEM);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_SYSTEM);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_LOCK);
+        verify(mWallpaperManager, never()).clear(anyInt());
+    }
+
+    @Test
+    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
+    public void testUpdateWallpaperDescription_delayed_systemOnly() throws IOException {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+
+        mWallpaperBackupAgent.updateWallpaperComponent(
+                new Pair<>(mWallpaperComponent, mWallpaperDescription), /* which */ FLAG_SYSTEM);
+
+        // Imitate wallpaper component installation.
+        mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
+                /* uid */0);
+
+        verify(mWallpaperManager, times(1))
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_SYSTEM);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription, FLAG_LOCK);
+        verify(mWallpaperManager, never())
+                .setWallpaperComponentWithDescription(mWallpaperDescription,
+                        FLAG_LOCK | FLAG_SYSTEM);
+        verify(mWallpaperManager, never()).clear(anyInt());
+    }
+
+    @Test
     public void testUpdateWallpaperComponent_delayed_systemAndLock() throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM);
         // Imitate wallpaper component installation.
         mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
@@ -423,7 +518,7 @@ public class WallpaperBackupAgentTest {
             throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_SYSTEM);
         // Imitate wallpaper component installation.
         mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
@@ -443,7 +538,7 @@ public class WallpaperBackupAgentTest {
             throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = false;
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM);
 
         // Imitate wallpaper component installation.
@@ -459,7 +554,7 @@ public class WallpaperBackupAgentTest {
             throws IOException {
         mWallpaperBackupAgent.mIsDeviceInRestore = false;
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM);
 
         // Imitate "wrong" wallpaper component installation.
@@ -788,7 +883,7 @@ public class WallpaperBackupAgentTest {
         when(mBackupManager.getDelayedRestoreLogger()).thenReturn(logger);
         mWallpaperBackupAgent.setBackupManagerForTesting(mBackupManager);
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM);
         // Imitate wallpaper component installation.
         mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
@@ -804,6 +899,33 @@ public class WallpaperBackupAgentTest {
 
 
     @Test
+    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
+    public void testUpdateWallpaperDescription_delayed_succeeds_logsSuccess() throws Exception {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+        when(mWallpaperManager.setWallpaperComponentWithDescription(any(),
+                eq(FLAG_LOCK | FLAG_SYSTEM))).thenReturn(true);
+        BackupRestoreEventLogger logger = new BackupRestoreEventLogger(
+                BackupAnnotations.OperationType.RESTORE);
+        when(mBackupManager.getDelayedRestoreLogger()).thenReturn(logger);
+        mWallpaperBackupAgent.setBackupManagerForTesting(mBackupManager);
+
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(null, mWallpaperDescription),
+                /* which */ FLAG_LOCK | FLAG_SYSTEM);
+        // Imitate wallpaper component installation.
+        mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
+                /* uid */0);
+
+        DataTypeResult system = getLoggingResult(WALLPAPER_DESCRIPTION_SYSTEM,
+                logger.getLoggingResults());
+        DataTypeResult lock = getLoggingResult(WALLPAPER_DESCRIPTION_LOCK,
+                logger.getLoggingResults());
+        assertThat(system).isNotNull();
+        assertThat(system.getSuccessCount()).isEqualTo(1);
+        assertThat(lock).isNotNull();
+        assertThat(lock.getSuccessCount()).isEqualTo(1);
+    }
+
+    @Test
     public void testUpdateWallpaperComponent_delayed_fails_logsFailure() throws Exception {
         mWallpaperBackupAgent.mIsDeviceInRestore = true;
         BackupRestoreEventLogger logger = new BackupRestoreEventLogger(
@@ -811,7 +933,7 @@ public class WallpaperBackupAgentTest {
         when(mBackupManager.getDelayedRestoreLogger()).thenReturn(logger);
         mWallpaperBackupAgent.setBackupManagerForTesting(mBackupManager);
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM);
         // Imitate wallpaper component installation.
         mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
@@ -825,6 +947,28 @@ public class WallpaperBackupAgentTest {
     }
 
     @Test
+    @EnableFlags(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
+    public void testUpdateWallpaperDescription_delayed_fails_logsFailure() throws Exception {
+        mWallpaperBackupAgent.mIsDeviceInRestore = true;
+        BackupRestoreEventLogger logger = new BackupRestoreEventLogger(
+                BackupAnnotations.OperationType.RESTORE);
+        when(mBackupManager.getDelayedRestoreLogger()).thenReturn(logger);
+        mWallpaperBackupAgent.setBackupManagerForTesting(mBackupManager);
+
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(null, mWallpaperDescription),
+                /* which */ FLAG_LOCK | FLAG_SYSTEM);
+        // Imitate wallpaper component installation.
+        mWallpaperBackupAgent.mWallpaperPackageMonitor.onPackageAdded(TEST_WALLPAPER_PACKAGE,
+                /* uid */0);
+
+        DataTypeResult system = getLoggingResult(WALLPAPER_LIVE_SYSTEM, logger.getLoggingResults());
+        assertThat(system).isNotNull();
+        assertThat(system.getFailCount()).isEqualTo(1);
+        assertThat(system.getErrors()).containsKey(
+                WallpaperEventLogger.ERROR_SET_DESCRIPTION_EXCEPTION);
+    }
+
+    @Test
     public void testUpdateWallpaperComponent_delayed_packageNotInstalled_logsFailure()
             throws Exception {
         mWallpaperBackupAgent.mIsDeviceInRestore = false;
@@ -833,7 +977,7 @@ public class WallpaperBackupAgentTest {
         when(mBackupManager.getDelayedRestoreLogger()).thenReturn(logger);
         mWallpaperBackupAgent.setBackupManagerForTesting(mBackupManager);
 
-        mWallpaperBackupAgent.updateWallpaperComponent(mWallpaperComponent,
+        mWallpaperBackupAgent.updateWallpaperComponent(new Pair<>(mWallpaperComponent, null),
                 /* which */ FLAG_LOCK | FLAG_SYSTEM);
 
         // Imitate wallpaper component installation.
@@ -1041,9 +1185,11 @@ public class WallpaperBackupAgentTest {
         }
 
         @Override
-        PackageMonitor getWallpaperPackageMonitor(ComponentName componentName, int which) {
+        PackageMonitor getWallpaperPackageMonitor(ComponentName componentName,
+                WallpaperDescription description, int which) {
             mGetPackageMonitorCallCount++;
-            mWallpaperPackageMonitor = super.getWallpaperPackageMonitor(componentName, which);
+            mWallpaperPackageMonitor = super.getWallpaperPackageMonitor(componentName, description,
+                    which);
             return mWallpaperPackageMonitor;
         }
 
