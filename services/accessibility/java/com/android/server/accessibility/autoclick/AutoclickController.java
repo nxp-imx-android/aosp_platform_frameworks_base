@@ -24,6 +24,7 @@ import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_M
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
 
 import static com.android.server.accessibility.autoclick.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_DOUBLE_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL;
@@ -45,6 +46,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
+import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
 import androidx.annotation.VisibleForTesting;
@@ -799,7 +801,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             final long now = SystemClock.uptimeMillis();
 
-            int actionButton;
+            int actionButton = BUTTON_PRIMARY;
             if (mHoveredState) {
                 // Always triggers left-click when the cursor hovers over the autoclick type
                 // panel, to always allow users to change a different click type. Otherwise, if
@@ -807,15 +809,32 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 // select other click types.
                 actionButton = BUTTON_PRIMARY;
             } else {
-                actionButton = mActiveClickType == AUTOCLICK_TYPE_RIGHT_CLICK
-                        ? BUTTON_SECONDARY
-                        : BUTTON_PRIMARY;
+                switch (mActiveClickType) {
+                    case AUTOCLICK_TYPE_LEFT_CLICK:
+                        actionButton = BUTTON_PRIMARY;
+                        break;
+                    case AUTOCLICK_TYPE_RIGHT_CLICK:
+                        actionButton = BUTTON_SECONDARY;
+                        break;
+                    case AUTOCLICK_TYPE_DOUBLE_CLICK:
+                        actionButton = BUTTON_PRIMARY;
+                        long doubleTapMinimumTimeout = ViewConfiguration.getDoubleTapMinTime();
+                        sendMotionEvent(actionButton, now);
+                        sendMotionEvent(actionButton, now + doubleTapMinimumTimeout);
+                        return;
+                    default:
+                        break;
+                }
             }
 
+            sendMotionEvent(actionButton, now);
+        }
+
+        private void sendMotionEvent(int actionButton, long eventTime) {
             MotionEvent downEvent =
                     MotionEvent.obtain(
-                            /* downTime= */ now,
-                            /* eventTime= */ now,
+                            /* downTime= */ eventTime,
+                            /* eventTime= */ eventTime,
                             MotionEvent.ACTION_DOWN,
                             /* pointerCount= */ 1,
                             mTempPointerProperties,
