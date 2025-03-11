@@ -1068,7 +1068,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         AppOpsManager.disableAppOpModeCache();
 
         if (Flags.enableAllSqliteAppopsAccesses()) {
-            mHistoricalRegistry = new HistoricalRegistrySql(context);
+            mHistoricalRegistry = new HistoricalRegistry(context);
         } else {
             mHistoricalRegistry = new LegacyHistoricalRegistry(this, context);
         }
@@ -6118,6 +6118,8 @@ public class AppOpsService extends IAppOpsService.Stub {
         pw.println("    Limit output to data associated with the given attribution tag.");
         pw.println("  --include-discrete [n]");
         pw.println("    Include discrete ops limited to n per dimension. Use zero for no limit.");
+        pw.println("  --history-limit [n]");
+        pw.println("    Include app ops limited to n recent records. Use zero for no limit.");
         pw.println("  --watchers");
         pw.println("    Only output the watcher sections.");
         pw.println("  --history");
@@ -6266,11 +6268,10 @@ public class AppOpsService extends IAppOpsService.Stub {
         int dumpUid = Process.INVALID_UID;
         int dumpMode = -1;
         boolean dumpWatchers = false;
-        // TODO ntmyren: Remove the dumpHistory and dumpFilter
         boolean dumpHistory = false;
         boolean includeDiscreteOps = false;
         boolean dumpUidStateChangeLogs = false;
-        int nDiscreteOps = 10;
+        int historyLimit = 10;
         @HistoricalOpsRequestFilter int dumpFilter = 0;
         boolean dumpAll = false;
 
@@ -6341,7 +6342,20 @@ public class AppOpsService extends IAppOpsService.Stub {
                         return;
                     }
                     try {
-                        nDiscreteOps = Integer.valueOf(args[i]);
+                        historyLimit = Integer.valueOf(args[i]);
+                    } catch (NumberFormatException e) {
+                        pw.println("Wrong parameter: " + args[i]);
+                        return;
+                    }
+                    includeDiscreteOps = true;
+                } else if ("--history-limit".equals(arg)) {
+                    i++;
+                    if (i >= args.length) {
+                        pw.println("No argument for --history-limit option");
+                        return;
+                    }
+                    try {
+                        historyLimit = Integer.valueOf(args[i]);
                     } catch (NumberFormatException e) {
                         pw.println("Wrong parameter: " + args[i]);
                         return;
@@ -6748,15 +6762,22 @@ public class AppOpsService extends IAppOpsService.Stub {
             }
         }
 
-        // Must not hold the appops lock
-        if (dumpHistory && !dumpWatchers) {
-            mHistoricalRegistry.dump("  ", pw, dumpUid, dumpPackage, dumpAttributionTag, dumpOp,
-                    dumpFilter);
-        }
-        if (includeDiscreteOps) {
-            pw.println("Discrete accesses: ");
-            mHistoricalRegistry.dumpDiscreteData(pw, dumpUid, dumpPackage, dumpAttributionTag,
-                    dumpFilter, dumpOp, sdf, date, "  ", nDiscreteOps);
+        if (Flags.enableAllSqliteAppopsAccesses()) {
+            if (dumpHistory && !dumpWatchers) {
+                mHistoricalRegistry.dump("  ", pw, dumpUid, dumpPackage, dumpAttributionTag,
+                        dumpOp, dumpFilter, sdf, date, includeDiscreteOps, historyLimit);
+            }
+        } else {
+            // Must not hold the appops lock
+            if (dumpHistory && !dumpWatchers) {
+                mHistoricalRegistry.dumpAggregatedData("  ", pw, dumpUid, dumpPackage,
+                        dumpAttributionTag, dumpOp, dumpFilter, sdf, date);
+            }
+            if (includeDiscreteOps) {
+                pw.println("Discrete accesses: ");
+                mHistoricalRegistry.dumpDiscreteData(pw, dumpUid, dumpPackage, dumpAttributionTag,
+                        dumpFilter, dumpOp, sdf, date, "  ", historyLimit);
+            }
         }
     }
 
@@ -7053,8 +7074,8 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
 
         if (Flags.enableAllSqliteAppopsAccesses()) {
-            mHistoricalRegistry = new HistoricalRegistrySql(
-                    (HistoricalRegistrySql) mHistoricalRegistry);
+            mHistoricalRegistry = new HistoricalRegistry(
+                    (HistoricalRegistry) mHistoricalRegistry);
         } else {
             mHistoricalRegistry = new LegacyHistoricalRegistry(
                     (LegacyHistoricalRegistry) mHistoricalRegistry);

@@ -258,19 +258,32 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                 }
             }
         }
+
         if (Flags.enableSqliteAppopsAccesses()) {
+            DiscreteOpsSqlRegistry sqlRegistry = (DiscreteOpsSqlRegistry) mDiscreteRegistry;
             if (DiscreteOpsXmlRegistry.getDiscreteOpsDir().exists()) {
-                DiscreteOpsSqlRegistry sqlRegistry = (DiscreteOpsSqlRegistry) mDiscreteRegistry;
                 DiscreteOpsXmlRegistry xmlRegistry = new DiscreteOpsXmlRegistry(mContext);
                 xmlRegistry.systemReady();
-                DiscreteOpsMigrationHelper.migrateDiscreteOpsToSqlite(xmlRegistry, sqlRegistry);
+                DiscreteOpsMigrationHelper.migrateFromXmlToSqlite(
+                        xmlRegistry, sqlRegistry);
+            } else if (HistoricalRegistry.getDiscreteOpsDatabaseFile().exists()) {
+                // roll back from unified schema sqlite to discrete ops sqlite.
+                AppOpHistoryHelper appOpHistoryHelper = new AppOpHistoryHelper(mContext,
+                        HistoricalRegistry.getDiscreteOpsDatabaseFile(),
+                        HistoricalRegistry.AggregationTimeWindow.SHORT,
+                        HistoricalRegistry.getDiscreteOpsDatabaseVersion());
+                appOpHistoryHelper.systemReady(
+                        HistoricalRegistry.getDiscreteOpsQuantizationMillis(),
+                        HistoricalRegistry.getAppOpsHistoryRetentionMillis());
+                DiscreteOpsMigrationHelper.rollbackFromUnifiedSchemaSqliteToSqlite(
+                        appOpHistoryHelper, sqlRegistry);
             }
         } else {
-            if (DiscreteOpsDbHelper.getDatabaseFile().exists()) { // roll-back sqlite
+            if (DiscreteOpsDbHelper.getDatabaseFile().exists()) { // roll-back sqlite to xml
                 DiscreteOpsSqlRegistry sqlRegistry = new DiscreteOpsSqlRegistry(mContext);
                 sqlRegistry.systemReady();
                 DiscreteOpsXmlRegistry xmlRegistry = (DiscreteOpsXmlRegistry) mDiscreteRegistry;
-                DiscreteOpsMigrationHelper.migrateDiscreteOpsToXml(sqlRegistry, xmlRegistry);
+                DiscreteOpsMigrationHelper.rollbackFromSqliteToXml(sqlRegistry, xmlRegistry);
             }
         }
     }
@@ -325,9 +338,10 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
 
 
     @Override
-    public void dump(String prefix, PrintWriter pw, int filterUid,
+    public void dumpAggregatedData(String prefix, PrintWriter pw, int filterUid,
             @Nullable String filterPackage, @Nullable String filterAttributionTag, int filterOp,
-            @HistoricalOpsRequestFilter int filter) {
+            @HistoricalOpsRequestFilter int filter,
+            @NonNull SimpleDateFormat sdf, @NonNull Date date) {
         synchronized (mOnDiskLock) {
             synchronized (mInMemoryLock) {
                 pw.println();
@@ -379,6 +393,15 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
             int nDiscreteOps) {
         mDiscreteRegistry.dump(pw, uidFilter, packageNameFilter, attributionTagFilter, filter,
                 dumpOp, sdf, date, prefix, nDiscreteOps);
+    }
+
+    @Override
+    public void dump(String prefix, PrintWriter pw, int filterUid,
+            @androidx.annotation.Nullable String filterPackage,
+            @androidx.annotation.Nullable String filterAttributionTag, int filterOp, int filter,
+            @androidx.annotation.NonNull SimpleDateFormat sdf,
+            @androidx.annotation.NonNull Date date, boolean includeDiscreteOps, int limit) {
+        // no-op, legacy registry dump discrete and aggregate data in separate methods.
     }
 
     @HistoricalMode int getMode() {
@@ -506,7 +529,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
             @NonNull String deviceId, @Nullable String attributionTag, @UidState int uidState,
             @OpFlags int flags, long accessTime,
             @AppOpsManager.AttributionFlags int attributionFlags, int attributionChainId,
-            int accessCount) {
+            int accessCount, boolean isStartOrResume) {
         synchronized (mInMemoryLock) {
             if (mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
                 if (!isPersistenceInitializedMLocked()) {
@@ -526,8 +549,8 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
 
     @Override
     public void incrementOpRejectedCount(int op, int uid, @NonNull String packageName,
-            @Nullable String attributionTag, @UidState int uidState, @OpFlags int flags,
-            int rejectCount) {
+            @NonNull String deviceId, @Nullable String attributionTag, @UidState int uidState,
+            @OpFlags int flags, long rejectTime, int rejectCount) {
         synchronized (mInMemoryLock) {
             if (mMode == AppOpsManager.HISTORICAL_MODE_ENABLED_ACTIVE) {
                 if (!isPersistenceInitializedMLocked()) {
@@ -535,7 +558,7 @@ final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
                     return;
                 }
                 getUpdatedPendingHistoricalOpsMLocked(
-                        System.currentTimeMillis()).increaseRejectCount(op, uid, packageName,
+                        rejectTime).increaseRejectCount(op, uid, packageName,
                         attributionTag, uidState, flags, rejectCount);
             }
         }
