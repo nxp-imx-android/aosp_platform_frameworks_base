@@ -68,6 +68,7 @@ class DesktopRepository(
      * @property topTransparentFullscreenTaskId the task id of any current top transparent
      *   fullscreen task launched on top of the desk. Cleared when the transparent task is closed or
      *   sent to back. (top is at index 0).
+     * @property pipTaskId the task id of PiP task entered while in Desktop Mode.
      */
     private data class Desk(
         val deskId: Int,
@@ -80,6 +81,7 @@ class DesktopRepository(
         val freeformTasksInZOrder: ArrayList<Int> = ArrayList(),
         var fullImmersiveTaskId: Int? = null,
         var topTransparentFullscreenTaskId: Int? = null,
+        var pipTaskId: Int? = null,
     ) {
         fun deepCopy(): Desk =
             Desk(
@@ -92,6 +94,7 @@ class DesktopRepository(
                 freeformTasksInZOrder = ArrayList(freeformTasksInZOrder),
                 fullImmersiveTaskId = fullImmersiveTaskId,
                 topTransparentFullscreenTaskId = topTransparentFullscreenTaskId,
+                pipTaskId = pipTaskId,
             )
 
         // TODO: b/362720497 - remove when multi-desktops is enabled where instances aren't
@@ -104,6 +107,7 @@ class DesktopRepository(
             freeformTasksInZOrder.clear()
             fullImmersiveTaskId = null
             topTransparentFullscreenTaskId = null
+            pipTaskId = null
         }
     }
 
@@ -122,6 +126,9 @@ class DesktopRepository(
 
     /* Tracks last bounds of task before toggled to immersive state. */
     private val boundsBeforeFullImmersiveByTaskId = SparseArray<Rect>()
+
+    /* Callback for when a pending PiP transition has been aborted. */
+    private var onPipAbortedCallback: ((Int, Int) -> Unit)? = null
 
     private var desktopGestureExclusionListener: Consumer<Region>? = null
     private var desktopGestureExclusionExecutor: Executor? = null
@@ -601,6 +608,57 @@ class DesktopRepository(
                 updatePersistentRepository(displayId)
             }
         }
+    }
+
+    /**
+     * Set whether the given task is the Desktop-entered PiP task in this display's active desk.
+     *
+     * TODO: b/389960283 - add explicit [deskId] argument.
+     */
+    fun setTaskInPip(displayId: Int, taskId: Int, enterPip: Boolean) {
+        val activeDesk =
+            desktopData.getActiveDesk(displayId)
+                ?: error("Expected active desk in display: $displayId")
+        if (enterPip) {
+            activeDesk.pipTaskId = taskId
+        } else {
+            activeDesk.pipTaskId =
+                if (activeDesk.pipTaskId == taskId) null
+                else {
+                    logW(
+                        "setTaskInPip: taskId=%d did not match saved taskId=%d",
+                        taskId,
+                        activeDesk.pipTaskId,
+                    )
+                    activeDesk.pipTaskId
+                }
+        }
+    }
+
+    /**
+     * Returns whether the given task is the Desktop-entered PiP task in this display's active desk.
+     *
+     * TODO: b/389960283 - add explicit [deskId] argument.
+     */
+    fun isTaskMinimizedPipInDisplay(displayId: Int, taskId: Int): Boolean =
+        desktopData.getActiveDesk(displayId)?.pipTaskId == taskId
+
+    /**
+     * Saves callback to handle a pending PiP transition being aborted.
+     *
+     * TODO: b/389960283 - add explicit [deskId] argument.
+     */
+    fun setOnPipAbortedCallback(callbackIfPipAborted: ((displayId: Int, pipTaskId: Int) -> Unit)?) {
+        onPipAbortedCallback = callbackIfPipAborted
+    }
+
+    /**
+     * Invokes callback to handle a pending PiP transition with the given task id being aborted.
+     *
+     * TODO: b/389960283 - add explicit [deskId] argument.
+     */
+    fun onPipAborted(displayId: Int, pipTaskId: Int) {
+        onPipAbortedCallback?.invoke(displayId, pipTaskId)
     }
 
     /**
