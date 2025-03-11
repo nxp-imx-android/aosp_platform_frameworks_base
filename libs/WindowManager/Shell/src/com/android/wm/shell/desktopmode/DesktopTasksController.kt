@@ -214,6 +214,7 @@ class DesktopTasksController(
     private val overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver,
     private val desksOrganizer: DesksOrganizer,
     private val desksTransitionObserver: DesksTransitionObserver,
+    private val desktopPipTransitionObserver: Optional<DesktopPipTransitionObserver>,
     private val userProfileContexts: UserProfileContexts,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
@@ -793,10 +794,31 @@ class DesktopTasksController(
 
     fun minimizeTask(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
         val wct = WindowContainerTransaction()
-
+        val taskId = taskInfo.taskId
+        val displayId = taskInfo.displayId
+        val deskId =
+            taskRepository.getDeskIdForTask(taskInfo.taskId)
+                ?: if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                    logW("minimizeTask: desk not found for task: ${taskInfo.taskId}")
+                    return
+                } else {
+                    getDefaultDeskId(taskInfo.displayId)
+                }
+        val isLastTask =
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                taskRepository.isOnlyVisibleNonClosingTaskInDesk(
+                    taskId = taskId,
+                    deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                    displayId = displayId,
+                )
+            } else {
+                taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
+            }
         val isMinimizingToPip =
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
-                (taskInfo.pictureInPictureParams?.isAutoEnterEnabled() ?: false)
+                desktopPipTransitionObserver.isPresent &&
+                (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
+
         // If task is going to PiP, start a PiP transition instead of a minimize transition
         if (isMinimizingToPip) {
             val requestInfo =
@@ -810,75 +832,60 @@ class DesktopTasksController(
                 )
             val requestRes = transitions.dispatchRequest(Binder(), requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
-            freeformTaskTransitionStarter.startPipTransition(wct)
-            taskRepository.setTaskInPip(taskInfo.displayId, taskInfo.taskId, enterPip = true)
-            taskRepository.setOnPipAbortedCallback { displayId, taskId ->
-                minimizeTaskInner(shellTaskOrganizer.getRunningTaskInfo(taskId)!!, minimizeReason)
-                taskRepository.setTaskInPip(displayId, taskId, enterPip = false)
-            }
-            return
-        }
 
-        minimizeTaskInner(taskInfo, minimizeReason)
-    }
-
-    private fun minimizeTaskInner(taskInfo: RunningTaskInfo, minimizeReason: MinimizeReason) {
-        val taskId = taskInfo.taskId
-        val deskId = taskRepository.getDeskIdForTask(taskInfo.taskId)
-        if (deskId == null && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            logW("minimizeTaskInner: desk not found for task: ${taskInfo.taskId}")
-            return
-        }
-        val displayId = taskInfo.displayId
-        val wct = WindowContainerTransaction()
-
-        snapEventHandler.removeTaskIfTiled(displayId, taskId)
-        val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
-        val desktopExitRunnable =
-            performDesktopExitCleanUp(
-                wct = wct,
-                deskId = deskId,
-                displayId = displayId,
-                willExitDesktop = willExitDesktop,
-            )
-        // Notify immersive handler as it might need to exit immersive state.
-        val exitResult =
-            desktopImmersiveController.exitImmersiveIfApplicable(
-                wct = wct,
-                taskInfo = taskInfo,
-                reason = DesktopImmersiveController.ExitReason.MINIMIZED,
-            )
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            desksOrganizer.minimizeTask(
-                wct = wct,
-                deskId = checkNotNull(deskId) { "Expected non-null deskId" },
-                task = taskInfo,
+            desktopPipTransitionObserver.get().addPendingPipTransition(
+                DesktopPipTransitionObserver.PendingPipTransition(
+                    token = freeformTaskTransitionStarter.startPipTransition(wct),
+                    taskId = taskInfo.taskId,
+                    onSuccess = {
+                        onDesktopTaskEnteredPip(
+                            taskId = taskId,
+                            deskId = deskId,
+                            displayId = taskInfo.displayId,
+                            taskIsLastVisibleTaskBeforePip = isLastTask,
+                        )
+                    },
+                )
             )
         } else {
-            wct.reorder(taskInfo.token, /* onTop= */ false)
-        }
-        val isLastTask =
-            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                taskRepository.isOnlyVisibleNonClosingTaskInDesk(
-                    taskId = taskId,
-                    deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+            snapEventHandler.removeTaskIfTiled(displayId, taskId)
+            val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
+            val desktopExitRunnable =
+                performDesktopExitCleanUp(
+                    wct = wct,
+                    deskId = deskId,
                     displayId = displayId,
+                    willExitDesktop = willExitDesktop,
+                )
+            // Notify immersive handler as it might need to exit immersive state.
+            val exitResult =
+                desktopImmersiveController.exitImmersiveIfApplicable(
+                    wct = wct,
+                    taskInfo = taskInfo,
+                    reason = DesktopImmersiveController.ExitReason.MINIMIZED,
+                )
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                desksOrganizer.minimizeTask(
+                    wct = wct,
+                    deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                    task = taskInfo,
                 )
             } else {
-                taskRepository.isOnlyVisibleNonClosingTask(taskId = taskId, displayId = displayId)
+                wct.reorder(taskInfo.token, /* onTop= */ false)
             }
-        val transition =
-            freeformTaskTransitionStarter.startMinimizedModeTransition(wct, taskId, isLastTask)
-        desktopTasksLimiter.ifPresent {
-            it.addPendingMinimizeChange(
-                transition = transition,
-                displayId = displayId,
-                taskId = taskId,
-                minimizeReason = minimizeReason,
-            )
+            val transition =
+                freeformTaskTransitionStarter.startMinimizedModeTransition(wct, taskId, isLastTask)
+            desktopTasksLimiter.ifPresent {
+                it.addPendingMinimizeChange(
+                    transition = transition,
+                    displayId = displayId,
+                    taskId = taskId,
+                    minimizeReason = minimizeReason,
+                )
+            }
+            exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
+            desktopExitRunnable?.invoke(transition)
         }
-        exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
-        desktopExitRunnable?.invoke(transition)
     }
 
     /** Move a task with given `taskId` to fullscreen */
@@ -1845,7 +1852,11 @@ class DesktopTasksController(
         displayId: Int,
         forceExitDesktop: Boolean,
     ): Boolean {
-        if (forceExitDesktop && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+        if (
+            forceExitDesktop &&
+                (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
+                    DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue)
+        ) {
             // |forceExitDesktop| is true when the callers knows we'll exit desktop, such as when
             // explicitly going fullscreen, so there's no point in checking the desktop state.
             return true
@@ -1860,6 +1871,33 @@ class DesktopTasksController(
             }
         }
         return true
+    }
+
+    /** Potentially perform Desktop cleanup after a task successfully enters PiP. */
+    @VisibleForTesting
+    fun onDesktopTaskEnteredPip(
+        taskId: Int,
+        deskId: Int,
+        displayId: Int,
+        taskIsLastVisibleTaskBeforePip: Boolean,
+    ) {
+        if (
+            !willExitDesktop(taskId, displayId, forceExitDesktop = taskIsLastVisibleTaskBeforePip)
+        ) {
+            return
+        }
+
+        val wct = WindowContainerTransaction()
+        val desktopExitRunnable =
+            performDesktopExitCleanUp(
+                wct = wct,
+                deskId = deskId,
+                displayId = displayId,
+                willExitDesktop = true,
+            )
+
+        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
+        desktopExitRunnable?.invoke(transition)
     }
 
     private fun performDesktopExitCleanupIfNeeded(
