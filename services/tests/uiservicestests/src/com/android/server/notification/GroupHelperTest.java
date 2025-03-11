@@ -60,7 +60,7 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.annotation.SuppressLint;
@@ -313,7 +313,7 @@ public class GroupHelperTest extends UiServiceTestCase {
                 getNotificationRecord(pkg, i, String.valueOf(i), UserHandle.SYSTEM),
                 false);
         }
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -327,7 +327,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         }
         mGroupHelper.onNotificationPosted(
             getNotificationRecord(pkg2, AUTOGROUP_AT_COUNT, "four", UserHandle.SYSTEM), false);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -340,7 +340,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         }
         mGroupHelper.onNotificationPosted(
             getNotificationRecord(pkg, AUTOGROUP_AT_COUNT, "four", UserHandle.of(7)), false);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -353,7 +353,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         mGroupHelper.onNotificationPosted(
             getNotificationRecord(pkg, AUTOGROUP_AT_COUNT, "four", UserHandle.SYSTEM, "a", false),
             false);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1744,7 +1744,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             notificationList.add(r);
             mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
         }
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1759,7 +1759,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             notificationList.add(r);
             mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
         }
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1775,7 +1775,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             notificationList.add(r);
             mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
         }
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1791,7 +1791,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             notificationList.add(r);
             mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
         }
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1811,7 +1811,7 @@ public class GroupHelperTest extends UiServiceTestCase {
                 String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.SYSTEM, "testGrp", true);
         notificationList.add(r);
         mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1830,7 +1830,7 @@ public class GroupHelperTest extends UiServiceTestCase {
                 String.valueOf(AUTOGROUP_AT_COUNT), UserHandle.of(7), "testGrp", true);
         notificationList.add(r);
         mGroupHelper.onNotificationPostedWithDelay(r, notificationList, summaryByGroup);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1853,7 +1853,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             String.valueOf(AUTOGROUP_AT_COUNT + 1), UserHandle.SYSTEM, "testGrp", false);
         notificationList.add(child);
         mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -1877,7 +1877,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         notificationList.add(child);
         summaryByGroup.put(summary.getGroupKey(), summary);
         mGroupHelper.onNotificationPostedWithDelay(child, notificationList, summaryByGroup);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -2209,7 +2209,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             childrenToRemove.add(child);
         }
         mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
 
         // Remove all child notifications from the valid group => summary without children
         Mockito.reset(mCallback);
@@ -2273,7 +2273,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             }
         }
         mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
 
         // Remove some child notifications from the valid group, transform into a singleton group
         Mockito.reset(mCallback);
@@ -2329,7 +2329,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             notificationList.add(child);
         }
         mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
 
         // Remove all child notifications from the valid group => summary without children
         Mockito.reset(mCallback);
@@ -2343,7 +2343,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         mGroupHelper.onGroupedNotificationRemovedWithDelay(summary, notificationList,
                 summaryByGroup);
         // Check that nothing was force grouped
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -3837,7 +3837,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             mGroupHelper.onNotificationPostedWithDelay(child, notificationList, summaryByGroup);
             mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
         }
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
 
@@ -3861,7 +3861,7 @@ public class GroupHelperTest extends UiServiceTestCase {
             mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
         }
         // FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS is disabled => don't force group
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test
@@ -4498,7 +4498,7 @@ public class GroupHelperTest extends UiServiceTestCase {
         mGroupHelper.onNotificationPostedWithDelay(extra, notifList, summaryByGroupKey);
 
         // no autogrouping should have occurred
-        verifyZeroInteractions(mCallback);
+        verifyNoMoreInteractions(mCallback);
     }
 
     @Test

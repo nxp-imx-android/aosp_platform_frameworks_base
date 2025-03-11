@@ -64,7 +64,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import android.accessibilityservice.AccessibilityService;
@@ -838,7 +837,7 @@ public class AbstractAccessibilityServiceConnectionTest {
         // ...without secure layers included
         assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isFalse();
         // No error sent to callback
-        verifyZeroInteractions(mMockCallback);
+        verifyNoMoreInteractions(mMockCallback);
     }
 
     @Test
@@ -856,7 +855,7 @@ public class AbstractAccessibilityServiceConnectionTest {
         // ...with secure layers included
         assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isTrue();
         // No error sent to callback
-        verifyZeroInteractions(mMockCallback);
+        verifyNoMoreInteractions(mMockCallback);
     }
 
     @Test
@@ -889,7 +888,7 @@ public class AbstractAccessibilityServiceConnectionTest {
         // ...with secure layers included
         assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isTrue();
         // No error sent to callback
-        verifyZeroInteractions(mMockCallback);
+        verifyNoMoreInteractions(mMockCallback);
     }
 
     private void takeScreenshotOfWindow(int windowFlags) throws Exception {

@@ -54,7 +54,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyZeroInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /**
@@ -111,7 +111,7 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
                 eq(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR),
             )
         // Assert fadeIn, fadeOut, and animateIndicatorType were not called.
-        verifyZeroInteractions(spyViewContainer)
+        verifyNoMoreInteractions(spyViewContainer)
     }
 
     @Test

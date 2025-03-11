@@ -44,7 +44,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.accessibilityservice.AccessibilityServiceInfo;
@@ -522,7 +522,7 @@ public class AccessibilityShortcutControllerTest {
                 AccessibilityShortcutController.DialogStatus.SHOWN);
         getController().performAccessibilityShortcut();
 
-        verifyZeroInteractions(mAlertDialogBuilder, mAlertDialog);
+        verifyNoMoreInteractions(mAlertDialogBuilder, mAlertDialog);
         verify(mToast).show();
         verify(mAccessibilityManagerService).performAccessibilityShortcut(
                 Display.DEFAULT_DISPLAY, HARDWARE, null);
@@ -615,7 +615,7 @@ public class AccessibilityShortcutControllerTest {
                 AccessibilityShortcutController.DialogStatus.SHOWN);
         getController().performAccessibilityShortcut();
 
-        verifyZeroInteractions(mToast);
+        verifyNoMoreInteractions(mToast);
         verify(mAccessibilityManagerService).performAccessibilityShortcut(
                 Display.DEFAULT_DISPLAY, HARDWARE, null);
     }
@@ -632,7 +632,7 @@ public class AccessibilityShortcutControllerTest {
                 AccessibilityShortcutController.DialogStatus.SHOWN);
         getController().performAccessibilityShortcut();
 
-        verifyZeroInteractions(mToast);
+        verifyNoMoreInteractions(mToast);
         verify(mAccessibilityManagerService).performAccessibilityShortcut(
                 Display.DEFAULT_DISPLAY, HARDWARE, null);
     }

@@ -62,7 +62,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertThrows;
 
@@ -992,7 +991,7 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
                 () -> mService.requestProjection(mBinder, PROJECTION_TYPE_NONE, PACKAGE_NAME));
         verify(mContext, never()).enforceCallingPermission(
                 eq(Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION), any());
-        verifyZeroInteractions(mBinder);
+        verifyNoMoreInteractions(mBinder);
         assertEquals(PROJECTION_TYPE_NONE, mService.getActiveProjectionTypes());
     }
 
@@ -1008,7 +1007,7 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
                 () -> mService.requestProjection(mBinder, multipleProjectionTypes, PACKAGE_NAME));
         verify(mContext, never()).enforceCallingPermission(
                 eq(Manifest.permission.TOGGLE_AUTOMOTIVE_PROJECTION), any());
-        verifyZeroInteractions(mBinder);
+        verifyNoMoreInteractions(mBinder);
         assertEquals(PROJECTION_TYPE_NONE, mService.getActiveProjectionTypes());
     }
 

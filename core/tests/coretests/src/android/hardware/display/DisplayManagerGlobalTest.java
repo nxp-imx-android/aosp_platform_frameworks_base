@@ -264,7 +264,7 @@ public class DisplayManagerGlobalTest {
                         /* isEventFilterExplicit */ true);
         callback.onDisplayEvent(displayId, DisplayManagerGlobal.EVENT_DISPLAY_ADDED);
         waitForHandler();
-        Mockito.verifyZeroInteractions(mDisplayListener);
+        Mockito.verifyNoMoreInteractions(mDisplayListener);
 
         mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
                 ALL_DISPLAY_EVENTS
@@ -272,7 +272,7 @@ public class DisplayManagerGlobalTest {
                         /* isEventFilterExplicit */ true);
         callback.onDisplayEvent(displayId, DisplayManagerGlobal.EVENT_DISPLAY_BASIC_CHANGED);
         waitForHandler();
-        Mockito.verifyZeroInteractions(mDisplayListener);
+        Mockito.verifyNoMoreInteractions(mDisplayListener);
 
         mDisplayManagerGlobal.registerDisplayListener(mDisplayListener, mHandler,
                 ALL_DISPLAY_EVENTS
@@ -280,7 +280,7 @@ public class DisplayManagerGlobalTest {
                         /* isEventFilterExplicit */ true);
         callback.onDisplayEvent(displayId, DisplayManagerGlobal.EVENT_DISPLAY_REMOVED);
         waitForHandler();
-        Mockito.verifyZeroInteractions(mDisplayListener);
+        Mockito.verifyNoMoreInteractions(mDisplayListener);
     }
 
     @Test
