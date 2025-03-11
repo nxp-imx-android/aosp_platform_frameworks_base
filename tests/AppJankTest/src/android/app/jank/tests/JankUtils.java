@@ -18,16 +18,18 @@ package android.app.jank.tests;
 
 import android.app.jank.AppJankStats;
 import android.app.jank.RelativeFrameTimeHistogram;
+import android.os.Process;
+
 
 public class JankUtils {
-    private static final int APP_ID = 25;
+    private static final int APP_ID = Process.myUid();
 
     /**
      * Returns a mock AppJankStats object to be used in tests.
      */
-    public static AppJankStats getAppJankStats() {
+    public static AppJankStats getAppJankStats(int appUID) {
         AppJankStats jankStats = new AppJankStats(
-                /*App Uid*/APP_ID,
+                /*App Uid*/appUID,
                 /*Widget Id*/"test widget id",
                 /*navigationComponent*/null,
                 /*Widget Category*/AppJankStats.WIDGET_CATEGORY_SCROLL,
@@ -37,6 +39,10 @@ public class JankUtils {
                 getOverrunHistogram()
         );
         return jankStats;
+    }
+
+    public static AppJankStats getAppJankStats() {
+        return getAppJankStats(APP_ID);
     }
 
     /**
