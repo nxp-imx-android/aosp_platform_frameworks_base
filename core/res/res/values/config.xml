@@ -2831,6 +2831,10 @@
     <!-- Whether dreams are disabled when ambient mode is suppressed. -->
     <bool name="config_dreamsDisabledByAmbientModeSuppressionConfig">false</bool>
 
+    <!-- The default for the setting that controls when to auto-start hub mode.
+          0 means "never" -->
+    <integer name="config_whenToStartHubModeDefault">0</integer>
+
     <!-- The duration in milliseconds of the dream opening animation.  -->
     <integer name="config_dreamOpenAnimationDuration">250</integer>
     <!-- The duration in milliseconds of the dream closing animation.  -->
