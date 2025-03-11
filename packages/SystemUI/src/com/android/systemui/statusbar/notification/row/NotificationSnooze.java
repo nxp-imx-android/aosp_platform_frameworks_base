@@ -51,7 +51,6 @@ import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
-import com.android.systemui.Flags;
 import com.android.systemui.plugins.statusbar.NotificationSwipeActionHelper;
 import com.android.systemui.plugins.statusbar.NotificationSwipeActionHelper.SnoozeOption;
 import com.android.systemui.res.R;
@@ -477,7 +476,7 @@ public class NotificationSnooze extends LinearLayout
 
     @Override
     public boolean handleCloseControls(boolean save, boolean force) {
-        if (Flags.notificationUndoGutsOnConfigChanged() && !save) {
+        if (!save) {
             // Undo changes and let the guts handle closing the view
             mSelectedOption = null;
             showSnoozeOptions(false);

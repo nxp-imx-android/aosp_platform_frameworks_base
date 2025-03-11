@@ -47,7 +47,6 @@ import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.settingslib.notification.ConversationIconFactory;
 import com.android.systemui.CoreStartable;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -235,15 +234,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         }
     }
 
-    public void onDensityOrFontScaleChanged(NotificationEntry entry) {
-        if (!Flags.notificationUndoGutsOnConfigChanged()) {
-            Log.wtf(TAG, "onDensityOrFontScaleChanged should not be called if"
-                    + " notificationUndoGutsOnConfigChanged is off");
-        }
-        setExposedGuts(entry.getGuts());
-        bindGuts(entry.getRow());
-    }
-
     /**
      * Sends an intent to open the notification settings for a particular package and optional
      * channel.
@@ -293,11 +283,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     private void startConversationSettingsActivity(int uid, ExpandableNotificationRow row) {
         final Intent intent = new Intent(Settings.ACTION_CONVERSATION_SETTINGS);
         mNotificationActivityStarter.startNotificationGutsIntent(intent, uid, row);
-    }
-
-    private boolean bindGuts(final ExpandableNotificationRow row) {
-        row.ensureGutsInflated();
-        return bindGuts(row, mGutsMenuItem);
     }
 
     @VisibleForTesting
@@ -611,6 +596,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         return mNotificationGutsExposed;
     }
 
+    @VisibleForTesting
     public void setExposedGuts(NotificationGuts guts) {
         mNotificationGutsExposed = guts;
     }

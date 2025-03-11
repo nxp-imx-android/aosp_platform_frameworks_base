@@ -27,7 +27,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableResources;
 import android.view.View;
@@ -39,7 +38,6 @@ import androidx.test.annotation.UiThreadTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.AnimatorTestRule;
 import com.android.systemui.plugins.statusbar.NotificationSwipeActionHelper;
@@ -93,7 +91,6 @@ public class NotificationSnoozeTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_NOTIFICATION_UNDO_GUTS_ON_CONFIG_CHANGED)
     public void closeControls_withoutSave_performsUndo() {
         ArrayList<SnoozeOption> options = mUnderTest.getDefaultSnoozeOptions();
         mUnderTest.mSelectedOption = options.getFirst();

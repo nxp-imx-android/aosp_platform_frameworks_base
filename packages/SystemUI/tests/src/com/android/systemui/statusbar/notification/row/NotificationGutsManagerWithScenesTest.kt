@@ -300,45 +300,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     }
 
     @Test
-    fun testChangeDensityOrFontScale() {
-        val guts = spy(NotificationGuts(mContext))
-        whenever(guts.post(any())).thenAnswer { invocation: InvocationOnMock ->
-            handler.post((invocation.arguments[0] as Runnable))
-            null
-        }
-
-        // Test doesn't support animation since the guts view is not attached.
-        doNothing()
-            .whenever(guts)
-            .openControls(any<Int>(), any<Int>(), any<Boolean>(), any<Runnable>())
-        val realRow = createTestNotificationRow()
-        val menuItem = createTestMenuItem(realRow)
-        val row = spy(realRow)
-        whenever(row!!.windowToken).thenReturn(Binder())
-        whenever(row.guts).thenReturn(guts)
-        doNothing().whenever(row).ensureGutsInflated()
-        val realEntry = realRow!!.entry
-        val entry = spy(realEntry)
-        whenever(entry.row).thenReturn(row)
-        whenever(entry.getGuts()).thenReturn(guts)
-        Assert.assertTrue(gutsManager.openGutsInternal(row, 0, 0, menuItem))
-        executor.runAllReady()
-        verify(guts).openControls(any<Int>(), any<Int>(), any<Boolean>(), any<Runnable>())
-
-        // called once by mGutsManager.bindGuts() in mGutsManager.openGuts()
-        verify(row).setGutsView(any())
-        row.onDensityOrFontScaleChanged()
-        gutsManager.onDensityOrFontScaleChanged(entry)
-        executor.runAllReady()
-        gutsManager.closeAndSaveGuts(false, false, false, 0, 0, false)
-        verify(guts)
-            .closeControls(any<Boolean>(), any<Boolean>(), any<Int>(), any<Int>(), any<Boolean>())
-
-        // called again by mGutsManager.bindGuts(), in mGutsManager.onDensityOrFontScaleChanged()
-        verify(row, times(2)).setGutsView(any())
-    }
-
-    @Test
     fun testAppOpsSettingsIntent_camera() {
         val ops = ArraySet<Int>()
         ops.add(AppOpsManager.OP_CAMERA)
