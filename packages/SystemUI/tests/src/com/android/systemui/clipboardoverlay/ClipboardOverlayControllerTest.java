@@ -44,6 +44,7 @@ import android.app.RemoteAction;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.net.Uri;
@@ -77,6 +78,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.util.Optional;
+import java.util.function.Consumer;
 
 @SmallTest
 @RunWith(AndroidJUnit4.class)
@@ -158,6 +160,31 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
      * is false are removed.[
      */
     private void initController() {
+        IntentCreator fakeIntentCreator = new IntentCreator() {
+            @Override
+            public Intent getTextEditorIntent(Context context) {
+                return new Intent();
+            }
+
+            @Override
+            public Intent getShareIntent(ClipData clipData, Context context) {
+                Intent intent = Intent.createChooser(new Intent(Intent.ACTION_SEND), null);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                return intent;
+            }
+
+            @Override
+            public void getImageEditIntentAsync(Uri uri, Context context,
+                    Consumer<Intent> outputConsumer) {
+                outputConsumer.accept(new Intent(Intent.ACTION_EDIT));
+            }
+
+            @Override
+            public Intent getRemoteCopyIntent(ClipData clipData, Context context) {
+                return new Intent();
+            }
+        };
+
         mOverlayController = new ClipboardOverlayController(
                 mContext,
                 mClipboardOverlayView,
@@ -171,7 +198,7 @@ public class ClipboardOverlayControllerTest extends SysuiTestCase {
                 mClipboardTransitionExecutor,
                 mClipboardIndicationProvider,
                 mUiEventLogger,
-                new ActionIntentCreator());
+                fakeIntentCreator);
         verify(mClipboardOverlayView).setCallbacks(mOverlayCallbacksCaptor.capture());
         mCallbacks = mOverlayCallbacksCaptor.getValue();
     }
