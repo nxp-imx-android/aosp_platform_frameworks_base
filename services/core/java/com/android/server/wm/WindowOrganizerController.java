@@ -473,35 +473,6 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
         transition.setAllReady();
     }
 
-    // TODO(b/365884835): remove this method and callers.
-    @Override
-    public int startLegacyTransition(int type, @NonNull RemoteAnimationAdapter adapter,
-            @NonNull IWindowContainerTransactionCallback callback,
-            @NonNull WindowContainerTransaction t) {
-        enforceTaskPermission("startLegacyTransition()");
-        final CallerInfo caller = new CallerInfo();
-        final long ident = Binder.clearCallingIdentity();
-        int syncId;
-        try {
-            synchronized (mGlobalLock) {
-                if (type < 0) {
-                    throw new IllegalArgumentException("Can't create transition with no type");
-                }
-                if (mTransitionController.getTransitionPlayer() != null) {
-                    throw new IllegalArgumentException("Can't use legacy transitions in"
-                            + " when shell transitions are enabled.");
-                }
-                syncId = startSyncWithOrganizer(callback);
-                applyTransaction(t, syncId, mService.mChainTracker.startLegacy("legacyTransit"),
-                        caller);
-                setSyncReady(syncId);
-            }
-        } finally {
-            Binder.restoreCallingIdentity(ident);
-        }
-        return syncId;
-    }
-
     @Override
     public void finishTransition(@NonNull IBinder transitionToken,
             @Nullable WindowContainerTransaction t) {
