@@ -233,8 +233,8 @@ public class WindowTestsBase extends SystemServiceTestsBase {
         displayPolicy.finishScreenTurningOn();
 
         final InsetsPolicy insetsPolicy = mDefaultDisplay.getInsetsPolicy();
-        suppressInsetsAnimation(insetsPolicy.getTransientControlTarget());
-        suppressInsetsAnimation(insetsPolicy.getPermanentControlTarget());
+        suppressInsetsAnimation(insetsPolicy.getShowingTransientControlTarget());
+        suppressInsetsAnimation(insetsPolicy.getShowingPermanentControlTarget());
 
         mTransaction = mSystemServicesTestRule.mTransaction;
 
