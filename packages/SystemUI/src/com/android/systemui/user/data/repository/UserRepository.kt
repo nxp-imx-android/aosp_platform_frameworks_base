@@ -414,16 +414,15 @@ constructor(
         }
     }
 
+    private suspend fun SelectedUserModel.isEligibleForLogout(): Boolean {
+        return withContext(backgroundDispatcher) {
+            selectionStatus == SelectionStatus.SELECTION_COMPLETE &&
+                devicePolicyManager.logoutUser != null
+        }
+    }
+
     companion object {
         private const val TAG = "UserRepository"
         @VisibleForTesting const val SETTING_SIMPLE_USER_SWITCHER = "lockscreenSimpleUserSwitcher"
     }
-}
-
-fun SelectedUserModel.isEligibleForLogout(): Boolean {
-    // TODO(b/206032495): should call mDevicePolicyManager.getLogoutUserId() instead of
-    // hardcode it to USER_SYSTEM so it properly supports headless system user mode
-    // (and then call mDevicePolicyManager.clearLogoutUser() after switched)
-    return selectionStatus == SelectionStatus.SELECTION_COMPLETE &&
-        userInfo.id != android.os.UserHandle.USER_SYSTEM
 }
