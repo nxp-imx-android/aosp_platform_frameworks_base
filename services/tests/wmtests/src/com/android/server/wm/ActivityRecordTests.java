@@ -2021,8 +2021,6 @@ public class ActivityRecordTests extends WindowTestsBase {
         display.setFixedRotationLaunchingAppUnchecked(activity);
         displayRotation.updateRotationUnchecked(true /* forceUpdate */);
 
-        assertTrue(displayRotation.isRotatingSeamlessly());
-
         // The launching rotated app should not be cleared when waiting for remote rotation.
         display.continueUpdateOrientationForDiffOrienLaunchingApp();
         assertTrue(display.isFixedRotationLaunchingApp(activity));

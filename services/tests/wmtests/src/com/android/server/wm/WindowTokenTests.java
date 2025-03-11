@@ -17,6 +17,8 @@
 package com.android.server.wm;
 
 import static android.view.InsetsSource.ID_IME;
+import static android.view.Surface.ROTATION_0;
+import static android.view.Surface.ROTATION_90;
 import static android.view.WindowManager.LayoutParams.FIRST_SUB_WINDOW;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -35,16 +37,19 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.res.Configuration;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.view.SurfaceControl;
 import android.view.WindowInsets;
 import android.window.WindowContext;
 
@@ -332,6 +337,31 @@ public class WindowTokenTests extends WindowTestsBase {
         // Even though the window is being removed afterwards, it won't apply exit animation.
         win.removeIfPossible();
         verify(win.mWinAnimator, never()).applyAnimationLocked(TRANSIT_EXIT, false);
+    }
+
+    @Test
+    public void testSeamlesslyRotate() {
+        final SurfaceControl.Transaction t = mTransaction;
+        final TestWindowToken token = createTestWindowToken(0, mDisplayContent);
+        token.mLastSurfacePosition.x = 10;
+        token.mLastSurfacePosition.y = 20;
+        final SeamlessRotator rotator = new SeamlessRotator(ROTATION_0, ROTATION_90,
+                mDisplayContent.getDisplayInfo(), false /* applyFixedTransformationHint */);
+        clearInvocations(t);
+        rotator.unrotate(t, token);
+
+        // Verify surface is un-rotated.
+        final Matrix matrix = new Matrix();
+        // Un-rotate 90 deg.
+        matrix.setRotate(270);
+        // Translate it back to origin.
+        matrix.postTranslate(0, mDisplayInfo.logicalWidth);
+        verify(t).setMatrix(eq(token.mSurfaceControl), eq(matrix), any(float[].class));
+
+        final float[] curSurfacePos = {token.mLastSurfacePosition.x, token.mLastSurfacePosition.y};
+        matrix.mapPoints(curSurfacePos);
+        verify(t).setPosition(eq(token.mSurfaceControl),
+                eq(curSurfacePos[0]), eq(curSurfacePos[1]));
     }
 
     @Test
