@@ -606,6 +606,10 @@ public class BubbleExpandedView extends LinearLayout {
         updateManageButtonIfExists();
     }
 
+    public float getCornerRadius() {
+        return mCornerRadius;
+    }
+
     /**
      * Updates the size and visuals of the pointer if {@link #mPointerView} is initialized.
      * Does nothing otherwise.

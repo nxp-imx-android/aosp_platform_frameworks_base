@@ -91,6 +91,7 @@ import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.DeviceConfig;
 import com.android.wm.shell.shared.bubbles.DismissView;
 import com.android.wm.shell.shared.bubbles.RelativeTouchListener;
@@ -1319,7 +1320,7 @@ public class BubbleStackView extends FrameLayout
         mBubbleContainer.bringToFront();
     }
 
-    // TODO: Create ManageMenuView and move setup / animations there
+    // TODO (b/402196554) : Create ManageMenuView and move setup / animations there
     private void setUpManageMenu() {
         if (mManageMenu != null) {
             removeView(mManageMenu);
@@ -1376,6 +1377,22 @@ public class BubbleStackView extends FrameLayout
 
         mManageSettingsIcon = mManageMenu.findViewById(R.id.bubble_manage_menu_settings_icon);
         mManageSettingsText = mManageMenu.findViewById(R.id.bubble_manage_menu_settings_name);
+
+        View fullscreenView = mManageMenu.findViewById(
+                R.id.bubble_manage_menu_fullscreen_container);
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+            fullscreenView.setVisibility(VISIBLE);
+            fullscreenView.setOnClickListener(
+                    view -> {
+                        showManageMenu(false /* show */);
+                        BubbleExpandedView expandedView = getExpandedView();
+                        if (expandedView != null && expandedView.getTaskView() != null) {
+                            expandedView.getTaskView().moveToFullscreen();
+                        }
+                    });
+        } else {
+            fullscreenView.setVisibility(GONE);
+        }
 
         // The menu itself should respect locale direction so the icons are on the correct side.
         mManageMenu.setLayoutDirection(LAYOUT_DIRECTION_LOCALE);
