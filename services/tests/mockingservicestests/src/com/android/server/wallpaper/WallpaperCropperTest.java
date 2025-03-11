@@ -33,10 +33,8 @@ import static com.android.window.flags.Flags.FLAG_MULTI_CROP;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -48,7 +46,6 @@ import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArraySet;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -95,7 +92,6 @@ public class WallpaperCropperTest {
 
     @Mock
     private Resources mResources;
-    private WallpaperCropper mWallpaperCropper;
 
     private static final Point PORTRAIT_ONE = new Point(500, 800);
     private static final Point PORTRAIT_TWO = new Point(400, 1000);
@@ -171,7 +167,6 @@ public class WallpaperCropperTest {
             return getWallpaperTestDir(userId);
         }).when(() -> WallpaperUtils.getWallpaperDir(anyInt()));
 
-        mWallpaperCropper = new WallpaperCropper(mWallpaperDisplayHelper);
     }
 
     private File getWallpaperTestDir(int userId) {
@@ -738,13 +733,13 @@ public class WallpaperCropperTest {
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = 2560;
         displayInfo.logicalHeight = 1044;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
         doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(DEFAULT_DISPLAY));
         WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
                 new Point(100, 100));
 
-        assertThat(
-                mWallpaperCropper.isWallpaperCompatibleForDisplay(DEFAULT_DISPLAY,
-                        wallpaperData)).isTrue();
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                DEFAULT_DISPLAY, wallpaperData)).isTrue();
     }
 
     // Test isWallpaperCompatibleForDisplay always return true for the stock wallpaper.
@@ -755,49 +750,67 @@ public class WallpaperCropperTest {
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = 2560;
         displayInfo.logicalHeight = 1044;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
         doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
         WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ true,
                 new Point(100, 100));
 
-        assertThat(
-                mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
-                        wallpaperData)).isTrue();
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                displayId, wallpaperData)).isTrue();
     }
 
     // Test isWallpaperCompatibleForDisplay wallpaper is suitable for the display and wallpaper
     // aspect ratio meets the hard-coded aspect ratio.
     @Test
-    public void isWallpaperCompatibleForDisplay_wallpaperSizeSuitableForDisplayAndMeetAspectRatio_returnTrue()
+    public void isWallpaperCompatibleForDisplay_wallpaperSizeLargerThanDisplayAndMeetAspectRatio_returnTrue()
             throws Exception {
         final int displayId = 2;
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = 2560;
         displayInfo.logicalHeight = 1044;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
         doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
         WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
                 new Point(4000, 3000));
 
-        assertThat(
-                mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
-                        wallpaperData)).isTrue();
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                displayId, wallpaperData)).isTrue();
     }
 
-    // Test isWallpaperCompatibleForDisplay wallpaper is not suitable for the display and wallpaper
-    // aspect ratio meets the hard-coded aspect ratio.
+    // Test isWallpaperCompatibleForDisplay wallpaper is smaller than the display but larger than
+    // the threshold and wallpaper aspect ratio meets the hard-coded aspect ratio.
     @Test
-    public void isWallpaperCompatibleForDisplay_wallpaperSizeNotSuitableForDisplayAndMeetAspectRatio_returnFalse()
+    public void isWallpaperCompatibleForDisplay_wallpaperSizeSmallerThanDisplayButBeyondThresholdAndMeetAspectRatio_returnTrue()
             throws Exception {
         final int displayId = 2;
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = 2560;
         displayInfo.logicalHeight = 1044;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
         doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
         WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
-                new Point(1000, 500));
+                new Point(2000, 900));
 
-        assertThat(
-                mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
-                        wallpaperData)).isFalse();
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                displayId, wallpaperData)).isTrue();
+    }
+
+    // Test isWallpaperCompatibleForDisplay wallpaper is smaller than the display but larger than
+    // the threshold and wallpaper aspect ratio meets the hard-coded aspect ratio.
+    @Test
+    public void isWallpaperCompatibleForDisplay_wallpaperSizeSmallerThanDisplayButAboveThresholdAndMeetAspectRatio_returnFalse()
+            throws Exception {
+        final int displayId = 2;
+        DisplayInfo displayInfo = new DisplayInfo();
+        displayInfo.logicalWidth = 2560;
+        displayInfo.logicalHeight = 1044;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
+        doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
+        WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
+                new Point(2000, 800));
+
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                displayId, wallpaperData)).isFalse();
     }
 
     // Test isWallpaperCompatibleForDisplay wallpaper is suitable for the display and wallpaper
@@ -809,13 +822,13 @@ public class WallpaperCropperTest {
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = 2560;
         displayInfo.logicalHeight = 1044;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
         doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
         WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
                 new Point(2000, 4000));
 
-        assertThat(
-                mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
-                        wallpaperData)).isFalse();
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                displayId, wallpaperData)).isFalse();
     }
 
     // Test isWallpaperCompatibleForDisplay, portrait display, wallpaper is suitable for the display
@@ -827,24 +840,13 @@ public class WallpaperCropperTest {
         DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.logicalWidth = 1044;
         displayInfo.logicalHeight = 2560;
+        setUpWithDisplays(List.of(new Point(displayInfo.logicalWidth, displayInfo.logicalHeight)));
         doReturn(displayInfo).when(mWallpaperDisplayHelper).getDisplayInfo(eq(displayId));
         WallpaperData wallpaperData = createWallpaperData(/* isStockWallpaper = */ false,
                 new Point(2000, 4000));
 
-        assertThat(
-                mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
-                        wallpaperData)).isTrue();
-    }
-
-    private void mockDisplay(int displayId, Point displayResolution) {
-        final Display mockDisplay = mock(Display.class);
-        when(mockDisplay.getDisplayInfo(any(DisplayInfo.class))).thenAnswer(invocation -> {
-            DisplayInfo displayInfo = invocation.getArgument(0);
-            displayInfo.displayId = displayId;
-            displayInfo.logicalWidth = displayResolution.x;
-            displayInfo.logicalHeight = displayResolution.y;
-            return true;
-        });
+        assertThat(new WallpaperCropper(mWallpaperDisplayHelper).isWallpaperCompatibleForDisplay(
+                displayId, wallpaperData)).isTrue();
     }
 
     private WallpaperData createWallpaperData(boolean isStockWallpaper, Point wallpaperSize)
