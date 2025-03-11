@@ -40,6 +40,8 @@ enum class HearingDevicesUiEvent(private val id: Int) : UiEventLogger.UiEventEnu
     HEARING_DEVICES_AMBIENT_EXPAND_CONTROLS(2153),
     @UiEvent(doc = "Collapse the ambient volume controls")
     HEARING_DEVICES_AMBIENT_COLLAPSE_CONTROLS(2154),
+    @UiEvent(doc = "Select a input routing option from input routing spinner")
+    HEARING_DEVICES_INPUT_ROUTING_SELECT(2155),
     @UiEvent(doc = "Click on the device settings to enter hearing devices page")
     HEARING_DEVICES_SETTINGS_CLICK(2172);
 
