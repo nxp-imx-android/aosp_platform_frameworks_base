@@ -33,6 +33,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.text.AnnotatedString
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -56,19 +57,22 @@ class EditModeTest : SysuiTestCase() {
         var tiles by remember { mutableStateOf(TestEditTiles) }
         val (currentTiles, otherTiles) = tiles.partition { it.tile.isCurrent }
         val listState = EditTileListState(currentTiles, columns = 4, largeTilesSpan = 2)
-        DefaultEditTileGrid(
-            listState = listState,
-            otherTiles = otherTiles,
-            columns = 4,
-            largeTilesSpan = 4,
-            modifier = Modifier.fillMaxSize(),
-            onAddTile = { tiles = tiles.add(it) },
-            onRemoveTile = { tiles = tiles.remove(it) },
-            onSetTiles = {},
-            onResize = { _, _ -> },
-            onStopEditing = {},
-            onReset = null,
-        )
+
+        PlatformTheme {
+            DefaultEditTileGrid(
+                listState = listState,
+                otherTiles = otherTiles,
+                columns = 4,
+                largeTilesSpan = 4,
+                modifier = Modifier.fillMaxSize(),
+                onAddTile = { tiles = tiles.add(it) },
+                onRemoveTile = { tiles = tiles.remove(it) },
+                onSetTiles = {},
+                onResize = { _, _ -> },
+                onStopEditing = {},
+                onReset = null,
+            )
+        }
     }
 
     @Test
