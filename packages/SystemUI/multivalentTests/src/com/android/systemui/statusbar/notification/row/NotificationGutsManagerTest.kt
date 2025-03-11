@@ -512,6 +512,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
             .setImportance(NotificationManager.IMPORTANCE_HIGH)
             .build()
 
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         whenever(highPriorityProvider.isHighPriority(entry)).thenReturn(true)
         val statusBarNotification = entry.sbn
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -534,6 +535,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 any<UiEventLogger>(),
                 /* isDeviceProvisioned = */ eq(false),
                 /* isNonblockable = */ eq(false),
+                /* isDismissable = */ eq(true),
                 /* wasShownHighPriority = */ eq(true),
                 eq(assistantFeedbackController),
                 eq(metricsLogger),
@@ -549,6 +551,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
 
@@ -574,6 +577,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 any<UiEventLogger>(),
                 /* isDeviceProvisioned = */ eq(true),
                 /* isNonblockable = */ eq(false),
+                /* isDismissable = */ eq(true),
                 /* wasShownHighPriority = */ eq(false),
                 eq(assistantFeedbackController),
                 eq(metricsLogger),
@@ -589,6 +593,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
 
@@ -612,6 +617,7 @@ class NotificationGutsManagerTest(flags: FlagsParameterization) : SysuiTestCase(
                 any<UiEventLogger>(),
                 /* isDeviceProvisioned = */ eq(false),
                 /* isNonblockable = */ eq(false),
+                /* isDismissable = */ eq(true),
                 /* wasShownHighPriority = */ eq(false),
                 eq(assistantFeedbackController),
                 eq(metricsLogger),

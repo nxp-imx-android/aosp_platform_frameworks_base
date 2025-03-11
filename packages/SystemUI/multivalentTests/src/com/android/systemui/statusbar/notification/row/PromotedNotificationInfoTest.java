@@ -152,6 +152,7 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 true,
                 false,
                 true,
+                true,
                 mAssistantFeedbackController,
                 mMetricsLogger,
                 null);
