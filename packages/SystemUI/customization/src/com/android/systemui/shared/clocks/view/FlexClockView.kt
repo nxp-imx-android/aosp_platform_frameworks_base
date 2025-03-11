@@ -26,7 +26,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.core.view.children
 import com.android.app.animation.Interpolators
 import com.android.systemui.customization.R
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockLogger
 import com.android.systemui.plugins.clocks.VPoint
 import com.android.systemui.plugins.clocks.VPointF
@@ -272,7 +272,7 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         invalidate()
     }
 
-    fun updateAxes(axes: List<ClockFontAxisSetting>) {
+    fun updateAxes(axes: ClockAxisStyle) {
         childViews.forEach { view -> view.updateAxes(axes) }
         requestLayout()
     }

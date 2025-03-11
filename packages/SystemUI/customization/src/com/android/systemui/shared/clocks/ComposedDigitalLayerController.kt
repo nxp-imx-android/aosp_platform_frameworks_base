@@ -22,10 +22,10 @@ import com.android.app.animation.Interpolators
 import com.android.systemui.log.core.Logger
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFaceConfig
 import com.android.systemui.plugins.clocks.ClockFaceEvents
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
@@ -111,7 +111,7 @@ class ComposedDigitalLayerController(private val clockCtx: ClockContext) :
 
             override fun onZenDataChanged(data: ZenData) {}
 
-            override fun onFontAxesChanged(axes: List<ClockFontAxisSetting>) {
+            override fun onFontAxesChanged(axes: ClockAxisStyle) {
                 view.updateAxes(axes)
             }
 
