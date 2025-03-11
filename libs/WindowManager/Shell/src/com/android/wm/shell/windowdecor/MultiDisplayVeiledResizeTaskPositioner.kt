@@ -294,6 +294,10 @@ class MultiDisplayVeiledResizeTaskPositioner(
         return Rect(repositionTaskBounds)
     }
 
+    override fun close() {
+        displayController.removeDisplayWindowListener(this)
+    }
+
     private fun resetVeilIfVisible() {
         if (isResizingOrAnimatingResize) {
             desktopWindowDecoration.hideResizeVeil()
