@@ -47,12 +47,11 @@ class DesktopRepository(
     val userId: Int,
 ) {
     /** A display that supports desktops. */
-    private data class DesktopDisplay(
-        val displayId: Int,
-        val orderedDesks: MutableSet<Desk> = mutableSetOf(),
-        // TODO: b/389960283 - update on desk activation / deactivation.
-        var activeDeskId: Int? = null,
-    )
+    private class DesktopDisplay(val displayId: Int) {
+        // The set implementation must preserve order.
+        val orderedDesks: MutableSet<Desk> = mutableSetOf()
+        var activeDeskId: Int? = null
+    }
 
     /**
      * Task data tracked per desk.
@@ -235,6 +234,25 @@ class DesktopRepository(
 
     /** Returns the default desk in the given display. */
     private fun getDefaultDesk(displayId: Int): Desk? = desktopData.getDefaultDesk(displayId)
+
+    /** Returns the id of the desk ordered previous to the given one, or null if there isn't one. */
+    fun getPreviousDeskId(deskId: Int): Int? {
+        val desks = desktopData.getOrderedDesks(getDisplayForDesk(deskId))
+        val index = desks.indexOfFirst { it.deskId == deskId }
+        if (index <= 0) return null
+        return desks[index - 1].deskId
+    }
+
+    /** Returns the id of the desk ordered next to the given one, or null if there isn't one. */
+    fun getNextDeskId(deskId: Int): Int? {
+        val desks = desktopData.getOrderedDesks(getDisplayForDesk(deskId))
+        val index = desks.indexOfFirst { it.deskId == deskId }
+        return if (index >= 0 && index < desks.size - 1) {
+            desks[index + 1].deskId
+        } else {
+            null
+        }
+    }
 
     /** Returns whether the given desk is active in its display. */
     fun isDeskActive(deskId: Int): Boolean =
@@ -1206,6 +1224,9 @@ class DesktopRepository(
         /** Returns the number of desks in the given display. */
         fun getNumberOfDesks(displayId: Int): Int
 
+        /** Returns a list of ordered desks in a given display. */
+        fun getOrderedDesks(displayId: Int): List<Desk>
+
         /** Applies a function to all desks. */
         fun forAllDesks(consumer: (Desk) -> Unit)
 
@@ -1280,6 +1301,9 @@ class DesktopRepository(
             deskByDisplayId.valueIterator().asSequence().toSet()
 
         override fun getNumberOfDesks(displayId: Int): Int = 1
+
+        override fun getOrderedDesks(displayId: Int): List<Desk> =
+            listOf(getDesk(deskId = displayId))
 
         override fun forAllDesks(consumer: (Desk) -> Unit) {
             deskByDisplayId.forEach { _, desk -> consumer(desk) }
@@ -1356,6 +1380,9 @@ class DesktopRepository(
             return display.orderedDesks.find { it.deskId == display.activeDeskId }
                 ?: display.orderedDesks.firstOrNull()
         }
+
+        override fun getOrderedDesks(displayId: Int): List<Desk> =
+            desktopDisplays[displayId].orderedDesks.toList()
 
         override fun getAllActiveDesks(): Set<Desk> {
             return desktopDisplays

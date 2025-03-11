@@ -1617,6 +1617,30 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         assertThat(lastActivationChange.newActive).isEqualTo(INVALID_DESK_ID)
     }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun getPreviousDeskId() {
+        repo.addDesk(displayId = 5, deskId = 1)
+        repo.addDesk(displayId = 5, deskId = 2)
+        repo.addDesk(displayId = 5, deskId = 3)
+
+        assertThat(repo.getPreviousDeskId(1)).isNull()
+        assertThat(repo.getPreviousDeskId(2)).isEqualTo(1)
+        assertThat(repo.getPreviousDeskId(3)).isEqualTo(2)
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun getNextDeskId() {
+        repo.addDesk(displayId = 5, deskId = 1)
+        repo.addDesk(displayId = 5, deskId = 2)
+        repo.addDesk(displayId = 5, deskId = 3)
+
+        assertThat(repo.getNextDeskId(1)).isEqualTo(2)
+        assertThat(repo.getNextDeskId(2)).isEqualTo(3)
+        assertThat(repo.getNextDeskId(3)).isNull()
+    }
+
     private class TestDeskChangeListener : DesktopRepository.DeskChangeListener {
         var lastAddition: LastAddition? = null
             private set

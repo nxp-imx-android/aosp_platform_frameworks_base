@@ -216,6 +216,14 @@ public class FocusTransitionObserver {
         return focusedTaskOnDisplay != null && focusedTaskOnDisplay.taskId == task.taskId;
     }
 
+    /** Returns the globally focused display id. */
+    public int getGloballyFocusedDisplayId() {
+        if (!enableDisplayFocusInShellTransitions() || mFocusedDisplayId == INVALID_DISPLAY) {
+            return INVALID_DISPLAY;
+        }
+        return mFocusedDisplayId;
+    }
+
     /**
      * Gets the globally focused task ID.
      */

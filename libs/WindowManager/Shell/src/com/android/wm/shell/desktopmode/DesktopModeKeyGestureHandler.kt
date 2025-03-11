@@ -56,6 +56,8 @@ class DesktopModeKeyGestureHandler(
                     KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_RIGHT_FREEFORM_WINDOW,
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW,
                     KeyGestureEvent.KEY_GESTURE_TYPE_MINIMIZE_FREEFORM_WINDOW,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK,
+                    KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
                 )
             inputManager.registerKeyGestureEventHandler(supportedGestures, this)
         }
@@ -69,6 +71,22 @@ class DesktopModeKeyGestureHandler(
                     mainExecutor.execute {
                         desktopTasksController.get().moveToNextDisplay(it.taskId)
                     }
+                }
+            }
+            KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK -> {
+                logV("Key gesture SWITCH_TO_PREVIOUS_DESK is handled")
+                mainExecutor.execute {
+                    desktopTasksController
+                        .get()
+                        .activatePreviousDesk(focusTransitionObserver.globallyFocusedDisplayId)
+                }
+            }
+            KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK -> {
+                logV("Key gesture SWITCH_TO_NEXT_DESK is handled")
+                mainExecutor.execute {
+                    desktopTasksController
+                        .get()
+                        .activateNextDesk(focusTransitionObserver.globallyFocusedDisplayId)
                 }
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_SNAP_LEFT_FREEFORM_WINDOW -> {
