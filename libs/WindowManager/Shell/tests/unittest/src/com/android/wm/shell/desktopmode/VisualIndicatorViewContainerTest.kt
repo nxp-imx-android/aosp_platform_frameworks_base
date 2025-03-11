@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
+import android.animation.AnimatorTestRule
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.graphics.Rect
@@ -29,6 +30,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.View
+import android.widget.FrameLayout
 import androidx.test.filters.SmallTest
 import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.wm.shell.ShellTestCase
@@ -43,6 +45,7 @@ import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
 import org.junit.Before
+import org.junit.Rule
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mock
@@ -67,6 +70,9 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidTestingRunner::class)
 @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
 class VisualIndicatorViewContainerTest : ShellTestCase() {
+
+    @JvmField @Rule val animatorTestRule = AnimatorTestRule(this)
+
     @Mock private lateinit var view: View
     @Mock private lateinit var displayLayout: DisplayLayout
     @Mock private lateinit var displayController: DisplayController
@@ -297,6 +303,95 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
         verify(spyViewContainer, never()).fadeInIndicatorInternal(any(), any(), any(), any())
     }
 
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    fun testCreateView_bubblesEnabled_indicatorIsFrameLayout() {
+        val spyViewContainer = setupSpyViewContainer()
+        assertThat(spyViewContainer.indicatorView).isInstanceOf(FrameLayout::class.java)
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    fun testFadeInOutBubbleIndicator_addAndRemoveBarIndicator() {
+        setUpBubbleBoundsProvider()
+        val spyViewContainer = setupSpyViewContainer()
+        spyViewContainer.fadeInIndicator(
+            displayLayout,
+            DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR,
+            DEFAULT_DISPLAY,
+        )
+        desktopExecutor.flushAll()
+        animatorTestRule.advanceTimeBy(200)
+        assertThat((spyViewContainer.indicatorView as FrameLayout).getChildAt(0)).isNotNull()
+
+        spyViewContainer.fadeOutIndicator(
+            displayLayout,
+            DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR,
+            finishCallback = null,
+            DEFAULT_DISPLAY,
+            snapEventHandler,
+        )
+        desktopExecutor.flushAll()
+        animatorTestRule.advanceTimeBy(250)
+        assertThat((spyViewContainer.indicatorView as FrameLayout).getChildAt(0)).isNull()
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    fun testTransitionIndicator_fullscreenToBubble_addBarIndicator() {
+        setUpBubbleBoundsProvider()
+        val spyViewContainer = setupSpyViewContainer()
+
+        spyViewContainer.transitionIndicator(
+            taskInfo,
+            displayController,
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+            DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR,
+        )
+        desktopExecutor.flushAll()
+        animatorTestRule.advanceTimeBy(200)
+
+        assertThat((spyViewContainer.indicatorView as FrameLayout).getChildAt(0)).isNotNull()
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    fun testTransitionIndicator_bubbleToFullscreen_removeBarIndicator() {
+        setUpBubbleBoundsProvider()
+        val spyViewContainer = setupSpyViewContainer()
+        spyViewContainer.fadeInIndicator(
+            displayLayout,
+            DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR,
+            DEFAULT_DISPLAY,
+        )
+        desktopExecutor.flushAll()
+        animatorTestRule.advanceTimeBy(200)
+        assertThat((spyViewContainer.indicatorView as FrameLayout).getChildAt(0)).isNotNull()
+
+        spyViewContainer.transitionIndicator(
+            taskInfo,
+            displayController,
+            DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR,
+            DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR,
+        )
+        desktopExecutor.flushAll()
+        animatorTestRule.advanceTimeBy(200)
+
+        assertThat((spyViewContainer.indicatorView as FrameLayout).getChildAt(0)).isNull()
+    }
+
     private fun setupSpyViewContainer(): VisualIndicatorViewContainer {
         val viewContainer =
             VisualIndicatorViewContainer(
@@ -331,7 +426,22 @@ class VisualIndicatorViewContainerTest : ShellTestCase() {
             .build()
     }
 
+    private fun setUpBubbleBoundsProvider() {
+        bubbleDropTargetBoundsProvider =
+            object : BubbleDropTargetBoundsProvider {
+                override fun getBubbleBarExpandedViewDropTargetBounds(onLeft: Boolean): Rect {
+                    return BUBBLE_INDICATOR_BOUNDS
+                }
+
+                override fun getBarDropTargetBounds(onLeft: Boolean): Rect {
+                    return BAR_INDICATOR_BOUNDS
+                }
+            }
+    }
+
     companion object {
         private val DISPLAY_BOUNDS = Rect(0, 0, 1000, 1000)
+        private val BUBBLE_INDICATOR_BOUNDS = Rect(800, 200, 900, 900)
+        private val BAR_INDICATOR_BOUNDS = Rect(880, 950, 900, 960)
     }
 }
