@@ -43,6 +43,7 @@ import android.os.IBinder
 import android.os.SystemProperties
 import android.os.UserHandle
 import android.util.Slog
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DragEvent
 import android.view.MotionEvent
@@ -463,6 +464,10 @@ class DesktopTasksController(
 
     /** Creates a new desk in the given display. */
     fun createDesk(displayId: Int) {
+        if (displayId == Display.INVALID_DISPLAY) {
+            logW("createDesk attempt with invalid displayId", displayId)
+            return
+        }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.createDesk(displayId) { deskId ->
                 taskRepository.addDesk(displayId = displayId, deskId = deskId)

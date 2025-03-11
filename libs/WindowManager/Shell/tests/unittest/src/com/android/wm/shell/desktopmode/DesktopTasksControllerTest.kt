@@ -57,6 +57,7 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableContext
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import android.view.Display.INVALID_DISPLAY
 import android.view.DragEvent
 import android.view.Gravity
 import android.view.MotionEvent
@@ -7348,6 +7349,14 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.createDesk(DEFAULT_DISPLAY)
 
         assertThat(taskRepository.getNumberOfDesks(DEFAULT_DISPLAY)).isEqualTo(currentDeskCount + 1)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun testCreateDesk_invalidDisplay_dropsRequest() {
+        controller.createDesk(INVALID_DISPLAY)
+
+        verify(desksOrganizer, never()).createDesk(any(), any())
     }
 
     @Test
