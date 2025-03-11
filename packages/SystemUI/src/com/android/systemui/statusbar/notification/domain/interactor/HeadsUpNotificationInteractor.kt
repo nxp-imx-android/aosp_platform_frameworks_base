@@ -81,7 +81,7 @@ constructor(
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             flowOf(emptySet())
         } else {
-            activeHeadsUpRows.map { it.map { (repo, _) -> repo }.toSet() }
+            activeHeadsUpRows.map { it.map { (repo, _) -> repo }.toSet() }.distinctUntilChanged()
         }
     }
 
@@ -90,9 +90,9 @@ constructor(
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) {
             flowOf(emptySet())
         } else {
-            activeHeadsUpRows.map {
-                it.filter { (_, isPinned) -> isPinned }.map { (repo, _) -> repo }.toSet()
-            }
+            activeHeadsUpRows
+                .map { it.filter { (_, isPinned) -> isPinned }.map { (repo, _) -> repo }.toSet() }
+                .distinctUntilChanged() // TODO(b/402428276) stop sending duplicate updates instead
         }
     }
 
