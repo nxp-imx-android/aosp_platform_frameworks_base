@@ -61,6 +61,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import com.android.launcher3.icons.IconProvider;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -122,6 +123,7 @@ public class SplitScreenControllerTests extends ShellTestCase {
     @Mock MultiInstanceHelper mMultiInstanceHelper;
     @Mock SplitState mSplitState;
     @Mock UserManager mUserManager;
+    @Mock RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     @Captor ArgumentCaptor<Intent> mIntentCaptor;
 
     private ShellController mShellController;
@@ -139,7 +141,8 @@ public class SplitScreenControllerTests extends ShellTestCase {
                 mDisplayInsetsController, mDragAndDropController, mTransitions, mTransactionPool,
                 mIconProvider, Optional.of(mRecentTasks), mLaunchAdjacentController,
                 Optional.of(mWindowDecorViewModel), Optional.of(mDesktopTasksController),
-                mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler));
+                mStageCoordinator, mMultiInstanceHelper, mSplitState, mMainExecutor, mMainHandler,
+                mRootDisplayAreaOrganizer));
     }
 
     @Test

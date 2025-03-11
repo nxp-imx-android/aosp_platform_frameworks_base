@@ -138,6 +138,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ComponentUtils;
@@ -218,6 +219,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private boolean mShowDecorImmediately;
     private final SyncTransactionQueue mSyncQueue;
     private final ShellTaskOrganizer mTaskOrganizer;
+    private final RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     private final Context mContext;
     private final List<SplitScreen.SplitScreenListener> mListeners = new ArrayList<>();
     private final Set<SplitScreen.SplitSelectListener> mSelectListeners = new HashSet<>();
@@ -240,6 +242,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private final Optional<DesktopTasksController> mDesktopTasksController;
     /** Singleton source of truth for the current state of split screen on this device. */
     private final SplitState mSplitState;
+    private final SplitStatusBarHider mStatusBarHider;
 
     private final Rect mTempRect1 = new Rect();
     private final Rect mTempRect2 = new Rect();
@@ -379,11 +382,13 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
-            RootTaskDisplayAreaOrganizer rootTDAOrganizer) {
+            RootTaskDisplayAreaOrganizer rootTDAOrganizer,
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
         mTaskOrganizer = taskOrganizer;
+        mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
         mLogger = new SplitscreenEventLogger();
         mMainExecutor = mainExecutor;
         mMainHandler = mainHandler;
@@ -445,6 +450,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 R.string.dock_non_resizeble_failed_to_dock_text, Toast.LENGTH_SHORT);
         mFoldLockSettingsObserver = new FoldLockSettingsObserver(mainHandler, context);
         mFoldLockSettingsObserver.register();
+        mStatusBarHider = new SplitStatusBarHider(taskOrganizer, splitState,
+                rootDisplayAreaOrganizer);
     }
 
     @VisibleForTesting
@@ -458,7 +465,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             LaunchAdjacentController launchAdjacentController,
             Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
             Optional<DesktopTasksController> desktopTasksController,
-            RootTaskDisplayAreaOrganizer rootTDAOrganizer) {
+            RootTaskDisplayAreaOrganizer rootTDAOrganizer,
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -493,6 +501,9 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         DisplayManager displayManager = context.getSystemService(DisplayManager.class);
         mSplitMultiDisplayHelper = new SplitMultiDisplayHelper(
                 Objects.requireNonNull(displayManager));
+        mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
+        mStatusBarHider = new SplitStatusBarHider(taskOrganizer, splitState,
+                rootDisplayAreaOrganizer);
     }
 
     public void setMixedHandler(DefaultMixedHandler mixedHandler) {
@@ -2187,7 +2198,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             mSplitLayout = new SplitLayout(TAG + "SplitDivider", mContext,
                     taskInfo.configuration, this, mParentContainerCallbacks,
                     mDisplayController, mDisplayImeController, mTaskOrganizer, parallaxType,
-                    mSplitState, mMainHandler);
+                    mSplitState, mMainHandler, mStatusBarHider);
             mDisplayInsetsController.addInsetsChangedListener(mDisplayId, mSplitLayout);
         }
 
@@ -4118,6 +4129,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             mMainStage.mVisible = mSideStage.mVisible = visible;
             mMainStage.mHasChildren = mSideStage.mHasChildren = visible;
         }
+
+        mStatusBarHider.onSplitVisibilityChanged(visible);
     }
 
     /**

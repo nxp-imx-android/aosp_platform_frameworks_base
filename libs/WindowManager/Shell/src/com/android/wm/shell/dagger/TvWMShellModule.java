@@ -20,6 +20,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.android.launcher3.icons.IconProvider;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
@@ -93,11 +94,12 @@ public class TvWMShellModule {
             SplitState splitState,
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
-            SystemWindows systemWindows) {
+            SystemWindows systemWindows,
+            RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
         return new TvSplitScreenController(context, shellInit, shellCommandHandler, shellController,
                 shellTaskOrganizer, syncQueue, rootTDAOrganizer, displayController,
                 displayImeController, displayInsetsController, transitions, transactionPool,
                 iconProvider, recentTasks, launchAdjacentController, multiInstanceHelper,
-                splitState, mainExecutor, mainHandler, systemWindows);
+                splitState, mainExecutor, mainHandler, systemWindows, rootDisplayAreaOrganizer);
     }
 }

@@ -61,6 +61,7 @@ import android.window.IRemoteTransition;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
+import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.test.annotation.UiThreadTest;
@@ -70,6 +71,7 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.launcher3.icons.IconProvider;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.MockToken;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
@@ -107,6 +109,7 @@ public class SplitTransitionTests extends ShellTestCase {
     @Mock private ShellTaskOrganizer mTaskOrganizer;
     @Mock private SyncTransactionQueue mSyncQueue;
     @Mock private RootTaskDisplayAreaOrganizer mRootTDAOrganizer;
+    @Mock private RootDisplayAreaOrganizer mRootDisplayAreaOrganizer;
     @Mock private DisplayController mDisplayController;
     @Mock private DisplayImeController mDisplayImeController;
     @Mock private DisplayInsetsController mDisplayInsetsController;
@@ -140,6 +143,8 @@ public class SplitTransitionTests extends ShellTestCase {
         doReturn(mockExecutor).when(mTransitions).getMainExecutor();
         doReturn(mockExecutor).when(mTransitions).getAnimExecutor();
         doReturn(mock(SurfaceControl.Transaction.class)).when(mTransactionPool).acquire();
+        doReturn(mock(WindowContainerToken.class))
+                .when(mRootDisplayAreaOrganizer).getDisplayTokenForDisplay(anyInt());
         mSplitLayout = SplitTestUtils.createMockSplitLayout();
         mMainStage = spy(new StageTaskListener(mContext, mTaskOrganizer, DEFAULT_DISPLAY, mock(
                 StageTaskListener.StageListenerCallbacks.class), mSyncQueue,
@@ -154,7 +159,7 @@ public class SplitTransitionTests extends ShellTestCase {
                 mDisplayImeController, mDisplayInsetsController, mSplitLayout, mTransitions,
                 mTransactionPool, mMainExecutor, mMainHandler, Optional.empty(),
                 mLaunchAdjacentController, Optional.empty(), mSplitState, Optional.empty(),
-                mRootTDAOrganizer);
+                mRootTDAOrganizer, mRootDisplayAreaOrganizer);
         when(mRootTDAOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(mDisplayAreaInfo);
 
         mStageCoordinator.setMixedHandler(mMixedHandler);

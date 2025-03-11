@@ -84,6 +84,7 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SnapPosition;
 import com.android.wm.shell.shared.split.SplitScreenConstants.SplitPosition;
+import com.android.wm.shell.splitscreen.SplitStatusBarHider;
 import com.android.wm.shell.splitscreen.StageTaskListener;
 
 import java.io.PrintWriter;
@@ -141,6 +142,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
             new PathInterpolator(0.45f, 0f, 0.5f, 1f);
     @ShellMainThread
     private final Handler mHandler;
+    private final SplitStatusBarHider mStatusBarHider;
 
     /** Singleton source of truth for the current state of split screen on this device. */
     private final SplitState mSplitState;
@@ -206,11 +208,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
 
     public SplitLayout(String windowName, Context context, Configuration configuration,
             SplitLayoutHandler splitLayoutHandler,
-            SplitWindowManager.ParentContainerCallbacks parentContainerCallbacks,
+            ParentContainerCallbacks parentContainerCallbacks,
             DisplayController displayController, DisplayImeController displayImeController,
             ShellTaskOrganizer taskOrganizer, int parallaxType, SplitState splitState,
-            @ShellMainThread Handler handler) {
+            @ShellMainThread Handler handler, SplitStatusBarHider statusBarHider) {
         mHandler = handler;
+        mStatusBarHider = statusBarHider;
         mContext = context.createConfigurationContext(configuration);
         mOrientation = configuration.orientation;
         mRotation = configuration.windowConfiguration.getRotation();
@@ -232,7 +235,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mAllowLeftRightSplitInPortrait = SplitScreenUtils.allowLeftRightSplitInPortrait(res);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
                 configuration);
-
+        statusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateDividerConfig(mContext);
 
         mRootBounds.set(configuration.windowConfiguration.getBounds());
@@ -505,6 +508,7 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mIsLargeScreen = configuration.smallestScreenWidthDp >= 600;
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
                 configuration);
+        mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
         updateLayouts();
         updateDividerConfig(mContext);
         initDividerPosition(mTempRect, wasLeftRightSplit);
@@ -533,6 +537,8 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         mRootBounds.set(tmpRect);
         mIsLeftRightSplit = SplitScreenUtils.isLeftRightSplit(mAllowLeftRightSplitInPortrait,
                 mIsLargeScreen, mRootBounds.width() >= mRootBounds.height());
+        mStatusBarHider.onLeftRightSplitUpdated(mIsLeftRightSplit);
+
         updateLayouts();
         initDividerPosition(mTempRect, wasLeftRightSplit);
     }

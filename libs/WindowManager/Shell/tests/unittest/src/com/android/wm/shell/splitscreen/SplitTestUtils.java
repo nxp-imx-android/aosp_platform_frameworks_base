@@ -30,6 +30,7 @@ import android.os.Handler;
 import android.view.SurfaceControl;
 
 import com.android.dx.mockito.inline.extended.ExtendedMockito;
+import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
@@ -91,12 +92,13 @@ public class SplitTestUtils {
                 LaunchAdjacentController launchAdjacentController,
                 Optional<WindowDecorViewModel> windowDecorViewModel, SplitState splitState,
                 Optional<DesktopTasksController> desktopTasksController,
-                RootTaskDisplayAreaOrganizer rootTDAOrganizer) {
+                RootTaskDisplayAreaOrganizer rootTDAOrganizer,
+                RootDisplayAreaOrganizer rootDisplayAreaOrganizer) {
             super(context, displayId, syncQueue, taskOrganizer, mainStage,
                     sideStage, displayController, imeController, insetsController, splitLayout,
                     transitions, transactionPool, mainExecutor, mainHandler, recentTasks,
                     launchAdjacentController, windowDecorViewModel, splitState,
-                    desktopTasksController, rootTDAOrganizer);
+                    desktopTasksController, rootTDAOrganizer, rootDisplayAreaOrganizer);
 
             // Prepare root task for testing.
             mRootLeash = new SurfaceControl.Builder().setName("test").build();
