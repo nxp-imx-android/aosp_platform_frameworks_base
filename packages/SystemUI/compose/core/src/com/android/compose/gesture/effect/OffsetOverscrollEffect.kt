@@ -16,7 +16,6 @@
 
 package com.android.compose.gesture.effect
 
-import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.OverscrollFactory
@@ -94,7 +93,6 @@ class OffsetOverscrollEffect(animationScope: CoroutineScope, animationSpec: Anim
     companion object {
         private val MaxDistance = 400.dp
 
-        @VisibleForTesting
         fun computeOffset(density: Density, overscrollDistance: Float): Int {
             val maxDistancePx = with(density) { MaxDistance.toPx() }
             val progress = ProgressConverter.Default.convert(overscrollDistance / maxDistancePx)
