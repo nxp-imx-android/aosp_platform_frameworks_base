@@ -1984,22 +1984,24 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         }
 
         for (int subId : subIds) {
-            notifyCarrierNetworkChangeWithPermission(subId, active);
+            notifyCarrierNetworkChangeWithPermission(getPhoneIdFromSubId(subId), subId, active);
         }
     }
 
     @Override
-    public void notifyCarrierNetworkChangeWithSubId(int subId, boolean active) {
-        if (!TelephonyPermissions.checkCarrierPrivilegeForSubId(mContext, subId)) {
+    public void notifyCarrierNetworkChangeForPhoneAndSubId(int phoneId, int subId, boolean active) {
+        // We only need to check carrier privileges for the subId if we don't have
+        // MODIFY_PHONE_STATE.
+        if (!checkNotifyPermission("notifyCarrierNetworkChangeForPhoneAndSubId()")
+                && !TelephonyPermissions.checkCarrierPrivilegeForSubId(mContext, subId)) {
             throw new SecurityException(
-                    "notifyCarrierNetworkChange without carrier privilege on subId " + subId);
+                     "notifyCarrierNetworkChange without carrier privilege on subId " + subId);
         }
 
-        notifyCarrierNetworkChangeWithPermission(subId, active);
+        notifyCarrierNetworkChangeWithPermission(phoneId, subId, active);
     }
 
-    private void notifyCarrierNetworkChangeWithPermission(int subId, boolean active) {
-        int phoneId = getPhoneIdFromSubId(subId);
+    private void notifyCarrierNetworkChangeWithPermission(int phoneId, int subId, boolean active) {
         synchronized (mRecords) {
             mCarrierNetworkChangeState[phoneId] = active;
 
