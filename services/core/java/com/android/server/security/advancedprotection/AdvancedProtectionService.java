@@ -23,7 +23,9 @@ import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Binder;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -32,14 +34,21 @@ import android.os.PermissionEnforcer;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.security.advancedprotection.AdvancedProtectionFeature;
+import android.security.advancedprotection.AdvancedProtectionManager;
+import android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
+import android.security.advancedprotection.AdvancedProtectionManager.SupportDialogType;
 import android.security.advancedprotection.IAdvancedProtectionCallback;
 import android.security.advancedprotection.IAdvancedProtectionService;
+import android.security.advancedprotection.AdvancedProtectionProtoEnums;
 import android.util.ArrayMap;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.DumpUtils;
+import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
@@ -51,7 +60,9 @@ import com.android.server.security.advancedprotection.features.DisallowInstallUn
 import com.android.server.security.advancedprotection.features.MemoryTaggingExtensionHook;
 import com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHook;
 
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,6 +71,15 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
     private static final String TAG = "AdvancedProtectionService";
     private static final int MODE_CHANGED = 0;
     private static final int CALLBACK_ADDED = 1;
+
+    // Shared preferences keys
+    private static final String PREFERENCE = "advanced_protection_preference";
+    private static final String ENABLED_CHANGE_TIME = "enabled_change_time";
+    private static final String LAST_DIALOG_FEATURE_ID = "last_dialog_feature_id";
+    private static final String LAST_DIALOG_TYPE = "last_dialog_type";
+    private static final String LAST_DIALOG_HOURS_SINCE_ENABLED = "last_dialog_hours_since_enabled";
+    private static final String LAST_DIALOG_LEARN_MORE_CLICKED = "last_dialog_learn_more_clicked";
+    private static final long MILLIS_PER_HOUR = 60 * 60 * 1000;
 
     private final Context mContext;
     private final Handler mHandler;
@@ -71,6 +91,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
     private final ArrayMap<IBinder, IAdvancedProtectionCallback> mCallbacks = new ArrayMap<>();
     // For tracking only - not called on state change
     private final ArrayList<AdvancedProtectionProvider> mProviders = new ArrayList<>();
+
+    // Used to store logging data
+    private SharedPreferences mSharedPreferences;
+    private boolean mEmitLogs = true;
 
     private AdvancedProtectionService(@NonNull Context context) {
         super(PermissionEnforcer.fromContext(context));
@@ -126,6 +150,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         if (provider != null) {
             mProviders.add(provider);
         }
+
+        mEmitLogs = false;
     }
 
     @Override
@@ -178,12 +204,97 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
                 if (enabled != isAdvancedProtectionEnabledInternal()) {
                     mStore.store(enabled);
                     sendModeChanged(enabled);
-                    Slog.i(TAG, "Advanced protection is " + (enabled ? "enabled" : "disabled"));
+                    logAdvancedProtectionEnabled(enabled);
                 }
             }
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
+    }
+
+    @Override
+    @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public void logDialogShown(@FeatureId int featureId, @SupportDialogType int type,
+            boolean learnMoreClicked) {
+        logDialogShown_enforcePermission();
+
+        if (!mEmitLogs) {
+            return;
+        }
+
+        int hoursSinceEnabled = hoursSinceLastChange();
+        FrameworkStatsLog.write(FrameworkStatsLog.ADVANCED_PROTECTION_SUPPORT_DIALOG_DISPLAYED,
+                /*feature_id*/ featureIdToLogEnum(featureId),
+                /*dialogue_type*/ dialogueTypeToLogEnum(type),
+                /*learn_more_clicked*/ learnMoreClicked,
+                /*hours_since_last_change*/ hoursSinceEnabled);
+
+        getSharedPreferences().edit()
+                .putInt(LAST_DIALOG_FEATURE_ID, featureId)
+                .putInt(LAST_DIALOG_TYPE, type)
+                .putBoolean(LAST_DIALOG_LEARN_MORE_CLICKED, learnMoreClicked)
+                .putInt(LAST_DIALOG_HOURS_SINCE_ENABLED, hoursSinceEnabled)
+                .apply();
+    }
+
+    private int featureIdToLogEnum(@FeatureId int featureId) {
+        switch (featureId) {
+            case AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_CELLULAR_2G;
+            case AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
+            case AdvancedProtectionManager.FEATURE_ID_DISALLOW_USB:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_USB;
+            case AdvancedProtectionManager.FEATURE_ID_DISALLOW_WEP:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_DISALLOW_WEP;
+            case AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_ENABLE_MTE;
+            default:
+                return AdvancedProtectionProtoEnums.FEATURE_ID_UNKNOWN;
+        }
+    }
+
+    private int dialogueTypeToLogEnum(@SupportDialogType int type) {
+        switch (type) {
+            case AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN:
+                return AdvancedProtectionProtoEnums.DIALOGUE_TYPE_UNKNOWN;
+            case AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION:
+                return AdvancedProtectionProtoEnums.DIALOGUE_TYPE_BLOCKED_INTERACTION;
+            case AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_DISABLED_SETTING:
+                return AdvancedProtectionProtoEnums.DIALOGUE_TYPE_DISABLED_SETTING;
+            default:
+                return AdvancedProtectionProtoEnums.DIALOGUE_TYPE_UNKNOWN;
+        }
+    }
+
+    private void logAdvancedProtectionEnabled(boolean enabled) {
+        if (!mEmitLogs) {
+            return;
+        }
+
+        Slog.i(TAG, "Advanced protection has been " + (enabled ? "enabled" : "disabled"));
+        SharedPreferences prefs = getSharedPreferences();
+        FrameworkStatsLog.write(FrameworkStatsLog.ADVANCED_PROTECTION_STATE_CHANGED,
+                /*enabled*/ enabled,
+                /*hours_since_enabled*/ hoursSinceLastChange(),
+                /*last_dialog_feature_id*/ featureIdToLogEnum(
+                    prefs.getInt(LAST_DIALOG_FEATURE_ID, -1)),
+                /*_type*/ dialogueTypeToLogEnum(prefs.getInt(LAST_DIALOG_TYPE, -1)),
+                /*_learn_more_clicked*/ prefs.getBoolean(LAST_DIALOG_LEARN_MORE_CLICKED, false),
+                /*_hours_since_enabled*/ prefs.getInt(LAST_DIALOG_HOURS_SINCE_ENABLED, -1));
+        prefs.edit()
+                .putLong(ENABLED_CHANGE_TIME, System.currentTimeMillis())
+                .apply();
+    }
+
+    private int hoursSinceLastChange() {
+        int hoursSinceEnabled = -1;
+        long lastChangeTimeMillis = getSharedPreferences().getLong(ENABLED_CHANGE_TIME, -1);
+        if (lastChangeTimeMillis != -1) {
+            hoursSinceEnabled = (int)
+                    ((System.currentTimeMillis() - lastChangeTimeMillis) / MILLIS_PER_HOUR);
+        }
+        return hoursSinceEnabled;
     }
 
     @Override
@@ -213,6 +324,30 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
                 .exec(this, in, out, err, args, callback, resultReceiver);
     }
 
+    @Override
+    public void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
+        if (!DumpUtils.checkDumpPermission(mContext, TAG, writer)) return;
+        writer.println("AdvancedProtectionService");
+        writer.println("  isAdvancedProtectionEnabled: " + isAdvancedProtectionEnabledInternal());
+        writer.println("  mHooks.size(): " + mHooks.size());
+        writer.println("  mCallbacks.size(): " + mCallbacks.size());
+        writer.println("  mProviders.size(): " + mProviders.size());
+
+        writer.println("Hooks: ");
+        mHooks.stream().forEach(hook -> {
+            writer.println("    " + hook.getClass().getSimpleName() +
+                                   " available: " + hook.isAvailable());
+        });
+        writer.println("  Providers: ");
+        mProviders.stream().forEach(provider -> {
+            writer.println("    " + provider.getClass().getSimpleName());
+            provider.getFeatures().stream().forEach(feature -> {
+                writer.println("      " + feature.getClass().getSimpleName());
+            });
+        });
+        writer.println("  mSharedPreferences: " + getSharedPreferences().getAll());
+    }
+
     void sendModeChanged(boolean enabled) {
         Message.obtain(mHandler, MODE_CHANGED, /*enabled*/ enabled ? 1 : 0, /*unused */ -1)
                 .sendToTarget();
@@ -222,6 +357,22 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         Message.obtain(mHandler, CALLBACK_ADDED, /*enabled*/ enabled ? 1 : 0, /*unused*/ -1,
                         /*callback*/ callback)
                 .sendToTarget();
+    }
+
+    private SharedPreferences getSharedPreferences() {
+        if (mSharedPreferences == null) {
+            initSharedPreferences();
+        }
+        return mSharedPreferences;
+    }
+
+    private synchronized void initSharedPreferences() {
+        if (mSharedPreferences == null) {
+            Context deviceContext = mContext.createDeviceProtectedStorageContext();
+            File sharedPrefs = new File(Environment.getDataSystemDirectory(), PREFERENCE);
+            mSharedPreferences = deviceContext.getSharedPreferences(sharedPrefs,
+                    Context.MODE_PRIVATE);
+        }
     }
 
     public static final class Lifecycle extends SystemService {
