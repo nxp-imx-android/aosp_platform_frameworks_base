@@ -16,10 +16,13 @@
 
 package com.android.systemui.display
 
+import android.hardware.display.DisplayManager
+import android.os.Handler
 import com.android.app.displaylib.DisplayLibComponent
 import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.DeviceStateRepositoryImpl
 import com.android.systemui.display.data.repository.DisplayRepository
@@ -42,6 +45,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 
 /** Module binding display related classes. */
 @Module(includes = [DisplayWindowPropertiesInteractorModule::class, DisplayLibModule::class])
@@ -111,8 +116,18 @@ interface DisplayModule {
 object DisplayLibModule {
     @Provides
     @SysUISingleton
-    fun displayLibComponent(): DisplayLibComponent {
-        return createDisplayLibComponent()
+    fun displayLibComponent(
+        displayManager: DisplayManager,
+        @Background backgroundHandler: Handler,
+        @Background bgApplicationScope: CoroutineScope,
+        @Background backgroundCoroutineDispatcher: CoroutineDispatcher,
+    ): DisplayLibComponent {
+        return createDisplayLibComponent(
+            displayManager,
+            backgroundHandler,
+            bgApplicationScope,
+            backgroundCoroutineDispatcher,
+        )
     }
 
     @Provides
