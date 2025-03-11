@@ -945,3 +945,13 @@ flag {
     description: "Enable restart menu UI, which is shown when an app moves between displays."
     bug: "397804287"
 }
+
+flag {
+    name: "enable_dynamic_radius_computation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to compute the corner/shadow radius of desktop windows dynamically with the current window context."
+    bug: "399630464"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
