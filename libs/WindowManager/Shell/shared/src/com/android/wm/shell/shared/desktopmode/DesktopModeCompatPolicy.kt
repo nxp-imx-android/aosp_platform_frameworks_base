@@ -23,6 +23,7 @@ import android.content.pm.PackageManager
 import android.window.DesktopModeFlags
 import com.android.internal.R
 import com.android.internal.policy.DesktopModeCompatUtils
+import java.util.function.Supplier
 
 /**
  * Class to decide whether to apply app compat policies in desktop mode.
@@ -34,9 +35,11 @@ class DesktopModeCompatPolicy(private val context: Context) {
     private val pkgManager: PackageManager
         get() = context.getPackageManager()
     private val defaultHomePackage: String?
-        get() = pkgManager.getHomeActivities(ArrayList())?.packageName
+        get() = defaultHomePackageSupplier?.get()
+            ?: pkgManager.getHomeActivities(ArrayList())?.packageName
     private val packageInfoCache = mutableMapOf<String, Boolean>()
 
+    var defaultHomePackageSupplier: Supplier<String?>? = null
 
     /**
      * If the top activity should be exempt from desktop windowing and forced back to fullscreen.
