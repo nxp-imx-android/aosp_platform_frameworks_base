@@ -61,6 +61,7 @@ public enum DesktopExperienceFlags {
     ENABLE_DISPLAY_RECONNECT_INTERACTION(Flags::enableDisplayReconnectInteraction, false),
     ENABLE_DISPLAY_WINDOWING_MODE_SWITCHING(Flags::enableDisplayWindowingModeSwitching, true),
     ENABLE_DRAG_TO_MAXIMIZE(Flags::enableDragToMaximize, true),
+    ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX(Flags::enableDynamicRadiusComputationBugfix, false),
     ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS(Flags::keyboardShortcutsToSwitchDesks, false),
     ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT(Flags::enableMoveToNextDisplayShortcut, true),
     ENABLE_MULTIPLE_DESKTOPS_BACKEND(Flags::enableMultipleDesktopsBackend, false),
