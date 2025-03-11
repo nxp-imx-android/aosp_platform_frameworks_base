@@ -16,6 +16,8 @@
 
 package com.android.systemui.display
 
+import com.android.app.displaylib.DisplayLibComponent
+import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DeviceStateRepository
@@ -42,7 +44,7 @@ import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
 /** Module binding display related classes. */
-@Module(includes = [DisplayWindowPropertiesInteractorModule::class])
+@Module(includes = [DisplayWindowPropertiesInteractorModule::class, DisplayLibModule::class])
 interface DisplayModule {
     @Binds
     fun bindConnectedDisplayInteractor(
@@ -101,5 +103,23 @@ interface DisplayModule {
                 CoreStartable.NOP
             }
         }
+    }
+}
+
+/** Module to bind the DisplayRepository from displaylib to the systemui dagger graph. */
+@Module
+object DisplayLibModule {
+    @Provides
+    @SysUISingleton
+    fun displayLibComponent(): DisplayLibComponent {
+        return createDisplayLibComponent()
+    }
+
+    @Provides
+    @SysUISingleton
+    fun providesDisplayRepositoryFromLib(
+        displayLibComponent: DisplayLibComponent
+    ): com.android.app.displaylib.DisplayRepository {
+        return displayLibComponent.displayRepository
     }
 }
