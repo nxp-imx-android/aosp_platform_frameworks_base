@@ -889,8 +889,8 @@ public class BackAnimationControllerTest extends ShellTestCase {
      */
     private void doStartEvents(int startX, int moveX) {
         doMotionEvent(MotionEvent.ACTION_DOWN, startX);
-        mController.onThresholdCrossed();
         doMotionEvent(MotionEvent.ACTION_MOVE, moveX);
+        mController.onThresholdCrossed();
     }
 
     private void simulateRemoteAnimationStart() throws RemoteException {
