@@ -290,7 +290,16 @@ message SystemSettingsProto {
 
     optional SettingProto apply_ramping_ringer = 35 [ (android.privacy).dest = DEST_AUTOMATIC ];
 
+    message Display {
+        option (android.msg_privacy).dest = DEST_EXPLICIT;
+
+        optional SettingProto cv_enabled = 1 [ (android.privacy).dest = DEST_AUTOMATIC ];
+    }
+    optional Display display = 39;
+
+
+
     // Please insert fields in alphabetical order and group them into messages
     // if possible (to avoid reaching the method limit).
-    // Next tag = 39;
+    // Next tag = 40;
 }
