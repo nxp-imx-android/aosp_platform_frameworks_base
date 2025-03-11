@@ -325,7 +325,8 @@ public final class FoldableDeviceStateProvider implements DeviceStateProvider,
             }
 
             if (newState != INVALID_DEVICE_STATE_IDENTIFIER && newState != mLastReportedState) {
-                if (Trace.isTagEnabled(TRACE_TAG_SYSTEM_SERVER)) {
+                if (mLastHingeAngleSensorEvent != null
+                        && Trace.isTagEnabled(TRACE_TAG_SYSTEM_SERVER)) {
                     Trace.instant(TRACE_TAG_SYSTEM_SERVER,
                             "[Device state changed] Last hinge sensor event timestamp: "
                                     + mLastHingeAngleSensorEvent.timestamp);
