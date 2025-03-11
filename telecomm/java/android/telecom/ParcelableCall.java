@@ -19,7 +19,6 @@ package android.telecom;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -687,9 +686,6 @@ public final class ParcelableCall implements Parcelable {
             source.readList(conferenceableCallIds, classLoader, java.lang.String.class);
             Bundle intentExtras = source.readBundle(classLoader);
             Bundle extras = source.readBundle(classLoader);
-            if (extras == null) {
-                extras = new Bundle();
-            }
             int supportedAudioRoutes = source.readInt();
             boolean isRttCallChanged = source.readByte() == 1;
             ParcelableRttCall rttCall = source.readParcelable(classLoader, android.telecom.ParcelableRttCall.class);
@@ -700,7 +696,6 @@ public final class ParcelableCall implements Parcelable {
             String activeChildCallId = source.readString();
             Uri contactPhotoUri = source.readParcelable(classLoader, Uri.class);
             UserHandle associatedUser = source.readParcelable(classLoader, UserHandle.class);
-            extras.putParcelable(Intent.EXTRA_USER_HANDLE, associatedUser);
             return new ParcelableCallBuilder()
                     .setId(id)
                     .setState(state)
