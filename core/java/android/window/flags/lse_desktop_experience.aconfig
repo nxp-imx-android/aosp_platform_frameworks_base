@@ -602,6 +602,13 @@ flag {
 }
 
 flag {
+    name: "keyboard_shortcuts_to_switch_desks"
+    namespace: "lse_desktop_experience"
+    description: "Enable switching the active desk with keyboard shortcuts"
+    bug: "389957556"
+}
+
+flag {
     name: "enable_connected_displays_dnd"
     namespace: "lse_desktop_experience"
     description: "Enable drag-and-drop between connected displays."
