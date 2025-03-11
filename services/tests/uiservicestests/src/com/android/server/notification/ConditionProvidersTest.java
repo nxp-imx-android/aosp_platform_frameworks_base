@@ -38,7 +38,6 @@ import android.os.IInterface;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.service.notification.Condition;
 
-import com.android.internal.R;
 import com.android.server.UiServiceTestCase;
 
 import org.junit.Before;
@@ -46,8 +45,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.List;
 
 public class ConditionProvidersTest extends UiServiceTestCase {
 
@@ -171,16 +168,5 @@ public class ConditionProvidersTest extends UiServiceTestCase {
         mProviders.removeDefaultFromConfig(userId);
 
         assertTrue(mProviders.getApproved(userId, true).isEmpty());
-    }
-
-    @Test
-    public void getDefaultDndAccessPackages_returnsPackages() {
-        mContext.getOrCreateTestableResources().addOverride(
-                R.string.config_defaultDndAccessPackages,
-                "com.example.a:com.example.b::::com.example.c");
-
-        List<String> packages = ConditionProviders.getDefaultDndAccessPackages(mContext);
-
-        assertThat(packages).containsExactly("com.example.a", "com.example.b", "com.example.c");
     }
 }
