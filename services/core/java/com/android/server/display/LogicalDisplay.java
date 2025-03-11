@@ -1160,6 +1160,7 @@ final class LogicalDisplay {
         pw.println("mRequestedMinimalPostProcessing=" + mRequestedMinimalPostProcessing);
         pw.println("mFrameRateOverrides=" + Arrays.toString(mFrameRateOverrides));
         pw.println("mPendingFrameRateOverrideUids=" + mPendingFrameRateOverrideUids);
+        pw.println("mDisplayGroupId=" + mDisplayGroupId);
         pw.println("mDisplayGroupName=" + mDisplayGroupName);
         pw.println("mThermalBrightnessThrottlingDataId=" + mThermalBrightnessThrottlingDataId);
         pw.println("mLeadDisplayId=" + mLeadDisplayId);
