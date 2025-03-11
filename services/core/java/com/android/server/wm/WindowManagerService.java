@@ -198,6 +198,8 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.configstore.V1_0.OptionalBool;
 import android.hardware.configstore.V1_1.ISurfaceFlingerConfigs;
+import android.hardware.devicestate.DeviceState;
+import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.InputSettings;
@@ -1032,6 +1034,21 @@ public class WindowManagerService extends IWindowManager.Stub
     PowerManager mPowerManager;
     PowerManagerInternal mPowerManagerInternal;
 
+    private DeviceStateManager mDeviceStateManager;
+    private DeviceStateCallback mDeviceStateCallback;
+    private class DeviceStateCallback implements DeviceStateManager.DeviceStateCallback {
+        private DeviceState mCurrentDeviceState;
+        @Override
+        public void onDeviceStateChanged(@NonNull DeviceState state) {
+            mCurrentDeviceState = state;
+        }
+
+        boolean isInRearDisplayOuterDefaultState() {
+            return mCurrentDeviceState != null && mCurrentDeviceState
+                    .hasProperties(DeviceState.PROPERTY_FEATURE_REAR_DISPLAY_OUTER_DEFAULT);
+        }
+    }
+
     private float mWindowAnimationScaleSetting = 1.0f;
     private float mTransitionAnimationScaleSetting = 1.0f;
     private float mAnimatorDurationScaleSetting = 1.0f;
@@ -1316,6 +1333,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
         mPowerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
+
+        mDeviceStateManager = context.getSystemService(DeviceStateManager.class);
+        mDeviceStateCallback = new DeviceStateCallback();
+        mDeviceStateManager.registerCallback(new HandlerExecutor(mH), mDeviceStateCallback);
 
         if (mPowerManagerInternal != null) {
             mPowerManagerInternal.registerLowPowerModeObserver(
@@ -8945,6 +8966,17 @@ public class WindowManagerService extends IWindowManager.Stub
                 // In that case, drop the event to prevent changing focus to a background activity.
                 Slog.w(TAG, "onPointerDownOutsideFocusLocked, drop event because " + touchedApp
                         + " is occluded and should not be focused.");
+                return;
+            }
+        }
+
+        if (mDeviceStateCallback.isInRearDisplayOuterDefaultState()) {
+            final Display[] rearDisplays = mDisplayManager
+                    .getDisplays(DisplayManager.DISPLAY_CATEGORY_REAR);
+            if (rearDisplays.length > 0 && rearDisplays[0].getDisplayId() == t.getDisplayId()) {
+                // Do not change display focus to the inner display if we're in this mode. Note that
+                // in this mode, the inner display is configured as a rear display.
+                Slog.w(TAG, "Ignoring focus change because device is in RDM.");
                 return;
             }
         }
