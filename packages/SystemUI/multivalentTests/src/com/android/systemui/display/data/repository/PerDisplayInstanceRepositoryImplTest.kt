@@ -19,6 +19,7 @@ package com.android.systemui.display.data.repository
 import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.testScope
