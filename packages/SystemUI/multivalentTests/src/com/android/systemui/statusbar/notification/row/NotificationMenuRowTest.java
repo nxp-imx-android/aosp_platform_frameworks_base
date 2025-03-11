@@ -28,7 +28,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.platform.test.annotations.DisableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
@@ -39,7 +38,6 @@ import android.view.ViewGroup;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.systemui.Flags;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
@@ -415,7 +413,6 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         assertTrue("when alpha is .5, menu is visible", row.isMenuVisible());
     }
 
-    @DisableFlags(Flags.FLAG_MAGNETIC_NOTIFICATION_SWIPES)
     @Test
     public void testOnTouchMove() {
         NotificationMenuRow row = Mockito.spy(

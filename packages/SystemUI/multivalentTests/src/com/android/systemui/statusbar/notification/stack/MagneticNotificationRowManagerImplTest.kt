@@ -130,9 +130,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.onDensityChange(
-                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
-            )
+            underTest.setSwipeThresholdPx(threshold)
 
             // GIVEN that targets are set and the rows are being pulled
             setTargets()
@@ -152,9 +150,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.onDensityChange(
-                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
-            )
+            underTest.setSwipeThresholdPx(threshold)
 
             // GIVEN that targets are set and the rows are being pulled
             canRowBeDismissed = false
@@ -176,9 +172,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.onDensityChange(
-                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
-            )
+            underTest.setSwipeThresholdPx(threshold)
 
             // GIVEN that targets are set and the rows are being pulled
             setTargets()
@@ -198,9 +192,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         kosmos.testScope.runTest {
             // GIVEN a threshold of 100 px
             val threshold = 100f
-            underTest.onDensityChange(
-                threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
-            )
+            underTest.setSwipeThresholdPx(threshold)
 
             // GIVEN that targets are set and the rows are being pulled
             canRowBeDismissed = false
@@ -302,29 +294,6 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             assertThat(underTest.isSwipedViewRoundableSet).isFalse()
         }
 
-    @Test
-    fun isMagneticRowDismissible_isDismissibleWhenDetached() =
-        kosmos.testScope.runTest {
-            setDetachedState()
-
-            val isDismissible = underTest.isMagneticRowSwipeDetached(swipedRow)
-            assertThat(isDismissible).isTrue()
-        }
-
-    @Test
-    fun setMagneticRowTranslation_whenDetached_belowAttachThreshold_reattaches() =
-        kosmos.testScope.runTest {
-            // GIVEN that the swiped view has been detached
-            setDetachedState()
-
-            // WHEN setting a new translation above the attach threshold
-            val translation = 50f
-            underTest.setMagneticRowTranslation(swipedRow, translation)
-
-            // THEN the swiped view reattaches magnetically and the state becomes PULLING
-            assertThat(underTest.currentState).isEqualTo(State.PULLING)
-        }
-
     @After
     fun tearDown() {
         // We reset the manager so that all MagneticRowListener can cancel all animations
@@ -333,9 +302,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
 
     private fun setDetachedState() {
         val threshold = 100f
-        underTest.onDensityChange(
-            threshold / MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
-        )
+        underTest.setSwipeThresholdPx(threshold)
 
         // Set the pulling state
         setTargets()
@@ -360,8 +327,8 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
     private fun MagneticRowListener.asTestableListener(rowIndex: Int): MagneticRowListener {
         val delegate = this
         return object : MagneticRowListener {
-            override fun setMagneticTranslation(translation: Float, trackEagerly: Boolean) {
-                delegate.setMagneticTranslation(translation, trackEagerly)
+            override fun setMagneticTranslation(translation: Float) {
+                delegate.setMagneticTranslation(translation)
             }
 
             override fun triggerMagneticForce(
