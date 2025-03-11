@@ -32,7 +32,6 @@ import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.keyguard.logging.KeyguardLogger
 import com.android.settingslib.Utils
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags.lightRevealMigration
 import com.android.systemui.biometrics.data.repository.FacePropertyRepository
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.dagger.SysUISingleton
@@ -43,6 +42,7 @@ import com.android.systemui.keyguard.shared.model.BiometricUnlockSource
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.res.R
+import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.statusbar.CircleReveal
 import com.android.systemui.statusbar.LiftReveal
 import com.android.systemui.statusbar.LightRevealEffect
@@ -196,7 +196,7 @@ constructor(
 
         // This code path is not used if the KeyguardTransitionRepository is managing the light
         // reveal scrim.
-        if (!lightRevealMigration()) {
+        if (!ambientAod()) {
             if (statusBarStateController.isDozing || biometricUnlockController.isWakeAndUnlock) {
                 circleReveal?.let {
                     lightRevealScrim.revealAmount = 0f
@@ -213,7 +213,7 @@ constructor(
     }
 
     override fun onKeyguardFadingAwayChanged() {
-        if (lightRevealMigration()) {
+        if (ambientAod()) {
             return
         }
 

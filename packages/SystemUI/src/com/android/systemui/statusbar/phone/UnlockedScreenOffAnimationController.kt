@@ -18,7 +18,6 @@ import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.jank.InteractionJankMonitor.CUJ_SCREEN_OFF
 import com.android.internal.jank.InteractionJankMonitor.CUJ_SCREEN_OFF_SHOW_AOD
 import com.android.systemui.DejankUtils
-import com.android.systemui.Flags.lightRevealMigration
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.KeyguardViewMediator
@@ -26,6 +25,7 @@ import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.shade.ShadeViewController
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeLockscreenInteractor
+import com.android.systemui.shared.Flags.ambientAod
 import com.android.systemui.statusbar.CircleReveal
 import com.android.systemui.statusbar.LightRevealScrim
 import com.android.systemui.statusbar.NotificationShadeWindowController
@@ -100,7 +100,7 @@ constructor(
             duration = LIGHT_REVEAL_ANIMATION_DURATION
             interpolator = Interpolators.LINEAR
             addUpdateListener {
-                if (lightRevealMigration()) return@addUpdateListener
+                if (ambientAod()) return@addUpdateListener
                 if (lightRevealScrim.revealEffect !is CircleReveal) {
                     lightRevealScrim.revealAmount = it.animatedValue as Float
                 }
@@ -116,7 +116,7 @@ constructor(
             addListener(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationCancel(animation: Animator) {
-                        if (lightRevealMigration()) return
+                        if (ambientAod()) return
                         if (lightRevealScrim.revealEffect !is CircleReveal) {
                             lightRevealScrim.revealAmount = 1f
                         }

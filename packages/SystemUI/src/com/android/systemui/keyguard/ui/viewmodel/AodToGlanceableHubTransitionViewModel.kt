@@ -17,7 +17,6 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import android.util.MathUtils
-import com.android.systemui.Flags.lightRevealMigration
 import com.android.systemui.communal.ui.compose.TransitionDuration
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.dagger.GlanceableHubBlurComponent
@@ -28,6 +27,7 @@ import com.android.systemui.keyguard.ui.KeyguardTransitionAnimationFlow
 import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import com.android.systemui.keyguard.ui.transitions.GlanceableHubTransition
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shared.Flags.ambientAod
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
@@ -56,14 +56,14 @@ constructor(
         return transitionAnimation.sharedFlow(
             duration = 250.milliseconds,
             startTime =
-                if (lightRevealMigration()) {
+                if (ambientAod()) {
                     100.milliseconds // Wait for the light reveal to "hit" the LS elements.
                 } else {
                     0.milliseconds
                 },
             onStart = {
                 currentAlpha =
-                    if (lightRevealMigration()) {
+                    if (ambientAod()) {
                         viewState.alpha()
                     } else {
                         0f
