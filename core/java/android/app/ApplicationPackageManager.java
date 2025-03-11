@@ -200,6 +200,8 @@ public class ApplicationPackageManager extends PackageManager {
     @GuardedBy("mPackageMonitorCallbacks")
     private final ArraySet<IRemoteCallback> mPackageMonitorCallbacks = new ArraySet<>();
 
+    private final boolean mUseSystemFeaturesCache;
+
     UserManager getUserManager() {
         if (mUserManager == null) {
             mUserManager = UserManager.get(mContext);
@@ -824,8 +826,7 @@ public class ApplicationPackageManager extends PackageManager {
         if (maybeHasSystemFeature != null) {
             return maybeHasSystemFeature;
         }
-        if (com.android.internal.os.Flags.applicationSharedMemoryEnabled()
-                && android.content.pm.Flags.cacheSdkSystemFeatures()) {
+        if (mUseSystemFeaturesCache) {
             maybeHasSystemFeature =
                     SystemFeaturesCache.getInstance().maybeHasFeature(name, version);
             if (maybeHasSystemFeature != null) {
@@ -2221,6 +2222,25 @@ public class ApplicationPackageManager extends PackageManager {
     protected ApplicationPackageManager(ContextImpl context, IPackageManager pm) {
         mContext = context;
         mPM = pm;
+        mUseSystemFeaturesCache = isSystemFeaturesCacheEnabledAndAvailable();
+    }
+
+    private static boolean isSystemFeaturesCacheEnabledAndAvailable() {
+        if (!android.content.pm.Flags.cacheSdkSystemFeatures()) {
+            return false;
+        }
+        if (!com.android.internal.os.Flags.applicationSharedMemoryEnabled()) {
+            return false;
+        }
+        if (ActivityThread.isSystem() && !SystemFeaturesCache.hasInstance()) {
+            // There are a handful of utility "system" processes that are neither system_server nor
+            // bound as applications. For these processes, we don't have access to application
+            // shared memory or the dependent system features cache.
+            // TODO(b/400713460): Revisit this exception after deprecating these command-like
+            // system processes.
+            return false;
+        }
+        return true;
     }
 
     /**
