@@ -1240,7 +1240,7 @@ public final class AppStartInfoTracker {
 
     /** A container class of (@link android.app.ApplicationStartInfo) */
     final class AppStartInfoContainer {
-        private ArrayList<ApplicationStartInfo> mInfos; // Always kept sorted by first timestamp.
+        private ArrayList<ApplicationStartInfo> mInfos; // Always kept sorted by monotonic time.
         private int mMaxCapacity;
         private int mUid;
         private boolean mMonitoringModeEnabled = false;
@@ -1271,9 +1271,11 @@ public final class AppStartInfoTracker {
                 return;
             }
 
-            // Sort records so we can remove the least recent ones.
-            Collections.sort(mInfos, (a, b) ->
-                    Long.compare(b.getMonoticCreationTimeMs(), a.getMonoticCreationTimeMs()));
+            if (!android.app.Flags.appStartInfoKeepRecordsSorted()) {
+                // Sort records so we can remove the least recent ones.
+                Collections.sort(mInfos, (a, b) ->
+                        Long.compare(b.getMonoticCreationTimeMs(), a.getMonoticCreationTimeMs()));
+            }
 
             // Remove records and trim list object back to size.
             mInfos.subList(0, mInfos.size() - getMaxCapacity()).clear();
@@ -1288,25 +1290,33 @@ public final class AppStartInfoTracker {
 
         @GuardedBy("mLock")
         void addStartInfoLocked(ApplicationStartInfo info) {
-            int size = mInfos.size();
-            if (size >= getMaxCapacity()) {
-                // Remove oldest record if size is over max capacity.
-                int oldestIndex = -1;
-                long oldestTimeStamp = Long.MAX_VALUE;
-                for (int i = 0; i < size; i++) {
-                    ApplicationStartInfo startInfo = mInfos.get(i);
-                    if (startInfo.getMonoticCreationTimeMs() < oldestTimeStamp) {
-                        oldestTimeStamp = startInfo.getMonoticCreationTimeMs();
-                        oldestIndex = i;
+            if (android.app.Flags.appStartInfoKeepRecordsSorted()) {
+                while (mInfos.size() >= getMaxCapacity()) {
+                    // Expected to execute at most once.
+                    mInfos.removeLast();
+                }
+                mInfos.addFirst(info);
+            } else {
+                int size = mInfos.size();
+                if (size >= getMaxCapacity()) {
+                    // Remove oldest record if size is over max capacity.
+                    int oldestIndex = -1;
+                    long oldestTimeStamp = Long.MAX_VALUE;
+                    for (int i = 0; i < size; i++) {
+                        ApplicationStartInfo startInfo = mInfos.get(i);
+                        if (startInfo.getMonoticCreationTimeMs() < oldestTimeStamp) {
+                            oldestTimeStamp = startInfo.getMonoticCreationTimeMs();
+                            oldestIndex = i;
+                        }
+                    }
+                    if (oldestIndex >= 0) {
+                        mInfos.remove(oldestIndex);
                     }
                 }
-                if (oldestIndex >= 0) {
-                    mInfos.remove(oldestIndex);
-                }
+                mInfos.add(info);
+                Collections.sort(mInfos, (a, b) ->
+                        Long.compare(b.getMonoticCreationTimeMs(), a.getMonoticCreationTimeMs()));
             }
-            mInfos.add(info);
-            Collections.sort(mInfos, (a, b) ->
-                    Long.compare(b.getMonoticCreationTimeMs(), a.getMonoticCreationTimeMs()));
         }
 
         /**
@@ -1493,7 +1503,13 @@ public final class AppStartInfoTracker {
                         info.readFromProto(proto, AppsStartInfoProto.Package.User.APP_START_INFO,
                                 byteArrayInputStream, objectInputStream, typedXmlPullParser);
                         info.setPackageName(packageName);
-                        mInfos.add(info);
+                        if (android.app.Flags.appStartInfoKeepRecordsSorted()) {
+                            // Since the writes are done from oldest to newest, each additional
+                            // record will be newer than the previous so use addFirst.
+                            mInfos.addFirst(info);
+                        } else {
+                            mInfos.add(info);
+                        }
                         break;
                     case (int) AppsStartInfoProto.Package.User.MONITORING_ENABLED:
                         mMonitoringModeEnabled = proto.readBoolean(
