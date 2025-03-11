@@ -31,7 +31,6 @@ import static android.content.Intent.ACTION_MAIN_USER_LOCKSCREEN_KNOWLEDGE_FACTO
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.UserHandle.USER_ALL;
 import static android.os.UserHandle.USER_SYSTEM;
-import static android.security.Flags.reportPrimaryAuthAttempts;
 
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD_OR_PIN;
@@ -2483,11 +2482,8 @@ public class LockSettingsService extends ILockSettings.Stub {
                 requireStrongAuth(STRONG_AUTH_REQUIRED_AFTER_LOCKOUT, userId);
             }
         }
-        if (reportPrimaryAuthAttempts()) {
-            final boolean success =
-                    response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK;
-            notifyLockSettingsStateListeners(success, userId);
-        }
+        final boolean success = response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK;
+        notifyLockSettingsStateListeners(success, userId);
         return response;
     }
 
