@@ -128,11 +128,11 @@ import java.util.concurrent.TimeUnit;
  */
 // TODO (bug:122218838): Make sure we handle start of epoch time
 // TODO (bug:122218838): Validate changed time is handled correctly
-final class HistoricalRegistry implements HistoricalRegistryInterface {
+final class LegacyHistoricalRegistry implements HistoricalRegistryInterface {
     private static final boolean DEBUG = false;
     private static final boolean KEEP_WTF_LOG = Build.IS_DEBUGGABLE;
 
-    private static final String LOG_TAG = HistoricalRegistry.class.getSimpleName();
+    private static final String LOG_TAG = LegacyHistoricalRegistry.class.getSimpleName();
 
     private static final String PARAMETER_DELIMITER = ",";
     private static final String PARAMETER_ASSIGNMENT = "=";
@@ -200,7 +200,7 @@ final class HistoricalRegistry implements HistoricalRegistryInterface {
 
     private final Context mContext;
 
-    HistoricalRegistry(@NonNull Object lock, Context context) {
+    LegacyHistoricalRegistry(@NonNull Object lock, Context context) {
         mInMemoryLock = lock;
         mContext = context;
         if (Flags.enableSqliteAppopsAccesses()) {
@@ -210,7 +210,7 @@ final class HistoricalRegistry implements HistoricalRegistryInterface {
         }
     }
 
-    HistoricalRegistry(@NonNull HistoricalRegistry other) {
+    LegacyHistoricalRegistry(@NonNull LegacyHistoricalRegistry other) {
         this(other.mInMemoryLock, other.mContext);
         mMode = other.mMode;
         mBaseSnapshotInterval = other.mBaseSnapshotInterval;
@@ -313,9 +313,9 @@ final class HistoricalRegistry implements HistoricalRegistryInterface {
                 final int mode = AppOpsManager.parseHistoricalMode(modeValue);
                 final long baseSnapshotInterval = Long.parseLong(baseSnapshotIntervalValue);
                 final int intervalCompressionMultiplier = Integer.parseInt(intervalMultiplierValue);
-                setHistoryParameters(mode, baseSnapshotInterval,intervalCompressionMultiplier);
+                setHistoryParameters(mode, baseSnapshotInterval, intervalCompressionMultiplier);
                 return;
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException ignored) { }
         }
         Slog.w(LOG_TAG, "Bad value for" + Settings.Global.APPOP_HISTORY_PARAMETERS
                 + "=" + setting + " resetting!");
@@ -805,7 +805,7 @@ final class HistoricalRegistry implements HistoricalRegistryInterface {
 
     private void schedulePersistHistoricalOpsMLocked(@NonNull HistoricalOps ops) {
         final Message message = PooledLambda.obtainMessage(
-                HistoricalRegistry::persistPendingHistory, HistoricalRegistry.this);
+                LegacyHistoricalRegistry::persistPendingHistory, LegacyHistoricalRegistry.this);
         message.what = MSG_WRITE_PENDING_HISTORY;
         IoThread.getHandler().sendMessage(message);
         mPendingWrites.offerFirst(ops);
@@ -813,7 +813,7 @@ final class HistoricalRegistry implements HistoricalRegistryInterface {
 
     private static void makeRelativeToEpochStart(@NonNull HistoricalOps ops, long nowMillis) {
         ops.setBeginAndEndTime(nowMillis - ops.getEndTimeMillis(),
-                nowMillis- ops.getBeginTimeMillis());
+                nowMillis - ops.getBeginTimeMillis());
     }
 
     private void pruneFutureOps(@NonNull List<HistoricalOps> ops) {
@@ -979,7 +979,7 @@ final class HistoricalRegistry implements HistoricalRegistryInterface {
                     final HistoricalOps readOp = readOps.get(i);
                     currentOps.merge(readOp);
                 }
-             }
+            }
         }
 
         private @Nullable LinkedList<HistoricalOps> collectHistoricalOpsBaseDLocked(int filterUid,
@@ -1125,7 +1125,7 @@ final class HistoricalRegistry implements HistoricalRegistryInterface {
                 if (existingOpCount > 0) {
                     // Compute elapsed time
                     final long elapsedTimeMillis = passedOps.get(passedOps.size() - 1)
-                        .getEndTimeMillis();
+                            .getEndTimeMillis();
                     for (int i = 0; i < existingOpCount; i++) {
                         final HistoricalOps existingOp = existingOps.get(i);
                         existingOp.offsetBeginAndEndTime(elapsedTimeMillis);
