@@ -49,11 +49,9 @@ constructor(@ShadeDisplayAware private val resources: Resources, val theme: Reso
                     QSTileState.ActivationState.INACTIVE
                 }
             label = resources.getString(R.string.quick_settings_dnd_label)
-            secondaryLabel =
-                resources.getString(
-                    if (data.isActivated) R.string.zen_mode_on else R.string.zen_mode_off
-                )
+            secondaryLabel = data.extraStatus
             contentDescription = label
+            stateDescription = data.extraStatus
             supportedActions =
                 setOf(QSTileState.UserAction.CLICK, QSTileState.UserAction.LONG_CLICK)
             expandedAccessibilityClass = Switch::class

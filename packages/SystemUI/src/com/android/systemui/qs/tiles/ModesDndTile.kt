@@ -121,6 +121,7 @@ constructor(
             label = tileLabel
             secondaryLabel = tileState.secondaryLabel
             contentDescription = tileState.contentDescription
+            stateDescription = tileState.stateDescription
             expandedAccessibilityClassName = tileState.expandedAccessibilityClassName
         }
     }
