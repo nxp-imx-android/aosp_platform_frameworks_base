@@ -47,6 +47,7 @@ import static android.os.storage.StorageManager.FLAG_STORAGE_CE;
 import static android.os.storage.StorageManager.FLAG_STORAGE_DE;
 import static android.os.storage.StorageManager.FLAG_STORAGE_EXTERNAL;
 
+import static com.android.server.pm.InitAppsHelper.ScanParams;
 import static com.android.server.pm.InstructionSets.getAppDexInstructionSets;
 import static com.android.server.pm.PackageManagerException.INTERNAL_ERROR_ARCHIVE_NO_INSTALLER_TITLE;
 import static com.android.server.pm.PackageManagerService.APP_METADATA_FILE_NAME;
@@ -94,6 +95,7 @@ import static com.android.server.pm.PackageManagerServiceUtils.extractAppMetadat
 import static com.android.server.pm.PackageManagerServiceUtils.isInstalledByAdb;
 import static com.android.server.pm.PackageManagerServiceUtils.logCriticalInfo;
 import static com.android.server.pm.PackageManagerServiceUtils.makeDirRecursive;
+import static com.android.server.pm.ParallelPackageParser.OrderedResult;
 import static com.android.server.pm.SharedUidMigration.BEST_EFFORT;
 
 import android.annotation.NonNull;
@@ -205,6 +207,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 
 
@@ -3753,12 +3756,13 @@ final class InstallPackageHelper {
 
         ParallelPackageParser parallelPackageParser =
                 new ParallelPackageParser(packageParser, executorService);
+        ScanParams scanParams = ScanParams.forApexDirScan(parseFlags, scanFlags);
 
         // Submit files for parsing in parallel
         ArrayMap<File, ApexInfo> parsingApexInfo = new ArrayMap<>();
         for (ApexInfo ai : allPackages) {
             File apexFile = new File(ai.modulePath);
-            parallelPackageParser.submit(apexFile, parseFlags);
+            parallelPackageParser.submit(apexFile, scanParams);
             parsingApexInfo.put(apexFile, ai);
         }
 
@@ -3817,18 +3821,61 @@ final class InstallPackageHelper {
     public void installPackagesFromDir(File scanDir, int parseFlags,
             int scanFlags, PackageParser2 packageParser, ExecutorService executorService,
             @Nullable ApexManager.ActiveApexInfo apexInfo) {
-        final File[] files = scanDir.listFiles();
+        ParallelPackageParser parallelPackageParser =
+                new ParallelPackageParser(packageParser, executorService);
+        ScanParams scanParams = (scanFlags & SCAN_AS_APK_IN_APEX) != 0
+                ? ScanParams.forApkInApexScan(scanDir, parseFlags, scanFlags, apexInfo)
+                : ScanParams.forApkPartitionScan(scanDir, parseFlags, scanFlags);
+        int fileCount = scanDirectoryForFilesToParse(parallelPackageParser, scanParams);
+
+        // Process results one by one
+        for (; fileCount > 0; fileCount--) {
+            processParseResult(parallelPackageParser.take());
+        }
+    }
+
+    /**
+     * Performs scans across multiple directories in parallel, then installs packages in the order
+     * that scans were submitted.
+     */
+    @GuardedBy({"mPm.mInstallLock", "mPm.mLock"})
+    public void parallelInstallPackagesFromDirs(List<ScanParams> scanParamsList,
+            PackageParser2 packageParser, ExecutorService executorService) {
+        ParallelPackageParser parallelPackageParser =
+                new ParallelPackageParser(packageParser, executorService);
+        List<List<OrderedResult>> resultsList = new ArrayList<>();
+
+        // Submit scan and parse tasks across all directories.
+        for (ScanParams scanParams : scanParamsList) {
+            resultsList.add(orderedScanDirectoryForFilesToParse(parallelPackageParser, scanParams));
+        }
+
+        // Process results in order.
+        for (List<OrderedResult> partitionResults : resultsList) {
+            for (OrderedResult result : partitionResults) {
+                try {
+                    processParseResult(result.future.get());
+                } catch (ExecutionException | InterruptedException e) {
+                    throw new IllegalStateException("Unable to parse: " + result.scanFile);
+                }
+            }
+        }
+    }
+
+    @GuardedBy({"mPm.mInstallLock", "mPm.mLock"})
+    private int scanDirectoryForFilesToParse(ParallelPackageParser parallelPackageParser,
+            ScanParams scanParams) {
+        final File[] files = scanParams.scanDir.listFiles();
         if (ArrayUtils.isEmpty(files)) {
-            Log.d(TAG, "No files in app dir " + scanDir);
-            return;
+            Log.d(TAG, "No files in app dir " + scanParams.scanDir);
+            return 0;
         }
 
         if (DEBUG_PACKAGE_SCANNING) {
-            Log.d(TAG, "Scanning app dir " + scanDir + " scanFlags=" + scanFlags
-                    + " flags=0x" + Integer.toHexString(parseFlags));
+            Log.d(TAG, "Scanning app dir " + scanParams.scanDir + " scanFlags = "
+                    + scanParams.scanFlags + " flags=0x"
+                    + Integer.toHexString(scanParams.parseFlags));
         }
-        ParallelPackageParser parallelPackageParser =
-                new ParallelPackageParser(packageParser, executorService);
 
         // Submit files for parsing in parallel
         int fileCount = 0;
@@ -3839,56 +3886,95 @@ final class InstallPackageHelper {
                 // Ignore entries which are not packages
                 continue;
             }
-            if ((scanFlags & SCAN_DROP_CACHE) != 0) {
+            if ((scanParams.scanFlags & SCAN_DROP_CACHE) != 0) {
                 final PackageCacher cacher = new PackageCacher(mPm.getCacheDir(),
                         mPm.mPackageParserCallback);
                 Log.w(TAG, "Dropping cache of " + file.getAbsolutePath());
                 cacher.cleanCachedResult(file);
             }
-            parallelPackageParser.submit(file, parseFlags);
+            parallelPackageParser.submit(file, scanParams);
             fileCount++;
         }
+        return fileCount;
+    }
 
-        // Process results one by one
-        for (; fileCount > 0; fileCount--) {
-            ParallelPackageParser.ParseResult parseResult = parallelPackageParser.take();
-            Throwable throwable = parseResult.throwable;
-            int errorCode = PackageManager.INSTALL_SUCCEEDED;
-            String errorMsg = null;
+    // This is similar to scanDirectoryForFilesToParse, but instead of collecting parse tasks in the
+    // order they return (and returning the number of files scanned), this returns the list of parse
+    // results in the order that scans were submitted.
+    @GuardedBy({"mPm.mInstallLock", "mPm.mLock"})
+    private List<OrderedResult> orderedScanDirectoryForFilesToParse(
+            ParallelPackageParser parallelPackageParser, ScanParams scanParams) {
+        List<OrderedResult> orderedResults = new ArrayList<>();
+        final File[] files = scanParams.scanDir.listFiles();
+        if (ArrayUtils.isEmpty(files)) {
+            Log.d(TAG, "No files in app dir " + scanParams.scanDir);
+            return orderedResults;
+        }
 
-            if (throwable == null) {
-                try {
-                    Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "addForInitLI");
-                    addForInitLI(parseResult.parsedPackage, parseFlags, scanFlags,
-                            new UserHandle(UserHandle.USER_SYSTEM), apexInfo);
-                } catch (PackageManagerException e) {
-                    errorCode = e.error;
-                    errorMsg = "Failed to scan " + parseResult.scanFile + ": " + e.getMessage();
-                    Slog.w(TAG, errorMsg);
-                } finally {
-                    Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
-                }
-            } else if (throwable instanceof PackageManagerException) {
-                PackageManagerException e = (PackageManagerException) throwable;
+        if (DEBUG_PACKAGE_SCANNING) {
+            Log.d(TAG, "Scanning app dir " + scanParams.scanDir + " scanFlags = "
+                    + scanParams.scanFlags + " flags=0x"
+                    + Integer.toHexString(scanParams.parseFlags));
+        }
+
+        // Submit files for parsing in parallel
+        for (File file : files) {
+            final boolean isPackage = (isApkFile(file) || file.isDirectory())
+                    && !PackageInstallerService.isStageName(file.getName());
+            if (!isPackage) {
+                // Ignore entries which are not packages
+                continue;
+            }
+            if ((scanParams.scanFlags & SCAN_DROP_CACHE) != 0) {
+                final PackageCacher cacher = new PackageCacher(mPm.getCacheDir(),
+                        mPm.mPackageParserCallback);
+                Log.w(TAG, "Dropping cache of " + file.getAbsolutePath());
+                cacher.cleanCachedResult(file);
+            }
+            orderedResults.add(parallelPackageParser.orderedSubmit(file, scanParams));
+        }
+        return orderedResults;
+    }
+
+    @GuardedBy({"mPm.mInstallLock", "mPm.mLock"})
+    private void processParseResult(ParallelPackageParser.ParseResult result) {
+        Throwable throwable = result.throwable;
+        int errorCode = PackageManager.INSTALL_SUCCEEDED;
+        String errorMsg = null;
+        ScanParams scanParams = result.scanParams;
+
+        if (throwable == null) {
+            try {
+                Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "addForInitLI");
+                addForInitLI(result.parsedPackage, scanParams.parseFlags, scanParams.scanFlags,
+                        new UserHandle(UserHandle.USER_SYSTEM), scanParams.apexInfo);
+            } catch (PackageManagerException e) {
                 errorCode = e.error;
-                errorMsg = "Failed to parse " + parseResult.scanFile + ": " + e.getMessage();
+                errorMsg = "Failed to scan " + result.scanFile + ": " + e.getMessage();
                 Slog.w(TAG, errorMsg);
-            } else {
-                throw new IllegalStateException("Unexpected exception occurred while parsing "
-                        + parseResult.scanFile, throwable);
+            } finally {
+                Trace.traceEnd(TRACE_TAG_PACKAGE_MANAGER);
             }
+        } else if (throwable instanceof PackageManagerException) {
+            PackageManagerException e = (PackageManagerException) throwable;
+            errorCode = e.error;
+            errorMsg = "Failed to parse " + result.scanFile + ": " + e.getMessage();
+            Slog.w(TAG, errorMsg);
+        } else {
+            throw new IllegalStateException("Unexpected exception occurred while parsing "
+                    + result.scanFile, throwable);
+        }
 
-            if ((scanFlags & SCAN_AS_APK_IN_APEX) != 0 && errorCode != INSTALL_SUCCEEDED) {
-                mApexManager.reportErrorWithApkInApex(scanDir.getAbsolutePath(), errorMsg);
-            }
+        if ((scanParams.scanFlags & SCAN_AS_APK_IN_APEX) != 0 && errorCode != INSTALL_SUCCEEDED) {
+            mApexManager.reportErrorWithApkInApex(scanParams.scanDir.getAbsolutePath(), errorMsg);
+        }
 
-            // Delete invalid userdata apps
-            if ((scanFlags & SCAN_AS_SYSTEM) == 0
-                    && errorCode != PackageManager.INSTALL_SUCCEEDED) {
-                logCriticalInfo(Log.WARN,
-                        "Deleting invalid package at " + parseResult.scanFile);
-                mRemovePackageHelper.removeCodePath(parseResult.scanFile);
-            }
+        // Delete invalid userdata apps
+        if ((scanParams.scanFlags & SCAN_AS_SYSTEM) == 0
+                && errorCode != PackageManager.INSTALL_SUCCEEDED) {
+            logCriticalInfo(Log.WARN,
+                    "Deleting invalid package at " + result.scanFile);
+            mRemovePackageHelper.removeCodePath(result.scanFile);
         }
     }
 
