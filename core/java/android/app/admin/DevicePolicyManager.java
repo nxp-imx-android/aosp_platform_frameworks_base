@@ -224,7 +224,7 @@ import java.util.function.Consumer;
  * <li>A <i id="deviceowner">Device Owner</i>, which only ever exists on the
  * {@link UserManager#isSystemUser System User} or Main User, is
  * the most powerful type of Device Policy Controller and can affect policy across the device.
- * <li>A <i id="profileowner">Profile Owner<i>, which can exist on any user, can
+ * <li>A <i id="profileowner">Profile Owner</i>, which can exist on any user, can
  * affect policy on the user it is on, and when it is running on
  * {@link UserManager#isProfile a profile} has
  * <a href="#profile-on-parent">limited</a> ability to affect policy on its parent.
