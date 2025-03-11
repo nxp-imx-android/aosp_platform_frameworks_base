@@ -54,7 +54,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyZeroInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /**
@@ -125,7 +125,7 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
 
         loader.getName(task)
 
-        verifyZeroInteractions(
+        verifyNoMoreInteractions(
             mockPackageManager,
             mockIconProvider,
             mockHeaderIconFactory,
@@ -165,7 +165,7 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
 
         loader.getHeaderIcon(task)
 
-        verifyZeroInteractions(mockPackageManager, mockIconProvider, mockHeaderIconFactory)
+        verifyNoMoreInteractions(mockPackageManager, mockIconProvider, mockHeaderIconFactory)
     }
 
     @Test
@@ -187,7 +187,7 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
 
         loader.getVeilIcon(task)
 
-        verifyZeroInteractions(mockPackageManager, mockIconProvider, mockVeilIconFactory)
+        verifyNoMoreInteractions(mockPackageManager, mockIconProvider, mockVeilIconFactory)
     }
 
     @Test

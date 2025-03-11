@@ -555,8 +555,6 @@ public final class ViewRootImpl implements ViewParent,
     @UiContext
     public final Context mContext;
 
-    private UiModeManager mUiModeManager;
-
     @UnsupportedAppUsage
     final IWindowSession mWindowSession;
     @NonNull Display mDisplay;
@@ -2079,8 +2077,7 @@ public final class ViewRootImpl implements ViewParent,
                 // We also ignore dark theme, since the app developer can override the user's
                 // preference for dark mode in configuration.uiMode. Instead, we assume that both
                 // force invert and the system's dark theme are enabled.
-                if (getUiModeManager().getForceInvertState() ==
-                        UiModeManager.FORCE_INVERT_TYPE_DARK) {
+                if (shouldApplyForceInvertDark()) {
                     final boolean isLightTheme =
                         a.getBoolean(R.styleable.Theme_isLightTheme, false);
                     // TODO: b/372558459 - Also check the background ColorDrawable color lightness
@@ -2106,6 +2103,14 @@ public final class ViewRootImpl implements ViewParent,
         } finally {
             a.recycle();
         }
+    }
+
+    private boolean shouldApplyForceInvertDark() {
+        final UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
+        if (uiModeManager == null) {
+            return false;
+        }
+        return uiModeManager.getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK;
     }
 
     private void updateForceDarkMode() {
@@ -9411,13 +9416,6 @@ public final class ViewRootImpl implements ViewParent,
             mFastScrollSoundEffectsEnabled = mAudioManager.areNavigationRepeatSoundEffectsEnabled();
         }
         return mAudioManager;
-    }
-
-    private UiModeManager getUiModeManager() {
-        if (mUiModeManager == null) {
-            mUiModeManager = mContext.getSystemService(UiModeManager.class);
-        }
-        return mUiModeManager;
     }
 
     private Vibrator getSystemVibrator() {

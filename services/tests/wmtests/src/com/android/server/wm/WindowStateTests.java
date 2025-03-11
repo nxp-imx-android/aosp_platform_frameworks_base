@@ -23,9 +23,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.permission.flags.Flags.FLAG_SENSITIVE_NOTIFICATION_APP_PROTECTION;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.InsetsSource.ID_IME;
-import static android.view.Surface.ROTATION_0;
-import static android.view.Surface.ROTATION_270;
-import static android.view.Surface.ROTATION_90;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.navigationBars;
 import static android.view.WindowInsets.Type.statusBars;
@@ -88,7 +85,6 @@ import static org.mockito.Mockito.when;
 import android.content.ContentResolver;
 import android.content.res.CompatibilityInfo;
 import android.content.res.Configuration;
-import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
@@ -670,56 +666,6 @@ public class WindowStateTests extends WindowTestsBase {
         win.destroySurfaceUnchecked();
         assertFalse(win.syncNextBuffer());
         assertNotEquals(drawT, handledT[0]);
-    }
-
-    @Test
-    public void testSeamlesslyRotateWindow() {
-        final WindowState app = newWindowBuilder("app", TYPE_APPLICATION).build();
-        final SurfaceControl.Transaction t = spy(StubTransaction.class);
-
-        makeWindowVisible(app);
-        app.mSurfaceControl = mock(SurfaceControl.class);
-        final Rect frame = app.getFrame();
-        frame.set(10, 20, 60, 80);
-        app.updateSurfacePosition(t);
-        assertTrue(app.mLastSurfacePosition.equals(frame.left, frame.top));
-        app.seamlesslyRotateIfAllowed(t, ROTATION_0, ROTATION_90, true /* requested */);
-        assertTrue(app.mSeamlesslyRotated);
-
-        // Verify we un-rotate the window state surface.
-        final Matrix matrix = new Matrix();
-        // Un-rotate 90 deg.
-        matrix.setRotate(270);
-        // Translate it back to origin.
-        matrix.postTranslate(0, mDisplayInfo.logicalWidth);
-        verify(t).setMatrix(eq(app.mSurfaceControl), eq(matrix), any(float[].class));
-
-        // Verify we update the position as well.
-        final float[] curSurfacePos = {app.mLastSurfacePosition.x, app.mLastSurfacePosition.y};
-        matrix.mapPoints(curSurfacePos);
-        verify(t).setPosition(eq(app.mSurfaceControl), eq(curSurfacePos[0]), eq(curSurfacePos[1]));
-
-        app.finishSeamlessRotation(t);
-        assertFalse(app.mSeamlesslyRotated);
-        assertNull(app.mPendingSeamlessRotate);
-
-        // Simulate the case with deferred layout and animation.
-        app.resetSurfacePositionForAnimationLeash(t);
-        clearInvocations(t);
-        mWm.mWindowPlacerLocked.deferLayout();
-        app.updateSurfacePosition(t);
-        // Because layout is deferred, the position should keep the reset value.
-        assertTrue(app.mLastSurfacePosition.equals(0, 0));
-
-        app.seamlesslyRotateIfAllowed(t, ROTATION_0, ROTATION_270, true /* requested */);
-        // The last position must be updated so the surface can be unrotated properly.
-        assertTrue(app.mLastSurfacePosition.equals(frame.left, frame.top));
-        matrix.setRotate(90);
-        matrix.postTranslate(mDisplayInfo.logicalHeight, 0);
-        curSurfacePos[0] = frame.left;
-        curSurfacePos[1] = frame.top;
-        matrix.mapPoints(curSurfacePos);
-        verify(t).setPosition(eq(app.mSurfaceControl), eq(curSurfacePos[0]), eq(curSurfacePos[1]));
     }
 
     @Test

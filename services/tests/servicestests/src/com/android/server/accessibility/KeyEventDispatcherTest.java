@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
@@ -159,7 +159,7 @@ public class KeyEventDispatcherTest {
                 mFilter1SequenceCaptor.getValue());
 
         assertTrue(mInputEventsHandler.hasMessages(SEND_FRAMEWORK_KEY_EVENT));
-        verifyZeroInteractions(mMockPowerManagerService);
+        verifyNoMoreInteractions(mMockPowerManagerService);
         assertFalse(isTimeoutPending(mMessageCapturingHandler));
     }
 
@@ -189,7 +189,7 @@ public class KeyEventDispatcherTest {
                 mFilter2SequenceCaptor.getValue());
 
         assertTrue(mInputEventsHandler.hasMessages(SEND_FRAMEWORK_KEY_EVENT));
-        verifyZeroInteractions(mMockPowerManagerService);
+        verifyNoMoreInteractions(mMockPowerManagerService);
         assertFalse(isTimeoutPending(mMessageCapturingHandler));
     }
 
@@ -261,7 +261,7 @@ public class KeyEventDispatcherTest {
         mKeyEventDispatcher.setOnKeyEventResult(mKeyEventFilter2, false,
                 mFilter2SequenceCaptor.getValue());
         assertTrue(mInputEventsHandler.hasMessages(SEND_FRAMEWORK_KEY_EVENT));
-        verifyZeroInteractions(mMockPowerManagerService);
+        verifyNoMoreInteractions(mMockPowerManagerService);
         assertFalse(isTimeoutPending(mMessageCapturingHandler));
     }
 
@@ -278,7 +278,7 @@ public class KeyEventDispatcherTest {
         mKeyEventDispatcher.handleMessage(getTimedMessage(mMessageCapturingHandler, 0));
 
         assertTrue(mInputEventsHandler.hasMessages(SEND_FRAMEWORK_KEY_EVENT));
-        verifyZeroInteractions(mMockPowerManagerService);
+        verifyNoMoreInteractions(mMockPowerManagerService);
     }
 
     @Test
@@ -293,7 +293,7 @@ public class KeyEventDispatcherTest {
         mKeyEventDispatcher.handleMessage(getTimedMessage(mMessageCapturingHandler, 0));
 
         assertTrue(mInputEventsHandler.hasMessages(SEND_FRAMEWORK_KEY_EVENT));
-        verifyZeroInteractions(mMockPowerManagerService);
+        verifyNoMoreInteractions(mMockPowerManagerService);
     }
 
     @Test
@@ -327,7 +327,7 @@ public class KeyEventDispatcherTest {
                 mFilter1SequenceCaptor.getValue());
 
         assertFalse(mInputEventsHandler.hasMessages(SEND_FRAMEWORK_KEY_EVENT));
-        verifyZeroInteractions(mMockPowerManagerService);
+        verifyNoMoreInteractions(mMockPowerManagerService);
     }
 
     @Test
@@ -344,7 +344,7 @@ public class KeyEventDispatcherTest {
         mKeyEventDispatcher.handleMessage(getTimedMessage(mMessageCapturingHandler, 0));
 
         assertFalse(mInputEventsHandler.hasMessages(SEND_FRAMEWORK_KEY_EVENT));
-        verifyZeroInteractions(mMockPowerManagerService);
+        verifyNoMoreInteractions(mMockPowerManagerService);
     }
 
     @Test

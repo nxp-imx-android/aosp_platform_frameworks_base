@@ -360,13 +360,13 @@ public final class QuotaController extends StateController {
 
     /** How much time each app will have to run jobs within their standby bucket window. */
     private final long[] mAllowedTimePerPeriodMs = new long[]{
-            QcConstants.DEFAULT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS,
+            QcConstants.DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS,
             QcConstants.DEFAULT_ALLOWED_TIME_PER_PERIOD_WORKING_MS,
             QcConstants.DEFAULT_ALLOWED_TIME_PER_PERIOD_FREQUENT_MS,
             QcConstants.DEFAULT_ALLOWED_TIME_PER_PERIOD_RARE_MS,
             0, // NEVER
             QcConstants.DEFAULT_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS,
-            QcConstants.DEFAULT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS
+            QcConstants.DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS
     };
 
     /**
@@ -3178,9 +3178,11 @@ public final class QuotaController extends StateController {
         static final String KEY_EJ_GRACE_PERIOD_TOP_APP_MS =
                 QC_CONSTANT_PREFIX + "ej_grace_period_top_app_ms";
 
-        private static final long DEFAULT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS =
+        // Legacy default time each app will have to run jobs within EXEMPTED bucket
+        private static final long DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS =
                 10 * 60 * 1000L; // 10 minutes
-        private static final long DEFAULT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS =
+        // Legacy default time each app will have to run jobs within ACTIVE bucket
+        private static final long DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS =
                 10 * 60 * 1000L; // 10 minutes
         private static final long DEFAULT_ALLOWED_TIME_PER_PERIOD_WORKING_MS =
                 10 * 60 * 1000L; // 10 minutes
@@ -3192,14 +3194,26 @@ public final class QuotaController extends StateController {
                 10 * 60 * 1000L; // 10 minutes
         private static final long DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS =
                 10 * 60 * 1000L; // 10 minutes
+
+        // Current default time each app will have to run jobs within EXEMPTED bucket
+        private static final long DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS =
+                20 * 60 * 1000L; // 20 minutes
+        // Current default time each app will have to run jobs within ACTIVE bucket
+        private static final long DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS =
+                20 * 60 * 1000L; // 20 minutes
+        private static final long DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS =
+                20 * 60 * 1000L; // 20 minutes
+
         private static final long DEFAULT_IN_QUOTA_BUFFER_MS =
                 30 * 1000L; // 30 seconds
         // Legacy default window size for EXEMPTED bucket
+        // EXEMPT apps can run jobs at any time
         private static final long DEFAULT_LEGACY_WINDOW_SIZE_EXEMPTED_MS =
-                DEFAULT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS; // EXEMPT apps can run jobs at any time
+                DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS;
         // Legacy default window size for ACTIVE bucket
+        // ACTIVE apps can run jobs at any time
         private static final long DEFAULT_LEGACY_WINDOW_SIZE_ACTIVE_MS =
-                DEFAULT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS; // ACTIVE apps can run jobs at any time
+                DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS;
         // Legacy default window size for WORKING bucket
         private static final long DEFAULT_LEGACY_WINDOW_SIZE_WORKING_MS =
                 2 * 60 * 60 * 1000L; // 2 hours
@@ -3215,6 +3229,13 @@ public final class QuotaController extends StateController {
                 4 * 60 * 60 * 1000L; // 4 hours
         private static final long DEFAULT_CURRENT_WINDOW_SIZE_FREQUENT_MS =
                 12 * 60 * 60 * 1000L; // 12 hours
+
+        // Latest default window size for EXEMPTED bucket.
+        private static final long DEFAULT_LATEST_WINDOW_SIZE_EXEMPTED_MS =
+                40 * 60 * 1000L; // 40 minutes.
+        // Latest default window size for ACTIVE bucket.
+        private static final long DEFAULT_LATEST_WINDOW_SIZE_ACTIVE_MS =
+                60 * 60 * 1000L; // 60 minutes.
 
         private static final long DEFAULT_WINDOW_SIZE_RARE_MS =
                 24 * 60 * 60 * 1000L; // 24 hours
@@ -3276,12 +3297,13 @@ public final class QuotaController extends StateController {
          * bucket window.
          */
         public long ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS =
-                DEFAULT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS;
+                DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS;
         /**
          * How much time each app in the active bucket will have to run jobs within their standby
          * bucket window.
          */
-        public long ALLOWED_TIME_PER_PERIOD_ACTIVE_MS = DEFAULT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS;
+        public long ALLOWED_TIME_PER_PERIOD_ACTIVE_MS =
+                DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS;
         /**
          * How much time each app in the working set bucket will have to run jobs within their
          * standby bucket window.
@@ -3575,10 +3597,29 @@ public final class QuotaController extends StateController {
         public long EJ_GRACE_PERIOD_TOP_APP_MS = DEFAULT_EJ_GRACE_PERIOD_TOP_APP_MS;
 
         void adjustDefaultBucketWindowSizes() {
-            WINDOW_SIZE_EXEMPTED_MS = DEFAULT_CURRENT_WINDOW_SIZE_EXEMPTED_MS;
-            WINDOW_SIZE_ACTIVE_MS = DEFAULT_CURRENT_WINDOW_SIZE_ACTIVE_MS;
+            ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS = Flags.tuneQuotaWindowDefaultParameters()
+                    ? DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS :
+                    DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS;
+            ALLOWED_TIME_PER_PERIOD_ACTIVE_MS = Flags.tuneQuotaWindowDefaultParameters()
+                    ? DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS :
+                    DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS;
+            ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS = Flags.tuneQuotaWindowDefaultParameters()
+                    ? DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS :
+                    DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS;
+
+            WINDOW_SIZE_EXEMPTED_MS = Flags.tuneQuotaWindowDefaultParameters()
+                    ? DEFAULT_LATEST_WINDOW_SIZE_EXEMPTED_MS :
+                    DEFAULT_CURRENT_WINDOW_SIZE_EXEMPTED_MS;
+            WINDOW_SIZE_ACTIVE_MS = Flags.tuneQuotaWindowDefaultParameters()
+                    ? DEFAULT_LATEST_WINDOW_SIZE_ACTIVE_MS :
+                    DEFAULT_CURRENT_WINDOW_SIZE_ACTIVE_MS;
             WINDOW_SIZE_WORKING_MS = DEFAULT_CURRENT_WINDOW_SIZE_WORKING_MS;
             WINDOW_SIZE_FREQUENT_MS = DEFAULT_CURRENT_WINDOW_SIZE_FREQUENT_MS;
+
+            mAllowedTimePerPeriodMs[EXEMPTED_INDEX] = Math.min(MAX_PERIOD_MS,
+                    Math.max(MINUTE_IN_MILLIS, ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS));
+            mAllowedTimePerPeriodMs[ACTIVE_INDEX] = Math.min(MAX_PERIOD_MS,
+                    Math.max(MINUTE_IN_MILLIS, ALLOWED_TIME_PER_PERIOD_ACTIVE_MS));
 
             mBucketPeriodsMs[EXEMPTED_INDEX] = Math.max(
                     mAllowedTimePerPeriodMs[EXEMPTED_INDEX],
@@ -3592,6 +3633,11 @@ public final class QuotaController extends StateController {
             mBucketPeriodsMs[FREQUENT_INDEX] = Math.max(
                     mAllowedTimePerPeriodMs[FREQUENT_INDEX],
                     Math.min(MAX_PERIOD_MS, WINDOW_SIZE_FREQUENT_MS));
+
+            mAllowedTimePeriodAdditionaInstallerMs =
+                    Math.min(mBucketPeriodsMs[EXEMPTED_INDEX]
+                                    - mAllowedTimePerPeriodMs[EXEMPTED_INDEX],
+                            ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS);
         }
 
         void adjustDefaultEjLimits() {
@@ -3882,10 +3928,14 @@ public final class QuotaController extends StateController {
                     KEY_WINDOW_SIZE_RESTRICTED_MS);
             ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS =
                     properties.getLong(KEY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS,
-                            DEFAULT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS);
+                            Flags.tuneQuotaWindowDefaultParameters()
+                                    ? DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS :
+                                    DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_EXEMPTED_MS);
             ALLOWED_TIME_PER_PERIOD_ACTIVE_MS =
                     properties.getLong(KEY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS,
-                            DEFAULT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS);
+                            Flags.tuneQuotaWindowDefaultParameters()
+                                    ? DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS :
+                                    DEFAULT_LEGACY_ALLOWED_TIME_PER_PERIOD_ACTIVE_MS);
             ALLOWED_TIME_PER_PERIOD_WORKING_MS =
                     properties.getLong(KEY_ALLOWED_TIME_PER_PERIOD_WORKING_MS,
                             DEFAULT_ALLOWED_TIME_PER_PERIOD_WORKING_MS);
@@ -3900,19 +3950,27 @@ public final class QuotaController extends StateController {
                             DEFAULT_ALLOWED_TIME_PER_PERIOD_RESTRICTED_MS);
             ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS =
                     properties.getLong(KEY_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS,
-                            DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS);
+                            Flags.tuneQuotaWindowDefaultParameters()
+                                    ? DEFAULT_CURRENT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS
+                                    : DEFAULT_ALLOWED_TIME_PER_PERIOD_ADDITION_INSTALLER_MS);
             IN_QUOTA_BUFFER_MS = properties.getLong(KEY_IN_QUOTA_BUFFER_MS,
                     DEFAULT_IN_QUOTA_BUFFER_MS);
             MAX_EXECUTION_TIME_MS = properties.getLong(KEY_MAX_EXECUTION_TIME_MS,
                     DEFAULT_MAX_EXECUTION_TIME_MS);
             WINDOW_SIZE_EXEMPTED_MS = properties.getLong(KEY_WINDOW_SIZE_EXEMPTED_MS,
-                    Flags.adjustQuotaDefaultConstants()
-                            ? DEFAULT_CURRENT_WINDOW_SIZE_EXEMPTED_MS :
-                            DEFAULT_LEGACY_WINDOW_SIZE_EXEMPTED_MS);
+                    (Flags.adjustQuotaDefaultConstants()
+                            && Flags.tuneQuotaWindowDefaultParameters())
+                            ? DEFAULT_LATEST_WINDOW_SIZE_EXEMPTED_MS :
+                            (Flags.adjustQuotaDefaultConstants()
+                                    ? DEFAULT_CURRENT_WINDOW_SIZE_EXEMPTED_MS :
+                                    DEFAULT_LEGACY_WINDOW_SIZE_EXEMPTED_MS));
             WINDOW_SIZE_ACTIVE_MS = properties.getLong(KEY_WINDOW_SIZE_ACTIVE_MS,
-                    Flags.adjustQuotaDefaultConstants()
-                            ? DEFAULT_CURRENT_WINDOW_SIZE_ACTIVE_MS :
-                            DEFAULT_LEGACY_WINDOW_SIZE_ACTIVE_MS);
+                    (Flags.adjustQuotaDefaultConstants()
+                            && Flags.tuneQuotaWindowDefaultParameters())
+                            ? DEFAULT_LATEST_WINDOW_SIZE_ACTIVE_MS :
+                            (Flags.adjustQuotaDefaultConstants()
+                                    ? DEFAULT_CURRENT_WINDOW_SIZE_ACTIVE_MS :
+                                    DEFAULT_LEGACY_WINDOW_SIZE_ACTIVE_MS));
             WINDOW_SIZE_WORKING_MS =
                     properties.getLong(KEY_WINDOW_SIZE_WORKING_MS,
                             Flags.adjustQuotaDefaultConstants()

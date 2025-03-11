@@ -39,9 +39,9 @@ import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.statusbar.notification.VisibilityLocationProvider;
 import com.android.systemui.statusbar.notification.collection.GroupEntry;
-import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifStabilityManager;
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider;
@@ -113,6 +113,8 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     @VisibleForTesting
     protected static final long ALLOW_SECTION_CHANGE_TIMEOUT = 500;
 
+    private final boolean mCheckLockScreenTransitionEnabled = Flags.checkLockscreenGoneTransition();
+
     @Inject
     public VisualStabilityCoordinator(
             @Background DelayableExecutor delayableExecutor,
@@ -182,7 +184,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                     this::onTrackingHeadsUpModeChanged);
         }
 
-        if (Flags.checkLockscreenGoneTransition()) {
+        if (mCheckLockScreenTransitionEnabled) {
             if (SceneContainerFlag.isEnabled()) {
                 mJavaAdapter.alwaysCollectFlow(mKeyguardTransitionInteractor.isInTransition(
                                 Edge.create(KeyguardState.LOCKSCREEN, Scenes.Gone), null),
@@ -437,7 +439,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         boolean wasReorderingAllowed = mReorderingAllowed;
         // No need to run notification pipeline when the lockscreen is in fading animation.
         mPipelineRunAllowed = !(isPanelCollapsingOrLaunchingActivity()
-                || (Flags.checkLockscreenGoneTransition() && mLockscreenInGoneTransition));
+                || (mCheckLockScreenTransitionEnabled && mLockscreenInGoneTransition));
         mReorderingAllowed = isReorderingAllowed();
         if (wasPipelineRunAllowed != mPipelineRunAllowed
                 || wasReorderingAllowed != mReorderingAllowed) {
@@ -566,7 +568,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
         pw.println("pipelineRunAllowed: " + mPipelineRunAllowed);
         pw.println("  notifPanelCollapsing: " + mNotifPanelCollapsing);
         pw.println("  launchingNotifActivity: " + mNotifPanelLaunchingActivity);
-        if (Flags.checkLockscreenGoneTransition()) {
+        if (mCheckLockScreenTransitionEnabled) {
             pw.println("  lockscreenInGoneTransition: " + mLockscreenInGoneTransition);
         }
         pw.println("reorderingAllowed: " + mReorderingAllowed);
@@ -627,7 +629,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     }
 
     private void onLockscreenInGoneTransitionChanged(boolean inGoneTransition) {
-        if (!Flags.checkLockscreenGoneTransition()) {
+        if (!mCheckLockScreenTransitionEnabled) {
             return;
         }
         if (inGoneTransition == mLockscreenInGoneTransition) {

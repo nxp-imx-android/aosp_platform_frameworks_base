@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 public class ConditionProviders extends ManagedServices {
 
@@ -203,14 +202,7 @@ public class ConditionProviders extends ManagedServices {
 
     @Override
     protected void loadDefaultsFromConfig() {
-        for (String dndPackage : getDefaultDndAccessPackages(mContext)) {
-            addDefaultComponentOrPackage(dndPackage);
-        }
-    }
-
-    static List<String> getDefaultDndAccessPackages(Context context) {
-        ArrayList<String> packages = new ArrayList<>();
-        String defaultDndAccess = context.getResources().getString(
+        String defaultDndAccess = mContext.getResources().getString(
                 R.string.config_defaultDndAccessPackages);
         if (defaultDndAccess != null) {
             String[] dnds = defaultDndAccess.split(ManagedServices.ENABLED_SERVICES_SEPARATOR);
@@ -218,10 +210,9 @@ public class ConditionProviders extends ManagedServices {
                 if (TextUtils.isEmpty(dnds[i])) {
                     continue;
                 }
-                packages.add(dnds[i]);
+                addDefaultComponentOrPackage(dnds[i]);
             }
         }
-        return packages;
     }
 
     @Override

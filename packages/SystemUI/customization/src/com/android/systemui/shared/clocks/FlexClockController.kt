@@ -16,20 +16,24 @@
 
 package com.android.systemui.shared.clocks
 
+import android.content.res.Resources
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.R
 import com.android.systemui.plugins.clocks.AlarmData
+import com.android.systemui.plugins.clocks.AxisPresetConfig
 import com.android.systemui.plugins.clocks.AxisType
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockConfig
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockEventListener
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFontAxis
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting
 import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
+import com.android.systemui.shared.clocks.FontUtils.put
+import com.android.systemui.shared.clocks.FontUtils.toClockAxis
 import com.android.systemui.shared.clocks.view.FlexClockView
 import java.io.PrintWriter
 import java.util.Locale
@@ -96,8 +100,8 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
                 largeClock.events.onZenDataChanged(data)
             }
 
-            override fun onFontAxesChanged(axes: List<ClockFontAxisSetting>) {
-                val fontAxes = getDefaultAxes(clockCtx.settings).merge(axes).map { it.toSetting() }
+            override fun onFontAxesChanged(axes: ClockAxisStyle) {
+                val fontAxes = ClockAxisStyle(getDefaultAxes(clockCtx.settings).merge(axes))
                 smallClock.events.onFontAxesChanged(fontAxes)
                 largeClock.events.onFontAxesChanged(fontAxes)
             }
@@ -162,66 +166,46 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
                 ),
             )
 
-        private val LEGACY_FLEX_SETTINGS =
-            listOf(
-                GSFAxes.WEIGHT.toClockAxisSetting(600f),
-                GSFAxes.WIDTH.toClockAxisSetting(100f),
-                GSFAxes.ROUND.toClockAxisSetting(100f),
-                GSFAxes.SLANT.toClockAxisSetting(0f),
-            )
+        private val LEGACY_FLEX_SETTINGS = ClockAxisStyle {
+            put(GSFAxes.WEIGHT, 600f)
+            put(GSFAxes.WIDTH, 100f)
+            put(GSFAxes.ROUND, 100f)
+            put(GSFAxes.SLANT, 0f)
+        }
 
-        val AXIS_PRESETS =
-            listOf(
-                FONT_AXES.map { it.toSetting() },
-                LEGACY_FLEX_SETTINGS,
-                listOf( // Porcelain
-                    GSFAxes.WEIGHT.toClockAxisSetting(500f),
-                    GSFAxes.WIDTH.toClockAxisSetting(100f),
-                    GSFAxes.ROUND.toClockAxisSetting(0f),
-                    GSFAxes.SLANT.toClockAxisSetting(0f),
-                ),
-                listOf( // Midnight
-                    GSFAxes.WEIGHT.toClockAxisSetting(300f),
-                    GSFAxes.WIDTH.toClockAxisSetting(100f),
-                    GSFAxes.ROUND.toClockAxisSetting(100f),
-                    GSFAxes.SLANT.toClockAxisSetting(-10f),
-                ),
-                listOf( // Sterling
-                    GSFAxes.WEIGHT.toClockAxisSetting(1000f),
-                    GSFAxes.WIDTH.toClockAxisSetting(100f),
-                    GSFAxes.ROUND.toClockAxisSetting(0f),
-                    GSFAxes.SLANT.toClockAxisSetting(0f),
-                ),
-                listOf( // Smoky Green
-                    GSFAxes.WEIGHT.toClockAxisSetting(150f),
-                    GSFAxes.WIDTH.toClockAxisSetting(50f),
-                    GSFAxes.ROUND.toClockAxisSetting(0f),
-                    GSFAxes.SLANT.toClockAxisSetting(0f),
-                ),
-                listOf( // Iris
-                    GSFAxes.WEIGHT.toClockAxisSetting(500f),
-                    GSFAxes.WIDTH.toClockAxisSetting(100f),
-                    GSFAxes.ROUND.toClockAxisSetting(100f),
-                    GSFAxes.SLANT.toClockAxisSetting(0f),
-                ),
-                listOf( // Margarita
-                    GSFAxes.WEIGHT.toClockAxisSetting(300f),
-                    GSFAxes.WIDTH.toClockAxisSetting(30f),
-                    GSFAxes.ROUND.toClockAxisSetting(100f),
-                    GSFAxes.SLANT.toClockAxisSetting(-10f),
-                ),
-                listOf( // Raspberry
-                    GSFAxes.WEIGHT.toClockAxisSetting(700f),
-                    GSFAxes.WIDTH.toClockAxisSetting(140f),
-                    GSFAxes.ROUND.toClockAxisSetting(100f),
-                    GSFAxes.SLANT.toClockAxisSetting(-7f),
-                ),
-                listOf( // Ultra Blue
-                    GSFAxes.WEIGHT.toClockAxisSetting(850f),
-                    GSFAxes.WIDTH.toClockAxisSetting(130f),
-                    GSFAxes.ROUND.toClockAxisSetting(0f),
-                    GSFAxes.SLANT.toClockAxisSetting(0f),
-                ),
+        private val PRESET_COUNT = 8
+        private val PRESET_WIDTH_INIT = 30f
+        private val PRESET_WIDTH_STEP = 12.5f
+        private val PRESET_WEIGHT_INIT = 800f
+        private val PRESET_WEIGHT_STEP = -100f
+        private val BASE_PRESETS: List<ClockAxisStyle> = run {
+            val presets = mutableListOf<ClockAxisStyle>()
+            var weight = PRESET_WEIGHT_INIT
+            var width = PRESET_WIDTH_INIT
+            for (i in 1..PRESET_COUNT) {
+                presets.add(
+                    ClockAxisStyle {
+                        put(GSFAxes.WEIGHT, weight)
+                        put(GSFAxes.WIDTH, width)
+                        put(GSFAxes.ROUND, 0f)
+                        put(GSFAxes.SLANT, 0f)
+                    }
+                )
+
+                weight += PRESET_WEIGHT_STEP
+                width += PRESET_WIDTH_STEP
+            }
+
+            return@run presets
+        }
+
+        fun buildPresetGroup(resources: Resources, isRound: Boolean): AxisPresetConfig.Group {
+            val round = if (isRound) GSFAxes.ROUND.maxValue else GSFAxes.ROUND.minValue
+            return AxisPresetConfig.Group(
+                presets = BASE_PRESETS.map { it.copy { put(GSFAxes.ROUND, round) } },
+                // TODO(b/395647577): Placeholder Icon; Replace or remove
+                icon = resources.getDrawable(R.drawable.clock_default_thumbnail, null),
             )
+        }
     }
 }

@@ -23,14 +23,12 @@ import android.media.MediaRouter.RouteInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -52,14 +50,14 @@ import java.util.Comparator;
 public class MediaRouteChooserDialog extends AlertDialog {
     private final MediaRouter mRouter;
     private final MediaRouterCallback mCallback;
-    private final boolean mShowProgressBarWhenEmpty;
 
     private int mRouteTypes;
     private View.OnClickListener mExtendedSettingsClickListener;
     private RouteAdapter mAdapter;
-    private ListView mListView;
     private Button mExtendedSettingsButton;
     private boolean mAttachedToWindow;
+
+    private final MediaRouteChooserContentManager mContentManager;
 
     public MediaRouteChooserDialog(Context context, int theme) {
         this(context, theme, true);
@@ -70,7 +68,7 @@ public class MediaRouteChooserDialog extends AlertDialog {
 
         mRouter = (MediaRouter) context.getSystemService(Context.MEDIA_ROUTER_SERVICE);
         mCallback = new MediaRouterCallback();
-        mShowProgressBarWhenEmpty = showProgressBarWhenEmpty;
+        mContentManager = new MediaRouteChooserContentManager(context, showProgressBarWhenEmpty);
     }
 
     /**
@@ -128,8 +126,9 @@ public class MediaRouteChooserDialog extends AlertDialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Note: setView must be called before super.onCreate().
-        setView(LayoutInflater.from(getContext()).inflate(R.layout.media_route_chooser_dialog,
-                null));
+        View containerView = LayoutInflater.from(getContext()).inflate(
+                R.layout.media_route_chooser_dialog, null);
+        setView(containerView);
 
         setTitle(mRouteTypes == MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY
                 ? R.string.media_route_chooser_title_for_remote_display
@@ -140,25 +139,15 @@ public class MediaRouteChooserDialog extends AlertDialog {
 
         super.onCreate(savedInstanceState);
 
-        View emptyView = findViewById(android.R.id.empty);
         mAdapter = new RouteAdapter(getContext());
-        mListView = (ListView) findViewById(R.id.media_route_list);
-        mListView.setAdapter(mAdapter);
-        mListView.setOnItemClickListener(mAdapter);
-        mListView.setEmptyView(emptyView);
+        ListView listView = findViewById(R.id.media_route_list);
+        listView.setAdapter(mAdapter);
+        listView.setOnItemClickListener(mAdapter);
 
-        mExtendedSettingsButton = (Button) findViewById(R.id.media_route_extended_settings_button);
+        mExtendedSettingsButton = findViewById(R.id.media_route_extended_settings_button);
         updateExtendedSettingsButton();
 
-        if (!mShowProgressBarWhenEmpty) {
-            findViewById(R.id.media_route_progress_bar).setVisibility(View.GONE);
-
-            // Center the empty view when the progress bar is not shown.
-            LinearLayout.LayoutParams params =
-                    (LinearLayout.LayoutParams) emptyView.getLayoutParams();
-            params.gravity = Gravity.CENTER;
-            emptyView.setLayoutParams(params);
-        }
+        mContentManager.bindViews(containerView);
     }
 
     private void updateExtendedSettingsButton() {
@@ -240,8 +229,8 @@ public class MediaRouteChooserDialog extends AlertDialog {
                 view = mInflater.inflate(R.layout.media_route_list_item, parent, false);
             }
             MediaRouter.RouteInfo route = getItem(position);
-            TextView text1 = (TextView)view.findViewById(android.R.id.text1);
-            TextView text2 = (TextView)view.findViewById(android.R.id.text2);
+            TextView text1 = view.findViewById(android.R.id.text1);
+            TextView text2 = view.findViewById(android.R.id.text2);
             text1.setText(route.getName());
             CharSequence description = route.getDescription();
             if (TextUtils.isEmpty(description)) {

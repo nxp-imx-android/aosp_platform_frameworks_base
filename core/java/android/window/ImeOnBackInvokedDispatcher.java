@@ -270,8 +270,7 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
                 }
                 mIOnBackInvokedCallback.onBackStarted(
                         new BackMotionEvent(backEvent.getTouchX(), backEvent.getTouchY(), frameTime,
-                                backEvent.getProgress(), false, backEvent.getSwipeEdge(),
-                                null));
+                                backEvent.getProgress(), false, backEvent.getSwipeEdge()));
             } catch (RemoteException e) {
                 Log.e(TAG, "Exception when invoking forwarded callback. e: ", e);
             }
@@ -286,8 +285,7 @@ public class ImeOnBackInvokedDispatcher implements OnBackInvokedDispatcher, Parc
                 }
                 mIOnBackInvokedCallback.onBackProgressed(
                         new BackMotionEvent(backEvent.getTouchX(), backEvent.getTouchY(), frameTime,
-                                backEvent.getProgress(), false, backEvent.getSwipeEdge(),
-                                null));
+                                backEvent.getProgress(), false, backEvent.getSwipeEdge()));
             } catch (RemoteException e) {
                 Log.e(TAG, "Exception when invoking forwarded callback. e: ", e);
             }

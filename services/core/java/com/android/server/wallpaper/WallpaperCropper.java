@@ -856,10 +856,14 @@ public class WallpaperCropper {
             BitmapFactory.decodeFile(wallpaperFile.getAbsolutePath(), options);
             wallpaperImageSize.set(options.outWidth, options.outHeight);
         }
+        boolean isRtl = TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())
+                == View.LAYOUT_DIRECTION_RTL;
+        Rect croppedImageBound = getCrop(displaySize, mDefaultDisplayInfo, wallpaperImageSize,
+                getRelativeCropHints(wallpaperData), isRtl);
 
-        double maxDisplayToImageRatio = Math.max((double) displaySize.x / wallpaperImageSize.x,
-                (double) displaySize.y / wallpaperImageSize.y);
-        if (maxDisplayToImageRatio > 1.5) {
+        double maxDisplayToImageRatio = Math.max((double) displaySize.x / croppedImageBound.width(),
+                (double) displaySize.y / croppedImageBound.height());
+        if (maxDisplayToImageRatio > 1.3) {
             return false;
         }
 

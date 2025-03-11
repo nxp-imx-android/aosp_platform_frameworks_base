@@ -126,3 +126,15 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "tune_quota_window_default_parameters"
+    namespace: "backstage_power"
+    description: "Tune default active/exempted bucket quota parameters"
+    bug: "401767691"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+

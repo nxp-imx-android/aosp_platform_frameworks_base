@@ -152,6 +152,8 @@ class DesktopTilingWindowDecoration(
                     endBounds = destinationBounds,
                     callback,
                 )
+            } else {
+                callback.invoke()
             }
         }
         return isTiled

@@ -224,6 +224,8 @@ public class MediaControlPanel {
             this::setIsScrubbing;
     private final SeekBarViewModel.EnabledChangeListener mEnabledChangeListener =
             this::setIsSeekBarEnabled;
+    private final SeekBarViewModel.ContentDescriptionListener mContentDescriptionListener =
+            this::setSeekbarContentDescription;
 
     private final BroadcastDialogController mBroadcastDialogController;
     private boolean mIsCurrentBroadcastedApp = false;
@@ -327,6 +329,7 @@ public class MediaControlPanel {
         }
         mSeekBarViewModel.removeScrubbingChangeListener(mScrubbingChangeListener);
         mSeekBarViewModel.removeEnabledChangeListener(mEnabledChangeListener);
+        mSeekBarViewModel.removeContentDescriptionListener(mContentDescriptionListener);
         mSeekBarViewModel.onDestroy();
         mMediaViewController.onDestroy();
     }
@@ -395,6 +398,10 @@ public class MediaControlPanel {
         });
     }
 
+    private void setSeekbarContentDescription(CharSequence elapsedTime, CharSequence duration) {
+        mSeekBarObserver.updateContentDescription(elapsedTime, duration);
+    }
+
     /**
      * Reloads animator duration scale.
      */
@@ -424,6 +431,7 @@ public class MediaControlPanel {
         mSeekBarViewModel.attachTouchHandlers(vh.getSeekBar());
         mSeekBarViewModel.setScrubbingChangeListener(mScrubbingChangeListener);
         mSeekBarViewModel.setEnabledChangeListener(mEnabledChangeListener);
+        mSeekBarViewModel.setContentDescriptionListener(mContentDescriptionListener);
         mMediaViewController.attach(player);
 
         vh.getPlayer().setOnLongClickListener(v -> {

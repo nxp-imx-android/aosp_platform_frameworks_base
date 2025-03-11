@@ -98,9 +98,14 @@ class BundleCoordinator @Inject constructor(
         object : NotifBundler("NotifBundler") {
 
             // Use list instead of set to keep fixed order
-            override val bundleIds: List<String> = SYSTEM_RESERVED_IDS
+            override val bundleIds: List<String> =
+                if (debugBundleUi) SYSTEM_RESERVED_IDS + "notify"
+                else SYSTEM_RESERVED_IDS
 
             override fun getBundleIdOrNull(entry: NotificationEntry?): String? {
+                if (debugBundleUi && entry?.key?.contains("notify") == true) {
+                    return "notify"
+                }
                 return entry?.representativeEntry?.channel?.id?.takeIf { it in this.bundleIds }
             }
         }
@@ -109,5 +114,10 @@ class BundleCoordinator @Inject constructor(
         if (NotificationBundleUi.isEnabled) {
             pipeline.setNotifBundler(bundler)
         }
+    }
+
+    companion object {
+        @kotlin.jvm.JvmField
+        var debugBundleUi: Boolean = true
     }
 }

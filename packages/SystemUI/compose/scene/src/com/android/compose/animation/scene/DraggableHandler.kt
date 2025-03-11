@@ -68,7 +68,7 @@ internal class DraggableHandler(
         return layoutImpl.swipeDetector.detectSwipe(change)
     }
 
-    override fun shouldConsumeNestedScroll(sign: Float): Boolean {
+    override fun shouldConsumeNestedPostScroll(sign: Float): Boolean {
         return this.enabled()
     }
 

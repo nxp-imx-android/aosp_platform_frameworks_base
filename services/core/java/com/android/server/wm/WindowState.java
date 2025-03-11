@@ -169,7 +169,6 @@ import static com.android.server.wm.WindowStateProto.IS_READY_FOR_DISPLAY;
 import static com.android.server.wm.WindowStateProto.IS_VISIBLE;
 import static com.android.server.wm.WindowStateProto.KEEP_CLEAR_AREAS;
 import static com.android.server.wm.WindowStateProto.MERGED_LOCAL_INSETS_SOURCES;
-import static com.android.server.wm.WindowStateProto.PENDING_SEAMLESS_ROTATION;
 import static com.android.server.wm.WindowStateProto.REMOVED;
 import static com.android.server.wm.WindowStateProto.REMOVE_ON_EXIT;
 import static com.android.server.wm.WindowStateProto.REQUESTED_HEIGHT;
@@ -231,7 +230,6 @@ import android.view.InsetsSource;
 import android.view.InsetsSourceControl;
 import android.view.InsetsState;
 import android.view.Surface;
-import android.view.Surface.Rotation;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewDebug;
@@ -399,7 +397,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * rotation.
      */
     final boolean mForceSeamlesslyRotate;
-    SeamlessRotator mPendingSeamlessRotate;
 
     private RemoteCallbackList<IWindowFocusObserver> mFocusCallbacks;
 
@@ -593,13 +590,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     /** The time when the window was last requested to redraw for orientation change. */
     private long mOrientationChangeRedrawRequestTime;
 
-    /**
-     * The orientation during the last visible call to relayout. If our
-     * current orientation is different, the window can't be ready
-     * to be shown.
-     */
-    int mLastVisibleLayoutRotation = -1;
-
     /** Is this window now (or just being) removed? */
     boolean mRemoved;
 
@@ -653,15 +643,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * {@link Task#setMainWindowSizeChangeTransaction(Transaction)} to synchronize position.
      */
     boolean mIsSurfacePositionPaused;
-
-    /**
-     * During seamless rotation we have two phases, first the old window contents
-     * are rotated to look as if they didn't move in the new coordinate system. Then we
-     * have to freeze updates to this layer (to preserve the transformation) until
-     * the resize actually occurs. This is true from when the transformation is set
-     * and false until the transaction to resize is sent.
-     */
-    boolean mSeamlesslyRotated = false;
 
     /**
      * Whether the IME insets have been consumed. If {@code true}, this window won't be able to
@@ -778,11 +759,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      */
     private boolean mInsetsAnimationRunning;
 
-    private final Consumer<SurfaceControl.Transaction> mSeamlessRotationFinishedConsumer = t -> {
-        finishSeamlessRotation(t);
-        updateSurfacePosition(t);
-    };
-
     private final Consumer<SurfaceControl.Transaction> mSetSurfacePositionConsumer = t -> {
         // Only apply the position to the surface when there's no leash created.
         if (mSurfaceControl != null && mSurfaceControl.isValid() && !mSurfaceAnimator.hasLeash()) {
@@ -897,69 +873,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final boolean visible = shouldCheckTokenVisibleRequested()
                 ? isVisibleRequested() : isVisible();
         return visible && mFrozenInsetsState == null;
-    }
-
-    void seamlesslyRotateIfAllowed(Transaction transaction, @Rotation int oldRotation,
-            @Rotation int rotation, boolean requested) {
-        // Invisible windows and the wallpaper do not participate in the seamless rotation animation
-        if (!isVisibleNow() || mIsWallpaper) {
-            return;
-        }
-
-        if (mToken.hasFixedRotationTransform()) {
-            // The transform of its surface is handled by fixed rotation.
-            return;
-        }
-        final Task task = getTask();
-        if (task != null && task.inPinnedWindowingMode()) {
-            // It is handled by PinnedTaskController. Note that the windowing mode of activity
-            // and windows may still be fullscreen.
-            return;
-        }
-
-        if (mPendingSeamlessRotate != null) {
-            oldRotation = mPendingSeamlessRotate.getOldRotation();
-        }
-
-        // Skip performing seamless rotation when the controlled insets is IME with visible state.
-        if (mControllableInsetProvider != null
-                && mControllableInsetProvider.getSource().getType() == WindowInsets.Type.ime()) {
-            return;
-        }
-
-        if (mForceSeamlesslyRotate || requested) {
-            if (mControllableInsetProvider != null) {
-                mControllableInsetProvider.startSeamlessRotation();
-            }
-            mPendingSeamlessRotate = new SeamlessRotator(oldRotation, rotation, getDisplayInfo(),
-                    false /* applyFixedTransformationHint */);
-            // The surface position is going to be unrotated according to the last position.
-            // Make sure the source position is up-to-date.
-            mLastSurfacePosition.set(mSurfacePosition.x, mSurfacePosition.y);
-            mPendingSeamlessRotate.unrotate(transaction, this);
-            getDisplayContent().getDisplayRotation().markForSeamlessRotation(this,
-                    true /* seamlesslyRotated */);
-            applyWithNextDraw(mSeamlessRotationFinishedConsumer);
-        }
-    }
-
-    void cancelSeamlessRotation() {
-        finishSeamlessRotation(getPendingTransaction());
-    }
-
-    void finishSeamlessRotation(SurfaceControl.Transaction t) {
-        if (mPendingSeamlessRotate == null) {
-            return;
-        }
-
-        mPendingSeamlessRotate.finish(t, this);
-        mPendingSeamlessRotate = null;
-
-        getDisplayContent().getDisplayRotation().markForSeamlessRotation(this,
-            false /* seamlesslyRotated */);
-        if (mControllableInsetProvider != null) {
-            mControllableInsetProvider.finishSeamlessRotation();
-        }
     }
 
     List<Rect> getSystemGestureExclusion() {
@@ -2176,8 +2089,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 && (mAttrs.privateFlags & PRIVATE_FLAG_NO_MOVE_ANIMATION) == 0
                 && !isDragResizing()
                 && hasMovementAnimation
-                && !mWinAnimator.mLastHidden
-                && !mSeamlesslyRotated;
+                && !mWinAnimator.mLastHidden;
     }
 
     /**
@@ -3998,7 +3910,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         proto.write(REMOVED, mRemoved);
         proto.write(IS_ON_SCREEN, isOnScreen());
         proto.write(IS_VISIBLE, isVisible);
-        proto.write(PENDING_SEAMLESS_ROTATION, mPendingSeamlessRotate != null);
         proto.write(FORCE_SEAMLESS_ROTATION, mForceSeamlesslyRotate);
         proto.write(HAS_COMPAT_SCALE, hasCompatScale());
         proto.write(GLOBAL_SCALE, mGlobalScale);
@@ -4144,14 +4055,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     + " mDestroying=" + mDestroying
                     + " mRemoved=" + mRemoved);
         }
-        pw.print(prefix + "mForceSeamlesslyRotate=" + mForceSeamlesslyRotate
-                + " seamlesslyRotate: pending=");
-        if (mPendingSeamlessRotate != null) {
-            mPendingSeamlessRotate.dump(pw);
-        } else {
-            pw.print("null");
-        }
-        pw.println();
 
         if (mXOffset != 0 || mYOffset != 0) {
             pw.println(prefix + "mXOffset=" + mXOffset + " mYOffset=" + mYOffset);
@@ -4883,8 +4786,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mWinAnimator.mEnterAnimationPending = true;
         }
 
-        mLastVisibleLayoutRotation = getDisplayContent().getRotation();
-
         mWinAnimator.mEnteringAnimation = true;
 
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "prepareToDisplay");
@@ -5282,9 +5183,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         final AsyncRotationController asyncRotationController =
                 mDisplayContent.getAsyncRotationController();
-        if ((asyncRotationController != null
-                && asyncRotationController.hasSeamlessOperation(mToken))
-                || mPendingSeamlessRotate != null) {
+        if (asyncRotationController != null
+                && asyncRotationController.hasSeamlessOperation(mToken)) {
             // Freeze position while un-rotating the window, so its surface remains at the position
             // corresponding to the original rotation.
             return;

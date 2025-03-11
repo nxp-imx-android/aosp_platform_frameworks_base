@@ -31,6 +31,7 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
@@ -42,6 +43,7 @@ import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyl
 public class PromotedNotificationInfo extends NotificationInfo {
     private static final String TAG = "PromotedNotifInfoGuts";
     private INotificationManager mNotificationManager;
+    private PackageDemotionInteractor mPackageDemotionInteractor;
     private NotificationGuts mGutsContainer;
 
     public PromotedNotificationInfo(Context context, AttributeSet attrs) {
@@ -56,6 +58,7 @@ public class PromotedNotificationInfo extends NotificationInfo {
             NotificationIconStyleProvider iconStyleProvider,
             OnUserInteractionCallback onUserInteractionCallback,
             ChannelEditorDialogController channelEditorDialogController,
+            PackageDemotionInteractor packageDemotionInteractor,
             String pkg,
             NotificationChannel notificationChannel,
             NotificationEntry entry,
@@ -65,16 +68,19 @@ public class PromotedNotificationInfo extends NotificationInfo {
             UiEventLogger uiEventLogger,
             boolean isDeviceProvisioned,
             boolean isNonblockable,
+            boolean isDismissable,
             boolean wasShownHighPriority,
             AssistantFeedbackController assistantFeedbackController,
             MetricsLogger metricsLogger, OnClickListener onCloseClick) throws RemoteException {
         super.bindNotification(pm, iNotificationManager, appIconProvider, iconStyleProvider,
-                onUserInteractionCallback, channelEditorDialogController, pkg, notificationChannel,
+                onUserInteractionCallback, channelEditorDialogController, packageDemotionInteractor,
+                pkg, notificationChannel,
                 entry, onSettingsClick, onAppSettingsClick, feedbackClickListener, uiEventLogger,
-                isDeviceProvisioned, isNonblockable, wasShownHighPriority,
+                isDeviceProvisioned, isNonblockable, isDismissable, wasShownHighPriority,
                 assistantFeedbackController, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;
+        mPackageDemotionInteractor = packageDemotionInteractor;
 
         bindDemote(entry.getSbn(), pkg);
     }
@@ -94,8 +100,8 @@ public class PromotedNotificationInfo extends NotificationInfo {
     private OnClickListener getDemoteClickListener(StatusBarNotification sbn, String packageName) {
         return ((View v) -> {
             try {
-                // TODO(b/391661009): Signal AutomaticPromotionCoordinator here
                 mNotificationManager.setCanBePromoted(packageName, sbn.getUid(), false, true);
+                mPackageDemotionInteractor.onPackageDemoted(packageName, sbn.getUid());
                 mGutsContainer.closeControls(v, true);
             } catch (RemoteException e) {
                 Log.e(TAG, "Couldn't revoke live update permission", e);

@@ -20,7 +20,7 @@ import androidx.compose.animation.core.tween
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
 import com.android.compose.animation.scene.reveal.verticalContainerReveal
-import com.android.mechanics.behavior.EdgeContainerExpansionSpec
+import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.systemui.keyguard.ui.composable.blueprint.ClockElementKeys
 import com.android.systemui.notifications.ui.composable.NotificationsShade
 import com.android.systemui.scene.shared.model.Overlays
@@ -29,7 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 fun TransitionBuilder.toNotificationsShadeTransition(
     durationScale: Double = 1.0,
-    shadeExpansionMotion: EdgeContainerExpansionSpec,
+    shadeExpansionMotion: VerticalExpandContainerSpec,
     revealHaptics: ContainerRevealHaptics,
 ) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())

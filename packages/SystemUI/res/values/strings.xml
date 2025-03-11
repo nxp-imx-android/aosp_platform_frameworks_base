@@ -2056,7 +2056,7 @@
     <string name="inline_ok_button">Apply</string>
 
     <!-- Notification inline controls: button to show block screen [CHAR_LIMIT=35] -->
-    <string name="inline_turn_off_notifications">Turn off notifications</string>
+    <string name="inline_turn_off_notifications">Turn off</string>
 
     <!-- [CHAR LIMIT=100] Notification Importance title -->
     <string name="notification_silence_title">Silent</string>

@@ -559,6 +559,17 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     }
 
     @Test
+    fun testClose() = runOnUiThread {
+        verify(mockDisplayController, times(1))
+            .addDisplayWindowListener(eq(taskPositioner))
+
+        taskPositioner.close()
+
+        verify(mockDisplayController, times(1))
+            .removeDisplayWindowListener(eq(taskPositioner))
+    }
+
+    @Test
     fun testIsResizingOrAnimatingResizeSet() = runOnUiThread {
         Assert.assertFalse(taskPositioner.isResizingOrAnimating)
 

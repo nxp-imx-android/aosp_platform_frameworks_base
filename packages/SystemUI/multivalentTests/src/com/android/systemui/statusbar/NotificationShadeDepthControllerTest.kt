@@ -32,14 +32,12 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.statusbar.StatusBarStateController
-import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeExpansionChangeEvent
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScrimController
-import com.android.systemui.statusbar.policy.FakeConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
-import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.WallpaperController
 import com.android.systemui.util.mockito.eq
@@ -77,7 +75,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     private val applicationScope = kosmos.testScope.backgroundScope
-    @Mock private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
     @Mock private lateinit var statusBarStateController: StatusBarStateController
     @Mock private lateinit var blurUtils: BlurUtils
     @Mock private lateinit var biometricUnlockController: BiometricUnlockController
@@ -87,6 +84,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     @Mock private lateinit var wallpaperController: WallpaperController
     @Mock private lateinit var wallpaperInteractor: WallpaperInteractor
     @Mock private lateinit var notificationShadeWindowController: NotificationShadeWindowController
+    @Mock private lateinit var windowRootViewBlurInteractor: WindowRootViewBlurInteractor
+    @Mock private lateinit var shadeModeInteractor: ShadeModeInteractor
     @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var appZoomOutOptional: Optional<AppZoomOut>
     @Mock private lateinit var root: View
@@ -103,7 +102,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     private var statusBarState = StatusBarState.SHADE
     private val maxBlur = 150
     private lateinit var notificationShadeDepthController: NotificationShadeDepthController
-    private val configurationController = FakeConfigurationController()
 
     @Before
     fun setup() {
@@ -133,13 +131,11 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
                 wallpaperInteractor,
                 notificationShadeWindowController,
                 dozeParameters,
-                context,
-                ResourcesSplitShadeStateController(),
+                shadeModeInteractor,
                 windowRootViewBlurInteractor,
                 appZoomOutOptional,
                 applicationScope,
-                dumpManager,
-                configurationController,
+                dumpManager
             )
         notificationShadeDepthController.shadeAnimation = shadeAnimation
         notificationShadeDepthController.brightnessMirrorSpring = brightnessSpring
@@ -492,15 +488,10 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
     }
 
     private fun enableSplitShade() {
-        setSplitShadeEnabled(true)
+        `when` (shadeModeInteractor.isSplitShade).thenReturn(true)
     }
 
     private fun disableSplitShade() {
-        setSplitShadeEnabled(false)
-    }
-
-    private fun setSplitShadeEnabled(enabled: Boolean) {
-        overrideResource(R.bool.config_use_split_notification_shade, enabled)
-        configurationController.notifyConfigurationChanged()
+        `when` (shadeModeInteractor.isSplitShade).thenReturn(false)
     }
 }

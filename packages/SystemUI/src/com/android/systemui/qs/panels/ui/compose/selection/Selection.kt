@@ -62,7 +62,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.zIndex
-import com.android.compose.modifiers.size
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.CommonTileDefaults.InactiveCornerRadius
 import com.android.systemui.qs.panels.ui.compose.selection.SelectionDefaults.BADGE_ANGLE_RAD
@@ -155,6 +154,7 @@ fun InteractiveTileContainer(
                 Icon(
                     Icons.Default.Remove,
                     contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier =
                         Modifier.size(size).align(Alignment.Center).graphicsLayer {
                             this.alpha = badgeIconAlpha
@@ -218,14 +218,15 @@ fun StaticTileBadge(
                     )
                 }
         ) {
-            val secondaryColor = MaterialTheme.colorScheme.secondary
             val size = with(LocalDensity.current) { BadgeIconSize.toDp() }
+            val primaryColor = MaterialTheme.colorScheme.primary
             Icon(
                 icon,
                 contentDescription = contentDescription,
+                tint = MaterialTheme.colorScheme.onPrimary,
                 modifier =
                     Modifier.size(size).align(Alignment.Center).drawBehind {
-                        drawCircle(secondaryColor, radius = BadgeSize.toPx() / 2)
+                        drawCircle(primaryColor, radius = BadgeSize.toPx() / 2)
                     },
             )
         }
@@ -291,7 +292,7 @@ private fun Transition<TileState>.animateColor(): State<Color> {
     return animateColor { state ->
         when (state) {
             None -> Color.Transparent
-            Removable -> MaterialTheme.colorScheme.secondary
+            Removable -> MaterialTheme.colorScheme.primaryContainer
             Selected -> MaterialTheme.colorScheme.primary
         }
     }

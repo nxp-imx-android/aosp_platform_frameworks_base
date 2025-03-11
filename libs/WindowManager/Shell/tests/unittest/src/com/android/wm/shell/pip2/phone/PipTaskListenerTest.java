@@ -30,7 +30,7 @@ import static org.mockito.kotlin.MatchersKt.eq;
 import static org.mockito.kotlin.VerificationKt.clearInvocations;
 import static org.mockito.kotlin.VerificationKt.times;
 import static org.mockito.kotlin.VerificationKt.verify;
-import static org.mockito.kotlin.VerificationKt.verifyZeroInteractions;
+import static org.mockito.kotlin.VerificationKt.verifyNoMoreInteractions;
 
 import android.app.ActivityManager;
 import android.app.PendingIntent;
@@ -176,7 +176,7 @@ public class PipTaskListenerTest {
         mPipTaskListener.setPictureInPictureParams(getPictureInPictureParams(
                 aspectRatio, action1));
 
-        verifyZeroInteractions(mMockPipParamsChangedCallback);
+        verifyNoMoreInteractions(mMockPipParamsChangedCallback);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class PipTaskListenerTest {
         clearInvocations(mMockPipParamsChangedCallback);
         mPipTaskListener.onTaskInfoChanged(new ActivityManager.RunningTaskInfo());
 
-        verifyZeroInteractions(mMockPipParamsChangedCallback);
+        verifyNoMoreInteractions(mMockPipParamsChangedCallback);
         verify(mMockPipTransitionState, times(0))
                 .setOnIdlePipTransitionStateRunnable(any(Runnable.class));
     }
@@ -245,7 +245,7 @@ public class PipTaskListenerTest {
         mPipTaskListener.onTaskInfoChanged(getTaskInfo(aspectRatio, action1));
 
         verify(mMockPipTransitionState).setOnIdlePipTransitionStateRunnable(any(Runnable.class));
-        verifyZeroInteractions(mMockPipParamsChangedCallback);
+        verifyNoMoreInteractions(mMockPipParamsChangedCallback);
     }
 
     @Test
@@ -262,7 +262,7 @@ public class PipTaskListenerTest {
         clearInvocations(mMockPipParamsChangedCallback);
         mPipTaskListener.onTaskInfoChanged(getTaskInfo(aspectRatio, action1));
 
-        verifyZeroInteractions(mMockPipParamsChangedCallback);
+        verifyNoMoreInteractions(mMockPipParamsChangedCallback);
         verify(mMockPipTransitionState, times(0))
                 .setOnIdlePipTransitionStateRunnable(any(Runnable.class));
     }
@@ -319,7 +319,7 @@ public class PipTaskListenerTest {
                 PipTransitionState.SCHEDULED_BOUNDS_CHANGE,
                 extras);
 
-        verifyZeroInteractions(mMockPipScheduler);
+        verifyNoMoreInteractions(mMockPipScheduler);
     }
 
     @Test

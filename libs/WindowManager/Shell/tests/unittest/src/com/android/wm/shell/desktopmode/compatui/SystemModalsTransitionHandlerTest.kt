@@ -90,7 +90,7 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
         whenever(packageManager.getHomeActivities(ArrayList())).thenReturn(componentName)
         desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
         transitionHandler = createTransitionHandler()
-        allowOverlayPermission(arrayOf(SYSTEM_ALERT_WINDOW))
+        allowOverlayPermissionForAllUsers(arrayOf(SYSTEM_ALERT_WINDOW))
     }
 
     private fun createTransitionHandler() =
@@ -200,10 +200,16 @@ class SystemModalsTransitionHandlerTest : ShellTestCase() {
             .isTrue()
     }
 
-    fun allowOverlayPermission(permissions: Array<String>) {
+    fun allowOverlayPermissionForAllUsers(permissions: Array<String>) {
         val packageInfo = mock<PackageInfo>()
         packageInfo.requestedPermissions = permissions
-        whenever(packageManager.getPackageInfo(anyString(), eq(PackageManager.GET_PERMISSIONS)))
+        whenever(
+                packageManager.getPackageInfoAsUser(
+                    anyString(),
+                    eq(PackageManager.GET_PERMISSIONS),
+                    anyInt(),
+                )
+            )
             .thenReturn(packageInfo)
     }
 }

@@ -228,7 +228,7 @@ public final class AutomaticZenRule implements Parcelable {
     public AutomaticZenRule(Parcel source) {
         enabled = source.readInt() == ENABLED;
         if (source.readInt() == ENABLED) {
-            name = getTrimmedString(source.readString8());
+            name = getTrimmedString(source.readString());
         }
         interruptionFilter = source.readInt();
         conditionId = getTrimmedUri(source.readParcelable(null, android.net.Uri.class));
@@ -238,11 +238,11 @@ public final class AutomaticZenRule implements Parcelable {
                 source.readParcelable(null, android.content.ComponentName.class));
         creationTime = source.readLong();
         mZenPolicy = source.readParcelable(null, ZenPolicy.class);
-        mPkg = source.readString8();
+        mPkg = source.readString();
         mDeviceEffects = source.readParcelable(null, ZenDeviceEffects.class);
         mAllowManualInvocation = source.readBoolean();
         mIconResId = source.readInt();
-        mTriggerDescription = getTrimmedString(source.readString8(), MAX_DESC_LENGTH);
+        mTriggerDescription = getTrimmedString(source.readString(), MAX_DESC_LENGTH);
         mType = source.readInt();
     }
 
@@ -514,7 +514,7 @@ public final class AutomaticZenRule implements Parcelable {
         dest.writeInt(enabled ? ENABLED : DISABLED);
         if (name != null) {
             dest.writeInt(1);
-            dest.writeString8(name);
+            dest.writeString(name);
         } else {
             dest.writeInt(0);
         }
@@ -524,11 +524,11 @@ public final class AutomaticZenRule implements Parcelable {
         dest.writeParcelable(configurationActivity, 0);
         dest.writeLong(creationTime);
         dest.writeParcelable(mZenPolicy, 0);
-        dest.writeString8(mPkg);
+        dest.writeString(mPkg);
         dest.writeParcelable(mDeviceEffects, 0);
         dest.writeBoolean(mAllowManualInvocation);
         dest.writeInt(mIconResId);
-        dest.writeString8(mTriggerDescription);
+        dest.writeString(mTriggerDescription);
         dest.writeInt(mType);
     }
 

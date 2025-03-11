@@ -50,6 +50,7 @@ import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
@@ -66,6 +67,7 @@ import android.Manifest;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.IAccessibilityServiceClient;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.PendingIntent;
 import android.app.RemoteAction;
@@ -77,10 +79,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Icon;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
 import android.hardware.input.KeyGestureEvent;
 import android.net.Uri;
@@ -114,6 +118,7 @@ import android.view.accessibility.IUserInitializationCompleteCallback;
 
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.compatibility.common.util.TestUtils;
 import com.android.internal.R;
@@ -135,6 +140,8 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerInternal;
+
+import com.google.common.truth.Correspondence;
 
 import org.junit.After;
 import org.junit.Before;
@@ -188,6 +195,8 @@ public class AccessibilityManagerServiceTest {
             DESCRIPTION,
             TEST_PENDING_INTENT);
 
+    private static final int FAKE_SYSTEMUI_UID = 1000;
+
     private static final int TEST_DISPLAY = Display.DEFAULT_DISPLAY + 1;
     private static final String TARGET_MAGNIFICATION = MAGNIFICATION_CONTROLLER_NAME;
     private static final ComponentName TARGET_ALWAYS_ON_A11Y_SERVICE =
@@ -207,11 +216,12 @@ public class AccessibilityManagerServiceTest {
     @Mock private AbstractAccessibilityServiceConnection.SystemSupport mMockSystemSupport;
     @Mock private WindowManagerInternal.AccessibilityControllerInternal mMockA11yController;
     @Mock private PackageManager mMockPackageManager;
+    @Mock
+    private PackageManagerInternal mMockPackageManagerInternal;
     @Mock private WindowManagerInternal mMockWindowManagerService;
     @Mock private AccessibilitySecurityPolicy mMockSecurityPolicy;
     @Mock private SystemActionPerformer mMockSystemActionPerformer;
     @Mock private AccessibilityWindowManager mMockA11yWindowManager;
-    @Mock private AccessibilityDisplayListener mMockA11yDisplayListener;
     @Mock private ActivityTaskManagerInternal mMockActivityTaskManagerInternal;
     @Mock private UserManagerInternal mMockUserManagerInternal;
     @Mock private IBinder mMockBinder;
@@ -234,6 +244,7 @@ public class AccessibilityManagerServiceTest {
     private TestableLooper mTestableLooper;
     private Handler mHandler;
     private FakePermissionEnforcer mFakePermissionEnforcer;
+    private TestDisplayManagerWrapper mTestDisplayManagerWrapper;
 
     @Before
     public void setUp() throws Exception {
@@ -246,6 +257,7 @@ public class AccessibilityManagerServiceTest {
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.removeServiceForTest(StatusBarManagerInternal.class);
         LocalServices.removeServiceForTest(PermissionEnforcer.class);
+        LocalServices.removeServiceForTest(PackageManagerInternal.class);
         LocalServices.addService(
                 WindowManagerInternal.class, mMockWindowManagerService);
         LocalServices.addService(
@@ -255,6 +267,12 @@ public class AccessibilityManagerServiceTest {
         LocalServices.addService(StatusBarManagerInternal.class, mStatusBarManagerInternal);
         mInputFilter = mock(FakeInputFilter.class);
         mTestableContext.addMockSystemService(DevicePolicyManager.class, mDevicePolicyManager);
+
+        when(mMockPackageManagerInternal.getSystemUiServiceComponent()).thenReturn(
+                new ComponentName("com.android.systemui", "com.android.systemui.SystemUIService"));
+        when(mMockPackageManagerInternal.getPackageUid(eq("com.android.systemui"), anyLong(),
+                anyInt())).thenReturn(FAKE_SYSTEMUI_UID);
+        LocalServices.addService(PackageManagerInternal.class, mMockPackageManagerInternal);
 
         when(mMockMagnificationController.getMagnificationConnectionManager()).thenReturn(
                 mMockMagnificationConnectionManager);
@@ -273,15 +291,9 @@ public class AccessibilityManagerServiceTest {
                 eq(UserHandle.USER_CURRENT)))
                 .thenReturn(mTestableContext.getUserId());
 
-        final ArrayList<Display> displays = new ArrayList<>();
-        final Display defaultDisplay = new Display(DisplayManagerGlobal.getInstance(),
-                Display.DEFAULT_DISPLAY, new DisplayInfo(),
-                DisplayAdjustments.DEFAULT_DISPLAY_ADJUSTMENTS);
-        final Display testDisplay = new Display(DisplayManagerGlobal.getInstance(), TEST_DISPLAY,
-                new DisplayInfo(), DisplayAdjustments.DEFAULT_DISPLAY_ADJUSTMENTS);
-        displays.add(defaultDisplay);
-        displays.add(testDisplay);
-        when(mMockA11yDisplayListener.getValidDisplayList()).thenReturn(displays);
+        mTestDisplayManagerWrapper = new TestDisplayManagerWrapper(mTestableContext);
+        mTestDisplayManagerWrapper.mDisplays = createFakeDisplayList(Display.TYPE_INTERNAL,
+                Display.TYPE_EXTERNAL);
 
         mA11yms = new AccessibilityManagerService(
                 mTestableContext,
@@ -290,7 +302,7 @@ public class AccessibilityManagerServiceTest {
                 mMockSecurityPolicy,
                 mMockSystemActionPerformer,
                 mMockA11yWindowManager,
-                mMockA11yDisplayListener,
+                mTestDisplayManagerWrapper,
                 mMockMagnificationController,
                 mInputFilter,
                 mProxyManager,
@@ -2309,6 +2321,73 @@ public class AccessibilityManagerServiceTest {
                 mA11yms.getCurrentUserIdLocked())).isEmpty();
     }
 
+    @Test
+    public void displayListReturnsDisplays() {
+        mTestDisplayManagerWrapper.mDisplays = createFakeDisplayList(
+                        Display.TYPE_INTERNAL,
+                        Display.TYPE_EXTERNAL,
+                        Display.TYPE_WIFI,
+                        Display.TYPE_OVERLAY,
+                        Display.TYPE_VIRTUAL
+        );
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            // In #setUp() we already have TYPE_INTERNAL and TYPE_EXTERNAL. Call the rest.
+            for (int i = 2; i < mTestDisplayManagerWrapper.mDisplays.size(); i++) {
+                mTestDisplayManagerWrapper.mRegisteredListener.onDisplayAdded(
+                        mTestDisplayManagerWrapper.mDisplays.get(i).getDisplayId());
+            }
+        });
+
+        List<Display> displays = mA11yms.getValidDisplayList();
+        assertThat(displays).hasSize(5);
+        assertThat(displays)
+                .comparingElementsUsing(
+                        Correspondence.transforming(Display::getType, "has a type of"))
+                .containsExactly(Display.TYPE_INTERNAL,
+                        Display.TYPE_EXTERNAL,
+                        Display.TYPE_WIFI,
+                        Display.TYPE_OVERLAY,
+                        Display.TYPE_VIRTUAL);
+    }
+
+    @Test
+    public void displayListReturnsDisplays_excludesVirtualPrivate() {
+        // Add a private virtual display whose uid is different from systemui.
+        final List<Display> displays = createFakeDisplayList(Display.TYPE_INTERNAL,
+                Display.TYPE_EXTERNAL);
+        displays.add(createFakeVirtualPrivateDisplay(/* displayId= */ 2, FAKE_SYSTEMUI_UID + 100));
+        mTestDisplayManagerWrapper.mDisplays = displays;
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mTestDisplayManagerWrapper.mRegisteredListener.onDisplayAdded(2);
+        });
+
+        List<Display> validDisplays = mA11yms.getValidDisplayList();
+        assertThat(validDisplays).hasSize(2);
+        assertThat(validDisplays)
+                .comparingElementsUsing(
+                        Correspondence.transforming(Display::getType, "has a type of"))
+                .doesNotContain(Display.TYPE_VIRTUAL);
+    }
+
+    @Test
+    public void displayListReturnsDisplays_includesVirtualSystemUIPrivate() {
+        // Add a private virtual display whose uid is systemui.
+        final List<Display> displays = createFakeDisplayList(Display.TYPE_INTERNAL,
+                Display.TYPE_EXTERNAL);
+        displays.add(createFakeVirtualPrivateDisplay(/* displayId= */ 2, FAKE_SYSTEMUI_UID));
+        mTestDisplayManagerWrapper.mDisplays = displays;
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            mTestDisplayManagerWrapper.mRegisteredListener.onDisplayAdded(2);
+        });
+
+        List<Display> validDisplays = mA11yms.getValidDisplayList();
+        assertThat(validDisplays).hasSize(3);
+        assertThat(validDisplays)
+                .comparingElementsUsing(
+                        Correspondence.transforming(Display::getType, "has a type of"))
+                .contains(Display.TYPE_VIRTUAL);
+    }
+
     private Set<String> readStringsFromSetting(String setting) {
         final Set<String> result = new ArraySet<>();
         mA11yms.readColonDelimitedSettingToSet(
@@ -2422,6 +2501,27 @@ public class AccessibilityManagerServiceTest {
                 });
     }
 
+    private static List<Display> createFakeDisplayList(int... types) {
+        final ArrayList<Display> displays = new ArrayList<>();
+        for (int i = 0; i < types.length; i++) {
+            final DisplayInfo info = new DisplayInfo();
+            info.type = types[i];
+            final Display display = new Display(DisplayManagerGlobal.getInstance(),
+                    i, info, DisplayAdjustments.DEFAULT_DISPLAY_ADJUSTMENTS);
+            displays.add(display);
+        }
+        return displays;
+    }
+
+    private static Display createFakeVirtualPrivateDisplay(int displayId, int uid) {
+        final DisplayInfo info = new DisplayInfo();
+        info.type = Display.TYPE_VIRTUAL;
+        info.flags |= Display.FLAG_PRIVATE;
+        info.ownerUid = uid;
+        return new Display(DisplayManagerGlobal.getInstance(),
+                displayId, info, DisplayAdjustments.DEFAULT_DISPLAY_ADJUSTMENTS);
+    }
+
     public static class FakeInputFilter extends AccessibilityInputFilter {
         FakeInputFilter(Context context,
                 AccessibilityManagerService service) {
@@ -2505,5 +2605,36 @@ public class AccessibilityManagerServiceTest {
                 .containsExactlyElementsIn(value);
         Set<String> setting = readStringsFromSetting(ShortcutUtils.convertToKey(shortcutType));
         assertThat(setting).containsExactlyElementsIn(value);
+    }
+
+    private static class TestDisplayManagerWrapper extends
+            AccessibilityDisplayListener.DisplayManagerWrapper {
+        List<Display> mDisplays;
+        DisplayManager.DisplayListener mRegisteredListener;
+
+        TestDisplayManagerWrapper(Context context) {
+            super(context);
+        }
+
+        @Override
+        public Display[] getDisplays() {
+            return mDisplays.toArray(new Display[0]);
+        }
+
+        @Override
+        public Display getDisplay(int displayId) {
+            for (final Display display : mDisplays) {
+                if (display.getDisplayId() == displayId) {
+                    return display;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public void registerDisplayListener(@NonNull DisplayManager.DisplayListener listener,
+                @Nullable Handler handler) {
+            mRegisteredListener = listener;
+        }
     }
 }

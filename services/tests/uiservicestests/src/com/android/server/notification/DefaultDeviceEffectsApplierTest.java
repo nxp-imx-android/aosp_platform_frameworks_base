@@ -36,7 +36,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.KeyguardManager;
@@ -184,7 +183,7 @@ public class DefaultDeviceEffectsApplierTest {
         mApplier.apply(noEffects, ORIGIN_USER_IN_SYSTEMUI);
 
         verify(mPowerManager).suppressAmbientDisplay(anyString(), eq(false));
-        verifyZeroInteractions(mColorDisplayManager, mWallpaperManager, mUiModeManager);
+        verifyNoMoreInteractions(mColorDisplayManager, mWallpaperManager, mUiModeManager);
     }
 
     @Test
@@ -252,8 +251,8 @@ public class DefaultDeviceEffectsApplierTest {
         // Wallpaper dimming was undone, Grayscale was applied, nothing else was touched.
         verify(mWallpaperManager).setWallpaperDimAmount(eq(0.0f));
         verify(mColorDisplayManager).setSaturationLevel(eq(0));
-        verifyZeroInteractions(mPowerManager);
-        verifyZeroInteractions(mUiModeManager);
+        verifyNoMoreInteractions(mPowerManager);
+        verifyNoMoreInteractions(mUiModeManager);
     }
 
     @Test
@@ -269,7 +268,7 @@ public class DefaultDeviceEffectsApplierTest {
                 ORIGIN_APP);
 
         // Effect was not yet applied, but a broadcast receiver was registered.
-        verifyZeroInteractions(mUiModeManager);
+        verifyNoMoreInteractions(mUiModeManager);
         verify(mContext).registerReceiver(broadcastReceiverCaptor.capture(),
                 intentFilterCaptor.capture(), anyInt());
         assertThat(intentFilterCaptor.getValue().getAction(0)).isEqualTo(Intent.ACTION_SCREEN_OFF);
@@ -337,7 +336,7 @@ public class DefaultDeviceEffectsApplierTest {
                 origin.value());
 
         // Effect was not applied, will be on next screen-off.
-        verifyZeroInteractions(mUiModeManager);
+        verifyNoMoreInteractions(mUiModeManager);
         verify(mContext).registerReceiver(any(),
                 argThat(filter -> Intent.ACTION_SCREEN_OFF.equals(filter.getAction(0))),
                 anyInt());

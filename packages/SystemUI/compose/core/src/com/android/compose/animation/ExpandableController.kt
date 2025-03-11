@@ -26,7 +26,6 @@ import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.State
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -80,6 +79,24 @@ fun rememberExpandableController(
     borderStroke: BorderStroke? = null,
     transitionControllerFactory: ComposableControllerFactory? = null,
 ): ExpandableController {
+    return rememberExpandableController(
+        color = { color },
+        shape = shape,
+        contentColor = contentColor,
+        borderStroke = borderStroke,
+        transitionControllerFactory = transitionControllerFactory,
+    )
+}
+
+/** Create an [ExpandableController] to control an [Expandable]. */
+@Composable
+fun rememberExpandableController(
+    color: () -> Color,
+    shape: Shape,
+    contentColor: Color = Color.Unspecified,
+    borderStroke: BorderStroke? = null,
+    transitionControllerFactory: ComposableControllerFactory? = null,
+): ExpandableController {
     val composeViewRoot = LocalView.current
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
@@ -125,7 +142,7 @@ fun rememberExpandableController(
 }
 
 internal class ExpandableControllerImpl(
-    internal val color: Color,
+    internal val color: () -> Color,
     internal val contentColor: Color,
     internal val shape: Shape,
     internal val borderStroke: BorderStroke?,

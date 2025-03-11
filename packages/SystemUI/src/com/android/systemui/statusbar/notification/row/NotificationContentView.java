@@ -269,6 +269,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         mNotificationMaxHeight = maxHeight;
     }
 
+    // This logic is mirrored in FrameLayoutWithMaxHeight.onMeasure in AODPromotedNotification.kt.
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int heightMode = MeasureSpec.getMode(heightMeasureSpec);
@@ -1592,10 +1593,13 @@ public class NotificationContentView extends FrameLayout implements Notification
             return;
         }
         ImageView bubbleButton = layout.findViewById(com.android.internal.R.id.bubble_button);
-        View actionContainer = layout.findViewById(com.android.internal.R.id.actions_container);
-        ViewGroup actionListMarginTarget = layout.findViewById(
-                com.android.internal.R.id.notification_action_list_margin_target);
-        if (bubbleButton == null || actionContainer == null) {
+        // With the new design, the actions_container should always be visible to act as padding
+        // when there are no actions. We're making its child visible/invisible instead.
+        View actionsContainerForVisibilityChange = layout.findViewById(
+                notificationsRedesignTemplates()
+                        ? com.android.internal.R.id.actions_container_layout
+                        : com.android.internal.R.id.actions_container);
+        if (bubbleButton == null || actionsContainerForVisibilityChange == null) {
             return;
         }
 
@@ -1613,17 +1617,14 @@ public class NotificationContentView extends FrameLayout implements Notification
             bubbleButton.setImageDrawable(d);
             bubbleButton.setOnClickListener(mContainingNotification.getBubbleClickListener());
             bubbleButton.setVisibility(VISIBLE);
-            actionContainer.setVisibility(VISIBLE);
-            // Set notification_action_list_margin_target's bottom margin to 0 when showing bubble
-            if (actionListMarginTarget != null) {
-                removeBottomMargin(actionListMarginTarget);
-            }
-            if (notificationsRedesignTemplates()) {
-                // Similar treatment for smart reply margin
-                LinearLayout smartReplyContainer = layout.findViewById(
-                        com.android.internal.R.id.smart_reply_container);
-                if (smartReplyContainer != null) {
-                    removeBottomMargin(smartReplyContainer);
+            actionsContainerForVisibilityChange.setVisibility(VISIBLE);
+            if (!notificationsRedesignTemplates()) {
+                // Set notification_action_list_margin_target's bottom margin to 0 when showing
+                // bubble
+                ViewGroup actionListMarginTarget = layout.findViewById(
+                        com.android.internal.R.id.notification_action_list_margin_target);
+                if (actionListMarginTarget != null) {
+                    removeBottomMargin(actionListMarginTarget);
                 }
             }
         } else  {
@@ -1664,8 +1665,13 @@ public class NotificationContentView extends FrameLayout implements Notification
             return;
         }
         ImageView snoozeButton = layout.findViewById(com.android.internal.R.id.snooze_button);
-        View actionContainer = layout.findViewById(com.android.internal.R.id.actions_container);
-        if (snoozeButton == null || actionContainer == null) {
+        // With the new design, the actions_container should always be visible to act as padding
+        // when there are no actions. We're making its child visible/invisible instead.
+        View actionsContainerForVisibilityChange = layout.findViewById(
+                notificationsRedesignTemplates()
+                        ? com.android.internal.R.id.actions_container_layout
+                        : com.android.internal.R.id.actions_container);
+        if (snoozeButton == null || actionsContainerForVisibilityChange == null) {
             return;
         }
         // Notification.Builder can 'disable' the snooze button to prevent it from being shown here
@@ -1691,7 +1697,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         snoozeButton.setOnClickListener(
                 mContainingNotification.getSnoozeClickListener(snoozeMenuItem));
         snoozeButton.setVisibility(VISIBLE);
-        actionContainer.setVisibility(VISIBLE);
+        actionsContainerForVisibilityChange.setVisibility(VISIBLE);
     }
 
     private void applySmartReplyView() {

@@ -22,11 +22,14 @@ import android.util.Log
 import android.view.IRemoteAnimationFinishedCallback
 import android.view.RemoteAnimationTarget
 import android.view.WindowManager
+import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissTransitionInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardShowWhileAwakeInteractor
 import com.android.systemui.keyguard.ui.binder.KeyguardSurfaceBehindParamsApplier
 import com.android.systemui.statusbar.policy.KeyguardStateController
+import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import com.android.window.flags.Flags
 import com.android.wm.shell.keyguard.KeyguardTransitions
 import java.util.concurrent.Executor
@@ -46,6 +49,9 @@ constructor(
     private val keyguardSurfaceBehindAnimator: KeyguardSurfaceBehindParamsApplier,
     private val keyguardDismissTransitionInteractor: KeyguardDismissTransitionInteractor,
     private val keyguardTransitions: KeyguardTransitions,
+    private val selectedUserInteractor: SelectedUserInteractor,
+    private val lockPatternUtils: LockPatternUtils,
+    private val keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor,
 ) {
 
     /**
@@ -92,11 +98,22 @@ constructor(
      *   second timeout).
      */
     private var isKeyguardGoingAway = false
-        private set(value) {
+        private set(goingAway) {
             // TODO(b/278086361): Extricate the keyguard state controller.
-            keyguardStateController.notifyKeyguardGoingAway(value)
-            field = value
+            keyguardStateController.notifyKeyguardGoingAway(goingAway)
+
+            if (goingAway) {
+                keyguardGoingAwayRequestedForUserId = selectedUserInteractor.getSelectedUserId()
+            }
+
+            field = goingAway
         }
+
+    /**
+     * The current user ID when we asked WM to start the keyguard going away animation. This is used
+     * for validation when user switching occurs during unlock.
+     */
+    private var keyguardGoingAwayRequestedForUserId: Int = -1
 
     /** Callback provided by WM to call once we're done with the going away animation. */
     private var goingAwayRemoteAnimationFinishedCallback: IRemoteAnimationFinishedCallback? = null
@@ -171,6 +188,14 @@ constructor(
         nonApps: Array<RemoteAnimationTarget>,
         finishedCallback: IRemoteAnimationFinishedCallback,
     ) {
+        goingAwayRemoteAnimationFinishedCallback = finishedCallback
+
+        if (maybeStartTransitionIfUserSwitchedDuringGoingAway()) {
+            Log.d(TAG, "User switched during keyguard going away - ending remote animation.")
+            endKeyguardGoingAwayAnimation()
+            return
+        }
+
         // If we weren't expecting the keyguard to be going away, WM triggered this transition.
         if (!isKeyguardGoingAway) {
             // Since WM triggered this, we're likely not transitioning to GONE yet. See if we can
@@ -198,7 +223,6 @@ constructor(
         }
 
         if (apps.isNotEmpty()) {
-            goingAwayRemoteAnimationFinishedCallback = finishedCallback
             keyguardSurfaceBehindAnimator.applyParamsToSurface(apps[0])
         } else {
             // Nothing to do here if we have no apps, end the animation, which will cancel it and WM
@@ -211,6 +235,7 @@ constructor(
         // If WM cancelled the animation, we need to end immediately even if we're still using the
         // animation.
         endKeyguardGoingAwayAnimation()
+        maybeStartTransitionIfUserSwitchedDuringGoingAway()
     }
 
     /**
@@ -298,6 +323,29 @@ constructor(
             isKeyguardGoingAway = false
 
             keyguardSurfaceBehindAnimator.notifySurfaceReleased()
+        }
+    }
+
+    /**
+     * If necessary, start a transition to show/hide keyguard in response to a user switch during
+     * keyguard going away.
+     *
+     * Returns [true] if a transition was started, or false if a transition was not necessary.
+     */
+    private fun maybeStartTransitionIfUserSwitchedDuringGoingAway(): Boolean {
+        val currentUser = selectedUserInteractor.getSelectedUserId()
+        if (currentUser != keyguardGoingAwayRequestedForUserId) {
+            if (lockPatternUtils.isSecure(currentUser)) {
+                keyguardShowWhileAwakeInteractor.onSwitchedToSecureUserWhileKeyguardGoingAway()
+            } else {
+                keyguardDismissTransitionInteractor.startDismissKeyguardTransition(
+                    reason = "User switch during keyguard going away, and new user is insecure"
+                )
+            }
+
+            return true
+        } else {
+            return false
         }
     }
 

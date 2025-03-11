@@ -113,6 +113,10 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
         return false
     }
 
+    override fun isPromotedOngoing(): Boolean {
+        return false
+    }
+
     override fun isFullScreenCapable(): Boolean {
         return false
     }

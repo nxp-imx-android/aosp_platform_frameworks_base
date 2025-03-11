@@ -27,6 +27,8 @@ import android.text.TextUtils;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.res.R;
 
+import java.util.function.Consumer;
+
 import javax.inject.Inject;
 
 @SysUISingleton
@@ -73,7 +75,7 @@ public class DefaultIntentCreator implements IntentCreator {
         return chooserIntent;
     }
 
-    public Intent getImageEditIntent(Uri uri, Context context) {
+    public void getImageEditIntentAsync(Uri uri, Context context, Consumer<Intent> outputConsumer) {
         String editorPackage = context.getString(R.string.config_screenshotEditor);
         Intent editIntent = new Intent(Intent.ACTION_EDIT);
         if (!TextUtils.isEmpty(editorPackage)) {
@@ -83,7 +85,7 @@ public class DefaultIntentCreator implements IntentCreator {
         editIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         editIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         editIntent.putExtra(EXTRA_EDIT_SOURCE, EDIT_SOURCE_CLIPBOARD);
-        return editIntent;
+        outputConsumer.accept(editIntent);
     }
 
     public Intent getRemoteCopyIntent(ClipData clipData, Context context) {

@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.content.Context;
 
@@ -105,6 +105,6 @@ public class DevicePostureControllerTest extends ShellTestCase {
         int sameDevicePosture = mDevicePostureCaptor.getValue();
         mDevicePostureController.onDevicePostureChanged(sameDevicePosture);
 
-        verifyZeroInteractions(mOnDevicePostureChangedListener);
+        verifyNoMoreInteractions(mOnDevicePostureChangedListener);
     }
 }

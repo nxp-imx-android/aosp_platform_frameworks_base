@@ -65,6 +65,7 @@ import android.graphics.drawable.Icon;
 import android.net.MacAddress;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.text.Spanned;
@@ -621,8 +622,10 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             Slog.w(TAG, "Already selected.");
             return;
         }
-        // Notify the adapter to highlight the selected item.
-        mDeviceAdapter.setSelectedPosition(position);
+        // Delay highlighting the selected item by posting to the main thread.
+        // This helps avoid flicker in the user consent dialog after device selection.
+        new Handler(
+                Looper.getMainLooper()).post(() -> mDeviceAdapter.setSelectedPosition(position));
 
         mSelectedDevice = requireNonNull(selectedDevice);
 

@@ -21,9 +21,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 
+import java.util.function.Consumer;
+
 public interface IntentCreator {
     Intent getTextEditorIntent(Context context);
     Intent getShareIntent(ClipData clipData, Context context);
-    Intent getImageEditIntent(Uri uri, Context context);
+    void getImageEditIntentAsync(Uri uri, Context context, Consumer<Intent> outputConsumer);
     Intent getRemoteCopyIntent(ClipData clipData, Context context);
 }

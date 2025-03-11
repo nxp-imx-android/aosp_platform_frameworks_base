@@ -671,9 +671,13 @@ void NativeInputManager::setDisplayTopology(JNIEnv* env, jobject topologyGraph) 
         return;
     }
 
-    // TODO(b/383092013): Add topology validation
     const DisplayTopologyGraph displayTopology =
             android_hardware_display_DisplayTopologyGraph_toNative(env, topologyGraph);
+    if (input_flags::enable_display_topology_validation() && !displayTopology.isValid()) {
+        LOG(ERROR) << "Ignoring Invalid DisplayTopology";
+        return;
+    }
+
     mInputManager->getDispatcher().setDisplayTopology(displayTopology);
     mInputManager->getChoreographer().setDisplayTopology(displayTopology);
 }

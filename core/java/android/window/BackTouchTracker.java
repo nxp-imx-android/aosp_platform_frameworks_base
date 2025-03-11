@@ -20,7 +20,6 @@ import android.annotation.FloatRange;
 import android.os.SystemProperties;
 import android.util.MathUtils;
 import android.view.MotionEvent;
-import android.view.RemoteAnimationTarget;
 
 import java.io.PrintWriter;
 
@@ -147,15 +146,14 @@ public class BackTouchTracker {
     }
 
     /** Creates a start {@link BackMotionEvent}. */
-    public BackMotionEvent createStartEvent(RemoteAnimationTarget target) {
+    public BackMotionEvent createStartEvent() {
         return new BackMotionEvent(
                 /* touchX = */ mInitTouchX,
                 /* touchY = */ mInitTouchY,
                 /* frameTimeMillis = */ 0,
                 /* progress = */ 0,
                 /* triggerBack = */ mTriggerBack,
-                /* swipeEdge = */ mSwipeEdge,
-                /* departingAnimationTarget = */ target);
+                /* swipeEdge = */ mSwipeEdge);
     }
 
     /** Creates a progress {@link BackMotionEvent}. */
@@ -239,8 +237,7 @@ public class BackTouchTracker {
                 /* frameTimeMillis = */ 0,
                 /* progress = */ progress,
                 /* triggerBack = */ mTriggerBack,
-                /* swipeEdge = */ mSwipeEdge,
-                /* departingAnimationTarget = */ null);
+                /* swipeEdge = */ mSwipeEdge);
     }
 
     /** Sets the thresholds for computing progress. */

@@ -36,6 +36,8 @@ import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioDevicePort;
 import android.media.AudioManager;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
 
@@ -67,6 +69,8 @@ import java.util.concurrent.Executor;
 public class HearingDevicePhoneCallNotificationControllerTest {
     @Rule
     public MockitoRule mockito = MockitoJUnit.rule();
+    @Rule
+    public SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final String TEST_ADDRESS = "55:66:77:88:99:AA";
 
@@ -118,6 +122,7 @@ public class HearingDevicePhoneCallNotificationControllerTest {
                 AudioManager.DEVICE_OUT_BLE_HEADSET);
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).thenReturn(
                 new AudioDeviceInfo[]{hapDeviceInfo});
+        when(mAudioManager.getCommunicationDevice()).thenReturn(hapDeviceInfo);
         when(mAudioManager.getAvailableCommunicationDevices()).thenReturn(List.of(hapDeviceInfo));
 
         mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK);
@@ -132,6 +137,7 @@ public class HearingDevicePhoneCallNotificationControllerTest {
                 AudioManager.DEVICE_OUT_BLUETOOTH_A2DP);
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).thenReturn(
                 new AudioDeviceInfo[]{a2dpDeviceInfo});
+        when(mAudioManager.getCommunicationDevice()).thenReturn(a2dpDeviceInfo);
         when(mAudioManager.getAvailableCommunicationDevices()).thenReturn(List.of(a2dpDeviceInfo));
 
         mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK);
@@ -146,6 +152,7 @@ public class HearingDevicePhoneCallNotificationControllerTest {
                 AudioManager.DEVICE_OUT_BLE_HEADSET);
         when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).thenReturn(
                 new AudioDeviceInfo[]{hapDeviceInfo});
+        when(mAudioManager.getCommunicationDevice()).thenReturn(hapDeviceInfo);
         when(mAudioManager.getAvailableCommunicationDevices()).thenReturn(List.of(hapDeviceInfo));
 
         mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK);
@@ -153,6 +160,51 @@ public class HearingDevicePhoneCallNotificationControllerTest {
 
         verify(mNotificationManager).cancel(
                 eq(SystemMessageProto.SystemMessage.NOTE_HEARING_DEVICE_INPUT_SWITCH));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_INPUT_CHANGE_WHEN_COMM_DEVICE)
+    public void onCallStateChanged_nonHearingDevice_offHookThenIdle_callAddAndRemoveListener() {
+        final ArgumentCaptor<AudioManager.OnCommunicationDeviceChangedListener> listenerCaptor =
+                ArgumentCaptor.forClass(AudioManager.OnCommunicationDeviceChangedListener.class);
+        AudioDeviceInfo a2dpDeviceInfo = createAudioDeviceInfo(TEST_ADDRESS,
+                AudioManager.DEVICE_OUT_BLUETOOTH_A2DP);
+        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).thenReturn(
+                new AudioDeviceInfo[]{a2dpDeviceInfo});
+        when(mAudioManager.getCommunicationDevice()).thenReturn(a2dpDeviceInfo);
+
+        mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK);
+        mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_IDLE);
+
+        verify(mAudioManager).addOnCommunicationDeviceChangedListener(any(Executor.class),
+                listenerCaptor.capture());
+        verify(mAudioManager).removeOnCommunicationDeviceChangedListener(
+                eq(listenerCaptor.getValue()));
+    }
+
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_INPUT_CHANGE_WHEN_COMM_DEVICE)
+    public void onCallStateChanged_hearingDeviceFromCommunicationDeviceChanged_showNotification() {
+        final ArgumentCaptor<AudioManager.OnCommunicationDeviceChangedListener> listenerCaptor =
+                ArgumentCaptor.forClass(AudioManager.OnCommunicationDeviceChangedListener.class);
+        AudioDeviceInfo hapDeviceInfo = createAudioDeviceInfo(TEST_ADDRESS,
+                AudioManager.DEVICE_OUT_BLE_HEADSET);
+        AudioDeviceInfo a2dpDeviceInfo = createAudioDeviceInfo(TEST_ADDRESS,
+                AudioManager.DEVICE_OUT_BLUETOOTH_A2DP);
+        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).thenReturn(
+                new AudioDeviceInfo[]{a2dpDeviceInfo});
+        when(mAudioManager.getCommunicationDevice()).thenReturn(a2dpDeviceInfo);
+
+        mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK);
+        verify(mAudioManager).addOnCommunicationDeviceChangedListener(any(Executor.class),
+                listenerCaptor.capture());
+        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).thenReturn(
+                new AudioDeviceInfo[]{hapDeviceInfo});
+        listenerCaptor.getValue().onCommunicationDeviceChanged(hapDeviceInfo);
+
+        verify(mNotificationManager).notify(
+                eq(SystemMessageProto.SystemMessage.NOTE_HEARING_DEVICE_INPUT_SWITCH), any());
     }
 
     private AudioDeviceInfo createAudioDeviceInfo(String address, int type) {

@@ -27,6 +27,7 @@ import android.util.IndentingPrintWriter;
 
 import androidx.annotation.NonNull;
 
+import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
 import com.android.settingslib.devicestate.DeviceStateRotationLockSettingsManager;
 import com.android.systemui.Dumpable;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -56,8 +57,8 @@ public final class DeviceStateRotationLockSettingController
     private int mDeviceState = -1;
     @Nullable
     private DeviceStateManager.DeviceStateCallback mDeviceStateCallback;
-    private DeviceStateRotationLockSettingsManager.DeviceStateRotationLockSettingsListener
-            mDeviceStateRotationLockSettingsListener;
+    private DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSettingListener
+            mDeviceStateAutoRotateSettingListener;
 
     @Inject
     public DeviceStateRotationLockSettingController(
@@ -83,17 +84,17 @@ public final class DeviceStateRotationLockSettingController
             // is no user action.
             mDeviceStateCallback = this::updateDeviceState;
             mDeviceStateManager.registerCallback(mMainExecutor, mDeviceStateCallback);
-            mDeviceStateRotationLockSettingsListener = () ->
+            mDeviceStateAutoRotateSettingListener = () ->
                     readPersistedSetting("deviceStateRotationLockChange", mDeviceState);
             mDeviceStateRotationLockSettingsManager.registerListener(
-                    mDeviceStateRotationLockSettingsListener);
+                    mDeviceStateAutoRotateSettingListener);
         } else {
             if (mDeviceStateCallback != null) {
                 mDeviceStateManager.unregisterCallback(mDeviceStateCallback);
             }
-            if (mDeviceStateRotationLockSettingsListener != null) {
+            if (mDeviceStateAutoRotateSettingListener != null) {
                 mDeviceStateRotationLockSettingsManager.unregisterListener(
-                        mDeviceStateRotationLockSettingsListener);
+                        mDeviceStateAutoRotateSettingListener);
             }
         }
     }

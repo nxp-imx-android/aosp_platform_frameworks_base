@@ -98,8 +98,6 @@ class HandleMenuTest : ShellTestCase() {
 
     private lateinit var handleMenu: HandleMenu
 
-    private val menuWidthWithElevation = MENU_WIDTH + MENU_PILL_ELEVATION
-
     @Before
     fun setUp() {
         val mockAdditionalViewHostViewContainer = AdditionalViewHostViewContainer(
@@ -126,7 +124,6 @@ class HandleMenuTest : ShellTestCase() {
             addOverride(R.dimen.desktop_mode_handle_menu_height, MENU_HEIGHT)
             addOverride(R.dimen.desktop_mode_handle_menu_margin_top, MENU_TOP_MARGIN)
             addOverride(R.dimen.desktop_mode_handle_menu_margin_start, MENU_START_MARGIN)
-            addOverride(R.dimen.desktop_mode_handle_menu_pill_elevation, MENU_PILL_ELEVATION)
             addOverride(
                 R.dimen.desktop_mode_handle_menu_pill_spacing_margin, MENU_PILL_SPACING_MARGIN)
         }
@@ -141,7 +138,7 @@ class HandleMenuTest : ShellTestCase() {
         assertTrue(handleMenu.handleMenuViewContainer is AdditionalSystemViewContainer)
         // Verify menu is created at coordinates that, when added to WindowManager,
         // show at the top-center of display.
-        val expected = Point(DISPLAY_BOUNDS.centerX() - menuWidthWithElevation / 2, MENU_TOP_MARGIN)
+        val expected = Point(DISPLAY_BOUNDS.centerX() - MENU_WIDTH / 2, MENU_TOP_MARGIN)
         assertEquals(expected.toPointF(), handleMenu.handleMenuPosition)
     }
 
@@ -165,7 +162,7 @@ class HandleMenuTest : ShellTestCase() {
         // Verify menu is created at coordinates that, when added to WindowManager,
         // show at the top-center of split left task.
         val expected = Point(
-            SPLIT_LEFT_BOUNDS.centerX() - menuWidthWithElevation / 2,
+            SPLIT_LEFT_BOUNDS.centerX() - MENU_WIDTH / 2,
             MENU_TOP_MARGIN
         )
         assertEquals(expected.toPointF(), handleMenu.handleMenuPosition)
@@ -180,7 +177,7 @@ class HandleMenuTest : ShellTestCase() {
         // Verify menu is created at coordinates that, when added to WindowManager,
         // show at the top-center of split right task.
         val expected = Point(
-            SPLIT_RIGHT_BOUNDS.centerX() - menuWidthWithElevation / 2,
+            SPLIT_RIGHT_BOUNDS.centerX() - MENU_WIDTH / 2,
             MENU_TOP_MARGIN
         )
         assertEquals(expected.toPointF(), handleMenu.handleMenuPosition)
@@ -323,7 +320,6 @@ class HandleMenuTest : ShellTestCase() {
         private const val MENU_HEIGHT = 400
         private const val MENU_TOP_MARGIN = 10
         private const val MENU_START_MARGIN = 20
-        private const val MENU_PILL_ELEVATION = 2
         private const val MENU_PILL_SPACING_MARGIN = 4
         private const val HANDLE_WIDTH = 80
         private const val APP_NAME = "Test App"

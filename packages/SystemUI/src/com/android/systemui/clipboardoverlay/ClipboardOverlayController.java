@@ -558,8 +558,10 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
 
     private void editImage(Uri uri) {
         mClipboardLogger.logSessionComplete(CLIPBOARD_OVERLAY_EDIT_TAPPED);
-        mContext.startActivity(mIntentCreator.getImageEditIntent(uri, mContext));
-        animateOut();
+        mIntentCreator.getImageEditIntentAsync(uri, mContext, intent -> {
+            mContext.startActivity(intent);
+            animateOut();
+        });
     }
 
     private void editText() {
@@ -747,8 +749,10 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                             mIntentCreator.getTextEditorIntent(mContext));
                     break;
                 case IMAGE:
-                    finishWithSharedTransition(CLIPBOARD_OVERLAY_EDIT_TAPPED,
-                            mIntentCreator.getImageEditIntent(mClipboardModel.getUri(), mContext));
+                    mIntentCreator.getImageEditIntentAsync(mClipboardModel.getUri(), mContext,
+                            intent -> {
+                                finishWithSharedTransition(CLIPBOARD_OVERLAY_EDIT_TAPPED, intent);
+                            });
                     break;
                 default:
                     Log.w(TAG, "Got preview tapped callback for non-editable type "

@@ -25,10 +25,8 @@
     >
 
     <LinearLayout
-        android:id="@+id/notification_action_list_margin_target"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/notification_content_margin"
         android:orientation="vertical"
         >
 

@@ -37,7 +37,6 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 import android.accessibilityservice.GestureDescription.GestureStep;
@@ -223,7 +222,7 @@ public class MotionEventInjectorTest {
         verifyNoMoreInteractions(next);
         reset(next);
 
-        verifyZeroInteractions(mServiceInterface);
+        verifyNoMoreInteractions(mServiceInterface);
 
         mMessageCapturingHandler.sendOneMessage(); // Send a motion event
         verify(next).onMotionEvent(argThat(allOf(mIsLineEnd, hasRightDownTime)),

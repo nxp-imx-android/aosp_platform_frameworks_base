@@ -6470,9 +6470,11 @@ public class Notification implements Parcelable
             contentView.setViewVisibility(R.id.notification_material_reply_text_3, View.GONE);
             contentView.setTextViewText(R.id.notification_material_reply_text_3, null);
 
-            // This may get erased by bindSnoozeAction, or if we're showing the bubble icon
-            contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
-                    RemoteViews.MARGIN_BOTTOM, R.dimen.notification_content_margin);
+            if (!notificationsRedesignTemplates()) {
+                // This may get erased by bindSnoozeAction, or if we're showing the bubble icon
+                contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
+                        RemoteViews.MARGIN_BOTTOM, R.dimen.notification_content_margin);
+            }
         }
 
         private boolean bindSnoozeAction(RemoteViews contentView, StandardTemplateParams p) {
@@ -6489,7 +6491,7 @@ public class Notification implements Parcelable
             final boolean snoozeEnabled = !hideSnoozeButton
                     && mContext.getContentResolver() != null
                     && isSnoozeSettingEnabled();
-            if (snoozeEnabled) {
+            if (!notificationsRedesignTemplates() && snoozeEnabled) {
                 contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
                         RemoteViews.MARGIN_BOTTOM, 0);
             }
@@ -6569,44 +6571,18 @@ public class Notification implements Parcelable
             }
 
             boolean validRemoteInput = false;
+            // With the new design, the actions_container should always be visible to act as padding
+            // when there are no actions. We're making its child GONE instead.
+            int actionsContainerForVisibilityChange = notificationsRedesignTemplates()
+                    ? R.id.actions_container_layout : R.id.actions_container;
             if (numActions > 0 && !p.mHideActions) {
-                contentView.setViewVisibility(R.id.actions_container, View.VISIBLE);
+                contentView.setViewVisibility(actionsContainerForVisibilityChange, View.VISIBLE);
                 contentView.setViewVisibility(R.id.actions, View.VISIBLE);
-                contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
-                        RemoteViews.MARGIN_BOTTOM, 0);
-                if (notificationsRedesignTemplates()) {
-                    // No need for additional space under smart replies/smart actions.
-                    contentView.setViewLayoutMarginDimen(R.id.smart_reply_container,
-                            RemoteViews.MARGIN_BOTTOM, 0);
-                    if (emphasizedMode) {
-                        // Emphasized actions look similar to smart replies, so let's use the same
-                        // margins.
-                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
-                                RemoteViews.MARGIN_TOP,
-                                R.dimen.notification_2025_smart_reply_container_margin);
-                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
-                                RemoteViews.MARGIN_BOTTOM,
-                                R.dimen.notification_2025_smart_reply_container_margin);
-                    } else {
-                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
-                                RemoteViews.MARGIN_TOP, 0);
-                        contentView.setViewLayoutMarginDimen(R.id.actions_container,
-                                RemoteViews.MARGIN_BOTTOM,
-                                R.dimen.notification_2025_action_list_margin_bottom);
-                    }
-                }
+                updateMarginsForActions(contentView, emphasizedMode);
                 validRemoteInput = populateActionsContainer(contentView, p, nonContextualActions,
                         numActions, emphasizedMode);
             } else {
-                contentView.setViewVisibility(R.id.actions_container, View.GONE);
-                if (notificationsRedesignTemplates() && !snoozeEnabled) {
-                    // Make sure smart replies & smart actions have enough space at the bottom
-                    // (if present) when there are no actions. This should be set to 0 if we're
-                    // showing the snooze or bubble buttons.
-                    contentView.setViewLayoutMarginDimen(R.id.smart_reply_container,
-                            RemoteViews.MARGIN_BOTTOM,
-                            R.dimen.notification_2025_smart_reply_container_margin);
-                }
+                contentView.setViewVisibility(actionsContainerForVisibilityChange, View.GONE);
             }
 
             RemoteInputHistoryItem[] replyText = getParcelableArrayFromBundle(
@@ -6650,6 +6626,30 @@ public class Notification implements Parcelable
             }
 
             return contentView;
+        }
+
+        private void updateMarginsForActions(RemoteViews contentView, boolean emphasizedMode) {
+            if (notificationsRedesignTemplates()) {
+                if (emphasizedMode) {
+                    // Emphasized actions look similar to smart replies, so let's use the same
+                    // margins.
+                    contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                            RemoteViews.MARGIN_TOP,
+                            R.dimen.notification_2025_smart_reply_container_margin);
+                    contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                            RemoteViews.MARGIN_BOTTOM,
+                            R.dimen.notification_2025_smart_reply_container_margin);
+                } else {
+                    contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                            RemoteViews.MARGIN_TOP, 0);
+                    contentView.setViewLayoutMarginDimen(R.id.actions_container,
+                            RemoteViews.MARGIN_BOTTOM,
+                            R.dimen.notification_2025_action_list_margin_bottom);
+                }
+            } else {
+                contentView.setViewLayoutMarginDimen(R.id.notification_action_list_margin_target,
+                        RemoteViews.MARGIN_BOTTOM, 0);
+            }
         }
 
         private boolean populateActionsContainer(RemoteViews contentView, StandardTemplateParams p,

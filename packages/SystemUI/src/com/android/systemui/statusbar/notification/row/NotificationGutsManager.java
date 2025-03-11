@@ -47,7 +47,6 @@ import com.android.internal.logging.nano.MetricsProto;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.settingslib.notification.ConversationIconFactory;
 import com.android.systemui.CoreStartable;
-import com.android.systemui.Flags;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.dagger.qualifiers.Main;
@@ -71,6 +70,7 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewListener;
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewManager;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -100,6 +100,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     private final AccessibilityManager mAccessibilityManager;
     private final HighPriorityProvider mHighPriorityProvider;
     private final ChannelEditorDialogController mChannelEditorDialogController;
+    private final PackageDemotionInteractor mPackageDemotionInteractor;
     private final OnUserInteractionCallback mOnUserInteractionCallback;
 
     // Dependencies:
@@ -155,6 +156,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             LauncherApps launcherApps,
             ShortcutManager shortcutManager,
             ChannelEditorDialogController channelEditorDialogController,
+            PackageDemotionInteractor packageDemotionInteractor,
             UserContextProvider contextTracker,
             AssistantFeedbackController assistantFeedbackController,
             Optional<BubblesManager> bubblesManagerOptional,
@@ -184,6 +186,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         mShortcutManager = shortcutManager;
         mContextTracker = contextTracker;
         mChannelEditorDialogController = channelEditorDialogController;
+        mPackageDemotionInteractor = packageDemotionInteractor;
         mAssistantFeedbackController = assistantFeedbackController;
         mBubblesManagerOptional = bubblesManagerOptional;
         mUiEventLogger = uiEventLogger;
@@ -229,15 +232,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                     /* y= */ -1,
                     /* resetMenu= */ true);
         }
-    }
-
-    public void onDensityOrFontScaleChanged(NotificationEntry entry) {
-        if (!Flags.notificationUndoGutsOnConfigChanged()) {
-            Log.wtf(TAG, "onDensityOrFontScaleChanged should not be called if"
-                    + " notificationUndoGutsOnConfigChanged is off");
-        }
-        setExposedGuts(entry.getGuts());
-        bindGuts(entry.getRow());
     }
 
     /**
@@ -289,11 +283,6 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     private void startConversationSettingsActivity(int uid, ExpandableNotificationRow row) {
         final Intent intent = new Intent(Settings.ACTION_CONVERSATION_SETTINGS);
         mNotificationActivityStarter.startNotificationGutsIntent(intent, uid, row);
-    }
-
-    private boolean bindGuts(final ExpandableNotificationRow row) {
-        row.ensureGutsInflated();
-        return bindGuts(row, mGutsMenuItem);
     }
 
     @VisibleForTesting
@@ -429,6 +418,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mIconStyleProvider,
                 mOnUserInteractionCallback,
                 mChannelEditorDialogController,
+                mPackageDemotionInteractor,
                 packageName,
                 row.getEntry().getChannel(),
                 row.getEntry(),
@@ -440,6 +430,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 NotificationBundleUi.isEnabled()
                         ? !row.getEntry().isBlockable()
                         : row.getIsNonblockable(),
+                row.canViewBeDismissed(),
                 mHighPriorityProvider.isHighPriority(row.getEntry()),
                 mAssistantFeedbackController,
                 mMetricsLogger,
@@ -605,6 +596,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         return mNotificationGutsExposed;
     }
 
+    @VisibleForTesting
     public void setExposedGuts(NotificationGuts guts) {
         mNotificationGutsExposed = guts;
     }

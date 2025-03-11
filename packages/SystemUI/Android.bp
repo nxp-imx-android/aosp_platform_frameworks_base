@@ -534,6 +534,7 @@ android_library {
         "androidx.compose.animation_animation-graphics",
         "androidx.lifecycle_lifecycle-viewmodel-compose",
         "kairos",
+        "displaylib",
         "aconfig_settings_flags_lib",
     ],
     libs: [
@@ -728,6 +729,7 @@ android_library {
         "Traceur-res",
         "aconfig_settings_flags_lib",
         "kairos",
+        "displaylib",
     ],
 }
 
@@ -770,6 +772,7 @@ android_library {
         "androidx.compose.runtime_runtime",
         "kairos",
         "kosmos",
+        "displaylib",
         "testables",
         "androidx.test.rules",
         "platform-compat-test-rules",

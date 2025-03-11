@@ -95,6 +95,7 @@ import com.android.wm.shell.compatui.impl.DefaultComponentIdGenerator;
 import com.android.wm.shell.desktopmode.DesktopMode;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
+import com.android.wm.shell.desktopmode.common.DefaultHomePackageSupplier;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelper;
 import com.android.wm.shell.displayareahelper.DisplayAreaHelperController;
@@ -260,8 +261,14 @@ public abstract class WMShellBaseModule {
 
     @WMSingleton
     @Provides
-    static DesktopModeCompatPolicy provideDesktopModeCompatPolicy(Context context) {
-        return new DesktopModeCompatPolicy(context);
+    static DesktopModeCompatPolicy provideDesktopModeCompatPolicy(
+            Context context,
+            ShellInit shellInit,
+            @ShellMainThread Handler mainHandler) {
+        final DesktopModeCompatPolicy policy = new DesktopModeCompatPolicy(context);
+        policy.setDefaultHomePackageSupplier(new DefaultHomePackageSupplier(
+                context, shellInit, mainHandler));
+        return policy;
     }
 
     @WMSingleton

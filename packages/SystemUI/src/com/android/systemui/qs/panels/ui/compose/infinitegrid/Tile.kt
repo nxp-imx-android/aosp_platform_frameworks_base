@@ -25,6 +25,7 @@ import android.service.quicksettings.Tile.STATE_ACTIVE
 import android.service.quicksettings.Tile.STATE_INACTIVE
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -59,6 +60,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.Role
@@ -74,7 +76,9 @@ import androidx.compose.ui.util.trace
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.Expandable
 import com.android.compose.animation.bounceable
+import com.android.compose.animation.rememberExpandableController
 import com.android.compose.modifiers.thenIf
+import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
@@ -165,6 +169,7 @@ fun Tile(
         // TODO(b/361789146): Draw the shapes instead of clipping
         val tileShape by TileDefaults.animateTileShapeAsState(uiState.state)
         val animatedColor by animateColorAsState(colors.background, label = "QSTileBackgroundColor")
+        val animatedAlpha by animateFloatAsState(colors.alpha, label = "QSTileAlpha")
 
         TileExpandable(
             color = { animatedColor },
@@ -181,7 +186,8 @@ fun Tile(
                         nextBounceable = currentBounceableInfo.nextTile,
                         orientation = Orientation.Horizontal,
                         bounceEnd = currentBounceableInfo.bounceEnd,
-                    ),
+                    )
+                    .graphicsLayer { alpha = animatedAlpha },
         ) { expandable ->
             val longClick: (() -> Unit)? =
                 {
@@ -260,8 +266,7 @@ private fun TileExpandable(
     content: @Composable (Expandable) -> Unit,
 ) {
     Expandable(
-        color = color(),
-        shape = shape,
+        controller = rememberExpandableController(color = color, shape = shape),
         modifier = modifier.clip(shape).verticalSquish(squishiness),
         useModifierBasedImplementation = true,
     ) {
@@ -370,6 +375,7 @@ data class TileColors(
     val label: Color,
     val secondaryLabel: Color,
     val icon: Color,
+    val alpha: Float = 1f,
 )
 
 private object TileDefaults {
@@ -393,10 +399,10 @@ private object TileDefaults {
     @ReadOnlyComposable
     fun activeDualTargetTileColors(): TileColors =
         TileColors(
-            background = MaterialTheme.colorScheme.surfaceVariant,
+            background = LocalAndroidColorScheme.current.surfaceEffect2,
             iconBackground = MaterialTheme.colorScheme.primary,
-            label = MaterialTheme.colorScheme.onSurfaceVariant,
-            secondaryLabel = MaterialTheme.colorScheme.onSurfaceVariant,
+            label = MaterialTheme.colorScheme.onSurface,
+            secondaryLabel = MaterialTheme.colorScheme.onSurface,
             icon = MaterialTheme.colorScheme.onPrimary,
         )
 
@@ -404,34 +410,36 @@ private object TileDefaults {
     @ReadOnlyComposable
     fun inactiveDualTargetTileColors(): TileColors =
         TileColors(
-            background = MaterialTheme.colorScheme.surfaceVariant,
-            iconBackground = MaterialTheme.colorScheme.surfaceContainerHighest,
-            label = MaterialTheme.colorScheme.onSurfaceVariant,
-            secondaryLabel = MaterialTheme.colorScheme.onSurfaceVariant,
-            icon = MaterialTheme.colorScheme.onSurfaceVariant,
+            background = LocalAndroidColorScheme.current.surfaceEffect2,
+            iconBackground = LocalAndroidColorScheme.current.surfaceEffect3,
+            label = MaterialTheme.colorScheme.onSurface,
+            secondaryLabel = MaterialTheme.colorScheme.onSurface,
+            icon = MaterialTheme.colorScheme.onSurface,
         )
 
     @Composable
     @ReadOnlyComposable
     fun inactiveTileColors(): TileColors =
         TileColors(
-            background = MaterialTheme.colorScheme.surfaceVariant,
-            iconBackground = MaterialTheme.colorScheme.surfaceVariant,
-            label = MaterialTheme.colorScheme.onSurfaceVariant,
-            secondaryLabel = MaterialTheme.colorScheme.onSurfaceVariant,
-            icon = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-    @Composable
-    @ReadOnlyComposable
-    fun unavailableTileColors(): TileColors =
-        TileColors(
-            background = MaterialTheme.colorScheme.surface,
-            iconBackground = MaterialTheme.colorScheme.surface,
+            background = LocalAndroidColorScheme.current.surfaceEffect2,
+            iconBackground = Color.Transparent,
             label = MaterialTheme.colorScheme.onSurface,
             secondaryLabel = MaterialTheme.colorScheme.onSurface,
             icon = MaterialTheme.colorScheme.onSurface,
         )
+
+    @Composable
+    @ReadOnlyComposable
+    fun unavailableTileColors(): TileColors {
+        return TileColors(
+            background = LocalAndroidColorScheme.current.surfaceEffect2,
+            iconBackground = LocalAndroidColorScheme.current.surfaceEffect2,
+            label = MaterialTheme.colorScheme.onSurface,
+            secondaryLabel = MaterialTheme.colorScheme.onSurface,
+            icon = MaterialTheme.colorScheme.onSurface,
+            alpha = .38f,
+        )
+    }
 
     @Composable
     @ReadOnlyComposable

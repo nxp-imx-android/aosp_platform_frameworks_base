@@ -196,9 +196,8 @@ fun StatusBarRoot(
 
                                 setContent {
                                     PlatformTheme {
-                                        val chipsVisibilityModel by
+                                        val chipsVisibilityModel =
                                             statusBarViewModel.ongoingActivityChips
-                                                .collectAsStateWithLifecycle()
                                         if (chipsVisibilityModel.areChipsAllowed) {
                                             OngoingActivityChips(
                                                 chips = chipsVisibilityModel.chips,

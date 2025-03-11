@@ -123,6 +123,7 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.widget.Toast;
 import android.window.DesktopExperienceFlags;
+import android.window.DesktopModeFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
@@ -675,7 +676,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         if (!enteredSplitSelect) {
             return null;
         }
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
+                && !DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
             mTaskOrganizer.applyTransaction(wct);
             return null;
         }

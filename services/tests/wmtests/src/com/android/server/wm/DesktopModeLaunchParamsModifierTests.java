@@ -383,7 +383,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         spyOn(mActivity.mAppCompatController.getAspectRatioOverrides());
         doReturn(true).when(
                         mActivity.mAppCompatController.getAspectRatioOverrides())
-                .isUserFullscreenOverrideEnabled();
+                .hasFullscreenOverride();
 
         final int desiredWidth =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
@@ -411,7 +411,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         spyOn(mActivity.mAppCompatController.getAspectRatioOverrides());
         doReturn(true).when(
                         mActivity.mAppCompatController.getAspectRatioOverrides())
-                .isSystemOverrideToFullscreenEnabled();
+                .hasFullscreenOverride();
 
         final int desiredWidth =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
@@ -1165,6 +1165,32 @@ public class DesktopModeLaunchParamsModifierTests extends
         assertEquals(RESULT_DONE,
                 new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
         assertEquals(WINDOWING_MODE_FREEFORM, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX})
+    public void testOptionsBoundsSet_flexibleLaunchSizeWithFullscreenOverride_noModifications() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FULLSCREEN);
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchBounds(new Rect(
+                        DISPLAY_STABLE_BOUNDS.left,
+                        DISPLAY_STABLE_BOUNDS.top,
+                        /* right = */ 500,
+                        /* bottom = */ 500))
+                .setFlexibleLaunchSize(true);
+        spyOn(mActivity.mAppCompatController.getAspectRatioOverrides());
+        doReturn(true).when(
+                        mActivity.mAppCompatController.getAspectRatioOverrides())
+                .hasFullscreenOverride();
+
+        assertEquals(RESULT_DONE,
+                new CalculateRequestBuilder().setTask(task).setOptions(options).calculate());
+        assertEquals(options.getLaunchBounds(), mResult.mBounds);
     }
 
     @Test

@@ -289,6 +289,9 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
 
         mIdToBundleEntry.clear();
         for (String id: mNotifBundler.getBundleIds()) {
+            if (BundleCoordinator.debugBundleUi) {
+                Log.i(TAG, "create BundleEntry with id: " + id);
+            }
             mIdToBundleEntry.put(id, new BundleEntry(id));
         }
     }

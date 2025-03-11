@@ -44,5 +44,5 @@ interface ClockEvents {
     fun onZenDataChanged(data: ZenData)
 
     /** Update reactive axes for this clock */
-    fun onFontAxesChanged(axes: List<ClockFontAxisSetting>)
+    fun onFontAxesChanged(axes: ClockAxisStyle)
 }

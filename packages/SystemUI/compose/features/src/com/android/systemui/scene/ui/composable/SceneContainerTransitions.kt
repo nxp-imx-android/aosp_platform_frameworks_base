@@ -6,7 +6,7 @@ import com.android.compose.animation.scene.TransitionKey
 import com.android.compose.animation.scene.reveal.ContainerRevealHaptics
 import com.android.compose.animation.scene.transitions
 import com.android.internal.jank.Cuj
-import com.android.mechanics.behavior.EdgeContainerExpansionSpec
+import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
@@ -50,7 +50,7 @@ import com.android.systemui.shade.ui.composable.Shade
  */
 class SceneContainerTransitions : SceneContainerTransitionsBuilder {
     override fun build(
-        shadeExpansionMotion: EdgeContainerExpansionSpec,
+        shadeExpansionMotion: VerticalExpandContainerSpec,
         revealHaptics: ContainerRevealHaptics,
     ): SceneTransitions {
         return transitions {

@@ -46,7 +46,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -55,7 +54,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -75,6 +73,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -101,6 +100,7 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
@@ -110,6 +110,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
+import androidx.compose.ui.util.fastRoundToInt
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformIconButton
 import com.android.compose.PlatformOutlinedButton
@@ -138,6 +139,7 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewM
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Renders a media controls UI element.
@@ -406,7 +408,7 @@ private fun ContentScope.CardForegroundContent(
             )
     ) {
         // Always add the first/top row, regardless of presentation style.
-        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             // Icon.
             Icon(
                 icon = viewModel.icon,
@@ -418,9 +420,26 @@ private fun ContentScope.CardForegroundContent(
                         .clip(CircleShape),
             )
 
+            var cardMaxWidth: Int by remember { mutableIntStateOf(0) }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.align(Alignment.TopEnd),
+                modifier =
+                    Modifier.align(Alignment.TopEnd)
+                        // Output switcher chips must each be limited to at most 40% of the maximum
+                        // width of the card.
+                        //
+                        // This saves the maximum possible width of the card so it can be referred
+                        // to by child custom layout code below.
+                        //
+                        // The assumption is that the row can be as wide as the entire card.
+                        .layout { measurable, constraints ->
+                            cardMaxWidth = constraints.maxWidth
+                            val placeable = measurable.measure(constraints)
+
+                            layout(placeable.measuredWidth, placeable.measuredHeight) {
+                                placeable.place(0, 0)
+                            }
+                        },
             ) {
                 viewModel.outputSwitcherChips.fastForEach { chip ->
                     OutputSwitcherChip(
@@ -433,9 +452,23 @@ private fun ContentScope.CardForegroundContent(
                                 //
                                 // The underlying assumption is that there'll never be more than one
                                 // chip with text and one more icon-only chip. Only the one with
-                                // text
-                                // can ever end up being too wide.
-                                .widthIn(max = this@BoxWithConstraints.maxWidth * 0.4f),
+                                // text can ever end up being too wide.
+                                .layout { measurable, constraints ->
+                                    val placeable =
+                                        measurable.measure(
+                                            constraints.copy(
+                                                maxWidth =
+                                                    min(
+                                                        (cardMaxWidth * 0.4f).fastRoundToInt(),
+                                                        constraints.maxWidth,
+                                                    )
+                                            )
+                                        )
+
+                                    layout(placeable.measuredWidth, placeable.measuredHeight) {
+                                        placeable.place(0, 0)
+                                    }
+                                },
                     )
                 }
             }

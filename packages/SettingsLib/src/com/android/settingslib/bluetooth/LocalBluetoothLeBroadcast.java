@@ -724,7 +724,10 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
             Log.d(TAG, "The BluetoothLeBroadcast is null");
             return null;
         }
-        if (mBluetoothLeBroadcastMetadata == null) {
+        if (mBluetoothLeBroadcastMetadata == null
+                // mBroadcastId is updated when onBroadcastStarted, which is always before
+                // onBroadcastMetadataChanged, so mBroadcastId is always the latest broadcast info
+                || mBluetoothLeBroadcastMetadata.getBroadcastId() != mBroadcastId) {
             final List<BluetoothLeBroadcastMetadata> metadataList =
                     mServiceBroadcast.getAllBroadcastMetadata();
             mBluetoothLeBroadcastMetadata =
@@ -732,6 +735,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                             .filter(i -> i.getBroadcastId() == mBroadcastId)
                             .findFirst()
                             .orElse(null);
+            Log.d(TAG, "getLatestBluetoothLeBroadcastMetadata for broadcast id " + mBroadcastId);
         }
         return mBluetoothLeBroadcastMetadata;
     }

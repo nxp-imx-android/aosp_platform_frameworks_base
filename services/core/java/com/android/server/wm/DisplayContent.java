@@ -41,6 +41,7 @@ import static android.util.TypedValue.COMPLEX_UNIT_DIP;
 import static android.util.TypedValue.COMPLEX_UNIT_MASK;
 import static android.util.TypedValue.COMPLEX_UNIT_SHIFT;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static android.view.Display.FLAG_CAN_SHOW_WITH_INSECURE_KEYGUARD;
 import static android.view.Display.FLAG_PRIVATE;
 import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
@@ -2161,7 +2162,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /** Re-show the previously hidden windows if all seamless rotated windows are done. */
     void finishAsyncRotationIfPossible() {
         final AsyncRotationController controller = mAsyncRotationController;
-        if (controller != null && !mDisplayRotation.hasSeamlessRotatingWindow()) {
+        if (controller != null) {
             controller.completeAll();
             mAsyncRotationController = null;
         }
@@ -2238,11 +2239,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     private void applyRotation(final int oldRotation, final int rotation) {
         mDisplayRotation.applyCurrentRotation(rotation);
-        final boolean shellTransitions = mTransitionController.getTransitionPlayer() != null;
-        final boolean rotateSeamlessly =
-                mDisplayRotation.isRotatingSeamlessly() && !shellTransitions;
-        final Transaction transaction =
-                shellTransitions ? getSyncTransaction() : getPendingTransaction();
+
         // We need to update our screen size information to match the new rotation. If the rotation
         // has actually changed then this method will return true and, according to the comment at
         // the top of the method, the caller is obligated to call computeNewConfigurationLocked().
@@ -2250,25 +2247,13 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // #computeScreenConfiguration() later.
         updateDisplayAndOrientation(null /* outConfig */);
 
-        if (!shellTransitions) {
-            forAllWindows(w -> {
-                w.seamlesslyRotateIfAllowed(transaction, oldRotation, rotation, rotateSeamlessly);
-            }, true /* traverseTopToBottom */);
-            mPinnedTaskController.startSeamlessRotationIfNeeded(transaction, oldRotation, rotation);
-            if (!mDisplayRotation.hasSeamlessRotatingWindow()) {
-                // Make sure DisplayRotation#isRotatingSeamlessly() will return false.
-                mDisplayRotation.cancelSeamlessRotation();
-            }
-        }
+        // Before setDisplayProjection is applied by the start transaction of transition,
+        // set the transform hint to avoid using surface in old rotation.
+        setFixedTransformHint(getPendingTransaction(), mSurfaceControl, rotation);
+        // The sync transaction should already contains setDisplayProjection, so unset the
+        // hint to restore the natural state when the transaction is applied.
+        getSyncTransaction().unsetFixedTransformHint(mSurfaceControl);
 
-        if (shellTransitions) {
-            // Before setDisplayProjection is applied by the start transaction of transition,
-            // set the transform hint to avoid using surface in old rotation.
-            setFixedTransformHint(getPendingTransaction(), mSurfaceControl, rotation);
-            // The sync transaction should already contains setDisplayProjection, so unset the
-            // hint to restore the natural state when the transaction is applied.
-            transaction.unsetFixedTransformHint(mSurfaceControl);
-        }
         scheduleAnimation();
 
         mWmService.mRotationWatcherController.dispatchDisplayRotationChange(mDisplayId, rotation);
@@ -2870,8 +2855,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         // If the transition finished callback cannot match the token for some reason, make sure the
         // rotated state is cleared if it is already invisible.
         if (mFixedRotationLaunchingApp != null && !mFixedRotationLaunchingApp.isVisibleRequested()
-                && !mFixedRotationLaunchingApp.isVisible()
-                && !mDisplayRotation.isRotatingSeamlessly()) {
+                && !mFixedRotationLaunchingApp.isVisible()) {
             clearFixedRotationLaunchingApp();
         }
         // If there won't be a transition to notify the launch is done, then it should be ready to
@@ -3283,26 +3267,30 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 /* inTopology= */ shouldShowContent);
     }
 
-     /**
-      * Whether the display is allowed to switch the content mode between extended and mirroring.
-      * If the content mode is extended, the display will start home activity and show system
-      * decorations, such as wallpapaer, status bar and navigation bar.
-      * If the content mode is mirroring, the display will not show home activity or system
-      * decorations.
-      * The content mode is switched when {@link Display#canHostTasks()} changes.
-      *
-      * Note that we only allow displays that are able to show system decorations to use the content
-      * mode switch; however, not all displays that are able to show system decorations are allowed
-      * to use the content mode switch.
-      */
-     boolean allowContentModeSwitch() {
+    /**
+     * Whether the display is allowed to switch the content mode between extended and mirroring.
+     * If the content mode is extended, the display will start home activity and show system
+     * decorations, such as wallpapaer, status bar and navigation bar.
+     * If the content mode is mirroring, the display will not show home activity or system
+     * decorations.
+     * The content mode is switched when {@link Display#canHostTasks()} changes.
+     *
+     * Note that we only allow displays that are able to show system decorations to use the content
+     * mode switch; however, not all displays that are able to show system decorations are allowed
+     * to use the content mode switch.
+     */
+    boolean allowContentModeSwitch() {
+        if ((mDisplay.getFlags() & FLAG_ALLOWS_CONTENT_MODE_SWITCH) == 0) {
+            return false;
+        }
+
         // The default display should always show system decorations.
         if (isDefaultDisplay) {
             return false;
         }
 
-        // Private display should never show system decorations.
-        if (isPrivate()) {
+        // Private or untrusted display should never show system decorations.
+        if (isPrivate() || !isTrusted()) {
             return false;
         }
 
@@ -3310,14 +3298,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return false;
         }
 
-        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_CONTENT_MODE_SWITCH.
-        if ((mDisplay.getFlags() & Display.FLAG_REAR) != 0) {
-            return false;
-        }
-
-        // TODO(b/391965805): Remove this after introducing FLAG_ALLOW_CONTENT_MODE_SWITCH.
-        // Virtual displays cannot add or remove system decorations during their lifecycle.
-        if (mDisplay.getType() == Display.TYPE_VIRTUAL) {
+        // Display with FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS enabled should always show system
+        // decorations, and should not switch the content mode.
+        if ((mDisplay.getFlags() & FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS) != 0) {
             return false;
         }
 
@@ -5072,7 +5055,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
 
         mLastHasContent = mTmpApplySurfaceChangesTransactionState.displayHasContent;
-        if (!inTransition() && !mDisplayRotation.isRotatingSeamlessly()) {
+        if (!inTransition()) {
             mWmService.mDisplayManagerInternal.setDisplayProperties(mDisplayId,
                     mLastHasContent,
                     mTmpApplySurfaceChangesTransactionState.preferredRefreshRate,

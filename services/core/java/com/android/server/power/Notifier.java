@@ -16,6 +16,7 @@
 
 package com.android.server.power;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.UserIdInt;
@@ -36,8 +37,8 @@ import android.os.BatteryStats;
 import android.os.BatteryStatsInternal;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IWakeLockCallback;
 import android.os.IScreenTimeoutPolicyListener;
+import android.os.IWakeLockCallback;
 import android.os.Looper;
 import android.os.Message;
 import android.os.PowerManager;
@@ -67,6 +68,7 @@ import com.android.internal.app.IBatteryStats;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.internal.util.IndentingPrintWriter;
 import com.android.server.EventLogTags;
 import com.android.server.LocalServices;
 import com.android.server.input.InputManagerInternal;
@@ -147,7 +149,8 @@ public class Notifier {
     @Nullable private final StatusBarManagerInternal mStatusBarManagerInternal;
     private final TrustManager mTrustManager;
     private final Vibrator mVibrator;
-    private final WakeLockLog mWakeLockLog;
+    @NonNull private final WakeLockLog mPartialWakeLockLog;
+    @NonNull private final WakeLockLog mFullWakeLockLog;
     private final DisplayManagerInternal mDisplayManagerInternal;
 
     private final NotifierHandler mHandler;
@@ -250,7 +253,9 @@ public class Notifier {
         mShowWirelessChargingAnimationConfig = context.getResources().getBoolean(
                 com.android.internal.R.bool.config_showBuiltinWirelessChargingAnim);
 
-        mWakeLockLog = mInjector.getWakeLockLog(context);
+        mFullWakeLockLog = mInjector.getWakeLockLog(context);
+        mPartialWakeLockLog = mInjector.getWakeLockLog(context);
+
         // Initialize interactive state for battery stats.
         try {
             mBatteryStats.noteInteractive(true);
@@ -324,7 +329,8 @@ public class Notifier {
                     // Ignore
                 }
             }
-            mWakeLockLog.onWakeLockAcquired(tag, ownerUid, flags, /*eventTime=*/ -1);
+            getWakeLockLog(flags).onWakeLockAcquired(tag,
+                    getUidForWakeLockLog(ownerUid, workSource), flags, /*eventTime=*/ -1);
         }
         mWakefulnessSessionObserver.onWakeLockAcquired(flags);
     }
@@ -473,7 +479,8 @@ public class Notifier {
                     // Ignore
                 }
             }
-            mWakeLockLog.onWakeLockReleased(tag, ownerUid, /*eventTime=*/ -1);
+            getWakeLockLog(flags).onWakeLockReleased(tag,
+                    getUidForWakeLockLog(ownerUid, workSource), /*eventTime=*/ -1);
         }
         mWakefulnessSessionObserver.onWakeLockReleased(flags, releaseReason);
     }
@@ -960,11 +967,18 @@ public class Notifier {
      * @param pw The stream to print to.
      */
     public void dump(PrintWriter pw) {
-        if (mWakeLockLog != null) {
-            mWakeLockLog.dump(pw);
-        }
+        pw.println("Notifier:");
 
-        mWakefulnessSessionObserver.dump(pw);
+        IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "  ");
+        ipw.println("Partial Wakelock Log:");
+        mPartialWakeLockLog.dump(ipw);
+
+        ipw.println("");
+        ipw.println("Full Wakelock Log:");
+        mFullWakeLockLog.dump(ipw);
+
+        ipw.println("");
+        mWakefulnessSessionObserver.dump(ipw);
     }
 
     private void updatePendingBroadcastLocked() {
@@ -1232,7 +1246,9 @@ public class Notifier {
                 // Do Nothing
             }
         }
-        mWakeLockLog.onWakeLockAcquired(tag, ownerUid, flags, currentTime);
+
+        getWakeLockLog(flags).onWakeLockAcquired(tag, getUidForWakeLockLog(ownerUid, workSource),
+                flags, currentTime);
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -1253,7 +1269,8 @@ public class Notifier {
                 // Ignore
             }
         }
-        mWakeLockLog.onWakeLockReleased(tag, ownerUid, currentTime);
+        getWakeLockLog(flags).onWakeLockReleased(tag, getUidForWakeLockLog(ownerUid, workSource),
+                currentTime);
     }
 
     @SuppressLint("AndroidFrameworkRequiresPermission")
@@ -1419,6 +1436,15 @@ public class Notifier {
         }
     }
 
+    private @NonNull WakeLockLog getWakeLockLog(int flags) {
+        return PowerManagerService.isScreenLock(flags) ? mFullWakeLockLog : mPartialWakeLockLog;
+    }
+
+    private int getUidForWakeLockLog(int ownerUid, WorkSource workSource) {
+        int attributionUid = workSource != null ? workSource.getAttributionUid() : -1;
+        return attributionUid != -1 ? attributionUid : ownerUid;
+    }
+
     private final class NotifierHandler extends Handler {
 
         public NotifierHandler(Looper looper) {
@@ -1501,7 +1527,7 @@ public class Notifier {
         /**
          * Gets the WakeLockLog object
          */
-        WakeLockLog getWakeLockLog(Context context);
+        @NonNull WakeLockLog getWakeLockLog(Context context);
 
         /**
          * Gets the AppOpsManager system service
@@ -1522,7 +1548,7 @@ public class Notifier {
         }
 
         @Override
-        public WakeLockLog getWakeLockLog(Context context) {
+        public @NonNull WakeLockLog getWakeLockLog(Context context) {
             return new WakeLockLog(context);
         }
 

@@ -36,13 +36,12 @@ import android.view.animation.PathInterpolator
 import android.widget.TextView
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
+import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.animation.TextAnimator
 import com.android.systemui.animation.TextAnimatorListener
 import com.android.systemui.customization.R
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting.Companion.replace
-import com.android.systemui.plugins.clocks.ClockFontAxisSetting.Companion.toFVar
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockLogger
 import com.android.systemui.plugins.clocks.VPoint
 import com.android.systemui.plugins.clocks.VPointF
@@ -56,9 +55,9 @@ import com.android.systemui.shared.clocks.DigitTranslateAnimator
 import com.android.systemui.shared.clocks.DimensionParser
 import com.android.systemui.shared.clocks.FLEX_CLOCK_ID
 import com.android.systemui.shared.clocks.FontTextStyle
+import com.android.systemui.shared.clocks.FontUtils.set
 import com.android.systemui.shared.clocks.ViewUtils.measuredSize
 import com.android.systemui.shared.clocks.ViewUtils.size
-import com.android.systemui.shared.clocks.toClockAxisSetting
 import java.lang.Thread
 import kotlin.math.max
 import kotlin.math.min
@@ -123,9 +122,9 @@ open class SimpleDigitalClockTextView(
     private val isLegacyFlex = clockCtx.settings.clockId == FLEX_CLOCK_ID
     private val fixedAodAxes =
         when {
-            !isLegacyFlex -> listOf(AOD_WEIGHT_AXIS, WIDTH_AXIS)
-            isLargeClock -> listOf(FLEX_AOD_LARGE_WEIGHT_AXIS, FLEX_AOD_WIDTH_AXIS)
-            else -> listOf(FLEX_AOD_SMALL_WEIGHT_AXIS, FLEX_AOD_WIDTH_AXIS)
+            !isLegacyFlex -> fromAxes(AOD_WEIGHT_AXIS, WIDTH_AXIS)
+            isLargeClock -> fromAxes(FLEX_AOD_LARGE_WEIGHT_AXIS, FLEX_AOD_WIDTH_AXIS)
+            else -> fromAxes(FLEX_AOD_SMALL_WEIGHT_AXIS, FLEX_AOD_WIDTH_AXIS)
         }
 
     private var lsFontVariation: String
@@ -135,11 +134,11 @@ open class SimpleDigitalClockTextView(
     init {
         val roundAxis = if (!isLegacyFlex) ROUND_AXIS else FLEX_ROUND_AXIS
         val lsFontAxes =
-            if (!isLegacyFlex) listOf(LS_WEIGHT_AXIS, WIDTH_AXIS, ROUND_AXIS, SLANT_AXIS)
-            else listOf(FLEX_LS_WEIGHT_AXIS, FLEX_LS_WIDTH_AXIS, FLEX_ROUND_AXIS, SLANT_AXIS)
+            if (!isLegacyFlex) fromAxes(LS_WEIGHT_AXIS, WIDTH_AXIS, ROUND_AXIS, SLANT_AXIS)
+            else fromAxes(FLEX_LS_WEIGHT_AXIS, FLEX_LS_WIDTH_AXIS, FLEX_ROUND_AXIS, SLANT_AXIS)
 
         lsFontVariation = lsFontAxes.toFVar()
-        aodFontVariation = (fixedAodAxes + listOf(roundAxis, SLANT_AXIS)).toFVar()
+        aodFontVariation = fixedAodAxes.copyWith(fromAxes(roundAxis, SLANT_AXIS)).toFVar()
         fidgetFontVariation = buildFidgetVariation(lsFontAxes).toFVar()
     }
 
@@ -201,9 +200,9 @@ open class SimpleDigitalClockTextView(
         invalidate()
     }
 
-    fun updateAxes(lsAxes: List<ClockFontAxisSetting>) {
+    fun updateAxes(lsAxes: ClockAxisStyle) {
         lsFontVariation = lsAxes.toFVar()
-        aodFontVariation = lsAxes.replace(fixedAodAxes).toFVar()
+        aodFontVariation = lsAxes.copyWith(fixedAodAxes).toFVar()
         fidgetFontVariation = buildFidgetVariation(lsAxes).toFVar()
         logger.updateAxes(lsFontVariation, aodFontVariation)
 
@@ -220,19 +219,16 @@ open class SimpleDigitalClockTextView(
         invalidate()
     }
 
-    fun buildFidgetVariation(axes: List<ClockFontAxisSetting>): List<ClockFontAxisSetting> {
-        val result = mutableListOf<ClockFontAxisSetting>()
-        for (axis in axes) {
-            result.add(
-                FIDGET_DISTS.get(axis.key)?.let { (dist, midpoint) ->
-                    ClockFontAxisSetting(
-                        axis.key,
-                        axis.value + dist * if (axis.value > midpoint) -1 else 1,
-                    )
-                } ?: axis
-            )
-        }
-        return result
+    fun buildFidgetVariation(axes: ClockAxisStyle): ClockAxisStyle {
+        return ClockAxisStyle(
+            axes.items
+                .map { (key, value) ->
+                    FIDGET_DISTS.get(key)?.let { (dist, midpoint) ->
+                        key to value + dist * if (value > midpoint) -1 else 1
+                    } ?: (key to value)
+                }
+                .toMap()
+        )
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -666,18 +662,22 @@ open class SimpleDigitalClockTextView(
             )
 
         val AOD_COLOR = Color.WHITE
-        val LS_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(400f)
-        val AOD_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(200f)
-        val WIDTH_AXIS = GSFAxes.WIDTH.toClockAxisSetting(85f)
-        val ROUND_AXIS = GSFAxes.ROUND.toClockAxisSetting(0f)
-        val SLANT_AXIS = GSFAxes.SLANT.toClockAxisSetting(0f)
+        private val LS_WEIGHT_AXIS = GSFAxes.WEIGHT to 400f
+        private val AOD_WEIGHT_AXIS = GSFAxes.WEIGHT to 200f
+        private val WIDTH_AXIS = GSFAxes.WIDTH to 85f
+        private val ROUND_AXIS = GSFAxes.ROUND to 0f
+        private val SLANT_AXIS = GSFAxes.SLANT to 0f
 
         // Axes for Legacy version of the Flex Clock
-        val FLEX_LS_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(600f)
-        val FLEX_AOD_LARGE_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(74f)
-        val FLEX_AOD_SMALL_WEIGHT_AXIS = GSFAxes.WEIGHT.toClockAxisSetting(133f)
-        val FLEX_LS_WIDTH_AXIS = GSFAxes.WIDTH.toClockAxisSetting(100f)
-        val FLEX_AOD_WIDTH_AXIS = GSFAxes.WIDTH.toClockAxisSetting(43f)
-        val FLEX_ROUND_AXIS = GSFAxes.ROUND.toClockAxisSetting(100f)
+        private val FLEX_LS_WEIGHT_AXIS = GSFAxes.WEIGHT to 600f
+        private val FLEX_AOD_LARGE_WEIGHT_AXIS = GSFAxes.WEIGHT to 74f
+        private val FLEX_AOD_SMALL_WEIGHT_AXIS = GSFAxes.WEIGHT to 133f
+        private val FLEX_LS_WIDTH_AXIS = GSFAxes.WIDTH to 100f
+        private val FLEX_AOD_WIDTH_AXIS = GSFAxes.WIDTH to 43f
+        private val FLEX_ROUND_AXIS = GSFAxes.ROUND to 100f
+
+        private fun fromAxes(vararg axes: Pair<AxisDefinition, Float>): ClockAxisStyle {
+            return ClockAxisStyle(axes.map { (def, value) -> def.tag to value }.toMap())
+        }
     }
 }

@@ -132,6 +132,11 @@ public interface EntryAdapter {
 
     boolean isAmbient();
 
+    /**
+     * Returns whether this row represents promoted ongoing notification.
+     */
+    boolean isPromotedOngoing();
+
     default boolean isFullScreenCapable() {
         return false;
     }

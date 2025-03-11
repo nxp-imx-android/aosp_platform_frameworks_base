@@ -2746,7 +2746,7 @@ public class KeyguardUpdateMonitorTest extends SysuiTestCase {
                     () -> mJavaAdapter,
                     () -> mSceneInteractor,
                     () -> mCommunalSceneInteractor,
-                    mKeyguardServiceShowLockscreenInteractor);
+                    () -> mKeyguardServiceShowLockscreenInteractor);
             setAlternateBouncerVisibility(false);
             setPrimaryBouncerVisibility(false);
             setStrongAuthTracker(KeyguardUpdateMonitorTest.this.mStrongAuthTracker);

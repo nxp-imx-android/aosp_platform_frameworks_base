@@ -30,7 +30,10 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.os.Build.VERSION_CODES.P;
 import static android.os.Build.VERSION_CODES.Q;
 import static android.view.Display.DEFAULT_DISPLAY;
+import static android.view.Display.FLAG_ALLOWS_CONTENT_MODE_SWITCH;
 import static android.view.Display.FLAG_PRIVATE;
+import static android.view.Display.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
+import static android.view.Display.FLAG_TRUSTED;
 import static android.view.DisplayCutout.BOUNDS_POSITION_TOP;
 import static android.view.DisplayCutout.fromBoundingRect;
 import static android.view.Surface.ROTATION_0;
@@ -1706,8 +1709,6 @@ public class DisplayContentTests extends WindowTestsBase {
         app.setVisible(true);
         doReturn(false).when(app).inTransition();
         mDisplayContent.mFixedRotationTransitionListener.onAppTransitionFinishedLocked(app.token);
-        mStatusBarWindow.finishSeamlessRotation(t);
-        mNavBarWindow.finishSeamlessRotation(t);
 
         // The fixed rotation should be cleared and the new rotation is applied to display.
         assertFalse(app.hasFixedRotationTransform());
@@ -2925,6 +2926,63 @@ public class DisplayContentTests extends WindowTestsBase {
         assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testSetShouldShowSystemDecorations_shouldShowSystemDecorationsDisplay() {
+        // Set up a non-default display with FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS enabled
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.flags = FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
+        final DisplayContent dc = createNewDisplay(displayInfo);
+
+        dc.onDisplayInfoChangeApplied();
+        assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
+    }
+
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testSetShouldShowSystemDecorations_notAllowContentModeSwitchDisplay() {
+        // Set up a non-default display without FLAG_ALLOWS_CONTENT_MODE_SWITCH enabled
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.flags = FLAG_TRUSTED;
+        final DisplayContent dc = createNewDisplay(displayInfo);
+
+        dc.onDisplayInfoChangeApplied();
+        assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
+    }
+
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testSetShouldShowSystemDecorations_untrustedDisplay() {
+        // Set up a non-default display without FLAG_TRUSTED enabled
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.flags = FLAG_ALLOWS_CONTENT_MODE_SWITCH;
+        final DisplayContent dc = createNewDisplay(displayInfo);
+
+        dc.onDisplayInfoChangeApplied();
+        assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
+    }
+
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    @Test
+    public void testSetShouldShowSystemDecorations_nonDefaultNonPrivateDisplay() {
+        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
+        displayInfo.displayId = DEFAULT_DISPLAY + 1;
+        displayInfo.flags = (FLAG_ALLOWS_CONTENT_MODE_SWITCH | FLAG_TRUSTED);
+        final DisplayContent dc = createNewDisplay(displayInfo);
+
+        spyOn(dc.mDisplay);
+        doReturn(false).when(dc.mDisplay).canHostTasks();
+        dc.onDisplayInfoChangeApplied();
+        assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
+
+        doReturn(true).when(dc.mDisplay).canHostTasks();
+        dc.onDisplayInfoChangeApplied();
+        assertTrue(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
+    }
+
     @EnableFlags(FLAG_ENABLE_PERSISTING_DISPLAY_SIZE_FOR_CONNECTED_DISPLAYS)
     @Test
     public void testForcedDensityRatioSetForExternalDisplays_persistDensityScaleFlagEnabled() {
@@ -2991,23 +3049,6 @@ public class DisplayContentTests extends WindowTestsBase {
 
         // Verify that forced density is updated based on the ratio.
         assertEquals(320, displayContent.mBaseDisplayDensity);
-    }
-
-    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
-    @Test
-    public void testSetShouldShowSystemDecorations_nonDefaultNonPrivateDisplay() {
-        final DisplayInfo displayInfo = new DisplayInfo(mDisplayInfo);
-        displayInfo.displayId = DEFAULT_DISPLAY + 1;
-        final DisplayContent dc = createNewDisplay(displayInfo);
-
-        spyOn(dc.mDisplay);
-        doReturn(false).when(dc.mDisplay).canHostTasks();
-        dc.onDisplayInfoChangeApplied();
-        assertFalse(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
-
-        doReturn(true).when(dc.mDisplay).canHostTasks();
-        dc.onDisplayInfoChangeApplied();
-        assertTrue(dc.mWmService.mDisplayWindowSettings.shouldShowSystemDecorsLocked(dc));
     }
 
     private void removeRootTaskTests(Runnable runnable) {

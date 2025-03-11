@@ -64,6 +64,7 @@ import android.util.AttributeSet;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.MathUtils;
+import android.util.Pair;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
 import android.view.LayoutInflater;
@@ -140,6 +141,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.policy.ScrollAdapter;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
+import com.android.systemui.statusbar.ui.SystemBarUtilsProxy;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.ColorUtilKt;
 import com.android.systemui.util.DumpUtilsKt;
@@ -3852,8 +3854,6 @@ public class NotificationStackScrollLayout
                         // existing overScroll, we have to scroll the view
                         customOverScrollBy((int) scrollAmount, getOwnScrollY(),
                                 range, getHeight() / 2);
-                        // If we're scrolling, leavebehinds should be dismissed
-                        mController.checkSnoozeLeavebehind();
                     }
                 }
                 break;
@@ -6002,7 +6002,6 @@ public class NotificationStackScrollLayout
      *                 LockscreenShadeTransitionController resets fraction to 0
      *                 where it remains until the next lockscreen-to-shade transition.
      */
-    @Override
     public void setFractionToShade(float fraction) {
         mAmbientState.setFractionToShade(fraction);
         updateContentHeight();  // Recompute stack height with different section gap.

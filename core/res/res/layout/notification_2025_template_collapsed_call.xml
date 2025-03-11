@@ -78,7 +78,6 @@
                     android:id="@+id/notification_headerless_view_column"
                     android:layout_width="0px"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
                     android:layout_weight="1"
                     android:layout_marginBottom="@dimen/notification_2025_margin"
                     android:layout_marginTop="@dimen/notification_2025_margin"
@@ -174,7 +173,6 @@
         </FrameLayout>
 
         <LinearLayout
-            android:id="@+id/notification_action_list_margin_target"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="-20dp"

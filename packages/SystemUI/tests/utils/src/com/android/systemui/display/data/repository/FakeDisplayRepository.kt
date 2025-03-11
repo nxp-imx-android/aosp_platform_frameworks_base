@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.android.app.displaylib.DisplayRepository.PendingDisplay
 import org.mockito.Mockito.`when` as whenever
 
 /** Creates a mock display. */
@@ -41,8 +42,8 @@ fun display(type: Int, flags: Int = 0, id: Int = 0, state: Int? = null): Display
 }
 
 /** Creates a mock [DisplayRepository.PendingDisplay]. */
-fun createPendingDisplay(id: Int = 0): DisplayRepository.PendingDisplay =
-    mock<DisplayRepository.PendingDisplay> { whenever(this.id).thenReturn(id) }
+fun createPendingDisplay(id: Int = 0): PendingDisplay =
+    mock<PendingDisplay> { whenever(this.id).thenReturn(id) }
 
 @SysUISingleton
 /** Fake [DisplayRepository] implementation for testing. */
@@ -50,7 +51,7 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     private val flow = MutableStateFlow<Set<Display>>(emptySet())
     private val displayIdFlow = MutableStateFlow<Set<Int>>(emptySet())
     private val pendingDisplayFlow =
-        MutableSharedFlow<DisplayRepository.PendingDisplay?>(replay = 1)
+        MutableSharedFlow<PendingDisplay?>(replay = 1)
     private val displayAdditionEventFlow = MutableSharedFlow<Display?>(replay = 0)
     private val displayRemovalEventFlow = MutableSharedFlow<Int>(replay = 0)
     private val displayIdsWithSystemDecorationsFlow = MutableStateFlow<Set<Int>>(emptySet())
@@ -101,7 +102,7 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     suspend fun emit(value: Set<Display>) = flow.emit(value)
 
     /** Emits [value] as [pendingDisplay] flow value. */
-    suspend fun emit(value: DisplayRepository.PendingDisplay?) = pendingDisplayFlow.emit(value)
+    suspend fun emit(value: PendingDisplay?) = pendingDisplayFlow.emit(value)
 
     override val displays: StateFlow<Set<Display>>
         get() = flow
@@ -109,7 +110,7 @@ class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     override val displayIds: StateFlow<Set<Int>>
         get() = displayIdFlow
 
-    override val pendingDisplay: Flow<DisplayRepository.PendingDisplay?>
+    override val pendingDisplay: Flow<PendingDisplay?>
         get() = pendingDisplayFlow
 
     private val _defaultDisplayOff: MutableStateFlow<Boolean> = MutableStateFlow(false)

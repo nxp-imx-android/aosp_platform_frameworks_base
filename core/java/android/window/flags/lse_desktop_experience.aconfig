@@ -602,6 +602,13 @@ flag {
 }
 
 flag {
+    name: "keyboard_shortcuts_to_switch_desks"
+    namespace: "lse_desktop_experience"
+    description: "Enable switching the active desk with keyboard shortcuts"
+    bug: "389957556"
+}
+
+flag {
     name: "enable_connected_displays_dnd"
     namespace: "lse_desktop_experience"
     description: "Enable drag-and-drop between connected displays."
@@ -944,4 +951,21 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable restart menu UI, which is shown when an app moves between displays."
     bug: "397804287"
+}
+
+flag {
+    name: "enable_dynamic_radius_computation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to compute the corner/shadow radius of desktop windows dynamically with the current window context."
+    bug: "399630464"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "show_home_behind_desktop"
+    namespace: "lse_desktop_experience"
+    description: "Enables the home to be shown behind the desktop."
+    bug: "375644149"
 }

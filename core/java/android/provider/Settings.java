@@ -6484,6 +6484,14 @@ public final class Settings {
         public static final String SCREEN_FLASH_NOTIFICATION = "screen_flash_notification";
 
         /**
+         * Setting to enable CV (proprietary)
+         *
+         * @hide
+         */
+        public static final String CV_ENABLED =
+                "cv_enabled";
+
+        /**
          * Integer property that specifes the color for screen flash notification as a
          * packed 32-bit color.
          *
@@ -15514,7 +15522,8 @@ public final class Settings {
          * <ul>
          * <li><pre>secure</pre>: creates a secure display</li>
          * <li><pre>own_content_only</pre>: only shows this display's own content</li>
-         * <li><pre>should_show_system_decorations</pre>: supports system decorations</li>
+         * <li><pre>should_show_system_decorations</pre>: always shows system decorations</li>
+         * <li><pre>fixed_content_mode</pre>: does not allow the content mode switch</li>
          * </ul>
          * </p><p>
          * Example:
@@ -20814,6 +20823,24 @@ public final class Settings {
              */
             @Readable
             public static final String WEAR_LAUNCHER_UI_MODE = "wear_launcher_ui_mode";
+
+            /**
+             * Setting indicating whether the primary gesture input action has been enabled by the
+             * user.
+             *
+             * @hide
+             */
+            public static final String GESTURE_PRIMARY_ACTION_USER_PREFERENCE =
+                    "gesture_primary_action_user_preference";
+
+            /**
+             * Setting indicating whether the dismiss gesture input action has been enabled by the
+             * user.
+             *
+             * @hide
+             */
+            public static final String GESTURE_DISMISS_ACTION_USER_PREFERENCE =
+                    "gesture_dismiss_action_user_preference";
 
             /** Whether Wear Power Anomaly Service is enabled.
              *

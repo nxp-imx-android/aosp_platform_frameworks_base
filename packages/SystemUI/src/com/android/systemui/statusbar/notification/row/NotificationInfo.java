@@ -74,6 +74,7 @@ import com.android.systemui.Dependency;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
@@ -120,6 +121,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
     private boolean mIsAutomaticChosen;
     private boolean mIsSingleDefaultChannel;
     private boolean mIsNonblockable;
+    private boolean mIsDismissable;
     private NotificationEntry mEntry;
     private StatusBarNotification mSbn;
     private boolean mIsDeviceProvisioned;
@@ -160,6 +162,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mPressedApply = true;
         mGutsContainer.closeControls(v, /* save= */ true);
     };
+    private OnClickListener mOnCloseClickListener;
 
     public NotificationInfo(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -193,6 +196,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             NotificationIconStyleProvider iconStyleProvider,
             OnUserInteractionCallback onUserInteractionCallback,
             ChannelEditorDialogController channelEditorDialogController,
+            PackageDemotionInteractor packageDemotionInteractor,
             String pkg,
             NotificationChannel notificationChannel,
             NotificationEntry entry,
@@ -202,6 +206,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
             UiEventLogger uiEventLogger,
             boolean isDeviceProvisioned,
             boolean isNonblockable,
+            boolean isDismissable,
             boolean wasShownHighPriority,
             AssistantFeedbackController assistantFeedbackController,
             MetricsLogger metricsLogger,
@@ -226,11 +231,13 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         mStartingChannelImportance = mSingleNotificationChannel.getImportance();
         mWasShownHighPriority = wasShownHighPriority;
         mIsNonblockable = isNonblockable;
+        mIsDismissable = isDismissable;
         mAppUid = mSbn.getUid();
         mDelegatePkg = mSbn.getOpPkg();
         mIsDeviceProvisioned = isDeviceProvisioned;
         mShowAutomaticSetting = mAssistantFeedbackController.isFeedbackEnabled();
         mUiEventLogger = uiEventLogger;
+        mOnCloseClickListener = onCloseClick;
 
         mIsSystemRegisteredCall = mSbn.getNotification().isStyle(Notification.CallStyle.class)
                 && mINotificationManager.isInCall(mSbn.getPackageName(), mSbn.getUid());
@@ -275,6 +282,11 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
         View turnOffButton = findViewById(R.id.turn_off_notifications);
         turnOffButton.setOnClickListener(getTurnOffNotificationsClickListener());
         turnOffButton.setVisibility(turnOffButton.hasOnClickListeners() && !mIsNonblockable
+                ? VISIBLE : GONE);
+
+        View dismissButton = findViewById(R.id.inline_dismiss);
+        dismissButton.setOnClickListener(mOnCloseClickListener);
+        dismissButton.setVisibility(dismissButton.hasOnClickListeners() && mIsDismissable
                 ? VISIBLE : GONE);
 
         View done = findViewById(R.id.done);

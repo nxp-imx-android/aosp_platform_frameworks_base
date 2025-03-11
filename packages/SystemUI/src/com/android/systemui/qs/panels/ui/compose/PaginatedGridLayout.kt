@@ -88,7 +88,11 @@ constructor(
         LaunchedEffect(listening, pagerState) {
             snapshotFlow { listening() }
                 .collect {
-                    if (!listening()) {
+                    // Whenever we go from not listening to listening, we should be in the first
+                    // page. If we did this when going from listening to not listening, opening
+                    // edit mode in second page will cause it to go to first page during the
+                    // transition.
+                    if (listening()) {
                         pagerState.scrollToPage(0)
                     }
                 }

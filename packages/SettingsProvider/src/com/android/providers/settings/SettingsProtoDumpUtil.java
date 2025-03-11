@@ -3157,6 +3157,12 @@ class SettingsProtoDumpUtil {
                 SystemSettingsProto.Volume.MASTER_BALANCE);
         p.end(volumeToken);
 
+        final long systemDisplayToken = p.start(SystemSettingsProto.DISPLAY);
+        dumpSetting(s, p,
+                Settings.System.CV_ENABLED,
+                SystemSettingsProto.Display.CV_ENABLED);
+        p.end(systemDisplayToken);
+
         dumpSetting(s, p,
                 Settings.System.WHEN_TO_MAKE_WIFI_CALLS,
                 SystemSettingsProto.WHEN_TO_MAKE_WIFI_CALLS);
