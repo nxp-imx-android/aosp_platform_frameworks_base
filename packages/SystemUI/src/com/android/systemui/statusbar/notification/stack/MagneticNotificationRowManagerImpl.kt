@@ -186,7 +186,7 @@ constructor(
                 it.setMagneticTranslation(targetTranslation)
             }
         }
-        playPullHaptics(mappedTranslation = swipedRowMultiplier * translation, canSwipedBeDismissed)
+        // TODO(b/399633875): Enable pull haptics after we have a clear and polished haptics design
     }
 
     private fun playPullHaptics(mappedTranslation: Float, canSwipedBeDismissed: Boolean) {
