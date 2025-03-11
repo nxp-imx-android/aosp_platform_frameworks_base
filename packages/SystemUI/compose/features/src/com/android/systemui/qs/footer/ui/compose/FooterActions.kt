@@ -73,7 +73,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.compose.animation.Expandable
 import com.android.compose.animation.scene.ContentScope
-import com.android.compose.modifiers.fadingBackground
+import com.android.compose.modifiers.animatedBackground
 import com.android.compose.theme.colorAttr
 import com.android.systemui.Flags.notificationShadeBlur
 import com.android.systemui.animation.Expandable
@@ -172,8 +172,8 @@ fun FooterActions(
     val backgroundTopRadius = dimensionResource(R.dimen.qs_corner_radius)
     val backgroundModifier =
         remember(backgroundColor, backgroundAlphaValue, backgroundTopRadius) {
-            Modifier.fadingBackground(
-                backgroundColor,
+            Modifier.animatedBackground(
+                { backgroundColor },
                 backgroundAlphaValue,
                 RoundedCornerShape(topStart = backgroundTopRadius, topEnd = backgroundTopRadius),
             )
