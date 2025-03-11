@@ -95,10 +95,20 @@ interface NestedDraggable {
      * nested scrollable.
      *
      * This is called whenever a nested scrollable does not consume some scroll amount. If this
-     * returns `true`, then [onDragStarted] will be called and this draggable will have priority and
+     * returns `true`, then [onDragStarted] will be called, this draggable will have priority and
      * consume all future events during preScroll until the nested scroll is finished.
      */
-    fun shouldConsumeNestedScroll(sign: Float): Boolean
+    fun shouldConsumeNestedPostScroll(sign: Float): Boolean = true
+
+    /**
+     * Whether this draggable should consume any scroll amount with the given [sign] *before* it can
+     * be consumed by a nested scrollable.
+     *
+     * This is called before a nested scrollable is able to consume that scroll amount. If this
+     * returns `true`, then [onDragStarted] will be called, this draggable will have priority and
+     * consume all future scroll events during preScroll until the nested scroll is finished.
+     */
+    fun shouldConsumeNestedPreScroll(sign: Float): Boolean = false
 
     interface Controller {
         /**
@@ -540,6 +550,14 @@ private class NestedDraggableNode(
     }
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        val sign = available.toFloat().sign
+        maybeCreateNewController(
+            sign = sign,
+            condition = {
+                source == NestedScrollSource.UserInput &&
+                    draggable.shouldConsumeNestedPreScroll(sign)
+            },
+        )
         val controller = nestedScrollController ?: return Offset.Zero
         return scrollWithOverscroll(controller, available)
     }
@@ -560,28 +578,34 @@ private class NestedDraggableNode(
         }
 
         val sign = offset.sign
-        if (
-            nestedDragsEnabled &&
-                nestedScrollController == null &&
-                // TODO(b/388231324): Remove this.
-                !lastEventWasScrollWheel &&
-                draggable.shouldConsumeNestedScroll(sign) &&
-                lastFirstDown != null
-        ) {
-            val startedPosition = checkNotNull(lastFirstDown)
-
-            // TODO(b/382665591): Ensure that there is at least one pointer down.
-            val pointersDownCount = pointersDown.size.coerceAtLeast(1)
-            val pointerType = pointersDown.entries.firstOrNull()?.value
-            nestedScrollController =
-                NestedScrollController(
-                    overscrollEffect,
-                    draggable.onDragStarted(startedPosition, sign, pointersDownCount, pointerType),
-                )
-        }
-
+        maybeCreateNewController(
+            sign,
+            condition = { draggable.shouldConsumeNestedPostScroll(sign) },
+        )
         val controller = nestedScrollController ?: return Offset.Zero
         return scrollWithOverscroll(controller, available)
+    }
+
+    private fun maybeCreateNewController(sign: Float, condition: () -> Boolean) {
+        if (
+            !nestedDragsEnabled ||
+                nestedScrollController != null ||
+                lastEventWasScrollWheel ||
+                lastFirstDown == null ||
+                !condition()
+        ) {
+            return
+        }
+
+        // TODO(b/382665591): Ensure that there is at least one pointer down.
+        val pointersDownCount = pointersDown.size.coerceAtLeast(1)
+        val pointerType = pointersDown.entries.firstOrNull()?.value
+        val startedPosition = checkNotNull(lastFirstDown)
+        nestedScrollController =
+            NestedScrollController(
+                overscrollEffect,
+                draggable.onDragStarted(startedPosition, sign, pointersDownCount, pointerType),
+            )
     }
 
     private fun scrollWithOverscroll(controller: NestedScrollController, offset: Offset): Offset {

@@ -971,6 +971,35 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
         assertThat(availableToEffectPostFling).isWithin(1f).of(100f)
     }
 
+    @Test
+    fun consumeNestedPreScroll() {
+        var consumeNestedPreScroll by mutableStateOf(false)
+        val draggable = TestDraggable(shouldConsumeNestedPreScroll = { consumeNestedPreScroll })
+
+        val touchSlop =
+            rule.setContentWithTouchSlop {
+                Box(
+                    Modifier.fillMaxSize()
+                        .nestedDraggable(draggable, orientation)
+                        // Always consume everything so that the only way to start the drag is to
+                        // intercept preScroll events.
+                        .scrollable(rememberScrollableState { it }, orientation)
+                )
+            }
+
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy((touchSlop + 1f).toOffset())
+        }
+
+        assertThat(draggable.onDragStartedCalled).isFalse()
+
+        consumeNestedPreScroll = true
+        rule.onRoot().performTouchInput { moveBy(1f.toOffset()) }
+
+        assertThat(draggable.onDragStartedCalled).isTrue()
+    }
+
     private fun ComposeContentTestRule.setContentWithTouchSlop(
         content: @Composable () -> Unit
     ): Float {
@@ -996,7 +1025,8 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
             { velocity, _ ->
                 velocity
             },
-        private val shouldConsumeNestedScroll: (Float) -> Boolean = { true },
+        private val shouldConsumeNestedPostScroll: (Float) -> Boolean = { true },
+        private val shouldConsumeNestedPreScroll: (Float) -> Boolean = { false },
     ) : NestedDraggable {
         var shouldStartDrag = true
         var onDragStartedCalled = false
@@ -1042,8 +1072,12 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
             }
         }
 
-        override fun shouldConsumeNestedScroll(sign: Float): Boolean {
-            return shouldConsumeNestedScroll.invoke(sign)
+        override fun shouldConsumeNestedPostScroll(sign: Float): Boolean {
+            return shouldConsumeNestedPostScroll.invoke(sign)
+        }
+
+        override fun shouldConsumeNestedPreScroll(sign: Float): Boolean {
+            return shouldConsumeNestedPreScroll.invoke(sign)
         }
     }
 }
