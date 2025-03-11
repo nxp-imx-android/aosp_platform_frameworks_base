@@ -343,7 +343,7 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     }
 
     protected boolean usesTransparentBackground() {
-        return false;
+        return mIsBlurSupported && notificationRowTransparency();
     }
 
     @Override

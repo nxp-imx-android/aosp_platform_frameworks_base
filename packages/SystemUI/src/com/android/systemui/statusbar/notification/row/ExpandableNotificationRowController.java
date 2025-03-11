@@ -20,6 +20,7 @@ import static com.android.systemui.Dependency.ALLOW_NOTIFICATION_LONG_PRESS_NAME
 import static com.android.systemui.statusbar.NotificationRemoteInputManager.ENABLE_REMOTE_INPUT;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
+import static com.android.systemui.util.kotlin.JavaAdapterKt.collectFlow;
 
 import android.net.Uri;
 import android.os.UserHandle;
@@ -35,8 +36,8 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.statusbar.IStatusBarService;
+import com.android.systemui.Flags;
 import com.android.systemui.flags.FeatureFlagsClassic;
-import com.android.systemui.flags.Flags;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
@@ -45,11 +46,8 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
-import com.android.systemui.statusbar.notification.NotificationActivityStarter;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
-import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.PipelineEntry;
-import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
@@ -60,7 +58,6 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.row.dagger.AppName;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationKey;
 import com.android.systemui.statusbar.notification.row.dagger.NotificationRowScope;
-import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
@@ -69,6 +66,7 @@ import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.policy.SmartReplyConstants;
 import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent;
 import com.android.systemui.util.time.SystemClock;
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 
 import com.google.android.msdl.data.model.MSDLToken;
 import com.google.android.msdl.domain.MSDLPlayer;
@@ -125,6 +123,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
     private final MSDLPlayer mMSDLPlayer;
     private final NotificationSettingsController mSettingsController;
     private final EntryAdapterFactory mEntryAdapterFactory;
+    private final WindowRootViewBlurInteractor mWindowRootViewBlurInteractor;
 
     @VisibleForTesting
     final NotificationSettingsController.Listener mSettingsListener =
@@ -291,7 +290,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
             UiEventLogger uiEventLogger,
             MSDLPlayer msdlPlayer,
             NotificationRebindingTracker notificationRebindingTracker,
-            EntryAdapterFactory entryAdapterFactory) {
+            EntryAdapterFactory entryAdapterFactory,
+            WindowRootViewBlurInteractor windowRootViewBlurInteractor) {
         mView = view;
         mListContainer = listContainer;
         mRemoteInputViewSubcomponentFactory = rivSubcomponentFactory;
@@ -329,6 +329,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
         mUiEventLogger = uiEventLogger;
         mMSDLPlayer = msdlPlayer;
         mEntryAdapterFactory = entryAdapterFactory;
+        mWindowRootViewBlurInteractor = windowRootViewBlurInteractor;
     }
 
     /**
@@ -367,7 +368,8 @@ public class ExpandableNotificationRowController implements NotifViewController 
         );
         mView.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
         if (mAllowLongPress) {
-            if (mFeatureFlags.isEnabled(Flags.NOTIFICATION_DRAG_TO_CONTENTS)) {
+            if (mFeatureFlags.isEnabled(
+                    com.android.systemui.flags.Flags.NOTIFICATION_DRAG_TO_CONTENTS)) {
                 mView.setDragController(mDragController);
             }
 
@@ -416,6 +418,11 @@ public class ExpandableNotificationRowController implements NotifViewController 
                 mSettingsController.removeCallback(BUBBLES_SETTING_URI, mSettingsListener);
             }
         });
+
+        if (Flags.notificationRowTransparency()) {
+            collectFlow(mView, mWindowRootViewBlurInteractor.isBlurCurrentlySupported(),
+                    mView::setIsBlurSupported);
+        }
     }
 
     private final StatusBarStateController.StateListener mStatusBarStateListener =

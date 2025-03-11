@@ -58,11 +58,13 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationRow
 import com.android.systemui.statusbar.phone.KeyguardBypassController
 import com.android.systemui.statusbar.policy.SmartReplyConstants
 import com.android.systemui.statusbar.policy.dagger.RemoteInputViewSubcomponent
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.withArgCaptor
 import com.android.systemui.util.time.SystemClock
+import com.android.systemui.window.domain.interactor.windowRootViewBlurInteractor
 import com.google.android.msdl.domain.MSDLPlayer
 import junit.framework.Assert
 import org.junit.After
@@ -83,6 +85,8 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
 
     private val appName = "MyApp"
     private val notifKey = "MyNotifKey"
+
+    private val kosmos = testKosmos()
 
     private val view: ExpandableNotificationRow = mock()
     private val activableNotificationViewController: ActivatableNotificationViewController = mock()
@@ -160,6 +164,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
                 msdlPlayer,
                 rebindingTracker,
                 entryAdapterFactory,
+                kosmos.windowRootViewBlurInteractor,
             )
         whenever(view.childrenContainer).thenReturn(childrenContainer)
 
