@@ -428,6 +428,9 @@ public class InputMethodService extends AbstractInputMethodService {
      */
     @AnyThread
     public static boolean canImeRenderGesturalNavButtons() {
+        if (Flags.disallowDisablingImeNavigationBar()) {
+            return true;
+        }
         return SystemProperties.getBoolean(PROP_CAN_RENDER_GESTURAL_NAV_BUTTONS, true);
     }
 
