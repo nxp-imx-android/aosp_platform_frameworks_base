@@ -1308,6 +1308,10 @@
     <!-- HTTP proxy settings. The hint text field for the hostname. -->
     <string name="proxy_hostname_hint" translatable="false">proxy.example.com</string>
 
+    <!-- Description for the screen zoom level that makes interface elements smallest. [CHAR LIMIT=24] -->
+    <string name="screen_zoom_summary_smallest">Smallest</string>
+    <!-- Description for the screen zoom level that makes interface elements smaller. [CHAR LIMIT=24] -->
+    <string name="screen_zoom_summary_smaller">Smaller</string>
     <!-- Description for the screen zoom level that makes interface elements small. [CHAR LIMIT=24] -->
     <string name="screen_zoom_summary_small">Small</string>
     <!-- Description for the device's default screen zoom level. [CHAR LIMIT=24] -->
@@ -1315,9 +1319,13 @@
     <!-- Description for the screen zoom level that makes interface elements large. [CHAR LIMIT=24] -->
     <string name="screen_zoom_summary_large">Large</string>
     <!-- Description for the screen zoom level that makes interface elements larger. [CHAR LIMIT=24] -->
-    <string name="screen_zoom_summary_very_large">Larger</string>
-    <!-- Description for the screen zoom level that makes interface elements largest. [CHAR LIMIT=24] -->
-    <string name="screen_zoom_summary_extremely_large">Largest</string>
+    <string name="screen_zoom_summary_larger">Larger</string>
+    <!-- Description for the screen zoom level that makes interface elements very large. [CHAR LIMIT=24] -->
+    <string name="screen_zoom_summary_very_large">Very Large</string>
+    <!-- Description for the screen zoom level that makes interface elements extra large. [CHAR LIMIT=24] -->
+    <string name="screen_zoom_summary_extra_large">Extra Large</string>
+    <!-- Description for the screen zoom level that makes interface elements max. [CHAR LIMIT=24] -->
+    <string name="screen_zoom_summary_largest">Largest</string>
     <!-- Description for a custom screen zoom level. This shows the requested display
          density in raw pixels per inch rather than using a relative description. [CHAR LIMIT=24] -->
     <string name="screen_zoom_summary_custom">Custom (<xliff:g id="densityDpi" example="160">%d</xliff:g>)</string>
