@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.row
 import android.annotation.DimenRes
 import android.content.res.Resources
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
 import android.service.notification.StatusBarNotification
 import android.testing.TestableLooper
 import android.testing.ViewUtils
@@ -88,14 +89,11 @@ class NotificationContentViewTest : SysuiTestCase() {
             spy(
                 when (NotificationBundleUi.isEnabled) {
                     true -> {
-                        ExpandableNotificationRow(
-                            mContext,
-                            /* attrs= */ null,
-                            UserHandle.CURRENT
-                        ).apply {
-                            entry = mockEntry
-                            entryAdapter = mockEntryAdapter
-                        }
+                        ExpandableNotificationRow(mContext, /* attrs= */ null, UserHandle.CURRENT)
+                            .apply {
+                                entry = mockEntry
+                                entryAdapter = mockEntryAdapter
+                            }
                     }
                     false -> {
                         ExpandableNotificationRow(mContext, /* attrs= */ null, mockEntry).apply {
@@ -402,6 +400,7 @@ class NotificationContentViewTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     fun setExpandedChild_notShowBubbleButton_marginTargetBottomMarginShouldNotChange() {
         // Given: bottom margin of actionListMarginTarget is notificationContentMargin
         // Bubble button should not be shown for the given NotificationEntry
@@ -429,6 +428,7 @@ class NotificationContentViewTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     fun setExpandedChild_showBubbleButton_marginTargetBottomMarginShouldChangeToZero() {
         // Given: bottom margin of actionListMarginTarget is notificationContentMargin
         // Bubble button should be shown for the given NotificationEntry
@@ -458,6 +458,7 @@ class NotificationContentViewTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     fun onNotificationUpdated_notShowBubbleButton_marginTargetBottomMarginShouldNotChange() {
         // Given: bottom margin of actionListMarginTarget is notificationContentMargin
         val mockNotificationEntry = createMockNotificationEntry()
@@ -486,6 +487,7 @@ class NotificationContentViewTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(android.app.Flags.FLAG_NOTIFICATIONS_REDESIGN_TEMPLATES)
     fun onNotificationUpdated_showBubbleButton_marginTargetBottomMarginShouldChangeToZero() {
         // Given: bottom margin of actionListMarginTarget is notificationContentMargin
         val mockNotificationEntry = createMockNotificationEntry()
@@ -514,7 +516,7 @@ class NotificationContentViewTest : SysuiTestCase() {
         // Given: controller says bubbles are enabled for the user
         view.setBubblesEnabledForUser(true)
 
-        // Then: bottom margin of actionListMarginTarget should not change, still be 20
+        // Then: bottom margin of actionListMarginTarget should be changed to 0
         assertEquals(0, getMarginBottom(actionListMarginTarget))
     }
 
@@ -628,8 +630,7 @@ class NotificationContentViewTest : SysuiTestCase() {
             whenever(sbnMock.user).thenReturn(userMock)
         }
 
-    private fun createMockNotificationEntryAdapter() =
-        mock<EntryAdapter>()
+    private fun createMockNotificationEntryAdapter() = mock<EntryAdapter>()
 
     private fun createLinearLayoutWithBottomMargin(bottomMargin: Int): LinearLayout {
         val outerLayout = LinearLayout(mContext)

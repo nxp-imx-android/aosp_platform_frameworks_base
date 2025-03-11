@@ -295,6 +295,11 @@
     <!-- The margin of the notification action list at the bottom in the 2025 redesign -->
     <dimen name="notification_2025_action_list_margin_bottom">6dp</dimen>
 
+    <!-- The minimum height of the notification action container, to act as a bottom padding for the
+         notification when there are no actions. This should always be equal to
+         notification_2025_margin - notification_2025_action_list_margin_bottom. -->
+    <dimen name="notification_2025_action_list_min_height">10dp</dimen>
+
     <!-- The overall height of the emphasized notification action -->
     <dimen name="notification_action_emphasized_height">48dp</dimen>
 
