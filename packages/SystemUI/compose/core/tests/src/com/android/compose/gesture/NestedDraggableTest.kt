@@ -1000,6 +1000,39 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
         assertThat(draggable.onDragStartedCalled).isTrue()
     }
 
+    @Test
+    fun autoStopNestedDrags() {
+        var consumeScrolls by mutableStateOf(true)
+        val draggable =
+            TestDraggable(autoStopNestedDrags = true, onDrag = { if (consumeScrolls) it else 0f })
+
+        val touchSlop =
+            rule.setContentWithTouchSlop {
+                Box(
+                    Modifier.fillMaxSize()
+                        .nestedDraggable(draggable, orientation)
+                        .scrollable(rememberScrollableState { 0f }, orientation)
+                )
+            }
+
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy((touchSlop + 1f).toOffset())
+        }
+
+        assertThat(draggable.onDragStartedCalled).isTrue()
+        assertThat(draggable.onDragStoppedCalled).isFalse()
+
+        rule.onRoot().performTouchInput { moveBy(50f.toOffset()) }
+
+        assertThat(draggable.onDragStoppedCalled).isFalse()
+
+        consumeScrolls = false
+        rule.onRoot().performTouchInput { moveBy(1f.toOffset()) }
+
+        assertThat(draggable.onDragStoppedCalled).isTrue()
+    }
+
     private fun ComposeContentTestRule.setContentWithTouchSlop(
         content: @Composable () -> Unit
     ): Float {
@@ -1027,6 +1060,7 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
             },
         private val shouldConsumeNestedPostScroll: (Float) -> Boolean = { true },
         private val shouldConsumeNestedPreScroll: (Float) -> Boolean = { false },
+        private val autoStopNestedDrags: Boolean = false,
     ) : NestedDraggable {
         var shouldStartDrag = true
         var onDragStartedCalled = false
@@ -1056,6 +1090,8 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
 
             onDragStarted.invoke(position, sign)
             return object : NestedDraggable.Controller {
+                override val autoStopNestedDrags: Boolean = this@TestDraggable.autoStopNestedDrags
+
                 override fun onDrag(delta: Float): Float {
                     onDragCalled = true
                     onDragDelta += delta

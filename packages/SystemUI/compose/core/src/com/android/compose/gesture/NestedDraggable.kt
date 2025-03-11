@@ -112,6 +112,14 @@ interface NestedDraggable {
 
     interface Controller {
         /**
+         * Whether drags that were started from nested scrolls should be automatically
+         * [stopped][onDragStopped] as soon as they don't consume the entire `delta` passed to
+         * [onDrag].
+         */
+        val autoStopNestedDrags: Boolean
+            get() = false
+
+        /**
          * Drag by [delta] pixels.
          *
          * @return the consumed [delta]. Any non-consumed delta will be dispatched to the next
@@ -609,8 +617,15 @@ private class NestedDraggableNode(
     }
 
     private fun scrollWithOverscroll(controller: NestedScrollController, offset: Offset): Offset {
-        return scrollWithOverscroll(offset) {
-            controller.controller.onDrag(it.toFloat()).toOffset()
+        return scrollWithOverscroll(offset) { delta ->
+            val available = delta.toFloat()
+            val consumed = controller.controller.onDrag(available)
+            if (controller.controller.autoStopNestedDrags && consumed != available) {
+                controller.ensureOnDragStoppedIsCalled()
+                this.nestedScrollController = null
+            }
+
+            consumed.toOffset()
         }
     }
 
