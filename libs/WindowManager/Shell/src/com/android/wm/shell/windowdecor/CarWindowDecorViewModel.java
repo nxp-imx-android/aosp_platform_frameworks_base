@@ -31,6 +31,7 @@ import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.SurfaceControl;
 import android.view.View;
+import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -159,7 +160,8 @@ public abstract class CarWindowDecorViewModel
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
-            SurfaceControl.Transaction finishT) {
+            SurfaceControl.Transaction finishT,
+            @TransitionInfo.TransitionMode int changeMode) {
         final CarWindowDecoration decoration = mWindowDecorByTaskId.get(taskInfo.taskId);
 
         if (!shouldShowWindowDecor(taskInfo)) {
