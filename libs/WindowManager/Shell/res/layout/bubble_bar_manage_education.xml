@@ -31,7 +31,7 @@
         android:layout_height="@dimen/bubble_popup_icon_size"
         android:tint="@androidprv:color/materialColorOutline"
         android:contentDescription="@null"
-        android:src="@drawable/pip_ic_settings"/>
+        android:src="@drawable/bubble_ic_settings"/>
 
     <TextView
         android:layout_width="wrap_content"
