@@ -188,6 +188,16 @@ flag {
 }
 
 flag {
+    name: "limit_fused_gps"
+    namespace: "location"
+    description: "Limits when GPS can be used for fused location requests"
+    bug: "401885179"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "gnss_assistance_interface_jni"
     namespace: "location"
     description: "Flag for GNSS assistance interface JNI"
