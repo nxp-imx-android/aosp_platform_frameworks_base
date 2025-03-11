@@ -691,7 +691,7 @@ public class TelephonyManager {
             case UNKNOWN:
                 modemCount = 1;
                 // check for voice and data support, 0 if not supported
-                if (!isVoiceCapable() && !isSmsCapable() && !isDataCapable()) {
+                if (!isDeviceVoiceCapable() && !isSmsCapable() && !isDataCapable()) {
                     modemCount = 0;
                 }
                 break;
@@ -2814,7 +2814,7 @@ public class TelephonyManager {
      */
     @RequiresFeature(PackageManager.FEATURE_TELEPHONY)
     public int getPhoneType() {
-        if (!isVoiceCapable() && !isDataCapable()) {
+        if (!isDeviceVoiceCapable() && !isDataCapable()) {
             return PHONE_TYPE_NONE;
         }
         return getCurrentPhoneType();
