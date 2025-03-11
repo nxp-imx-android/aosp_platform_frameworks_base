@@ -62,9 +62,8 @@ constructor(
     val swipedRowMultiplier =
         MAGNETIC_TRANSLATION_MULTIPLIERS[MAGNETIC_TRANSLATION_MULTIPLIERS.size / 2]
 
-    override fun onDensityChange(density: Float) {
-        magneticDetachThreshold =
-            density * MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+    override fun setSwipeThresholdPx(thresholdPx: Float) {
+        magneticDetachThreshold = thresholdPx
     }
 
     override fun setMagneticAndRoundableTargets(
@@ -254,9 +253,6 @@ constructor(
             listener?.cancelMagneticAnimations()
         }
     }
-
-    override fun isMagneticRowSwipeDetached(row: ExpandableNotificationRow): Boolean =
-        row.isSwipedTarget() && currentState == State.DETACHED
 
     override fun resetRoundness() = notificationRoundnessManager.clear()
 

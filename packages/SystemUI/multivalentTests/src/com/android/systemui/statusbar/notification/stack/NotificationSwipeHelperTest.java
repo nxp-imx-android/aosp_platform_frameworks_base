@@ -49,7 +49,6 @@ import android.view.ViewConfiguration;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.classifier.FalsingManagerFake;
 import com.android.systemui.flags.FakeFeatureFlags;
@@ -363,26 +362,11 @@ public class NotificationSwipeHelperTest extends SysuiTestCase {
         verify(mSwipeHelper, times(1)).isFalseGesture();
     }
 
-    @DisableFlags(Flags.FLAG_MAGNETIC_NOTIFICATION_SWIPES)
     @Test
     public void testIsDismissGesture_farEnough() {
         doReturn(false).when(mSwipeHelper).isFalseGesture();
         doReturn(true).when(mSwipeHelper).swipedFarEnough();
         doReturn(false).when(mSwipeHelper).swipedFastEnough();
-        when(mCallback.canChildBeDismissedInDirection(any(), anyBoolean())).thenReturn(true);
-        when(mEvent.getActionMasked()).thenReturn(MotionEvent.ACTION_UP);
-
-        assertTrue("Should be a dismissal", mSwipeHelper.isDismissGesture(mEvent));
-        verify(mSwipeHelper, times(1)).isFalseGesture();
-    }
-
-    @EnableFlags(Flags.FLAG_MAGNETIC_NOTIFICATION_SWIPES)
-    @Test
-    public void testIsDismissGesture_magneticSwipeIsDismissible() {
-        doReturn(false).when(mSwipeHelper).isFalseGesture();
-        doReturn(false).when(mSwipeHelper).swipedFarEnough();
-        doReturn(false).when(mSwipeHelper).swipedFastEnough();
-        doReturn(true).when(mCallback).isMagneticViewDetached(any());
         when(mCallback.canChildBeDismissedInDirection(any(), anyBoolean())).thenReturn(true);
         when(mEvent.getActionMasked()).thenReturn(MotionEvent.ACTION_UP);
 
