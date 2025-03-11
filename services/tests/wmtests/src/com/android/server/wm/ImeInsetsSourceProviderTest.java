@@ -26,6 +26,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -275,5 +277,24 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.onPostLayout();
         assertTrue(mImeProvider.isServerVisible());
         assertTrue(mImeProvider.isSurfaceVisible());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_REFACTOR_INSETS_CONTROLLER)
+    public void testUpdateControlForTarget_differentControlTarget() throws RemoteException {
+        final WindowState oldTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
+        final WindowState newTarget = newWindowBuilder("newapp", TYPE_APPLICATION).build();
+
+        oldTarget.setRequestedVisibleTypes(
+                WindowInsets.Type.defaultVisible() | WindowInsets.Type.ime());
+        mDisplayContent.setImeControlTarget(oldTarget);
+        mDisplayContent.setImeInputTarget(newTarget);
+
+        // Having a null windowContainer will early return in updateControlForTarget
+        mImeProvider.setWindowContainer(null, null, null);
+
+        clearInvocations(mDisplayContent);
+        mImeProvider.updateControlForTarget(newTarget, false /* force */, ImeTracker.Token.empty());
+        verify(mDisplayContent, never()).getImeInputTarget();
     }
 }

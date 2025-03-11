@@ -321,7 +321,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
         if (Flags.refactorInsetsController()) {
             // TODO(b/353463205) investigate if we should fail the statsToken, or if it's only
             //  temporary null.
-            if (target != null) {
+            if (target != null && target == mControlTarget) {
                 // If insets target is not available (e.g. RemoteInsetsControlTarget), use current
                 // IME input target to update IME request state. For example, switch from a task
                 // with showing IME to a split-screen task without showing IME.
@@ -334,6 +334,11 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                 } else {
                     invokeOnImeRequestedChangedListener(target, statsToken);
                 }
+            } else {
+                ProtoLog.w(WM_DEBUG_IME,
+                        "Not invoking onImeRequestedChangedListener, target=%s, current "
+                                + "controlTarget=%s",
+                        target, mControlTarget);
             }
         }
     }
