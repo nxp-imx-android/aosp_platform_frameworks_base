@@ -313,7 +313,8 @@ public class ContextualSearchManagerService extends SystemService {
             android.Manifest.permission.CREATE_USERS,
             android.Manifest.permission.QUERY_USERS
     })
-    private Intent getContextualSearchIntent(int entrypoint, int userId, CallbackToken mToken) {
+    private Intent getContextualSearchIntent(int entrypoint, int userId, String callingPackage,
+            CallbackToken mToken) {
         final Intent launchIntent = getResolvedLaunchIntent(userId);
         if (launchIntent == null) {
             if (DEBUG) Log.w(TAG, "Failed getContextualSearchIntent: launchIntent is null");
@@ -331,6 +332,9 @@ public class ContextualSearchManagerService extends SystemService {
         if (Flags.includeAudioPlayingStatus()) {
             launchIntent.putExtra(ContextualSearchManager.EXTRA_IS_AUDIO_PLAYING,
                     mAudioManager.isMusicActive());
+        }
+        if (Flags.selfInvocation()) {
+            launchIntent.putExtra(Intent.EXTRA_CALLING_PACKAGE, callingPackage);
         }
         boolean isAssistDataAllowed = mAtmInternal.isAssistDataAllowed();
         final List<ActivityAssistInfo> records = mAtmInternal.getTopVisibleActivities();
@@ -500,6 +504,7 @@ public class ContextualSearchManagerService extends SystemService {
         }
 
         private void startContextualSearchInternal(int entrypoint) {
+            final String callingPackage = mPackageManager.getNameForUid(Binder.getCallingUid());
             final int callingUserId = Binder.getCallingUserHandle().getIdentifier();
             mAssistDataRequester.cancel();
             // Creates a new CallbackToken at mToken and an expiration handler.
@@ -508,7 +513,8 @@ public class ContextualSearchManagerService extends SystemService {
             // server has READ_FRAME_BUFFER permission to get the screenshot and because only
             // the system server can invoke non-exported activities.
             Binder.withCleanCallingIdentity(() -> {
-                Intent launchIntent = getContextualSearchIntent(entrypoint, callingUserId, mToken);
+                Intent launchIntent = getContextualSearchIntent(entrypoint, callingUserId,
+                            callingPackage, mToken);
                 if (launchIntent != null) {
                     int result = invokeContextualSearchIntent(launchIntent, callingUserId);
                     if (DEBUG) {
