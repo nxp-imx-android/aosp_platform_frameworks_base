@@ -21,6 +21,7 @@ import android.app.TaskInfo
 import android.graphics.Rect
 import android.os.Parcel
 import android.testing.AndroidTestingRunner
+import android.view.Display.DEFAULT_DISPLAY
 import android.window.IWindowContainerToken
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
@@ -281,7 +282,8 @@ class GroupedTaskInfoTest : ShellTestCase() {
         val task2 = createTaskInfo(id = 2)
 
         val taskInfo = GroupedTaskInfo.forDeskTasks(
-            /* deskId = */ 500, listOf(task1, task2), setOf())
+            /* deskId = */ 500, DEFAULT_DISPLAY, listOf(task1, task2), setOf()
+        )
 
         assertThat(taskInfo.deskId).isEqualTo(500)
         assertThat(taskInfo.getTaskById(1)).isEqualTo(task1)
@@ -335,6 +337,7 @@ class GroupedTaskInfoTest : ShellTestCase() {
     ): GroupedTaskInfo {
         return GroupedTaskInfo.forDeskTasks(
             deskId,
+            DEFAULT_DISPLAY,
             freeformTaskIds.map { createTaskInfo(it) }.toList(),
             minimizedTaskIds.toSet())
     }

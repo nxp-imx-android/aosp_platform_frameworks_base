@@ -536,17 +536,20 @@ public class RecentTasksController implements TaskStackListenerCallback,
     }
 
     /**
-     * Represents a desk whose ID is `mDeskId` and contains the tasks in `mDeskTasks`. Some of these
-     * tasks are minimized and their IDs are contained in the `mMinimizedDeskTasks` set.
+     * Represents a desk whose ID is `mDeskId` inside the display with `mDisplayId` and contains
+     * the tasks in `mDeskTasks`. Some of these tasks are minimized and their IDs are contained
+     * in the `mMinimizedDeskTasks` set.
      */
     private static class Desk {
         final int mDeskId;
+        final int mDisplayId;
         boolean mHasVisibleTasks = false;
         final ArrayList<TaskInfo> mDeskTasks = new ArrayList<>();
         final Set<Integer> mMinimizedDeskTasks = new HashSet<>();
 
-        Desk(int deskId) {
+        Desk(int deskId, int displayId) {
             mDeskId = deskId;
+            mDisplayId = displayId;
         }
 
         void addTask(TaskInfo taskInfo, boolean isMinimized, boolean isVisible) {
@@ -562,7 +565,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
         }
 
         GroupedTaskInfo createDeskTaskInfo() {
-            return GroupedTaskInfo.forDeskTasks(mDeskId, mDeskTasks, mMinimizedDeskTasks);
+            return GroupedTaskInfo.forDeskTasks(mDeskId, mDisplayId, mDeskTasks,
+                    mMinimizedDeskTasks);
         }
     }
 
@@ -601,7 +605,8 @@ public class RecentTasksController implements TaskStackListenerCallback,
     private Desk getOrCreateDesk(int deskId) {
         var desk = mTmpDesks.get(deskId);
         if (desk == null) {
-            desk = new Desk(deskId);
+            desk = new Desk(deskId,
+                    mDesktopUserRepositories.get().getCurrent().getDisplayForDesk(deskId));
             mTmpDesks.put(deskId, desk);
         }
         return desk;
