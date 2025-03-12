@@ -16,12 +16,14 @@
 
 package com.android.systemui.communal.widgets
 
+import android.appwidget.AppWidgetProviderInfo
 import android.content.pm.UserInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.repository.fakeCommunalWidgetRepository
+import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.communalInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.communal.domain.interactor.setCommunalEnabled
@@ -49,6 +51,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.never
+import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 
@@ -65,6 +68,7 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
     private lateinit var appWidgetIdToRemove: MutableSharedFlow<Int>
 
+    private lateinit var communalInteractorSpy: CommunalInteractor
     private lateinit var underTest: CommunalAppWidgetHostStartable
 
     @Before
@@ -78,12 +82,13 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
         helper = kosmos.fakeGlanceableHubMultiUserHelper
         appWidgetIdToRemove = MutableSharedFlow()
         whenever(appWidgetHost.appWidgetIdToRemove).thenReturn(appWidgetIdToRemove)
+        communalInteractorSpy = spy(kosmos.communalInteractor)
 
         underTest =
             CommunalAppWidgetHostStartable(
                 { appWidgetHost },
                 { communalWidgetHost },
-                { kosmos.communalInteractor },
+                { communalInteractorSpy },
                 { kosmos.communalSettingsInteractor },
                 { kosmos.keyguardInteractor },
                 { kosmos.fakeUserTracker },
@@ -255,6 +260,41 @@ class CommunalAppWidgetHostStartableTest : SysuiTestCase() {
 
                 // Both work widgets are removed.
                 assertThat(communalWidgets).containsExactly(widget3)
+            }
+        }
+
+    @Test
+    fun removeNotLockscreenWidgets_whenCommunalIsAvailable() =
+        with(kosmos) {
+            testScope.runTest {
+                // Communal is available
+                setCommunalAvailable(true)
+                kosmos.fakeUserTracker.set(
+                    userInfos = listOf(MAIN_USER_INFO),
+                    selectedUserIndex = 0,
+                )
+                fakeCommunalWidgetRepository.addWidget(
+                    appWidgetId = 1,
+                    userId = MAIN_USER_INFO.id,
+                    category = AppWidgetProviderInfo.WIDGET_CATEGORY_NOT_KEYGUARD,
+                )
+                fakeCommunalWidgetRepository.addWidget(appWidgetId = 2, userId = MAIN_USER_INFO.id)
+                fakeCommunalWidgetRepository.addWidget(
+                    appWidgetId = 3,
+                    userId = MAIN_USER_INFO.id,
+                    category = AppWidgetProviderInfo.WIDGET_CATEGORY_NOT_KEYGUARD,
+                )
+
+                underTest.start()
+                runCurrent()
+
+                val communalWidgets by
+                    collectLastValue(fakeCommunalWidgetRepository.communalWidgets)
+                assertThat(communalWidgets).hasSize(1)
+                assertThat(communalWidgets!![0].appWidgetId).isEqualTo(2)
+
+                verify(communalInteractorSpy).deleteWidget(1)
+                verify(communalInteractorSpy).deleteWidget(3)
             }
         }
 

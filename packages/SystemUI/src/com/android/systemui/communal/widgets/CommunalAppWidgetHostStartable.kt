@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.widgets
 
+import android.appwidget.AppWidgetProviderInfo
 import com.android.systemui.CoreStartable
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
@@ -101,6 +102,7 @@ constructor(
                     val (_, isActive) = withPrev
                     // The validation is performed once the hub becomes active.
                     if (isActive) {
+                        removeNotLockscreenWidgets(widgets)
                         validateWidgetsAndDeleteOrphaned(widgets)
                     }
                 }
@@ -143,6 +145,19 @@ constructor(
                 communalWidgetHost.stopObservingHost()
             }
         }
+
+    private fun removeNotLockscreenWidgets(widgets: List<CommunalWidgetContentModel>) {
+        widgets
+            .filter { widget ->
+                when (widget) {
+                    is CommunalWidgetContentModel.Available ->
+                        widget.providerInfo.widgetCategory and
+                            AppWidgetProviderInfo.WIDGET_CATEGORY_NOT_KEYGUARD != 0
+                    else -> false
+                }
+            }
+            .onEach { widget -> communalInteractor.deleteWidget(id = widget.appWidgetId) }
+    }
 
     /**
      * Ensure the existence of all associated users for widgets, and remove widgets belonging to
