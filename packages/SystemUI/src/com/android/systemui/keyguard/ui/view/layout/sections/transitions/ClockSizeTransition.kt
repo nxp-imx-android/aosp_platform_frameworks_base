@@ -28,7 +28,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnPreDrawListener
 import com.android.app.animation.Interpolators
-import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.ClockLogger.Companion.getVisText
 import com.android.systemui.keyguard.ui.view.layout.blueprints.transitions.IntraBlueprintTransition
 import com.android.systemui.keyguard.ui.view.layout.blueprints.transitions.IntraBlueprintTransition.Type
 import com.android.systemui.keyguard.ui.view.layout.sections.transitions.ClockSizeTransition.SmartspaceMoveTransition.Companion.STATUS_AREA_MOVE_DOWN_MILLIS
@@ -36,7 +36,7 @@ import com.android.systemui.keyguard.ui.view.layout.sections.transitions.ClockSi
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
-import com.android.systemui.plugins.clocks.ClockLogger.Companion.getVisText
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.shared.R as sharedR
 import com.google.android.material.math.MathUtils
@@ -295,14 +295,14 @@ class ClockSizeTransition(
                 }
                     ?: run {
                         logger.e("No large clock set, falling back")
-                        addTarget(customR.id.lockscreen_clock_view_large)
+                        addTarget(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE)
                     }
                 if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                     addTarget(sharedR.id.date_smartspace_view_large)
                 }
             } else {
                 logger.i("Adding small clock")
-                addTarget(customR.id.lockscreen_clock_view)
+                addTarget(ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL)
                 if (!viewModel.shouldDateWeatherBeBelowSmallClock.value) {
                     addTarget(sharedR.id.date_smartspace_view)
                 }

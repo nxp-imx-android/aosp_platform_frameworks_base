@@ -49,7 +49,6 @@ import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.view.onApplyWindowInsets
 import com.android.systemui.common.ui.view.onLayoutChanged
 import com.android.systemui.common.ui.view.onTouchListener
-import com.android.systemui.customization.R as customR
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryHapticsInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.view.layout.sections.AodPromotedNotificationSection
@@ -65,6 +64,7 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.KeyguardBlueprintLog
 import com.android.systemui.plugins.FalsingManager
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -574,11 +574,11 @@ object KeyguardRootViewBinder {
     private val burnInLayerId = R.id.burn_in_layer
     private val aodPromotedNotificationId = AodPromotedNotificationSection.viewId
     private val aodNotificationIconContainerId = R.id.aod_notification_icon_container
-    private val largeClockId = customR.id.lockscreen_clock_view_large
+    private val largeClockId = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE
     private val largeClockDateId = sharedR.id.date_smartspace_view_large
     private val largeClockWeatherId = sharedR.id.weather_smartspace_view_large
     private val bcSmartspaceId = sharedR.id.bc_smartspace_view
-    private val smallClockId = customR.id.lockscreen_clock_view
+    private val smallClockId = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
     private val indicationArea = R.id.keyguard_indication_area
     private val startButton = R.id.start_button
     private val endButton = R.id.end_button

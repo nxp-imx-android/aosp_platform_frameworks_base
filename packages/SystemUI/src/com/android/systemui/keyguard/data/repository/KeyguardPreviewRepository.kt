@@ -17,11 +17,14 @@
 package com.android.systemui.keyguard.data.repository
 
 import android.app.WallpaperColors
+import android.content.Context
 import android.hardware.display.DisplayManager
 import android.os.Bundle
 import android.os.IBinder
+import android.view.ContextThemeWrapper
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.shared.clocks.ClockRegistry
@@ -42,6 +45,7 @@ interface KeyguardPreviewRepositoryFactory {
 class KeyguardPreviewRepository
 @AssistedInject
 constructor(
+    @Application context: Context,
     private val clockRepository: KeyguardClockRepository,
     private val clockRegistry: ClockRegistry,
     private val displayManager: DisplayManager,
@@ -55,6 +59,9 @@ constructor(
 
     val displayId = request.getInt(KEY_DISPLAY_ID, DEFAULT_DISPLAY)
     val display: Display? = displayManager.getDisplay(displayId)
+    val previewContext: Context =
+        display?.let { ContextThemeWrapper(context.createDisplayContext(it), context.getTheme()) }
+            ?: context
 
     /** [shouldHideClock] here means that we never create and bind the clock views */
     val shouldHideClock: Boolean = request.getBoolean(KEY_HIDE_CLOCK, false)
@@ -66,7 +73,7 @@ constructor(
         clockRepository.currentClockId.map {
             // We should create a new instance for each collect call cause in preview, the same
             // clock will be attached to a different parent view at the same time.
-            clockRegistry.createCurrentClock()
+            clockRegistry.createCurrentClock(previewContext)
         }
 
     companion object {

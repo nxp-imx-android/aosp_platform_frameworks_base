@@ -39,6 +39,7 @@ android_library {
         "monet",
         "dagger2",
         "jsr330",
+        "SystemUIClocks-CommonLib",
     ],
     libs: [
         // Keep android-specific libraries as libs instead of static_libs, so that they don't break
@@ -50,9 +51,7 @@ android_library {
         "androidx.recyclerview_recyclerview",
         "kotlinx_coroutines_android",
     ],
-    resource_dirs: [
-        "res",
-    ],
+    resource_dirs: ["res"],
     min_sdk_version: "current",
     plugins: ["dagger2-compiler"],
     kotlincflags: ["-Xjvm-default=all"],

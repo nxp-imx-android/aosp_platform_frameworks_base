@@ -74,10 +74,16 @@ object KeyguardPreviewSmartspaceViewBinder {
                         val topPadding =
                             when (it) {
                                 ClockSizeSetting.DYNAMIC ->
-                                    viewModel.getLargeClockSmartspaceTopPadding(clockPreviewConfig)
+                                    viewModel.getLargeClockSmartspaceTopPadding(
+                                        smartspace.context,
+                                        clockPreviewConfig,
+                                    )
 
                                 ClockSizeSetting.SMALL ->
-                                    viewModel.getSmallClockSmartspaceTopPadding(clockPreviewConfig)
+                                    viewModel.getSmallClockSmartspaceTopPadding(
+                                        smartspace.context,
+                                        clockPreviewConfig,
+                                    )
                             }
                         smartspace.setTopPadding(topPadding)
                     }

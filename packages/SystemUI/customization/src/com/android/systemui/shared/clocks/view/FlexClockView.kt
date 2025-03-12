@@ -25,18 +25,19 @@ import android.widget.RelativeLayout
 import androidx.annotation.VisibleForTesting
 import androidx.core.view.children
 import com.android.app.animation.Interpolators
-import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.CanvasUtil.translate
+import com.android.systemui.customization.clocks.CanvasUtil.use
+import com.android.systemui.customization.clocks.ClockLogger
+import com.android.systemui.customization.clocks.R
+import com.android.systemui.customization.clocks.ViewUtils.measuredSize
 import com.android.systemui.plugins.clocks.ClockAxisStyle
-import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VPointF.Companion.max
 import com.android.systemui.plugins.clocks.VPointF.Companion.times
 import com.android.systemui.plugins.clocks.VRectF
-import com.android.systemui.shared.clocks.CanvasUtil.translate
-import com.android.systemui.shared.clocks.CanvasUtil.use
 import com.android.systemui.shared.clocks.ClockContext
 import com.android.systemui.shared.clocks.DigitTranslateAnimator
-import com.android.systemui.shared.clocks.ViewUtils.measuredSize
 import java.util.Locale
 import kotlin.collections.filterNotNull
 import kotlin.collections.map
@@ -222,13 +223,13 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
             var offset =
                 maxChildSize.run {
                     when (child.id) {
-                        R.id.HOUR_FIRST_DIGIT -> VPointF.ZERO
-                        R.id.HOUR_SECOND_DIGIT -> VPointF(x, 0f)
-                        R.id.HOUR_DIGIT_PAIR -> VPointF.ZERO
+                        ClockViewIds.HOUR_FIRST_DIGIT -> VPointF.ZERO
+                        ClockViewIds.HOUR_SECOND_DIGIT -> VPointF(x, 0f)
+                        ClockViewIds.HOUR_DIGIT_PAIR -> VPointF.ZERO
                         // Add a small vertical buffer for second line views
-                        R.id.MINUTE_DIGIT_PAIR -> VPointF(0f, y + yBuffer)
-                        R.id.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)
-                        R.id.MINUTE_SECOND_DIGIT -> VPointF(x, y + yBuffer)
+                        ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(0f, y + yBuffer)
+                        ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(0f, y + yBuffer)
+                        ClockViewIds.MINUTE_SECOND_DIGIT -> VPointF(x, y + yBuffer)
                         else -> VPointF.ZERO
                     }
                 }
@@ -465,12 +466,12 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         fun updateDirectionalTargetTranslate(id: Int, targetTranslation: VPointF): VPointF {
             return targetTranslation *
                 when (id) {
-                    R.id.HOUR_FIRST_DIGIT -> VPointF(-1, -1)
-                    R.id.HOUR_SECOND_DIGIT -> VPointF(1, -1)
-                    R.id.MINUTE_FIRST_DIGIT -> VPointF(-1, 1)
-                    R.id.MINUTE_SECOND_DIGIT -> VPointF(1, 1)
-                    R.id.HOUR_DIGIT_PAIR -> VPointF(-1, -1)
-                    R.id.MINUTE_DIGIT_PAIR -> VPointF(-1, 1)
+                    ClockViewIds.HOUR_FIRST_DIGIT -> VPointF(-1, -1)
+                    ClockViewIds.HOUR_SECOND_DIGIT -> VPointF(1, -1)
+                    ClockViewIds.MINUTE_FIRST_DIGIT -> VPointF(-1, 1)
+                    ClockViewIds.MINUTE_SECOND_DIGIT -> VPointF(1, 1)
+                    ClockViewIds.HOUR_DIGIT_PAIR -> VPointF(-1, -1)
+                    ClockViewIds.MINUTE_DIGIT_PAIR -> VPointF(-1, 1)
                     else -> VPointF(1, 1)
                 }
         }

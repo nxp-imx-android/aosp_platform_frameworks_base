@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.plugins.clocks
+package com.android.systemui.customization.clocks
 
 import android.view.View
 import android.view.View.MeasureSpec
@@ -22,6 +22,8 @@ import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.core.LogcatOnlyMessageBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.core.MessageBuffer
+import com.android.systemui.plugins.clocks.VPointF
+import com.android.systemui.plugins.clocks.VRect
 import kotlin.math.abs
 
 class ClockLogger(private val view: View?, buffer: MessageBuffer, tag: String) :

@@ -24,12 +24,12 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import com.android.keyguard.KeyguardSliceView
 import com.android.keyguard.KeyguardSliceViewController
-import com.android.systemui.customization.R as customR
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.shared.model.KeyguardSection
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.res.R
 import com.android.systemui.settings.DisplayTracker
 import com.android.systemui.statusbar.lockscreen.LockscreenSmartspaceController
@@ -95,7 +95,7 @@ constructor(
             connect(
                 R.id.keyguard_slice_view,
                 ConstraintSet.TOP,
-                customR.id.lockscreen_clock_view,
+                ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL,
                 ConstraintSet.BOTTOM,
             )
 

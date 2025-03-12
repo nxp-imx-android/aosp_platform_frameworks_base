@@ -17,6 +17,7 @@
 package com.android.systemui.keyguard.domain.interactor
 
 import android.app.WallpaperColors
+import android.content.Context
 import android.os.Bundle
 import android.os.IBinder
 import android.view.Display
@@ -42,6 +43,9 @@ constructor(
     private val clockInteractor: KeyguardClockInteractor,
     private val shadeModeInteractor: ShadeModeInteractor,
 ) {
+    val previewContext: Context
+        get() = repository.previewContext
+
     val previewClock: Flow<ClockController> = repository.previewClock
 
     val previewClockSize: Flow<ClockSizeSetting> =

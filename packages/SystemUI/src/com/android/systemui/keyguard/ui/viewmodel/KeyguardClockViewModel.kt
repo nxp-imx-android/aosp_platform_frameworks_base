@@ -21,7 +21,7 @@ import android.content.res.Resources
 import androidx.constraintlayout.helper.widget.Layer
 import com.android.keyguard.ClockEventController
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
-import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -32,6 +32,7 @@ import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.log.dagger.KeyguardSmallClockLog
 import com.android.systemui.plugins.clocks.ClockPreviewConfig
+import com.android.systemui.res.R as SysuiR
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -159,11 +160,17 @@ constructor(
     /** Calculates the top margin for the small clock. */
     fun getSmallClockTopMargin(): Int {
         return ClockPreviewConfig(
-                context,
-                shadeModeInteractor.isShadeLayoutWide.value,
-                SceneContainerFlag.isEnabled,
+                isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value,
+                isSceneContainerFlagEnabled = SceneContainerFlag.isEnabled,
+                statusBarHeight = systemBarUtils.getStatusBarHeaderHeightKeyguard(),
+                splitShadeTopMargin =
+                    context.resources.getDimensionPixelSize(
+                        SysuiR.dimen.keyguard_split_shade_top_margin
+                    ),
+                clockTopMargin =
+                    context.resources.getDimensionPixelSize(SysuiR.dimen.keyguard_clock_top_margin),
             )
-            .getSmallClockTopPadding(systemBarUtils.getStatusBarHeaderHeightKeyguard())
+            .getSmallClockTopPadding()
     }
 
     val smallClockTopMargin =
@@ -178,11 +185,11 @@ constructor(
     fun getLargeClockTopMargin(): Int {
         return if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
             systemBarUtils.getStatusBarHeight() / 2 +
-                resources.getDimensionPixelSize(customR.dimen.keyguard_smartspace_top_offset)
+                resources.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset)
         } else {
             systemBarUtils.getStatusBarHeight() +
-                resources.getDimensionPixelSize(customR.dimen.small_clock_padding_top) +
-                resources.getDimensionPixelSize(customR.dimen.keyguard_smartspace_top_offset)
+                resources.getDimensionPixelSize(clocksR.dimen.small_clock_padding_top) +
+                resources.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset)
         }
     }
 
@@ -190,7 +197,7 @@ constructor(
         configurationInteractor.onAnyConfigurationChange.map { getLargeClockTopMargin() }
 
     val largeClockTextSize: Flow<Int> =
-        configurationInteractor.dimensionPixelSize(customR.dimen.large_clock_text_size)
+        configurationInteractor.dimensionPixelSize(clocksR.dimen.large_clock_text_size)
 
     val shouldDateWeatherBeBelowSmallClock: StateFlow<Boolean> =
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {

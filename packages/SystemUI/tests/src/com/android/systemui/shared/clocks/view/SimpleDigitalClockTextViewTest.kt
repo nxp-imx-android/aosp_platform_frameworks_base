@@ -19,7 +19,7 @@ import android.graphics.Typeface
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.plugins.clocks.ClockLogger
+import com.android.systemui.customization.clocks.ClockLogger
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.shared.clocks.ClockContext

@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.customization.clocks
 
-import android.graphics.Canvas
-import com.android.systemui.plugins.clocks.VPoint
-import com.android.systemui.plugins.clocks.VPointF
+import android.content.Context
+import com.android.internal.R as internalR
+import com.android.internal.policy.SystemBarUtils
 
-object CanvasUtil {
-    fun Canvas.translate(pt: VPointF) = this.translate(pt.x, pt.y)
-
-    fun Canvas.translate(pt: VPoint) = this.translate(pt.x.toFloat(), pt.y.toFloat())
-
-    fun <T> Canvas.use(func: (Canvas) -> T): T {
-        val saveNum = save()
-        val result = func(this)
-        restoreToCount(saveNum)
-        return result
+object ContextUtil {
+    fun Context.getSafeStatusBarHeight(): Int {
+        return this.displayNoVerify?.let { display ->
+            SystemBarUtils.getStatusBarHeight(this.resources, display.cutout)
+        } ?: this.resources.getDimensionPixelSize(internalR.dimen.status_bar_height)
     }
 }

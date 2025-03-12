@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.customization.clocks
 
 import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.plugins.clocks.AxisType

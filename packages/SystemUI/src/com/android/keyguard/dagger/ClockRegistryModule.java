@@ -70,7 +70,6 @@ public abstract class ClockRegistryModule {
                         || featureFlags.isEnabled(Flags.LOCKSCREEN_CUSTOM_CLOCKS),
                 /* handleAllUsers= */ true,
                 new DefaultClockProvider(
-                        context,
                         layoutInflater,
                         resources,
                         com.android.systemui.shared.Flags.clockReactiveVariants(),

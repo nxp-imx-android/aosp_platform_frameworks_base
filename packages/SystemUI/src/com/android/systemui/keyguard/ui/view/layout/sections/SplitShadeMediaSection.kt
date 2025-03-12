@@ -27,7 +27,7 @@ import androidx.constraintlayout.widget.ConstraintSet.MATCH_CONSTRAINT
 import androidx.constraintlayout.widget.ConstraintSet.PARENT_ID
 import androidx.constraintlayout.widget.ConstraintSet.START
 import androidx.constraintlayout.widget.ConstraintSet.TOP
-import com.android.systemui.customization.R as customR
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.shared.model.KeyguardSection
 import com.android.systemui.media.controls.ui.controller.KeyguardMediaController
 import com.android.systemui.res.R
@@ -51,7 +51,7 @@ constructor(
                 val horizontalPadding =
                     padding +
                         context.resources.getDimensionPixelSize(
-                            customR.dimen.status_view_margin_horizontal
+                            clocksR.dimen.status_view_margin_horizontal
                         )
 
                 setPaddingRelative(horizontalPadding, padding, horizontalPadding, padding)

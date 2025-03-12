@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.combine
 
 /** Binder for the small clock view, large clock view. */
 object KeyguardPreviewClockViewBinder {
-    val lockId = View.generateViewId()
+    val lockViewId = View.generateViewId()
 
     @JvmStatic
     fun bind(
@@ -85,10 +85,7 @@ object KeyguardPreviewClockViewBinder {
                                         .forEach { rootView.removeView(it) }
                                 }
                                 lastClock = currentClock
-                                updateClockAppearance(
-                                    currentClock,
-                                    clockPreviewConfig.context.resources,
-                                )
+                                updateClockAppearance(currentClock, rootView.context.resources)
 
                                 if (viewModel.shouldHighlightSelectedAffordance) {
                                     (currentClock.largeClock.layout.views +
@@ -133,8 +130,8 @@ object KeyguardPreviewClockViewBinder {
         val cs = ConstraintSet().apply { clone(rootView) }
 
         val configWithUpdatedLockId =
-            if (rootView.getViewById(lockId) != null) {
-                clockPreviewConfig.copy(lockId = lockId)
+            if (rootView.getViewById(lockViewId) != null) {
+                clockPreviewConfig.copy(lockViewId = lockViewId)
             } else {
                 clockPreviewConfig
             }

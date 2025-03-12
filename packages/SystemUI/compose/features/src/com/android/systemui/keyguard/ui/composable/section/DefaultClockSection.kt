@@ -32,7 +32,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.padding
-import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.keyguard.ui.composable.blueprint.ClockElementKeys.largeClockElementKey
 import com.android.systemui.keyguard.ui.composable.blueprint.ClockElementKeys.smallClockElementKey
 import com.android.systemui.keyguard.ui.composable.blueprint.ClockScenes.largeClockScene
@@ -92,8 +92,8 @@ constructor(
             checkNotNull(currentClock).smallClock.view,
             modifier =
                 modifier
-                    .height(dimensionResource(R.dimen.small_clock_height))
-                    .padding(horizontal = dimensionResource(R.dimen.clock_padding_start))
+                    .height(dimensionResource(clocksR.dimen.small_clock_height))
+                    .padding(horizontal = dimensionResource(clocksR.dimen.clock_padding_start))
                     .padding(top = { smallTopMargin })
                     .onTopPlacementChanged(onTopChanged)
                     .burnInAware(viewModel = aodBurnInViewModel, params = burnInParams)

@@ -23,7 +23,11 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import com.android.app.animation.Interpolators
 import com.android.systemui.animation.GSFAxes
-import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.DefaultClockFaceLayout
+import com.android.systemui.customization.clocks.FontUtils.get
+import com.android.systemui.customization.clocks.FontUtils.set
+import com.android.systemui.customization.clocks.R
+import com.android.systemui.customization.clocks.ViewUtils.computeLayoutDiff
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
 import com.android.systemui.plugins.clocks.ClockAxisStyle
@@ -33,14 +37,11 @@ import com.android.systemui.plugins.clocks.ClockFaceController
 import com.android.systemui.plugins.clocks.ClockFaceEvents
 import com.android.systemui.plugins.clocks.ClockFaceLayout
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
-import com.android.systemui.plugins.clocks.DefaultClockFaceLayout
+import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
-import com.android.systemui.shared.clocks.FontUtils.get
-import com.android.systemui.shared.clocks.FontUtils.set
-import com.android.systemui.shared.clocks.ViewUtils.computeLayoutDiff
 import com.android.systemui.shared.clocks.view.FlexClockView
 import com.android.systemui.shared.clocks.view.HorizontalAlignment
 import com.android.systemui.shared.clocks.view.VerticalAlignment
@@ -89,7 +90,8 @@ class FlexClockFaceController(clockCtx: ClockContext, private val isLargeClock: 
     override val layout: ClockFaceLayout =
         DefaultClockFaceLayout(view).apply {
             views[0].id =
-                if (isLargeClock) R.id.lockscreen_clock_view_large else R.id.lockscreen_clock_view
+                if (isLargeClock) ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE
+                else ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
         }
 
     override val events = FlexClockFaceEvents()
