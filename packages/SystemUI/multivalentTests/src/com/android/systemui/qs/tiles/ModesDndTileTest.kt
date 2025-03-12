@@ -184,12 +184,12 @@ class ModesDndTileTest : SysuiTestCase() {
                     state = Tile.STATE_INACTIVE
                     secondaryLabel = "Old secondary label"
                 }
-            val model = ModesDndTileModel(isActivated = true)
+            val model = ModesDndTileModel(isActivated = true, extraStatus = "Until 14:30")
 
             underTest.handleUpdateState(tileState, model)
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
-            assertThat(tileState.secondaryLabel).isEqualTo("On")
+            assertThat(tileState.secondaryLabel).isEqualTo("Until 14:30")
         }
 
     @Test
@@ -206,6 +206,6 @@ class ModesDndTileTest : SysuiTestCase() {
             underTest.handleUpdateState(tileState, null)
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
-            assertThat(tileState.secondaryLabel).isEqualTo("On")
+            assertThat(tileState.secondaryLabel).isEqualTo(null) // Tile will use default On text
         }
 }
