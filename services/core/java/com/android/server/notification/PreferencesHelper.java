@@ -74,7 +74,6 @@ import com.android.internal.logging.MetricsLogger;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.XmlUtils;
 import com.android.server.notification.PermissionHelper.PackagePermission;
-import com.android.server.uri.UriGrantsManagerInternal;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -183,7 +182,6 @@ public class PreferencesHelper implements RankingConfig {
     private final PermissionHelper mPermissionHelper;
     private final NotificationChannelLogger mNotificationChannelLogger;
     private final AppOpsManager mAppOps;
-    private final UriGrantsManagerInternal mUgmInternal;
 
     private SparseBooleanArray mBadgingEnabled;
     private SparseBooleanArray mBubblesEnabled;
@@ -200,7 +198,6 @@ public class PreferencesHelper implements RankingConfig {
             ZenModeHelper zenHelper, PermissionHelper permHelper,
             NotificationChannelLogger notificationChannelLogger,
             AppOpsManager appOpsManager,
-            UriGrantsManagerInternal ugmInternal,
             SysUiStatsEvent.BuilderFactory statsEventBuilderFactory,
             boolean showReviewPermissionsNotification) {
         mContext = context;
@@ -211,7 +208,6 @@ public class PreferencesHelper implements RankingConfig {
         mNotificationChannelLogger = notificationChannelLogger;
         mAppOps = appOpsManager;
         mStatsEventBuilderFactory = statsEventBuilderFactory;
-        mUgmInternal = ugmInternal;
         mShowReviewPermissionsNotification = showReviewPermissionsNotification;
 
         XML_VERSION = 4;
@@ -1012,11 +1008,6 @@ public class PreferencesHelper implements RankingConfig {
                     channel.setImportantConversation(false);
                 }
                 clearLockedFieldsLocked(channel);
-
-                // Verify that the app has permission to read the sound Uri
-                // Only check for new channels, as regular apps can only set sound
-                // before creating. See: {@link NotificationChannel#setSound}
-                PermissionHelper.grantUriPermission(mUgmInternal, channel.getSound(), uid);
 
                 channel.setImportanceLockedByCriticalDeviceFunction(
                         r.defaultAppLockedImportance || r.fixedImportance);
