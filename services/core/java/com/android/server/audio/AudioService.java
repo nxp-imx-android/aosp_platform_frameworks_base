@@ -3336,11 +3336,25 @@ public class AudioService extends IAudioService.Stub
     }
 
     private int rescaleIndex(int index, int srcStream, int dstStream) {
-        return rescaleIndex(index,
-                getVssForStreamOrDefault(srcStream).getMinIndex(),
-                getVssForStreamOrDefault(srcStream).getMaxIndex(),
-                getVssForStreamOrDefault(dstStream).getMinIndex(),
-                getVssForStreamOrDefault(dstStream).getMaxIndex());
+        final VolumeStreamState srcVss = getVssForStreamOrDefault(srcStream);
+        final VolumeStreamState dstVss = getVssForStreamOrDefault(dstStream);
+        int newIndex = rescaleIndex(index, srcVss.getMinIndex(), srcVss.getMaxIndex(),
+                dstVss.getMinIndex(), dstVss.getMaxIndex());
+        // only apply solution for DTMF stream to make sure that it is not muted when
+        // re-aliasing to voice call stream. With ringMyCar flag enabled this will be
+        // automatically solved since we are sending the mute state to APM
+        // TODO(b/402542630): revisit stream aliasing logic with different min index
+        //  values / mute states
+        if (!ringMyCar() && dstStream == AudioSystem.STREAM_DTMF
+                && srcStream == AudioSystem.STREAM_VOICE_CALL
+                && srcVss.getMinIndex() > dstVss.getMinIndex()) {
+            newIndex += srcVss.getMinIndex() - dstVss.getMinIndex();
+            if (newIndex > dstVss.getMaxIndex()) {
+                newIndex = dstVss.getMaxIndex();
+            }
+        }
+
+        return newIndex;
     }
 
     private int rescaleIndex(int index, int srcMin, int srcMax, int dstMin, int dstMax) {
