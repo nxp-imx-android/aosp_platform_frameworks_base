@@ -3918,6 +3918,22 @@ public class CarrierConfigManager {
             "5g_icon_display_secondary_grace_period_string";
 
     /**
+     * When an NR advanced connection is lost and a Physical Cell ID (PCI) change occurs within
+     * the primary timer{@link #KEY_5G_ICON_DISPLAY_GRACE_PERIOD_STRING}, delay updating the network
+     * icon.
+     *
+     * <p>This delay is implemented because a rapid PCI change often indicates the device is
+     * switching to a nearby cell tower to quickly restore the NR advanced connection. Displaying
+     * an intermediate network icon (like 4G/LTE) might be misleading if the 5G connection is
+     * restored shortly after. This value sets the delay in seconds; 0 disables the feature.</p>
+     *
+     * @hide
+     */
+    public static final String KEY_NR_ADVANCED_PCI_CHANGE_SECONDARY_TIMER_SECONDS_INT =
+            "nr_advanced_pci_change_secondary_timer_seconds_int";
+
+
+    /**
      * The secondary grace periods in seconds to use if NR advanced icon was shown due to connecting
      * to bands specified in {@link #KEY_ADDITIONAL_NR_ADVANCED_BANDS_INT_ARRAY}.
      *
@@ -11222,6 +11238,7 @@ public class CarrierConfigManager {
                         + "not_restricted_rrc_con:5G");
         sDefaults.putString(KEY_5G_ICON_DISPLAY_GRACE_PERIOD_STRING, "");
         sDefaults.putString(KEY_5G_ICON_DISPLAY_SECONDARY_GRACE_PERIOD_STRING, "");
+        sDefaults.putInt(KEY_NR_ADVANCED_PCI_CHANGE_SECONDARY_TIMER_SECONDS_INT, 0);
         sDefaults.putInt(KEY_NR_ADVANCED_BANDS_SECONDARY_TIMER_SECONDS_INT, 0);
         sDefaults.putBoolean(KEY_NR_TIMERS_RESET_IF_NON_ENDC_AND_RRC_IDLE_BOOL, false);
         sDefaults.putBoolean(KEY_NR_TIMERS_RESET_ON_VOICE_QOS_BOOL, false);
