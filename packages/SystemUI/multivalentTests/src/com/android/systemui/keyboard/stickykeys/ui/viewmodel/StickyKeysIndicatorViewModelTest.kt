@@ -117,9 +117,9 @@ class StickyKeysIndicatorViewModelTest : SysuiTestCase() {
     }
 
     private fun setStickyKeySetting(enabled: Boolean) {
-        val newValue = if (enabled) "1" else "0"
+        val newValue = if (enabled) 1 else 0
         val defaultUser = userRepository.getSelectedUserInfo().id
-        secureSettings.putStringForUser(ACCESSIBILITY_STICKY_KEYS, newValue, defaultUser)
+        secureSettings.putIntForUser(ACCESSIBILITY_STICKY_KEYS, newValue, defaultUser)
     }
 
     @Test
