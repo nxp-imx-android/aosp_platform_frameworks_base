@@ -214,7 +214,6 @@ class DesktopTasksController(
     private val overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver,
     private val desksOrganizer: DesksOrganizer,
     private val desksTransitionObserver: DesksTransitionObserver,
-    private val desktopPipTransitionObserver: Optional<DesktopPipTransitionObserver>,
     private val userProfileContexts: UserProfileContexts,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
@@ -842,7 +841,6 @@ class DesktopTasksController(
             }
         val isMinimizingToPip =
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
-                desktopPipTransitionObserver.isPresent &&
                 (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
 
         // If task is going to PiP, start a PiP transition instead of a minimize transition
@@ -856,25 +854,23 @@ class DesktopTasksController(
                     /* displayChange= */ null,
                     /* flags= */ 0,
                 )
-            val requestRes = transitions.dispatchRequest(Binder(), requestInfo, /* skip= */ null)
+            val requestRes =
+                transitions.dispatchRequest(SYNTHETIC_TRANSITION, requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
 
-            desktopPipTransitionObserver
-                .get()
-                .addPendingPipTransition(
-                    DesktopPipTransitionObserver.PendingPipTransition(
-                        token = freeformTaskTransitionStarter.startPipTransition(wct),
-                        taskId = taskInfo.taskId,
-                        onSuccess = {
-                            onDesktopTaskEnteredPip(
-                                taskId = taskId,
-                                deskId = deskId,
-                                displayId = taskInfo.displayId,
-                                taskIsLastVisibleTaskBeforePip = isLastTask,
-                            )
-                        },
+            // If the task minimizing to PiP is the last task, modify wct to perform Desktop cleanup
+            var desktopExitRunnable: RunOnTransitStart? = null
+            if (isLastTask) {
+                desktopExitRunnable =
+                    performDesktopExitCleanUp(
+                        wct = wct,
+                        deskId = deskId,
+                        displayId = displayId,
+                        willExitDesktop = true,
                     )
-                )
+            }
+            val transition = freeformTaskTransitionStarter.startPipTransition(wct)
+            desktopExitRunnable?.invoke(transition)
         } else {
             snapEventHandler.removeTaskIfTiled(displayId, taskId)
             val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
@@ -1887,11 +1883,7 @@ class DesktopTasksController(
         displayId: Int,
         forceExitDesktop: Boolean,
     ): Boolean {
-        if (
-            forceExitDesktop &&
-                (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue ||
-                    DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue)
-        ) {
+        if (forceExitDesktop && DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             // |forceExitDesktop| is true when the callers knows we'll exit desktop, such as when
             // explicitly going fullscreen, so there's no point in checking the desktop state.
             return true
@@ -1906,33 +1898,6 @@ class DesktopTasksController(
             }
         }
         return true
-    }
-
-    /** Potentially perform Desktop cleanup after a task successfully enters PiP. */
-    @VisibleForTesting
-    fun onDesktopTaskEnteredPip(
-        taskId: Int,
-        deskId: Int,
-        displayId: Int,
-        taskIsLastVisibleTaskBeforePip: Boolean,
-    ) {
-        if (
-            !willExitDesktop(taskId, displayId, forceExitDesktop = taskIsLastVisibleTaskBeforePip)
-        ) {
-            return
-        }
-
-        val wct = WindowContainerTransaction()
-        val desktopExitRunnable =
-            performDesktopExitCleanUp(
-                wct = wct,
-                deskId = deskId,
-                displayId = displayId,
-                willExitDesktop = true,
-            )
-
-        val transition = transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
-        desktopExitRunnable?.invoke(transition)
     }
 
     private fun performDesktopExitCleanupIfNeeded(
@@ -1958,7 +1923,7 @@ class DesktopTasksController(
     }
 
     /** TODO: b/394268248 - update [deskId] to be non-null. */
-    private fun performDesktopExitCleanUp(
+    fun performDesktopExitCleanUp(
         wct: WindowContainerTransaction,
         deskId: Int?,
         displayId: Int,
@@ -3955,6 +3920,12 @@ class DesktopTasksController(
                 DesktopTaskToFrontReason.TASKBAR_MANAGE_WINDOW ->
                     UnminimizeReason.TASKBAR_MANAGE_WINDOW
             }
+
+        @JvmField
+        /**
+         * A placeholder for a synthetic transition that isn't backed by a true system transition.
+         */
+        val SYNTHETIC_TRANSITION: IBinder = Binder()
     }
 
     /** Defines interface for classes that can listen to changes for task resize. */
