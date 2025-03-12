@@ -16,6 +16,8 @@
 
 package com.android.settingslib.widget;
 
+import static android.view.HapticFeedbackConstants.CLOCK_TICK;
+
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
@@ -46,6 +48,9 @@ import com.google.android.material.slider.Slider;
  */
 public class SliderPreference extends Preference {
     private static final String TAG = "SliderPreference";
+    public static final int HAPTIC_FEEDBACK_MODE_NONE = 0;
+    public static final int HAPTIC_FEEDBACK_MODE_ON_TICKS = 1;
+    public static final int HAPTIC_FEEDBACK_MODE_ON_ENDS = 2;
 
     private final int mTextStartId;
     private final int mTextEndId;
@@ -71,6 +76,8 @@ public class SliderPreference extends Preference {
     private int mMin;
     private int mMax;
     private int mSliderIncrement;
+    private int mHapticFeedbackMode = HAPTIC_FEEDBACK_MODE_NONE;
+    private boolean mTickVisible = false;
     private boolean mAdjustable;
     private boolean mTrackingTouch;
     private CharSequence mSliderContentDescription;
@@ -265,6 +272,7 @@ public class SliderPreference extends Preference {
         }
         if (mSliderIncrement != 0) {
             mSlider.setStepSize(mSliderIncrement);
+            mSlider.setTickVisible(mTickVisible);
         } else {
             mSliderIncrement = (int) (mSlider.getStepSize());
         }
@@ -442,6 +450,29 @@ public class SliderPreference extends Preference {
     }
 
     /**
+     * Sets the haptic feedback mode. HAPTIC_FEEDBACK_MODE_ON_TICKS means to perform haptic feedback
+     * as the {@link Slider} value is updated; HAPTIC_FEEDBACK_MODE_ON_ENDS means to perform haptic
+     * feedback as the {@link Slider} value is equal to the min/max value.
+     *
+     * @param hapticFeedbackMode The haptic feedback mode.
+     */
+    public void setHapticFeedbackMode(int hapticFeedbackMode) {
+        mHapticFeedbackMode = hapticFeedbackMode;
+    }
+
+    /**
+     * Sets whether the tick marks are visible. Only used when the slider is in discrete mode.
+     *
+     * @param tickVisible The visibility of tick marks.
+     */
+    public void setTickVisible(boolean tickVisible) {
+        if (tickVisible != mTickVisible) {
+            mTickVisible = tickVisible;
+            notifyChanged();
+        }
+    }
+
+    /**
      * Gets whether the current {@link Slider} value is displayed to the user.
      *
      * @return Whether the current {@link Slider} value is displayed to the user
@@ -519,7 +550,16 @@ public class SliderPreference extends Preference {
         if (sliderValue != mSliderValue) {
             if (callChangeListener(sliderValue)) {
                 setValueInternal(sliderValue, false);
-                // TODO: mHapticFeedbackMode
+                switch (mHapticFeedbackMode) {
+                    case HAPTIC_FEEDBACK_MODE_ON_TICKS:
+                        slider.performHapticFeedback(CLOCK_TICK);
+                        break;
+                    case HAPTIC_FEEDBACK_MODE_ON_ENDS:
+                        if (mSliderValue == mMax || mSliderValue == mMin) {
+                            slider.performHapticFeedback(CLOCK_TICK);
+                        }
+                        break;
+                }
             } else {
                 slider.setValue(mSliderValue);
             }
