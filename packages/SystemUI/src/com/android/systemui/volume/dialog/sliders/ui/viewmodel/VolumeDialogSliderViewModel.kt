@@ -40,7 +40,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
@@ -78,11 +77,16 @@ constructor(
 
     private val userVolumeUpdates = MutableStateFlow<VolumeUpdate?>(null)
     private val model: Flow<VolumeDialogStreamModel> =
-        interactor.slider
-            .filter {
-                val currentVolumeUpdate = userVolumeUpdates.value ?: return@filter true
+        combine(interactor.slider, userVolumeUpdates) { model, currentVolumeUpdate ->
+                currentVolumeUpdate ?: return@combine model
                 val lastVolumeUpdateTime = currentVolumeUpdate.timestampMillis
-                getTimestampMillis() - lastVolumeUpdateTime > VOLUME_UPDATE_GRACE_PERIOD
+                val shouldIgnoreUpdates =
+                    getTimestampMillis() - lastVolumeUpdateTime < VOLUME_UPDATE_GRACE_PERIOD
+                if (shouldIgnoreUpdates) {
+                    model.copy(level = currentVolumeUpdate.newVolumeLevel)
+                } else {
+                    model
+                }
             }
             .stateIn(coroutineScope, SharingStarted.Eagerly, null)
             .filterNotNull()
