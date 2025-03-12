@@ -136,9 +136,11 @@ public class SystemFeaturesCacheTest {
         SystemFeaturesCache cache = new SystemFeaturesCache(features);
 
         SystemFeaturesCache.clearInstance();
+        assertThat(SystemFeaturesCache.hasInstance()).isFalse();
         assertThrows(IllegalStateException.class, () -> SystemFeaturesCache.getInstance());
 
         SystemFeaturesCache.setInstance(cache);
+        assertThat(SystemFeaturesCache.hasInstance()).isTrue();
         assertThat(SystemFeaturesCache.getInstance()).isEqualTo(cache);
 
         assertThrows(
@@ -149,6 +151,7 @@ public class SystemFeaturesCacheTest {
     @Test
     public void testSingletonAutomaticallySetWithFeatureEnabled() {
         assumeTrue(android.content.pm.Flags.cacheSdkSystemFeatures());
+        assertThat(SystemFeaturesCache.hasInstance()).isTrue();
         assertThat(SystemFeaturesCache.getInstance()).isNotNull();
     }
 
