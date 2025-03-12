@@ -75,12 +75,13 @@ public class AutoclickControllerTest {
 
     private static class MotionEventCaptor extends BaseEventStreamTransformation {
         public MotionEvent downEvent;
-
+        public int eventCount = 0;
         @Override
         public void onMotionEvent(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     downEvent = event;
+                    eventCount++;
                     break;
             }
         }
@@ -920,6 +921,41 @@ public class AutoclickControllerTest {
                 /* repeat= */ 0,
                 /* metaState= */ modifiers);
         mController.onKeyEvent(keyEvent, /* policyFlags= */ 0);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void sendClick_clickType_doubleclick_triggerClickTwice() {
+        MotionEventCaptor motionEventCaptor = new MotionEventCaptor();
+        mController.setNext(motionEventCaptor);
+
+        injectFakeMouseActionHoverMoveEvent();
+        // Set delay to zero so click is scheduled to run immediately.
+        mController.mClickScheduler.updateDelay(0);
+
+        // Set click type to double click.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_DOUBLE_CLICK);
+        AutoclickTypePanel mockAutoclickTypePanel = mock(AutoclickTypePanel.class);
+        mController.mAutoclickTypePanel = mockAutoclickTypePanel;
+
+        // Send hover move event.
+        MotionEvent hoverMove = MotionEvent.obtain(
+                /* downTime= */ 0,
+                /* eventTime= */ 100,
+                /* action= */ MotionEvent.ACTION_HOVER_MOVE,
+                /* x= */ 30f,
+                /* y= */ 0f,
+                /* metaState= */ 0);
+        hoverMove.setSource(InputDevice.SOURCE_MOUSE);
+        mController.onMotionEvent(hoverMove, hoverMove, /* policyFlags= */ 0);
+        mTestableLooper.processAllMessages();
+
+        // Verify left click sent.
+        assertThat(motionEventCaptor.downEvent).isNotNull();
+        assertThat(motionEventCaptor.downEvent.getButtonState()).isEqualTo(
+                MotionEvent.BUTTON_PRIMARY);
+        assertThat(motionEventCaptor.eventCount).isEqualTo(2);
     }
 
     private MotionEvent getFakeMotionHoverMoveEvent() {
