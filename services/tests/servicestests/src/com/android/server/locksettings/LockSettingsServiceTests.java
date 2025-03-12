@@ -18,7 +18,6 @@ package com.android.server.locksettings;
 
 import static android.Manifest.permission.CONFIGURE_FACTORY_RESET_PROTECTION;
 import static android.security.Flags.FLAG_CLEAR_STRONG_AUTH_ON_ADD_PRIMARY_CREDENTIAL;
-import static android.security.Flags.FLAG_REPORT_PRIMARY_AUTH_ATTEMPTS;
 
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_NONE;
 import static com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD;
@@ -558,7 +557,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     @Test
     public void testVerifyCredential_notifyLockSettingsStateListeners_whenGoodPassword()
             throws Exception {
-        mSetFlagsRule.enableFlags(FLAG_REPORT_PRIMARY_AUTH_ATTEMPTS);
         final LockscreenCredential password = newPassword("password");
         setCredential(PRIMARY_USER_ID, password);
         final LockSettingsStateListener listener = mock(LockSettingsStateListener.class);
@@ -574,7 +572,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     @Test
     public void testVerifyCredential_notifyLockSettingsStateListeners_whenBadPassword()
             throws Exception {
-        mSetFlagsRule.enableFlags(FLAG_REPORT_PRIMARY_AUTH_ATTEMPTS);
         final LockscreenCredential password = newPassword("password");
         setCredential(PRIMARY_USER_ID, password);
         final LockscreenCredential badPassword = newPassword("badPassword");
@@ -590,7 +587,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
 
     @Test
     public void testLockSettingsStateListener_registeredThenUnregistered() throws Exception {
-        mSetFlagsRule.enableFlags(FLAG_REPORT_PRIMARY_AUTH_ATTEMPTS);
         final LockscreenCredential password = newPassword("password");
         setCredential(PRIMARY_USER_ID, password);
         final LockscreenCredential badPassword = newPassword("badPassword");
