@@ -164,6 +164,8 @@ import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_SERVICE;
 import static com.android.server.am.ActivityManagerDebugConfig.POSTFIX_UID_OBSERVERS;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_AM;
 import static com.android.server.am.ActivityManagerDebugConfig.TAG_WITH_CLASS_NAME;
+import static com.android.server.am.LogcatFetcher.LOGCAT_TIMEOUT_SEC;
+import static com.android.server.am.LogcatFetcher.RESERVED_BYTES_PER_LOGCAT_LINE;
 import static com.android.server.am.MemoryStatUtil.hasMemcg;
 import static com.android.server.am.ProcessList.ProcStartHandler;
 import static com.android.server.flags.Flags.disableSystemCompaction;
@@ -587,12 +589,6 @@ public class ActivityManagerService extends IActivityManager.Stub
 
     // How many bytes to write into the dropbox log before truncating
     static final int DROPBOX_DEFAULT_MAX_SIZE = 192 * 1024;
-    // Assumes logcat entries average around 100 bytes; that's not perfect stack traces count
-    // as one line, but close enough for now.
-    static final int RESERVED_BYTES_PER_LOGCAT_LINE = 100;
-
-    // How many seconds should the system wait before terminating the spawned logcat process.
-    static final int LOGCAT_TIMEOUT_SEC = Flags.logcatLongerTimeout() ? 15 : 10;
 
     // Necessary ApplicationInfo flags to mark an app as persistent
     static final int PERSISTENT_MASK =
@@ -9839,9 +9835,17 @@ public class ActivityManagerService extends IActivityManager.Stub
                 sb.append("Process-Runtime: ").append(runtimeMillis).append("\n");
             }
         }
+
+        final Instant errorTimestamp;
+        if (volatileStates != null && volatileStates.getTimestamp() != null) {
+            errorTimestamp = volatileStates.getTimestamp().toInstant();
+        } else {
+            errorTimestamp = Instant.now();
+        }
+
         if (eventType.equals("crash")) {
             String formattedTime = DROPBOX_TIME_FORMATTER.format(
-                    Instant.now().atZone(ZoneId.systemDefault()));
+                    errorTimestamp.atZone(ZoneId.systemDefault()));
             sb.append("Timestamp: ").append(formattedTime).append("\n");
         }
         if (activityShortComponentName != null) {
@@ -9927,8 +9931,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
                     int maxDataFileSize = dropboxMaxSize
                             - sb.length()
-                            - logcatLines * RESERVED_BYTES_PER_LOGCAT_LINE
-                            - kernelLogLines * RESERVED_BYTES_PER_LOGCAT_LINE
+                            - (logcatLines + kernelLogLines) * RESERVED_BYTES_PER_LOGCAT_LINE
                             - DATA_FILE_PATH_FOOTER.length();
 
                     if (maxDataFileSize > 0) {
@@ -9948,17 +9951,24 @@ public class ActivityManagerService extends IActivityManager.Stub
                 if (crashInfo != null && crashInfo.stackTrace != null) {
                     sb.append(crashInfo.stackTrace);
                 }
+
                 boolean shouldAddLogs = (logcatLines > 0 || kernelLogLines > 0)
                         && (Flags.collectLogcatOnRunSynchronously() || !runSynchronously);
+
                 if (shouldAddLogs) {
                     sb.append("\n");
-                    if (logcatLines > 0) {
-                        fetchLogcatBuffers(sb, logcatLines, LOGCAT_TIMEOUT_SEC,
-                                List.of("events", "system", "main", "crash"));
-                    }
-                    if (kernelLogLines > 0) {
-                        fetchLogcatBuffers(sb, kernelLogLines, LOGCAT_TIMEOUT_SEC / 2,
-                                List.of("kernel"));
+                    if (Flags.limitLogcatCollection()) {
+                        LogcatFetcher.appendLogcatLogs(sb, dropboxMaxSize -  sb.length(),
+                                errorTimestamp, logcatLines, kernelLogLines);
+                    } else {
+                        if (logcatLines > 0) {
+                            fetchLogcatBuffers(sb, logcatLines, LOGCAT_TIMEOUT_SEC,
+                                    List.of("events", "system", "main", "crash"));
+                        }
+                        if (kernelLogLines > 0) {
+                            fetchLogcatBuffers(sb, kernelLogLines, LOGCAT_TIMEOUT_SEC / 2,
+                                    List.of("kernel"));
+                        }
                     }
                 }
 

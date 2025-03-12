@@ -323,3 +323,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "limit_logcat_collection"
+    namespace: "stability"
+    description: "Limit the number of logcat logs included to fit in dropbox entries"
+    bug: "354138103"
+}
