@@ -44,6 +44,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
 import android.content.pm.UserInfo;
+import android.content.res.Resources;
 import android.graphics.Rect;
 import android.hardware.hdmi.HdmiClient;
 import android.hardware.hdmi.HdmiControlManager;
@@ -145,6 +146,8 @@ public final class TvInputManagerService extends SystemService {
     private static final long SET_TV_AS_ACTIVE_SOURCE_IF_NO_REQUEST_DELAY_IN_MILLIS
             = 10 * 1000; // 10 seconds
 
+    private static String sConfiguredTvProfileName;
+
     // There are two different formats of DVB frontend devices. One is /dev/dvb%d.frontend%d,
     // another one is /dev/dvb/adapter%d/frontend%d. Followings are the patterns for selecting the
     // DVB frontend devices from the list of files in the /dev and /dev/dvb/adapter%d directory.
@@ -219,6 +222,7 @@ public final class TvInputManagerService extends SystemService {
         }
 
         initExternalInputLoggingConfigs();
+        initConfigTvProfileName();
     }
 
     @Override
@@ -302,6 +306,15 @@ public final class TvInputManagerService extends SystemService {
         mExternalInputLoggingDeviceBrandNames.addAll(Arrays.asList(deviceBrandNames));
     }
 
+    private void initConfigTvProfileName() {
+        try {
+            sConfiguredTvProfileName = mContext.getResources().getString(
+                    R.string.config_configured_tv_profile_name);
+        } catch (Resources.NotFoundException e) {
+            sConfiguredTvProfileName = "";
+        }
+    }
+
     private class MyPackageMonitor extends PackageMonitor {
         MyPackageMonitor(boolean supportsPackageRestartQuery) {
             super(supportsPackageRestartQuery);
@@ -381,6 +394,7 @@ public final class TvInputManagerService extends SystemService {
         intentFilter.addAction(Intent.ACTION_USER_REMOVED);
         intentFilter.addAction(Intent.ACTION_USER_STARTED);
         intentFilter.addAction(Intent.ACTION_USER_STOPPED);
+        intentFilter.addAction(Intent.ACTION_USER_INFO_CHANGED);
         mContext.registerReceiverAsUser(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -391,10 +405,28 @@ public final class TvInputManagerService extends SystemService {
                     removeUser(intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0));
                 } else if (Intent.ACTION_USER_STARTED.equals(action)) {
                     int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0);
-                    startUser(userId);
+                    UserInfo userInfo = mUserManager.getUserInfo(userId);
+                    // Start user directly for devices without the configuration and when the
+                    // profile has been configured previously, i.e. has onboarded successfully
+                    if (sConfiguredTvProfileName.isEmpty() || (userInfo.name.equals(
+                            sConfiguredTvProfileName) && userInfo.isProfile())) {
+                        startUser(userId);
+                    }
+                    // For non-configured new user, do not call startUser until
+                    // ACTION_USER_INFO_CHANGED is received
                 } else if (Intent.ACTION_USER_STOPPED.equals(action)) {
                     int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0);
                     stopUser(userId);
+                } else if (Intent.ACTION_USER_INFO_CHANGED.equals(action)) {
+                    // Act upon this intent only if config is defined
+                    if (!sConfiguredTvProfileName.isEmpty()) {
+                        int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0);
+                        UserInfo userInfo = mUserManager.getUserInfo(userId);
+                        if (userInfo.name.equals(sConfiguredTvProfileName) && userInfo.isProfile()
+                                && mUserManager.isUserRunning(userId)) {
+                            startUser(userId);
+                        }
+                    }
                 }
             }
         }, UserHandle.ALL, intentFilter, null, null);
@@ -577,9 +609,8 @@ public final class TvInputManagerService extends SystemService {
             }
             UserInfo userInfo = mUserManager.getUserInfo(userId);
             UserInfo parentInfo = mUserManager.getProfileParent(userId);
-            if (userInfo.isProfile()
-                    && parentInfo != null
-                    && parentInfo.id == mCurrentUserId) {
+            // User is guaranteed to be a profile here as we have checked before calling startUser
+            if (parentInfo != null && parentInfo.id == mCurrentUserId) {
                 int prevUserId = mCurrentUserId;
                 mCurrentUserId = userId;
                 // only the children of the current user can be started in background

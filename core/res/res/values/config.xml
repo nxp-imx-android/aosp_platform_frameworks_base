@@ -7482,4 +7482,7 @@
     <!-- Biometrics fingerprint frr notification target activity component name, it shall be customized by OEMs -->
     <string translatable="false" name="config_fingerprintFrrTargetComponent"></string>
 
+    <!-- Default name for all newly configured tv profiles. -->
+    <string name="config_configured_tv_profile_name">configured_user</string>
+
 </resources>
