@@ -1059,7 +1059,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (Flags.enableAllSqliteAppopsAccesses()) {
             mHistoricalRegistry = new HistoricalRegistrySql(context);
         } else {
-            mHistoricalRegistry = new HistoricalRegistry(this, context);
+            mHistoricalRegistry = new LegacyHistoricalRegistry(this, context);
         }
     }
 
@@ -7011,7 +7011,8 @@ public class AppOpsService extends IAppOpsService.Stub {
             mHistoricalRegistry = new HistoricalRegistrySql(
                     (HistoricalRegistrySql) mHistoricalRegistry);
         } else {
-            mHistoricalRegistry = new HistoricalRegistry((HistoricalRegistry) mHistoricalRegistry);
+            mHistoricalRegistry = new LegacyHistoricalRegistry(
+                    (LegacyHistoricalRegistry) mHistoricalRegistry);
         }
 
         mHistoricalRegistry.systemReady(mContext.getContentResolver());
