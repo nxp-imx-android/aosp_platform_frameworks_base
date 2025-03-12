@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.compose.animation.scene.ContentScope
+import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.smartspace.SmartspaceInteractionHandler
 import com.android.systemui.communal.ui.compose.section.AmbientStatusBarSection
@@ -70,8 +71,10 @@ constructor(
                 content = {
                     Box(modifier = Modifier.fillMaxSize()) {
                         with(communalPopupSection) { Popup() }
-                        with(ambientStatusBarSection) {
-                            AmbientStatusBar(modifier = Modifier.fillMaxWidth().zIndex(1f))
+                        if (!Flags.glanceableHubV2()) {
+                            with(ambientStatusBarSection) {
+                                AmbientStatusBar(modifier = Modifier.fillMaxWidth().zIndex(1f))
+                            }
                         }
                         CommunalHub(
                             viewModel = viewModel,
