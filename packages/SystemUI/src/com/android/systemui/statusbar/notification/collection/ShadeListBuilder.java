@@ -565,6 +565,11 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
             entry.beginNewAttachState();
         }
 
+        for (BundleEntry be : mIdToBundleEntry.values()) {
+            be.beginNewAttachState();
+            // TODO(b/399736937) Clear bundle children
+            // BundleEntry has not representative summary so we do not need to clear it here.
+        }
         mNotifList.clear();
     }
 
