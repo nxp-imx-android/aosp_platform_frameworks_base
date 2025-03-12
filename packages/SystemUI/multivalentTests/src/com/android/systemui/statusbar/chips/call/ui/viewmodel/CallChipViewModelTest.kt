@@ -528,6 +528,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             )
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
             val factory = latest!!.transitionManager!!.controllerFactory
             assertThat(factory!!.component).isEqualTo(component)
 
@@ -538,6 +539,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isTrue()
 
             // Start the return transition [InCall(isAppVisible=true), ReturnRequested ->
             // Returning].
@@ -545,12 +547,14 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
             // End the return transition [InCall(isAppVisible=true), Returning -> NoTransition].
             controller.onTransitionAnimationEnd(isExpandingFullyAbove = false)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
             // Settle the return transition [InCall(isAppVisible=true) ->
             // InCall(isAppVisible=false), NoTransition].
@@ -558,6 +562,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
             // Trigger a launch transition [InCall(isAppVisible=false) -> InCall(isAppVisible=true),
             // NoTransition].
@@ -565,6 +570,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
             // Request the return transition [InCall(isAppVisible=true), NoTransition ->
             // LaunchRequested].
@@ -572,6 +578,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
             // Start the return transition [InCall(isAppVisible=true), LaunchRequested ->
             // Launching].
@@ -579,12 +586,14 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
             // End the return transition [InCall(isAppVisible=true), Launching -> NoTransition].
             controller.onTransitionAnimationStart(isExpandingFullyAbove = false)
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
             assertThat(latest!!.transitionManager!!.controllerFactory).isEqualTo(factory)
+            assertThat(latest!!.transitionManager!!.hideChipForTransition).isFalse()
 
             // End the call with the app visible [InCall(isAppVisible=true) -> NoCall,
             // NoTransition].

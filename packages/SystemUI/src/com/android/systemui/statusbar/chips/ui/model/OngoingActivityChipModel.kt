@@ -301,5 +301,11 @@ sealed class OngoingActivityChipModel {
         val registerTransition: () -> Unit = {},
         /** Used to remove the existing registration for this chip, if any. */
         val unregisterTransition: () -> Unit = {},
+        /**
+         * Whether the chip should be made invisible (0 opacity) while still being composed. This is
+         * necessary to avoid flickers at the beginning of return transitions, when the chip must
+         * not be visible but must be composed in order for the animation to start.
+         */
+        val hideChipForTransition: Boolean = false,
     )
 }

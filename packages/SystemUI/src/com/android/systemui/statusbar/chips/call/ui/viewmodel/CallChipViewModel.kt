@@ -124,6 +124,7 @@ constructor(
                                         oldTransitionState = oldTransitionState,
                                         newTransitionState = newTransitionState,
                                     ),
+                                transitionState = newTransitionState,
                             )
                     }
                 }
@@ -177,6 +178,7 @@ constructor(
         state: OngoingCallModel.InCall,
         systemClock: SystemClock,
         isHidden: Boolean,
+        transitionState: TransitionState = TransitionState.NoTransition,
     ): OngoingActivityChipModel.Active {
         val key = state.notificationKey
         val contentDescription = getContentDescription(state.appName)
@@ -209,7 +211,7 @@ constructor(
                 onClickListenerLegacy = getOnClickListener(state.intent),
                 clickBehavior = getClickBehavior(state.intent),
                 isHidden = isHidden,
-                transitionManager = getTransitionManager(state),
+                transitionManager = getTransitionManager(state, transitionState),
             )
         } else {
             val startTimeInElapsedRealtime =
@@ -222,7 +224,7 @@ constructor(
                 onClickListenerLegacy = getOnClickListener(state.intent),
                 clickBehavior = getClickBehavior(state.intent),
                 isHidden = isHidden,
-                transitionManager = getTransitionManager(state),
+                transitionManager = getTransitionManager(state, transitionState),
             )
         }
     }
@@ -285,7 +287,8 @@ constructor(
     }
 
     private fun getTransitionManager(
-        state: OngoingCallModel
+        state: OngoingCallModel,
+        transitionState: TransitionState = TransitionState.NoTransition,
     ): OngoingActivityChipModel.TransitionManager? {
         if (!StatusBarChipsReturnAnimations.isEnabled) return null
         return if (state is OngoingCallModel.NoCall) {
@@ -301,6 +304,9 @@ constructor(
                     registerTransition = {
                         activityStarter.registerTransition(cookie, factory, scope)
                     },
+                    // Make the chip invisible at the beginning of the return transition to avoid
+                    // it flickering.
+                    hideChipForTransition = transitionState is TransitionState.ReturnRequested,
                 )
             } else {
                 // Without a component we can't instantiate a controller factory, and without a
