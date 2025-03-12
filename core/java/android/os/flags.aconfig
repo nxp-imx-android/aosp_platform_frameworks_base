@@ -354,6 +354,15 @@ flag {
 
 flag {
      namespace: "system_performance"
+     name: "parcel_marshall_bytebuffer"
+     is_exported: true
+     description: "Parcel marshal/unmarshall APIs that use ByteBuffer."
+     is_fixed_read_only: true
+     bug: "401362825"
+}
+
+flag {
+     namespace: "system_performance"
      name: "perfetto_sdk_tracing"
      description: "Tracing using Perfetto SDK."
      bug: "303199244"

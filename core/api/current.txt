@@ -34264,6 +34264,7 @@ package android.os {
     method public boolean hasFileDescriptors();
     method public boolean hasFileDescriptors(int, int);
     method public byte[] marshall();
+    method @FlaggedApi("android.os.parcel_marshall_bytebuffer") public void marshall(@NonNull java.nio.ByteBuffer);
     method @NonNull public static android.os.Parcel obtain();
     method @NonNull public static android.os.Parcel obtain(@NonNull android.os.IBinder);
     method @Deprecated @Nullable public Object[] readArray(@Nullable ClassLoader);
@@ -34333,6 +34334,7 @@ package android.os {
     method public void setDataSize(int);
     method public void setPropagateAllowBlocking();
     method public void unmarshall(@NonNull byte[], int, int);
+    method @FlaggedApi("android.os.parcel_marshall_bytebuffer") public void unmarshall(@NonNull java.nio.ByteBuffer);
     method public void writeArray(@Nullable Object[]);
     method public void writeBinderArray(@Nullable android.os.IBinder[]);
     method public void writeBinderList(@Nullable java.util.List<android.os.IBinder>);
