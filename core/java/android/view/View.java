@@ -34271,6 +34271,12 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                 frameRateToSet = velocityFrameRate;
             }
             viewRootImpl.votePreferredFrameRate(frameRateToSet, compatibility);
+
+            if (Trace.isTagEnabled(TRACE_TAG_VIEW)) {
+                Trace.instant(TRACE_TAG_VIEW,
+                        getClass().getSimpleName()
+                            + " - votePreferredFrameRate: " + frameRateToSet);
+            }
         }
 
         if (viewRootImpl.shouldCheckFrameRateCategory()) {
@@ -34305,6 +34311,13 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
                         frameRateCategory = category
                                 | FRAME_RATE_CATEGORY_REASON_INVALID;
                     }
+                }
+
+                if (Trace.isTagEnabled(TRACE_TAG_VIEW)) {
+                    Trace.instant(TRACE_TAG_VIEW,
+                            getClass().getSimpleName() + " - votePreferredFrameRate: "
+                                + viewRootImpl.categoryToString(
+                                    frameRateCategory & ~FRAME_RATE_CATEGORY_REASON_MASK));
                 }
             } else {
                 // Category doesn't control it. It is directly controlled by frame rate

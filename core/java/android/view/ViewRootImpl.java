@@ -13218,7 +13218,7 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
-    private static String categoryToString(int frameRateCategory) {
+    static String categoryToString(int frameRateCategory) {
         String category;
         switch (frameRateCategory) {
             case FRAME_RATE_CATEGORY_NO_PREFERENCE -> category = "no preference";
