@@ -109,27 +109,29 @@ public:
             return binder::Status::ok();
         }
         captureResults.fenceResult.value()->waitForever(LOG_TAG);
-        jobject jhardwareBuffer = android_hardware_HardwareBuffer_createFromAHardwareBuffer(
-                env, captureResults.buffer->toAHardwareBuffer());
-        jobject jGainmap = nullptr;
+        auto jhardwareBuffer = ScopedLocalRef<jobject>(
+                env, android_hardware_HardwareBuffer_createFromAHardwareBuffer(
+                        env, captureResults.buffer->toAHardwareBuffer()));
+        auto jGainmap = ScopedLocalRef<jobject>(env);
         if (captureResults.optionalGainMap) {
-            jGainmap = android_hardware_HardwareBuffer_createFromAHardwareBuffer(
-                    env, captureResults.optionalGainMap->toAHardwareBuffer());
+            jGainmap = ScopedLocalRef<jobject>(
+                    env, android_hardware_HardwareBuffer_createFromAHardwareBuffer(
+                            env, captureResults.optionalGainMap->toAHardwareBuffer()));
         }
-        jobject screenshotHardwareBuffer =
-                env->CallStaticObjectMethod(gScreenshotHardwareBufferClassInfo.clazz,
+        auto screenshotHardwareBuffer =
+                ScopedLocalRef<jobject>(env, env->CallStaticObjectMethod(
+                                            gScreenshotHardwareBufferClassInfo.clazz,
                                             gScreenshotHardwareBufferClassInfo.builder,
-                                            jhardwareBuffer,
+                                            jhardwareBuffer.get(),
                                             static_cast<jint>(captureResults.capturedDataspace),
                                             captureResults.capturedSecureLayers,
-                                            captureResults.capturedHdrLayers, jGainmap,
-                                            captureResults.hdrSdrRatio);
+                                            captureResults.capturedHdrLayers, jGainmap.get(),
+                                            captureResults.hdrSdrRatio));
         checkAndClearException(env, "builder");
-        env->CallVoidMethod(consumer.get(), gConsumerClassInfo.accept, screenshotHardwareBuffer,
+        env->CallVoidMethod(consumer.get(), gConsumerClassInfo.accept,
+                            screenshotHardwareBuffer.get(),
                             fenceStatus(captureResults.fenceResult));
         checkAndClearException(env, "accept");
-        env->DeleteLocalRef(jhardwareBuffer);
-        env->DeleteLocalRef(screenshotHardwareBuffer);
         return binder::Status::ok();
     }
 
