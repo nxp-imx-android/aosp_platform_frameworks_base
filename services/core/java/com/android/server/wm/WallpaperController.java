@@ -117,8 +117,11 @@ class WallpaperController {
     private boolean mShouldOffsetWallpaperCenter;
 
     // This is for WallpaperCropper, which has cropping logic for the default display only.
+    // This is lazily initialization by getOrCreateDefaultDisplayInfo. DO NOT use this member
+    // variable directly.
     // TODO(b/400685784) make the WallpaperCropper operate on every display independently
-    private final WallpaperDefaultDisplayInfo mDefaultDisplayInfo;
+    @Nullable
+    private WallpaperDefaultDisplayInfo mDefaultDisplayInfo = null;
 
     private final ToBooleanFunction<WindowState> mFindWallpaperTargetFunction = w -> {
         final ActivityRecord ar = w.mActivityRecord;
@@ -202,14 +205,12 @@ class WallpaperController {
     WallpaperController(WindowManagerService service, DisplayContent displayContent) {
         mService = service;
         mDisplayContent = displayContent;
-        WindowManager windowManager = service.mContext.getSystemService(WindowManager.class);
         Resources resources = service.mContext.getResources();
         mMinWallpaperScale =
                 resources.getFloat(com.android.internal.R.dimen.config_wallpaperMinScale);
         mMaxWallpaperScale = resources.getFloat(R.dimen.config_wallpaperMaxScale);
         mShouldOffsetWallpaperCenter = resources.getBoolean(
                 com.android.internal.R.bool.config_offsetWallpaperToCenterOfLargestDisplay);
-        mDefaultDisplayInfo = new WallpaperDefaultDisplayInfo(windowManager, resources);
     }
 
     void resetLargestDisplay(Display display) {
@@ -358,8 +359,8 @@ class WallpaperController {
                     wallpaperWin.mRequestedWidth, wallpaperWin.mRequestedHeight);
             SparseArray<Rect> cropHints = token.getCropHints();
             wallpaperFrame = bitmapSize.x <= 0 || bitmapSize.y <= 0 ? wallpaperWin.getFrame()
-                    : WallpaperCropper.getCrop(screenSize, mDefaultDisplayInfo, bitmapSize,
-                            cropHints, wallpaperWin.isRtl());
+                    : WallpaperCropper.getCrop(screenSize, getOrCreateDefaultDisplayInfo(),
+                            bitmapSize, cropHints, wallpaperWin.isRtl());
             int frameWidth = wallpaperFrame.width();
             int frameHeight = wallpaperFrame.height();
             float frameRatio = (float) frameWidth / frameHeight;
@@ -504,6 +505,16 @@ class WallpaperController {
         }
 
         return changed;
+    }
+
+    private WallpaperDefaultDisplayInfo getOrCreateDefaultDisplayInfo() {
+        if (mDefaultDisplayInfo != null) {
+            return mDefaultDisplayInfo;
+        }
+        WindowManager windowManager = mService.mContext.getSystemService(WindowManager.class);
+        Resources resources = mService.mContext.getResources();
+        mDefaultDisplayInfo = new WallpaperDefaultDisplayInfo(windowManager, resources);
+        return mDefaultDisplayInfo;
     }
 
     /**
