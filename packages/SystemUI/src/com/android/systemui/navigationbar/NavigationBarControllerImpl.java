@@ -469,7 +469,8 @@ public class NavigationBarControllerImpl implements
         return (navBar == null) ? null : navBar.getView();
     }
 
-    private @Nullable NavigationBar getNavigationBar(int displayId) {
+    @Override
+    public @Nullable NavigationBar getNavigationBar(int displayId) {
         return mNavigationBars.get(displayId);
     }
 
