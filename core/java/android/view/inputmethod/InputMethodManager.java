@@ -2454,6 +2454,7 @@ public final class InputMethodManager {
                                 & WindowInsets.Type.ime()) == 0
                         || viewRootImpl.getInsetsController()
                                 .isPredictiveBackImeHideAnimInProgress())) {
+                    Handler vh = view.getHandler();
                     ImeTracker.forLogging().onProgress(statsToken,
                             ImeTracker.PHASE_CLIENT_NO_ONGOING_USER_ANIMATION);
                     if (resultReceiver != null) {
@@ -2464,8 +2465,17 @@ public final class InputMethodManager {
                                         : InputMethodManager.RESULT_SHOWN, null);
                     }
                     // TODO(b/322992891) handle case of SHOW_IMPLICIT
-                    viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
-                            false /* fromIme */, statsToken);
+                    if (vh.getLooper() != Looper.myLooper()) {
+                        // The view is running on a different thread than our own, so
+                        // we need to reschedule our work for over there.
+                        if (DEBUG) Log.v(TAG, "Show soft input: reschedule to view thread");
+                        final var finalStatsToken = statsToken;
+                        vh.post(() -> viewRootImpl.getInsetsController().show(
+                                WindowInsets.Type.ime(), false /* fromIme */, finalStatsToken));
+                    } else {
+                        viewRootImpl.getInsetsController().show(WindowInsets.Type.ime(),
+                                false /* fromIme */, statsToken);
+                    }
                     return true;
                 }
                 ImeTracker.forLogging().onCancelled(statsToken,
