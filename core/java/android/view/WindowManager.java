@@ -5095,6 +5095,15 @@ public interface WindowManager extends ViewManager {
             format = _format;
         }
 
+        /**
+         * Sets a title for the window.
+         * <p>
+         * This title will be used primarily for debugging, and may be exposed via {@link
+         * android.view.accessibility.AccessibilityWindowInfo#getTitle} if no {@link Window#setTitle
+         * user-facing title} has been set.
+         *
+         * @see Window#setTitle
+         */
         public final void setTitle(CharSequence title) {
             if (null == title)
                 title = "";
