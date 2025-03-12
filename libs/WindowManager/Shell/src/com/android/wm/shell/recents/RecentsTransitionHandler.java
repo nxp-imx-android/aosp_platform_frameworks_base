@@ -88,6 +88,7 @@ import com.android.wm.shell.transition.Transitions;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * Handles the Recents (overview) animation. Only one of these can run at a time. A recents
@@ -108,6 +109,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
     private IApplicationThread mAnimApp = null;
     private final ArrayList<RecentsController> mControllers = new ArrayList<>();
     private final ArrayList<RecentsTransitionStateListener> mStateListeners = new ArrayList<>();
+    private Supplier<SurfaceControl.Transaction> mFinishTransactionSupplier = null;
 
     /**
      * List of other handlers which might need to mix recents with other things. These are checked
@@ -162,6 +164,16 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
      */
     public void setTransitionBackgroundColor(@Nullable Color color) {
         mBackgroundColor = color;
+    }
+
+    /**
+     * Used for testing to provide a supplier for the transaction used in
+     * RecentsController#finishInner() which later gets merged into the final finish transaction.
+     */
+    @VisibleForTesting
+    public void setFinishTransactionSupplier(
+            Supplier<SurfaceControl.Transaction> finishTransactionSupplier) {
+        mFinishTransactionSupplier = finishTransactionSupplier;
     }
 
     /**
@@ -413,6 +425,8 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         // enableRecentsBookendTransition() is enabled
         private IBinder mPendingFinishTransition;
         private IResultReceiver mPendingRunnerFinishCb;
+        // This stores the pending finish transaction to merge with the actual finish transaction
+        private SurfaceControl.Transaction mPendingFinishTransaction;
 
         RecentsController(IRecentsAnimationRunner listener) {
             mInstanceId = System.identityHashCode(this);
@@ -558,6 +572,10 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             mPipTransaction = null;
             mPendingRunnerFinishCb = null;
             mPendingFinishTransition = null;
+            if (mPendingFinishTransaction != null) {
+                mPendingFinishTransaction.close();
+            }
+            mPendingFinishTransaction = null;
             mControllers.remove(this);
             for (int i = 0; i < mStateListeners.size(); i++) {
                 mStateListeners.get(i).onTransitionStateChanged(TRANSITION_STATE_NOT_RUNNING);
@@ -1371,7 +1389,9 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                             + "willFinishToHome=%b state=%d reason=%s",
                     mInstanceId, toHome, sendUserLeaveHint, mWillFinishToHome, mState, reason);
 
-            final SurfaceControl.Transaction t = mFinishTransaction;
+            final SurfaceControl.Transaction t = mFinishTransactionSupplier != null
+                    ? mFinishTransactionSupplier.get()
+                    : new SurfaceControl.Transaction();
             final WindowContainerTransaction wct = new WindowContainerTransaction();
 
             // The following code must set this if it is changing anything in core that might affect
@@ -1510,6 +1530,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 // In this case, we've already started the PIP transition, so we can
                                 // clean up immediately
                                 mPendingRunnerFinishCb = runnerFinishCb;
+                                mPendingFinishTransaction = t;
                                 onFinishInner(null);
                                 return;
                             }
@@ -1530,6 +1551,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "[%d] RecentsController.finishInner: "
                                         + "Queuing TRANSIT_END_RECENTS_TRANSITION", mInstanceId);
                         mPendingRunnerFinishCb = runnerFinishCb;
+                        mPendingFinishTransaction = t;
                         mPendingFinishTransition = mTransitions.startTransition(
                                 TRANSIT_END_RECENTS_TRANSITION, wct,
                                 new PendingFinishTransitionHandler());
@@ -1538,15 +1560,18 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                 "[%d] RecentsController.finishInner: Non-transition affecting wct",
                                 mInstanceId);
                         mPendingRunnerFinishCb = runnerFinishCb;
+                        mPendingFinishTransaction = t;
                         onFinishInner(wct);
                     }
                 } else {
                     // If there's no work to do, just go ahead and clean up
                     mPendingRunnerFinishCb = runnerFinishCb;
+                    mPendingFinishTransaction = t;
                     onFinishInner(null /* wct */);
                 }
             } else {
                 mPendingRunnerFinishCb = runnerFinishCb;
+                mPendingFinishTransaction = t;
                 onFinishInner(wct);
             }
         }
@@ -1559,6 +1584,11 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     "[%d] RecentsController.finishInner: Completing finish", mInstanceId);
             final Transitions.TransitionFinishCallback finishCb = mFinishCB;
             final IResultReceiver runnerFinishCb = mPendingRunnerFinishCb;
+
+            // We merge the cleanup transaction (prepared in finishInner()) with the last accepted
+            // finish transaction to ensure that it's applied after the default finish transaction
+            // created for the bookend transition (if it's used)
+            mFinishTransaction.merge(mPendingFinishTransaction);
 
             cleanUp();
             finishCb.onTransitionFinished(wct);

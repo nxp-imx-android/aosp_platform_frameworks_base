@@ -121,8 +121,6 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     @Mock
     private DisplayInsetsController mDisplayInsetsController;
     @Mock
-    private IRecentTasksListener mRecentTasksListener;
-    @Mock
     private TaskStackTransitionObserver mTaskStackTransitionObserver;
     @Mock
     private Transitions mTransitions;
@@ -169,6 +167,10 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         doReturn(mMainExecutor).when(mTransitions).getMainExecutor();
         mRecentsTransitionHandler = new RecentsTransitionHandler(mShellInit, mShellTaskOrganizer,
                 mTransitions, mRecentTasksController, mock(HomeTransitionObserver.class));
+        // By default use a mock finish transaction since we are sending transitions that don't have
+        // real surface controls
+        mRecentsTransitionHandler.setFinishTransactionSupplier(
+                () -> mock(SurfaceControl.Transaction.class));
 
         mShellInit.init();
     }
@@ -394,6 +396,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         SurfaceControl leash = mergeTransitionInfo.getChanges().get(0).getLeash();
         final IBinder transition = startRecentsTransition(/* synthetic= */ false);
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.setFinishTransactionSupplier(() -> finishT);
         mRecentsTransitionHandler.startAnimation(
                 transition, createTransitionInfo(), new StubTransaction(), new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
@@ -421,8 +424,10 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         SurfaceControl leash = transitionInfo.getChanges().get(0).getLeash();
         final IBinder transition = startRecentsTransition(/* synthetic= */ false);
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        mRecentsTransitionHandler.setFinishTransactionSupplier(() -> finishT);
         mRecentsTransitionHandler.startAnimation(
-                transition, transitionInfo, new StubTransaction(), finishT,
+                transition, transitionInfo, new StubTransaction(),
+                new StubTransaction(),
                 mock(Transitions.TransitionFinishCallback.class));
 
         mRecentsTransitionHandler.findController(transition).finish(/* toHome= */ false,
