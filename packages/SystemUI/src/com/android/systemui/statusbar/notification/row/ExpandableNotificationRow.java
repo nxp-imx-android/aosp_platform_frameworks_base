@@ -41,6 +41,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -3997,12 +3998,18 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             }
         } else if (isChildInGroup()) {
             final int childColor = getShowingLayout().getBackgroundColorForExpansionState();
-            // Only show a background if the group is expanded OR if it is expanding / collapsing
-            // and has a custom background color.
-            final boolean showBackground = isGroupExpanded()
-                    || ((mNotificationParent.isGroupExpansionChanging()
-                    || mNotificationParent.isUserLocked()) && childColor != 0);
-            mShowNoBackground = !showBackground;
+            if (Flags.notificationRowTransparency() && childColor == Color.TRANSPARENT) {
+                // If child is not customizing its background color, switch from the parent to
+                // the child background when the expansion finishes.
+                mShowNoBackground = !mNotificationParent.mShowNoBackground;
+            } else {
+                // Only show a background if the group is expanded OR if it is
+                // expanding / collapsing and has a custom background color.
+                final boolean showBackground = isGroupExpanded()
+                        || ((mNotificationParent.isGroupExpansionChanging()
+                        || mNotificationParent.isUserLocked()) && childColor != 0);
+                mShowNoBackground = !showBackground;
+            }
         } else {
             // Only children or parents ever need no background.
             mShowNoBackground = false;
