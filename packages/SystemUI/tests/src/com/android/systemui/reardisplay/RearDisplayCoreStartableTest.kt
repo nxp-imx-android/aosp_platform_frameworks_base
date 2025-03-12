@@ -18,9 +18,11 @@ package com.android.systemui.reardisplay
 
 import android.hardware.devicestate.feature.flags.Flags.FLAG_DEVICE_STATE_RDM_V2
 import android.hardware.display.rearDisplay
+import android.os.fakeExecutorHandler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display
+import android.view.accessibility.accessibilityManager
 import androidx.test.filters.SmallTest
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
@@ -62,6 +64,8 @@ class RearDisplayCoreStartableTest : SysuiTestCase() {
             kosmos.rearDisplayInnerDialogDelegateFactory,
             kosmos.testScope,
             kosmos.keyguardUpdateMonitor,
+            kosmos.accessibilityManager,
+            kosmos.fakeExecutorHandler,
         )
 
     @Before
@@ -69,7 +73,7 @@ class RearDisplayCoreStartableTest : SysuiTestCase() {
         whenever(kosmos.rearDisplay.flags).thenReturn(Display.FLAG_REAR)
         whenever(kosmos.rearDisplay.displayAdjustments)
             .thenReturn(mContext.display.displayAdjustments)
-        whenever(kosmos.rearDisplayInnerDialogDelegateFactory.create(any(), any()))
+        whenever(kosmos.rearDisplayInnerDialogDelegateFactory.create(any(), any(), any()))
             .thenReturn(mockDelegate)
         whenever(mockDelegate.createDialog()).thenReturn(mockDialog)
     }
