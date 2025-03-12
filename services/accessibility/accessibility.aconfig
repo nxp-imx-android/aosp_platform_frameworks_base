@@ -223,6 +223,16 @@ flag {
 }
 
 flag {
+    name: "manager_lifecycle_user_change"
+    namespace: "accessibility"
+    description: "Use A11yManagerService's Lifecycle to change users, instead of listening for user changed events."
+    bug: "393626471"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "motion_event_injector_cancel_fix"
     namespace: "accessibility"
     description: "Fix the ACTION_CANCEL logic used in MotionEventInjector to avoid InputDispatcher inconsistency"

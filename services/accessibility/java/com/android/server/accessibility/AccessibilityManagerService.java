@@ -500,6 +500,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             mService = new AccessibilityManagerService(context);
         }
 
+        @VisibleForTesting
+        public Lifecycle(Context context, AccessibilityManagerService service) {
+            super(context);
+            mService = service;
+        }
+
         @Override
         public void onStart() {
             LocalServices.addService(AccessibilityManagerInternal.class,
@@ -510,6 +516,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         @Override
         public void onBootPhase(int phase) {
             mService.onBootPhase(phase);
+        }
+
+        @Override
+        public void onUserSwitching(@androidx.annotation.Nullable TargetUser from,
+                @androidx.annotation.NonNull TargetUser to) {
+            super.onUserSwitching(from, to);
+            if (Flags.managerLifecycleUserChange()) {
+                mService.switchUser(to.getUserIdentifier());
+            }
         }
     }
 
@@ -1055,7 +1070,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
                 String action = intent.getAction();
                 if (Intent.ACTION_USER_SWITCHED.equals(action)) {
-                    switchUser(intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0));
+                    if (!Flags.managerLifecycleUserChange()) {
+                        switchUser(intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0));
+                    }
                 } else if (Intent.ACTION_USER_UNLOCKED.equals(action)) {
                     unlockUser(intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0));
                 } else if (Intent.ACTION_USER_REMOVED.equals(action)) {
