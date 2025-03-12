@@ -63,6 +63,8 @@ class DragResizeInputListenerTest : ShellTestCase() {
     private val testBgExecutor = TestShellExecutor()
     private val mockWindowSession = mock<IWindowSession>()
     private val mockInputEventReceiver = mock<TaskResizeInputEventReceiver>()
+    private val inputChannel = mock<InputChannel>()
+    private val sinkInputChannel = mock<InputChannel>()
 
     @Test
     fun testGrantInputChannelOffMainThread() {
@@ -143,6 +145,16 @@ class DragResizeInputListenerTest : ShellTestCase() {
         verify(mockWindowSession).remove(inputListener.mSinkClientToken)
     }
 
+    @Test
+    fun testClose_afterBgSetup_disposesOfInputChannels() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        inputListener.close()
+        testMainExecutor.flushAll()
+        verify(inputChannel).dispose()
+        verify(sinkInputChannel).dispose()
+    }
+
     private fun verifyNoInputChannelGrantRequests() {
         verify(mockWindowSession, never())
             .grantInputChannel(
@@ -178,6 +190,8 @@ class DragResizeInputListenerTest : ShellTestCase() {
             { StubTransaction() },
             mock<DisplayController>(),
             mock<DesktopModeEventLogger>(),
+            inputChannel,
+            sinkInputChannel,
         )
 
     private class TestInitializationCallback : Runnable {
