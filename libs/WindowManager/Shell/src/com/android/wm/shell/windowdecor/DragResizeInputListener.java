@@ -138,7 +138,11 @@ class DragResizeInputListener implements AutoCloseable {
         mHandler = handler;
         mChoreographer = choreographer;
         mDisplayId = displayId;
-        mDecorationSurface = decorationSurface;
+        // Creates a new SurfaceControl pointing the same underlying surface with decorationSurface
+        // to ensure that mDecorationSurface will not be released while it's used on the background
+        // thread. Note that the empty name will be overridden by the next copyFrom call.
+        mDecorationSurface = surfaceControlBuilderSupplier.get().setName("").build();
+        mDecorationSurface.copyFrom(decorationSurface, "DragResizeInputListener");
         mDragPositioningCallback = callback;
         mSurfaceControlBuilderSupplier = surfaceControlBuilderSupplier;
         mSurfaceControlTransactionSupplier = surfaceControlTransactionSupplier;
@@ -427,6 +431,9 @@ class DragResizeInputListener implements AutoCloseable {
             } catch (RemoteException e) {
                 e.rethrowFromSystemServer();
             }
+            // Removing this surface on the background thread to ensure that mInitInputChannels has
+            // already been finished.
+            mSurfaceControlTransactionSupplier.get().remove(mDecorationSurface).apply();
         });
     }
 
