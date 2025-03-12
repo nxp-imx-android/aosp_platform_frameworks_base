@@ -3665,13 +3665,6 @@ final class ActivityRecord extends WindowToken {
 
                 if (endTask) {
                     mAtmService.getLockTaskController().clearLockedTask(task);
-                    // This activity was in the top focused root task and this is the last
-                    // activity in that task, give this activity a higher layer so it can stay on
-                    // top before the closing task transition be executed.
-                    if (mayAdjustTop) {
-                        mNeedsZBoost = true;
-                        mDisplayContent.assignWindowLayers(false /* setLayoutNeeded */);
-                    }
                 }
             } else if (!isState(PAUSING)) {
                 if (mVisibleRequested) {
@@ -7231,11 +7224,6 @@ final class ActivityRecord extends WindowToken {
             }
         }
         return candidate;
-    }
-
-    @Override
-    boolean needsZBoost() {
-        return mNeedsZBoost || super.needsZBoost();
     }
 
     @Override
