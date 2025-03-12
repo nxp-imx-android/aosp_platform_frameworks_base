@@ -132,8 +132,13 @@ public class AndroidPlatformSemanticNodeApplier
             }
         }
 
-        // TODO correct values
-        nodeInfo.setCollectionInfo(AccessibilityNodeInfo.CollectionInfo.obtain(-1, 1, false));
+        if (scrollDirection == RootContentBehavior.SCROLL_HORIZONTAL) {
+            nodeInfo.setCollectionInfo(AccessibilityNodeInfo.CollectionInfo.obtain(1, -1, false));
+            nodeInfo.setClassName("android.widget.HorizontalScrollView");
+        } else {
+            nodeInfo.setCollectionInfo(AccessibilityNodeInfo.CollectionInfo.obtain(-1, 1, false));
+            nodeInfo.setClassName("android.widget.ScrollView");
+        }
 
         if (scrollDirection == RootContentBehavior.SCROLL_HORIZONTAL) {
             nodeInfo.setClassName("android.widget.HorizontalScrollView");

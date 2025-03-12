@@ -430,9 +430,35 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public boolean showOnScreen(RemoteContext context, int childId) {
-        // TODO correct this when we trust the bounds in parent
-        return scrollByOffset(context, -1000) != 0;
+    public boolean scrollDirection(RemoteContext context, ScrollDirection direction) {
+        float offset = mHostDimension * 0.7f;
+
+        if (direction == ScrollDirection.FORWARD
+                || direction == ScrollDirection.DOWN
+                || direction == ScrollDirection.RIGHT) {
+            offset *= -1;
+        }
+
+        return scrollByOffset(context, (int) offset) != 0;
+    }
+
+    @Override
+    public boolean showOnScreen(RemoteContext context, Component child) {
+        float[] locationInWindow = new float[2];
+        child.getLocationInWindow(locationInWindow);
+
+        int offset = 0;
+        if (handlesVerticalScroll()) {
+            offset = (int) -locationInWindow[1];
+        } else {
+            offset = (int) -locationInWindow[0];
+        }
+
+        if (offset == 0) {
+            return true;
+        } else {
+            return scrollByOffset(context, offset) != 0;
+        }
     }
 
     @Nullable
