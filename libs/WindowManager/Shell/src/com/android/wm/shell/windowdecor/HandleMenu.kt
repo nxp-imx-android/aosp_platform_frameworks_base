@@ -109,15 +109,18 @@ class HandleMenu(
         get() = (DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue() && !taskInfo.isFreeform)
 
     private val pillTopMargin: Int = loadDimensionPixelSize(
-        R.dimen.desktop_mode_handle_menu_pill_spacing_margin)
+        R.dimen.desktop_mode_handle_menu_pill_spacing_margin
+    )
     private val menuWidth = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_width)
     private val menuHeight = getHandleMenuHeight()
     private val marginMenuTop = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_margin_top)
     private val marginMenuStart = loadDimensionPixelSize(
-        R.dimen.desktop_mode_handle_menu_margin_start)
+        R.dimen.desktop_mode_handle_menu_margin_start
+    )
 
     @VisibleForTesting
     var handleMenuViewContainer: AdditionalViewContainer? = null
+
     @VisibleForTesting
     var handleMenuView: HandleMenuView? = null
 
@@ -136,7 +139,7 @@ class HandleMenu(
 
     private val shouldShowMoreActionsPill: Boolean
         get() = SHOULD_SHOW_SCREENSHOT_BUTTON || shouldShowNewWindowButton ||
-            shouldShowManageWindowsButton || shouldShowChangeAspectRatioButton
+                shouldShowManageWindowsButton || shouldShowChangeAspectRatioButton
 
     private var loadAppInfoJob: Job? = null
 
@@ -240,7 +243,8 @@ class HandleMenu(
         val y = handleMenuPosition.y.toInt()
         handleMenuViewContainer =
             if ((!taskInfo.isFreeform && DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue())
-                    || forceShowSystemBars) {
+                || forceShowSystemBars
+            ) {
                 AdditionalSystemViewContainer(
                     windowManagerWrapper = windowManagerWrapper,
                     taskId = taskInfo.taskId,
@@ -251,7 +255,11 @@ class HandleMenu(
                     flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                             WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
                     view = handleMenuView.rootView,
-                    forciblyShownTypes = if (forceShowSystemBars) { systemBars() } else { 0 },
+                    forciblyShownTypes = if (forceShowSystemBars) {
+                        systemBars()
+                    } else {
+                        0
+                    },
                     ignoreCutouts = Flags.showAppHandleLargeScreens()
                             || BubbleAnythingFlagHelper.enableBubbleToFullscreen()
                 )
@@ -369,7 +377,8 @@ class HandleMenu(
                 inputPoint.y - globalMenuPosition.y
             )
             if (splitScreenController.getSplitPosition(taskInfo.taskId)
-                == SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT) {
+                == SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
+            ) {
                 val leftStageBounds = Rect()
                 splitScreenController.getStageBounds(leftStageBounds, Rect())
                 inputRelativeToMenu.x += leftStageBounds.width().toFloat()
@@ -398,7 +407,8 @@ class HandleMenu(
         var menuHeight = loadDimensionPixelSize(R.dimen.desktop_mode_handle_menu_height)
         if (!shouldShowWindowingPill) {
             menuHeight -= loadDimensionPixelSize(
-                R.dimen.desktop_mode_handle_menu_windowing_pill_height)
+                R.dimen.desktop_mode_handle_menu_windowing_pill_height
+            )
             menuHeight -= pillTopMargin
         }
         if (!SHOULD_SHOW_SCREENSHOT_BUTTON) {
@@ -418,14 +428,16 @@ class HandleMenu(
         }
         if (!shouldShowChangeAspectRatioButton) {
             menuHeight -= loadDimensionPixelSize(
-                R.dimen.desktop_mode_handle_menu_change_aspect_ratio_height)
+                R.dimen.desktop_mode_handle_menu_change_aspect_ratio_height
+            )
         }
         if (!shouldShowMoreActionsPill) {
             menuHeight -= pillTopMargin
         }
         if (!shouldShowBrowserPill) {
             menuHeight -= loadDimensionPixelSize(
-                R.dimen.desktop_mode_handle_menu_open_in_browser_pill_height)
+                R.dimen.desktop_mode_handle_menu_open_in_browser_pill_height
+            )
             menuHeight -= pillTopMargin
         }
         return menuHeight
@@ -468,48 +480,66 @@ class HandleMenu(
 
         // Insets for ripple effect of App Info Pill. and Windowing Pill. buttons
         val iconButtondrawableShiftInset = context.resources.getDimensionPixelSize(
-            R.dimen.desktop_mode_handle_menu_icon_button_ripple_inset_shift)
+            R.dimen.desktop_mode_handle_menu_icon_button_ripple_inset_shift
+        )
         val iconButtondrawableBaseInset = context.resources.getDimensionPixelSize(
-            R.dimen.desktop_mode_handle_menu_icon_button_ripple_inset_base)
+            R.dimen.desktop_mode_handle_menu_icon_button_ripple_inset_base
+        )
         private val iconButtonRippleRadius = context.resources.getDimensionPixelSize(
-            R.dimen.desktop_mode_handle_menu_icon_button_ripple_radius)
-        private val iconButtonDrawableInsetsBase = DrawableInsets(t = iconButtondrawableBaseInset,
+            R.dimen.desktop_mode_handle_menu_icon_button_ripple_radius
+        )
+        private val iconButtonDrawableInsetsBase = DrawableInsets(
+            t = iconButtondrawableBaseInset,
             b = iconButtondrawableBaseInset, l = iconButtondrawableBaseInset,
-            r = iconButtondrawableBaseInset)
-        private val iconButtonDrawableInsetsLeft = DrawableInsets(t = iconButtondrawableBaseInset,
-            b = iconButtondrawableBaseInset, l = iconButtondrawableShiftInset, r = 0)
-        private val iconButtonDrawableInsetsRight = DrawableInsets(t = iconButtondrawableBaseInset,
-            b = iconButtondrawableBaseInset, l = 0, r = iconButtondrawableShiftInset)
+            r = iconButtondrawableBaseInset
+        )
+        private val iconButtonDrawableInsetsLeft = DrawableInsets(
+            t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = iconButtondrawableShiftInset, r = 0
+        )
+        private val iconButtonDrawableInsetsRight = DrawableInsets(
+            t = iconButtondrawableBaseInset,
+            b = iconButtondrawableBaseInset, l = 0, r = iconButtondrawableShiftInset
+        )
 
         // App Info Pill.
         private val appInfoPill = rootView.requireViewById<View>(R.id.app_info_pill)
         private val collapseMenuButton = appInfoPill.requireViewById<HandleMenuImageButton>(
-            R.id.collapse_menu_button)
+            R.id.collapse_menu_button
+        )
+
         @VisibleForTesting
         val appIconView = appInfoPill.requireViewById<ImageView>(R.id.application_icon)
+
         @VisibleForTesting
         val appNameView = appInfoPill.requireViewById<MarqueedTextView>(R.id.application_name)
 
         // Windowing Pill.
         private val windowingPill = rootView.requireViewById<View>(R.id.windowing_pill)
         private val fullscreenBtn = windowingPill.requireViewById<ImageButton>(
-            R.id.fullscreen_button)
+            R.id.fullscreen_button
+        )
         private val splitscreenBtn = windowingPill.requireViewById<ImageButton>(
-            R.id.split_screen_button)
+            R.id.split_screen_button
+        )
         private val floatingBtn = windowingPill.requireViewById<ImageButton>(R.id.floating_button)
         private val floatingBtnSpace = windowingPill.requireViewById<Space>(
-            R.id.floating_button_space)
+            R.id.floating_button_space
+        )
 
         private val desktopBtn = windowingPill.requireViewById<ImageButton>(R.id.desktop_button)
         private val desktopBtnSpace = windowingPill.requireViewById<Space>(
-            R.id.desktop_button_space)
+            R.id.desktop_button_space
+        )
 
         // More Actions Pill.
         private val moreActionsPill = rootView.requireViewById<View>(R.id.more_actions_pill)
         private val screenshotBtn = moreActionsPill.requireViewById<HandleMenuActionButton>(
-            R.id.screenshot_button)
+            R.id.screenshot_button
+        )
         private val newWindowBtn = moreActionsPill.requireViewById<HandleMenuActionButton>(
-            R.id.new_window_button)
+            R.id.new_window_button
+        )
         private val manageWindowBtn = moreActionsPill
             .requireViewById<HandleMenuActionButton>(R.id.manage_windows_button)
         private val changeAspectRatioBtn = moreActionsPill
@@ -517,11 +547,14 @@ class HandleMenu(
 
         // Open in Browser/App Pill.
         private val openInAppOrBrowserPill = rootView.requireViewById<View>(
-            R.id.open_in_app_or_browser_pill)
+            R.id.open_in_app_or_browser_pill
+        )
         private val openInAppOrBrowserBtn = openInAppOrBrowserPill.requireViewById<View>(
-            R.id.open_in_app_or_browser_button)
+            R.id.open_in_app_or_browser_button
+        )
         private val openByDefaultBtn = openInAppOrBrowserPill.requireViewById<ImageButton>(
-            R.id.open_by_default_button)
+            R.id.open_by_default_button
+        )
         private val decorThemeUtil = DecorThemeUtil(context)
         private val animator = HandleMenuAnimator(rootView, menuWidth, captionHeight.toFloat())
 
@@ -730,9 +763,9 @@ class HandleMenu(
             desktopBtn.imageTintList = style.windowingButtonColor
 
             val startInsets = if (context.isRtl) iconButtonDrawableInsetsRight
-                else iconButtonDrawableInsetsLeft
+            else iconButtonDrawableInsetsLeft
             val endInsets = if (context.isRtl) iconButtonDrawableInsetsLeft
-                else iconButtonDrawableInsetsRight
+            else iconButtonDrawableInsetsRight
 
             fullscreenBtn.apply {
                 background = createBackgroundDrawable(
@@ -804,9 +837,11 @@ class HandleMenu(
                 getString(R.string.open_in_browser_text)
             }
 
+            val buttonRoot = openInAppOrBrowserBtn.requireViewById<LinearLayout>(R.id.action_button)
             val label = openInAppOrBrowserBtn.requireViewById<MarqueedTextView>(R.id.label)
             val image = openInAppOrBrowserBtn.requireViewById<ImageView>(R.id.image)
             openInAppOrBrowserBtn.contentDescription = btnText
+            buttonRoot.contentDescription = btnText
             label.apply {
                 text = btnText
                 setTextColor(style.textColor)
@@ -837,7 +872,7 @@ class HandleMenu(
          */
         fun shouldShowChangeAspectRatioButton(taskInfo: RunningTaskInfo): Boolean =
             taskInfo.appCompatTaskInfo.eligibleForUserAspectRatioButton() &&
-                taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN
+                    taskInfo.windowingMode == WindowConfiguration.WINDOWING_MODE_FULLSCREEN
     }
 }
 
