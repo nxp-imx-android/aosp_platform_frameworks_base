@@ -595,6 +595,13 @@ flag {
 }
 
 flag {
+    name: "nested_tasks_with_independent_bounds"
+    namespace: "lse_desktop_experience"
+    description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
+    bug: "402825303"
+}
+
+flag {
     name: "enable_multiple_desktops_backend"
     namespace: "lse_desktop_experience"
     description: "Enable multiple desktop sessions for desktop windowing (backend)."
