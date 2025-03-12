@@ -32,7 +32,6 @@ import static android.Manifest.permission.QUERY_AUDIO_STATE;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
-import static android.content.Intent.ACTION_PACKAGE_REMOVED;
 import static android.content.Intent.EXTRA_ARCHIVAL;
 import static android.content.Intent.EXTRA_REPLACING;
 import static android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP;
@@ -12943,11 +12942,12 @@ public class AudioService extends IAudioService.Stub
                 );
         audioPolicy.registerOnStartTask(() -> {
             provider.onServiceStart(audioPolicy.getPermissionController());
+            sLifecycleLogger.enqueue(new EventLogger.StringEvent(
+                    "Controller start task complete").printLog(ALOGI, TAG));
         });
 
         IntentFilter packageUpdateFilter = new IntentFilter();
         packageUpdateFilter.addAction(ACTION_PACKAGE_ADDED);
-        packageUpdateFilter.addAction(ACTION_PACKAGE_REMOVED);
         packageUpdateFilter.addDataScheme("package");
 
         context.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -12961,9 +12961,6 @@ public class AudioService extends IAudioService.Stub
                 if (ACTION_PACKAGE_ADDED.equals(action)) {
                     audioserverExecutor.execute(() ->
                             provider.onModifyPackageState(uid, pkgName, false /* isRemoved */));
-                } else if (ACTION_PACKAGE_REMOVED.equals(action)) {
-                    audioserverExecutor.execute(() ->
-                            provider.onModifyPackageState(uid, pkgName, true /* isRemoved */));
                 }
             }
         }, packageUpdateFilter, null, null); // main thread is fine, since dispatch on executor
