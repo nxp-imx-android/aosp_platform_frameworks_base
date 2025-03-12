@@ -114,21 +114,36 @@ class DesktopDisplayModeController(
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
     }
 
+    // Do not directly use this method to check the state of desktop-first mode. Check the display
+    // windowing mode instead.
+    private fun canDesktopFirstModeBeEnabledOnDefaultDisplay(): Boolean {
+        if (isDefaultDisplayDesktopEligible()) {
+            if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
+                return true
+            }
+            if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
+                if (isInClamshellMode()) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
     @VisibleForTesting
     fun getTargetWindowingModeForDefaultDisplay(): Int {
-        if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
+        if (canDesktopFirstModeBeEnabledOnDefaultDisplay()) {
             return WINDOWING_MODE_FREEFORM
         }
-        if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-            if (isInClamshellMode()) {
-                return WINDOWING_MODE_FREEFORM
-            }
-            return WINDOWING_MODE_FULLSCREEN
-        }
 
-        // If form factor-based desktop first switch is disabled, use the default display windowing
-        // mode here to keep the freeform mode for some form factors (e.g., FEATURE_PC).
-        return windowManager.getWindowingMode(DEFAULT_DISPLAY)
+        return if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
+            WINDOWING_MODE_FULLSCREEN
+        } else {
+            // If form factor-based desktop first switch is disabled, use the default display
+            // windowing mode here to keep the freeform mode for some form factors (e.g.,
+            // FEATURE_PC).
+            windowManager.getWindowingMode(DEFAULT_DISPLAY)
+        }
     }
 
     private fun isExtendedDisplayEnabled(): Boolean {
@@ -155,6 +170,13 @@ class DesktopDisplayModeController(
         rootTaskDisplayAreaOrganizer.getDisplayIds().any { it != DEFAULT_DISPLAY }
 
     private fun isInClamshellMode() = inputManager.isInTabletMode() == InputManager.SWITCH_STATE_OFF
+
+    private fun isDefaultDisplayDesktopEligible(): Boolean {
+        val display = requireNotNull(displayController.getDisplay(DEFAULT_DISPLAY)) {
+            "Display object of DEFAULT_DISPLAY must be non-null."
+        }
+        return DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+    }
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
