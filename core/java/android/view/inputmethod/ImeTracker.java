@@ -231,6 +231,7 @@ public interface ImeTracker {
             PHASE_WM_WINDOW_ANIMATING_TYPES_CHANGED,
             PHASE_WM_NOTIFY_HIDE_ANIMATION_FINISHED,
             PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES,
+            PHASE_CLIENT_ON_CONTROLS_CHANGED,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface Phase {}
@@ -469,6 +470,9 @@ public interface ImeTracker {
     /** The control target reported its animatingTypes back to WindowManagerService. */
     int PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES =
             ImeProtoEnums.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES;
+    /** InsetsController received a control for the IME. */
+    int PHASE_CLIENT_ON_CONTROLS_CHANGED =
+            ImeProtoEnums.PHASE_CLIENT_ON_CONTROLS_CHANGED;
 
     /**
      * Called when an IME request is started.
