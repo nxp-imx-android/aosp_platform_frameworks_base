@@ -1510,6 +1510,9 @@
     <!-- Warning message to tell user is have problem during profile connect, it need to turn off device and back on. [CHAR_LIMIT=NONE] -->
     <string name="profile_connect_timeout_subtext">Problem connecting. Turn device off &amp; back on</string>
 
+    <!-- Warning message when the bluetooth key is missing. [CHAR_LIMIT=NONE] -->
+    <string name="bluetooth_key_missing_subtext">Can’t connect</string>
+
     <!-- Name of the 3.5mm audio device. [CHAR LIMIT=40] -->
     <string name="media_transfer_wired_device_name">Wired audio device</string>
 

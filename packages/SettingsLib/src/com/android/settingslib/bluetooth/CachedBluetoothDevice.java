@@ -1495,6 +1495,11 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         int leftBattery = -1;
         int rightBattery = -1;
 
+        Integer keyMissingCount = BluetoothUtils.getKeyMissingCount(mDevice);
+        if (keyMissingCount != null && keyMissingCount > 0) {
+            return mContext.getString(R.string.bluetooth_key_missing_subtext);
+        }
+
         if (isProfileConnectedFail() && isConnected()) {
             return mContext.getString(R.string.profile_connect_timeout_subtext);
         }
