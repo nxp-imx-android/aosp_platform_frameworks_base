@@ -22,6 +22,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import java.lang.ref.WeakReference
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 /**
  * Base class for a condition that needs to be fulfilled in order for [Monitor] to inform its
@@ -43,11 +45,12 @@ protected constructor(
 ) {
     private val mTag: String = javaClass.simpleName
 
-    private val _callbacks = mutableListOf<WeakReference<Callback>>()
-    private var _started = false
+    private val callbacks = mutableListOf<WeakReference<Callback>>()
+    private var started = false
+    private var currentJob: Job? = null
 
     /** Starts monitoring the condition. */
-    protected abstract fun start()
+    protected abstract suspend fun start()
 
     /** Stops monitoring the condition. */
     protected abstract fun stop()
@@ -64,21 +67,21 @@ protected constructor(
      */
     fun addCallback(callback: Callback) {
         if (shouldLog()) Log.d(mTag, "adding callback")
-        _callbacks.add(WeakReference(callback))
+        callbacks.add(WeakReference(callback))
 
-        if (_started) {
+        if (started) {
             callback.onConditionChanged(this)
             return
         }
 
-        start()
-        _started = true
+        currentJob = _scope.launch { start() }
+        started = true
     }
 
     /** Removes the provided callback from further receiving updates. */
     fun removeCallback(callback: Callback) {
         if (shouldLog()) Log.d(mTag, "removing callback")
-        val iterator = _callbacks.iterator()
+        val iterator = callbacks.iterator()
         while (iterator.hasNext()) {
             val cb = iterator.next().get()
             if (cb == null || cb === callback) {
@@ -86,12 +89,15 @@ protected constructor(
             }
         }
 
-        if (_callbacks.isNotEmpty() || !_started) {
+        if (callbacks.isNotEmpty() || !started) {
             return
         }
 
         stop()
-        _started = false
+        currentJob?.cancel()
+        currentJob = null
+
+        started = false
     }
 
     /**
@@ -151,7 +157,7 @@ protected constructor(
     }
 
     private fun sendUpdate() {
-        val iterator = _callbacks.iterator()
+        val iterator = callbacks.iterator()
         while (iterator.hasNext()) {
             val cb = iterator.next().get()
             if (cb == null) {

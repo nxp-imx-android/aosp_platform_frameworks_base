@@ -45,7 +45,7 @@ constructor(
             .cancellable()
             .distinctUntilChanged()
 
-    override fun start() {
+    override suspend fun start() {
         job = coroutineScope.launch { directBootFlow.collect { updateCondition(it) } }
         updateCondition(!userManager.isUserUnlocked)
     }

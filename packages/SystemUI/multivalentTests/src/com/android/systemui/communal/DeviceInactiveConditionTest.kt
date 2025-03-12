@@ -20,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.condition.testStart
 import com.android.systemui.keyguard.WakefulnessLifecycle
 import com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_ASLEEP
 import com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_AWAKE
@@ -67,7 +68,7 @@ class DeviceInactiveConditionTest : SysuiTestCase() {
     fun asleep_conditionTrue() =
         kosmos.runTest {
             // Condition is false to start.
-            underTest.start()
+            testStart(underTest)
             assertThat(underTest.isConditionMet).isFalse()
 
             // Condition is true when device goes to sleep.
@@ -79,7 +80,7 @@ class DeviceInactiveConditionTest : SysuiTestCase() {
     fun dozingAndAsleep_conditionFalse() =
         kosmos.runTest {
             // Condition is true when device is asleep.
-            underTest.start()
+            testStart(underTest)
             sleep()
             assertThat(underTest.isConditionMet).isTrue()
 
