@@ -2138,3 +2138,12 @@ flag {
     }
 }
 
+flag {
+   name: "keyguard_wm_reorder_atms_calls"
+   namespace: "systemui"
+   description: "Calls ATMS#setLockScreenShown before default display callbacks in case they're slow"
+   bug: "399693427"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
