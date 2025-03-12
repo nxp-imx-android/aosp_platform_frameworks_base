@@ -137,6 +137,7 @@ import static android.security.Flags.preventIntentRedirectThrowExceptionIfNested
 import static android.util.FeatureFlagUtils.SETTINGS_ENABLE_MONITOR_PHANTOM_PROCS;
 import static android.view.Display.INVALID_DISPLAY;
 
+import static com.android.internal.util.FrameworkStatsLog.EXTRA_INTENT_KEYS_COLLECTED_ON_SERVER;
 import static com.android.internal.util.FrameworkStatsLog.INTENT_CREATOR_TOKEN_ADDED;
 import static com.android.internal.util.FrameworkStatsLog.UNSAFE_INTENT_EVENT_REPORTED__EVENT_TYPE__NEW_MUTABLE_IMPLICIT_PENDING_INTENT_RETRIEVED;
 import static com.android.sdksandbox.flags.Flags.sdkSandboxInstrumentationInfo;
@@ -19415,12 +19416,14 @@ public class ActivityManagerService extends IActivityManager.Stub
         if (!preventIntentRedirect()) return;
         if (intent == null) return;
 
+        int callingUid = Binder.getCallingUid();
         if (((intent.getExtendedFlags() & Intent.EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED) == 0)
                 && intent.getExtras() != null && intent.getExtras().hasIntent()) {
             Slog.wtf(TAG,
                     "[IntentRedirect Hardening] The intent does not have its nested keys collected as a "
                             + "preparation for creating intent creator tokens. Intent: "
                             + intent + "; creatorPackage: " + creatorPackage);
+            FrameworkStatsLog.write(EXTRA_INTENT_KEYS_COLLECTED_ON_SERVER, callingUid);
             if (preventIntentRedirectShowToastIfNestedKeysNotCollectedRW()) {
                 UiThread.getHandler().post(
                         () -> Toast.makeText(mContext,
@@ -19447,7 +19450,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 targetPackage);
         final boolean noExtraIntentKeys =
                 intent.getExtraIntentKeys() == null || intent.getExtraIntentKeys().isEmpty();
-        final int creatorUid = noExtraIntentKeys ? DEFAULT_INTENT_CREATOR_UID : Binder.getCallingUid();
+        final int creatorUid = noExtraIntentKeys ? DEFAULT_INTENT_CREATOR_UID : callingUid;
 
         intent.forEachNestedCreatorToken(extraIntent -> {
             if (isCreatorSameAsTarget) {
