@@ -36,7 +36,6 @@ import android.os.BatteryConsumer;
 import android.os.BatteryStats;
 import android.os.Handler;
 import android.os.Process;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import com.android.internal.os.Clock;
 import com.android.internal.os.PowerProfile;
@@ -59,11 +58,6 @@ import java.util.function.Supplier;
 public class ScreenPowerStatsProcessorTest {
 
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
             .setNumDisplays(2)
             .setAveragePowerForOrdinal(PowerProfile.POWER_GROUP_DISPLAY_AMBIENT, 0, 180.0)

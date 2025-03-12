@@ -139,7 +139,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
                         }
                         final int viewUserId = NotificationBundleUi.isEnabled()
                             ? mView.getEntryAdapter().getSbn().getUserId()
-                            : mView.getEntry().getSbn().getUserId();
+                            : mView.getEntryLegacy().getSbn().getUserId();
                         if (viewUserId == UserHandle.USER_ALL || viewUserId == userId) {
                             mView.getPrivateLayout().setBubblesEnabledForUser(
                                     BUBBLES_SETTING_ENABLED_VALUE.equals(value));
@@ -395,7 +395,7 @@ public class ExpandableNotificationRowController implements NotifViewController 
                         mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
                     }
                 } else {
-                    mView.getEntry().setInitializationTime(mClock.elapsedRealtime());
+                    mView.getEntryLegacy().setInitializationTime(mClock.elapsedRealtime());
                     mSettingsController.addCallback(BUBBLES_SETTING_URI, mSettingsListener);
                 }
                 mPluginManager.addPluginListener(mView,
@@ -429,7 +429,9 @@ public class ExpandableNotificationRowController implements NotifViewController 
     @Override
     @NonNull
     public String getNodeLabel() {
-        return NotificationBundleUi.isEnabled() ? mView.getLoggingKey() : logKey(mView.getEntry());
+        return NotificationBundleUi.isEnabled()
+                ? mView.getLoggingKey()
+                : logKey(mView.getEntryLegacy());
     }
 
     @Override

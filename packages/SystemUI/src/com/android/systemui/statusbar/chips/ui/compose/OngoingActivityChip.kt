@@ -42,6 +42,7 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.StatusBarIconView
+import com.android.systemui.statusbar.chips.StatusBarChipsReturnAnimations
 import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -90,6 +91,8 @@ fun OngoingActivityChip(
             },
         borderStroke = borderStroke,
         onClick = onClick,
+        useModifierBasedImplementation = StatusBarChipsReturnAnimations.isEnabled,
+        transitionControllerFactory = model.transitionManager?.controllerFactory,
     ) {
         ChipBody(model, iconViewStore, isClickable = onClick != null)
     }

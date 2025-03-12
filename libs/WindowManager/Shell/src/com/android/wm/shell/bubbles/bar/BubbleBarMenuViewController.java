@@ -28,9 +28,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.android.app.animation.Interpolators;
-import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
+import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 
 import java.util.ArrayList;
 
@@ -263,7 +263,7 @@ class BubbleBarMenuViewController {
                 }
         ));
 
-        if (Flags.enableBubbleAnything() || Flags.enableBubbleToFullscreen()) {
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
             menuActions.add(new BubbleBarMenuView.MenuAction(
                     Icon.createWithResource(resources,
                             R.drawable.desktop_mode_ic_handle_menu_fullscreen),

@@ -30,6 +30,7 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.TaskInfo;
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.IBinder;
@@ -41,6 +42,11 @@ import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
+
+import androidx.core.animation.Animator;
+import androidx.core.animation.Animator.AnimatorUpdateListener;
+import androidx.core.animation.AnimatorListenerAdapter;
+import androidx.core.animation.ValueAnimator;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.launcher3.icons.BubbleIconFactory;
@@ -114,8 +120,8 @@ public class BubbleTransitions {
     }
 
     /** Starts a transition that converts a dragged bubble icon to a full screen task. */
-    public BubbleTransition startDraggedBubbleIconToFullscreen(Bubble bubble) {
-        return new DraggedBubbleIconToFullscreen(bubble);
+    public BubbleTransition startDraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation) {
+        return new DraggedBubbleIconToFullscreen(bubble, dropLocation);
     }
 
     /**
@@ -612,8 +618,7 @@ public class BubbleTransitions {
             mTaskLeash = taskChg.getLeash();
             mRootLeash = info.getRoot(0).getLeash();
 
-            SurfaceControl dest =
-                    mBubble.getBubbleBarExpandedView().getViewRootImpl().getSurfaceControl();
+            SurfaceControl dest = getExpandedView(mBubble).getViewRootImpl().getSurfaceControl();
             final Runnable onPlucked = () -> {
                 // Need to remove the taskview AFTER applying the startTransaction because
                 // it isn't synchronized.
@@ -623,12 +628,12 @@ public class BubbleTransitions {
                 mBubbleData.setExpanded(false /* expanded */);
             };
             if (dest != null) {
-                pluck(mTaskLeash, mBubble.getBubbleBarExpandedView(), dest,
+                pluck(mTaskLeash, getExpandedView(mBubble), dest,
                         taskChg.getStartAbsBounds().left - info.getRoot(0).getOffset().x,
                         taskChg.getStartAbsBounds().top - info.getRoot(0).getOffset().y,
-                        mBubble.getBubbleBarExpandedView().getCornerRadius(), startTransaction,
+                        getCornerRadius(mBubble), startTransaction,
                         onPlucked);
-                mBubble.getBubbleBarExpandedView().post(() -> mTransitions.dispatchTransition(
+                getExpandedView(mBubble).post(() -> mTransitions.dispatchTransition(
                         mTransition, info, startTransaction, finishTransaction, finishCallback,
                         null));
             } else {
@@ -649,6 +654,20 @@ public class BubbleTransitions {
             t.reparent(mTaskLeash, mRootLeash);
             t.apply();
         }
+
+        private View getExpandedView(@NonNull Bubble bubble) {
+            if (bubble.getBubbleBarExpandedView() != null) {
+                return bubble.getBubbleBarExpandedView();
+            }
+            return bubble.getExpandedView();
+        }
+
+        private float getCornerRadius(@NonNull Bubble bubble) {
+            if (bubble.getBubbleBarExpandedView() != null) {
+                return bubble.getBubbleBarExpandedView().getCornerRadius();
+            }
+            return bubble.getExpandedView().getCornerRadius();
+        }
     }
 
     /**
@@ -660,9 +679,19 @@ public class BubbleTransitions {
 
         IBinder mTransition;
         final Bubble mBubble;
+        final Point mDropLocation;
+        final TransactionProvider mTransactionProvider;
 
-        DraggedBubbleIconToFullscreen(Bubble bubble) {
+        DraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation) {
+            this(bubble, dropLocation, SurfaceControl.Transaction::new);
+        }
+
+        @VisibleForTesting
+        DraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation,
+                TransactionProvider transactionProvider) {
             mBubble = bubble;
+            mDropLocation = dropLocation;
+            mTransactionProvider = transactionProvider;
             bubble.setPreparingTransition(this);
             WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
             WindowContainerTransaction wct = new WindowContainerTransaction();
@@ -710,8 +739,34 @@ public class BubbleTransitions {
             }
             mRepository.remove(taskViewTaskController);
 
+            final SurfaceControl taskLeash = change.getLeash();
+            // set the initial position of the task with 0 scale
+            startTransaction.setPosition(taskLeash, mDropLocation.x, mDropLocation.y);
+            startTransaction.setScale(taskLeash, 0, 0);
             startTransaction.apply();
-            finishCallback.onTransitionFinished(null);
+
+            final SurfaceControl.Transaction animT = mTransactionProvider.get();
+            ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
+            animator.setDuration(250);
+            animator.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(@NonNull Animator animation) {
+                    float progress = animator.getAnimatedFraction();
+                    float x = mDropLocation.x * (1 - progress);
+                    float y = mDropLocation.y * (1 - progress);
+                    animT.setPosition(taskLeash, x, y);
+                    animT.setScale(taskLeash, progress, progress);
+                    animT.apply();
+                }
+            });
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(@NonNull Animator animation) {
+                    animT.close();
+                    finishCallback.onTransitionFinished(null);
+                }
+            });
+            animator.start();
             taskViewTaskController.notifyTaskRemovalStarted(mBubble.getTaskView().getTaskInfo());
             mTaskViewTransitions.onExternalDone(transition);
             return true;
@@ -760,5 +815,9 @@ public class BubbleTransitions {
             mTransition = null;
             mTaskViewTransitions.onExternalDone(transition);
         }
+    }
+
+    interface TransactionProvider {
+        SurfaceControl.Transaction get();
     }
 }

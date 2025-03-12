@@ -30,7 +30,6 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.res.R
@@ -48,6 +47,7 @@ import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingC
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.window.StatusBarWindowController
 import com.android.systemui.statusbar.window.StatusBarWindowControllerStore
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -70,7 +70,7 @@ import org.mockito.kotlin.whenever
 @TestableLooper.RunWithLooper
 @DisableFlags(StatusBarChipsModernization.FLAG_NAME)
 class OngoingCallControllerTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
 
     private val mainExecutor = kosmos.fakeExecutor
     private val testScope = kosmos.testScope

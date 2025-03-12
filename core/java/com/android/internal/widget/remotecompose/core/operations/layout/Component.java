@@ -175,20 +175,25 @@ public class Component extends PaintOperation
                             + mComponentId);
         }
         for (ComponentValue v : mComponentValues) {
-            switch (v.getType()) {
-                case ComponentValue.WIDTH:
-                    context.loadFloat(v.getValueId(), mWidth);
-                    if (DEBUG) {
-                        System.out.println("Updating WIDTH for " + mComponentId + " to " + mWidth);
-                    }
-                    break;
-                case ComponentValue.HEIGHT:
-                    context.loadFloat(v.getValueId(), mHeight);
-                    if (DEBUG) {
-                        System.out.println(
-                                "Updating HEIGHT for " + mComponentId + " to " + mHeight);
-                    }
-                    break;
+            if (context.getMode() == RemoteContext.ContextMode.DATA) {
+                context.loadFloat(v.getValueId(), 1f);
+            } else {
+                switch (v.getType()) {
+                    case ComponentValue.WIDTH:
+                        context.loadFloat(v.getValueId(), mWidth);
+                        if (DEBUG) {
+                            System.out.println(
+                                    "Updating WIDTH for " + mComponentId + " to " + mWidth);
+                        }
+                        break;
+                    case ComponentValue.HEIGHT:
+                        context.loadFloat(v.getValueId(), mHeight);
+                        if (DEBUG) {
+                            System.out.println(
+                                    "Updating HEIGHT for " + mComponentId + " to " + mHeight);
+                        }
+                        break;
+                }
             }
         }
     }
@@ -824,13 +829,25 @@ public class Component extends PaintOperation
      *
      * @param value a 2 dimension float array that will receive the horizontal and vertical position
      *     of the component.
+     * @param forSelf whether the location is for this container or a child, relevant for scrollable
+     *     items.
      */
-    public void getLocationInWindow(@NonNull float[] value) {
+    public void getLocationInWindow(@NonNull float[] value, boolean forSelf) {
         value[0] += mX;
         value[1] += mY;
         if (mParent != null) {
-            mParent.getLocationInWindow(value);
+            mParent.getLocationInWindow(value, false);
         }
+    }
+
+    /**
+     * Returns the location of the component relative to the root component
+     *
+     * @param value a 2 dimension float array that will receive the horizontal and vertical position
+     *     of the component.
+     */
+    public void getLocationInWindow(@NonNull float[] value) {
+        getLocationInWindow(value, true);
     }
 
     @NonNull

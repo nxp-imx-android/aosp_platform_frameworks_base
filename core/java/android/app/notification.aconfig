@@ -269,7 +269,7 @@ flag {
   namespace: "systemui"
   description: "enables metrics when redacting notifications on the lockscreen"
   bug: "343631648"
-    metadata {
+  metadata {
     purpose: PURPOSE_BUGFIX
   }
 }
@@ -279,7 +279,16 @@ flag {
   namespace: "systemui"
   description: "enables user expanding the public view of a notification"
   bug: "398853084"
-    metadata {
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+ }
+flag {
+  name: "notif_entry_creation_time_use_elapsed_realtime"
+  namespace: "systemui"
+  description: "makes the notification entry expect its creation time to be elapsedRealtime, not uptimeMillis"
+  bug: "343631648"
+  metadata {
     purpose: PURPOSE_BUGFIX
   }
 }

@@ -40,11 +40,13 @@ import com.android.wm.shell.windowdecor.DragResizeInputListener.TaskResizeInputE
 import com.google.common.truth.Truth.assertThat
 import java.util.function.Consumer
 import java.util.function.Supplier
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -63,6 +65,15 @@ class DragResizeInputListenerTest : ShellTestCase() {
     private val testBgExecutor = TestShellExecutor()
     private val mockWindowSession = mock<IWindowSession>()
     private val mockInputEventReceiver = mock<TaskResizeInputEventReceiver>()
+    private val inputChannel = mock<InputChannel>()
+    private val sinkInputChannel = mock<InputChannel>()
+    private val decorationSurface = SurfaceControl.Builder().setName("decoration surface").build()
+    private val createdSurfaces = ArrayList<SurfaceControl>()
+
+    @After
+    fun tearDown() {
+        decorationSurface.release()
+    }
 
     @Test
     fun testGrantInputChannelOffMainThread() {
@@ -70,6 +81,35 @@ class DragResizeInputListenerTest : ShellTestCase() {
         testMainExecutor.flushAll()
 
         verifyNoInputChannelGrantRequests()
+    }
+
+    @Test
+    fun testGrantInputChannelAfterDecorSurfaceReleased() {
+        // Keep tracking the underlying surface that the decorationSurface points to.
+        val forVerification = SurfaceControl(decorationSurface, "forVerification")
+        try {
+            create()
+            decorationSurface.release()
+            testBgExecutor.flushAll()
+
+            verify(mockWindowSession)
+                .grantInputChannel(
+                    anyInt(),
+                    argThat<SurfaceControl> { isValid && isSameSurface(forVerification) },
+                    any(),
+                    anyOrNull(),
+                    anyInt(),
+                    anyInt(),
+                    anyInt(),
+                    anyInt(),
+                    anyOrNull(),
+                    any(),
+                    any(),
+                    any(),
+                )
+        } finally {
+            forVerification.release()
+        }
     }
 
     @Test
@@ -143,6 +183,40 @@ class DragResizeInputListenerTest : ShellTestCase() {
         verify(mockWindowSession).remove(inputListener.mSinkClientToken)
     }
 
+    @Test
+    fun testClose_afterBgSetup_disposesOfInputChannels() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        inputListener.close()
+        testMainExecutor.flushAll()
+        verify(inputChannel).dispose()
+        verify(sinkInputChannel).dispose()
+    }
+
+    @Test
+    fun testClose_beforeBgSetup_releaseSurfaces() {
+        val inputListener = create()
+        inputListener.close()
+        testBgExecutor.flushAll()
+        testMainExecutor.flushAll()
+
+        assertThat(createdSurfaces).hasSize(1)
+        assertThat(createdSurfaces[0].isValid).isFalse()
+    }
+
+    @Test
+    fun testClose_afterBgSetup_releaseSurfaces() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        inputListener.close()
+        testMainExecutor.flushAll()
+        testBgExecutor.flushAll()
+
+        assertThat(createdSurfaces).hasSize(2)
+        assertThat(createdSurfaces[0].isValid).isFalse()
+        assertThat(createdSurfaces[1].isValid).isFalse()
+    }
+
     private fun verifyNoInputChannelGrantRequests() {
         verify(mockWindowSession, never())
             .grantInputChannel(
@@ -172,12 +246,26 @@ class DragResizeInputListenerTest : ShellTestCase() {
             TestHandler(Looper.getMainLooper()),
             mock<Choreographer>(),
             Display.DEFAULT_DISPLAY,
-            mock<SurfaceControl>(),
+            decorationSurface,
             mock<DragPositioningCallback>(),
-            { SurfaceControl.Builder() },
-            { StubTransaction() },
+            {
+                object : SurfaceControl.Builder() {
+                    override fun build(): SurfaceControl {
+                        return super.build().also { createdSurfaces.add(it) }
+                    }
+                }
+            },
+            {
+                object : StubTransaction() {
+                    override fun remove(sc: SurfaceControl): SurfaceControl.Transaction {
+                        return super.remove(sc).also { sc.release() }
+                    }
+                }
+            },
             mock<DisplayController>(),
             mock<DesktopModeEventLogger>(),
+            inputChannel,
+            sinkInputChannel,
         )
 
     private class TestInitializationCallback : Runnable {

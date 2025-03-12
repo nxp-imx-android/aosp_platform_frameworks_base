@@ -1907,9 +1907,9 @@ public final class PermissionManager {
     @Context.PermissionRequestState
     public int getPermissionRequestState(@NonNull String packageName, @NonNull String permission,
             int deviceId) {
-        int actualDeviceId = resolveDeviceIdForPermissionCheck(mContext, deviceId, permission);
+        int resolvedDeviceId = resolveDeviceIdForPermissionCheck(mContext, deviceId, permission);
         return sPermissionRequestStateCache.query(
-                new PermissionRequestStateQuery(packageName, permission, actualDeviceId));
+                new PermissionRequestStateQuery(packageName, permission, resolvedDeviceId));
     }
 
     /**
@@ -2036,8 +2036,8 @@ public final class PermissionManager {
      */
     public int checkPackageNamePermission(String permName, String pkgName,
             int deviceId, @UserIdInt int userId) {
-        int actualDeviceId = resolveDeviceIdForPermissionCheck(mContext, deviceId, permName);
-        String persistentDeviceId = getPersistentDeviceId(actualDeviceId);
+        int resolvedDeviceId = resolveDeviceIdForPermissionCheck(mContext, deviceId, permName);
+        String persistentDeviceId = getPersistentDeviceId(resolvedDeviceId);
         return sPackageNamePermissionCache.query(
                 new PackageNamePermissionQuery(permName, pkgName, persistentDeviceId, userId));
     }

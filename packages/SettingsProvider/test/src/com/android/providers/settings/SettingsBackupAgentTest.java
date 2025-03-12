@@ -16,15 +16,15 @@
 
 package com.android.providers.settings;
 
-import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_WIFI_NEW_CONFIG;
-import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SOFTAP_CONFIG;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SIM_SPECIFIC_SETTINGS_2;
+import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_SOFTAP_CONFIG;
+import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_WIFI_NEW_CONFIG;
 import static com.android.providers.settings.SettingsBackupRestoreKeys.KEY_WIFI_SETTINGS_BACKUP_DATA;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -35,12 +35,10 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
-import android.annotation.Nullable;
 import android.app.backup.BackupAnnotations.BackupDestination;
 import android.app.backup.BackupAnnotations.OperationType;
 import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
-import android.app.backup.BackupRestoreEventLogger;
 import android.app.backup.BackupRestoreEventLogger.DataTypeResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -69,13 +67,11 @@ import androidx.test.runner.AndroidJUnit4;
 
 import com.android.window.flags.Flags;
 
-import java.util.List;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -328,6 +324,47 @@ public class SettingsBackupAgentTest extends BaseSettingsProviderTest {
         // When the current value is larger than the only one available, the largest allowed
         // is returned.
         assertEquals("1.5", testedMethod.apply("1.8"));
+    }
+
+    @Test
+    public void testOnRestore_minContrastLevelIsRestoredToZero() {
+        mAgentUnderTest = new TestFriendlySettingsBackupAgent() {
+            @Override
+            protected Set<String> getBlockedSettings(int blockedSettingsArrayId) {
+                return new HashSet<>();
+            }
+        };
+        mAgentUnderTest.attach(mContext);
+
+        TestSettingsHelper settingsHelper = new TestSettingsHelper(mContext);
+        mAgentUnderTest.mSettingsHelper = settingsHelper;
+
+        String contrastLevelValue = "-1.0";
+        Map<String, String> settingsToRestore = Map.of(Settings.Secure.CONTRAST_LEVEL,
+                contrastLevelValue);
+
+        byte[] backupData = generateBackupData(settingsToRestore);
+        mAgentUnderTest.restoreSettings(
+                backupData,
+                /* pos */ 0,
+                backupData.length,
+                Settings.Secure.CONTENT_URI,
+                null,
+                null,
+                null,
+                /* blockedSettingsArrayId */ 0,
+                Collections.emptySet(),
+                Collections.emptySet(),
+                KEY_SECURE);
+
+        // Check that the contrast level has been restored.
+        assertTrue(settingsHelper.mWrittenValues.containsKey(Settings.Secure.CONTRAST_LEVEL));
+
+        String restoredContrastLevel = settingsHelper.mWrittenValues.get(
+                Settings.Secure.CONTRAST_LEVEL);
+
+        float restoredFloat = Float.parseFloat(restoredContrastLevel);
+        assertEquals(0.0f, restoredFloat, 0.001f);
     }
 
     @Test

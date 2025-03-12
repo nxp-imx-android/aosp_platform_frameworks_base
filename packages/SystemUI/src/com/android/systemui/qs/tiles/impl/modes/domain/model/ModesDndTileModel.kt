@@ -16,4 +16,4 @@
 
 package com.android.systemui.qs.tiles.impl.modes.domain.model
 
-data class ModesDndTileModel(val isActivated: Boolean)
+data class ModesDndTileModel(val isActivated: Boolean, val extraStatus: String?)

@@ -1016,6 +1016,13 @@
     <string name="hearing_devices_presets_error">Couldn\'t update preset</string>
     <!-- QuickSettings: Title for hearing aids presets. Preset is a set of hearing aid settings. User can apply different settings in different environments (e.g. Outdoor, Restaurant, Home) [CHAR LIMIT=40]-->
     <string name="hearing_devices_preset_label">Preset</string>
+    <!-- QuickSettings: Title for hearing aids input routing control in hearing device dialog. [CHAR LIMIT=40]-->
+    <string name="hearing_devices_input_routing_label">Default microphone for calls</string>
+    <!-- QuickSettings: Option for hearing aids input routing control in hearing device dialog. It will alter input routing for calls for hearing aid. [CHAR LIMIT=40]-->
+    <string-array name="hearing_device_input_routing_options">
+        <item>Hearing aid microphone</item>
+        <item>This phone\'s microphone</item>
+    </string-array>
     <!-- QuickSettings: Content description for the icon that indicates the item is selected [CHAR LIMIT=NONE]-->
     <string name="hearing_devices_spinner_item_selected">Selected</string>
     <!-- QuickSettings: Title for ambient controls. [CHAR LIMIT=40]-->

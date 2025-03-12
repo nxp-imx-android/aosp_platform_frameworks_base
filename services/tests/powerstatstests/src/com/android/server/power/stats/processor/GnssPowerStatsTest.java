@@ -41,7 +41,6 @@ import android.os.BatteryConsumer;
 import android.os.BatteryStats;
 import android.os.Handler;
 import android.os.Process;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import com.android.internal.os.Clock;
 import com.android.internal.os.MonotonicClock;
@@ -64,11 +63,6 @@ import java.util.function.Supplier;
 
 public class GnssPowerStatsTest {
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
             .setAveragePower(PowerProfile.POWER_GPS_ON, 100.0)
             .setAveragePower(PowerProfile.POWER_GPS_SIGNAL_QUALITY_BASED, new double[]{1000, 100})

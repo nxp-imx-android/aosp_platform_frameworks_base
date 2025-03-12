@@ -35,7 +35,6 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="@dimen/notification_2025_min_height"
             android:clipChildren="false"
             android:layout_weight="1"
             >
@@ -79,7 +78,6 @@
                     android:layout_width="0px"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:layout_marginBottom="@dimen/notification_2025_margin"
                     android:layout_marginTop="@dimen/notification_2025_margin"
                     android:clipChildren="false"
                     android:orientation="vertical"
@@ -151,7 +149,7 @@
                     android:id="@+id/expand_button_touch_container"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:minWidth="@dimen/notification_content_margin_end"
+                    android:minWidth="@dimen/notification_2025_margin"
                     >
 
                     <include layout="@layout/notification_2025_expand_button"
@@ -172,20 +170,13 @@
 
         </FrameLayout>
 
-        <LinearLayout
+        <include layout="@layout/notification_template_smart_reply_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-20dp"
-            android:clipChildren="false"
-            android:orientation="vertical">
-            <include layout="@layout/notification_template_smart_reply_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin"
-                android:layout_marginStart="@dimen/notification_2025_content_margin_start"
-                android:layout_marginEnd="@dimen/notification_content_margin_end" />
-            <include layout="@layout/notification_2025_action_list" />
-        </LinearLayout>
+            android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin"
+            android:layout_marginStart="@dimen/notification_2025_content_margin_start"
+            android:layout_marginEnd="@dimen/notification_2025_margin" />
+        <include layout="@layout/notification_2025_action_list" />
     </LinearLayout>
 
 </com.android.internal.widget.CallLayout>

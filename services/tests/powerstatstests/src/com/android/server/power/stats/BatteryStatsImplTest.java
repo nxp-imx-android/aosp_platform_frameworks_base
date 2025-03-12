@@ -92,7 +92,6 @@ import java.util.List;
 public class BatteryStatsImplTest {
     @Rule(order = 0)
     public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
             .setSystemPropertyImmutable("persist.sys.com.android.server.power.feature.flags."
                 + "framework_wakelock_info-override", null)
             .build();
@@ -150,7 +149,7 @@ public class BatteryStatsImplTest {
         File systemDir = Files.createTempDirectory("BatteryStatsHistoryTest").toFile();
 
         Context context;
-        if (RavenwoodRule.isUnderRavenwood()) {
+        if (RavenwoodRule.isOnRavenwood()) {
             context = mock(Context.class);
             SensorManager sensorManager = mock(SensorManager.class);
             when(sensorManager.getSensorList(anyInt())).thenReturn(List.of());
@@ -856,7 +855,7 @@ public class BatteryStatsImplTest {
     }
 
     private UidTraffic createUidTraffic(int appUid, long rxBytes, long txBytes) {
-        if (RavenwoodRule.isUnderRavenwood()) {
+        if (RavenwoodRule.isOnRavenwood()) {
             UidTraffic uidTraffic = mock(UidTraffic.class);
             when(uidTraffic.getUid()).thenReturn(appUid);
             when(uidTraffic.getRxBytes()).thenReturn(rxBytes);
@@ -881,7 +880,7 @@ public class BatteryStatsImplTest {
             long controllerIdleTimeMs,
             long controllerEnergyUsed,
             UidTraffic... uidTraffic) {
-        if (RavenwoodRule.isUnderRavenwood()) {
+        if (RavenwoodRule.isOnRavenwood()) {
             BluetoothActivityEnergyInfo info = mock(BluetoothActivityEnergyInfo.class);
             when(info.getTimestampMillis()).thenReturn(timestamp);
             when(info.getControllerTxTimeMillis()).thenReturn(controllerTxTimeMs);

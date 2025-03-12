@@ -105,7 +105,7 @@ public final class NotificationClicker implements View.OnClickListener {
                 mBubblesOptional.get().collapseStack();
             }
         } else {
-            if (!row.getEntry().isBubble() && mBubblesOptional.isPresent()) {
+            if (!row.getEntryLegacy().isBubble() && mBubblesOptional.isPresent()) {
                 mBubblesOptional.get().collapseStack();
             }
         }
@@ -130,7 +130,7 @@ public final class NotificationClicker implements View.OnClickListener {
             } else {
                 row.setBubbleClickListener(v ->
                         mNotificationActivityStarter.onNotificationBubbleIconClicked(
-                                row.getEntry()));
+                                row.getEntryLegacy()));
             }
             row.setOnClickListener(this);
             row.setOnDragSuccessListener(mOnDragSuccessListener);

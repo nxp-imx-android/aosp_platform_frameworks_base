@@ -141,6 +141,10 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     @Mock
     private QSSettingsPackageRepository mQSSettingsPackageRepository;
     @Mock
+    private HearingDevicesInputRoutingController.Factory mInputRoutingFactory;
+    @Mock
+    private HearingDevicesInputRoutingController mInputRoutingController;
+    @Mock
     private CachedBluetoothDevice mCachedDevice;
     @Mock
     private BluetoothDevice mDevice;
@@ -184,6 +188,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
         when(mCachedDevice.getBondState()).thenReturn(BOND_BONDED);
         when(mCachedDevice.getDeviceSide()).thenReturn(SIDE_LEFT);
         when(mHearingDeviceItem.getCachedBluetoothDevice()).thenReturn(mCachedDevice);
+        when(mInputRoutingFactory.create(any())).thenReturn(mInputRoutingController);
 
         mContext.setMockPackageManager(mPackageManager);
     }
@@ -349,6 +354,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
 
         setUpDeviceDialogWithoutPairNewDeviceButton();
         mDialog.show();
+        mExecutor.runAllReady();
 
         ViewGroup ambientLayout = getAmbientLayout(mDialog);
         assertThat(ambientLayout.getVisibility()).isEqualTo(View.VISIBLE);
@@ -401,7 +407,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 mExecutor,
                 mAudioManager,
                 mUiEventLogger,
-                mQSSettingsPackageRepository
+                mQSSettingsPackageRepository,
+                mInputRoutingFactory
         );
         mDialog = mDialogDelegate.createDialog();
     }
@@ -437,7 +444,6 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     private ViewGroup getAmbientLayout(SystemUIDialog dialog) {
         return dialog.requireViewById(R.id.ambient_layout);
     }
-
 
     private int countChildWithoutSpace(ViewGroup viewGroup) {
         int spaceCount = 0;

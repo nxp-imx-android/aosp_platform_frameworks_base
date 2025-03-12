@@ -18,6 +18,7 @@ package com.android.wm.shell.bubbles;
 
 import android.content.Intent;
 import android.content.pm.ShortcutInfo;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.UserHandle;
 import com.android.wm.shell.bubbles.IBubblesListener;
@@ -59,5 +60,5 @@ interface IBubbles {
 
     oneway void showDropTarget(in boolean show, in @nullable BubbleBarLocation location) = 15;
 
-    oneway void moveBubbleToFullscreen(in String key) = 16;
+    oneway void moveDraggedBubbleToFullscreen(in String key, in Point dropLocation) = 16;
 }

@@ -40,7 +40,6 @@ import android.os.BatteryConsumer;
 import android.os.BatteryStats;
 import android.os.Handler;
 import android.os.Process;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import com.android.internal.os.Clock;
 import com.android.internal.os.MonotonicClock;
@@ -63,11 +62,6 @@ import java.util.function.Supplier;
 
 public class CameraPowerStatsTest {
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
             .setAveragePower(PowerProfile.POWER_CAMERA, 100.0)
             .initMeasuredEnergyStatsLocked();

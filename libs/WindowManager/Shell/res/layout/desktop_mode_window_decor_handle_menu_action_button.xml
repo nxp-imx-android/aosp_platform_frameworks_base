@@ -22,8 +22,7 @@
     android:layout_height="match_parent"
     android:gravity="start|center_vertical"
     android:paddingHorizontal="16dp"
-    android:clickable="true"
-    android:focusable="true"
+    android:importantForAccessibility="yes"
     android:orientation="horizontal"
     android:background="?android:attr/selectableItemBackground">
 

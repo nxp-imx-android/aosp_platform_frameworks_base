@@ -30,7 +30,6 @@ import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractorI
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.display.data.repository.displayStateRepository
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -40,6 +39,7 @@ import com.android.systemui.qs.dagger.QSSceneComponent
 import com.android.systemui.settings.brightness.MirrorController
 import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.capture
@@ -65,7 +65,7 @@ import org.mockito.Mockito.verify
 @RunWith(AndroidJUnit4::class)
 class QSSceneAdapterImplTest : SysuiTestCase() {
 
-    private val kosmos = Kosmos().apply { testCase = this@QSSceneAdapterImplTest }
+    private val kosmos = testKosmos().apply { testCase = this@QSSceneAdapterImplTest }
     private val testDispatcher = kosmos.testDispatcher
     private val testScope = kosmos.testScope
 

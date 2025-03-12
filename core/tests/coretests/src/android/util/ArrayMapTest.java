@@ -18,7 +18,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.fail;
 
-import android.platform.test.annotations.IgnoreUnderRavenwood;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.ravenwood.RavenwoodRule;
 
@@ -57,7 +57,7 @@ public class ArrayMapTest {
      */
     @Test
     @Ignore("Failing; b/399137661")
-    @IgnoreUnderRavenwood(reason = "Long test runtime")
+    @DisabledOnRavenwood(reason = "Long test runtime")
     public void testConcurrentModificationException() throws Exception {
         final int TEST_LEN_MS = 5000;
         System.out.println("Starting ArrayMap concurrency test");

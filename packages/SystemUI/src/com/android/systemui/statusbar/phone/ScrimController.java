@@ -29,6 +29,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.IntDef;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.util.Log;
@@ -226,6 +227,8 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
 
     private ScrimState mState = ScrimState.UNINITIALIZED;
 
+    private Context mContext;
+
     private ScrimView mScrimInFront;
     private ScrimView mNotificationsScrim;
     private ScrimView mScrimBehind;
@@ -365,7 +368,9 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             @Main CoroutineDispatcher mainDispatcher,
             LargeScreenShadeInterpolator largeScreenShadeInterpolator,
             BlurConfig blurConfig,
+            @Main Context context,
             Lazy<WindowRootViewBlurInteractor> windowRootViewBlurInteractor) {
+        mContext = context;
         mScrimStateListener = lightBarController::setScrimState;
         mLargeScreenShadeInterpolator = largeScreenShadeInterpolator;
         mBlurConfig = blurConfig;
@@ -1627,16 +1632,16 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
 
     private void updateThemeColors() {
         if (mScrimBehind == null) return;
-        int background = mScrimBehind.getContext().getColor(
+        int background = mContext.getColor(
                 com.android.internal.R.color.materialColorSurfaceDim);
-        int accent = mScrimBehind.getContext().getColor(
+        int accent = mContext.getColor(
                 com.android.internal.R.color.materialColorPrimary);
         mColors.setMainColor(background);
         mColors.setSecondaryColor(accent);
         final boolean isBackgroundLight = !ContrastColorUtil.isColorDark(background);
         mColors.setSupportsDarkText(isBackgroundLight);
 
-        int surface = mScrimBehind.getContext().getColor(
+        int surface = mContext.getColor(
                 com.android.internal.R.color.materialColorSurface);
         for (ScrimState state : ScrimState.values()) {
             state.setSurfaceColor(surface);

@@ -699,7 +699,7 @@ interface IWindowManager
     /**
      * Indicates the display should show system decors.
      * <p>
-     * System decors include status bar, navigation bar, launcher.
+     * System decors include status bar, navigation bar, launcher, and wallpaper.
      * </p>
      *
      * @param displayId The id of the display.
@@ -717,6 +717,23 @@ interface IWindowManager
      * @param shouldShow Indicates that the display should show system decors.
      */
     void setShouldShowSystemDecors(int displayId, boolean shouldShow);
+
+    /**
+     * Indicates that the display is eligible for the desktop mode from WindowManager's perspective.
+     * This includes:
+     * - The default display;
+     * - Any display that is allowed to switch the content mode between extended and mirroring
+     * (which means it can dynamically add or remove system decors), and it is now in extended mode
+     * (should currently show system decors).
+     * <p>
+     * System decors include status bar, navigation bar, launcher, and wallpaper.
+     * </p>
+     *
+     * @param displayId The id of the display.
+     * @return {@code true} if the display is eligible for the desktop mode from WindowManager's
+     * perspective.
+     */
+    boolean isEligibleForDesktopMode(int displayId);
 
     /**
      * Indicates the policy for how the display should show IME.
@@ -792,7 +809,8 @@ interface IWindowManager
      * Updates the currently animating insets types of a remote process.
      */
     @EnforcePermission("MANAGE_APP_TOKENS")
-    void updateDisplayWindowAnimatingTypes(int displayId, int animatingTypes);
+    void updateDisplayWindowAnimatingTypes(int displayId, int animatingTypes,
+            in @nullable ImeTracker.Token statsToken);
 
     /**
      * Called to get the expected window insets.

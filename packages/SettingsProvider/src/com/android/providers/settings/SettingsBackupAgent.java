@@ -37,10 +37,12 @@ import android.app.backup.BackupDataInput;
 import android.app.backup.BackupDataOutput;
 import android.app.backup.BackupRestoreEventLogger;
 import android.app.backup.FullBackupDataOutput;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.database.Cursor;
 import android.net.NetworkPolicy;
 import android.net.NetworkPolicyManager;
@@ -941,6 +943,7 @@ public class SettingsBackupAgent extends BackupAgentHelper {
         Set<String> blockedSettings = getBlockedSettings(blockedSettingsArrayId);
 
         int restoredSettingsCount = 0;
+        boolean selectedSpellCheckerRestored = false;
         for (String key : allowlist.mSettingsAllowlist) {
             boolean isBlockedBySystem = blockedSettings != null && blockedSettings.contains(key);
             if (isBlockedBySystem || isBlockedByDynamicList(dynamicBlockList, contentUri,  key)) {
@@ -1068,6 +1071,25 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                     }
                     continue;
                 }
+            } else if (Settings.Secure.SELECTED_SPELL_CHECKER.equals(key)) {
+                ServiceInfo si = getServiceInfoOrNull(value);
+                if (si == null || si.applicationInfo == null) {
+                    Log.i(TAG, "Skipping restore for setting selected_spell_checker "
+                            + "as it is not installed");
+                    continue;
+                } else if (!si.applicationInfo.isSystemApp()
+                        && !si.applicationInfo.isUpdatedSystemApp()) {
+                    Log.i(TAG, "Skipping restore for setting selected_spell_checker "
+                            + "as it is not a system app");
+                    continue;
+                }
+                selectedSpellCheckerRestored = true;
+            } else if (Settings.Secure.SELECTED_SPELL_CHECKER_SUBTYPE.equals(key)) {
+                if (!selectedSpellCheckerRestored) {
+                    Log.i(TAG, "Skipping restore for setting selected_spell_checker_subtype "
+                            + "as selected_spell_checker was not restored");
+                    continue;
+                }
             }
 
             if (Settings.System.FONT_SCALE.equals(key)) {
@@ -1083,6 +1105,21 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                 final String toRestore = value;
                 value = findClosestAllowedFontScale(value, mAvailableFontScales);
                 Log.d(TAG, "Restored font scale from: " + toRestore + " to " + value);
+            }
+
+            if (Settings.Secure.CONTRAST_LEVEL.equals(key)) {
+                boolean increaseMinContrast = getBaseContext().getResources()
+                        .getBoolean(R.bool.config_increaseMinContrast);
+
+                float valueFloat;
+                try {
+                    valueFloat = Float.parseFloat(value);
+                } catch (NumberFormatException e) {
+                    valueFloat = 0.0f;
+                }
+
+                float newValue = Math.max(valueFloat, increaseMinContrast ? 0.0f : -1.0f);
+                value = String.valueOf(newValue);
             }
 
             settingsHelper.restoreValue(this, cr, contentValues, destination, key, value,
@@ -1866,6 +1903,18 @@ public class SettingsBackupAgent extends BackupAgentHelper {
                 | ((in[pos + 2] & 0xFF) <<  8)
                 | ((in[pos + 3] & 0xFF) <<  0);
         return result;
+    }
+
+    @Nullable
+    private ServiceInfo getServiceInfoOrNull(@Nullable String flattenedServiceName) {
+        if (flattenedServiceName == null) return null;
+        ComponentName componentName = ComponentName.unflattenFromString(flattenedServiceName);
+        if (componentName == null) return null;
+        try {
+            return getBaseContext().getPackageManager().getServiceInfo(componentName, 0);
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
     }
 
     /**

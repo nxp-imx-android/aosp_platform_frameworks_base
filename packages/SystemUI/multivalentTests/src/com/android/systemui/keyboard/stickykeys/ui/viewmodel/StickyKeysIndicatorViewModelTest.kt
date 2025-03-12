@@ -33,7 +33,6 @@ import com.android.systemui.keyboard.stickykeys.shared.model.ModifierKey.ALT_GR
 import com.android.systemui.keyboard.stickykeys.shared.model.ModifierKey.CTRL
 import com.android.systemui.keyboard.stickykeys.shared.model.ModifierKey.META
 import com.android.systemui.keyboard.stickykeys.shared.model.ModifierKey.SHIFT
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.testKosmos
@@ -64,7 +63,7 @@ class StickyKeysIndicatorViewModelTest : SysuiTestCase() {
     private val inputManager = mock<InputManager>()
     private val keyboardRepository = FakeKeyboardRepository()
     private val secureSettings = kosmos.fakeSettings
-    private val userRepository = Kosmos().fakeUserRepository
+    private val userRepository = testKosmos().fakeUserRepository
     private val captor =
         ArgumentCaptor.forClass(InputManager.StickyModifierStateListener::class.java)
 

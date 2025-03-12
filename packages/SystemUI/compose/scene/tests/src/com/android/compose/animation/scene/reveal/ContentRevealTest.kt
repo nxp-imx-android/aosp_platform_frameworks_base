@@ -111,10 +111,12 @@ class ContentRevealTest(private val isFloating: Boolean) {
         assertVerticalContainerRevealMotion(
             GestureRevealMotion(SceneClosed) {
                 val gestureDurationMillis = 1000L
+                // detach position for the floating container is larger
+                val gestureHeight = if (isFloating) 160.dp.toPx() else 100.dp.toPx()
                 swipe(
                     curve = {
                         val progress = it / gestureDurationMillis.toFloat()
-                        val y = sin(progress * Math.PI).toFloat() * 100.dp.toPx()
+                        val y = sin(progress * Math.PI).toFloat() * gestureHeight
                         Offset(centerX, y)
                     },
                     gestureDurationMillis,
@@ -159,7 +161,7 @@ class ContentRevealTest(private val isFloating: Boolean) {
     fun verticalReveal_gesture_dragHalfClose() {
         assertVerticalContainerRevealMotion(
             GestureRevealMotion(SceneOpen) {
-                swipeUp(350.dp.toPx(), 100.dp.toPx(), durationMillis = 500)
+                swipeUp(250.dp.toPx(), 100.dp.toPx(), durationMillis = 500)
             },
             "verticalReveal_gesture_dragHalfClose",
         )
@@ -251,9 +253,9 @@ class ContentRevealTest(private val isFloating: Boolean) {
                         SceneTransitionLayoutForTesting(
                             state,
                             modifier =
-                                Modifier.padding(50.dp)
+                                Modifier.padding(5.dp)
                                     .background(Color.Yellow)
-                                    .size(ContainerSize.width, ContainerSize.height + 200.dp)
+                                    .size(ContainerSize.width, ContainerSize.height + 100.dp)
                                     .testTag("stl"),
                         ) {
                             scene(
@@ -298,7 +300,7 @@ class ContentRevealTest(private val isFloating: Boolean) {
     companion object {
         @get:Parameters @JvmStatic val parameterValues = listOf(true, false)
 
-        val ContainerSize = DpSize(200.dp, 400.dp)
+        val ContainerSize = DpSize(150.dp, 300.dp)
 
         val FlingVelocity = 1000.dp // dp/sec
 

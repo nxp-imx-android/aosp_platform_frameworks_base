@@ -46,7 +46,7 @@ public abstract class RemoteContext {
             new CoreDocument(); // todo: is this a valid way to initialize? bbade@
     public @NonNull RemoteComposeState mRemoteComposeState =
             new RemoteComposeState(); // todo, is this a valid use of RemoteComposeState -- bbade@
-
+    private long mDocLoadTime = System.currentTimeMillis();
     @Nullable protected PaintContext mPaintContext = null;
     protected float mDensity = Float.NaN;
 
@@ -81,6 +81,20 @@ public abstract class RemoteContext {
         if (!Float.isNaN(density) && density > 0) {
             mDensity = density;
         }
+    }
+
+    /**
+     * Get the time the document was loaded
+     *
+     * @return time in ms since the document was loaded
+     */
+    public long getDocLoadTime() {
+        return mDocLoadTime;
+    }
+
+    /** Set the time the document was loaded */
+    public void setDocLoadTime() {
+        mDocLoadTime = System.currentTimeMillis();
     }
 
     public boolean isAnimationEnabled() {

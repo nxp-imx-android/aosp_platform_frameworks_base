@@ -39,7 +39,6 @@ import android.hardware.power.stats.EnergyConsumerResult;
 import android.hardware.power.stats.EnergyConsumerType;
 import android.os.Handler;
 import android.os.Process;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import com.android.internal.os.Clock;
 import com.android.internal.os.PowerStats;
@@ -64,11 +63,6 @@ import java.util.function.Consumer;
 
 public class CustomEnergyConsumerPowerStatsTest {
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule();
 
     public static final int ENERGY_CONSUMER_ID1 = 77;

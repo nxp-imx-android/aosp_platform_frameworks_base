@@ -32,7 +32,6 @@ import static android.Manifest.permission.QUERY_AUDIO_STATE;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
-import static android.content.Intent.ACTION_PACKAGE_REMOVED;
 import static android.content.Intent.EXTRA_ARCHIVAL;
 import static android.content.Intent.EXTRA_REPLACING;
 import static android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP;
@@ -3336,11 +3335,25 @@ public class AudioService extends IAudioService.Stub
     }
 
     private int rescaleIndex(int index, int srcStream, int dstStream) {
-        return rescaleIndex(index,
-                getVssForStreamOrDefault(srcStream).getMinIndex(),
-                getVssForStreamOrDefault(srcStream).getMaxIndex(),
-                getVssForStreamOrDefault(dstStream).getMinIndex(),
-                getVssForStreamOrDefault(dstStream).getMaxIndex());
+        final VolumeStreamState srcVss = getVssForStreamOrDefault(srcStream);
+        final VolumeStreamState dstVss = getVssForStreamOrDefault(dstStream);
+        int newIndex = rescaleIndex(index, srcVss.getMinIndex(), srcVss.getMaxIndex(),
+                dstVss.getMinIndex(), dstVss.getMaxIndex());
+        // only apply solution for DTMF stream to make sure that it is not muted when
+        // re-aliasing to voice call stream. With ringMyCar flag enabled this will be
+        // automatically solved since we are sending the mute state to APM
+        // TODO(b/402542630): revisit stream aliasing logic with different min index
+        //  values / mute states
+        if (!ringMyCar() && dstStream == AudioSystem.STREAM_DTMF
+                && srcStream == AudioSystem.STREAM_VOICE_CALL
+                && srcVss.getMinIndex() > dstVss.getMinIndex()) {
+            newIndex += srcVss.getMinIndex() - dstVss.getMinIndex();
+            if (newIndex > dstVss.getMaxIndex()) {
+                newIndex = dstVss.getMaxIndex();
+            }
+        }
+
+        return newIndex;
     }
 
     private int rescaleIndex(int index, int srcMin, int srcMax, int dstMin, int dstMax) {
@@ -12929,11 +12942,12 @@ public class AudioService extends IAudioService.Stub
                 );
         audioPolicy.registerOnStartTask(() -> {
             provider.onServiceStart(audioPolicy.getPermissionController());
+            sLifecycleLogger.enqueue(new EventLogger.StringEvent(
+                    "Controller start task complete").printLog(ALOGI, TAG));
         });
 
         IntentFilter packageUpdateFilter = new IntentFilter();
         packageUpdateFilter.addAction(ACTION_PACKAGE_ADDED);
-        packageUpdateFilter.addAction(ACTION_PACKAGE_REMOVED);
         packageUpdateFilter.addDataScheme("package");
 
         context.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -12947,9 +12961,6 @@ public class AudioService extends IAudioService.Stub
                 if (ACTION_PACKAGE_ADDED.equals(action)) {
                     audioserverExecutor.execute(() ->
                             provider.onModifyPackageState(uid, pkgName, false /* isRemoved */));
-                } else if (ACTION_PACKAGE_REMOVED.equals(action)) {
-                    audioserverExecutor.execute(() ->
-                            provider.onModifyPackageState(uid, pkgName, true /* isRemoved */));
                 }
             }
         }, packageUpdateFilter, null, null); // main thread is fine, since dispatch on executor

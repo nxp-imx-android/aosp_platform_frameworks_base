@@ -103,7 +103,7 @@
             android:id="@+id/expand_button_touch_container"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:minWidth="@dimen/notification_content_margin_end"
+            android:minWidth="@dimen/notification_2025_margin"
             >
             <include layout="@layout/notification_2025_expand_button"
                 android:layout_width="wrap_content"

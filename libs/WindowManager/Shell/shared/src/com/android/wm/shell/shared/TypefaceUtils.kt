@@ -80,7 +80,7 @@ class TypefaceUtils {
             fontStyle: Int = Typeface.NORMAL,
         ) {
             if (!Flags.enableGsf()) return
-            textView?.typeface = Typeface.create(fontFamily.name, fontStyle)
+            textView?.typeface = Typeface.create(fontFamily.value, fontStyle)
         }
     }
 }

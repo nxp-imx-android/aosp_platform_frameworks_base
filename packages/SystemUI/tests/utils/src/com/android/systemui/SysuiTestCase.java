@@ -28,7 +28,6 @@ import android.os.MessageQueue;
 import android.os.ParcelFileDescriptor;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.platform.test.ravenwood.RavenwoodClassRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.test.mock.MockContext;
 import android.testing.DexmakerShareClassLoaderRule;
@@ -92,23 +91,6 @@ public abstract class SysuiTestCase {
     @Rule(order = Integer.MIN_VALUE)
     public AndroidXAnimatorIsolationRule mAndroidXAnimatorIsolationRule =
             new AndroidXAnimatorIsolationRule();
-
-    /**
-     * Rule that respects class-level annotations such as {@code @DisabledOnRavenwood} when tests
-     * are running on Ravenwood; on all other test environments this rule is a no-op passthrough.
-     */
-    @ClassRule(order = Integer.MIN_VALUE + 1)
-    public static final RavenwoodClassRule sRavenwood = new RavenwoodClassRule();
-
-    /**
-     * Rule that defines and prepares the Ravenwood environment when tests are running on
-     * Ravenwood; on all other test environments this rule is a no-op passthrough.
-     */
-    @Rule(order = Integer.MIN_VALUE + 1)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProcessApp()
-            .setProvideMainThread(true)
-            .build();
 
     @ClassRule
     public static final SetFlagsRule.ClassRule mSetFlagsClassRule =

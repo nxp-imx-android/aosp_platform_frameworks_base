@@ -34,7 +34,6 @@ import com.android.systemui.keyboard.shortcut.shortcutHelperMultiTaskingShortcut
 import com.android.systemui.keyboard.shortcut.shortcutHelperSystemShortcutsSource
 import com.android.systemui.keyboard.shortcut.shortcutHelperTestHelper
 import com.android.systemui.keyboard.shortcut.shortcutHelperViewModel
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testDispatcher
@@ -43,6 +42,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.settings.FakeUserTracker
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -60,7 +60,7 @@ class ShortcutHelperDialogStarterTest : SysuiTestCase() {
     private val fakeMultiTaskingSource = FakeKeyboardShortcutGroupsSource()
     private val mockUserContext: Context = mock()
     private val kosmos =
-        Kosmos().also {
+        testKosmos().also {
             it.testCase = this
             it.testDispatcher = UnconfinedTestDispatcher()
             it.shortcutHelperSystemShortcutsSource = fakeSystemSource

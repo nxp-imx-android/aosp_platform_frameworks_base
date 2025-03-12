@@ -23,7 +23,6 @@ import androidx.test.filters.SmallTest
 import com.android.internal.accessibility.AccessibilityShortcutController
 import com.android.internal.accessibility.common.ShortcutConstants
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
@@ -31,6 +30,7 @@ import com.android.systemui.model.SysUiState
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.testKosmos
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -58,7 +58,7 @@ class ExtraDimDialogDelegateTest : SysuiTestCase() {
 
     private lateinit var extraDimDialogDelegate: ExtraDimDialogDelegate
 
-    private val kosmos = Kosmos().also { it.testCase = this }
+    private val kosmos = testKosmos().also { it.testCase = this }
     private val testScope = kosmos.testScope
 
     @Mock private lateinit var dialog: SystemUIDialog
@@ -79,7 +79,7 @@ class ExtraDimDialogDelegateTest : SysuiTestCase() {
                 kosmos.testDispatcher,
                 dialogFactory,
                 accessibilityManager,
-                userTracker
+                userTracker,
             )
     }
 
@@ -94,7 +94,7 @@ class ExtraDimDialogDelegateTest : SysuiTestCase() {
             verify(dialog)
                 .setPositiveButton(
                     eq(R.string.accessibility_deprecate_extra_dim_dialog_button),
-                    clickListener.capture()
+                    clickListener.capture(),
                 )
 
             clickListener.firstValue.onClick(dialog, 0)
@@ -110,7 +110,7 @@ class ExtraDimDialogDelegateTest : SysuiTestCase() {
                                 .flattenToString()
                         )
                     ),
-                    anyInt()
+                    anyInt(),
                 )
         }
 }

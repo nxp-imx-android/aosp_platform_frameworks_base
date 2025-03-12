@@ -47,7 +47,7 @@ public class NotificationBigTextTemplateViewWrapper extends NotificationTemplate
         // the transformation types and we need to have our values set by then.
         resolveViews(NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getSbn()
-                : row.getEntry().getSbn());
+                : row.getEntryLegacy().getSbn());
         super.onContentUpdated(row);
     }
 

@@ -2816,10 +2816,11 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
         if (!checkNotifyPermission("notifyEmergencyNumberList()")) {
             return;
         }
-        if (!mContext.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_TELEPHONY_CALLING)) {
+        if (!mContext.getPackageManager().hasSystemFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+                && !mContext.getPackageManager()
+                        .hasSystemFeature(PackageManager.FEATURE_TELEPHONY_MESSAGING)) {
             // TelephonyManager.getEmergencyNumberList() throws an exception if
-            // FEATURE_TELEPHONY_CALLING is not defined.
+            // FEATURE_TELEPHONY_CALLING or FEATURE_TELEPHONY_MESSAGING is not defined.
             return;
         }
 
@@ -3871,10 +3872,6 @@ public class TelephonyRegistry extends ITelephonyRegistry.Stub {
      */
     public void notifyCarrierRoamingNtnSignalStrengthChanged(int subId,
             @NonNull NtnSignalStrength ntnSignalStrength) {
-        if (!SubscriptionManager.isValidSubscriptionId(subId)) {
-            log("notifyCarrierRoamingNtnSignalStrengthChanged: invalid subscription id");
-            return;
-        }
         if (!checkNotifyPermission("notifyCarrierRoamingNtnSignalStrengthChanged")) {
             log("notifyCarrierRoamingNtnSignalStrengthChanged: caller does not have required "
                     + "permissions.");

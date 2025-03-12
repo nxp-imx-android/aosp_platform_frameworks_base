@@ -597,7 +597,8 @@ public class WindowlessWindowManager implements IWindowSession {
     }
 
     @Override
-    public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes) {
+    public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         // NO-OP
     }
 

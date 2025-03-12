@@ -109,7 +109,7 @@ public class ExpandableNotificationRowDragController {
 
         StatusBarNotification sn = NotificationBundleUi.isEnabled()
                 ? enr.getEntryAdapter().getSbn()
-                : enr.getEntry().getSbn();
+                : enr.getEntryLegacy().getSbn();
         Notification notification = sn.getNotification();
         final PendingIntent contentIntent = notification.contentIntent != null
                 ? notification.contentIntent

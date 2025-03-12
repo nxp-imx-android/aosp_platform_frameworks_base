@@ -348,6 +348,7 @@ aconfig_declarations {
     name: "android.location.flags-aconfig",
     package: "android.location.flags",
     container: "system",
+    exportable: true,
     srcs: [
         "location/java/android/location/flags/*.aconfig",
     ],
@@ -588,7 +589,6 @@ aconfig_declarations {
 java_aconfig_library {
     name: "android.view.inputmethod.flags-aconfig-java",
     aconfig_declarations: "android.view.inputmethod.flags-aconfig",
-    host_supported: true,
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 

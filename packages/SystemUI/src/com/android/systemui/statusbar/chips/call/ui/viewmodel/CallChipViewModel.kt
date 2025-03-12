@@ -17,10 +17,13 @@
 package com.android.systemui.statusbar.chips.call.ui.viewmodel
 
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.view.View
 import com.android.internal.jank.Cuj
 import com.android.systemui.animation.ActivityTransitionAnimator
+import com.android.systemui.animation.ComposableControllerFactory
+import com.android.systemui.animation.DelegateTransitionAnimatorController
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.dagger.SysUISingleton
@@ -48,7 +51,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 
 /** View model for the ongoing phone call chip shown in the status bar. */
@@ -63,14 +69,62 @@ constructor(
     private val activityStarter: ActivityStarter,
     @StatusBarChipsLog private val logger: LogBuffer,
 ) : OngoingActivityChipViewModel {
+    /** The transition cookie used to register and unregister launch and return animations. */
+    private val cookie =
+        ActivityTransitionAnimator.TransitionCookie("${CallChipViewModel::class.java}")
+
+    /**
+     * Used internally to determine when a launch or return animation is in progress, as these
+     * require special handling.
+     */
+    private val transitionState: MutableStateFlow<TransitionState> =
+        MutableStateFlow(TransitionState.NoTransition)
+
+    // Since we're combining the chip state and the transition state flows, getting the old value by
+    // using [pairwise()] would confuse things. This is because if the calculation is triggered by
+    // a change in transition state, the chip state will still show the previous and current values,
+    // making it difficult to figure out what actually changed. Instead we cache the old value here,
+    // so that at each update we can keep track of what actually changed.
+    private var latestState: OngoingCallModel = OngoingCallModel.NoCall
+    private var latestTransitionState: TransitionState = TransitionState.NoTransition
+
     private val chipWithReturnAnimation: StateFlow<OngoingActivityChipModel> =
         if (StatusBarChipsReturnAnimations.isEnabled) {
-            interactor.ongoingCallState
-                .map { state ->
-                    when (state) {
-                        is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
+            combine(interactor.ongoingCallState, transitionState) { newState, newTransitionState ->
+                    val oldState = latestState
+                    latestState = newState
+                    val oldTransitionState = latestTransitionState
+                    latestTransitionState = newTransitionState
+
+                    logger.log(
+                        TAG,
+                        LogLevel.DEBUG,
+                        {},
+                        {
+                            "Call chip state updated: oldState=$oldState newState=$newState " +
+                                "oldTransitionState=$oldTransitionState " +
+                                "newTransitionState=$newTransitionState"
+                        },
+                    )
+
+                    when (newState) {
+                        is OngoingCallModel.NoCall ->
+                            OngoingActivityChipModel.Inactive(
+                                transitionManager = getTransitionManager(newState)
+                            )
+
                         is OngoingCallModel.InCall ->
-                            prepareChip(state, systemClock, isHidden = state.isAppVisible)
+                            prepareChip(
+                                newState,
+                                systemClock,
+                                isHidden =
+                                    shouldChipBeHidden(
+                                        oldState = oldState,
+                                        newState = newState,
+                                        oldTransitionState = oldTransitionState,
+                                        newTransitionState = newTransitionState,
+                                    ),
+                            )
                     }
                 }
                 .stateIn(
@@ -112,6 +166,12 @@ constructor(
             chipLegacy
         }
 
+    /**
+     * The controller factory that the call chip uses to register and unregister its transition
+     * animations.
+     */
+    private var transitionControllerFactory: ComposableControllerFactory? = null
+
     /** Builds an [OngoingActivityChipModel.Active] from all the relevant information. */
     private fun prepareChip(
         state: OngoingCallModel.InCall,
@@ -149,6 +209,7 @@ constructor(
                 onClickListenerLegacy = getOnClickListener(state.intent),
                 clickBehavior = getClickBehavior(state.intent),
                 isHidden = isHidden,
+                transitionManager = getTransitionManager(state),
             )
         } else {
             val startTimeInElapsedRealtime =
@@ -161,6 +222,7 @@ constructor(
                 onClickListenerLegacy = getOnClickListener(state.intent),
                 clickBehavior = getClickBehavior(state.intent),
                 isHidden = isHidden,
+                transitionManager = getTransitionManager(state),
             )
         }
     }
@@ -191,9 +253,21 @@ constructor(
                 onClick = { expandable ->
                     StatusBarChipsModernization.unsafeAssertInNewMode()
                     val animationController =
-                        expandable.activityTransitionController(
-                            Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
-                        )
+                        if (
+                            !StatusBarChipsReturnAnimations.isEnabled ||
+                                transitionControllerFactory == null
+                        ) {
+                            expandable.activityTransitionController(
+                                Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP
+                            )
+                        } else {
+                            // When return animations are enabled, we use a long-lived registration
+                            // with controllers created on-demand by the animation library instead
+                            // of explicitly creating one at the time of the click. By not passing
+                            // a controller here, we let the framework do its work. Otherwise, the
+                            // explicit controller would take precedence and override the other one.
+                            null
+                        }
                     activityStarter.postStartActivityDismissingKeyguard(intent, animationController)
                 }
             )
@@ -210,6 +284,120 @@ constructor(
         )
     }
 
+    private fun getTransitionManager(
+        state: OngoingCallModel
+    ): OngoingActivityChipModel.TransitionManager? {
+        if (!StatusBarChipsReturnAnimations.isEnabled) return null
+        return if (state is OngoingCallModel.NoCall) {
+            OngoingActivityChipModel.TransitionManager(
+                unregisterTransition = { activityStarter.unregisterTransition(cookie) }
+            )
+        } else {
+            val component = (state as OngoingCallModel.InCall).intent?.intent?.component
+            if (component != null) {
+                val factory = getTransitionControllerFactory(component)
+                OngoingActivityChipModel.TransitionManager(
+                    factory,
+                    registerTransition = {
+                        activityStarter.registerTransition(cookie, factory, scope)
+                    },
+                )
+            } else {
+                // Without a component we can't instantiate a controller factory, and without a
+                // factory registering an animation is impossible. In this case, the transition
+                // manager is empty and inert.
+                OngoingActivityChipModel.TransitionManager()
+            }
+        }
+    }
+
+    private fun getTransitionControllerFactory(
+        component: ComponentName
+    ): ComposableControllerFactory {
+        var factory = transitionControllerFactory
+        if (factory?.component == component) return factory
+
+        factory =
+            object :
+                ComposableControllerFactory(
+                    cookie,
+                    component,
+                    launchCujType = Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP,
+                ) {
+                override suspend fun createController(
+                    forLaunch: Boolean
+                ): ActivityTransitionAnimator.Controller {
+                    transitionState.value =
+                        if (forLaunch) {
+                            TransitionState.LaunchRequested
+                        } else {
+                            TransitionState.ReturnRequested
+                        }
+
+                    val controller =
+                        expandable
+                            .mapNotNull {
+                                it?.activityTransitionController(
+                                    launchCujType,
+                                    cookie,
+                                    component,
+                                    returnCujType,
+                                    isEphemeral = false,
+                                )
+                            }
+                            .first()
+
+                    return object : DelegateTransitionAnimatorController(controller) {
+                        override val isLaunching: Boolean
+                            get() = forLaunch
+
+                        override fun onTransitionAnimationStart(isExpandingFullyAbove: Boolean) {
+                            delegate.onTransitionAnimationStart(isExpandingFullyAbove)
+                            transitionState.value =
+                                if (isLaunching) {
+                                    TransitionState.Launching
+                                } else {
+                                    TransitionState.Returning
+                                }
+                        }
+
+                        override fun onTransitionAnimationEnd(isExpandingFullyAbove: Boolean) {
+                            delegate.onTransitionAnimationEnd(isExpandingFullyAbove)
+                            transitionState.value = TransitionState.NoTransition
+                        }
+
+                        override fun onTransitionAnimationCancelled(
+                            newKeyguardOccludedState: Boolean?
+                        ) {
+                            delegate.onTransitionAnimationCancelled(newKeyguardOccludedState)
+                            transitionState.value = TransitionState.NoTransition
+                        }
+                    }
+                }
+            }
+
+        transitionControllerFactory = factory
+        return factory
+    }
+
+    /** Define the current state of this chip's transition animation. */
+    private sealed interface TransitionState {
+        /** Idle. */
+        data object NoTransition : TransitionState
+
+        /** Launch animation has been requested but hasn't started yet. */
+        data object LaunchRequested : TransitionState
+
+        /** Launch animation in progress. */
+        data object Launching : TransitionState
+
+        /** Return animation has been requested but hasn't started yet. */
+        data object ReturnRequested : TransitionState
+
+        /** Return animation in progress. */
+        data object Returning : TransitionState
+    }
+
     companion object {
         private val phoneIcon =
             Icon.Resource(
@@ -217,5 +405,42 @@ constructor(
                 ContentDescription.Resource(R.string.ongoing_call_content_description),
             )
         private val TAG = "CallVM".pad()
+
+        /** Determines whether or not an active call chip should be hidden. */
+        private fun shouldChipBeHidden(
+            oldState: OngoingCallModel,
+            newState: OngoingCallModel.InCall,
+            oldTransitionState: TransitionState,
+            newTransitionState: TransitionState,
+        ): Boolean {
+            // The app is in the background and no transitions are ongoing (during transitions,
+            // [isAppVisible] must always be true). Show the chip.
+            if (!newState.isAppVisible) return false
+
+            // The call has just started and is visible. Hide the chip.
+            if (oldState is OngoingCallModel.NoCall) return true
+
+            // The state went from the app not being visible to visible. This happens when the chip
+            // is tapped and a launch animation is about to start. Keep the chip showing.
+            if (!(oldState as OngoingCallModel.InCall).isAppVisible) return false
+
+            // The app was and remains visible, but the transition state has changed. A launch or
+            // return animation has been requested or is ongoing. Keep the chip showing.
+            if (
+                newTransitionState is TransitionState.LaunchRequested ||
+                    newTransitionState is TransitionState.Launching ||
+                    newTransitionState is TransitionState.ReturnRequested ||
+                    newTransitionState is TransitionState.Returning
+            ) {
+                return false
+            }
+
+            // The app was and remains visible, so we generally want to hide the chip. The only
+            // exception is if a return transition has just ended. In this case, the transition
+            // state changes shortly before the app visibility does. If we hide the chip between
+            // these two updates, this results in a flicker. We bridge the gap by keeping the chip
+            // showing.
+            return oldTransitionState != TransitionState.Returning
+        }
     }
 }

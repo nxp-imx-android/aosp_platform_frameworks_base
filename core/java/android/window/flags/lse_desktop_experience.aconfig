@@ -933,6 +933,16 @@ flag {
 }
 
 flag {
+    name: "skip_decor_view_relayout_when_closing_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to skip DecorView relayout when the corresponding window is closing."
+    bug: "394502142"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_size_compat_mode_improvements_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enable some improvements in size compat mode for connected displays."

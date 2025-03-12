@@ -822,7 +822,8 @@ public class AppOpsService extends IAppOpsService.Stub {
         @Override
         public void onOpModeChanged(int op, int uid, String packageName, String persistentDeviceId)
                 throws RemoteException {
-            mCallback.opChanged(op, uid, packageName, persistentDeviceId);
+            mCallback.opChanged(op, uid, packageName != null ? packageName : "",
+                    Objects.requireNonNull(persistentDeviceId));
         }
     }
 
@@ -1059,7 +1060,7 @@ public class AppOpsService extends IAppOpsService.Stub {
         if (Flags.enableAllSqliteAppopsAccesses()) {
             mHistoricalRegistry = new HistoricalRegistrySql(context);
         } else {
-            mHistoricalRegistry = new HistoricalRegistry(this, context);
+            mHistoricalRegistry = new LegacyHistoricalRegistry(this, context);
         }
     }
 
@@ -7011,7 +7012,8 @@ public class AppOpsService extends IAppOpsService.Stub {
             mHistoricalRegistry = new HistoricalRegistrySql(
                     (HistoricalRegistrySql) mHistoricalRegistry);
         } else {
-            mHistoricalRegistry = new HistoricalRegistry((HistoricalRegistry) mHistoricalRegistry);
+            mHistoricalRegistry = new LegacyHistoricalRegistry(
+                    (LegacyHistoricalRegistry) mHistoricalRegistry);
         }
 
         mHistoricalRegistry.systemReady(mContext.getContentResolver());

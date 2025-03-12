@@ -61,7 +61,7 @@ constructor(
         row: ExpandableNotificationRow,
         context: Context,
     ): NotificationIconProvider {
-        val sbn = if (NotificationBundleUi.isEnabled) row.entryAdapter?.sbn else  row.entry.sbn
+        val sbn = if (NotificationBundleUi.isEnabled) row.entryAdapter?.sbn else row.entryLegacy.sbn
         if (sbn == null) {
             return object : NotificationIconProvider {
                 override fun shouldShowAppIcon(): Boolean {

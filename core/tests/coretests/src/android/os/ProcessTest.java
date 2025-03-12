@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import android.platform.test.annotations.IgnoreUnderRavenwood;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.ravenwood.RavenwoodRule;
 
 import org.junit.Rule;
@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-@IgnoreUnderRavenwood(blockedBy = Process.class)
+@DisabledOnRavenwood(blockedBy = Process.class)
 public class ProcessTest {
     @Rule
     public final RavenwoodRule mRavenwood = new RavenwoodRule();

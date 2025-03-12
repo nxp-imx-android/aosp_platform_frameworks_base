@@ -15347,11 +15347,15 @@ public class TelephonyManager {
      * {@link android.Manifest.permission#MODIFY_PHONE_STATE MODIFY_PHONE_STATE}
      *
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     @SystemApi
     public void notifyOtaEmergencyNumberDbInstalled() {
         try {
@@ -15376,11 +15380,15 @@ public class TelephonyManager {
      * {@link android.Manifest.permission#READ_ACTIVE_EMERGENCY_SESSION}
      *
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.READ_ACTIVE_EMERGENCY_SESSION)
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     @SystemApi
     public void updateOtaEmergencyNumberDbFilePath(
             @NonNull ParcelFileDescriptor otaParcelFileDescriptor) {
@@ -15404,11 +15412,15 @@ public class TelephonyManager {
      * {@link android.Manifest.permission#READ_ACTIVE_EMERGENCY_SESSION}
      *
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.READ_ACTIVE_EMERGENCY_SESSION)
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     @SystemApi
     public void resetOtaEmergencyNumberDbFilePath() {
         try {
@@ -15490,11 +15502,15 @@ public class TelephonyManager {
      * or throw a SecurityException if the caller does not have the permission.
      *
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      */
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @NonNull
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     public Map<Integer, List<EmergencyNumber>> getEmergencyNumberList() {
         Map<Integer, List<EmergencyNumber>> emergencyNumberList = new HashMap<>();
         try {
@@ -15548,11 +15564,15 @@ public class TelephonyManager {
      * or throw a SecurityException if the caller does not have the permission.
      * @throws IllegalStateException if the Telephony process is not currently available.
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      */
     @RequiresPermission(android.Manifest.permission.READ_PHONE_STATE)
     @NonNull
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     public Map<Integer, List<EmergencyNumber>> getEmergencyNumberList(
             @EmergencyServiceCategories int categories) {
         Map<Integer, List<EmergencyNumber>> emergencyNumberListForCategories = new HashMap<>();
@@ -15618,9 +15638,13 @@ public class TelephonyManager {
      * SIM card(s), Android database, modem, network or defaults; {@code false} otherwise.
      * @throws IllegalStateException if the Telephony process is not currently available.
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      */
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     public boolean isEmergencyNumber(@NonNull String number) {
         try {
             ITelephony telephony = getITelephony();
@@ -15657,7 +15681,8 @@ public class TelephonyManager {
      * have the required permission/privileges
      * @throws IllegalStateException if the Telephony process is not currently available.
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      *
      * @deprecated Please use {@link TelephonyManager#isEmergencyNumber(String)} instead.
      * @hide
@@ -15665,7 +15690,10 @@ public class TelephonyManager {
     @Deprecated
     @SystemApi
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     public boolean isPotentialEmergencyNumber(@NonNull String number) {
         try {
             ITelephony telephony = getITelephony();
@@ -15685,15 +15713,19 @@ public class TelephonyManager {
      * Returns the emergency number database version.
      *
      * <p>Requires Permission:
-     *   {@link android.Manifest.permission#READ_PRIVILEGED_PHONE_STATE READ_PRIVILEGED_PHONE_STATE}
+     *   {@link android.Manifest.permission#READ_PRIVILEGED_PHONE_STATE}
      *
      * @throws UnsupportedOperationException If the device does not have
-     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING}.
+     *          {@link PackageManager#FEATURE_TELEPHONY_CALLING} or
+     *          {@link PackageManager#FEATURE_TELEPHONY_MESSAGING}.
      * @hide
      */
     @SystemApi
     @RequiresPermission(android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
-    @RequiresFeature(PackageManager.FEATURE_TELEPHONY_CALLING)
+    @RequiresFeature(anyOf = {
+        PackageManager.FEATURE_TELEPHONY_CALLING,
+        PackageManager.FEATURE_TELEPHONY_MESSAGING
+    })
     public int getEmergencyNumberDbVersion() {
         try {
             ITelephony telephony = getITelephony();

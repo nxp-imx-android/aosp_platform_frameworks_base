@@ -22,13 +22,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tileimpl.SubtitleArrayMapping
 import com.android.systemui.qs.tiles.impl.custom.QSTileStateSubject
 import com.android.systemui.qs.tiles.impl.onehanded.domain.model.OneHandedModeTileModel
 import com.android.systemui.qs.tiles.impl.onehanded.qsOneHandedModeTileConfig
 import com.android.systemui.qs.tiles.viewmodel.QSTileState
 import com.android.systemui.res.R
+import com.android.systemui.testKosmos
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -36,7 +36,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class OneHandedModeTileMapperTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val config = kosmos.qsOneHandedModeTileConfig
     private val subtitleArrayId = SubtitleArrayMapping.getSubtitleId(config.tileSpec.spec)
     private val subtitleArray by lazy { context.resources.getStringArray(subtitleArrayId) }

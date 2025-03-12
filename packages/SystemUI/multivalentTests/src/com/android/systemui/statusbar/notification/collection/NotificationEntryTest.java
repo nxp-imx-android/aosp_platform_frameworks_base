@@ -58,6 +58,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.RankingBuilder;
 import com.android.systemui.statusbar.SbnBuilder;
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
+import com.android.systemui.statusbar.notification.collection.UseElapsedRealtimeForCreationTime;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.util.time.FakeSystemClock;
 
@@ -151,7 +152,8 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .build();
 
         NotificationEntry entry =
-                new NotificationEntry(sbn, ranking, mClock.uptimeMillis());
+                new NotificationEntry(sbn, ranking,
+                        UseElapsedRealtimeForCreationTime.getCurrentTime(mClock));
 
         assertFalse(entry.isBlockable());
     }
@@ -251,7 +253,8 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .build();
 
         NotificationEntry entry =
-                new NotificationEntry(sbn, ranking, mClock.uptimeMillis());
+                new NotificationEntry(sbn, ranking,
+                        UseElapsedRealtimeForCreationTime.getCurrentTime(mClock));
 
         assertEquals(systemGeneratedSmartActions, entry.getSmartActions());
         assertEquals(NOTIFICATION_CHANNEL, entry.getChannel());
@@ -365,7 +368,8 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .setKey(sbn.getKey())
                 .build();
         NotificationEntry entry =
-                new NotificationEntry(sbn, ranking, mClock.uptimeMillis());
+                new NotificationEntry(sbn, ranking,
+                        UseElapsedRealtimeForCreationTime.getCurrentTime(mClock));
 
         assertFalse(entry.isChannelVisibilityPrivate());
     }
@@ -378,7 +382,8 @@ public class NotificationEntryTest extends SysuiTestCase {
                 .setKey(sbn.getKey())
                 .build();
         NotificationEntry entry =
-                new NotificationEntry(sbn, ranking, mClock.uptimeMillis());
+                new NotificationEntry(sbn, ranking,
+                        UseElapsedRealtimeForCreationTime.getCurrentTime(mClock));
 
         assertFalse(entry.isChannelVisibilityPrivate());
     }

@@ -24,11 +24,11 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.hearingaid.HearingDevicesChecker
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.hearingdevices.domain.model.HearingDevicesTileModel
 import com.android.systemui.statusbar.policy.fakeBluetoothController
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runCurrent
@@ -46,7 +46,7 @@ import org.mockito.kotlin.whenever
 @EnabledOnRavenwood
 @RunWith(AndroidJUnit4::class)
 class HearingDevicesTileDataInteractorTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val testScope = kosmos.testScope
     private val testUser = UserHandle.of(1)
 

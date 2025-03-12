@@ -22,9 +22,9 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.oneHandedModeRepository
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.onehanded.domain.OneHandedModeTileDataInteractor
+import com.android.systemui.testKosmos
 import com.android.wm.shell.onehanded.OneHanded
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.flowOf
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class OneHandedModeTileDataInteractorTest : SysuiTestCase() {
 
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val testUser = UserHandle.of(1)!!
     private val oneHandedModeRepository = kosmos.oneHandedModeRepository
     private val underTest: OneHandedModeTileDataInteractor =

@@ -73,7 +73,9 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.5f;
+    static final float BUILD = 0.7f;
+
+    private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
     @NonNull ArrayList<Operation> mOperations = new ArrayList<>();
 
@@ -840,17 +842,24 @@ public class CoreDocument implements Serializable {
 
     @NonNull private HashMap<Integer, Component> mComponentMap = new HashMap<Integer, Component>();
 
+    /**
+     * Register all the operations recursively
+     *
+     * @param context
+     * @param list
+     */
     private void registerVariables(
             @NonNull RemoteContext context, @NonNull ArrayList<Operation> list) {
         for (Operation op : list) {
             if (op instanceof VariableSupport) {
-                ((VariableSupport) op).updateVariables(context);
                 ((VariableSupport) op).registerListening(context);
             }
             if (op instanceof Component) {
                 mComponentMap.put(((Component) op).getComponentId(), (Component) op);
-                registerVariables(context, ((Component) op).getList());
                 ((Component) op).registerVariables(context);
+            }
+            if (op instanceof Container) {
+                registerVariables(context, ((Container) op).getList());
             }
             if (op instanceof ComponentValue) {
                 ComponentValue v = (ComponentValue) op;
@@ -864,14 +873,34 @@ public class CoreDocument implements Serializable {
             if (op instanceof ComponentModifiers) {
                 for (ModifierOperation modifier : ((ComponentModifiers) op).getList()) {
                     if (modifier instanceof VariableSupport) {
-                        ((VariableSupport) modifier).updateVariables(context);
                         ((VariableSupport) modifier).registerListening(context);
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Apply the operations recursively, for the original initialization pass with mode == DATA
+     *
+     * @param context
+     * @param list
+     */
+    private void applyOperations(
+            @NonNull RemoteContext context, @NonNull ArrayList<Operation> list) {
+        for (Operation op : list) {
+            if (op instanceof VariableSupport) {
+                ((VariableSupport) op).updateVariables(context);
+            }
+            if (op instanceof Component) { // for componentvalues...
+                ((Component) op).updateVariables(context);
+            }
             op.markNotDirty();
             op.apply(context);
             context.incrementOpCount();
+            if (op instanceof Container) {
+                applyOperations(context, ((Container) op).getList());
+            }
         }
     }
 
@@ -891,8 +920,12 @@ public class CoreDocument implements Serializable {
         mTimeVariables.updateTime(context);
 
         registerVariables(context, mOperations);
+        applyOperations(context, mOperations);
         context.mMode = RemoteContext.ContextMode.UNSET;
-        mFirstPaint = true;
+
+        if (UPDATE_VARIABLES_BEFORE_LAYOUT) {
+            mFirstPaint = true;
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1241,11 +1274,13 @@ public class CoreDocument implements Serializable {
         context.mRemoteComposeState = mRemoteComposeState;
         context.mRemoteComposeState.setContext(context);
 
-        // Update any dirty variables
-        if (mFirstPaint) {
-            mFirstPaint = false;
-        } else {
-            updateVariables(context, theme, mOperations);
+        if (UPDATE_VARIABLES_BEFORE_LAYOUT) {
+            // Update any dirty variables
+            if (mFirstPaint) {
+                mFirstPaint = false;
+            } else {
+                updateVariables(context, theme, mOperations);
+            }
         }
 
         // If we have a content sizing set, we are going to take the original document

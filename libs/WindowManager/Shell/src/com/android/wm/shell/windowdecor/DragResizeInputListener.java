@@ -23,12 +23,12 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERL
 import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
 import static android.view.WindowManager.LayoutParams.TYPE_INPUT_CONSUMER;
 
+import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_BOTTOM;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_LEFT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_RIGHT;
 import static com.android.wm.shell.windowdecor.DragPositioningCallback.CTRL_TYPE_TOP;
-import static com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.isEdgeResizePermitted;
 import static com.android.wm.shell.windowdecor.DragResizeWindowGeometry.isEventFromTouchscreen;
 
@@ -127,7 +127,9 @@ class DragResizeInputListener implements AutoCloseable {
             Supplier<SurfaceControl.Builder> surfaceControlBuilderSupplier,
             Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier,
             DisplayController displayController,
-            DesktopModeEventLogger desktopModeEventLogger) {
+            DesktopModeEventLogger desktopModeEventLogger,
+            InputChannel inputChannel,
+            InputChannel sinkInputChannel) {
         mContext = context;
         mWindowSession = windowSession;
         mBgExecutor = bgExecutor;
@@ -136,7 +138,11 @@ class DragResizeInputListener implements AutoCloseable {
         mHandler = handler;
         mChoreographer = choreographer;
         mDisplayId = displayId;
-        mDecorationSurface = decorationSurface;
+        // Creates a new SurfaceControl pointing the same underlying surface with decorationSurface
+        // to ensure that mDecorationSurface will not be released while it's used on the background
+        // thread. Note that the empty name will be overridden by the next copyFrom call.
+        mDecorationSurface = surfaceControlBuilderSupplier.get().setName("").build();
+        mDecorationSurface.copyFrom(decorationSurface, "DragResizeInputListener");
         mDragPositioningCallback = callback;
         mSurfaceControlBuilderSupplier = surfaceControlBuilderSupplier;
         mSurfaceControlTransactionSupplier = surfaceControlTransactionSupplier;
@@ -154,9 +160,13 @@ class DragResizeInputListener implements AutoCloseable {
             final InputSetUpResult result = setUpInputChannels(mDisplayId, mWindowSession,
                     mDecorationSurface, mClientToken, mSinkClientToken,
                     mSurfaceControlBuilderSupplier,
-                    mSurfaceControlTransactionSupplier);
+                    mSurfaceControlTransactionSupplier, inputChannel, sinkInputChannel);
             mainExecutor.execute(() -> {
                 if (mClosed) {
+                    result.mInputChannel.dispose();
+                    result.mSinkInputChannel.dispose();
+                    mSurfaceControlTransactionSupplier.get().remove(
+                            result.mInputSinkSurface).apply();
                     return;
                 }
                 mInputSinkSurface = result.mInputSinkSurface;
@@ -208,7 +218,7 @@ class DragResizeInputListener implements AutoCloseable {
                 new DefaultTaskResizeInputEventReceiverFactory(), taskInfo,
                 handler, choreographer, displayId, decorationSurface, callback,
                 surfaceControlBuilderSupplier, surfaceControlTransactionSupplier,
-                displayController, desktopModeEventLogger);
+                displayController, desktopModeEventLogger, new InputChannel(), new InputChannel());
     }
 
     DragResizeInputListener(
@@ -251,11 +261,11 @@ class DragResizeInputListener implements AutoCloseable {
             @NonNull IBinder clientToken,
             @NonNull IBinder sinkClientToken,
             @NonNull Supplier<SurfaceControl.Builder> surfaceControlBuilderSupplier,
-            @NonNull Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier) {
+            @NonNull Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier,
+            @NonNull InputChannel inputChannel,
+            @NonNull InputChannel sinkInputChannel) {
         Trace.beginSection("DragResizeInputListener#setUpInputChannels");
         final InputTransferToken inputTransferToken = new InputTransferToken();
-        final InputChannel inputChannel = new InputChannel();
-        final InputChannel sinkInputChannel = new InputChannel();
         try {
             windowSession.grantInputChannel(
                     displayId,
@@ -421,6 +431,9 @@ class DragResizeInputListener implements AutoCloseable {
             } catch (RemoteException e) {
                 e.rethrowFromSystemServer();
             }
+            // Removing this surface on the background thread to ensure that mInitInputChannels has
+            // already been finished.
+            mSurfaceControlTransactionSupplier.get().remove(mDecorationSurface).apply();
         });
     }
 

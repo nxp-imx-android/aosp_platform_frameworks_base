@@ -25,7 +25,6 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.defaultDeviceState
 import com.android.systemui.deviceStateManager
 import com.android.systemui.foldedDeviceStateList
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.impl.custom.QSTileStateSubject
 import com.android.systemui.qs.tiles.impl.rotation.domain.model.RotationLockTileModel
 import com.android.systemui.qs.tiles.impl.rotation.qsRotationLockTileConfig
@@ -33,6 +32,7 @@ import com.android.systemui.qs.tiles.viewmodel.QSTileState
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.DevicePostureController
 import com.android.systemui.statusbar.policy.devicePostureController
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -42,7 +42,7 @@ import org.mockito.kotlin.whenever
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class RotationLockTileMapperTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val rotationLockTileConfig = kosmos.qsRotationLockTileConfig
     private val devicePostureController = kosmos.devicePostureController
     private val deviceStateManager = kosmos.deviceStateManager

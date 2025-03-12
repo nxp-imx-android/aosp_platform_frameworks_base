@@ -821,7 +821,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     @Override
-    public void setAnimatingTypes(@InsetsType int animatingTypes) {
+    public void setAnimatingTypes(@InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         if (mAnimatingTypes != animatingTypes) {
             if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
                 Trace.instant(TRACE_TAG_WINDOW_MANAGER,
@@ -835,10 +836,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             mAnimatingTypes = animatingTypes;
 
             if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
+                ImeTracker.forLogging().onProgress(statsToken,
+                        ImeTracker.PHASE_WM_WINDOW_ANIMATING_TYPES_CHANGED);
                 final InsetsStateController insetsStateController =
                         getDisplayContent().getInsetsStateController();
-                insetsStateController.onAnimatingTypesChanged(this);
+                insetsStateController.onAnimatingTypesChanged(this, statsToken);
             }
+        } else {
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_WM_WINDOW_ANIMATING_TYPES_CHANGED);
         }
     }
 

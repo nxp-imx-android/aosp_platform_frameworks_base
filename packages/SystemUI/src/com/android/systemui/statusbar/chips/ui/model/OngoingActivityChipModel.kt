@@ -20,6 +20,7 @@ import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
 import android.os.SystemClock
 import android.view.View
+import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
@@ -33,6 +34,9 @@ sealed class OngoingActivityChipModel {
     /** Condensed name representing the model, used for logs. */
     abstract val logName: String
 
+    /** Object used to manage the behavior of this chip during activity launch and returns. */
+    abstract val transitionManager: TransitionManager?
+
     /**
      * This chip shouldn't be shown.
      *
@@ -40,7 +44,10 @@ sealed class OngoingActivityChipModel {
      *   animated, and false if that transition should *not* be animated (i.e. the chip view should
      *   immediately disappear).
      */
-    data class Inactive(val shouldAnimate: Boolean = true) : OngoingActivityChipModel() {
+    data class Inactive(
+        val shouldAnimate: Boolean = true,
+        override val transitionManager: TransitionManager? = null,
+    ) : OngoingActivityChipModel() {
         override val logName = "Inactive(anim=$shouldAnimate)"
     }
 
@@ -61,6 +68,7 @@ sealed class OngoingActivityChipModel {
         open val onClickListenerLegacy: View.OnClickListener?,
         /** Data class that determines how clicks on the chip should be handled. */
         open val clickBehavior: ClickBehavior,
+        override val transitionManager: TransitionManager?,
         /**
          * Whether this chip should be hidden. This can be the case depending on system states (like
          * which apps are in the foreground and whether there is an ongoing transition.
@@ -77,6 +85,7 @@ sealed class OngoingActivityChipModel {
             override val colors: ColorsModel,
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
+            override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
         ) :
@@ -86,6 +95,7 @@ sealed class OngoingActivityChipModel {
                 colors,
                 onClickListenerLegacy,
                 clickBehavior,
+                transitionManager,
                 isHidden,
                 shouldAnimate,
             ) {
@@ -122,6 +132,7 @@ sealed class OngoingActivityChipModel {
             val isEventInFuture: Boolean = false,
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
+            override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
         ) :
@@ -131,6 +142,7 @@ sealed class OngoingActivityChipModel {
                 colors,
                 onClickListenerLegacy,
                 clickBehavior,
+                transitionManager,
                 isHidden,
                 shouldAnimate,
             ) {
@@ -157,6 +169,7 @@ sealed class OngoingActivityChipModel {
             @CurrentTimeMillisLong val time: Long,
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
+            override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
         ) :
@@ -166,6 +179,7 @@ sealed class OngoingActivityChipModel {
                 colors,
                 onClickListenerLegacy,
                 clickBehavior,
+                transitionManager,
                 isHidden,
                 shouldAnimate,
             ) {
@@ -185,6 +199,7 @@ sealed class OngoingActivityChipModel {
             override val colors: ColorsModel,
             /** The number of seconds until an event is started. */
             val secondsUntilStarted: Long,
+            override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
         ) :
@@ -194,6 +209,7 @@ sealed class OngoingActivityChipModel {
                 colors,
                 onClickListenerLegacy = null,
                 clickBehavior = ClickBehavior.None,
+                transitionManager,
                 isHidden,
                 shouldAnimate,
             ) {
@@ -209,6 +225,7 @@ sealed class OngoingActivityChipModel {
             val text: String,
             override val onClickListenerLegacy: View.OnClickListener? = null,
             override val clickBehavior: ClickBehavior,
+            override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
         ) :
@@ -218,6 +235,7 @@ sealed class OngoingActivityChipModel {
                 colors,
                 onClickListenerLegacy,
                 clickBehavior,
+                transitionManager,
                 isHidden,
                 shouldAnimate,
             ) {
@@ -271,4 +289,17 @@ sealed class OngoingActivityChipModel {
         /** Clicking the chip will show the heads up notification associated with the chip. */
         data class ShowHeadsUpNotification(val onClick: () -> Unit) : ClickBehavior
     }
+
+    /** Defines the behavior of the chip with respect to activity launch and return transitions. */
+    data class TransitionManager(
+        /** The factory used to create the controllers that animate the chip. */
+        val controllerFactory: ComposableControllerFactory? = null,
+        /**
+         * Used to create a registration for this chip using [controllerFactory]. Must be
+         * idempotent.
+         */
+        val registerTransition: () -> Unit = {},
+        /** Used to remove the existing registration for this chip, if any. */
+        val unregisterTransition: () -> Unit = {},
+    )
 }

@@ -33,7 +33,6 @@ import static org.junit.Assert.fail;
 
 import android.os.BatteryConsumer;
 import android.os.PersistableBundle;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.IntArray;
 import android.util.LongArray;
 
@@ -60,11 +59,6 @@ import java.util.Map;
 @SmallTest
 public class CpuPowerStatsProcessorTest {
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
             .setAveragePower(PowerProfile.POWER_CPU_ACTIVE, 720)
             .setCpuScalingPolicy(0, new int[]{0, 1}, new int[]{100, 200})

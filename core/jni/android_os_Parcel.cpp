@@ -604,9 +604,7 @@ static jbyteArray android_os_Parcel_marshall(JNIEnv* env, jclass clazz, jlong na
 static long ensure_capacity(JNIEnv* env, Parcel* parcel, jint remaining) {
     long dataSize = parcel->dataSize();
     if (remaining < dataSize) {
-        jniThrowExceptionFmt(env, "java/nio/BufferOverflowException",
-                             "Destination buffer remaining capacity %d is less than the Parcel data size %d.",
-                             remaining, dataSize);
+        jnihelp::ThrowException(env, "java/nio/BufferOverflowException", "()V");
         return -1;
     }
     return dataSize;

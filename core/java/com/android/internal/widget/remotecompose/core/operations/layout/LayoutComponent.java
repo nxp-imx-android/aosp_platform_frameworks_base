@@ -289,11 +289,11 @@ public class LayoutComponent extends Component {
     }
 
     @Override
-    public void getLocationInWindow(@NonNull float[] value) {
+    public void getLocationInWindow(@NonNull float[] value, boolean forSelf) {
         value[0] += mX + mPaddingLeft;
         value[1] += mY + mPaddingTop;
         if (mParent != null) {
-            mParent.getLocationInWindow(value);
+            mParent.getLocationInWindow(value, false);
         }
     }
 

@@ -169,7 +169,7 @@ public class NotificationRemoteInputManager implements CoreStartable {
                         if (NotificationBundleUi.isEnabled()) {
                             releaseNotificationIfKeptForRemoteInputHistory(row.getEntryAdapter());
                         } else {
-                            releaseNotificationIfKeptForRemoteInputHistory(row.getEntry());
+                            releaseNotificationIfKeptForRemoteInputHistory(row.getEntryLegacy());
                         }
                     }
                     return started;
@@ -189,8 +189,8 @@ public class NotificationRemoteInputManager implements CoreStartable {
                     statusBarNotification = row.getEntryAdapter().getSbn();
                 }
             } else {
-                if (row.getEntry() != null) {
-                    statusBarNotification = row.getEntry().getSbn();
+                if (row.getEntryLegacy() != null) {
+                    statusBarNotification = row.getEntryLegacy().getSbn();
                 }
             }
             if (statusBarNotification == null) {

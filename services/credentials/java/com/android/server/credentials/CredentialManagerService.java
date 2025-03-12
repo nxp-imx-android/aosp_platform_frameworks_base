@@ -51,7 +51,6 @@ import android.credentials.ISetEnabledProvidersCallback;
 import android.credentials.PrepareGetCredentialResponseInternal;
 import android.credentials.RegisterCredentialDescriptionRequest;
 import android.credentials.UnregisterCredentialDescriptionRequest;
-import android.credentials.flags.Flags;
 import android.os.Binder;
 import android.os.CancellationSignal;
 import android.os.IBinder;
@@ -538,33 +537,30 @@ public final class CredentialManagerService
 
             final int userId = UserHandle.getCallingUserId();
             final int callingUid = Binder.getCallingUid();
-            if (Flags.safeguardCandidateCredentialsApiCaller()) {
-                try {
-                    String credentialManagerAutofillCompName = mContext.getResources().getString(
-                            R.string.config_defaultCredentialManagerAutofillService);
-                    ComponentName componentName = ComponentName.unflattenFromString(
-                            credentialManagerAutofillCompName);
-                    if (componentName == null) {
-                        throw new SecurityException(
-                                "Credential Autofill service does not exist on this device.");
-                    }
-                    PackageManager pm = mContext.createContextAsUser(
-                            UserHandle.getUserHandleForUid(callingUid), 0).getPackageManager();
-                    String callingProcessPackage = pm.getNameForUid(callingUid);
-                    if (callingProcessPackage == null) {
-                        throw new SecurityException(
-                                "Couldn't determine the identity of the caller.");
-                    }
-                    if (!Objects.equals(componentName.getPackageName(), callingProcessPackage)) {
-                        throw new SecurityException(callingProcessPackage
-                                + " is not the device's credential autofill package.");
-                    }
-                } catch (Resources.NotFoundException e) {
+            try {
+                String credentialManagerAutofillCompName = mContext.getResources().getString(
+                        R.string.config_defaultCredentialManagerAutofillService);
+                ComponentName componentName = ComponentName.unflattenFromString(
+                        credentialManagerAutofillCompName);
+                if (componentName == null) {
                     throw new SecurityException(
                             "Credential Autofill service does not exist on this device.");
                 }
+                PackageManager pm = mContext.createContextAsUser(
+                        UserHandle.getUserHandleForUid(callingUid), 0).getPackageManager();
+                String callingProcessPackage = pm.getNameForUid(callingUid);
+                if (callingProcessPackage == null) {
+                    throw new SecurityException(
+                            "Couldn't determine the identity of the caller.");
+                }
+                if (!Objects.equals(componentName.getPackageName(), callingProcessPackage)) {
+                    throw new SecurityException(callingProcessPackage
+                            + " is not the device's credential autofill package.");
+                }
+            } catch (Resources.NotFoundException e) {
+                throw new SecurityException(
+                        "Credential Autofill service does not exist on this device.");
             }
-
 
             // New request session, scoped for this request only.
             final GetCandidateRequestSession session =
