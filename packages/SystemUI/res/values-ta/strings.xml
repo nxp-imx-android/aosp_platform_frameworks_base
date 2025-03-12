@@ -423,20 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"சுற்றுப்புறங்கள்"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"இடது"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"வலது"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"சுற்றுப்புறங்கள்"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"இடதுபுறச் சுற்றுப்புறங்கள்"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"வலதுபுறச் சுற்றுப்புறங்கள்"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"இடது மற்றும் வலதுபுறம் உள்ள கட்டுப்பாடுகளை விரிவாக்கும்"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ஒருங்கிணைந்த கட்டுப்பாட்டுக்குச் சுருக்கும்"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"சுற்றுப்புறங்களின் ஒலியை அடக்கும்"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"சுற்றுப்புறங்களின் ஒலியை இயக்கும்"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"கருவிகள்"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"உடனடி வசனம்"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"அமைப்புகள்"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"குறிப்பு"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"சாதனத்தின் மைக்ரோஃபோனுக்கான தடுப்பை நீக்கவா?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"சாதனத்தின் கேமராவுக்கான தடுப்பை நீக்கவா?"</string>
@@ -798,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ஆன் - முகம் அடிப்படையிலானது"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"முடிந்தது"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"பயன்படுத்து"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"அறிவிப்புகளை முடக்கு"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"சைலன்ட்"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"இயல்புநிலை"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"தானியங்கு"</string>
@@ -909,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ஆப்ஸ் வலதுபுறம் வரும்படி திரைப் பிரிப்பைப் பயன்படுத்துதல்"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ஆப்ஸ் இடதுபுறம் வரும்படி திரைப் பிரிப்பைப் பயன்படுத்துதல்"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"முழுத்திரையைப் பயன்படுத்து"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"டெஸ்க்டாப் சாளரமாக்குதலைப் பயன்படுத்துதல்"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"திரைப் பிரிப்பைப் பயன்படுத்தும்போது வலது/கீழ் உள்ள ஆப்ஸுக்கு மாறுதல்"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"திரைப் பிரிப்பைப் பயன்படுத்தும்போது இடது/மேலே உள்ள ஆப்ஸுக்கு மாறுதல்"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"திரைப் பிரிப்பின்போது: ஓர் ஆப்ஸுக்குப் பதிலாக மற்றொன்றை மாற்றுதல்"</string>
@@ -1006,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"<xliff:g id="POSITION">%1$d</xliff:g>ல் சேர்க்கும்"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"நிலை தவறானது."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"இடம்: <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"கட்டம் ஏற்கெனவே சேர்க்கப்பட்டது"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"கட்டம் சேர்க்கப்பட்டது"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"கட்டம் அகற்றப்பட்டது"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"விரைவு அமைப்புகள் திருத்தி."</string>
@@ -1208,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸுக்கான இந்த மீடியா கட்டுப்பாடுகளை மறைக்கவா?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"தற்போதைய மீடியா அமர்வை மறைக்க முடியாது."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"மறை"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"தொடர்க"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"அமைப்புகள்"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="ARTIST_NAME">%2$s</xliff:g> இன் <xliff:g id="SONG_NAME">%1$s</xliff:g> பாடல் <xliff:g id="APP_LABEL">%3$s</xliff:g> ஆப்ஸில் பிளேயாகிறது"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> / <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

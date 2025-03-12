@@ -432,8 +432,7 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"ເຊົາປິດສຽງແວດລ້ອມ"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"ເຄື່ອງມື"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"ຄຳບັນຍາຍສົດ"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"ການຕັ້ງຄ່າ"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"ບັນທຶກ"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"ປົດບລັອກໄມໂຄຣໂຟນອຸປະກອນບໍ?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"ປົດບລັອກກ້ອງຖ່າຍຮູບອຸ​ປະ​ກອນບໍ?"</string>
@@ -795,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ເປີດ - ອ້າງອີງໃບໜ້າ"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ແລ້ວໆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ນຳໃຊ້"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"ປິດການແຈ້ງເຕືອນ"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"ປິດສຽງ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ຄ່າເລີ່ມຕົ້ນ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ອັດຕະໂນມັດ"</string>
@@ -906,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ໃຊ້ໂໝດແບ່ງໜ້າຈໍໂດຍໃຫ້ແອັບຢູ່ເບື້ອງຂວາ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ໃຊ້ໂໝດແບ່ງໜ້າຈໍໂດຍໃຫ້ແອັບຢູ່ເບື້ອງຊ້າຍ"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ໃຊ້ແບບເຕັມຈໍ"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"ໃຊ້ໜ້າຈໍເດັສທັອບ"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ສະຫຼັບໄປໃຊ້ແອັບຢູ່ຂວາ ຫຼື ທາງລຸ່ມໃນຂະນະທີ່ໃຊ້ແບ່ງໜ້າຈໍ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ສະຫຼັບໄປໃຊ້ແອັບຢູ່ຊ້າຍ ຫຼື ທາງເທິງໃນຂະນະທີ່ໃຊ້ແບ່ງໜ້າຈໍ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ໃນລະຫວ່າງແບ່ງໜ້າຈໍ: ໃຫ້ປ່ຽນຈາກແອັບໜຶ່ງເປັນອີກແອັບໜຶ່ງ"</string>
@@ -1003,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"ເພີ່ມໃສ່ຕຳແໜ່ງ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"ຕຳແໜ່ງບໍ່ຖືກຕ້ອງ."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"ຕຳແໜ່ງ <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"ເພີ່ມແຜ່ນແລ້ວ"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"ເພີ່ມແຜ່ນແລ້ວ"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"ລຶບແຜ່ນແລ້ວ"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"ຕົວແກ້ໄຂການຕັ້ງຄ່າດ່ວນ"</string>
@@ -1205,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"ເຊື່ອງຕົວຄວບຄຸມມີເດຍນີ້ສຳລັບ <xliff:g id="APP_NAME">%1$s</xliff:g> ບໍ?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"ບໍ່ສາມາດເຊື່ອງເຊດຊັນມີເດຍປັດຈຸບັນໄດ້."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"ເຊື່ອງ"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"ສືບຕໍ່"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"ການຕັ້ງຄ່າ"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="SONG_NAME">%1$s</xliff:g> ໂດຍ <xliff:g id="ARTIST_NAME">%2$s</xliff:g> ກຳລັງຫຼິ້ນຈາກ <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> ຈາກ <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

@@ -423,12 +423,9 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Paligid"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kaliwa"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Kanan"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Paligid"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Kaliwang bahagi ng paligid"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Kanang bahagi ng paligid"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"I-expand sa kaliwa at kanang magkahiwalay na mga kontrol"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"I-collapse sa pinag-isang kontrol"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"I-mute ang paligid"</string>
@@ -797,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Naka-on - Batay sa mukha"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Tapos na"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Ilapat"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"I-off ang mga notification"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Naka-silent"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Default"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Awtomatiko"</string>
@@ -908,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gumamit ng split screen nang nasa kanan ang app"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gumamit ng split screen nang nasa kaliwa ang app"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Gamitin ang full screen"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Gamitin ang desktop windowing"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Lumipat sa app sa kanan o ibaba habang ginagamit ang split screen"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Lumipat sa app sa kaliwa o itaas habang ginagamit ang split screen"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Habang nasa split screen: magpalit-palit ng app"</string>
@@ -1206,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"itago ang kontrol sa media na ito para sa <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Hindi maitatago ang kasalukuyang session ng media."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Itago"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Ituloy"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Mga Setting"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"Nagpe-play ang <xliff:g id="SONG_NAME">%1$s</xliff:g> ni/ng <xliff:g id="ARTIST_NAME">%2$s</xliff:g> mula sa <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> sa <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

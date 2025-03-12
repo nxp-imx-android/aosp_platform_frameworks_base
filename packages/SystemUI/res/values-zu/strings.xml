@@ -425,20 +425,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Izindawo ezizungezile"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kwesokunxele"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Kwesokudla"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Izindawo ezizungezile"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Indawo ezungezile engakwesokunxele"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Indawo ezungezile engakwesokudla"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Nwebela ezilawulini ezihlukanisiwe zakwesokunxele nakwesokudla"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Goqa ezilawulini ezihlanganisiwe"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Thulisa izindawo ezizungezile"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Susa ukuthula ezindaweni ezizungezile"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Amathuluzi"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Okushuthwe Bukhoma"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Amasethingi"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Inothi"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Vulela imakrofoni yedivayisi?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Vulela ikhamera yedivayisi?"</string>
@@ -800,7 +796,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Vuliwe - Kususelwe kubuso"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Kwenziwe"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Faka"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Vala izaziso"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Kuthulile"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Okuzenzekelayo"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Okuzenzekelayo"</string>
@@ -911,8 +908,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Sebenzisa ukuhlukanisa isikrini nge-app kwesokudla"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Sebenzisa ukuhlukanisa isikrini nge-app kwesokunxele"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Sebenzisa isikrini esigcwele"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Sebenzisa iwindi ledeskithophu"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Shintshela ku-app ngakwesokudla noma ngezansi ngenkathi usebenzisa uhlukanisa isikrini"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Shintshela ku-app ngakwesokunxele noma ngaphezulu ngenkathi usebenzisa ukuhlukanisa isikrini"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Ngesikhathi sokuhlukaniswa kwesikrini: shintsha i-app ngenye"</string>
@@ -1008,8 +1004,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Engeza kusikhundla se-<xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Indawo ayivumelekile."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Isikhundla se-<xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Ithayela lifakiwe kakade"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Ithayela lingeziwe"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Ithayela likhishiwe"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Isihleli sezilungiselelo ezisheshayo."</string>
@@ -1210,7 +1205,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Fihlela i-<xliff:g id="APP_NAME">%1$s</xliff:g> lesi silawuli semidiya?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Iseshini yamanje yemidiya ayikwazi ukufihlwa."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Fihla"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Qalisa kabusha"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Izilungiselelo"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"I-<xliff:g id="SONG_NAME">%1$s</xliff:g> ka-<xliff:g id="ARTIST_NAME">%2$s</xliff:g> idlala kusuka ku-<xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> ku-<xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

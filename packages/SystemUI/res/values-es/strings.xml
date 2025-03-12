@@ -423,20 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Alrededores"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Izquierda"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Derecha"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Entorno"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Entorno izquierdo"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Entorno derecho"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Expandir a los controles separados de izquierda y derecha"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Contraer al control unificado"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Silenciar alrededores"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Dejar de silenciar alrededores"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Herramientas"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Subtítulos automáticos"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Ajustes"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Nota"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"¿Desbloquear el micrófono del dispositivo?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"¿Desbloquear la cámara del dispositivo?"</string>
@@ -517,7 +513,7 @@
     <string name="communal_tutorial_indicator_text" msgid="4503010353591430123">"Desliza hacia la izquierda para iniciar el tutorial de la comunidad"</string>
     <string name="cta_tile_button_to_open_widget_editor" msgid="3871562362382963878">"Personalizar"</string>
     <string name="cta_tile_button_to_dismiss" msgid="3377597875997861754">"Cerrar"</string>
-    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Añade, elimina y reordena tus widgets en este espacio"</string>
+    <string name="cta_label_to_edit_widget" msgid="6496885074209203756">"Añade, elimina y reordena tus widgets"</string>
     <string name="cta_label_to_open_widget_picker" msgid="3874946756976360699">"Añade más widgets"</string>
     <string name="popup_on_dismiss_cta_tile_text" msgid="8292501780996070019">"Mantén pulsado para personalizar los widgets"</string>
     <string name="button_to_configure_widgets_text" msgid="4191862850185256901">"Personalizar widgets"</string>
@@ -798,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activado: basado en caras"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Hecho"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Desactivar notificaciones"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Silencio"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Predeterminado"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automática"</string>
@@ -909,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Usar la pantalla dividida con la aplicación a la derecha"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Usar la pantalla dividida con la aplicación a la izquierda"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Usar pantalla completa"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Usar el escritorio basado en ventanas"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Cambiar a la aplicación de la derecha o de abajo en pantalla dividida"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Cambiar a la app de la izquierda o de arriba en pantalla dividida"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Con pantalla dividida: reemplazar una aplicación por otra"</string>
@@ -1006,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Añadir a la posición <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Posición no válida."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Posición <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Tarjeta ya añadida"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Recuadro añadido"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Recuadro quitado"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Editor de ajustes rápidos."</string>
@@ -1208,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"¿Ocultar este control multimedia para <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"La sesión multimedia no se puede ocultar."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Ocultar"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Reanudar"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Ajustes"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"Se está reproduciendo <xliff:g id="SONG_NAME">%1$s</xliff:g> de <xliff:g id="ARTIST_NAME">%2$s</xliff:g> en <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> de <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

@@ -432,8 +432,7 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Միացնել շրջակայքի ձայները"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Գործիքներ"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Կենդանի ենթագրեր"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Կարգավորումներ"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Նշում"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Արգելահանե՞լ սարքի խոսափողը"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Արգելահանե՞լ սարքի տեսախցիկը"</string>
@@ -795,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Միաց․ – Դիմաճանաչման հիման վրա"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Փակել"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Կիրառել"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Անջատել ծանուցումները"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Անձայն"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Կանխադրված"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Ավտոմատ"</string>
@@ -906,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Տրոհել էկրանը և տեղավորել այս հավելվածը աջ կողմում"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Տրոհել էկրանը և տեղավորել այս հավելվածը ձախ կողմում"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Օգտագործեք լիաէկրան ռեժիմը"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Օգտագործել համակարգչի պատուհանի ռեժիմը"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Անցեք աջ կողմի կամ ներքևի հավելվածին տրոհված էկրանի միջոցով"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Անցեք աջ կողմի կամ վերևի հավելվածին տրոհված էկրանի միջոցով"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Տրոհված էկրանի ռեժիմում մեկ հավելվածը փոխարինել մյուսով"</string>
@@ -1204,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Թաքցնե՞լ <xliff:g id="APP_NAME">%1$s</xliff:g>-ի մեդիա աշխատաշրջանի կառավարման տարրը։"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Չհաջողվեց թաքցնել ընթացիկ մուլտիմեդիա աշխատաշրջանը։"</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Թաքցնել"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Շարունակել"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Կարգավորումներ"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"Այժմ նվագարկվում է <xliff:g id="SONG_NAME">%1$s</xliff:g> երգը <xliff:g id="ARTIST_NAME">%2$s</xliff:g>-ի կատարմամբ <xliff:g id="APP_LABEL">%3$s</xliff:g> հավելվածից"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>՝ <xliff:g id="TOTAL_TIME">%2$s</xliff:g>-ից"</string>
