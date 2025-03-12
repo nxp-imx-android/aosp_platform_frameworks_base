@@ -43,6 +43,10 @@ class BundleEntry(spec: BundleSpec) : PipelineEntry(spec.key) {
         _children.add(child)
     }
 
+    fun removeChild(child: ListEntry) {
+        _children.remove(child)
+    }
+
     fun clearChildren() {
         _children.clear()
     }

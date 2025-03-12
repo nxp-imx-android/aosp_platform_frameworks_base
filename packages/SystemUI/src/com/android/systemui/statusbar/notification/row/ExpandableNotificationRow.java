@@ -2282,16 +2282,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mFalsingManager = falsingManager;
         mStatusBarStateController = statusBarStateController;
         mPeopleNotificationIdentifier = peopleNotificationIdentifier;
-        for (NotificationContentView l : mLayouts) {
-            l.initialize(
-                    mPeopleNotificationIdentifier,
-                    rivSubcomponentFactory,
-                    smartReplyConstants,
-                    smartReplyController,
-                    statusBarService,
-                    uiEventLogger
-            );
+        if (rivSubcomponentFactory != null) {
+            for (NotificationContentView l : mLayouts) {
+                l.initialize(
+                        mPeopleNotificationIdentifier,
+                        rivSubcomponentFactory,
+                        smartReplyConstants,
+                        smartReplyController,
+                        statusBarService,
+                        uiEventLogger
+                );
+            }
         }
+
         mOnUserInteractionCallback = onUserInteractionCallback;
         mNotificationGutsManager = gutsManager;
         mMetricsLogger = metricsLogger;

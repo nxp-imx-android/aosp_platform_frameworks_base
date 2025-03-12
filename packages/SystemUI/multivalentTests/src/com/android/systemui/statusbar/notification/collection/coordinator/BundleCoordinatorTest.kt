@@ -27,6 +27,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.render.BundleBarn
 import com.android.systemui.statusbar.notification.collection.render.NodeController
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -44,6 +45,7 @@ class BundleCoordinatorTest : SysuiTestCase() {
     @Mock private lateinit var socialController: NodeController
     @Mock private lateinit var recsController: NodeController
     @Mock private lateinit var promoController: NodeController
+    @Mock private lateinit var bundleBarn: BundleBarn
 
     private lateinit var coordinator: BundleCoordinator
 
@@ -55,7 +57,8 @@ class BundleCoordinatorTest : SysuiTestCase() {
                 newsController,
                 socialController,
                 recsController,
-                promoController
+                promoController,
+                bundleBarn
             )
     }
 

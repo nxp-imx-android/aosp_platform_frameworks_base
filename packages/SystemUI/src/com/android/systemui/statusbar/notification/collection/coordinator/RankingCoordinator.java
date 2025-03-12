@@ -27,6 +27,7 @@ import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope;
+import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifComparator;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifFilter;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner;
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
@@ -34,6 +35,7 @@ import com.android.systemui.statusbar.notification.collection.render.NodeControl
 import com.android.systemui.statusbar.notification.collection.render.SectionHeaderController;
 import com.android.systemui.statusbar.notification.dagger.AlertingHeader;
 import com.android.systemui.statusbar.notification.dagger.SilentHeader;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationPriorityBucketKt;
 
 import java.util.List;
@@ -156,6 +158,34 @@ public class RankingCoordinator implements Coordinator {
             }
             mSilentHeaderController.setClearSectionEnabled(
                     mHasSilentEntries | mHasMinimizedEntries);
+        }
+
+        private final NotifComparator mSilentSectionComparator = new NotifComparator(
+                "SilentSectionComparator") {
+            @Override
+            public int compare(@NonNull PipelineEntry o1, @NonNull PipelineEntry o2) {
+                boolean isBundle1 = o1 instanceof BundleEntry;
+                boolean isBundle2 = o2 instanceof BundleEntry;
+                if (isBundle1 && isBundle2) {
+                    // When both are bundles, order by bundle id, which is guaranteed to be in
+                    // a fixed order
+                    // TODO(b/399736937) prefix bundle keys to ensure fixed order
+                    // TODO(b/399736937) optimize sort since this is on the main thread
+                    return o1.getKey().compareTo(o2.getKey());
+                }
+                // Order bundles before non-bundles
+                return -1 * Boolean.compare(isBundle1, isBundle2);
+            }
+        };
+
+
+        @Nullable
+        @Override
+        public NotifComparator getComparator() {
+            if (NotificationBundleUi.isEnabled()) {
+                return mSilentSectionComparator;
+            }
+            return null;
         }
     };
 
