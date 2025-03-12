@@ -114,4 +114,7 @@
     <!-- By default ActivityOptions#makeScaleUpAnimation is only used between activities. This
      config enables OEMs to support its usage across tasks.-->
     <bool name="config_enableCrossTaskScaleUpAnimation">true</bool>
+
+    <!-- The amount of friction applied to scrolls and flings. -->
+    <item name="config_scrollFriction" format="float" type="dimen">0.023</item>
 </resources>
