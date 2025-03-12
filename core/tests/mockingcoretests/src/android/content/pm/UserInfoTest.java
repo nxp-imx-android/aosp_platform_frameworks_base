@@ -27,8 +27,14 @@ import static android.os.UserManager.USER_TYPE_FULL_RESTRICTED;
 import static android.os.UserManager.USER_TYPE_FULL_SYSTEM;
 import static android.os.UserManager.USER_TYPE_SYSTEM_HEADLESS;
 
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import android.annotation.UserIdInt;
 import android.content.pm.UserInfo.UserInfoFlag;
+import android.content.res.Resources;
 import android.os.Parcel;
 import android.os.UserHandle;
 import android.platform.test.annotations.DisableFlags;
@@ -36,6 +42,8 @@ import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.filters.SmallTest;
+
+import com.android.modules.utils.testing.ExtendedMockitoRule;
 
 import com.google.common.truth.Expect;
 
@@ -51,6 +59,11 @@ public final class UserInfoTest {
             new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
 
     @Rule public final Expect expect = Expect.create();
+
+    @Rule
+    public final ExtendedMockitoRule extendedMockito = new ExtendedMockitoRule.Builder(this)
+            .spyStatic(Resources.class)
+            .build();
 
     @Test
     public void testSimple() throws Exception {
@@ -96,7 +109,6 @@ public final class UserInfoTest {
         expectCannotHaveProfile("non-full user", createTestUserInfo(/* flags= */ 0));
         expectCannotHaveProfile("guest user", createTestUserInfo(FLAG_FULL | FLAG_GUEST));
         expectCanHaveProfile("main user", createTestUserInfo(FLAG_FULL | FLAG_MAIN));
-        expectCannotHaveProfile("non-main user", createTestUserInfo(FLAG_FULL));
         expectCannotHaveProfile("demo user", createTestUserInfo(FLAG_FULL | FLAG_DEMO));
         expectCannotHaveProfile("restricted user",
                 createTestUserInfo(USER_TYPE_FULL_RESTRICTED, FLAG_FULL));
@@ -105,6 +117,13 @@ public final class UserInfoTest {
                 createTestUserInfo(USER_TYPE_FULL_SYSTEM, FLAG_FULL | FLAG_SYSTEM | FLAG_MAIN));
         expectCannotHaveProfile("headless system user that's not main user",
                 createTestUserInfo(USER_TYPE_SYSTEM_HEADLESS, FLAG_SYSTEM));
+
+        // Non-main user depends on config_supportProfilesOnNonMainUser, but should be disabled
+        // anyways because of the flag
+        mockConfigSupportProfilesOnNonMainUser(false);
+        expectCannotHaveProfile("non-main user", createTestUserInfo(FLAG_FULL));
+        mockConfigSupportProfilesOnNonMainUser(true);
+        expectCannotHaveProfile("non-main user", createTestUserInfo(FLAG_FULL));
     }
 
     @Test
@@ -113,7 +132,6 @@ public final class UserInfoTest {
         expectCannotHaveProfile("non-full user", createTestUserInfo(/* flags= */ 0));
         expectCannotHaveProfile("guest user", createTestUserInfo(FLAG_FULL | FLAG_GUEST));
         expectCanHaveProfile("main user", createTestUserInfo(FLAG_FULL | FLAG_MAIN));
-        expectCanHaveProfile("non-main user", createTestUserInfo(FLAG_FULL));
         expectCannotHaveProfile("demo user", createTestUserInfo(FLAG_FULL | FLAG_DEMO));
         expectCannotHaveProfile("restricted user",
                 createTestUserInfo(USER_TYPE_FULL_RESTRICTED, FLAG_FULL));
@@ -122,6 +140,12 @@ public final class UserInfoTest {
                 createTestUserInfo(USER_TYPE_FULL_SYSTEM, FLAG_FULL | FLAG_SYSTEM | FLAG_MAIN));
         expectCannotHaveProfile("headless system user that's not main user",
                 createTestUserInfo(USER_TYPE_SYSTEM_HEADLESS, FLAG_SYSTEM));
+
+        // Non-main user depends on config_supportProfilesOnNonMainUser
+        mockConfigSupportProfilesOnNonMainUser(false);
+        expectCannotHaveProfile("non-main user (config disabled)", createTestUserInfo(FLAG_FULL));
+        mockConfigSupportProfilesOnNonMainUser(true);
+        expectCanHaveProfile("non-main user (config enabled)", createTestUserInfo(FLAG_FULL));
     }
 
     @Test
@@ -255,5 +279,12 @@ public final class UserInfoTest {
     private void expectCannotHaveProfile(String description, UserInfo user) {
         expect.withMessage("canHaveProfile() on %s (%s)", description, user)
                 .that(user.canHaveProfile()).isFalse();
+    }
+
+    private void mockConfigSupportProfilesOnNonMainUser(boolean value) {
+        Resources resources = mock(Resources.class);
+        int config = com.android.internal.R.bool.config_supportProfilesOnNonMainUser;
+        when(resources.getBoolean(config)).thenReturn(value);
+        doReturn(resources).when(Resources::getSystem);
     }
 }

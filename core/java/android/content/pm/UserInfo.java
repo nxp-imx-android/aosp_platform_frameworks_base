@@ -500,8 +500,10 @@ public class UserInfo implements Parcelable {
         // NOTE: profiles used to be restricted just to the system user (and later to the main
         // user), but from the framework point of view there is no need for such restriction, hence
         // it's lifted
-        // TODO(b/374832167): check value of config_supportProfilesOnNonMainUser
-        return isMain() || android.multiuser.Flags.profilesForAll();
+        return isMain()
+                || (android.multiuser.Flags.profilesForAll()
+                        && Resources.getSystem().getBoolean(
+                                com.android.internal.R.bool.config_supportProfilesOnNonMainUser));
     }
 
     // TODO(b/142482943): Get rid of this (after removing it from all tests) if feasible.
