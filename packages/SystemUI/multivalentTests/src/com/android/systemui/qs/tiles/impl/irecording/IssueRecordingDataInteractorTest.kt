@@ -22,13 +22,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
 import com.android.systemui.recordissue.IssueRecordingState
 import com.android.systemui.settings.fakeUserFileManager
 import com.android.systemui.settings.userTracker
+import com.android.systemui.testKosmos
 import com.android.systemui.util.settings.fakeGlobalSettings
 import com.google.common.truth.Truth
 import kotlinx.coroutines.flow.flowOf
@@ -42,7 +42,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class IssueRecordingDataInteractorTest : SysuiTestCase() {
 
-    private val kosmos = Kosmos().also { it.testCase = this }
+    private val kosmos = testKosmos().also { it.testCase = this }
     private val userTracker = kosmos.userTracker
     private val userFileManager = kosmos.fakeUserFileManager
     private val testUser = UserHandle.of(1)

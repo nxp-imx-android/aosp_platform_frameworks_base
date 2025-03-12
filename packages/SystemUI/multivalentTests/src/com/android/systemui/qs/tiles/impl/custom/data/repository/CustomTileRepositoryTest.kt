@@ -24,7 +24,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectValues
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.external.TileServiceKey
 import com.android.systemui.qs.pipeline.shared.TileSpec
@@ -34,6 +33,7 @@ import com.android.systemui.qs.tiles.impl.custom.customTileSpec
 import com.android.systemui.qs.tiles.impl.custom.customTileStatePersister
 import com.android.systemui.qs.tiles.impl.custom.data.entity.CustomTileDefaults
 import com.android.systemui.qs.tiles.impl.custom.packageManagerAdapterFacade
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runCurrent
@@ -45,7 +45,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class CustomTileRepositoryTest : SysuiTestCase() {
 
-    private val kosmos = Kosmos().apply { customTileSpec = TileSpec.create(TEST_COMPONENT) }
+    private val kosmos = testKosmos().apply { customTileSpec = TileSpec.create(TEST_COMPONENT) }
     private val underTest: CustomTileRepository =
         with(kosmos) {
             CustomTileRepositoryImpl(
@@ -213,7 +213,7 @@ class CustomTileRepositoryTest : SysuiTestCase() {
                 underTest.updateWithTile(
                     TEST_USER_1,
                     Tile().apply { subtitle = "test_subtitle" },
-                    true
+                    true,
                 )
                 runCurrent()
 
@@ -247,7 +247,7 @@ class CustomTileRepositoryTest : SysuiTestCase() {
                 underTest.updateWithTile(
                     TEST_USER_1,
                     Tile().apply { subtitle = "test_subtitle" },
-                    true
+                    true,
                 )
                 runCurrent()
 

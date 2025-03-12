@@ -23,11 +23,11 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.qs.tiles.impl.custom.QSTileStateSubject
 import com.android.systemui.qs.tiles.impl.qr.domain.model.QRCodeScannerTileModel
 import com.android.systemui.qs.tiles.impl.qr.qsQRCodeScannerTileConfig
 import com.android.systemui.qs.tiles.viewmodel.QSTileState
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
 import org.junit.Before
 import org.junit.Test
@@ -36,7 +36,7 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class QRCodeScannerTileMapperTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val config = kosmos.qsQRCodeScannerTileConfig
 
     private lateinit var mapper: QRCodeScannerTileMapper

@@ -26,7 +26,6 @@ import com.android.systemui.accessibility.fontscaling.FontScalingDialogDelegate
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
 import com.android.systemui.animation.LaunchableView
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.qs.shared.QSSettingsPackageRepository
@@ -37,6 +36,7 @@ import com.android.systemui.qs.tiles.base.interactor.QSTileInputTestKtx.click
 import com.android.systemui.qs.tiles.impl.fontscaling.domain.model.FontScalingTileModel
 import com.android.systemui.statusbar.phone.FakeKeyguardStateController
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -67,7 +67,7 @@ class FontScalingUserActionInteractorTest : SysuiTestCase() {
 
     @Captor private lateinit var argumentCaptor: ArgumentCaptor<Runnable>
 
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val scope = kosmos.testScope
     private val qsTileIntentUserActionHandler = FakeQSTileIntentUserInputHandler()
     private val keyguardStateController = FakeKeyguardStateController()

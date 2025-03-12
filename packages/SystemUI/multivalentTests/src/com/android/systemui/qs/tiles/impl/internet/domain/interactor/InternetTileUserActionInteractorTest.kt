@@ -21,7 +21,6 @@ import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.tiles.base.actions.FakeQSTileIntentUserInputHandler
 import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandlerSubject
@@ -29,6 +28,7 @@ import com.android.systemui.qs.tiles.base.interactor.QSTileInputTestKtx
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
 import com.android.systemui.statusbar.connectivity.AccessPointController
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.nullable
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -44,7 +44,7 @@ import org.mockito.kotlin.verify
 @EnabledOnRavenwood
 @RunWith(AndroidJUnit4::class)
 class InternetTileUserActionInteractorTest : SysuiTestCase() {
-    private val kosmos = Kosmos()
+    private val kosmos = testKosmos()
     private val inputHandler = FakeQSTileIntentUserInputHandler()
 
     private lateinit var underTest: InternetTileUserActionInteractor

@@ -23,12 +23,12 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFaceAuthRepository
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.plugins.statusbar.statusBarStateController
 import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.statusbar.lockscreenShadeTransitionController
 import com.android.systemui.statusbar.phone.screenOffAnimationController
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -44,7 +44,7 @@ import org.mockito.kotlin.whenever
 class NotificationShelfInteractorTest : SysuiTestCase() {
 
     private val kosmos =
-        Kosmos().apply {
+        testKosmos().apply {
             testCase = this@NotificationShelfInteractorTest
             lockscreenShadeTransitionController = mock()
             screenOffAnimationController = mock()
