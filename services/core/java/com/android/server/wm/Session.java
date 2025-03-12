@@ -738,12 +738,18 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes) {
+    public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         synchronized (mService.mGlobalLock) {
             final WindowState win = mService.windowForClientLocked(this, window,
                     false /* throwOnError */);
             if (win != null) {
-                win.setAnimatingTypes(animatingTypes);
+                ImeTracker.forLogging().onProgress(statsToken,
+                        ImeTracker.PHASE_WM_UPDATE_ANIMATING_TYPES);
+                win.setAnimatingTypes(animatingTypes, statsToken);
+            } else {
+                ImeTracker.forLogging().onFailed(statsToken,
+                        ImeTracker.PHASE_WM_UPDATE_ANIMATING_TYPES);
             }
         }
     }

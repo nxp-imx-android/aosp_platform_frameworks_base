@@ -1063,7 +1063,7 @@ public class ViewRootImplTest {
         ViewRootImpl viewRootImpl = mView.getViewRootImpl();
         sInstrumentation.runOnMainSync(() -> {
             mView.invalidate();
-            viewRootImpl.updateAnimatingTypes(Type.systemBars());
+            viewRootImpl.updateAnimatingTypes(Type.systemBars(), null /* statsToken */);
             mView.invalidate();
         });
         sInstrumentation.waitForIdleSync();

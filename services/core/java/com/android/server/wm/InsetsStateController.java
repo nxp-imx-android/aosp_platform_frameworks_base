@@ -393,10 +393,12 @@ class InsetsStateController {
         }
     }
 
-    void onAnimatingTypesChanged(InsetsControlTarget target) {
+    void onAnimatingTypesChanged(InsetsControlTarget target,
+            @Nullable ImeTracker.Token statsToken) {
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
-            provider.onAnimatingTypesChanged(target);
+            final boolean isImeProvider = provider.getSource().getType() == WindowInsets.Type.ime();
+            provider.onAnimatingTypesChanged(target, isImeProvider ? statsToken : null);
         }
     }
 

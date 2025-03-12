@@ -672,7 +672,8 @@ class InsetsSourceProvider {
                 mServerVisible, mClientVisible);
     }
 
-    void onAnimatingTypesChanged(InsetsControlTarget caller) {
+    void onAnimatingTypesChanged(InsetsControlTarget caller,
+            @Nullable ImeTracker.Token statsToken) {
     }
 
     protected boolean isLeashReadyForDispatching() {

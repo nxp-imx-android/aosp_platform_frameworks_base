@@ -809,7 +809,8 @@ interface IWindowManager
      * Updates the currently animating insets types of a remote process.
      */
     @EnforcePermission("MANAGE_APP_TOKENS")
-    void updateDisplayWindowAnimatingTypes(int displayId, int animatingTypes);
+    void updateDisplayWindowAnimatingTypes(int displayId, int animatingTypes,
+            in @nullable ImeTracker.Token statsToken);
 
     /**
      * Called to get the expected window insets.
