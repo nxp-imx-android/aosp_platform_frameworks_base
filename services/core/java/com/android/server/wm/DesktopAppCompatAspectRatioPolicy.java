@@ -69,11 +69,11 @@ public class DesktopAppCompatAspectRatioPolicy {
      * Calculates the final aspect ratio of an launching activity based on the task it will be
      * launched in. Takes into account any min or max aspect ratio constraints.
      */
-    float calculateAspectRatio(@NonNull Task task) {
+    float calculateAspectRatio(@NonNull Task task, boolean hasOrientationMismatch) {
         final float maxAspectRatio = getMaxAspectRatio();
         final float minAspectRatio = getMinAspectRatio(task);
         float desiredAspectRatio = 0;
-        desiredAspectRatio = getDesiredAspectRatio(task);
+        desiredAspectRatio = getDesiredAspectRatio(task, hasOrientationMismatch);
         if (maxAspectRatio >= 1 && desiredAspectRatio > maxAspectRatio) {
             desiredAspectRatio = maxAspectRatio;
         } else if (minAspectRatio >= 1 && desiredAspectRatio < minAspectRatio) {
@@ -87,13 +87,14 @@ public class DesktopAppCompatAspectRatioPolicy {
      * any min or max aspect ratio constraints.
      */
     @VisibleForTesting
-    float getDesiredAspectRatio(@NonNull Task task) {
+    float getDesiredAspectRatio(@NonNull Task task, boolean hasOrientationMismatch) {
         final float letterboxAspectRatioOverride = getFixedOrientationLetterboxAspectRatio(task);
         // Aspect ratio as suggested by the system. Apps requested mix/max aspect ratio will
         // be respected in #calculateAspectRatio.
         if (isDefaultMultiWindowLetterboxAspectRatioDesired(task)) {
             return DEFAULT_LETTERBOX_ASPECT_RATIO_FOR_MULTI_WINDOW;
-        } else if (letterboxAspectRatioOverride > MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO) {
+        } else if (hasOrientationMismatch
+                && letterboxAspectRatioOverride > MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO) {
             return letterboxAspectRatioOverride;
         }
         return AppCompatUtils.computeAspectRatio(task.getDisplayArea().getBounds());

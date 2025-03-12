@@ -52,6 +52,7 @@ import static com.android.server.wm.LaunchParamsController.LaunchParamsModifier.
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -437,7 +438,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
-                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any());
+                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any(), anyBoolean());
 
         final int desiredWidth =
                 (int) ((LANDSCAPE_DISPLAY_BOUNDS.height() / LETTERBOX_ASPECT_RATIO) + 0.5f);
@@ -933,7 +934,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
-                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any());
+                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any(), anyBoolean());
 
         final int desiredHeight =
                 (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
@@ -1060,7 +1061,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
-                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any());
+                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any(), anyBoolean());
 
         final int desiredWidth = PORTRAIT_DISPLAY_BOUNDS.width()
                 - (DESKTOP_MODE_LANDSCAPE_APP_PADDING * 2);
@@ -1115,7 +1116,7 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         spyOn(activity.mAppCompatController.getDesktopAspectRatioPolicy());
         doReturn(LETTERBOX_ASPECT_RATIO).when(activity.mAppCompatController
-                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any());
+                .getDesktopAspectRatioPolicy()).calculateAspectRatio(any(), anyBoolean());
 
         final int desiredWidth = PORTRAIT_DISPLAY_BOUNDS.width()
                 - (DESKTOP_MODE_LANDSCAPE_APP_PADDING * 2);
@@ -1569,7 +1570,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();
         spyOn(desktopAppCompatAspectRatioPolicy);
         doReturn(aspectRatio).when(desktopAppCompatAspectRatioPolicy)
-                .getDesiredAspectRatio(any());
+                .getDesiredAspectRatio(any(), anyBoolean());
     }
 
     private void applyUserMinAspectRatioOverride(ActivityRecord activity, int overrideCode,
@@ -1579,7 +1580,7 @@ public class DesktopModeLaunchParamsModifierTests extends
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();
         spyOn(desktopAppCompatAspectRatioPolicy);
         doReturn(1f).when(desktopAppCompatAspectRatioPolicy)
-                .getDesiredAspectRatio(any());
+                .getDesiredAspectRatio(any(), anyBoolean());
 
         // Enable user aspect ratio settings
         final AppCompatConfiguration appCompatConfiguration =
