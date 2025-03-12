@@ -18,7 +18,7 @@
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_label" msgid="4470785958457506021">"கம்பேனியன் சாதன நிர்வாகி"</string>
     <string name="confirmation_title" msgid="2244241995958340998">"&lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt; சாதனத்தை அணுக &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; ஆப்ஸை அனுமதிக்கவா?"</string>
-    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"இந்த <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> சாதனத்தின் <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ஆன் செய்யப்பட்டு, அதன் அருகில் உங்கள் <xliff:g id="PROFILE_NAME">%3$s</xliff:g> இருப்பதை உறுதிசெய்துகொள்ளவும்."</string>
+    <string name="message_discovery_soft_timeout" msgid="473346859407859161">"இந்த <xliff:g id="DEVICE_TYPE">%1$s</xliff:g> <xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> ஆக இருக்க வேண்டும். உங்கள் <xliff:g id="PROFILE_NAME">%3$s</xliff:g> அருகில் இருக்க வேண்டும்."</string>
     <string name="message_discovery_hard_timeout" msgid="677514663495711424">"சாதனங்கள் எதுவும் கண்டறியப்படவில்லை. பிறகு முயலவும்."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"புளூடூத்"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"வைஃபை"</string>

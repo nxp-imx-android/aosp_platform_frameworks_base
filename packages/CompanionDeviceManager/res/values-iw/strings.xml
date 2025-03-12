@@ -19,7 +19,7 @@
     <string name="app_label" msgid="4470785958457506021">"ניהול מכשיר מותאם"</string>
     <string name="confirmation_title" msgid="2244241995958340998">"‏לאפשר לאפליקציה &lt;strong&gt;<xliff:g id="APP_NAME">%1$s</xliff:g>&lt;/strong&gt; לגשת אל &lt;strong&gt;<xliff:g id="DEVICE_NAME">%2$s</xliff:g>&lt;/strong&gt;?"</string>
     <string name="message_discovery_soft_timeout" msgid="473346859407859161">"צריך לוודא שה-<xliff:g id="DISCOVERY_METHOD">%2$s</xliff:g> מופעל ב<xliff:g id="DEVICE_TYPE">%1$s</xliff:g>, ושה<xliff:g id="PROFILE_NAME">%3$s</xliff:g> בקרבת מקום."</string>
-    <string name="message_discovery_hard_timeout" msgid="677514663495711424">"לא נמצאו מכשירים. אפשר לנסות שוב מאוחר יותר."</string>
+    <string name="message_discovery_hard_timeout" msgid="677514663495711424">"לא נמצאו מכשירים. כדאי לנסות שוב עוד מעט."</string>
     <string name="discovery_bluetooth" msgid="5693557668470016164">"Bluetooth"</string>
     <string name="discovery_wifi" msgid="1551782459721758773">"Wi-Fi"</string>
     <string name="discovery_mixed" msgid="7071466134150760127">"‏חיבור Wi-Fi ו-Bluetooth"</string>
