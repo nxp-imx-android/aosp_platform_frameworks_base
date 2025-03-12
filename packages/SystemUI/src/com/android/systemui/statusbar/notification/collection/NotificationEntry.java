@@ -508,7 +508,7 @@ public final class NotificationEntry extends ListEntry {
 
             ArrayList<NotificationEntry> children = new ArrayList<>();
             for (ExpandableNotificationRow child : rowChildren) {
-                children.add(child.getEntry());
+                children.add(child.getEntryLegacy());
             }
 
             return children;

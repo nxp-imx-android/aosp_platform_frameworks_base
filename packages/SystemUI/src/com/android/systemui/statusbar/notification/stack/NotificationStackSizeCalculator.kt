@@ -413,7 +413,7 @@ constructor(
                         (currentNotification as? ExpandableNotificationRow)?.entryAdapter
                     counter.incrementForBucket(entryAdapter?.sectionBucket)
                 } else {
-                    val entry = (currentNotification as? ExpandableNotificationRow)?.entry
+                    val entry = (currentNotification as? ExpandableNotificationRow)?.entryLegacy
                     counter.incrementForBucket(entry?.bucket)
                 }
             }
@@ -470,7 +470,7 @@ constructor(
             calculateGapAndDividerHeight(stack, previousView, current = view, visibleIndex)
         val canPeek = view is ExpandableNotificationRow &&
                 if (NotificationBundleUi.isEnabled) view.entryAdapter?.canPeek() == true
-                else view.entry.isStickyAndNotDemoted
+                else view.entryLegacy.isStickyAndNotDemoted
 
         var size =
             if (onLockscreen) {

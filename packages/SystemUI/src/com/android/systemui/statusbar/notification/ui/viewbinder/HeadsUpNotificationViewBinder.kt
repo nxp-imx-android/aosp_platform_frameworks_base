@@ -60,7 +60,7 @@ constructor(
                         if (animationsEnabled) {
                             added.forEach { key ->
                                 val row = obtainView(key)
-                                val hasStatusBarChip = statusBarChips.contains(row.entry.key)
+                                val hasStatusBarChip = statusBarChips.contains(row.key)
                                 parentView.generateHeadsUpAnimation(
                                     row,
                                     /* isHeadsUp = */ true,
@@ -69,7 +69,7 @@ constructor(
                             }
                             removed.forEach { key ->
                                 val row = obtainView(key)
-                                val hasStatusBarChip = statusBarChips.contains(row.entry.key)
+                                val hasStatusBarChip = statusBarChips.contains(row.key)
                                 if (!parentView.isBeingDragged()) {
                                     parentView.generateHeadsUpAnimation(
                                         row,

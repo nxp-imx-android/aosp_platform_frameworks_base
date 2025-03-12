@@ -327,7 +327,7 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
         // the transformation types and we need to have our values set by then.
         resolveTemplateViews(NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getSbn()
-                : row.getEntry().getSbn());
+                : row.getEntryLegacy().getSbn());
         super.onContentUpdated(row);
         // With the modern templates, a large icon visually overlaps the header, so we can't
         // hide the header, we must show it.

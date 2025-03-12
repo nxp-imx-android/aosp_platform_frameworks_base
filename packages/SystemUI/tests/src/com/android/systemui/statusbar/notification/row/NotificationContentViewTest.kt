@@ -89,15 +89,17 @@ class NotificationContentViewTest : SysuiTestCase() {
             spy(
                 when (NotificationBundleUi.isEnabled) {
                     true -> {
-                        ExpandableNotificationRow(mContext, /* attrs= */ null, UserHandle.CURRENT)
-                            .apply {
-                                entry = mockEntry
-                                entryAdapter = mockEntryAdapter
-                            }
+                        ExpandableNotificationRow(
+                            mContext,
+                            /* attrs= */ null,
+                            UserHandle.CURRENT
+                        ).apply {
+                            entryAdapter = mockEntryAdapter
+                        }
                     }
                     false -> {
                         ExpandableNotificationRow(mContext, /* attrs= */ null, mockEntry).apply {
-                            entry = mockEntry
+                            entryLegacy = mockEntry
                         }
                     }
                 }

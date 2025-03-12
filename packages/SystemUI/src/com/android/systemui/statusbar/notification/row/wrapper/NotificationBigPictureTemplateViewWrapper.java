@@ -50,7 +50,7 @@ public class NotificationBigPictureTemplateViewWrapper extends NotificationTempl
         resolveViews();
         updateImageTag(NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getSbn()
-                : row.getEntry().getSbn());
+                : row.getEntryLegacy().getSbn());
     }
 
     private void resolveViews() {

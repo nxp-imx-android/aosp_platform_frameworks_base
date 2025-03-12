@@ -601,7 +601,7 @@ public class NotificationContentView extends FrameLayout implements Notification
         if (NotificationBundleUi.isEnabled()) {
             return mContainingNotification.getEntryAdapter().getSbn();
         } else {
-            return mContainingNotification.getEntry().getSbn();
+            return mContainingNotification.getEntryLegacy().getSbn();
         }
     }
 

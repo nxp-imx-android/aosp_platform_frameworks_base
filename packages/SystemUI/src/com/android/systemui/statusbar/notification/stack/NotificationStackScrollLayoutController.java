@@ -648,11 +648,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 public void onChildSnappedBack(View animView, float targetLeft) {
                     mView.onSwipeEnd();
                     if (animView instanceof ExpandableNotificationRow row) {
-                        if (row.isPinned() && !canChildBeDismissed(row)
-                                && NotificationBundleUi.isEnabled()
+                        boolean cannotFullScreen = NotificationBundleUi.isEnabled()
                                 ? !row.getEntryAdapter().isFullScreenCapable()
-                                : (row.getEntry().getSbn().getNotification().fullScreenIntent
-                                        == null)) {
+                                : (row.getEntryLegacy().getSbn().getNotification().fullScreenIntent
+                                        == null);
+                        if (row.isPinned() && !canChildBeDismissed(row) && cannotFullScreen) {
                             mHeadsUpManager.removeNotification(
                                     row.getKey(),
                                     /* removeImmediately= */ true,
