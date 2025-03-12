@@ -67,6 +67,10 @@ public class PowerManagerFlags {
             new FlagState(Flags.FLAG_WAKELOCK_ATTRIBUTION_VIA_WORKCHAIN,
                     Flags::wakelockAttributionViaWorkchain);
 
+    private final FlagState mDisableFrozenProcessWakelocks =
+            new FlagState(Flags.FLAG_DISABLE_FROZEN_PROCESS_WAKELOCKS,
+                    Flags::disableFrozenProcessWakelocks);
+
     /** Returns whether early-screen-timeout-detector is enabled on not. */
     public boolean isEarlyScreenTimeoutDetectorEnabled() {
         return mEarlyScreenTimeoutDetectorFlagState.isEnabled();
@@ -121,6 +125,13 @@ public class PowerManagerFlags {
     }
 
     /**
+     * @return Whether the feature to disable the frozen process wakelocks is enabled
+     */
+    public boolean isDisableFrozenProcessWakelocksEnabled() {
+        return mDisableFrozenProcessWakelocks.isEnabled();
+    }
+
+    /**
      * dumps all flagstates
      * @param pw printWriter
      */
@@ -132,6 +143,7 @@ public class PowerManagerFlags {
         pw.println(" " + mFrameworkWakelockInfo);
         pw.println(" " + mMoveWscLoggingToNotifier);
         pw.println(" " + mWakelockAttributionViaWorkchain);
+        pw.println(" " + mDisableFrozenProcessWakelocks);
     }
 
     private static class FlagState {
