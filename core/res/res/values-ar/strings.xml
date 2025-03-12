@@ -1969,8 +1969,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"طلب إدخال نقش فتح القفل قبل إزالة التثبيت"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"طلب إدخال كلمة المرور قبل إزالة التثبيت"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"تم التثبيت من قِبل المشرف.\nانتقِل إلى الإعدادات للاطّلاع على الأذونات الممنوحة"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"تم التحديث من قِبل المشرف.\nيُرجى الانتقال إلى الإعدادات للاطّلاع على الأذونات الممنوحة"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"تم الحذف بواسطة المشرف"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"حسنًا"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"يؤدي استخدام ميزة \"توفير شحن البطارية\" إلى تفعيل وضع \"المظهر الداكن\" وتقييد أو إيقاف الأنشطة في الخلفية وبعض التأثيرات المرئية وميزات معيّنة وبعض اتصالات الشبكات."</string>
@@ -2278,18 +2277,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"الانتقال للأسفل أو للأعلى"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"إيقاف مؤقت"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"تعديل الموضع"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"الانتقال للأعلى"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"الانتقال للأسفل"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"الانتقال لليمين"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"الانتقال لليسار"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"الخروج من وضع الانتقال"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"لوحة الانتقال"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"تم وضع <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> في الحزمة \"محظورة\"."</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"هذا المستخدم أرسل صورة"</string>

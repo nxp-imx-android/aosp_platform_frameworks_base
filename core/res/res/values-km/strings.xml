@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"សួរ​រក​លំនាំ​ដោះ​សោ​មុន​ពេលដោះខ្ទាស់"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"សួរ​រក​ពាក្យ​សម្ងាត់​មុន​ពេល​ផ្ដាច់"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"បានដំឡើងដោយអ្នកគ្រប់គ្រងរបស់អ្នក។\nចូលទៅកាន់ការកំណត់ ដើម្បីមើលការ​អនុញ្ញាតដែលផ្ដល់ឱ្យ"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"បានធ្វើបច្ចុប្បន្នភាពដោយអ្នកគ្រប់គ្រងរបស់អ្នក។\nចូលទៅកាន់ការកំណត់ ដើម្បីមើលការ​អនុញ្ញាតដែលផ្ដល់ឱ្យ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"លុប​ដោយ​អ្នកគ្រប់គ្រង​របស់​អ្នក"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"យល់ព្រម"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"មុខងារ​សន្សំថ្មបើកទម្រង់រចនាងងឹត និងដាក់កំហិត ឬបិទសកម្មភាពផ្ទៃខាងក្រោយ បែបផែនរូបភាពមួយចំនួន មុខងារជាក់លាក់ និងការតភ្ជាប់បណ្ដាញមួយចំនួន។"</string>
@@ -2274,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"រំកិល"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ផ្អាក"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ទីតាំង"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"រំកិលឡើងលើ"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"រំកិលចុះក្រោម"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"រំកិល​ទៅ​ឆ្វេង"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"រំកិល​ទៅ​ស្ដាំ"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"ចាកចេញពី​មុខងារ​រំកិល"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ផ្ទាំងរំកិល"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ត្រូវបានដាក់​ទៅក្នុងធុង​ដែលបានដាក់កំហិត"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>៖"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"បាន​ផ្ញើរូបភាព"</string>
@@ -2493,8 +2486,7 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"ការងារទី 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"ការធ្វើ​តេស្ត"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"ទូទៅ"</string>
-    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
-    <skip />
+    <string name="profile_label_supervising" msgid="5649312778545745371">"កំពុងគ្រប់គ្រង"</string>
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"កម្រងព័ត៌មានការងារ"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"លំហ​ឯកជន"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"ក្លូន"</string>

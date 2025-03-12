@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"अनपिन करण्‍यापूर्वी अनलॉक नमुन्यासाठी विचारा"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"अनपिन करण्‍यापूर्वी संकेतशब्दासाठी विचारा"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"तुमच्या ॲडमिनने इंस्टॉल केले आहे.\nदिलेल्या परवानग्या पाहण्यासाठी सेटिंग्जवर जा"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"तुमच्या ॲडमिनने अपडेट केले आहे.\nदिलेल्या परवानग्या पाहण्यासाठी सेटिंग्जवर जा"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"आपल्या प्रशासकाने हटवले"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ओके"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"बॅटरी सेव्हर गडद थीम सुरू करते आणि बॅकग्राउंड ॲक्टिव्हिटी, काही व्हिज्युअल इफेक्ट, ठरावीक वैशिष्ट्ये व काही नेटवर्क कनेक्शन मर्यादित किंवा बंद करते."</string>

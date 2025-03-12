@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Kërko motivin e shkyçjes para heqjes së gozhdimit"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Kërko fjalëkalim para heqjes nga gozhdimi."</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instaluar nga administratori.\nShko te cilësimet për të shikuar lejet e dhëna"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Përditësuar nga administratori.\nShko te cilësimet për të shikuar lejet e dhëna"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Fshirë nga administratori"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Në rregull"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"\"Kursyesi i baterisë\" aktivizon \"Temën e errët\" dhe kufizon ose çaktivizon aktivitetin në sfond, disa efekte vizuale, veçori të caktuara dhe disa lidhje të rrjetit."</string>

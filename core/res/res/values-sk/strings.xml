@@ -1822,8 +1822,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Zväčšenie"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Chcete prepnúť na mikrofón telefónu?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Chcete prepnúť na mikrofón načúvadla?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Keď chcete zlepšiť zvuk alebo ak je batéria načúvadla slabá. Týmto iba prepnete mikrofón počas hovoru."</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Volať handsfree môžete pomocou mikrofónu načúvadla. Týmto iba prepnete mikrofón počas hovoru."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Pre lepší zvuk alebo ak je batéria načúvadla takmer vybitá. Mikrofón sa prepne iba na čas hovoru."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Pomocou mikrofónu načúvadla môžete volať handsfree. Mikrofón sa prepne iba na čas hovoru."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Prepnúť"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Nastavenia"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Prepína sa na účet <xliff:g id="NAME">%1$s</xliff:g>…"</string>

@@ -1820,8 +1820,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Stækkun"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Skipta yfir í hljóðnema símans?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Skipta yfir í hljóðnema heyrnartækis?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Fyrir betri hljómgæði eða ef lítil hleðsla er á heyrnartækinu. Aðeins verður skipt um hljóðnema á meðan á símtali stendur."</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Þú getur notað hljóðnema heyrnartækisins þíns til að hringja eða svara símtölum handfrjálst. Aðeins verður skipt um hljóðnema á meðan á símtali stendur."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Til að auka hljómgæði eða ef hleðsla heyrnartækisins er lág. Aðeins verður skipt um hljóðnema meðan á símtali stendur."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Þú getur notað hljóðnema heyrnartækisins þíns til að hringja eða svara símtölum handfrjálst. Aðeins verður skipt um hljóðnema meðan á símtali stendur."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Skipta"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Stillingar"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Skiptir yfir á <xliff:g id="NAME">%1$s</xliff:g>…"</string>
@@ -2492,8 +2492,7 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"Vinna 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"Prófun"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"Sameiginlegt"</string>
-    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
-    <skip />
+    <string name="profile_label_supervising" msgid="5649312778545745371">"Eftirlit virkt"</string>
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"Vinnusnið"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"Leynirými"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Afrit"</string>

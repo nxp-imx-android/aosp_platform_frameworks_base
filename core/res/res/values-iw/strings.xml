@@ -1966,8 +1966,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"צריך לבקש קו ביטול נעילה לפני ביטול הצמדה"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"יש לבקש סיסמה לפני ביטול הצמדה"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"החבילה הותקנה על ידי האדמין.\nצריך לעבור להגדרות כדי לראות את ההרשאות שניתנו"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"החבילה עודכנה על ידי האדמין.\nצריך לעבור להגדרות כדי לראות את ההרשאות שניתנו"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"נמחקה על ידי מנהל המערכת"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"אישור"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"התכונה \'חיסכון בסוללה\' מפעילה עיצוב כהה ומגבילה או מכבה פעילות ברקע, חלק מהאפקטים החזותיים, תכונות מסוימות וחלק מהחיבורים לרשתות."</string>

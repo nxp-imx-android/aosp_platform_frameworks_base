@@ -1820,7 +1820,7 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Томруулах"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Утасны микрофон руу сэлгэх үү?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Сонсголын төхөөрөмжийн микрофон руу сэлгэх үү?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Дуу чимээг сайжруулахын тулд эсвэл таны сонсголын төхөөрөмжийн батарей бага бол. Энэ нь зөвхөн дуудлагын үеэр таны микрофоныг сэлгэнэ."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Дуу чимээг сайжруулахын тулд эсвэл таны сонсголын төхөөрөмжийн цэнэг бага үед, зөвхөн дуудлагын үеэр таны микрофоныг сэлгэнэ."</string>
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Та гараас хамаарахгүй дуудлагад сонсголын төхөөрөмжийнхөө микрофоныг ашиглаж болно. Энэ нь зөвхөн дуудлагын үеэр таны микрофоныг сэлгэнэ."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Сэлгэх"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Тохиргоо"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Бэхэлснийг болиулахаас өмнө түгжээ тайлах хээ асуух"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Тогтоосныг суллахаас өмнө нууц үг асуух"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Танай админ суулгасан.\nОлгосон зөвшөөрлүүдийг харахын тулд тохиргоо руу очно уу"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Танай админ шинэчилсэн.\nОлгосон зөвшөөрлийг харахын тулд тохиргоо руу очно уу"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Таны админ устгасан"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ОК"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Батарей хэмнэгч нь Бараан загварыг асааж, дэвсгэрийн үйл ажиллагаа, зарим визуал эффект, тодорхой онцлогууд болон зарим сүлжээний холболтыг хязгаарлах эсвэл унтраана."</string>

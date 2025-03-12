@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定時必須畫出解鎖圖案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消固定時必須輸入密碼"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"這是管理員安裝的套件。\n你可以前往設定查看授予的權限"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"管理員已更新套件。\n你可以前往設定查看授予的權限"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"已由你的管理員刪除"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"確定"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"省電模式會開啟深色主題，並限制或關閉背景活動、某些視覺效果、特定功能和部分網路連線。"</string>
