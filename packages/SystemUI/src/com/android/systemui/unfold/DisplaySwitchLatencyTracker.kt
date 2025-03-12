@@ -344,6 +344,8 @@ constructor(
         val onDrawnToOnScreenTurnedOnMs: Int = VALUE_UNKNOWN,
         val trackingResult: Int =
             SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TRACKING_RESULT__UNKNOWN_RESULT,
+        val screenWakelockstatus: Int =
+            SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__SCREEN_WAKELOCK_STATUS__SCREEN_WAKELOCK_STATUS_UNKNOWN,
     )
 
     enum class TrackingResult {
