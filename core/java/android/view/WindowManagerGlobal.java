@@ -329,13 +329,17 @@ public final class WindowManagerGlobal {
 
     /**
      * Adds a listener that will be notified whenever {@link #getWindowViews()} changes. The
-     * current value is provided immediately. If it was registered previously then this is ano op.
+     * current value is provided immediately using the provided {@link Executor}. If this
+     * {@link Consumer} was registered previously, then this is a no op.
      */
     public void addWindowViewsListener(@NonNull Executor executor,
             @NonNull Consumer<List<View>> consumer) {
         synchronized (mLock) {
+            if (mWindowViewsListenerGroup.isConsumerPresent(consumer)) {
+                return;
+            }
             mWindowViewsListenerGroup.addListener(executor, consumer);
-            mWindowViewsListenerGroup.accept(getWindowViews());
+            executor.execute(() -> consumer.accept(getWindowViews()));
         }
     }
 
