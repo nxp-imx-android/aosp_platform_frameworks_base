@@ -321,6 +321,22 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     }
 
     @Override
+    public boolean startAnimation(@NonNull IBinder transition,
+                                  @Nullable TransitionInfo info,
+                                  @NonNull TransitionDispatchState dispatchState,
+                                  @NonNull SurfaceControl.Transaction startTransaction,
+                                  @NonNull SurfaceControl.Transaction finishTransaction,
+                                  @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        if (info == null) {
+            // In data collection mode: there can't be errors - nothing to do
+            return false;
+        }
+        // In animation mode: always play everything
+        return startAnimation(
+                transition, info, startTransaction, finishTransaction, finishCallback);
+    }
+
+    @Override
     public boolean startAnimation(@NonNull IBinder transition, @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
