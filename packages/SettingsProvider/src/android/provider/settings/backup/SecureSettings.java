@@ -300,5 +300,9 @@ public class SecureSettings {
         Settings.Secure.DUAL_SHADE,
         Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED,
         Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED,
+        Settings.Secure.SPELL_CHECKER_ENABLED,
+        Settings.Secure.SELECTED_SPELL_CHECKER,
+        // SELECTED_SPELL_CHECKER_SUBTYPE needs to be restored after SELECTED_SPELL_CHECKER
+        Settings.Secure.SELECTED_SPELL_CHECKER_SUBTYPE,
     };
 }
