@@ -1609,7 +1609,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                                     relevantDecor.mTaskInfo,
                                     relevantDecor.mTaskSurface, ev.getRawX(), ev.getRawY(),
                                     dragStartState);
-                    if (indicatorType != TO_FULLSCREEN_INDICATOR) {
+                    if (indicatorType != TO_FULLSCREEN_INDICATOR
+                            || BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
                         if (mMoveToDesktopAnimator == null) {
                             mMoveToDesktopAnimator = new MoveToDesktopAnimator(
                                     mContext, mDragToDesktopAnimationStartBounds,

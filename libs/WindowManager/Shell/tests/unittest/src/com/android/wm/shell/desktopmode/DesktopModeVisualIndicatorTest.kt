@@ -36,6 +36,7 @@ import com.android.wm.shell.TestShellExecutor
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.SyncTransactionQueue
+import com.android.wm.shell.shared.R as sharedR
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
 import com.google.common.truth.Truth.assertThat
@@ -78,9 +79,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
 
     @Before
     fun setUp() {
-        whenever(displayLayout.width()).thenReturn(DISPLAY_BOUNDS.width())
-        whenever(displayLayout.height()).thenReturn(DISPLAY_BOUNDS.height())
-        whenever(displayLayout.stableInsets()).thenReturn(STABLE_INSETS)
+        setUpDisplayBoundsTablet()
         whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
         whenever(displayController.getDisplay(anyInt())).thenReturn(mContext.display)
         whenever(bubbleBoundsProvider.getBubbleBarExpandedViewDropTargetBounds(any()))
@@ -97,12 +96,36 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         )
     }
 
+    private fun setUpDisplayBoundsTablet() {
+        whenever(displayLayout.width()).thenReturn(TABLET_DISPLAY_BOUNDS.width())
+        whenever(displayLayout.height()).thenReturn(TABLET_DISPLAY_BOUNDS.height())
+        whenever(displayLayout.stableInsets()).thenReturn(TABLET_STABLE_INSETS)
+    }
+
+    private fun setUpDisplayBoundsFoldable() {
+        whenever(displayLayout.width()).thenReturn(FOLDABLE_DISPLAY_BOUNDS.width())
+        whenever(displayLayout.height()).thenReturn(FOLDABLE_DISPLAY_BOUNDS.height())
+        whenever(displayLayout.stableInsets()).thenReturn(FOLDABLE_STABLE_INSETS)
+    }
+
+    private fun disableDesktop() {
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
+            false,
+        )
+    }
+
+    private fun setUpFoldable() {
+        setUpDisplayBoundsFoldable()
+        disableDesktop()
+    }
+
     @Test
     fun testFullscreenRegionCalculation() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
         var testRegion = visualIndicator.calculateFullscreenRegion(displayLayout, CAPTION_HEIGHT)
         assertThat(testRegion.bounds)
-            .isEqualTo(Rect(0, Short.MIN_VALUE.toInt(), 2400, 2 * STABLE_INSETS.top))
+            .isEqualTo(Rect(0, Short.MIN_VALUE.toInt(), 2400, 2 * TABLET_STABLE_INSETS.top))
 
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM)
         testRegion = visualIndicator.calculateFullscreenRegion(displayLayout, CAPTION_HEIGHT)
@@ -113,9 +136,9 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         assertThat(testRegion.bounds)
             .isEqualTo(
                 Rect(
-                    (DISPLAY_BOUNDS.width() / 2f - toFullscreenWidth / 2f).toInt(),
+                    (TABLET_DISPLAY_BOUNDS.width() / 2f - toFullscreenWidth / 2f).toInt(),
                     Short.MIN_VALUE.toInt(),
-                    (DISPLAY_BOUNDS.width() / 2f + toFullscreenWidth / 2f).toInt(),
+                    (TABLET_DISPLAY_BOUNDS.width() / 2f + toFullscreenWidth / 2f).toInt(),
                     transitionHeight,
                 )
             )
@@ -123,7 +146,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
         testRegion = visualIndicator.calculateFullscreenRegion(displayLayout, CAPTION_HEIGHT)
         assertThat(testRegion.bounds)
-            .isEqualTo(Rect(0, Short.MIN_VALUE.toInt(), 2400, 2 * STABLE_INSETS.top))
+            .isEqualTo(Rect(0, Short.MIN_VALUE.toInt(), 2400, 2 * TABLET_STABLE_INSETS.top))
 
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.DRAGGED_INTENT)
         testRegion = visualIndicator.calculateFullscreenRegion(displayLayout, CAPTION_HEIGHT)
@@ -142,7 +165,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(0, -50, 32, 1600))
+        assertThat(testRegion).isEqualTo(Rect(0, -50, 32, 1600))
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM)
         testRegion =
             visualIndicator.calculateSplitLeftRegion(
@@ -150,7 +173,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(0, transitionHeight, 32, 1600))
+        assertThat(testRegion).isEqualTo(Rect(0, transitionHeight, 32, 1600))
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
         testRegion =
             visualIndicator.calculateSplitLeftRegion(
@@ -158,7 +181,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(0, -50, 32, 1600))
+        assertThat(testRegion).isEqualTo(Rect(0, -50, 32, 1600))
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.DRAGGED_INTENT)
         testRegion =
             visualIndicator.calculateSplitLeftRegion(
@@ -166,7 +189,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(0, -50, 32, 1600))
+        assertThat(testRegion).isEqualTo(Rect(0, -50, 32, 1600))
     }
 
     @Test
@@ -180,7 +203,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(2368, -50, 2400, 1600))
+        assertThat(testRegion).isEqualTo(Rect(2368, -50, 2400, 1600))
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FREEFORM)
         testRegion =
             visualIndicator.calculateSplitRightRegion(
@@ -188,7 +211,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(2368, transitionHeight, 2400, 1600))
+        assertThat(testRegion).isEqualTo(Rect(2368, transitionHeight, 2400, 1600))
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
         testRegion =
             visualIndicator.calculateSplitRightRegion(
@@ -196,7 +219,7 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(2368, -50, 2400, 1600))
+        assertThat(testRegion).isEqualTo(Rect(2368, -50, 2400, 1600))
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.DRAGGED_INTENT)
         testRegion =
             visualIndicator.calculateSplitRightRegion(
@@ -204,41 +227,37 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 TRANSITION_AREA_WIDTH,
                 CAPTION_HEIGHT,
             )
-        assertThat(testRegion.bounds).isEqualTo(Rect(2368, -50, 2400, 1600))
+        assertThat(testRegion).isEqualTo(Rect(2368, -50, 2400, 1600))
     }
 
     @Test
     fun testBubbleLeftRegionCalculation() {
-        val bubbleRegionWidth =
-            context.resources.getDimensionPixelSize(R.dimen.bubble_transform_area_width)
-        val bubbleRegionHeight =
-            context.resources.getDimensionPixelSize(R.dimen.bubble_transform_area_height)
-        val expectedRect = Rect(0, 1600 - bubbleRegionHeight, bubbleRegionWidth, 1600)
+        val bubbleRegionSize =
+            context.resources.getDimensionPixelSize(sharedR.dimen.drag_zone_bubble_tablet)
+        val expectedRect = Rect(0, 1600 - bubbleRegionSize, bubbleRegionSize, 1600)
 
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
         var testRegion = visualIndicator.calculateBubbleLeftRegion(displayLayout)
-        assertThat(testRegion.bounds).isEqualTo(expectedRect)
+        assertThat(testRegion).isEqualTo(expectedRect)
 
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
         testRegion = visualIndicator.calculateBubbleLeftRegion(displayLayout)
-        assertThat(testRegion.bounds).isEqualTo(expectedRect)
+        assertThat(testRegion).isEqualTo(expectedRect)
     }
 
     @Test
     fun testBubbleRightRegionCalculation() {
-        val bubbleRegionWidth =
-            context.resources.getDimensionPixelSize(R.dimen.bubble_transform_area_width)
-        val bubbleRegionHeight =
-            context.resources.getDimensionPixelSize(R.dimen.bubble_transform_area_height)
-        val expectedRect = Rect(2400 - bubbleRegionWidth, 1600 - bubbleRegionHeight, 2400, 1600)
+        val bubbleRegionSize =
+            context.resources.getDimensionPixelSize(sharedR.dimen.drag_zone_bubble_tablet)
+        val expectedRect = Rect(2400 - bubbleRegionSize, 1600 - bubbleRegionSize, 2400, 1600)
 
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
         var testRegion = visualIndicator.calculateBubbleRightRegion(displayLayout)
-        assertThat(testRegion.bounds).isEqualTo(expectedRect)
+        assertThat(testRegion).isEqualTo(expectedRect)
 
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
         testRegion = visualIndicator.calculateBubbleRightRegion(displayLayout)
-        assertThat(testRegion.bounds).isEqualTo(expectedRect)
+        assertThat(testRegion).isEqualTo(expectedRect)
     }
 
     @Test
@@ -264,47 +283,107 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
         com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
     )
-    fun testDefaultIndicatorWithNoDesktop() {
-        mContext.orCreateTestableResources.addOverride(
-            com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
-            false,
-        )
-        // Fullscreen to center, no desktop indicator
+    fun testDefaultIndicators_bubblesEnabled() {
         createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN)
-        var result = visualIndicator.updateIndicatorType(PointF(500f, 500f))
-        assertThat(result).isEqualTo(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
-        // Fullscreen to split
-        result = visualIndicator.updateIndicatorType(PointF(10000f, 500f))
-        assertThat(result)
-            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR)
-        result = visualIndicator.updateIndicatorType(PointF(-10000f, 500f))
-        assertThat(result)
-            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR)
-        // Fullscreen to bubble
-        result = visualIndicator.updateIndicatorType(PointF(100f, 1500f))
+        var result = visualIndicator.updateIndicatorType(PointF(10f, 1500f))
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_LEFT_INDICATOR)
         result = visualIndicator.updateIndicatorType(PointF(2300f, 1500f))
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR)
-        // Split to center, no desktop indicator
-        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.FROM_SPLIT)
-        result = visualIndicator.updateIndicatorType(PointF(500f, 500f))
-        assertThat(result).isEqualTo(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
-        // Split to fullscreen
-        result = visualIndicator.updateIndicatorType(PointF(500f, 0f))
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    fun testDefaultIndicators_foldable_leftRightSplit() {
+        setUpFoldable()
+
+        createVisualIndicator(
+            DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN,
+            isSmallTablet = true,
+            isLeftRightSplit = true,
+        )
+        var result = visualIndicator.updateIndicatorType(foldCenter())
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
-        // Split to bubble
-        result = visualIndicator.updateIndicatorType(PointF(100f, 1500f))
+
+        result = visualIndicator.updateIndicatorType(foldLeftEdge())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_LEFT_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldRightEdge())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_SPLIT_RIGHT_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldLeftBottom())
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_LEFT_INDICATOR)
-        result = visualIndicator.updateIndicatorType(PointF(2300f, 1500f))
+
+        result = visualIndicator.updateIndicatorType(foldRightBottom())
         assertThat(result)
             .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR)
-        // Drag app to center, no desktop indicator
-        createVisualIndicator(DesktopModeVisualIndicator.DragStartState.DRAGGED_INTENT)
-        result = visualIndicator.updateIndicatorType(PointF(500f, 500f))
+
+        createVisualIndicator(
+            DesktopModeVisualIndicator.DragStartState.FROM_SPLIT,
+            isSmallTablet = true,
+            isLeftRightSplit = true,
+        )
+        result = visualIndicator.updateIndicatorType(foldCenter())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldLeftBottom())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_LEFT_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldRightBottom())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR)
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    fun testDefaultIndicators_foldable_topBottomSplit() {
+        setUpFoldable()
+
+        createVisualIndicator(
+            DesktopModeVisualIndicator.DragStartState.FROM_FULLSCREEN,
+            isSmallTablet = true,
+            isLeftRightSplit = false,
+        )
+        var result = visualIndicator.updateIndicatorType(foldCenter())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldLeftEdge())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldLeftBottom())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_LEFT_INDICATOR)
+
+        result = visualIndicator.updateIndicatorType(foldRightBottom())
+        assertThat(result)
+            .isEqualTo(DesktopModeVisualIndicator.IndicatorType.TO_BUBBLE_RIGHT_INDICATOR)
+
+        createVisualIndicator(
+            DesktopModeVisualIndicator.DragStartState.FROM_SPLIT,
+            isSmallTablet = true,
+            isLeftRightSplit = false,
+        )
+        // No indicator as top/bottom split apps should not be dragged
+        result = visualIndicator.updateIndicatorType(foldCenter())
+        assertThat(result).isEqualTo(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
+        result = visualIndicator.updateIndicatorType(foldLeftBottom())
+        assertThat(result).isEqualTo(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
+        result = visualIndicator.updateIndicatorType(foldRightBottom())
         assertThat(result).isEqualTo(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
     }
 
@@ -382,7 +461,11 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
         verify(taskDisplayAreaOrganizer, never()).attachToDisplayArea(anyInt(), any())
     }
 
-    private fun createVisualIndicator(dragStartState: DesktopModeVisualIndicator.DragStartState) {
+    private fun createVisualIndicator(
+        dragStartState: DesktopModeVisualIndicator.DragStartState,
+        isSmallTablet: Boolean = false,
+        isLeftRightSplit: Boolean = true,
+    ) {
         visualIndicator =
             DesktopModeVisualIndicator(
                 desktopExecutor,
@@ -396,20 +479,53 @@ class DesktopModeVisualIndicatorTest : ShellTestCase() {
                 dragStartState,
                 bubbleBoundsProvider,
                 snapEventHandler,
+                isSmallTablet,
+                isLeftRightSplit,
             )
+    }
+
+    private fun foldCenter(): PointF {
+        return PointF(
+            FOLDABLE_DISPLAY_BOUNDS.centerX().toFloat(),
+            FOLDABLE_DISPLAY_BOUNDS.centerY().toFloat(),
+        )
+    }
+
+    private fun foldLeftEdge(): PointF {
+        return PointF(0f, 50f)
+    }
+
+    private fun foldRightEdge(): PointF {
+        return PointF(750f, 50f)
+    }
+
+    private fun foldLeftBottom(): PointF {
+        return PointF(0f, 650f)
+    }
+
+    private fun foldRightBottom(): PointF {
+        return PointF(750f, 650f)
     }
 
     companion object {
         private const val TRANSITION_AREA_WIDTH = 32
         private const val CAPTION_HEIGHT = 50
-        private val DISPLAY_BOUNDS = Rect(0, 0, 2400, 1600)
         private const val NAVBAR_HEIGHT = 50
-        private val STABLE_INSETS =
+        private val TABLET_DISPLAY_BOUNDS = Rect(0, 0, 2400, 1600)
+        private val TABLET_STABLE_INSETS =
             Rect(
-                DISPLAY_BOUNDS.left,
-                DISPLAY_BOUNDS.top + CAPTION_HEIGHT,
-                DISPLAY_BOUNDS.right,
-                DISPLAY_BOUNDS.bottom - NAVBAR_HEIGHT,
+                TABLET_DISPLAY_BOUNDS.left,
+                TABLET_DISPLAY_BOUNDS.top + CAPTION_HEIGHT,
+                TABLET_DISPLAY_BOUNDS.right,
+                TABLET_DISPLAY_BOUNDS.bottom - NAVBAR_HEIGHT,
+            )
+        private val FOLDABLE_DISPLAY_BOUNDS = Rect(0, 0, 800, 700)
+        private val FOLDABLE_STABLE_INSETS =
+            Rect(
+                FOLDABLE_DISPLAY_BOUNDS.left,
+                FOLDABLE_DISPLAY_BOUNDS.top + CAPTION_HEIGHT,
+                FOLDABLE_DISPLAY_BOUNDS.right,
+                FOLDABLE_DISPLAY_BOUNDS.bottom - NAVBAR_HEIGHT,
             )
     }
 }
