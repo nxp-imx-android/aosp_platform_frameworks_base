@@ -18,7 +18,6 @@ package com.android.server.inputmethod;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
@@ -28,7 +27,6 @@ import com.android.server.wm.WindowManagerInternal;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -41,10 +39,6 @@ import java.util.function.IntFunction;
 public final class UserDataRepositoryTest {
 
     private static final int ANY_USER_ID = 1;
-
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true).build();
 
     @Mock
     private InputMethodManagerService mMockInputMethodManagerService;

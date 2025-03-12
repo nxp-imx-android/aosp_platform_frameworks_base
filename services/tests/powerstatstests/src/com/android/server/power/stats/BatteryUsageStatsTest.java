@@ -37,7 +37,6 @@ import android.os.BatteryUsageStats;
 import android.os.Parcel;
 import android.os.UidBatteryConsumer;
 import android.os.UserBatteryConsumer;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.Xml;
 
 import androidx.test.filters.SmallTest;
@@ -46,7 +45,6 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -64,11 +62,6 @@ import java.util.stream.Collectors;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 public class BatteryUsageStatsTest {
-    @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
     private static final int USER_ID = 42;
     private static final int APP_UID1 = 271;
     private static final int APP_UID2 = 314;

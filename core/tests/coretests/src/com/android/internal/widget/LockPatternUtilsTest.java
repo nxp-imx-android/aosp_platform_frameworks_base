@@ -53,7 +53,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
-import android.platform.test.annotations.IgnoreUnderRavenwood;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.provider.Settings;
@@ -80,7 +80,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-@IgnoreUnderRavenwood(blockedBy = LockPatternUtils.class)
+@DisabledOnRavenwood(blockedBy = LockPatternUtils.class)
 public class LockPatternUtilsTest {
     @Rule
     public final RavenwoodRule mRavenwood = new RavenwoodRule();

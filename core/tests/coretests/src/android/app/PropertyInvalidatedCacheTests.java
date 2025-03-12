@@ -41,7 +41,6 @@ import android.util.Log;
 import com.android.internal.os.ApplicationSharedMemory;
 
 import android.platform.test.annotations.DisabledOnRavenwood;
-import android.platform.test.annotations.IgnoreUnderRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;

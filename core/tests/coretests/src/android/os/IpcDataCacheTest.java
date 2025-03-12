@@ -26,7 +26,7 @@ import static org.junit.Assert.fail;
 import android.app.PropertyInvalidatedCache;
 import android.app.PropertyInvalidatedCache.Args;
 import android.multiuser.Flags;
-import android.platform.test.annotations.IgnoreUnderRavenwood;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;

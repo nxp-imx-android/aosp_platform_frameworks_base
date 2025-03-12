@@ -22,7 +22,6 @@ import static com.google.common.truth.Truth.assertWithMessage;
 import android.os.BatteryManager;
 import android.os.BatteryStats;
 import android.os.Process;
-import android.platform.test.ravenwood.RavenwoodRule;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
@@ -31,7 +30,6 @@ import com.android.internal.os.BatteryStatsHistoryIterator;
 import com.android.internal.os.MonotonicClock;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -44,11 +42,6 @@ import java.util.Random;
 @SmallTest
 @SuppressWarnings("GuardedBy")
 public class BatteryStatsHistoryIteratorTest {
-    @Rule
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
     private static final int APP_UID = Process.FIRST_APPLICATION_UID + 42;
 
     private final MockClock mMockClock = new MockClock();
