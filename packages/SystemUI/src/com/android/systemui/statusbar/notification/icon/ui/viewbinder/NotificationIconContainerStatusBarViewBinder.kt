@@ -18,9 +18,9 @@ package com.android.systemui.statusbar.notification.icon.ui.viewbinder
 
 import android.view.Display
 import androidx.lifecycle.lifecycleScope
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.tracing.traceSection
 import com.android.systemui.common.ui.ConfigurationState
-import com.android.systemui.display.data.repository.PerDisplayRepository
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.statusbar.notification.collection.NotifCollection
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder.IconViewStore
