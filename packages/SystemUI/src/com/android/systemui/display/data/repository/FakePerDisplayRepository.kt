@@ -16,9 +16,6 @@
 
 package com.android.systemui.display.data.repository
 
-import com.android.app.displaylib.PerDisplayRepository
-
-// TODO b/401305290 - move to displaylib
 class FakePerDisplayRepository<T> : PerDisplayRepository<T> {
 
     private val instances = mutableMapOf<Int, T>()

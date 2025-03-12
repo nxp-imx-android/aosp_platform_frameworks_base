@@ -16,7 +16,6 @@
 package com.android.systemui.display.data.repository
 
 import android.view.Display
-import com.android.app.displaylib.DisplayRepository.PendingDisplay
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.util.mockito.mock
 import dagger.Binds
@@ -27,6 +26,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.android.app.displaylib.DisplayRepository.PendingDisplay
 import org.mockito.Mockito.`when` as whenever
 
 /** Creates a mock display. */
@@ -50,7 +50,8 @@ fun createPendingDisplay(id: Int = 0): PendingDisplay =
 class FakeDisplayRepository @Inject constructor() : DisplayRepository {
     private val flow = MutableStateFlow<Set<Display>>(emptySet())
     private val displayIdFlow = MutableStateFlow<Set<Int>>(emptySet())
-    private val pendingDisplayFlow = MutableSharedFlow<PendingDisplay?>(replay = 1)
+    private val pendingDisplayFlow =
+        MutableSharedFlow<PendingDisplay?>(replay = 1)
     private val displayAdditionEventFlow = MutableSharedFlow<Display?>(replay = 0)
     private val displayRemovalEventFlow = MutableSharedFlow<Int>(replay = 0)
     private val displayIdsWithSystemDecorationsFlow = MutableStateFlow<Set<Int>>(emptySet())

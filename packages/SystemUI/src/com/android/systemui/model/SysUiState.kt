@@ -17,9 +17,9 @@ package com.android.systemui.model
 
 import android.util.Log
 import android.view.Display
-import com.android.app.displaylib.PerDisplayInstanceProviderWithTeardown
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.display.data.repository.PerDisplayInstanceProviderWithTeardown
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.model.SysUiState.SysUiStateCallback
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
