@@ -138,7 +138,7 @@
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Interrompi registrazione"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Condivisione dello schermo in corso"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Condivisione di contenuti in corso…"</string>
-    <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Vuoi interrompere la condivisione dello schermo?"</string>
+    <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Interrompere la condivisione dello schermo?"</string>
     <string name="share_to_app_stop_dialog_title_generic" msgid="9079161538135843648">"Interrompere la condivisione?"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen_with_host_app" msgid="522823522115375414">"Al momento stai condividendo l\'intero schermo con <xliff:g id="HOST_APP_NAME">%1$s</xliff:g>"</string>
     <string name="share_to_app_stop_dialog_message_entire_screen" msgid="5090115386271179270">"Al momento stai condividendo l\'intero schermo con un\'app"</string>
@@ -432,8 +432,7 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Riattiva audio ambientale"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Strumenti"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Sottotitoli in tempo reale"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Impostazioni"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Nota"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Vuoi sbloccare il microfono del dispositivo?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Vuoi sbloccare la fotocamera del dispositivo?"</string>
@@ -795,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"On - Rotazione basata sul viso"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Fine"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Applica"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Disattiva notifiche"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Modalità silenziosa"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Modalità predefinita"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatico"</string>
@@ -906,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utilizza lo schermo diviso con l\'app a destra"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utilizza lo schermo diviso con l\'app a sinistra"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Utilizza la modalità a schermo intero"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Usa windowing del desktop"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Passa all\'app a destra o sotto mentre usi lo schermo diviso"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Passa all\'app a sinistra o sopra mentre usi lo schermo diviso"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Con lo schermo diviso: sostituisci un\'app con un\'altra"</string>
@@ -1204,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Nascondere questo controllo multimediale per <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Imposs. nascondere sessione multimediale corrente."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Nascondi"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Riprendi"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Impostazioni"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="SONG_NAME">%1$s</xliff:g> di <xliff:g id="ARTIST_NAME">%2$s</xliff:g> è in riproduzione da <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> di <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

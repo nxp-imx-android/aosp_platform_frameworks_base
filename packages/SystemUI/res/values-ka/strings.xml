@@ -794,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ჩართული — სახის მიხედვით"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"მზადაა"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"მისადაგება"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"შეტყობინებების გამორთვა"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"ჩუმი"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ნაგულისხმევი"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ავტომატური"</string>
@@ -905,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ეკრანის გაყოფის გამოყენება აპზე მარჯვნივ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ეკრანის გაყოფის გამოყენება აპზე მარცხნივ"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"სრული ეკრანის გამოყენება"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"დესკტოპის ფანჯრის რეჟიმის გამოყენება"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ეკრანის გაყოფის გამოყენებისას აპზე მარჯვნივ ან ქვემოთ გადართვა"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ეკრანის გაყოფის გამოყენებისას აპზე მარცხნივ ან ზემოთ გადართვა"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ეკრანის გაყოფის დროს: ერთი აპის მეორით ჩანაცვლება"</string>
@@ -1203,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"დაიმალოს მედიის ეს კონტროლერი <xliff:g id="APP_NAME">%1$s</xliff:g> აპში?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"მედიის მიმდინარე სესიის დამალვა შეუძლებელია."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"დამალვა"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"გაგრძელება"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"პარამეტრები"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="SONG_NAME">%1$s</xliff:g>, <xliff:g id="ARTIST_NAME">%2$s</xliff:g>, უკრავს <xliff:g id="APP_LABEL">%3$s</xliff:g>-დან"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="TOTAL_TIME">%2$s</xliff:g>-დან <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>

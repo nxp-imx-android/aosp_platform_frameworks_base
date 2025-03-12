@@ -423,20 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Ήχοι περιβάλλοντος"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Αριστερά"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Δεξιά"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Ήχοι περιβάλλοντος"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Ήχοι περιβάλλοντος στα αριστερά"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Ήχοι περιβάλλοντος στα δεξιά"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Ανάπτυξη σε ξεχωριστά στοιχεία ελέγχου αριστερά και δεξιά"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Σύμπτυξη σε ενοποιημένο στοιχείο ελέγχου"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Σίγαση ήχων περιβάλλοντος"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Κατάργηση σίγασης ήχων περιβάλλοντος"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Εργαλεία"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Ζωντανοί υπότιτλοι"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Ρυθμίσεις"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Σημείωση"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Κατάργηση αποκλεισμού μικροφώνου συσκευής;"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Κατάργηση αποκλεισμού κάμερας συσκευής;"</string>
@@ -798,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Ενεργό - Βάσει προσώπου"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Τέλος"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Εφαρμογή"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Απενεργοποίηση ειδοποιήσεων"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Σίγαση"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Προεπιλογή"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Αυτόματο"</string>
@@ -909,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Χρήση διαχωρισμού οθόνης με την εφαρμογή στα δεξιά"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Χρήση διαχωρισμού οθόνης με την εφαρμογή στα αριστερά"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Χρήση πλήρους οθόνης"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Χρήση της λειτουργίας προσαρμογής σε παράθυρο στην επιφάνεια εργασίας"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Εναλλαγή στην εφαρμογή δεξιά ή κάτω κατά τη χρήση διαχωρισμού οθόνης"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Εναλλαγή σε εφαρμογή αριστερά ή επάνω κατά τη χρήση διαχωρισμού οθόνης"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Κατά τον διαχωρισμό οθόνης: αντικατάσταση μιας εφαρμογής με άλλη"</string>
@@ -1006,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Προσθήκη στη θέση <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Μη έγκυρη θέση."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Θέση <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Το πλακίδιο έχει ήδη προστεθεί"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Το πλακίδιο προστέθηκε"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Το πλακίδιο καταργήθηκε"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Επεξεργασία γρήγορων ρυθμίσεων."</string>
@@ -1208,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Απόκρυψη στοιχ. ελέγχου μέσων για <xliff:g id="APP_NAME">%1$s</xliff:g>;"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Αδυναμία απόκρ. τρέχουσας περιόδ. λειτουργ. μέσου."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Απόκρυψη"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Συνέχιση"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Ρυθμίσεις"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"Γίνεται αναπαραγωγή του <xliff:g id="SONG_NAME">%1$s</xliff:g> από <xliff:g id="ARTIST_NAME">%2$s</xliff:g> στην εφαρμογή <xliff:g id="APP_LABEL">%3$s</xliff:g>."</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> από <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

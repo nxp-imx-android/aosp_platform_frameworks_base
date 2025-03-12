@@ -423,20 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"സറൗണ്ടിംഗ്‌സ്"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ഇടത്"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"വലത്"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"സറൗണ്ടിംഗ്‌സ്"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"ഇടത് സറൗണ്ടിംഗ്‌സ്"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"വലത് സറൗണ്ടിംഗ്‌സ്"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"വേർതിരിച്ച ഇടത്, വലത് നിയന്ത്രണങ്ങളിലേക്ക് വികസിപ്പിക്കുക"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ഏകീകൃത നിയന്ത്രണത്തിലേക്ക് ചുരുക്കുക"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"സറൗണ്ടിംഗ്‌സ് മ്യൂട്ട് ചെയ്യുക"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"സറൗണ്ടിംഗ്‌സ് അൺമ്യൂട്ട് ചെയ്യുക"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"ടൂളുകൾ"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"തത്സമയ ക്യാപ്ഷൻ"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"ക്രമീകരണം"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"കുറിപ്പ്"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"ഉപകരണ മൈക്രോഫോൺ അൺബ്ലോക്ക് ചെയ്യണോ?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"ഉപകരണ ക്യാമറ അൺബ്ലോക്ക് ചെയ്യണോ?"</string>
@@ -798,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ഓണാണ് - ഫേസ് ബേസ്‌ഡ്"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"പൂർത്തിയായി"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ബാധകമാക്കുക"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"അറിയിപ്പുകൾ ഓഫാക്കുക"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"നിശബ്‌ദം"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ഡിഫോൾട്ട്"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"സ്വയമേവ"</string>
@@ -909,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"വലതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ഇടതുവശത്തുള്ള ആപ്പിനൊപ്പം സ്‌ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"പൂർണ സ്ക്രീൻ ഉപയോഗിക്കുക"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"ഡെസ്ക്ടോപ്പ് വിൻഡോയിംഗ് ഉപയോഗിക്കുക"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"സ്ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുമ്പോൾ വലതുവശത്തെ/താഴത്തെ ആപ്പിലേക്ക് മാറുക"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"സ്ക്രീൻ വിഭജന മോഡ് ഉപയോഗിക്കുമ്പോൾ ഇടതുവശത്തെ/മുകളിലെ ആപ്പിലേക്ക് മാറൂ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"സ്‌ക്രീൻ വിഭജന മോഡിൽ: ഒരു ആപ്പിൽ നിന്ന് മറ്റൊന്നിലേക്ക് മാറുക"</string>
@@ -1207,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"<xliff:g id="APP_NAME">%1$s</xliff:g> ആപ്പിനുള്ള ഈ മീഡിയാ കൺട്രോൾ മറയ്ക്കണോ?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"നിലവിലെ മീഡിയ സെഷൻ മറയ്ക്കാനാകില്ല."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"മറയ്‌ക്കുക"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"പുനരാരംഭിക്കുക"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"ക്രമീകരണം"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="ARTIST_NAME">%2$s</xliff:g> എന്ന ആർട്ടിസ്റ്റിന്റെ <xliff:g id="SONG_NAME">%1$s</xliff:g> എന്ന ഗാനം <xliff:g id="APP_LABEL">%3$s</xliff:g> ആപ്പിൽ പ്ലേ ചെയ്യുന്നു"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="TOTAL_TIME">%2$s</xliff:g>-ൽ <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>

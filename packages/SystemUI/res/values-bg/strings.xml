@@ -432,8 +432,7 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Включване на околните звуци"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Инструменти"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Надписи на живо"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Настройки"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Бележка"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Да се отблокира ли микрофонът на устройството?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Да се отблокира ли камерата на устройството?"</string>
@@ -795,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Вкл. – въз основа на лицето"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Готово"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Прилагане"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Изключване на известията"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Тих режим"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Стандартно"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Автоматично"</string>
@@ -906,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Използване на разделен екран с приложението вдясно"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Използване на разделен екран с приложението вляво"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Използване режима на цял екран"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Използване на режима за настолни компютри"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Превключване към приложението вдясно/отдолу в режима на разделен екран"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Превключване към приложението вляво/отгоре в режима на разделен екран"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"При разделен екран: замяна на дадено приложение с друго"</string>
@@ -1204,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Скриване на мултимед. контрола за <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Текущата сесия за мултимедия не бе скрита."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Скриване"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Възобновяване"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Настройки"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="SONG_NAME">%1$s</xliff:g> на <xliff:g id="ARTIST_NAME">%2$s</xliff:g> се възпроизвежда от <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> от <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>
