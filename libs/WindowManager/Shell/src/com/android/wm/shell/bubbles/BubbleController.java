@@ -1306,7 +1306,11 @@ public class BubbleController implements ConfigurationChangeListener,
                 // TODO b/392893178: Merge the unfold and the task view transition so that we don't
                 //  have to post a delayed runnable to the looper to update the bounds
                 if (mStackView.isExpanded()) {
-                    mStackView.postDelayed(() -> mStackView.updateExpandedView(), 500);
+                    mStackView.postDelayed(() -> {
+                        if (mStackView != null) {
+                            mStackView.updateExpandedView();
+                        }
+                    } , 500);
                 }
             }
             if (newConfig.fontScale != mFontScale) {
