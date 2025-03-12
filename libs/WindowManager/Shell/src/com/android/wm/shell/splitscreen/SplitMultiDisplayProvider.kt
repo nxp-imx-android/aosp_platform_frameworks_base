@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.splitscreen;
+package com.android.wm.shell.splitscreen
 
-import android.window.WindowContainerToken;
+import android.window.WindowContainerToken
 
-public interface SplitMultiDisplayProvider {
+interface SplitMultiDisplayProvider {
     /**
      * Returns the WindowContainerToken for the root of the given display ID.
      *
      * @param displayId The ID of the display.
      * @return The {@link WindowContainerToken} associated with the display's root task.
      */
-    WindowContainerToken getDisplayRootForDisplayId(int displayId);
+    fun getDisplayRootForDisplayId(displayId: Int): WindowContainerToken?
 }
