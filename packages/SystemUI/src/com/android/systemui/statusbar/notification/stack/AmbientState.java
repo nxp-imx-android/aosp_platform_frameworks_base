@@ -696,10 +696,13 @@ public class AmbientState implements Dumpable {
         return mPulsing;
     }
 
+    public boolean isPulsing(String entryKey) {
+        boolean isHeadsUp = mHeadsUpRepository.isHeadsUpEntry(entryKey);
+        return mPulsing && isHeadsUp;
+    }
+
     public boolean isPulsing(NotificationEntry entry) {
-        boolean isHeadsUp = NotificationBundleUi.isEnabled()
-                ? mHeadsUpRepository.isHeadsUpEntry(entry.getKey())
-                : entry.isHeadsUpEntry();
+        boolean isHeadsUp = entry.isHeadsUpEntry();
         return mPulsing && isHeadsUp;
     }
 
@@ -750,7 +753,10 @@ public class AmbientState implements Dumpable {
      * @return whether a row is dozing and not pulsing right now
      */
     public boolean isDozingAndNotPulsing(ExpandableNotificationRow row) {
-        return isDozing() && !isPulsing(row.getEntry());
+        boolean isPulsing = NotificationBundleUi.isEnabled()
+                ? isPulsing(row.getKey())
+                : isPulsing(row.getEntryLegacy());
+        return isDozing() && !isPulsing;
     }
 
     /**
