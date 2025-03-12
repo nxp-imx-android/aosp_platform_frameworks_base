@@ -672,6 +672,7 @@ public class BatteryStatsHistory {
      */
     public void reset() {
         synchronized (this) {
+            mMonotonicHistorySize = 0;
             initHistoryBuffer();
             if (mStore != null) {
                 mStore.reset();

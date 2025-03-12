@@ -579,7 +579,7 @@ public class BatteryUsageStatsProviderTest {
         MockBatteryStatsImpl batteryStats = mStatsRule.getBatteryStats();
         accumulateBatteryUsageStats(batteryStats, 10000000, 0);
         // Accumulate every 200 bytes of battery history
-        accumulateBatteryUsageStats(batteryStats, 200, 2);
+        accumulateBatteryUsageStats(batteryStats, 200, 1);
         accumulateBatteryUsageStats(batteryStats, 50, 5);
         // Accumulate on every invocation of accumulateBatteryUsageStats
         accumulateBatteryUsageStats(batteryStats, 0, 7);
