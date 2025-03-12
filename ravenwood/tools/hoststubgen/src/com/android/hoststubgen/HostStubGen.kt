@@ -31,11 +31,12 @@ import org.apache.commons.compress.archivers.zip.ZipFile
 class HostStubGen(val options: HostStubGenOptions) {
     fun run() {
         val errors = HostStubGenErrors()
-        val stats = HostStubGenStats()
         val inJar = ZipFile(options.inJar.get)
 
         // Load all classes.
         val allClasses = ClassNodes.loadClassStructures(inJar, options.inJar.get)
+
+        val stats = HostStubGenStats(allClasses)
 
         // Dump the classes, if specified.
         options.inputJarDumpFile.ifSet {

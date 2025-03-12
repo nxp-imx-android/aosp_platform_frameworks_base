@@ -15,13 +15,24 @@
  */
 package com.android.hoststubgen
 
+import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.getOuterClassNameFromFullClassName
 import com.android.hoststubgen.asm.getPackageNameFromFullClassName
 import com.android.hoststubgen.filters.FilterPolicyWithReason
+import com.android.hoststubgen.filters.StatsLabel
 import org.objectweb.asm.Opcodes
 import java.io.PrintWriter
 
-open class HostStubGenStats {
+/**
+ * TODO This is for the legacy API coverage stats CSV that shows how many APIs are "supported"
+ * in each class with some heuristics. We created [ApiDumper] later, which dumpps all methods
+ * with the "supported" status. We should update the coverage dashboard to use the [ApiDumper]
+ * output and remove this class, once we port all the heuristics to [ApiDumper] as well.
+ * (For example, this class ignores non-public and/or abstract methods, but [ApiDumper] shows
+ * all of them in the same way. We should probably mark them as "Boring" or maybe "Ignore"
+ * for [ApiDumper])
+ */
+open class HostStubGenStats(val classes: ClassNodes) {
     data class Stats(
             var supported: Int = 0,
             var total: Int = 0,
@@ -30,14 +41,6 @@ open class HostStubGenStats {
 
     private val stats = mutableMapOf<String, Stats>()
 
-    data class Api(
-        val fullClassName: String,
-        val methodName: String,
-        val methodDesc: String,
-    )
-
-    private val apis = mutableListOf<Api>()
-
     fun onVisitPolicyForMethod(
         fullClassName: String,
         methodName: String,
@@ -45,16 +48,16 @@ open class HostStubGenStats {
         policy: FilterPolicyWithReason,
         access: Int
     ) {
-        if (policy.policy.isSupported) {
-            apis.add(Api(fullClassName, methodName, descriptor))
-        }
-
         // Ignore methods that aren't public
         if ((access and Opcodes.ACC_PUBLIC) == 0) return
         // Ignore methods that are abstract
         if ((access and Opcodes.ACC_ABSTRACT) != 0) return
+
         // Ignore methods where policy isn't relevant
-        if (policy.isIgnoredForStats) return
+        val statsLabel = policy.statsLabel
+        if (statsLabel == StatsLabel.Ignored) return
+
+        val cn = classes.findClass(fullClassName) ?: return
 
         val packageName = getPackageNameFromFullClassName(fullClassName)
         val className = getOuterClassNameFromFullClassName(fullClassName)
@@ -70,7 +73,7 @@ open class HostStubGenStats {
         val packageStats = stats.getOrPut(packageName) { Stats() }
         val classStats = packageStats.children.getOrPut(className) { Stats() }
 
-        if (policy.policy.isSupported) {
+        if (statsLabel == StatsLabel.Supported) {
             packageStats.supported += 1
             classStats.supported += 1
         }
