@@ -32,6 +32,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.LayoutCo
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.ComponentMeasure;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ScrollModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.WidthInModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
@@ -384,6 +385,17 @@ public class RowLayout extends LayoutManager {
             tx += mSpacedBy;
         }
         DebugLog.e();
+    }
+
+    @Override
+    public void getLocationInWindow(@NonNull float[] value, boolean forSelf) {
+        super.getLocationInWindow(value, forSelf);
+
+        if (!forSelf && mHorizontalScrollDelegate instanceof ScrollModifierOperation) {
+            ScrollModifierOperation smo = (ScrollModifierOperation) mHorizontalScrollDelegate;
+
+            value[0] += smo.getScrollX();
+        }
     }
 
     /**

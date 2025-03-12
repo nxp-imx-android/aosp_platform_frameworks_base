@@ -73,7 +73,9 @@ public class CoreDocument implements Serializable {
 
     // We also keep a more fine-grained BUILD number, exposed as
     // ID_API_LEVEL = DOCUMENT_API_LEVEL + BUILD
-    static final float BUILD = 0.5f;
+    static final float BUILD = 0.6f;
+
+    private static final boolean UPDATE_VARIABLES_BEFORE_LAYOUT = false;
 
     @NonNull ArrayList<Operation> mOperations = new ArrayList<>();
 
@@ -892,7 +894,10 @@ public class CoreDocument implements Serializable {
 
         registerVariables(context, mOperations);
         context.mMode = RemoteContext.ContextMode.UNSET;
-        mFirstPaint = true;
+
+        if (UPDATE_VARIABLES_BEFORE_LAYOUT) {
+            mFirstPaint = true;
+        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1241,11 +1246,13 @@ public class CoreDocument implements Serializable {
         context.mRemoteComposeState = mRemoteComposeState;
         context.mRemoteComposeState.setContext(context);
 
-        // Update any dirty variables
-        if (mFirstPaint) {
-            mFirstPaint = false;
-        } else {
-            updateVariables(context, theme, mOperations);
+        if (UPDATE_VARIABLES_BEFORE_LAYOUT) {
+            // Update any dirty variables
+            if (mFirstPaint) {
+                mFirstPaint = false;
+            } else {
+                updateVariables(context, theme, mOperations);
+            }
         }
 
         // If we have a content sizing set, we are going to take the original document

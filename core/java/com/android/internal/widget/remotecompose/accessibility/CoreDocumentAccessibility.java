@@ -33,6 +33,7 @@ import com.android.internal.widget.remotecompose.core.semantics.AccessibilitySem
 import com.android.internal.widget.remotecompose.core.semantics.AccessibleComponent;
 import com.android.internal.widget.remotecompose.core.semantics.CoreSemantics;
 import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent;
+import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent.ScrollDirection;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,9 +105,9 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
             if (isClickAction(action)) {
                 return performClick(component);
             } else if (isScrollForwardAction(action)) {
-                return scrollByOffset(mRemoteContext, component, -500) != 0;
+                return scrollDirection(mRemoteContext, component, ScrollDirection.FORWARD);
             } else if (isScrollBackwardAction(action)) {
-                return scrollByOffset(mRemoteContext, component, 500) != 0;
+                return scrollDirection(mRemoteContext, component, ScrollDirection.BACKWARD);
             } else if (isShowOnScreenAction(action)) {
                 return showOnScreen(mRemoteContext, component);
             } else {
@@ -141,17 +142,30 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
     }
 
     private boolean showOnScreen(RemoteContext context, Component component) {
-        if (component.getParent() instanceof LayoutComponent) {
-            LayoutComponent parent = (LayoutComponent) component.getParent();
-            ScrollableComponent scrollable = parent.selfOrModifier(ScrollableComponent.class);
+        ScrollableComponent scrollable = findScrollable(component);
 
-            if (scrollable != null) {
-                scrollable.showOnScreen(context, component.getComponentId());
-                return true;
-            }
+        if (scrollable != null) {
+            return scrollable.showOnScreen(context, component);
         }
 
         return false;
+    }
+
+    @Nullable
+    private static ScrollableComponent findScrollable(Component component) {
+        Component parent = component.getParent();
+
+        while (parent != null) {
+            ScrollableComponent scrollable = parent.selfOrModifier(ScrollableComponent.class);
+
+            if (scrollable != null) {
+                return scrollable;
+            } else {
+                parent = parent.getParent();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -170,6 +184,25 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
         }
 
         return 0;
+    }
+
+    /**
+     * scroll content in a given direction
+     *
+     * @param context
+     * @param component
+     * @param direction
+     * @return
+     */
+    public boolean scrollDirection(
+            RemoteContext context, Component component, ScrollDirection direction) {
+        ScrollableComponent scrollable = component.selfOrModifier(ScrollableComponent.class);
+
+        if (scrollable != null) {
+            return scrollable.scrollDirection(context, direction);
+        }
+
+        return false;
     }
 
     /**

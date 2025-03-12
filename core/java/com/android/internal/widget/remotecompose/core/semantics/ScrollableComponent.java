@@ -18,6 +18,7 @@ package com.android.internal.widget.remotecompose.core.semantics;
 import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 
 /**
  * Interface for components that support scrolling.
@@ -48,13 +49,23 @@ public interface ScrollableComponent extends AccessibilitySemantics {
     }
 
     /**
+     * Scrolls the content in the specified direction.
+     *
+     * @param direction the direction to scroll
+     * @return whether a scroll was possible
+     */
+    default boolean scrollDirection(RemoteContext context, ScrollDirection direction) {
+        return false;
+    }
+
+    /**
      * Show a child with the given ID on the screen, typically scrolling so it's fully on screen.
      *
-     * @param childId The ID of the child to check for visibility.
+     * @param child The child (including nested) to check for visibility.
      * @return {@code true} if the child with the given ID could be shown on screen; {@code false}
      *     otherwise.
      */
-    default boolean showOnScreen(RemoteContext context, int childId) {
+    default boolean showOnScreen(RemoteContext context, Component child) {
         return false;
     }
 
@@ -107,5 +118,14 @@ public interface ScrollableComponent extends AccessibilitySemantics {
         public boolean canScrollBackwards() {
             return mCanScrollBackwards;
         }
+    }
+
+    enum ScrollDirection {
+        FORWARD,
+        BACKWARD,
+        UP,
+        DOWN,
+        LEFT,
+        RIGHT,
     }
 }

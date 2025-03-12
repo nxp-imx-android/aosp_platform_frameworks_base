@@ -85,6 +85,9 @@ public class TimeAttribute extends PaintOperation {
     /** the year */
     public static final short TIME_YEAR = 12;
 
+    /** (value - doc_load_time) * 1E-3 */
+    public static final short TIME_FROM_LOAD_SEC = 14;
+
     /**
      * creates a new operation
      *
@@ -226,6 +229,7 @@ public class TimeAttribute extends PaintOperation {
         int val = mType & 255;
         int flags = mType >> 8;
         RemoteContext ctx = context.getContext();
+        long load_time = ctx.getDocLoadTime();
         LongConstant longConstant = (LongConstant) ctx.getObject(mTimeId);
         long value = longConstant.getValue();
         long delta = 0;
@@ -292,6 +296,9 @@ public class TimeAttribute extends PaintOperation {
             case TIME_YEAR:
                 ctx.loadFloat(mId, time.getYear());
                 break;
+            case TIME_FROM_LOAD_SEC:
+                ctx.loadFloat(mId, (value - load_time) * 1E-3f);
+                break;
         }
     }
 
@@ -334,6 +341,8 @@ public class TimeAttribute extends PaintOperation {
                 return "TIME_DAY_OF_WEEK";
             case TIME_YEAR:
                 return "TIME_YEAR";
+            case TIME_FROM_LOAD_SEC:
+                return "TIME_FROM_LOAD_SEC";
             default:
                 return "INVALID_TIME_TYPE";
         }

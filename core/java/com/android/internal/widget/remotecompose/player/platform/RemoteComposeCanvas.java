@@ -102,6 +102,7 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
         mDocument = value;
         mDocument.initializeContext(mARContext);
         mDisable = false;
+        mARContext.setDocLoadTime();
         mARContext.setAnimationEnabled(true);
         mARContext.setDensity(mDensity);
         mARContext.setUseChoreographer(true);

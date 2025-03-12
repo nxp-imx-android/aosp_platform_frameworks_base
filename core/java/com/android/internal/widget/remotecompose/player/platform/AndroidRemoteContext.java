@@ -22,7 +22,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.TouchListener;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
@@ -43,7 +42,6 @@ import java.util.HashMap;
  *
  * <p>This is used to play the RemoteCompose operations on Android.
  */
-@VisibleForTesting
 public class AndroidRemoteContext extends RemoteContext {
 
     public void useCanvas(Canvas canvas) {

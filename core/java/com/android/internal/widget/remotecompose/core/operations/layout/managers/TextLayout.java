@@ -77,6 +77,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
     private final Size mCachedSize = new Size(0f, 0f);
 
     @Nullable private String mCachedString = "";
+    @Nullable private String mNewString;
 
     Platform.ComputedTextLayout mComputedTextLayout;
 
@@ -99,7 +100,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
         if (cachedString != null && cachedString.equalsIgnoreCase(mCachedString)) {
             return;
         }
-        mCachedString = cachedString;
+        mNewString = cachedString;
         if (mType == -1) {
             if (mFontFamilyId != -1) {
                 String fontFamily = context.getText(mFontFamilyId);
@@ -119,8 +120,6 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
                 mType = 0;
             }
         }
-        mTextW = -1;
-        mTextH = -1;
 
         if (mHorizontalScrollDelegate != null) {
             mHorizontalScrollDelegate.reset();
@@ -351,6 +350,9 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
         mPaint.setColor(mColor);
         context.replacePaint(mPaint);
         float[] bounds = new float[4];
+        if (mNewString != null && !mNewString.equals(mCachedString)) {
+            mCachedString = mNewString;
+        }
         if (mCachedString == null) {
             return;
         }
