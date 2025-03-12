@@ -30,6 +30,7 @@ import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -37,6 +38,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.ActivityManager;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.IBinder;
@@ -47,7 +49,9 @@ import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
+import androidx.core.animation.AnimatorTestRule;
 import androidx.test.filters.SmallTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.launcher3.icons.BubbleIconFactory;
 import com.android.wm.shell.ShellTaskOrganizer;
@@ -65,6 +69,7 @@ import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
@@ -75,6 +80,8 @@ import org.mockito.MockitoAnnotations;
  */
 @SmallTest
 public class BubbleTransitionsTest extends ShellTestCase {
+
+    @Rule public final AnimatorTestRule mAnimatorTestRule = new AnimatorTestRule();
 
     private static final int FULLSCREEN_TASK_WIDTH = 200;
     private static final int FULLSCREEN_TASK_HEIGHT = 100;
@@ -292,24 +299,37 @@ public class BubbleTransitionsTest extends ShellTestCase {
     @Test
     public void convertDraggedBubbleToFullscreen() {
         ActivityManager.RunningTaskInfo taskInfo = setupBubble();
+        SurfaceControl.Transaction animT = mock(SurfaceControl.Transaction.class);
+        BubbleTransitions.TransactionProvider transactionProvider = () -> animT;
         final DraggedBubbleIconToFullscreen bt =
-                (DraggedBubbleIconToFullscreen) mBubbleTransitions
-                        .startDraggedBubbleIconToFullscreen(mBubble);
+                mBubbleTransitions.new DraggedBubbleIconToFullscreen(
+                        mBubble, new Point(100, 50), transactionProvider);
         verify(mTransitions).startTransition(anyInt(), any(), eq(bt));
 
+        SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
         final TransitionInfo info = new TransitionInfo(TRANSIT_TO_FRONT, 0);
-        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token,
-                mock(SurfaceControl.class));
+        final TransitionInfo.Change chg = new TransitionInfo.Change(taskInfo.token, taskLeash);
         chg.setMode(TRANSIT_TO_FRONT);
         chg.setTaskInfo(taskInfo);
         info.addChange(chg);
         info.addRoot(new TransitionInfo.Root(0, mock(SurfaceControl.class), 0, 0));
         SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
         SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
-        Transitions.TransitionFinishCallback finishCb = wct -> {};
-        bt.startAnimation(bt.mTransition, info, startT, finishT, finishCb);
+        boolean[] transitionFinished = {false};
+        Transitions.TransitionFinishCallback finishCb = wct -> transitionFinished[0] = true;
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            bt.startAnimation(bt.mTransition, info, startT, finishT, finishCb);
+            mAnimatorTestRule.advanceTimeBy(250);
+        });
+        verify(startT).setScale(taskLeash, 0, 0);
+        verify(startT).setPosition(taskLeash, 100, 50);
         verify(startT).apply();
+        verify(animT).setScale(taskLeash, 1, 1);
+        verify(animT).setPosition(taskLeash, 0, 0);
+        verify(animT, atLeastOnce()).apply();
+        verify(animT).close();
         assertFalse(mTaskViewTransitions.hasPending());
+        assertTrue(transitionFinished[0]);
     }
 
     @Test

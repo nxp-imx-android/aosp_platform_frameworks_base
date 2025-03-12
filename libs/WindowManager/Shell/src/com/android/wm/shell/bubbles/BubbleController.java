@@ -2643,9 +2643,9 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubbleData.setSelectedBubbleAndExpandStack(bubbleToSelect);
     }
 
-    private void moveBubbleToFullscreen(String key) {
+    private void moveDraggedBubbleToFullscreen(String key, Point dropLocation) {
         Bubble b = mBubbleData.getBubbleInStackWithKey(key);
-        mBubbleTransitions.startDraggedBubbleIconToFullscreen(b);
+        mBubbleTransitions.startDraggedBubbleIconToFullscreen(b, dropLocation);
     }
 
     private boolean isDeviceLocked() {
@@ -2936,8 +2936,9 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void moveBubbleToFullscreen(String key) {
-            mMainExecutor.execute(() -> mController.moveBubbleToFullscreen(key));
+        public void moveDraggedBubbleToFullscreen(String key, Point dropLocation) {
+            mMainExecutor.execute(
+                    () -> mController.moveDraggedBubbleToFullscreen(key, dropLocation));
         }
     }
 
