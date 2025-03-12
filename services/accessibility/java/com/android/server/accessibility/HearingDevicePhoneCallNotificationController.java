@@ -17,6 +17,7 @@
 package com.android.server.accessibility;
 
 import android.Manifest;
+import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -149,11 +150,7 @@ public class HearingDevicePhoneCallNotificationController {
             }
 
             if (state == TelephonyManager.CALL_STATE_IDLE) {
-                if (mIsCommDeviceChangedRegistered) {
-                    mIsCommDeviceChangedRegistered = false;
-                    mAudioManager.removeOnCommunicationDeviceChangedListener(
-                            mCommDeviceChangedListener);
-                }
+                removeOnCommunicationDeviceChangedListenerIfNeeded(mCommDeviceChangedListener);
                 dismissNotificationIfNeeded();
 
                 if (mHearingDevice != null) {
@@ -172,10 +169,8 @@ public class HearingDevicePhoneCallNotificationController {
                     if (mHearingDevice != null) {
                         showNotificationIfNeeded();
                     } else {
-                        mAudioManager.addOnCommunicationDeviceChangedListener(
-                                mCommDeviceChangedExecutor,
+                        addOnCommunicationDeviceChangedListenerIfNeeded(mCommDeviceChangedExecutor,
                                 mCommDeviceChangedListener);
-                        mIsCommDeviceChangedRegistered = true;
                     }
                 } else {
                     mHearingDevice = getSupportedInputHearingDeviceInfo(
@@ -185,6 +180,27 @@ public class HearingDevicePhoneCallNotificationController {
                     }
                 }
             }
+        }
+
+        private void addOnCommunicationDeviceChangedListenerIfNeeded(
+                @NonNull @CallbackExecutor Executor executor,
+                @NonNull AudioManager.OnCommunicationDeviceChangedListener listener) {
+            if (mIsCommDeviceChangedRegistered) {
+                return;
+            }
+
+            mIsCommDeviceChangedRegistered = true;
+            mAudioManager.addOnCommunicationDeviceChangedListener(executor, listener);
+        }
+
+        private void removeOnCommunicationDeviceChangedListenerIfNeeded(
+                @NonNull AudioManager.OnCommunicationDeviceChangedListener listener) {
+            if (!mIsCommDeviceChangedRegistered) {
+                return;
+            }
+
+            mAudioManager.removeOnCommunicationDeviceChangedListener(listener);
+            mIsCommDeviceChangedRegistered = false;
         }
 
         private void showNotificationIfNeeded() {
