@@ -822,7 +822,8 @@ public class AppOpsService extends IAppOpsService.Stub {
         @Override
         public void onOpModeChanged(int op, int uid, String packageName, String persistentDeviceId)
                 throws RemoteException {
-            mCallback.opChanged(op, uid, packageName, persistentDeviceId);
+            mCallback.opChanged(op, uid, packageName != null ? packageName : "",
+                    Objects.requireNonNull(persistentDeviceId));
         }
     }
 

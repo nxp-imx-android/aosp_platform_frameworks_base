@@ -2004,7 +2004,7 @@ public class ActivityManagerService extends IActivityManager.Stub
                 new IAppOpsCallback.Stub() {
                     @Override public void opChanged(int op, int uid, String packageName,
                             String persistentDeviceId) {
-                        if (op == AppOpsManager.OP_RUN_IN_BACKGROUND && packageName != null) {
+                        if (op == AppOpsManager.OP_RUN_IN_BACKGROUND && uid >= 0) {
                             if (getAppOpsManager().checkOpNoThrow(op, uid, packageName)
                                     != AppOpsManager.MODE_ALLOWED) {
                                 runInBackgroundDisabled(uid);

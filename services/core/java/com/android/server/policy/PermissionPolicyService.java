@@ -235,15 +235,12 @@ public final class PermissionPolicyService extends SystemService {
                 this::synchronizeUidPermissionsAndAppOpsAsync);
 
         mAppOpsCallback = new IAppOpsCallback.Stub() {
-            public void opChanged(int op, int uid, @Nullable String packageName,
-                    String persistentDeviceId) {
+            public void opChanged(int op, int uid, String packageName, String persistentDeviceId) {
                 if (!Objects.equals(persistentDeviceId,
-                        VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT)) {
+                        VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT) || uid < 0) {
                     return;
                 }
-                if (packageName != null) {
-                    synchronizeUidPermissionsAndAppOpsAsync(uid);
-                }
+                synchronizeUidPermissionsAndAppOpsAsync(uid);
                 resetAppOpPermissionsIfNotRequestedForUidAsync(uid);
             }
         };
