@@ -158,7 +158,6 @@ import static com.android.server.wm.ActivityRecordProto.FRONT_OF_TASK;
 import static com.android.server.wm.ActivityRecordProto.IN_SIZE_COMPAT_MODE;
 import static com.android.server.wm.ActivityRecordProto.IS_ANIMATING;
 import static com.android.server.wm.ActivityRecordProto.IS_USER_FULLSCREEN_OVERRIDE_ENABLED;
-import static com.android.server.wm.ActivityRecordProto.LAST_ALL_DRAWN;
 import static com.android.server.wm.ActivityRecordProto.LAST_DROP_INPUT_MODE;
 import static com.android.server.wm.ActivityRecordProto.LAST_SURFACE_SHOWING;
 import static com.android.server.wm.ActivityRecordProto.MIN_ASPECT_RATIO;
@@ -723,7 +722,6 @@ final class ActivityRecord extends WindowToken {
     private int mNumInterestingWindows;
     private int mNumDrawnWindows;
     boolean allDrawn;
-    private boolean mLastAllDrawn;
 
     /**
      * Solely for reporting to ActivityMetricsLogger. Just tracks whether, the last time this
@@ -1148,13 +1146,11 @@ final class ActivityRecord extends WindowToken {
         if (mAppStopped) {
             pw.print(prefix); pw.print("mAppStopped="); pw.println(mAppStopped);
         }
-        if (mNumInterestingWindows != 0 || mNumDrawnWindows != 0
-                || allDrawn || mLastAllDrawn) {
+        if (mNumInterestingWindows != 0 || mNumDrawnWindows != 0 || allDrawn) {
             pw.print(prefix); pw.print("mNumInterestingWindows=");
             pw.print(mNumInterestingWindows);
             pw.print(" mNumDrawnWindows="); pw.print(mNumDrawnWindows);
             pw.print(" allDrawn="); pw.print(allDrawn);
-            pw.print(" lastAllDrawn="); pw.print(mLastAllDrawn);
             pw.println(")");
         }
         if (mStartingData != null || firstWindowDrawn) {
@@ -5155,7 +5151,6 @@ final class ActivityRecord extends WindowToken {
 
     void clearAllDrawn() {
         allDrawn = false;
-        mLastAllDrawn = false;
     }
 
     /**
@@ -6590,35 +6585,6 @@ final class ActivityRecord extends WindowToken {
         if (DEBUG_VISIBILITY) Slog.v(TAG_WM, "Reporting gone in " + token);
         if (DEBUG_SWITCH) Log.v(TAG_SWITCH, "windowsGone(): " + this);
         nowVisible = false;
-    }
-
-    @Override
-    void checkAppWindowsReadyToShow() {
-        if (allDrawn == mLastAllDrawn) {
-            return;
-        }
-
-        mLastAllDrawn = allDrawn;
-        if (!allDrawn) {
-            return;
-        }
-
-        setAppLayoutChanges(FINISH_LAYOUT_REDO_ANIM, "checkAppWindowsReadyToShow");
-
-        // We can now show all of the drawn windows!
-        if (canShowWindows()) {
-            showAllWindowsLocked();
-        }
-    }
-
-    /**
-     * This must be called while inside a transaction.
-     */
-    void showAllWindowsLocked() {
-        forAllWindows(windowState -> {
-            if (DEBUG_VISIBILITY) Slog.v(TAG, "performing show on: " + windowState);
-            windowState.performShowLocked();
-        }, false /* traverseTopToBottom */);
     }
 
     void updateReportedVisibilityLocked() {
@@ -9386,7 +9352,6 @@ final class ActivityRecord extends WindowToken {
         proto.write(NUM_INTERESTING_WINDOWS, mNumInterestingWindows);
         proto.write(NUM_DRAWN_WINDOWS, mNumDrawnWindows);
         proto.write(ALL_DRAWN, allDrawn);
-        proto.write(LAST_ALL_DRAWN, mLastAllDrawn);
         if (mStartingWindow != null) {
             mStartingWindow.writeIdentifierToProto(proto, STARTING_WINDOW);
         }
