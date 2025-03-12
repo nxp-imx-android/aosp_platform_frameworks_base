@@ -1369,16 +1369,19 @@ public final class NotificationRecord {
      * {@link SecurityException} depending on target SDK of enqueuing app.
      */
     private void visitGrantableUri(Uri uri, boolean userOverriddenUri, boolean isSound) {
-        if (mGrantableUris != null && mGrantableUris.contains(uri)) {
-            return; // already verified this URI
-        }
+        if (uri == null || !ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) return;
 
         // We can't grant Uri permissions from system
         final int sourceUid = getSbn().getUid();
         if (sourceUid == android.os.Process.SYSTEM_UID) return;
 
+        final long ident = Binder.clearCallingIdentity();
         try {
-            PermissionHelper.grantUriPermission(mUgmInternal, uri, sourceUid);
+            // This will throw SecurityException if caller can't grant
+            mUgmInternal.checkGrantUriPermission(sourceUid, null,
+                    ContentProvider.getUriWithoutUserId(uri),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                    ContentProvider.getUserIdFromUri(uri, UserHandle.getUserId(sourceUid)));
 
             if (mGrantableUris == null) {
                 mGrantableUris = new ArraySet<>();
@@ -1398,6 +1401,8 @@ public final class NotificationRecord {
                     }
                 }
             }
+        } finally {
+            Binder.restoreCallingIdentity(ident);
         }
     }
 
