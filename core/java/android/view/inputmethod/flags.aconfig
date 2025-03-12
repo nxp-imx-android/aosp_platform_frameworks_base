@@ -224,3 +224,14 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+    name: "disallow_disabling_ime_navigation_bar"
+    namespace: "input_method"
+    description: "Disallows disabling the IME navigation bar through canImeRenderGesturalNavButtons"
+    bug: "402442590"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
