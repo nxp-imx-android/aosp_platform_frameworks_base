@@ -16,7 +16,6 @@
 
 package com.android.systemui.display.data.repository
 
-import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.dump.DumpableFromToString

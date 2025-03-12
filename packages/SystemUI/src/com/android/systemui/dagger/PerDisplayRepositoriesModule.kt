@@ -16,9 +16,9 @@
 
 package com.android.systemui.dagger
 
-import com.android.app.displaylib.DefaultDisplayOnlyInstanceRepositoryImpl
-import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
-import com.android.app.displaylib.PerDisplayRepository
+import com.android.systemui.display.data.repository.DefaultDisplayOnlyInstanceRepositoryImpl
+import com.android.systemui.display.data.repository.PerDisplayInstanceRepositoryImpl
+import com.android.systemui.display.data.repository.PerDisplayRepository
 import com.android.systemui.model.SysUIStateInstanceProvider
 import com.android.systemui.model.SysUiState
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround

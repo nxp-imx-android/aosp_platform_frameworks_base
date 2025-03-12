@@ -17,9 +17,9 @@
 package com.android.systemui.common.domain.interactor
 
 import android.util.Log
-import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DisplayRepository
+import com.android.systemui.display.data.repository.PerDisplayRepository
 import com.android.systemui.model.StateChange
 import com.android.systemui.model.SysUiState
 import javax.inject.Inject
