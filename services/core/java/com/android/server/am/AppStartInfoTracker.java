@@ -728,8 +728,8 @@ public final class AppStartInfoTracker {
 
                     Collections.sort(
                             list, (a, b) ->
-                            Long.compare(b.getMonoticCreationTimeMs(),
-                                    a.getMonoticCreationTimeMs()));
+                            Long.compare(b.getMonotonicCreationTimeMs(),
+                                    a.getMonotonicCreationTimeMs()));
                     int size = list.size();
                     if (maxNum > 0) {
                         size = Math.min(size, maxNum);
@@ -1274,7 +1274,8 @@ public final class AppStartInfoTracker {
             if (!android.app.Flags.appStartInfoKeepRecordsSorted()) {
                 // Sort records so we can remove the least recent ones.
                 Collections.sort(mInfos, (a, b) ->
-                        Long.compare(b.getMonoticCreationTimeMs(), a.getMonoticCreationTimeMs()));
+                        Long.compare(b.getMonotonicCreationTimeMs(),
+                                a.getMonotonicCreationTimeMs()));
             }
 
             // Remove records and trim list object back to size.
@@ -1304,8 +1305,8 @@ public final class AppStartInfoTracker {
                     long oldestTimeStamp = Long.MAX_VALUE;
                     for (int i = 0; i < size; i++) {
                         ApplicationStartInfo startInfo = mInfos.get(i);
-                        if (startInfo.getMonoticCreationTimeMs() < oldestTimeStamp) {
-                            oldestTimeStamp = startInfo.getMonoticCreationTimeMs();
+                        if (startInfo.getMonotonicCreationTimeMs() < oldestTimeStamp) {
+                            oldestTimeStamp = startInfo.getMonotonicCreationTimeMs();
                             oldestIndex = i;
                         }
                     }
@@ -1315,7 +1316,8 @@ public final class AppStartInfoTracker {
                 }
                 mInfos.add(info);
                 Collections.sort(mInfos, (a, b) ->
-                        Long.compare(b.getMonoticCreationTimeMs(), a.getMonoticCreationTimeMs()));
+                        Long.compare(b.getMonotonicCreationTimeMs(),
+                                a.getMonotonicCreationTimeMs()));
             }
         }
 
@@ -1464,7 +1466,7 @@ public final class AppStartInfoTracker {
                 long removeOlderThan = getMonotonicTimeMs() - APP_START_INFO_HISTORY_LENGTH_MS;
                 // Iterate backwards so we can remove old records as we go.
                 for (int i = size - 1; i >= 0; i--) {
-                    if (mInfos.get(i).getMonoticCreationTimeMs() < removeOlderThan) {
+                    if (mInfos.get(i).getMonotonicCreationTimeMs() < removeOlderThan) {
                         // Remove the record.
                         mInfos.remove(i);
                     } else {
