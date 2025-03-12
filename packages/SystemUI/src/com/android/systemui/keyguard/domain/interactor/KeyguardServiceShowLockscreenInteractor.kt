@@ -139,18 +139,16 @@ constructor(
     /** Notifies the callbacks that we've either locked, or decided not to lock. */
     private fun notifyShowLockscreenCallbacks() {
         var callbacks: MutableList<ShowLockscreenCallback>
+
         synchronized(repository.showLockscreenCallbacks) {
             callbacks = ArrayList(repository.showLockscreenCallbacks)
             repository.showLockscreenCallbacks.clear()
         }
 
-        val iter: MutableIterator<ShowLockscreenCallback> = callbacks.listIterator()
-        while (iter.hasNext()) {
-            val callback = iter.next()
-            iter.remove()
+        callbacks.forEach { callback ->
             if (callback.userId != selectedUserInteractor.getSelectedUserId()) {
                 Log.i(TAG, "Not notifying lockNowCallback due to user mismatch")
-                continue
+                return
             }
             Log.i(TAG, "Notifying lockNowCallback")
             try {
