@@ -156,6 +156,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -186,6 +187,9 @@ public final class PowerManagerService extends SystemService
 
     // Message: Sent when the policy want to release all timeout override wake locks.
     private static final int MSG_RELEASE_ALL_OVERRIDE_WAKE_LOCKS = 6;
+
+    // Message: Sent when the processes frozen state changes
+    private static final int MSG_PROCESS_FROZEN_STATE_CHANGED = 7;
 
     // Dirty bit: mWakeLocks changed
     private static final int DIRTY_WAKE_LOCKS = 1 << 0;
@@ -4369,10 +4373,15 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private void updateWakeLockDisabledStatesLocked() {
+        updateWakeLockDisabledStatesLocked(mWakeLocks);
+    }
+
+    @GuardedBy("mLock")
+    private void updateWakeLockDisabledStatesLocked(List<WakeLock> wakelocks) {
         boolean changed = false;
-        final int numWakeLocks = mWakeLocks.size();
+        int numWakeLocks = wakelocks.size();
         for (int i = 0; i < numWakeLocks; i++) {
-            final WakeLock wakeLock = mWakeLocks.get(i);
+            final WakeLock wakeLock = wakelocks.get(i);
             if ((wakeLock.mFlags & PowerManager.WAKE_LOCK_LEVEL_MASK)
                     == PowerManager.PARTIAL_WAKE_LOCK || isScreenLock(wakeLock)) {
                 if (setWakeLockDisabledStateLocked(wakeLock)) {
@@ -4386,6 +4395,7 @@ public final class PowerManagerService extends SystemService
                 }
             }
         }
+
         if (changed) {
             mDirty |= DIRTY_WAKE_LOCKS;
             updatePowerStateLocked();
@@ -4394,9 +4404,16 @@ public final class PowerManagerService extends SystemService
 
     @GuardedBy("mLock")
     private boolean setWakeLockDisabledStateLocked(WakeLock wakeLock) {
+        boolean disabled = false;
+        if (wakeLock.isFrozenLocked()) {
+            if (DEBUG_SPEW) {
+                Slog.d(TAG, "Process frozen. Disabling the wakelock " + wakeLock.mTag);
+            }
+            disabled = true;
+            return wakeLock.setDisabled(disabled);
+        }
         if ((wakeLock.mFlags & PowerManager.WAKE_LOCK_LEVEL_MASK)
                 == PowerManager.PARTIAL_WAKE_LOCK) {
-            boolean disabled = false;
             final int appid = UserHandle.getAppId(wakeLock.mOwnerUid);
             if (appid >= Process.FIRST_APPLICATION_UID) {
                 // Cached inactive processes are never allowed to hold wake locks.
@@ -4429,7 +4446,6 @@ public final class PowerManagerService extends SystemService
             }
             return wakeLock.setDisabled(disabled);
         } else if (mDisableScreenWakeLocksWhileCached && isScreenLock(wakeLock)) {
-            boolean disabled = false;
             final int appid = UserHandle.getAppId(wakeLock.mOwnerUid);
             final UidState state = wakeLock.mUidState;
             // Cached inactive processes are never allowed to hold wake locks.
@@ -5463,6 +5479,9 @@ public final class PowerManagerService extends SystemService
                 case MSG_RELEASE_ALL_OVERRIDE_WAKE_LOCKS:
                     releaseAllOverrideWakeLocks(msg.arg1);
                     break;
+                case MSG_PROCESS_FROZEN_STATE_CHANGED:
+                    handleProcessFrozenStateChange(msg.obj, msg.arg1);
+                    break;
             }
 
             return true;
@@ -5472,7 +5491,8 @@ public final class PowerManagerService extends SystemService
     /**
      * Represents a wake lock that has been acquired by an application.
      */
-    /* package */ final class WakeLock implements IBinder.DeathRecipient {
+    /* package */ final class WakeLock implements IBinder.DeathRecipient,
+            IBinder.FrozenStateChangeCallback {
         public final IBinder mLock;
         public final int mDisplayId;
         public int mFlags;
@@ -5487,6 +5507,7 @@ public final class PowerManagerService extends SystemService
         public boolean mNotifiedAcquired;
         public boolean mNotifiedLong;
         public boolean mDisabled;
+        private boolean mIsFrozen;
         public IWakeLockCallback mCallback;
 
         public WakeLock(IBinder lock, int displayId, int flags, String tag, String packageName,
@@ -5503,6 +5524,21 @@ public final class PowerManagerService extends SystemService
             mOwnerPid = ownerPid;
             mUidState = uidState;
             mCallback = callback;
+            if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
+                try {
+                    lock.addFrozenStateChangeCallback(this);
+                } catch (UnsupportedOperationException e) {
+                    // Ignore the exception.  The callback is not supported on this platform or on
+                    // this binder.  The callback is never supported for local binders.  There is
+                    // no error. A log message is provided for debug.
+                    if (DEBUG_SPEW) {
+                        Slog.v(TAG, "FrozenStateChangeCallback not supported for this wakelock "
+                                + tag + " " + e.getLocalizedMessage());
+                    }
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             linkToDeath();
         }
 
@@ -5510,6 +5546,23 @@ public final class PowerManagerService extends SystemService
         public void binderDied() {
             unlinkToDeath();
             PowerManagerService.this.handleWakeLockDeath(this);
+        }
+
+        @Override
+        public void onFrozenStateChanged(@androidx.annotation.NonNull IBinder who, int state) {
+            if (mFeatureFlags.isDisableFrozenProcessWakelocksEnabled()) {
+                Message msg = mHandler.obtainMessage(MSG_PROCESS_FROZEN_STATE_CHANGED,
+                        state, /* arg2= */ 0, mLock);
+                mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
+            }
+        }
+
+        public boolean isFrozenLocked() {
+            return mIsFrozen;
+        }
+
+        public void setFrozenLocked(int state) {
+            mIsFrozen = (state == IBinder.FrozenStateChangeCallback.STATE_FROZEN);
         }
 
         private void linkToDeath() {
@@ -5610,6 +5663,10 @@ public final class PowerManagerService extends SystemService
             }
             sb.append(" (uid=");
             sb.append(mOwnerUid);
+
+            sb.append(" isFrozen=");
+            sb.append(mIsFrozen);
+
             if (mOwnerPid != 0) {
                 sb.append(" pid=");
                 sb.append(mOwnerPid);
@@ -7275,6 +7332,26 @@ public final class PowerManagerService extends SystemService
             }
         } finally {
             Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @VisibleForTesting
+    void handleProcessFrozenStateChange(@NonNull Object lock, int state) {
+        if (lock instanceof IBinder) {
+            synchronized (mLock) {
+                int index = findWakeLockIndexLocked((IBinder) lock);
+                if (index < 0) {
+                    if (DEBUG_SPEW) {
+                        Slog.d(TAG, "No wakelock found whose frozen state is to be changed");
+                    }
+                    return;
+                }
+                WakeLock wakelock = mWakeLocks.get(index);
+                wakelock.setFrozenLocked(state);
+                updateWakeLockDisabledStatesLocked(Collections.singletonList(wakelock));
+            }
+        } else {
+            Slog.wtf(TAG, "not an IBinder object: " + lock);
         }
     }
 
