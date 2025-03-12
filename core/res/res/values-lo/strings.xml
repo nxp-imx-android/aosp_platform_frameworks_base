@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"​ຖາມ​ຫາ​ຮູບ​ແບບ​ປົດ​ລັອກ​ກ່ອນ​ຍົກ​ເລີກ​ການ​ປັກ​ໝຸດ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"​ຖາມ​ຫາ​ລະ​ຫັດ​ຜ່ານ​ກ່ອນ​ຍົກ​ເລີກ​ການ​ປັກ​ໝຸດ"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"ຕິດຕັ້ງໂດຍຜູ້ເບິ່ງແຍງຂອງທ່ານ.\nເຂົ້າໄປການຕັ້ງຄ່າເພື່ອເບິ່ງສິດທີ່ໄດ້ຮັບອະນຸຍາດ"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"ອັບເດດໂດຍຜູ້ເບິ່ງແຍງຂອງທ່ານ.\nເຂົ້າໄປການຕັ້ງຄ່າເພື່ອເບິ່ງສິດທີ່ໄດ້ຮັບອະນຸຍາດ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ຖືກລຶບອອກໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ຕົກລົງ"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ຕົວປະຢັດແບັດເຕີຣີຈະເປີດໃຊ້ຮູບແບບສີສັນມືດ ແລະ ຈຳກັດ ຫຼື ປິດການເຄື່ອນໄຫວໃນພື້ນຫຼັງ, ເອັບເຟັກທາງພາບຈຳນວນໜຶ່ງ, ຄຸນສົມບັດບາງຢ່າງ ແລະ ການເຊື່ອມຕໍ່ເຄືອຂ່າຍບາງອັນ."</string>
@@ -2274,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ເລື່ອນ"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ຢຸດຊົ່ວຄາວ"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ຕຳແໜ່ງ"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ເລື່ອນຂຶ້ນ"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"ເລື່ອນລົງ"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"ເລື່ອນໄປທາງຊ້າຍ"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"ເລື່ອນໄປທາງຂວາ"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"ອອກຈາກໂໝດເລື່ອນ"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ເລື່ອນແຜງ"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ຖືກວາງໄວ້ໃນກະຕ່າ \"ຈຳກັດ\" ແລ້ວ"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"ສົ່ງຮູບແລ້ວ"</string>

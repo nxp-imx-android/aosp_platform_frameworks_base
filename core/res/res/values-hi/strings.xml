@@ -1820,8 +1820,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"ज़ूम करने की सुविधा"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"क्या आपको फ़ोन के माइक्रोफ़ोन पर स्विच करना है?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"क्या आपको कान की मशीन के माइक पर स्विच करना है?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"बेहतर आवाज़ के लिए या कान की मशीन की बैटरी कम होने पर. यह सिर्फ़ कॉल के दौरान आपका माइक चालू करता है."</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"बोलकर कॉल का जवाब देने के लिए, \'कान की मशीन का माइक्रोफ़ोन\' इस्तेमाल किया जा सकता है. इससे, कॉल के दौरान सिर्फ़ आपका माइक चालू या बंद होता है."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"बेहतर आवाज़ के लिए या कान की मशीन की बैटरी कम होने पर, इसका इस्तेमाल करें. इससे सिर्फ़ कॉल के दौरान आपका माइक चालू होता है."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"बोलकर कॉल का जवाब देने के लिए, \'कान की मशीन का माइक्रोफ़ोन\' इस्तेमाल किया जा सकता है. इससे सिर्फ़ कॉल के दौरान आपका माइक चालू होता है."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"स्विच करें"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"सेटिंग"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> पर स्विच किया जा रहा है…"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"अनपिन करने से पहले लॉक खोलने के पैटर्न के लिए पूछें"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"अनपिन करने से पहले पासवर्ड के लिए पूछें"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"इसे आपके एडमिन ने इंस्टॉल किया है.\nजिन अनुमतियों को मंज़ूरी मिली है उन्हें देखने के लिए, सेटिंग में जाएं"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"इसे आपके एडमिन ने अपडेट किया है.\nजिन अनुमतियों को मंज़ूरी मिली है उन्हें देखने के लिए, सेटिंग में जाएं"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"आपके व्यवस्थापक ने हटा दिया है"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ठीक है"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"बैटरी सेवर, गहरे रंग वाली थीम को चालू करता है. साथ ही, इस मोड में बैकग्राउंड की गतिविधि, कुछ विज़ुअल इफ़ेक्ट, और कुछ खास सुविधाएं कम या बंद हो जाती हैं. कुछ इंटरनेट कनेक्शन भी पूरी तरह काम नहीं करते."</string>

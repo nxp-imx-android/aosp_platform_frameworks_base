@@ -1821,8 +1821,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Povećavanje"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Želite li se prebaciti na mikrofon telefona?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Želite li se prebaciti na mikrofon slušnog pomagala?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Za bolji zvuk ili ako je razina baterije slušnog pomagala niska. Time se mikrofon prebacuje samo tijekom poziva."</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Mikrofon slušnog pomagala možete koristiti za pozivanje bez upotrebe ruku. Time se mikrofon prebacuje samo tijekom poziva."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Da biste se bolje čuli ili ako je razina baterije slušnog pomagala niska. Mikrofon se koristi samo tijekom poziva."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Mikrofon slušnog pomagala možete koristiti za pozivanje bez upotrebe ruku. Mikrofon se koristi samo tijekom poziva."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Prebaci"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Postavke"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Prebacivanje na korisnika <xliff:g id="NAME">%1$s</xliff:g>…"</string>
@@ -1966,8 +1966,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Traži uzorak za otključavanje radi otkvačivanja"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Traži zaporku radi otkvačivanja"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalirao vaš administrator.\nOtvorite postavke da biste pregledali dodijeljena dopuštenja"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Ažurirao je vaš administrator.\nOtvorite postavke da biste pregledali dodijeljena dopuštenja"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Izbrisao administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"U redu"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Štednja baterije uključuje tamnu temu i ograničava ili isključuje aktivnosti u pozadini, neke vizualne efekte, određene značajke i neke mrežne veze."</string>

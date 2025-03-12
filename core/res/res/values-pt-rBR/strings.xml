@@ -1966,8 +1966,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pedir padrão de desbloqueio antes de liberar"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pedir senha antes de liberar"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalado pelo administrador.\nAcesse as configurações para conferir as permissões concedidas"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Atualizado pelo administrador.\nAcesse as configurações para conferir as permissões concedidas"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Excluído pelo seu administrador"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"A Economia de bateria ativa o tema escuro e limita ou desativa atividades em segundo plano, alguns efeitos visuais, recursos específicos e algumas conexões de rede."</string>

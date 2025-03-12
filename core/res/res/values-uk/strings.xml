@@ -1967,8 +1967,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Запитувати ключ розблокування перед відкріпленням"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Запитувати пароль перед відкріпленням"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Установлено адміністратором.\nПерейдіть у налаштування, щоб переглянути надані дозволи."</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Оновлено адміністратором.\nПерейдіть у налаштування, щоб переглянути надані дозволи."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Видалено адміністратором"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ОК"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"У режимі енергозбереження вмикається темна тема й обмежуються чи вимикаються дії у фоновому режимі, а також деякі візуальні ефекти, функції та з’єднання з мережами."</string>

@@ -1818,9 +1818,9 @@
     <string name="accessibility_gesture_instructional_text" msgid="4133877896011098550">"Keyingi safar shu buyruqdan foydalanganingizda funksiya ochiladi. Ekranning pastidan 2 barmoq bilan tepaga suring va darhol qoʻyib yuboring."</string>
     <string name="accessibility_gesture_3finger_instructional_text" msgid="1124458279366968154">"Keyingi safar shu buyruqdan foydalanganingizda funksiya ochiladi. Ekranning pastidan 3 barmoq bilan tepaga suring va darhol qoʻyib yuboring."</string>
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Kattalashtirish"</string>
-    <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Telefon mikrofoniga almashtirilsinmi?"</string>
-    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Eshitish moslamasi mikrofoniga almashtirilsinmi?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Tovush yaxshilanishi uchun yoki eshitish moslamasi batareyasi quvvati kam boʻlsa. Bu faqat chaqiruv paytida mikrofonni almashtiradi."</string>
+    <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Telefon mikrofoniga almashilsinmi?"</string>
+    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Eshitish moslamasi mikrofoniga almashilsinmi?"</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Tovush sifati sizni qoniqtirmasa yoki eshitish moslamasi batareyasi quvvati kamligida telefon mikrofonidan foydalanishingiz mumkin. Mikrofon faqat chaqiruv vaqtida almashadi."</string>
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Garniturali chaqiruv uchun eshitish moslamasi mikrofonidan foydalanish mumkin. Bu faqat chaqiruv paytida mikrofonni almashtiradi."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Almashtirish"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Sozlamalar"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Yechishdan oldin grafik kalit so‘ralsin"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Bo‘shatishdan oldin parol so‘ralsin"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Administrator oʻrnatgan.\nBerilgan ruxsatlarni koʻrish uchun sozlamalarni oching"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Administrator yangilagan.\nBerilgan ruxsatlarni koʻrish uchun sozlamalarni oching"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Administrator tomonidan o‘chirilgan"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Quvvat tejash funksiyasi Tungi mavzuni va cheklovlarni yoqadi hamda fondagi harakatlar, vizual effektlar, ayrim funksiyalar va tarmoq aloqalari kabi boshqa funksiyalarni faolsizlantiradi yoki cheklaydi."</string>
@@ -2274,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Aylantirish"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Pauza"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Joylashuvi"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Tepaga varaqlash"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Pastga varaqlash"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Chapga varaqlash"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Oʻngga varaqlash"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Varaqlash rejimidan chiqish"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Varaqlash paneli"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> cheklangan turkumga joylandi"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"rasm yuborildi"</string>

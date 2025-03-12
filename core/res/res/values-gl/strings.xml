@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Pedir padrón de desbloqueo antes de soltar a fixación"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Pedir contrasinal antes de soltar a fixación"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalado pola persoa administradora.\nVai á configuración para ver os permisos concedidos"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Actualizado pola persoa administradora.\nVai á configuración para ver os permisos concedidos"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Eliminado polo teu administrador"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Aceptar"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Coa función Aforro de batería, actívase o tema escuro e restrínxense ou desactívanse a actividade en segundo plano, algúns efectos visuais e determinadas funcións e conexións de rede."</string>

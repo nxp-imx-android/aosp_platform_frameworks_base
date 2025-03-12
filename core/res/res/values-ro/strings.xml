@@ -1966,8 +1966,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Solicită mai întâi modelul pentru deblocare"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Solicită parola înainte de a anula fixarea"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalat de administrator.\nAccesează setările ca să vezi permisiunile acordate."</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Instalat de administrator.\nAccesează setările ca să vezi permisiunile acordate"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Șters de administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Economisirea bateriei activează tema întunecată și restricționează sau dezactivează activitatea în fundal, unele efecte vizuale, alte funcții și câteva conexiuni la rețea."</string>

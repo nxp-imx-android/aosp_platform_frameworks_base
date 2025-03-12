@@ -962,7 +962,7 @@
     <string name="phoneTypeMms" msgid="1799747455131365989">"MMS"</string>
     <string name="eventTypeCustom" msgid="3257367158986466481">"Özel"</string>
     <string name="eventTypeBirthday" msgid="7770026752793912283">"Doğum günü"</string>
-    <string name="eventTypeAnniversary" msgid="4684702412407916888">"Yıldönümü"</string>
+    <string name="eventTypeAnniversary" msgid="4684702412407916888">"Yıl dönümü"</string>
     <string name="eventTypeOther" msgid="530671238533887997">"Diğer"</string>
     <string name="emailTypeCustom" msgid="1809435350482181786">"Özel"</string>
     <string name="emailTypeHome" msgid="1597116303154775999">"Ev"</string>
@@ -1820,7 +1820,7 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Büyütme"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Telefon mikrofonuna geçilsin mi?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"İşitme cihazı mikrofonuna geçilsin mi?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Daha iyi ses kalitesi için veya işitme cihazınızın pili azaldığında Bu işlem yalnızca görüşme sırasında mikrofonunuzu değiştirir."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Daha iyi ses kalitesi için veya işitme cihazınızın pili azaldığında. Bu işlem yalnızca görüşme sırasında mikrofonunuzu değiştirir."</string>
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Eller serbest modunda arama yapmak için işitme cihazı mikrofonunu kullanabilirsiniz. Bu işlem yalnızca görüşme sırasında mikrofonunuzu değiştirir."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Geçiş yap"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Ayarlar"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Sabitlemeyi kaldırmadan önce kilit açma desenini sor"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Sabitlemeyi kaldırmadan önce şifre sor"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Yöneticiniz tarafından yüklendi.\nVerilen izinleri görüntülemek için ayarlara gidin"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Yöneticiniz tarafından güncellendi.\nVerilen izinleri görüntülemek için ayarlara gidin"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Yöneticiniz tarafından silindi"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Tamam"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Pil Tasarrufu, Koyu temayı açıp arka plan etkinliğini, bazı görsel efektleri, belirli özellikleri ve bazı ağ bağlantılarını sınırlandırır veya kapatır."</string>

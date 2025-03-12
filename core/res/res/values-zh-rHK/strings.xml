@@ -1818,10 +1818,10 @@
     <string name="accessibility_gesture_instructional_text" msgid="4133877896011098550">"下次使用此快速鍵時，就會開啟此功能。請用 2 隻手指從螢幕底部向上滑動並快速放開。"</string>
     <string name="accessibility_gesture_3finger_instructional_text" msgid="1124458279366968154">"下次使用此快速鍵時，就會開啟此功能。請用 3 隻手指從螢幕底部向上滑動並快速放開。"</string>
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"放大"</string>
-    <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"要切換至手機麥克風嗎？"</string>
-    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"要切換至助聽器麥克風嗎？"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"可改善音質，也在助聽器電量不足時適用。此操作只會切換通話期間的麥克風。"</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"你可使用助聽器麥克風進行免提通話。此操作只會切換通話期間的麥克風。"</string>
+    <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"要轉用手機麥克風嗎？"</string>
+    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"要轉用助聽器麥克風嗎？"</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"這樣可改善音質，助聽器電量不足時亦適用。系統只會在通話期間切換麥克風。"</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"你可使用助聽器麥克風進行免提通話。系統只會在通話期間切換麥克風。"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"切換"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"設定"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"正在切換至<xliff:g id="NAME">%1$s</xliff:g>…"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定時必須提供解鎖圖案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消固定時必須輸入密碼"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"已由你的管理員安裝。\n請前往設定查看已授予的權限"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"已由你的管理員更新。\n請前往設定查看已授予的權限"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"已由你的管理員刪除"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"好"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"「慳電模式」會開啟深色主題背景，並限制或關閉背景活動、部分視覺效果、特定功能和部分網絡連線。"</string>

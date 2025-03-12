@@ -1820,8 +1820,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"放大功能"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"要切换为手机麦克风吗？"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"要切换为助听器麦克风吗？"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"可改善音质，或在助听器电池电量不足时使用。此操作只会切换通话期间的麦克风。"</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"您可以使用助听器麦克风进行免提通话。此操作只会切换通话期间的麦克风。"</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"可改善音质，或在助听器电池电量不足时使用。系统仅会在通话期间切换麦克风。"</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"您可以使用助听器麦克风进行免提通话。系统只会在通话期间切换麦克风。"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"切换"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"设置"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"正在切换为<xliff:g id="NAME">%1$s</xliff:g>…"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定前要求绘制解锁图案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消时要求输入密码"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"由您的管理员安装。\n前往设置可查看已授予的权限"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"由您的管理员更新。\n前往设置可查看已授予的权限"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"已由您的管理员删除"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"确定"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>

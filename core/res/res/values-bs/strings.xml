@@ -1966,8 +1966,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Traži uzorak za otključavanje prije poništavanja kačenja"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Traži lozinku prije nego se otkači"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Instalirao je vaš administrator.\nIdite u postavke da pregledate data odobrenja"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Ažurirao je vaš administrator.\nIdite u postavke da pregledate data odobrenja"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Izbrisao je vaš administrator"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Uredu"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Ušteda baterije uključuje tamnu temu i ograničava ili isključuje aktivnost u pozadini, određene vizuelne efekte i funkcije te neke mrežne veze."</string>

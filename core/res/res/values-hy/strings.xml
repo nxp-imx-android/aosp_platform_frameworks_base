@@ -2273,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Ոլորել"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Դադարեցնել"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Դիրքը"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Թերթել վերև"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Թերթել ներքև"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Թերթել ձախ"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Թերթել աջ"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Դուրս գալ թերթելու ռեժիմից"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Թերթելու վահանակ"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> փաթեթը գցվեց ՍԱՀՄԱՆԱՓԱԿՎԱԾ զամբյուղի մեջ"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>՝"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"օգտատերը պատկեր է ուղարկել"</string>

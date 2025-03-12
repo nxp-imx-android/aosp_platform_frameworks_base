@@ -1821,8 +1821,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Agrandissement"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Passer au micro du téléphone ?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Passer au micro de l\'appareil auditif ?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Pour améliorer le son ou si la batterie de votre appareil auditif est faible. Cette option change uniquement le micro pendant l\'appel."</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Vous pouvez utiliser le micro de votre appareil auditif pour passer des appels en mode mains-libres. Cette option change uniquement le micro pendant l\'appel."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Pour un meilleur son ou si la batterie de votre appareil auditif est faible. Cette option ne change le micro que pendant l\'appel."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Vous pouvez utiliser le micro de votre appareil auditif pour passer des appels en mode mains-libres. Cette option ne change le micro que pendant l\'appel."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Changer"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Paramètres"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Passage à <xliff:g id="NAME">%1$s</xliff:g>..."</string>
@@ -1966,8 +1966,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Demander le schéma de déverrouillage avant de retirer l\'épingle"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Demander le mot de passe avant de retirer l\'épingle"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Installé par votre administrateur.\nAllez dans les paramètres pour consulter les autorisations accordées."</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Mis à jour par votre administrateur.\nAllez dans les paramètres pour consulter les autorisations accordées."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Supprimé par votre administrateur"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"L\'économiseur de batterie active le thème sombre et limite ou désactive l\'activité en arrière-plan ainsi que certains effets visuels, fonctionnalités et connexions réseau."</string>
