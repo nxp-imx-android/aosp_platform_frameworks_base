@@ -149,7 +149,6 @@ public class FloatExpression extends Operation implements VariableSupport, Seria
 
     @Override
     public void apply(@NonNull RemoteContext context) {
-        updateVariables(context);
         float t = context.getAnimationTime();
         if (Float.isNaN(mLastChange)) {
             mLastChange = t;

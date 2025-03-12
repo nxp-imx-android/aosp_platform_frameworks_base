@@ -49,6 +49,14 @@ public interface MapSerializer {
     MapSerializer addIntExpressionSrc(String key, int[] value, int mask);
 
     /**
+     * Add a path
+     *
+     * @param key The key
+     * @param path The path
+     */
+    MapSerializer addPath(String key, float[] path);
+
+    /**
      * Add metadata to this map for filtering by the data format generator.
      *
      * @param value A set of tags to add

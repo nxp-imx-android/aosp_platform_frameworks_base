@@ -175,20 +175,25 @@ public class Component extends PaintOperation
                             + mComponentId);
         }
         for (ComponentValue v : mComponentValues) {
-            switch (v.getType()) {
-                case ComponentValue.WIDTH:
-                    context.loadFloat(v.getValueId(), mWidth);
-                    if (DEBUG) {
-                        System.out.println("Updating WIDTH for " + mComponentId + " to " + mWidth);
-                    }
-                    break;
-                case ComponentValue.HEIGHT:
-                    context.loadFloat(v.getValueId(), mHeight);
-                    if (DEBUG) {
-                        System.out.println(
-                                "Updating HEIGHT for " + mComponentId + " to " + mHeight);
-                    }
-                    break;
+            if (context.getMode() == RemoteContext.ContextMode.DATA) {
+                context.loadFloat(v.getValueId(), 1f);
+            } else {
+                switch (v.getType()) {
+                    case ComponentValue.WIDTH:
+                        context.loadFloat(v.getValueId(), mWidth);
+                        if (DEBUG) {
+                            System.out.println(
+                                    "Updating WIDTH for " + mComponentId + " to " + mWidth);
+                        }
+                        break;
+                    case ComponentValue.HEIGHT:
+                        context.loadFloat(v.getValueId(), mHeight);
+                        if (DEBUG) {
+                            System.out.println(
+                                    "Updating HEIGHT for " + mComponentId + " to " + mHeight);
+                        }
+                        break;
+                }
             }
         }
     }
