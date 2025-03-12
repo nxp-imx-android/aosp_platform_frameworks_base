@@ -9378,10 +9378,12 @@ public class WindowManagerService extends IWindowManager.Stub
 
     /**
      * Updates the flags on an existing surface's input channel. This assumes the surface provided
-     * is the one associated with the provided input-channel. If this isn't the case, behavior
-     * is undefined.
+     * is the one associated with the provided input-channel. If this isn't the case, behavior is
+     * undefined.
      */
-    void updateInputChannel(IBinder channelToken, int displayId, SurfaceControl surface,
+    void updateInputChannel(IBinder channelToken,
+            @Nullable InputTransferToken hostInputTransferToken, int displayId,
+            SurfaceControl surface,
             int flags, int privateFlags, int inputFeatures, Region region) {
         final InputApplicationHandle applicationHandle;
         final String name;
@@ -9395,6 +9397,11 @@ public class WindowManagerService extends IWindowManager.Stub
             name = win.toString();
             applicationHandle = win.getApplicationHandle();
             win.setIsFocusable((flags & FLAG_NOT_FOCUSABLE) == 0);
+            if (Flags.updateHostInputTransferToken()) {
+                WindowState hostWindowState = hostInputTransferToken != null
+                        ? mInputToWindowMap.get(hostInputTransferToken.getToken()) : null;
+                win.updateHost(hostWindowState);
+            }
         }
 
         updateInputChannel(channelToken, win.mOwnerUid, win.mOwnerPid, displayId, surface, name,

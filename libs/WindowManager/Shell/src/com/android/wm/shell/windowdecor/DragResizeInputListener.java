@@ -342,6 +342,7 @@ class DragResizeInputListener implements AutoCloseable {
         try {
             mWindowSession.updateInputChannel(
                     mInputChannel.getToken(),
+                    null /* hostInputToken */,
                     mDisplayId,
                     mDecorationSurface,
                     FLAG_NOT_FOCUSABLE,
@@ -383,6 +384,7 @@ class DragResizeInputListener implements AutoCloseable {
         try {
             mWindowSession.updateInputChannel(
                     mSinkInputChannel.getToken(),
+                    null /* hostInputToken */,
                     mDisplayId,
                     mInputSinkSurface,
                     FLAG_NOT_FOCUSABLE,

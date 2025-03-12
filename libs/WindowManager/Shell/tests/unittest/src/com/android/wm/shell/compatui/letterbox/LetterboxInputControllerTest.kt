@@ -35,6 +35,7 @@ import java.util.function.Supplier
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -191,6 +192,7 @@ class LetterboxInputControllerTest : ShellTestCase() {
         fun checkUpdateSessionRegion(times: Int = 1, displayId: Int = DISPLAY_ID, region: Region) {
             verify(windowSession, times(times)).updateInputChannel(
                 any(),
+                anyOrNull(),
                 eq(displayId),
                 any(),
                 any(),

@@ -16,6 +16,7 @@
 
 package android.view;
 
+
 import static android.view.flags.Flags.FLAG_DEPRECATE_SURFACE_VIEW_Z_ORDER_APIS;
 import static android.view.flags.Flags.FLAG_SURFACE_VIEW_GET_SURFACE_PACKAGE;
 import static android.view.flags.Flags.FLAG_SURFACE_VIEW_SET_COMPOSITION_ORDER;
@@ -23,6 +24,8 @@ import static android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
 import static android.view.WindowManagerPolicyConstants.APPLICATION_MEDIA_OVERLAY_SUBLAYER;
 import static android.view.WindowManagerPolicyConstants.APPLICATION_MEDIA_SUBLAYER;
 import static android.view.WindowManagerPolicyConstants.APPLICATION_PANEL_SUBLAYER;
+import static android.view.flags.Flags.FLAG_SURFACE_VIEW_GET_SURFACE_PACKAGE;
+import static android.view.flags.Flags.FLAG_SURFACE_VIEW_SET_COMPOSITION_ORDER;
 
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
@@ -59,6 +62,7 @@ import android.util.Log;
 import android.view.SurfaceControl.Transaction;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.IAccessibilityEmbeddedConnection;
+import android.window.InputTransferToken;
 import android.window.SurfaceSyncGroup;
 
 import com.android.graphics.hwui.flags.Flags;
@@ -347,7 +351,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
                     sv.mSurfacePackage.getRemoteInterface().attachParentInterface(this);
                     mSurfaceView = sv;
                 } catch (RemoteException e) {
-                    Log.d(TAG, "Failed to attach parent interface to SCVH. Likely SCVH is alraedy "
+                    Log.d(TAG, "Failed to attach parent interface to SCVH. Likely SCVH is already "
                             + "dead.");
                 }
             }
@@ -492,10 +496,37 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
         mTag = "SV[" + System.identityHashCode(this) + windowName + "]";
     }
 
+    private void dispatchScvhAttachedToHost() {
+        final ViewRootImpl viewRoot = getViewRootImpl();
+        if (viewRoot == null) {
+            return;
+        }
+
+        IBinder inputToken = viewRoot.getInputToken();
+        if (inputToken == null) {
+            // We don't have an input channel so we can't transfer focus or active
+            // touch gestures to embedded.
+            return;
+        }
+
+        try {
+            mSurfacePackage
+                    .getRemoteInterface()
+                    .onDispatchAttachedToWindow(new InputTransferToken(inputToken));
+        } catch (RemoteException e) {
+            Log.d(TAG,
+                    "Failed to onDispatchAttachedToWindow to SCVH. Likely SCVH is already "
+                            + "dead.");
+        }
+    }
+
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         setTag();
+        if (mSurfacePackage != null) {
+            dispatchScvhAttachedToHost();
+        }
         getViewRootImpl().addSurfaceChangedCallback(this);
         mWindowStopped = false;
         mViewVisibility = getVisibility() == VISIBLE;
@@ -2189,6 +2220,7 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
             applyTransactionOnVriDraw(transaction);
         }
         mSurfacePackage = p;
+        dispatchScvhAttachedToHost();
         mSurfaceControlViewHostParent.attach(this);
 
         if (isFocused()) {
