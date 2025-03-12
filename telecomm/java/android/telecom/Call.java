@@ -23,6 +23,7 @@ import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.content.Intent;
 import android.content.pm.ServiceInfo;
 import android.net.Uri;
 import android.os.BadParcelableException;
@@ -1174,6 +1175,10 @@ public final class Call {
                 int callerNumberVerificationStatus,
                 Uri contactPhotoUri,
                 UserHandle originatingUser) {
+            if (extras == null) {
+                extras = new Bundle();
+            }
+            extras.putParcelable(Intent.EXTRA_USER_HANDLE, originatingUser);
             mState = state;
             mTelecomCallId = telecomCallId;
             mHandle = handle;
