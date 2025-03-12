@@ -82,6 +82,9 @@ struct FindEntryResult {
   // The bitmask of configuration axis with which the resource value varies.
   uint32_t type_flags;
 
+  // The bitmask of ResTable_entry flags
+  uint16_t entry_flags;
+
   // The dynamic package ID map for the package from which this resource came from.
   const DynamicRefTable* dynamic_ref_table;
 
@@ -1031,6 +1034,7 @@ base::expected<FindEntryResult, NullOrIOError> AssetManager2::FindEntryInternal(
     .entry = *entry,
     .config = *best_config,
     .type_flags = type_flags,
+    .entry_flags = (*best_entry_verified)->flags(),
     .dynamic_ref_table = package_group.dynamic_ref_table.get(),
     .package_name = &best_package->GetPackageName(),
     .type_string_ref = StringPoolRef(best_package->GetTypeStringPool(), best_type->id - 1),
@@ -1185,16 +1189,16 @@ base::expected<AssetManager2::SelectedValue, NullOrIOError> AssetManager2::GetRe
     }
 
     // Create a reference since we can't represent this complex type as a Res_value.
-    return SelectedValue(Res_value::TYPE_REFERENCE, resid, result->cookie, result->type_flags,
-                         resid, result->config);
+    return SelectedValue(Res_value::TYPE_REFERENCE, resid, result->cookie, result->entry_flags,
+                         result->type_flags, resid, result->config);
   }
 
   // Convert the package ID to the runtime assigned package ID.
   Res_value value = std::get<Res_value>(result->entry);
   result->dynamic_ref_table->lookupResourceValue(&value);
 
-  return SelectedValue(value.dataType, value.data, result->cookie, result->type_flags,
-                       resid, result->config);
+  return SelectedValue(value.dataType, value.data, result->cookie, result->entry_flags,
+                       result->type_flags, resid, result->config);
 }
 
 base::expected<std::monostate, NullOrIOError> AssetManager2::ResolveReference(
@@ -1847,8 +1851,8 @@ std::optional<AssetManager2::SelectedValue> Theme::GetAttribute(uint32_t resid) 
     }
 
     return AssetManager2::SelectedValue(entry_it->value.dataType, entry_it->value.data,
-                                        entry_it->cookie, type_spec_flags, 0U /* resid */,
-                                        {} /* config */);
+                                        entry_it->cookie, 0U /* entry flags*/, type_spec_flags,
+                                        0U /* resid */, {} /* config */);
   }
   return std::nullopt;
 }

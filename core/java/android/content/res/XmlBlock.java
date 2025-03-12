@@ -59,12 +59,14 @@ public final class XmlBlock implements AutoCloseable {
         mAssets = null;
         mNative = nativeCreate(data, 0, data.length);
         mStrings = new StringBlock(nativeGetStringBlock(mNative), false);
+        mUsesFeatureFlags = true;
     }
 
     public XmlBlock(byte[] data, int offset, int size) {
         mAssets = null;
         mNative = nativeCreate(data, offset, size);
         mStrings = new StringBlock(nativeGetStringBlock(mNative), false);
+        mUsesFeatureFlags = true;
     }
 
     @Override
@@ -346,7 +348,8 @@ public final class XmlBlock implements AutoCloseable {
             if (ev == ERROR_BAD_DOCUMENT) {
                 throw new XmlPullParserException("Corrupt XML binary file");
             }
-            if (useLayoutReadwrite() && ev == START_TAG) {
+
+            if (useLayoutReadwrite() && mUsesFeatureFlags && ev == START_TAG) {
                 AconfigFlags flags = ParsingPackageUtils.getAconfigFlags();
                 if (flags.skipCurrentElement(/* pkg= */ null, this)) {
                     int depth = 1;
@@ -678,10 +681,11 @@ public final class XmlBlock implements AutoCloseable {
      *  are doing!  The given native object must exist for the entire lifetime
      *  of this newly creating XmlBlock.
      */
-    XmlBlock(@Nullable AssetManager assets, long xmlBlock) {
+    XmlBlock(@Nullable AssetManager assets, long xmlBlock, boolean usesFeatureFlags) {
         mAssets = assets;
         mNative = xmlBlock;
         mStrings = new StringBlock(nativeGetStringBlock(xmlBlock), false);
+        mUsesFeatureFlags = usesFeatureFlags;
     }
 
     private @Nullable final AssetManager mAssets;
@@ -689,6 +693,8 @@ public final class XmlBlock implements AutoCloseable {
     /*package*/ final StringBlock mStrings;
     private boolean mOpen = true;
     private int mOpenCount = 1;
+
+    private final boolean mUsesFeatureFlags;
 
     private static final native long nativeCreate(byte[] data,
                                                  int offset,

@@ -257,6 +257,7 @@ class AssetManager2 {
         : cookie(entry.cookie),
           data(entry.value.data),
           type(entry.value.dataType),
+          entry_flags(0U),
           flags(bag->type_spec_flags),
           resid(0U),
           config() {
@@ -271,6 +272,9 @@ class AssetManager2 {
     // Type of the data value.
     uint8_t type;
 
+    // The bitmask of ResTable_entry flags
+    uint16_t entry_flags;
+
     // The bitmask of configuration axis that this resource varies with.
     // See ResTable_config::CONFIG_*.
     uint32_t flags;
@@ -283,9 +287,10 @@ class AssetManager2 {
 
    private:
     SelectedValue(uint8_t value_type, Res_value::data_type value_data, ApkAssetsCookie cookie,
-                  uint32_t type_flags, uint32_t resid, ResTable_config config) :
-                  cookie(cookie), data(value_data), type(value_type), flags(type_flags),
-                  resid(resid), config(std::move(config)) {}
+                  uint16_t entry_flags, uint32_t type_flags, uint32_t resid, ResTable_config config)
+        :
+                  cookie(cookie), data(value_data), type(value_type), entry_flags(entry_flags),
+                  flags(type_flags), resid(resid), config(std::move(config)) {}
   };
 
   // Retrieves the best matching resource value with ID `resid`.

@@ -67,6 +67,7 @@ static struct typedvalue_offsets_t {
   jfieldID mResourceId;
   jfieldID mChangingConfigurations;
   jfieldID mDensity;
+  jfieldID mUsesFeatureFlags;
 } gTypedValueOffsets;
 
 // This is also used by asset_manager.cpp.
@@ -137,6 +138,8 @@ static jint CopyValue(JNIEnv* env, const AssetManager2::SelectedValue& value,
   env->SetIntField(out_typed_value, gTypedValueOffsets.mResourceId, value.resid);
   env->SetIntField(out_typed_value, gTypedValueOffsets.mChangingConfigurations, value.flags);
   env->SetIntField(out_typed_value, gTypedValueOffsets.mDensity, value.config.density);
+  env->SetBooleanField(out_typed_value, gTypedValueOffsets.mUsesFeatureFlags,
+                       value.entry_flags & ResTable_entry::FLAG_USES_FEATURE_FLAGS);
   return static_cast<jint>(ApkAssetsCookieToJavaCookie(value.cookie));
 }
 
@@ -1664,6 +1667,7 @@ int register_android_content_AssetManager(JNIEnv* env) {
   gTypedValueOffsets.mChangingConfigurations =
       GetFieldIDOrDie(env, typedValue, "changingConfigurations", "I");
   gTypedValueOffsets.mDensity = GetFieldIDOrDie(env, typedValue, "density", "I");
+  gTypedValueOffsets.mUsesFeatureFlags = GetFieldIDOrDie(env, typedValue, "usesFeatureFlags", "Z");
 
   jclass assetManager = FindClassOrDie(env, "android/content/res/AssetManager");
   gAssetManagerOffsets.mObject = GetFieldIDOrDie(env, assetManager, "mObject", "J");

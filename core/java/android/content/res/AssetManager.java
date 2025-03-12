@@ -1190,7 +1190,7 @@ public final class AssetManager implements AutoCloseable {
      */
     public @NonNull XmlResourceParser openXmlResourceParser(int cookie, @NonNull String fileName)
             throws IOException {
-        try (XmlBlock block = openXmlBlockAsset(cookie, fileName)) {
+        try (XmlBlock block = openXmlBlockAsset(cookie, fileName, true)) {
             XmlResourceParser parser = block.newParser(ID_NULL, new Validator());
             // If openXmlBlockAsset doesn't throw, it will always return an XmlBlock object with
             // a valid native pointer, which makes newParser always return non-null. But let's
@@ -1209,7 +1209,7 @@ public final class AssetManager implements AutoCloseable {
      * @hide
      */
     @NonNull XmlBlock openXmlBlockAsset(@NonNull String fileName) throws IOException {
-        return openXmlBlockAsset(0, fileName);
+        return openXmlBlockAsset(0, fileName, true);
     }
 
     /**
@@ -1218,9 +1218,11 @@ public final class AssetManager implements AutoCloseable {
      *
      * @param cookie Identifier of the package to be opened.
      * @param fileName Name of the asset to retrieve.
+     * @param usesFeatureFlags Whether the resources uses feature flags
      * @hide
      */
-    @NonNull XmlBlock openXmlBlockAsset(int cookie, @NonNull String fileName) throws IOException {
+    @NonNull XmlBlock openXmlBlockAsset(int cookie, @NonNull String fileName,
+            boolean usesFeatureFlags) throws IOException {
         Objects.requireNonNull(fileName, "fileName");
         synchronized (this) {
             ensureOpenLocked();
@@ -1229,7 +1231,8 @@ public final class AssetManager implements AutoCloseable {
             if (xmlBlock == 0) {
                 throw new FileNotFoundException("Asset XML file: " + fileName);
             }
-            final XmlBlock block = new XmlBlock(this, xmlBlock);
+
+            final XmlBlock block = new XmlBlock(this, xmlBlock, usesFeatureFlags);
             incRefsLocked(block.hashCode());
             return block;
         }
