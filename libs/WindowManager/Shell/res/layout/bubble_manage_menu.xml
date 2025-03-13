@@ -40,6 +40,7 @@
             android:tint="@color/bubbles_icon_tint"/>
 
         <TextView
+            android:id="@+id/manage_dismiss"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -67,6 +68,7 @@
             android:tint="@color/bubbles_icon_tint"/>
 
         <TextView
+            android:id="@+id/manage_dont_bubble"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
