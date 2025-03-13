@@ -16,7 +16,7 @@
 package com.android.systemui.lowlightclock
 
 import com.android.internal.logging.UiEventLogger
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.shared.condition.Condition
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 class LowLightCondition
 @Inject
 constructor(
-    @Application scope: CoroutineScope,
+    @Background scope: CoroutineScope,
     private val ambientLightModeMonitor: AmbientLightModeMonitor,
     private val uiEventLogger: UiEventLogger,
 ) : Condition(scope) {

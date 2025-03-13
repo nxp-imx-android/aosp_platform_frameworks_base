@@ -17,7 +17,7 @@ package com.android.systemui.lowlightclock
 
 import android.text.TextUtils
 import android.util.Log
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
@@ -31,7 +31,7 @@ import kotlinx.coroutines.CoroutineScope
  */
 class ForceLowLightCondition
 @Inject
-constructor(@Application scope: CoroutineScope, commandRegistry: CommandRegistry) :
+constructor(@Background scope: CoroutineScope, commandRegistry: CommandRegistry) :
     Condition(scope, null, true) {
     /**
      * Default Constructor.

@@ -21,7 +21,7 @@ import android.os.UserHandle
 import android.provider.Settings
 import android.util.Log
 import com.android.internal.R
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.util.settings.SecureSettings
@@ -32,7 +32,7 @@ import kotlinx.coroutines.CoroutineScope
 class ScreenSaverEnabledCondition
 @Inject
 constructor(
-    @Application scope: CoroutineScope,
+    @Background scope: CoroutineScope,
     @Main resources: Resources,
     private val secureSettings: SecureSettings,
 ) : Condition(scope) {

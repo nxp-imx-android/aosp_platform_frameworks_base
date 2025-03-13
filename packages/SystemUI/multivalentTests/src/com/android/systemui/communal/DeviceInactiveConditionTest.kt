@@ -56,6 +56,7 @@ class DeviceInactiveConditionTest : SysuiTestCase() {
         Kosmos.Fixture {
             DeviceInactiveCondition(
                 applicationCoroutineScope,
+                applicationCoroutineScope,
                 keyguardStateController,
                 wakefulnessLifecycle,
                 keyguardUpdateMonitor,
