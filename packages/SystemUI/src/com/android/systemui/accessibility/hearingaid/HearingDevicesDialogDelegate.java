@@ -286,7 +286,9 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                             mLaunchSourceId);
                     final Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_DETAILS_SETTINGS)
                             .putExtra(Intent.EXTRA_COMPONENT_NAME,
-                                    ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME.flattenToString());
+                                    ACCESSIBILITY_HEARING_AIDS_COMPONENT_NAME.flattenToString())
+                            .setPackage(mQSSettingsPackageRepository.getSettingsPackageName());
+
                     mActivityStarter.postStartActivityDismissingKeyguard(intent, /* delay= */ 0,
                             mDialogTransitionAnimator.createActivityTransitionController(
                                     dialog));
@@ -588,9 +590,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                     com.android.internal.R.color.materialColorOnPrimaryContainer));
         }
         text.setText(item.getToolName());
-        Intent intent = item.getToolIntent()
-                .setPackage(mQSSettingsPackageRepository.getSettingsPackageName());
-
+        Intent intent = item.getToolIntent();
         view.setOnClickListener(v -> {
             final String name = intent.getComponent() != null
                     ? intent.getComponent().flattenToString()
