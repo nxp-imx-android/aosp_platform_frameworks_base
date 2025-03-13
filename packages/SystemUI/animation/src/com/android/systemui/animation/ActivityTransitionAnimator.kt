@@ -1216,6 +1216,13 @@ constructor(
         private var animation: TransitionAnimator.Animation? = null
 
         /**
+         * Whether the opening/closing window needs to reparented to the view's window at the
+         * beginning of the animation. Since we don't always do this, we need to keep track of it in
+         * order to have the rest of the animation behave correctly.
+         */
+        var reparent = false
+
+        /**
          * A timeout to cancel the transition animation if the remote animation is not started or
          * cancelled within [TRANSITION_TIMEOUT] milliseconds after the intent was started.
          *
@@ -1469,6 +1476,12 @@ constructor(
                 transitionAnimator.isExpandingFullyAbove(controller.transitionContainer, endState)
             val windowState = startingWindowState ?: controller.windowAnimatorState
 
+            val viewRoot = controller.transitionContainer.viewRootImpl
+            val skipReparenting = skipReparentTransaction || viewRoot == null
+            if (moveTransitionAnimationLayer() && !skipReparenting) {
+                reparent = true
+            }
+
             // We animate the opening window and delegate the view expansion to [this.controller].
             val delegate = this.controller
             val controller =
@@ -1536,16 +1549,13 @@ constructor(
                             )
                         }
 
-                        if (moveTransitionAnimationLayer() && !skipReparentTransaction) {
+                        if (reparent) {
                             // Ensure that the launching window is rendered above the view's window,
                             // so it is not obstructed.
                             // TODO(b/397180418): re-use the start transaction once the
                             //  RemoteAnimation wrapper is cleaned up.
                             SurfaceControl.Transaction().use {
-                                it.reparent(
-                                    window.leash,
-                                    controller.transitionContainer.viewRootImpl.surfaceControl,
-                                )
+                                it.reparent(window.leash, viewRoot.surfaceControl)
                                 it.apply()
                             }
                         }
@@ -1603,7 +1613,7 @@ constructor(
                     null
                 }
             val fadeWindowBackgroundLayer =
-                if (moveTransitionAnimationLayer()) {
+                if (reparent) {
                     false
                 } else {
                     !controller.isBelowAnimatingWindow
@@ -1727,7 +1737,7 @@ constructor(
             // fade in progressively. Otherwise, it should be fully opaque and will be progressively
             // revealed as the window background color layer above the window fades out.
             val alpha =
-                if (moveTransitionAnimationLayer() || controller.isBelowAnimatingWindow) {
+                if (reparent || controller.isBelowAnimatingWindow) {
                     if (controller.isLaunching) {
                         interpolators.contentAfterFadeInInterpolator.getInterpolation(
                             windowProgress
