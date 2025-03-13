@@ -50,7 +50,6 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
 import com.android.systemui.qs.logging.QSLogger;
-import com.android.systemui.qs.tiles.dialog.CastDetailsViewModel;
 import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor;
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.connectivity.IconState;
@@ -64,7 +63,6 @@ import com.android.systemui.statusbar.policy.HotspotController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -106,8 +104,6 @@ public class CastTileTest extends SysuiTestCase {
     private DialogTransitionAnimator mDialogTransitionAnimator;
     @Mock
     private QsEventLogger mUiEventLogger;
-    @Mock
-    private CastDetailsViewModel.Factory mCastDetailsViewModelFactory;
 
     private final TileJavaAdapter mJavaAdapter = new TileJavaAdapter();
     private final FakeConnectivityRepository mConnectivityRepository =
@@ -521,29 +517,6 @@ public class CastTileTest extends SysuiTestCase {
         assertTrue(mCastTile.getState().forceExpandIcon);
     }
 
-    @Test
-    public void testDetailsViewUnavailableState_returnsNull() {
-        createAndStartTileNewImpl();
-        mTestableLooper.processAllMessages();
-
-        assertEquals(Tile.STATE_UNAVAILABLE, mCastTile.getState().state);
-        mCastTile.getDetailsViewModel(Assert::assertNull);
-    }
-
-    @Test
-    public void testDetailsViewAvailableState_returnsNotNull() {
-        createAndStartTileNewImpl();
-        CastDevice device = createConnectedCastDevice();
-        List<CastDevice> devices = new ArrayList<>();
-        devices.add(device);
-        when(mController.getCastDevices()).thenReturn(devices);
-        mConnectivityRepository.setWifiConnected(true);
-        mTestableLooper.processAllMessages();
-
-        assertEquals(Tile.STATE_ACTIVE, mCastTile.getState().state);
-        mCastTile.getDetailsViewModel(Assert::assertNotNull);
-    }
-
     /**
      * For simplicity, let this method still set the field even though that's kind of gross
      */
@@ -567,8 +540,7 @@ public class CastTileTest extends SysuiTestCase {
                 mConnectivityRepository,
                 mJavaAdapter,
                 mFeatureFlags,
-                mShadeDialogContextInteractor,
-                mCastDetailsViewModelFactory
+                mShadeDialogContextInteractor
         );
         mCastTile.initialize();
 
@@ -612,8 +584,7 @@ public class CastTileTest extends SysuiTestCase {
                 mConnectivityRepository,
                 mJavaAdapter,
                 mFeatureFlags,
-                mShadeDialogContextInteractor,
-                mCastDetailsViewModelFactory
+                mShadeDialogContextInteractor
         );
         mCastTile.initialize();
 

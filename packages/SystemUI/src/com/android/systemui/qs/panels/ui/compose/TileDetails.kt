@@ -43,8 +43,6 @@ import com.android.systemui.bluetooth.qsdialog.BluetoothDetailsViewModel
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
-import com.android.systemui.qs.tiles.dialog.CastDetailsContent
-import com.android.systemui.qs.tiles.dialog.CastDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDetailsContent
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.ModesDetailsContent
@@ -133,7 +131,6 @@ private fun MapTileDetailsContent(tileDetailsViewModel: TileDetailsViewModel) {
         is BluetoothDetailsViewModel ->
             BluetoothDetailsContent(tileDetailsViewModel.detailsContentViewModel)
         is ModesDetailsViewModel -> ModesDetailsContent(tileDetailsViewModel)
-        is CastDetailsViewModel -> CastDetailsContent()
     }
 }
 
