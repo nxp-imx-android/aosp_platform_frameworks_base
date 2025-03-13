@@ -929,8 +929,8 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
         //Ensure mSupportedSads is empty before fetching SADs
         synchronized (mLock) {
             mSupportedSads.clear();
+            notifyArcStatusToAudioService(true, mSupportedSads);
         }
-        notifyArcStatusToAudioService(true, mSupportedSads);
         mArcEstablished = true;
 
         // Avoid triggering duplicate RequestSadAction events.
