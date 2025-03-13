@@ -281,7 +281,6 @@ internal class DepthTracker {
                             },
                     )
                 }
-                downstreamSet.clear()
             }
         }
         reset()
