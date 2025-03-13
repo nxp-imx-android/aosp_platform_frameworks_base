@@ -55423,6 +55423,7 @@ package android.view {
     method public void dispatchOnDraw();
     method public void dispatchOnGlobalLayout();
     method public boolean dispatchOnPreDraw();
+    method @FlaggedApi("android.view.flags.enable_dispatch_on_scroll_changed") public void dispatchOnScrollChanged();
     method public boolean isAlive();
     method public void registerFrameCommitCallback(@NonNull Runnable);
     method @Deprecated public void removeGlobalOnLayoutListener(android.view.ViewTreeObserver.OnGlobalLayoutListener);
