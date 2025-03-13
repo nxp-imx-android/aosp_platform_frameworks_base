@@ -57,6 +57,11 @@ public class FlexParallaxSpec implements ParallaxSpec {
      * @return 0f = no dim applied. 1f = full black.
      */
     public float getDimValue(int position, DividerSnapAlgorithm snapAlgorithm) {
+        // On tablets, apps don't go offscreen, so only dim for dismissal.
+        if (!snapAlgorithm.areOffscreenRatiosSupported()) {
+            return ParallaxSpec.super.getDimValue(position, snapAlgorithm);
+        }
+
         int startDismissPos = snapAlgorithm.getDismissStartTarget().getPosition();
         int firstTargetPos = snapAlgorithm.getFirstSplitTarget().getPosition();
         int middleTargetPos = snapAlgorithm.getMiddleTarget().getPosition();

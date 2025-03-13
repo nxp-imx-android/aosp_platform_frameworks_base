@@ -71,6 +71,7 @@ public class FlexParallaxSpecTests {
         when(mockSnapAlgorithm.getMiddleTarget()).thenReturn(mockMiddleTarget);
         when(mockSnapAlgorithm.getLastSplitTarget()).thenReturn(mockLastTarget);
         when(mockSnapAlgorithm.getDismissEndTarget()).thenReturn(mockEndEdge);
+        when(mockSnapAlgorithm.areOffscreenRatiosSupported()).thenReturn(true);
 
         when(mockStartEdge.getPosition()).thenReturn(0);
         when(mockFirstTarget.getPosition()).thenReturn(250);
