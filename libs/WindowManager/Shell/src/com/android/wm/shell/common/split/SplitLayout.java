@@ -559,7 +559,12 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
                 true /* setEffectBounds */);
     }
 
-    /** Updates recording bounds of divider window and both of the splits. */
+    /**
+     * Updates the bounds of the divider window and both split apps.
+     * @param position The left/top edge of the visual divider, where the edge of app A meets the
+     *                 divider. Not to be confused with the actual divider surface, which is larger
+     *                 and overlaps the apps a bit.
+     */
     private void updateBounds(int position, Rect bounds1, Rect bounds2, Rect dividerBounds,
             boolean setEffectBounds) {
         dividerBounds.set(mRootBounds);
@@ -574,10 +579,11 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
 
             // For flexible split, expand app offscreen as well
             if (mDividerSnapAlgorithm.areOffscreenRatiosSupported()) {
-                if (position <= mDividerSnapAlgorithm.getMiddleTarget().position) {
-                    bounds1.left = bounds1.right - bounds2.width();
+                int distanceToCenter = position - mDividerSnapAlgorithm.getMiddleTarget().position;
+                if (position < mDividerSnapAlgorithm.getMiddleTarget().position) {
+                    bounds1.left += distanceToCenter * 2;
                 } else {
-                    bounds2.right = bounds2.left + bounds1.width();
+                    bounds2.right += distanceToCenter * 2;
                 }
             }
 
@@ -590,10 +596,11 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
 
             // For flexible split, expand app offscreen as well
             if (mDividerSnapAlgorithm.areOffscreenRatiosSupported()) {
-                if (position <= mDividerSnapAlgorithm.getMiddleTarget().position) {
-                    bounds1.top = bounds1.bottom - bounds2.height();
+                int distanceToCenter = position - mDividerSnapAlgorithm.getMiddleTarget().position;
+                if (position < mDividerSnapAlgorithm.getMiddleTarget().position) {
+                    bounds1.top += distanceToCenter * 2;
                 } else {
-                    bounds2.bottom = bounds2.top + bounds1.height();
+                    bounds2.bottom += distanceToCenter * 2;
                 }
             }
         }
