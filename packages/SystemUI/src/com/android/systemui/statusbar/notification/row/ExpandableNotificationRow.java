@@ -2680,30 +2680,58 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     /**
+     * Whether to allow dismissal with the whole-row translation animation.
+     *
+     * If true, either animation is permissible.
+     * If false, usingRTX behavior is forbidden, only clipping animation should be used.
+     *
+     * Usually either is OK, except for promoted notifications, where we always need to
+     * dismiss with content clipping/partial translation animation instead, so that we
+     * can show the demotion options.
+     * @return
+     */
+    private boolean allowDismissUsingRowTranslationX() {
+        if (Flags.permissionHelperInlineUiRichOngoing()) {
+            return !isPromotedOngoing();
+        } else {
+            // Don't change behavior unless the flag is on.
+            return true;
+        }
+    }
+
+    /**
      * Set the dismiss behavior of the view.
      *
      * @param usingRowTranslationX {@code true} if the view should translate using regular
      *                             translationX, otherwise the contents will be
      *                             translated.
+     * @param forceUpdateChildren {@code true} to force initialization, {@code false} if lazy
+     *                             behavior is OK.
      */
     @Override
-    public void setDismissUsingRowTranslationX(boolean usingRowTranslationX) {
-        if (usingRowTranslationX != mDismissUsingRowTranslationX) {
+    public void setDismissUsingRowTranslationX(boolean usingRowTranslationX,
+            boolean forceUpdateChildren) {
+        // Before updating dismiss behavior, make sure this is an allowable configuration for this
+        // notification.
+        usingRowTranslationX = usingRowTranslationX && allowDismissUsingRowTranslationX();
+
+        if (forceUpdateChildren || (usingRowTranslationX != mDismissUsingRowTranslationX)) {
             // In case we were already transitioning, let's switch over!
             float previousTranslation = getTranslation();
             if (previousTranslation != 0) {
                 setTranslation(0);
             }
-            super.setDismissUsingRowTranslationX(usingRowTranslationX);
+            super.setDismissUsingRowTranslationX(usingRowTranslationX, forceUpdateChildren);
             if (previousTranslation != 0) {
                 setTranslation(previousTranslation);
             }
+
             if (mChildrenContainer != null) {
                 List<ExpandableNotificationRow> notificationChildren =
                         mChildrenContainer.getAttachedChildren();
                 for (int i = 0; i < notificationChildren.size(); i++) {
                     ExpandableNotificationRow child = notificationChildren.get(i);
-                    child.setDismissUsingRowTranslationX(usingRowTranslationX);
+                    child.setDismissUsingRowTranslationX(usingRowTranslationX, forceUpdateChildren);
                 }
             }
         }

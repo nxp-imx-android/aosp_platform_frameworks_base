@@ -29,6 +29,7 @@ import android.content.pm.ShortcutManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
@@ -309,6 +310,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         });
 
         View gutsView = item.getGutsView();
+
         try {
             if (gutsView instanceof NotificationSnooze) {
                 initializeSnoozeView(row, (NotificationSnooze) gutsView);
@@ -322,6 +324,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                         (PartialConversationInfo) gutsView);
             } else if (gutsView instanceof FeedbackInfo) {
                 initializeFeedbackInfo(row, (FeedbackInfo) gutsView);
+            } else if (gutsView instanceof PromotedPermissionGutsContent) {
+                initializeDemoteView(row, (PromotedPermissionGutsContent) gutsView);
             }
             return true;
         } catch (Exception e) {
@@ -347,6 +351,31 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
         notificationSnoozeView.setSnoozeOptions(row.getEntry().getSnoozeCriteria());
         guts.setHeightChangedListener((NotificationGuts g) -> {
             mListContainer.onHeightChanged(row, row.isShown() /* needsAnimation */);
+        });
+    }
+
+    /**
+     * Sets up the {@link NotificationSnooze} inside the notification row's guts.
+     *
+     * @param row view to set up the guts for
+     * @param demoteGuts view to set up/bind within {@code row}
+     */
+    private void initializeDemoteView(
+            final ExpandableNotificationRow row,
+            PromotedPermissionGutsContent demoteGuts) {
+        StatusBarNotification sbn = row.getEntry().getSbn();
+        demoteGuts.setStatusBarNotification(sbn);
+        demoteGuts.setOnDemoteAction(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    // TODO(b/391661009): Signal AutomaticPromotionCoordinator here
+                    mNotificationManager.setCanBePromoted(
+                            sbn.getPackageName(), sbn.getUid(), false, true);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "Couldn't revoke live update permission", e);
+                }
+            }
         });
     }
 
