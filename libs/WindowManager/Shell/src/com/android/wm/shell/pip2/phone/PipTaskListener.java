@@ -111,8 +111,9 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
                 listener.onActionsChanged(params.getActions(), params.getCloseAction());
             }
         }
-        mPictureInPictureParams.copyOnlySet(params != null ? params
-                : new PictureInPictureParams.Builder().build());
+        // Set the new params but make sure mPictureInPictureParams is not null.
+        mPictureInPictureParams = params == null
+                ? new PictureInPictureParams.Builder().build() : params;
     }
 
     /** Add a PipParamsChangedCallback listener. */

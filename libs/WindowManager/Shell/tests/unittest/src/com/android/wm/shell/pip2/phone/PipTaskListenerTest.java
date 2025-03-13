@@ -196,6 +196,7 @@ public class PipTaskListenerTest {
         verifyNoMoreInteractions(mMockPipParamsChangedCallback);
         verify(mMockPipTransitionState, times(0))
                 .setOnIdlePipTransitionStateRunnable(any(Runnable.class));
+        assertTrue(mPipTaskListener.getPictureInPictureParams().empty());
     }
 
     @Test
