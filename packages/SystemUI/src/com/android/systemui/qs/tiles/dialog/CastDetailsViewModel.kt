@@ -16,37 +16,21 @@
 
 package com.android.systemui.qs.tiles.dialog
 
-import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.provider.Settings
-import com.android.internal.app.MediaRouteControllerContentManager
-import com.android.internal.app.MediaRouteDialogPresenter
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandler
-import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 
 /** The view model used for the screen record details view in the Quick Settings */
 class CastDetailsViewModel
 @AssistedInject
-constructor(
-    private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler,
-    @Assisted private val context: Context,
-    @Assisted private val routeTypes: Int,
-) : MediaRouteControllerContentManager.Delegate, TileDetailsViewModel {
+constructor(private val qsTileIntentUserActionHandler: QSTileIntentUserInputHandler) :
+    TileDetailsViewModel {
     @AssistedFactory
     fun interface Factory {
-        fun create(context: Context, routeTypes: Int): CastDetailsViewModel
-    }
-
-    fun shouldShowChooserDialog(): Boolean {
-        return MediaRouteDialogPresenter.shouldShowChooserDialog(context, routeTypes)
-    }
-
-    fun createControllerContentManager(): MediaRouteControllerContentManager {
-        return MediaRouteControllerContentManager(context, this)
+        fun create(): CastDetailsViewModel
     }
 
     override fun clickOnSettingsButton() {
@@ -63,16 +47,4 @@ constructor(
     // TODO(b/388321032): Replace this string with a string in a translatable xml file,
     override val subTitle: String
         get() = "Searching for devices..."
-
-    override fun setMediaRouteDeviceTitle(title: CharSequence?) {
-        // TODO(b/378514236): Finish implementing this function.
-    }
-
-    override fun setMediaRouteDeviceIcon(icon: Drawable?) {
-        // TODO(b/378514236): Finish implementing this function.
-    }
-
-    override fun dismissView() {
-        // TODO(b/378514236): Finish implementing this function.
-    }
 }
