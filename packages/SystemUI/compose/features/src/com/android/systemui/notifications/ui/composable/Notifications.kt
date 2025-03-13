@@ -60,7 +60,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -98,6 +97,7 @@ import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadi
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
 import com.android.systemui.scene.session.ui.composable.rememberSession
+import com.android.systemui.scene.session.ui.composable.sessionCoroutineScope
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent
@@ -299,7 +299,7 @@ fun ContentScope.NotificationScrollingStack(
     onEmptySpaceClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = shadeSession.sessionCoroutineScope()
     val density = LocalDensity.current
     val screenCornerRadius = LocalScreenCornerRadius.current
     val scrimCornerRadius = dimensionResource(R.dimen.notification_scrim_corner_radius)
