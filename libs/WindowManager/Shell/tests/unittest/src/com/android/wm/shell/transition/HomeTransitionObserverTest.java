@@ -222,7 +222,7 @@ public class HomeTransitionObserverTest extends ShellTestCase {
 
     @Test
     @EnableFlags({FLAG_ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX})
-    public void startDragToDesktopAborted_doesNotTriggerCallback() throws RemoteException {
+    public void startDragToDesktopAborted_triggersCallback() throws RemoteException {
         TransitionInfo info = mock(TransitionInfo.class);
         TransitionInfo.Change change = mock(TransitionInfo.Change.class);
         ActivityManager.RunningTaskInfo taskInfo = mock(ActivityManager.RunningTaskInfo.class);
@@ -239,7 +239,7 @@ public class HomeTransitionObserverTest extends ShellTestCase {
 
         mHomeTransitionObserver.onTransitionFinished(transition, /* aborted= */ true);
 
-        verify(mListener, never()).onHomeVisibilityChanged(/* isVisible= */ anyBoolean());
+        verify(mListener).onHomeVisibilityChanged(/* isVisible= */ true);
     }
 
     @Test
