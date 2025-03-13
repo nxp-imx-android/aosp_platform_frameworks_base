@@ -1780,7 +1780,7 @@ public abstract class BatteryStats {
             out.writeInt(statIrqTime);
             out.writeInt(statSoftIrqTime);
             out.writeInt(statIdlTime);
-            out.writeString(statSubsystemPowerState);
+            out.writeString8(statSubsystemPowerState);
         }
 
         public void readFromParcel(Parcel in) {
@@ -1801,7 +1801,15 @@ public abstract class BatteryStats {
             statIrqTime = in.readInt();
             statSoftIrqTime = in.readInt();
             statIdlTime = in.readInt();
-            statSubsystemPowerState = in.readString();
+            statSubsystemPowerState = in.readString8();
+        }
+
+
+        public boolean isEmpty() {
+            return userTime == 0 && systemTime == 0 && appCpuUid1 == Process.INVALID_UID
+                    && appCpuUid2 == Process.INVALID_UID && appCpuUid3 == Process.INVALID_UID
+                    && statSystemTime == 0 && statIOWaitTime == 0 && statIrqTime == 0
+                    && statSoftIrqTime == 0 && statIdlTime == 0 && statSubsystemPowerState == null;
         }
     }
 
@@ -2238,6 +2246,7 @@ public abstract class BatteryStats {
             tagsFirstOccurrence = false;
             powerStats = null;
             processStateChange = null;
+            stepDetails = null;
         }
 
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
@@ -2289,6 +2298,7 @@ public abstract class BatteryStats {
             currentTime = o.currentTime;
             powerStats = o.powerStats;
             processStateChange = o.processStateChange;
+            stepDetails = o.stepDetails;
         }
 
         public boolean sameNonEvent(HistoryItem o) {
@@ -7318,7 +7328,8 @@ public abstract class BatteryStats {
                         }
 
                         item.append(", SubsystemPowerState ");
-                        item.append(rec.stepDetails.statSubsystemPowerState);
+                        item.append(rec.stepDetails.statSubsystemPowerState != null
+                                ? rec.stepDetails.statSubsystemPowerState : "Empty");
                         item.append("\n");
                     } else {
                         item.append(BATTERY_STATS_CHECKIN_VERSION); item.append(',');

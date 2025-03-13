@@ -29,8 +29,6 @@ import static com.android.server.power.stats.processor.AggregatedPowerStatsConfi
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.mockito.Mockito.mock;
-
 import android.annotation.SuppressLint;
 import android.os.BatteryConsumer;
 import android.os.PersistableBundle;
@@ -89,7 +87,6 @@ public class WakelockPowerStatsProcessorTest {
         long[] uidStats = new long[descriptor.uidStatsArrayLength];
 
         BatteryStatsHistory history = new BatteryStatsHistory(null, 10000, null,
-                mock(BatteryStatsHistory.HistoryStepDetailsCalculator.class),
                 mStatsRule.getMockClock(),
                 new MonotonicClock(START_TIME, mStatsRule.getMockClock()), null, null);
         history.forceRecordAllHistory();
