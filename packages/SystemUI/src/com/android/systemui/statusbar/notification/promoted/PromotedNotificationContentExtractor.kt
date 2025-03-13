@@ -204,16 +204,18 @@ constructor(
         extras?.getBoolean(EXTRA_PROGRESS_INDETERMINATE)
 
     private fun Notification.extractWhen(): When? {
+        val whenTime = getWhen()
+
         return when {
             showsChronometer() -> {
                 When.Chronometer(
                     elapsedRealtimeMillis =
-                        `when` + systemClock.elapsedRealtime() - systemClock.currentTimeMillis(),
+                        whenTime + systemClock.elapsedRealtime() - systemClock.currentTimeMillis(),
                     isCountDown = chronometerCountDown(),
                 )
             }
 
-            showsTime() -> When.Time(currentTimeMillis = `when`)
+            showsTime() -> When.Time(currentTimeMillis = whenTime)
 
             else -> null
         }
