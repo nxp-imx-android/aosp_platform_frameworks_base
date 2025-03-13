@@ -96,6 +96,46 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
         row.resetMenu();
     }
 
+
+    @Test
+    public void testNoAppOpsInSlowSwipe() {
+        when(mRow.getShowSnooze()).thenReturn(false);
+        Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 0);
+
+        NotificationMenuRow row = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
+        row.createMenu(mRow);
+
+        ViewGroup container = (ViewGroup) row.getMenuView();
+        // noti blocking
+        assertEquals(1, container.getChildCount());
+    }
+
+    @Test
+    public void testNoSnoozeInSlowSwipe() {
+        when(mRow.getShowSnooze()).thenReturn(false);
+        Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 0);
+
+        NotificationMenuRow row = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
+        row.createMenu(mRow);
+
+        ViewGroup container = (ViewGroup) row.getMenuView();
+        // just for noti blocking
+        assertEquals(1, container.getChildCount());
+    }
+
+    @Test
+    public void testSnoozeInSlowSwipe() {
+        when(mRow.getShowSnooze()).thenReturn(true);
+        Settings.Global.putInt(mContext.getContentResolver(), SHOW_NEW_NOTIF_DISMISS, 0);
+
+        NotificationMenuRow row = new NotificationMenuRow(mContext, mPeopleNotificationIdentifier);
+        row.createMenu(mRow);
+
+        ViewGroup container = (ViewGroup) row.getMenuView();
+        // one for snooze and one for noti blocking
+        assertEquals(2, container.getChildCount());
+    }
+
     @Test
     public void testSlowSwipe_newDismiss() {
         when(mRow.getShowSnooze()).thenReturn(true);
@@ -190,7 +230,6 @@ public class NotificationMenuRowTest extends LeakCheckedTest {
                 new NotificationMenuRow(mContext, mPeopleNotificationIdentifier));
         doReturn(30f).when(row).getSnapBackThreshold();
         doReturn(50f).when(row).getDismissThreshold();
-        doReturn(70).when(row).getSpaceForMenu();
 
         when(row.isMenuOnLeft()).thenReturn(true);
         when(row.getTranslation()).thenReturn(40f);

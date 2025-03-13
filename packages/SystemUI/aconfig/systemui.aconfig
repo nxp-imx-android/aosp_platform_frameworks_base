@@ -2033,14 +2033,7 @@ flag {
 flag {
   name: "permission_helper_ui_rich_ongoing"
   namespace: "systemui"
-  description: "[RONs] Guards inline permission helper for demoting RONs [Guts/card version]"
-  bug: "379186372"
-}
-
-flag {
-  name: "permission_helper_inline_ui_rich_ongoing"
-  namespace: "systemui"
-  description: "[RONs] Guards inline permission helper for demoting RONs [Inline version]"
+  description: "[RONs] Guards inline permission helper for demoting RONs"
   bug: "379186372"
 }
 

@@ -268,7 +268,6 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         } else if (personNotifType >= PeopleNotificationIdentifier.TYPE_FULL_PERSON) {
             mInfoItem = createConversationItem(mContext);
         } else if (android.app.Flags.uiRichOngoing()
-                && android.app.Flags.apiRichOngoing()
                 && Flags.permissionHelperUiRichOngoing()
                 && entry.getSbn().getNotification().isPromotedOngoing()) {
             mInfoItem = createPromotedItem(mContext);
@@ -281,12 +280,6 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         }
         mRightMenuItems.add(mInfoItem);
         mRightMenuItems.add(mFeedbackItem);
-        if (android.app.Flags.uiRichOngoing() && Flags.permissionHelperInlineUiRichOngoing()
-                && entry.isPromotedOngoing()) {
-            mRightMenuItems.add(createDemoteItem(mContext));
-        }
-
-
         mLeftMenuItems.addAll(mRightMenuItems);
 
         populateMenuViews();
@@ -308,19 +301,15 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         } else {
             mMenuContainer = new FrameLayout(mContext);
         }
-
         final int showDismissSetting =  Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.SHOW_NEW_NOTIF_DISMISS, /* default = */ 1);
         final boolean newFlowHideShelf = showDismissSetting == 1;
-
-        // Populate menu items if we are using the new permission helper (U+) or if we are using
-        // the very old dismiss setting (SC-).
-        // TODO: SHOW_NEW_NOTIF_DISMISS==0 case can likely be removed.
-        if (Flags.permissionHelperInlineUiRichOngoing() || !newFlowHideShelf) {
-            List<MenuItem> menuItems = mOnLeft ? mLeftMenuItems : mRightMenuItems;
-            for (int i = 0; i < menuItems.size(); i++) {
-                addMenuView(menuItems.get(i), mMenuContainer);
-            }
+        if (newFlowHideShelf) {
+            return;
+        }
+        List<MenuItem> menuItems = mOnLeft ? mLeftMenuItems : mRightMenuItems;
+        for (int i = 0; i < menuItems.size(); i++) {
+            addMenuView(menuItems.get(i), mMenuContainer);
         }
     }
 
@@ -684,15 +673,6 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         return snooze;
     }
 
-    static MenuItem createDemoteItem(Context context) {
-        PromotedPermissionGutsContent demoteContent =
-                (PromotedPermissionGutsContent) LayoutInflater.from(context).inflate(
-                R.layout.promoted_permission_guts, null, false);
-        MenuItem info = new NotificationMenuItem(context, null, demoteContent,
-                R.drawable.unpin_icon);
-        return info;
-    }
-
     static NotificationMenuItem createConversationItem(Context context) {
         Resources res = context.getResources();
         String infoDescription = res.getString(R.string.notification_menu_gear_description);
@@ -700,7 +680,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 (NotificationConversationInfo) LayoutInflater.from(context).inflate(
                         R.layout.notification_conversation_info, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+                R.drawable.ic_settings);
     }
 
     static NotificationMenuItem createPromotedItem(Context context) {
@@ -710,7 +690,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 (PromotedNotificationInfo) LayoutInflater.from(context).inflate(
                         R.layout.promoted_notification_info, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+                R.drawable.ic_settings);
     }
 
     static NotificationMenuItem createPartialConversationItem(Context context) {
@@ -720,7 +700,7 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 (PartialConversationInfo) LayoutInflater.from(context).inflate(
                         R.layout.partial_conversation_info, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+                R.drawable.ic_settings);
     }
 
     static NotificationMenuItem createInfoItem(Context context) {
@@ -732,14 +712,14 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         NotificationInfo infoContent = (NotificationInfo) LayoutInflater.from(context).inflate(
                 layoutId, null, false);
         return new NotificationMenuItem(context, infoDescription, infoContent,
-                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+                R.drawable.ic_settings);
     }
 
     static MenuItem createFeedbackItem(Context context) {
         FeedbackInfo feedbackContent = (FeedbackInfo) LayoutInflater.from(context).inflate(
                 R.layout.feedback_info, null, false);
         MenuItem info = new NotificationMenuItem(context, null, feedbackContent,
-                NotificationMenuItem.OMIT_FROM_SWIPE_MENU);
+                -1 /*don't show in slow swipe menu */);
         return info;
     }
 
@@ -776,10 +756,6 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
 
     @Override
     public boolean isWithinSnapMenuThreshold() {
-        if (getSpaceForMenu() == 0) {
-            // don't snap open if there are no items
-            return false;
-        }
         float translation = getTranslation();
         float snapBackThreshold = getSnapBackThreshold();
         float targetRight = getDismissThreshold();
@@ -821,10 +797,6 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
     }
 
     public static class NotificationMenuItem implements MenuItem {
-
-        // Constant signaling that this MenuItem should not appear in slow swipe.
-        public static final int OMIT_FROM_SWIPE_MENU = -1;
-
         View mMenuView;
         GutsContent mGutsContent;
         String mContentDescription;

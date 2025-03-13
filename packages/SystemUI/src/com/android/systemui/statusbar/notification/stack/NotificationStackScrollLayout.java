@@ -3220,7 +3220,8 @@ public class NotificationStackScrollLayout
         updateAnimationState(child);
         updateChronometerForChild(child);
         if (child instanceof ExpandableNotificationRow row) {
-            row.setDismissUsingRowTranslationX(mDismissUsingRowTranslationX, /* force= */ true);
+            row.setDismissUsingRowTranslationX(mDismissUsingRowTranslationX);
+
         }
     }
 
@@ -6156,7 +6157,7 @@ public class NotificationStackScrollLayout
                 View child = getChildAt(i);
                 if (child instanceof ExpandableNotificationRow) {
                     ((ExpandableNotificationRow) child).setDismissUsingRowTranslationX(
-                            dismissUsingRowTranslationX, /* force= */ false);
+                            dismissUsingRowTranslationX);
                 }
             }
         }
