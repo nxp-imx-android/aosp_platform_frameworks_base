@@ -49,6 +49,7 @@ import com.android.keyguard.CarrierTextController;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.keyguard.logging.KeyguardLogger;
+import com.android.systemui.Flags;
 import com.android.systemui.battery.BatteryMeterViewController;
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor;
 import com.android.systemui.dagger.qualifiers.Background;
@@ -475,12 +476,14 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                 UserHandle.USER_ALL);
         updateUserSwitcher();
         onThemeChanged();
-        collectFlow(mView, mCommunalSceneInteractor.isCommunalVisible(), mCommunalConsumer,
-                mCoroutineDispatcher);
-        collectFlow(mView, mLockscreenToHubTransitionViewModel.getStatusBarAlpha(),
-                mToGlanceableHubStatusBarAlphaConsumer, mCoroutineDispatcher);
-        collectFlow(mView, mHubToLockscreenTransitionViewModel.getStatusBarAlpha(),
-                mFromGlanceableHubStatusBarAlphaConsumer, mCoroutineDispatcher);
+        if (!Flags.glanceableHubV2()) {
+            collectFlow(mView, mCommunalSceneInteractor.isCommunalVisible(), mCommunalConsumer,
+                    mCoroutineDispatcher);
+            collectFlow(mView, mLockscreenToHubTransitionViewModel.getStatusBarAlpha(),
+                    mToGlanceableHubStatusBarAlphaConsumer, mCoroutineDispatcher);
+            collectFlow(mView, mHubToLockscreenTransitionViewModel.getStatusBarAlpha(),
+                    mFromGlanceableHubStatusBarAlphaConsumer, mCoroutineDispatcher);
+        }
         if (NewStatusBarIcons.isEnabled()) {
             ComposeView batteryComposeView = new ComposeView(mContext);
             UnifiedBatteryViewBinder.bind(
@@ -645,7 +648,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                         && !mDozing
                         && !hideForBypass
                         && !mDisableStateTracker.isDisabled()
-                        && (!mCommunalShowing || mExplicitAlpha != -1)
+                        && (Flags.glanceableHubV2() || (!mCommunalShowing || mExplicitAlpha != -1))
                         ? View.VISIBLE : View.INVISIBLE;
 
         updateViewState(newAlpha, newVisibility);
