@@ -256,6 +256,9 @@ public class Clock extends TextView implements
                     if (mClockFormat != null) {
                         mClockFormat.setTimeZone(mCalendar.getTimeZone());
                     }
+                    if (mContentDescriptionFormat != null) {
+                        mContentDescriptionFormat.setTimeZone(mCalendar.getTimeZone());
+                    }
                 });
             } else if (action.equals(Intent.ACTION_CONFIGURATION_CHANGED)) {
                 final Locale newLocale = getResources().getConfiguration().locale;
