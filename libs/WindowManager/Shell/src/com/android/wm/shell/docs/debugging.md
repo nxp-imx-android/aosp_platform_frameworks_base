@@ -142,8 +142,8 @@ transaction which is applied.
 ## Tracing activity starts & finishes in the app process
 
 It's sometimes useful to know when to see a stack trace of when an activity starts in the app code
-(ie. if you are repro'ing a bug related to activity starts). You can enable this system property to
-get this trace:
+or via a `WindowContainerTransaction` (ie. if you are repro'ing a bug related to activity starts).
+You can enable this system property to get this trace:
 ```shell
 # Enabling
 adb shell setprop persist.wm.debug.start_activity true
@@ -167,6 +167,21 @@ adb logcat -s "Instrumentation"
 adb shell setprop persist.wm.debug.finish_activity \"\"
 adb reboot
 ```
+
+## Tracing transition requests in the Shell
+
+To trace where a new WM transition is started in the Shell, you can enable this system property:
+```shell
+# Enabling
+adb shell setprop persist.wm.debug.start_shell_transition true
+adb reboot
+adb logcat -s "ShellTransitions"
+
+# Disabling
+adb shell setprop persist.wm.debug.start_shell_transition \"\"
+adb reboot
+```
+
 
 ## Dumps
 
