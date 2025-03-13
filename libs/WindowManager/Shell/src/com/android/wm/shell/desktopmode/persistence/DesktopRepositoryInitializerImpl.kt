@@ -126,6 +126,20 @@ class DesktopRepositoryInitializerImpl(
                                         taskId = task.taskId,
                                     )
                                 }
+
+                                if (task.desktopTaskTilingState == DesktopTaskTilingState.LEFT) {
+                                    repository.addLeftTiledTask(
+                                        persistentDesktop.displayId,
+                                        task.taskId,
+                                    )
+                                } else if (
+                                    task.desktopTaskTilingState == DesktopTaskTilingState.RIGHT
+                                ) {
+                                    repository.addRightTiledTask(
+                                        persistentDesktop.displayId,
+                                        task.taskId,
+                                    )
+                                }
                             }
                     }
                 }
