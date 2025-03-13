@@ -311,6 +311,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     static final int SHORT_PRESS_POWER_LOCK_OR_SLEEP = 6;
     static final int SHORT_PRESS_POWER_DREAM_OR_SLEEP = 7;
     static final int SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP = 8;
+    static final int SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP = 9;
 
     // must match: config_LongPressOnPowerBehavior in config.xml
     // The config value can be overridden using Settings.Global.POWER_BUTTON_LONG_PRESS
@@ -1234,8 +1235,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     break;
                 }
                 case SHORT_PRESS_POWER_DREAM_OR_SLEEP: {
-                    attemptToDreamFromShortPowerButtonPress(
-                            true,
+                    attemptToDreamOrAwakeFromShortPowerButtonPress(
+                            /* isScreenOn */ true,
+                            /* awakeWhenDream */ false,
+                            /* noDreamAction */
                             () -> sleepDefaultDisplayFromPowerButton(eventTime, 0));
                     break;
                 }
@@ -1269,11 +1272,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         lockNow(options);
                     } else {
                         // If the hub cannot be run, attempt to dream instead.
-                        attemptToDreamFromShortPowerButtonPress(
+                        attemptToDreamOrAwakeFromShortPowerButtonPress(
                                 /* isScreenOn */ true,
+                                /* awakeWhenDream */ false,
                                 /* noDreamAction */
                                 () -> sleepDefaultDisplayFromPowerButton(eventTime, 0));
                     }
+                    break;
+                }
+                case SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP: {
+                    attemptToDreamOrAwakeFromShortPowerButtonPress(
+                            /* isScreenOn */ true,
+                            /* awakeWhenDream */ true,
+                            /* noDreamAction */
+                            () -> sleepDefaultDisplayFromPowerButton(eventTime, 0));
                     break;
                 }
             }
@@ -1319,15 +1331,18 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     /**
-     * Attempt to dream from a power button press.
+     * Attempt to dream, awake or sleep from a power button press.
      *
      * @param isScreenOn Whether the screen is currently on.
+     * @param awakeWhenDream When it's set to {@code true}, awake the device from dreaming.
+     *        Otherwise, go to sleep.
      * @param noDreamAction The action to perform if dreaming is not possible.
      */
-    private void attemptToDreamFromShortPowerButtonPress(
-            boolean isScreenOn, Runnable noDreamAction) {
+    private void attemptToDreamOrAwakeFromShortPowerButtonPress(
+            boolean isScreenOn, boolean awakeWhenDream, Runnable noDreamAction) {
         if (mShortPressOnPowerBehavior != SHORT_PRESS_POWER_DREAM_OR_SLEEP
-                && mShortPressOnPowerBehavior != SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP) {
+                && mShortPressOnPowerBehavior != SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP
+                && mShortPressOnPowerBehavior != SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP) {
             // If the power button behavior isn't one that should be able to trigger the dream, give
             // up.
             noDreamAction.run();
@@ -1335,9 +1350,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
-        if (dreamManagerInternal == null || !dreamManagerInternal.canStartDreaming(isScreenOn)) {
-            Slog.d(TAG, "Can't start dreaming when attempting to dream from short power"
-                    + " press (isScreenOn=" + isScreenOn + ")");
+        if (dreamManagerInternal == null) {
+            Slog.d(TAG,
+                    "Can't access dream manager dreaming when attempting to start or stop dream "
+                    + "from short power press (isScreenOn="
+                            + isScreenOn + ", awakeWhenDream=" + awakeWhenDream + ")");
+            noDreamAction.run();
+            return;
+        }
+
+        if (!dreamManagerInternal.canStartDreaming(isScreenOn)) {
+            if (awakeWhenDream && dreamManagerInternal.isDreaming()) {
+                dreamManagerInternal.stopDream(false /*immediate*/, "short press power" /*reason*/);
+                return;
+            }
+            Slog.d(TAG,
+                    "Can't start dreaming and the device is not dreaming when attempting to start "
+                    + "or stop dream from short power press (isScreenOn="
+                            + isScreenOn + ", awakeWhenDream=" + awakeWhenDream + ")");
             noDreamAction.run();
             return;
         }

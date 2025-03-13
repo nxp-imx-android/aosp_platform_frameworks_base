@@ -35,6 +35,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.when;
 import static com.android.server.policy.PhoneWindowManager.EXTRA_TRIGGER_HUB;
+import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP;
 import static com.android.server.policy.PhoneWindowManager.SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -312,6 +313,77 @@ public class PhoneWindowManagerTests {
         // Hub is not available.
         Settings.Secure.putInt(mContext.getContentResolver(),
                 Settings.Secure.GLANCEABLE_HUB_ENABLED, 0);
+        when(mDreamManagerInternal.canStartDreaming(any(Boolean.class))).thenReturn(true);
+
+        // Power button pressed.
+        int eventTime = 0;
+        mPhoneWindowManager.powerPress(eventTime, 1, 0);
+
+        // Dream is requested.
+        verify(mDreamManagerInternal).requestDream();
+    }
+
+    @Test
+    public void powerPress_dreamOrAwakeOrSleep_awakeFromDream() {
+        when(mDisplayPolicy.isAwake()).thenReturn(true);
+        initPhoneWindowManager();
+
+        // Set power button behavior.
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.POWER_BUTTON_SHORT_PRESS,
+                SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP);
+        mPhoneWindowManager.updateSettings(null);
+
+        // Can not dream when device is dreaming.
+        when(mDreamManagerInternal.canStartDreaming(any(Boolean.class))).thenReturn(false);
+        // Device is dreaming.
+        when(mDreamManagerInternal.isDreaming()).thenReturn(true);
+
+        // Power button pressed.
+        int eventTime = 0;
+        mPhoneWindowManager.powerPress(eventTime, 1, 0);
+
+        // Dream is stopped.
+        verify(mDreamManagerInternal)
+                .stopDream(false /*immediate*/, "short press power" /*reason*/);
+    }
+
+    @Test
+    public void powerPress_dreamOrAwakeOrSleep_canNotDreamGoToSleep() {
+        when(mDisplayPolicy.isAwake()).thenReturn(true);
+        initPhoneWindowManager();
+
+        // Set power button behavior.
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.POWER_BUTTON_SHORT_PRESS,
+                SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP);
+        mPhoneWindowManager.updateSettings(null);
+
+        // Can not dream for other reasons.
+        when(mDreamManagerInternal.canStartDreaming(any(Boolean.class))).thenReturn(false);
+        // Device is not dreaming.
+        when(mDreamManagerInternal.isDreaming()).thenReturn(false);
+
+        // Power button pressed.
+        int eventTime = 0;
+        mPhoneWindowManager.powerPress(eventTime, 1, 0);
+
+        // Device goes to sleep.
+        verify(mPowerManager).goToSleep(eventTime, PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
+    }
+
+    @Test
+    public void powerPress_dreamOrAwakeOrSleep_dreamFromActive() {
+        when(mDisplayPolicy.isAwake()).thenReturn(true);
+        initPhoneWindowManager();
+
+        // Set power button behavior.
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.POWER_BUTTON_SHORT_PRESS,
+                SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP);
+        mPhoneWindowManager.updateSettings(null);
+
+        // Can dream when active.
         when(mDreamManagerInternal.canStartDreaming(any(Boolean.class))).thenReturn(true);
 
         // Power button pressed.
