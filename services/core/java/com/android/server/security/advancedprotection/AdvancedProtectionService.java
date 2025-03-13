@@ -59,6 +59,7 @@ import com.android.server.security.advancedprotection.features.DisallowCellular2
 import com.android.server.security.advancedprotection.features.DisallowInstallUnknownSourcesAdvancedProtectionHook;
 import com.android.server.security.advancedprotection.features.MemoryTaggingExtensionHook;
 import com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHook;
+import com.android.server.security.advancedprotection.features.DisallowWepAdvancedProtectionProvider;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -131,7 +132,9 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
           } catch (Exception e) {
             Slog.e(TAG, "Failed to initialize UsbDataAdvancedProtection", e);
           }
-      }
+        }
+
+        mProviders.add(new DisallowWepAdvancedProtectionProvider());
     }
 
     // Only for tests
@@ -303,7 +306,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         getAdvancedProtectionFeatures_enforcePermission();
         List<AdvancedProtectionFeature> features = new ArrayList<>();
         for (int i = 0; i < mProviders.size(); i++) {
-            features.addAll(mProviders.get(i).getFeatures());
+            features.addAll(mProviders.get(i).getFeatures(mContext));
         }
 
         for (int i = 0; i < mHooks.size(); i++) {
@@ -341,7 +344,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         writer.println("  Providers: ");
         mProviders.stream().forEach(provider -> {
             writer.println("    " + provider.getClass().getSimpleName());
-            provider.getFeatures().stream().forEach(feature -> {
+            provider.getFeatures(mContext).stream().forEach(feature -> {
                 writer.println("      " + feature.getClass().getSimpleName());
             });
         });
