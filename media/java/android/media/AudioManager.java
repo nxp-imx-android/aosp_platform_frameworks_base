@@ -19,14 +19,15 @@ package android.media;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.content.Context.DEVICE_ID_DEFAULT;
+import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
+import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
+import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
+import static android.media.audio.Flags.FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING;
+import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.cacheGetStreamMinMaxVolume;
 import static android.media.audio.Flags.cacheGetStreamVolume;
-import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
-import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
-import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
-import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
 
 import android.Manifest;
@@ -8777,14 +8778,17 @@ public class AudioManager {
     }
 
     /**
-     * @hide
      * Register an audio volume group change listener.
      *
      * @param executor {@link Executor} to handle the callbacks
      * @param callback the callback to receive the audio volume group changes
      * @throws SecurityException if the caller doesn't have the required permission.
+     *
+     * @hide
      */
     @SystemApi
+    @FlaggedApi(FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING)
+    @RequiresPermission("Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED")
     public void registerVolumeGroupCallback(@NonNull Executor executor,
             @NonNull VolumeGroupCallback callback) {
         mVolumeChangedListenerMgr.addListener(executor, callback, "registerVolumeGroupCallback",
@@ -8792,11 +8796,15 @@ public class AudioManager {
     }
 
     /**
-     * @hide
      * Unregister an audio volume group change listener.
+     *
      * @param callback the {@link VolumeGroupCallback} to unregister
+     *
+     * @hide
      */
     @SystemApi
+    @FlaggedApi(FLAG_REGISTER_VOLUME_CALLBACK_API_HARDENING)
+    @RequiresPermission("Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED")
     public void unregisterVolumeGroupCallback(@NonNull VolumeGroupCallback callback) {
         mVolumeChangedListenerMgr.removeListener(callback, "unregisterVolumeGroupCallback");
     }
