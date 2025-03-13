@@ -306,6 +306,8 @@ class DesktopTasksController(
             this,
         )
         shellController.addUserChangeListener(this)
+        // Update the current user id again because it might be updated between init and onInit().
+        updateCurrentUser(ActivityManager.getCurrentUser())
         transitions.addHandler(this)
         dragToDesktopTransitionHandler.dragToDesktopStateListener = dragToDesktopStateListener
         recentsTransitionHandler.addTransitionStateListener(
@@ -3547,9 +3549,15 @@ class DesktopTasksController(
     // TODO(b/366397912): Support full multi-user mode in Windowing.
     override fun onUserChanged(newUserId: Int, userContext: Context) {
         logV("onUserChanged previousUserId=%d, newUserId=%d", userId, newUserId)
+        updateCurrentUser(newUserId)
+    }
+
+    private fun updateCurrentUser(newUserId: Int) {
         userId = newUserId
         taskRepository = userRepositories.getProfile(userId)
-        snapEventHandler.onUserChange()
+        if (this::snapEventHandler.isInitialized) {
+            snapEventHandler.onUserChange()
+        }
     }
 
     /** Called when a task's info changes. */
