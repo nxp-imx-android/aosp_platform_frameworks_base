@@ -126,6 +126,11 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
         return false
     }
 
+    override fun onDragSuccess() {
+        // do nothing. these should not be draggable
+        Log.wtf(TAG, "onDragSuccess() called")
+    }
+
     override fun onNotificationBubbleIconClicked() {
         // do nothing. these cannot be a bubble
         Log.wtf(TAG, "onNotificationBubbleIconClicked() called")

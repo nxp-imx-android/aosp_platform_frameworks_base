@@ -365,6 +365,22 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun onDragSuccess() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(mock(Notification.Action::class.java))
+                .build()
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        underTest.onDragSuccess()
+        verify(kosmos.mockNotificationActivityStarter).onDragSuccess(entry)
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun onNotificationBubbleIconClicked() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
