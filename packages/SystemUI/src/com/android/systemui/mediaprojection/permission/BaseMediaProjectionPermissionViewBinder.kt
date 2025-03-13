@@ -150,6 +150,13 @@ private class OptionsAdapter(context: Context, private val options: List<ScreenS
             titleTextView.isEnabled = true
         } else {
             errorTextView.visibility = View.VISIBLE
+            if (com.android.systemui.Flags.mediaProjectionGreyErrorText()) {
+                errorTextView.isEnabled = false
+                errorTextView.setTextColor(context.getColorStateList(R.color.menu_item_text))
+                errorTextView.setText(
+                    R.string.media_projection_entry_app_permission_dialog_single_app_not_supported
+                )
+            }
             titleTextView.isEnabled = false
         }
         return view
