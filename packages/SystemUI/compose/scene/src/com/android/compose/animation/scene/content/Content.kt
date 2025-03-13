@@ -93,9 +93,10 @@ internal sealed class Content(
     val containerState = ContainerState()
 
     // Important: All fields in this class should be backed by State given that contents are updated
-    // directly during composition, outside of a SideEffect.
+    // directly during composition, outside of a SideEffect, or are observed during composition,
+    // layout or drawing.
     var content by mutableStateOf(content)
-    var targetSize by mutableStateOf(IntSize.Zero)
+    var targetSize by mutableStateOf(Element.SizeUnspecified)
     var userActions by mutableStateOf(actions)
     var zIndex by mutableFloatStateOf(zIndex)
 
@@ -212,9 +213,17 @@ private class ContentNode(
         return if (isElevationPossible) delegate(ContainerNode(content.containerState)) else null
     }
 
+    override fun onDetach() {
+        this.content.targetSize = Element.SizeUnspecified
+    }
+
     fun update(content: Content, isElevationPossible: Boolean, isInvisible: Boolean) {
-        if (content != this.content || isElevationPossible != this.isElevationPossible) {
+        if (content != this.content) {
+            this.content.targetSize = Element.SizeUnspecified
             this.content = content
+        }
+
+        if (content != this.content || isElevationPossible != this.isElevationPossible) {
             this.isElevationPossible = isElevationPossible
 
             containerDelegate?.let { undelegate(it) }

@@ -462,7 +462,9 @@ internal class SceneTransitionLayoutImpl(
                 // swipes.
                 .swipeToScene(horizontalDraggableHandler)
                 .swipeToScene(verticalDraggableHandler)
-                .then(LayoutElement(layoutImpl = this))
+                .then(
+                    LayoutElement(layoutImpl = this, transitionState = this.state.transitionState)
+                )
         ) {
             LookaheadScope {
                 if (_lookaheadScope == null) {
@@ -623,23 +625,28 @@ internal class SceneTransitionLayoutImpl(
     @VisibleForTesting internal fun overlaysOrNullForTest(): Map<OverlayKey, Overlay>? = _overlays
 }
 
-private data class LayoutElement(private val layoutImpl: SceneTransitionLayoutImpl) :
-    ModifierNodeElement<LayoutNode>() {
-    override fun create(): LayoutNode = LayoutNode(layoutImpl)
+private data class LayoutElement(
+    private val layoutImpl: SceneTransitionLayoutImpl,
+    private val transitionState: TransitionState,
+) : ModifierNodeElement<LayoutNode>() {
+    override fun create(): LayoutNode = LayoutNode(layoutImpl, transitionState)
 
     override fun update(node: LayoutNode) {
         node.layoutImpl = layoutImpl
+        node.transitionState = transitionState
     }
 }
 
-private class LayoutNode(var layoutImpl: SceneTransitionLayoutImpl) :
-    Modifier.Node(), ApproachLayoutModifierNode, LayoutAwareModifierNode {
+private class LayoutNode(
+    var layoutImpl: SceneTransitionLayoutImpl,
+    var transitionState: TransitionState,
+) : Modifier.Node(), ApproachLayoutModifierNode, LayoutAwareModifierNode {
     override fun onRemeasured(size: IntSize) {
         layoutImpl.lastSize = size
     }
 
     override fun isMeasurementApproachInProgress(lookaheadSize: IntSize): Boolean {
-        return layoutImpl.state.isTransitioning()
+        return transitionState is TransitionState.Transition.ChangeScene
     }
 
     @ExperimentalComposeUiApi
@@ -652,8 +659,7 @@ private class LayoutNode(var layoutImpl: SceneTransitionLayoutImpl) :
 
         val width: Int
         val height: Int
-        val transition =
-            layoutImpl.state.currentTransition as? TransitionState.Transition.ChangeScene
+        val transition = transitionState as? TransitionState.Transition.ChangeScene
         if (transition == null) {
             width = placeable.width
             height = placeable.height
@@ -661,6 +667,9 @@ private class LayoutNode(var layoutImpl: SceneTransitionLayoutImpl) :
             // Interpolate the size.
             val fromSize = layoutImpl.scene(transition.fromScene).targetSize
             val toSize = layoutImpl.scene(transition.toScene).targetSize
+
+            check(fromSize != Element.SizeUnspecified) { "fromSize is unspecified " }
+            check(toSize != Element.SizeUnspecified) { "toSize is unspecified" }
 
             // Optimization: make sure we don't read state.progress if fromSize ==
             // toSize to avoid running this code every frame when the layout size does
