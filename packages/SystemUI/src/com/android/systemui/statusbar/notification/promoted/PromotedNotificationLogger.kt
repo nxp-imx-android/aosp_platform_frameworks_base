@@ -63,7 +63,7 @@ constructor(@PromotedNotificationLog private val buffer: LogBuffer) {
             INFO,
             {
                 str1 = entry.logKey
-                str2 = content.toString()
+                str2 = content.toRedactedString()
             },
             { "extraction succeeded: $str2 for $str1" },
         )
