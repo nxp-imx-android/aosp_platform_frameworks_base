@@ -388,8 +388,7 @@ class SplitScreenTransitions {
         mPendingEnter = new EnterSession(
                 transition, remoteTransition, extraTransitType, resizeAnim, snapPosition);
 
-        ProtoLog.v(WM_SHELL_TRANSITIONS, "  splitTransition "
-                + " deduced Enter split screen");
+        ProtoLog.v(WM_SHELL_TRANSITIONS, "  splitTransition deduced Enter split screen");
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "setEnterTransition: transitType=%d resize=%b",
                 extraTransitType, resizeAnim);
     }

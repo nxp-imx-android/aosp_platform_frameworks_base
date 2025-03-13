@@ -171,7 +171,7 @@ public class BubbleTaskViewListener implements TaskView.Listener {
                 // wrong with the intent, we can't really recover / try to populate
                 // the bubble again so we'll just remove it.
                 Log.w(TAG, "Exception while displaying bubble: " + getBubbleKey()
-                        + ", " + e.getMessage() + "; removing bubble");
+                        + "; removing bubble", e);
                 mExpandedViewManager.removeBubble(
                         getBubbleKey(), Bubbles.DISMISS_INVALID_INTENT);
             }

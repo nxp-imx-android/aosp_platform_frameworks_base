@@ -16,9 +16,13 @@
 
 package com.android.wm.shell.taskview;
 
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES_NOISY;
+
 import android.annotation.Nullable;
 import android.graphics.Rect;
 import android.window.WindowContainerToken;
+
+import com.android.internal.protolog.ProtoLog;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -71,12 +75,14 @@ public class TaskViewRepository {
 
     /** Start tracking {@param tv}. */
     public void add(TaskViewTaskController tv) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Repo.add(): taskView=%d", tv.hashCode());
         if (contains(tv)) return;
         mTaskViews.add(new TaskViewState(tv));
     }
 
     /** Remove {@param tv} from tracking. */
     public void remove(TaskViewTaskController tv) {
+        ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Repo.remove(): taskView=%d", tv.hashCode());
         int idx = findAndPrune(tv);
         if (idx < 0) return;
         mTaskViews.remove(idx);
