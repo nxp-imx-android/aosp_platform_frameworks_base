@@ -340,7 +340,8 @@ public class PipController implements ConfigurationChangeListener,
             mPipDisplayLayoutState.rotateTo(toRotation);
         }
 
-        if (!mPipTransitionState.isInPip()) {
+        if (!mPipTransitionState.isInPip()
+                && mPipTransitionState.getState() != PipTransitionState.ENTERING_PIP) {
             // Skip the PiP-relevant updates if we aren't in a valid PiP state.
             if (mPipTransitionState.isInFixedRotation()) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,

@@ -45,6 +45,7 @@ import android.app.ActivityManager;
 import android.app.PictureInPictureParams;
 import android.app.TaskInfo;
 import android.content.Context;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -452,7 +453,7 @@ public class PipTransition extends PipTransitionController implements
         final int delta = getFixedRotationDelta(info, pipChange, mPipDisplayLayoutState);
         if (delta != ROTATION_0) {
             // Update transition target changes in place to prepare for fixed rotation.
-            handleBoundsEnterFixedRotation(info, pipChange, pipActivityChange);
+            updatePipChangesForFixedRotation(info, pipChange, pipActivityChange);
         }
 
         // Update the src-rect-hint in params in place, to set up initial animator transform.
@@ -513,7 +514,7 @@ public class PipTransition extends PipTransitionController implements
         final int delta = getFixedRotationDelta(info, pipChange, mPipDisplayLayoutState);
         if (delta != ROTATION_0) {
             // Update transition target changes in place to prepare for fixed rotation.
-            handleBoundsEnterFixedRotation(info, pipChange, pipActivityChange);
+            updatePipChangesForFixedRotation(info, pipChange, pipActivityChange);
         }
 
         PipEnterAnimator animator = new PipEnterAnimator(mContext, pipLeash,
@@ -546,7 +547,7 @@ public class PipTransition extends PipTransitionController implements
         return true;
     }
 
-    private void handleBoundsEnterFixedRotation(TransitionInfo info,
+    private void updatePipChangesForFixedRotation(TransitionInfo info,
             TransitionInfo.Change outPipTaskChange,
             TransitionInfo.Change outPipActivityChange) {
         final TransitionInfo.Change fixedRotationChange = findFixedRotationChange(info);
@@ -604,10 +605,33 @@ public class PipTransition extends PipTransitionController implements
         SurfaceControl pipLeash = mPipTransitionState.getPinnedTaskLeash();
         Preconditions.checkNotNull(pipLeash, "Leash is null for alpha transition.");
 
-        // Start transition with 0 alpha at the entry bounds.
-        startTransaction.setPosition(pipLeash, destinationBounds.left, destinationBounds.top)
-                .setWindowCrop(pipLeash, destinationBounds.width(), destinationBounds.height())
-                .setAlpha(pipLeash, 0f);
+        final int delta = getFixedRotationDelta(info, pipChange, mPipDisplayLayoutState);
+        if (delta != ROTATION_0) {
+            updatePipChangesForFixedRotation(info, pipChange,
+                    // We don't have an activity change to animate in legacy enter,
+                    // so just use a placeholder one as the outPipActivityChange.
+                    new TransitionInfo.Change(null /* container */, new SurfaceControl()));
+        }
+        startTransaction.setWindowCrop(pipLeash,
+                destinationBounds.width(), destinationBounds.height());
+        if (delta != ROTATION_0) {
+            // In a fixed rotation case, rotate PiP leash in the old orientation to its final
+            // position, but keep the bounds visually invariant until async rotation changes
+            // the display rotation after
+            int normalizedRotation = delta;
+            if (normalizedRotation == ROTATION_270) {
+                normalizedRotation = -ROTATION_90;
+            }
+            Matrix transformTensor = new Matrix();
+            final float[] matrixTmp = new float[9];
+            transformTensor.setTranslate(destinationBounds.left, destinationBounds.top);
+            transformTensor.postRotate(-normalizedRotation * 90f);
+
+            startTransaction.setMatrix(pipLeash, transformTensor, matrixTmp);
+            finishTransaction.setMatrix(pipLeash, transformTensor, matrixTmp);
+        } else {
+            startTransaction.setPosition(pipLeash, destinationBounds.left, destinationBounds.top);
+        }
 
         PipAlphaAnimator animator = new PipAlphaAnimator(mContext, pipLeash, startTransaction,
                 finishTransaction, PipAlphaAnimator.FADE_IN);
