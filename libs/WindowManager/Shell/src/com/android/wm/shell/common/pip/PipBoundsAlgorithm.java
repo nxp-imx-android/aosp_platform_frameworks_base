@@ -221,8 +221,11 @@ public class PipBoundsAlgorithm {
                             + " than destination(%s)", sourceRectHint, destinationBounds);
             return false;
         }
-        if (!PictureInPictureParams.isSameAspectRatio(sourceRectHint,
-                new Rational(destinationBounds.width(), destinationBounds.height()))) {
+        // We use the aspect ratio of source rect hint to check against destination bounds
+        // here to avoid upscaling error.
+        final Rational srcAspectRatio = new Rational(
+                sourceRectHint.width(), sourceRectHint.height());
+        if (!PictureInPictureParams.isSameAspectRatio(destinationBounds, srcAspectRatio)) {
             ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                     "isSourceRectHintValidForEnterPip=false, hint(%s) does not match"
                             + " destination(%s) aspect ratio", sourceRectHint, destinationBounds);
