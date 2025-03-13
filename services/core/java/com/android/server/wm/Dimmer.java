@@ -218,6 +218,11 @@ class Dimmer {
      */
     protected void adjustAppearance(@NonNull WindowState dimmingContainer,
                                     float alpha, int blurRadius) {
+        if (!mHost.isVisibleRequested()) {
+            // If the host is already going away, there is no point in keeping dimming
+            return;
+        }
+
         if (mDimState != null || (alpha != 0 || blurRadius != 0)) {
             final DimState d = obtainDimState(dimmingContainer);
             d.prepareLookChange(alpha, blurRadius);
