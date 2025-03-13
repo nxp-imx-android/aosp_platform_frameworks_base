@@ -238,6 +238,8 @@ import static android.app.admin.PolicySizeVerifier.MAX_LONG_SUPPORT_MESSAGE_LENG
 import static android.app.admin.PolicySizeVerifier.MAX_ORG_NAME_LENGTH;
 import static android.app.admin.PolicySizeVerifier.MAX_PROFILE_NAME_LENGTH;
 import static android.app.admin.PolicySizeVerifier.MAX_SHORT_SUPPORT_MESSAGE_LENGTH;
+import static android.app.admin.PolicyUpdateResult.RESULT_POLICY_CLEARED;
+import static android.app.admin.PolicyUpdateResult.RESULT_POLICY_SET;
 import static android.app.admin.ProvisioningException.ERROR_ADMIN_PACKAGE_INSTALLATION_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_PRE_CONDITION_FAILED;
 import static android.app.admin.ProvisioningException.ERROR_PROFILE_CREATION_FAILED;
@@ -16840,9 +16842,11 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
         EnforcingAdmin enforcingAdmin;
 
-        // TODO(b/370472975): enable when we stop policy enforecer callback from blocking the main
-        //  thread
-        if (Flags.setPermissionGrantStateCoexistence()) {
+        if (Flags.setPermissionGrantStateCoexistence() && Flags.dpeBasedOnAsyncApisEnabled()) {
+            // TODO(b/403539755):  If admin calls setPermissionGrantState and enforcement fails,
+            //  subsequent calls will succeed without retrying enforcement. Need to somehow track
+            //  actual enforcement status to disambiguate.
+
             enforcingAdmin = enforcePermissionAndGetEnforcingAdmin(
                     admin,
                     MANAGE_DEVICE_POLICY_RUNTIME_PERMISSIONS,
@@ -16872,26 +16876,21 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             //  exist, or the permission isn't requested by the app, because we could end up with
             //  inconsistent state between the policy engine and package manager. Also a package
             //  might get removed or has it's permission updated after we've set the policy.
-            if (grantState == PERMISSION_GRANT_STATE_DEFAULT) {
-                mDevicePolicyEngine.removeLocalPolicy(
-                        PolicyDefinition.PERMISSION_GRANT(packageName, permission),
-                        enforcingAdmin,
-                        caller.getUserId());
-            } else {
-                mDevicePolicyEngine.setLocalPolicy(
-                        PolicyDefinition.PERMISSION_GRANT(packageName, permission),
-                        enforcingAdmin,
-                        new IntegerPolicyValue(grantState),
-                        caller.getUserId());
-            }
-            int newState = mInjector.binderWithCleanCallingIdentity(() ->
-                    getPermissionGrantStateForUser(
-                            packageName, permission, caller, caller.getUserId()));
-            if (newState == grantState) {
-                callback.sendResult(Bundle.EMPTY);
-            } else {
-                callback.sendResult(null);
-            }
+            CompletableFuture<Integer> setPolicyFuture =
+                    grantState == PERMISSION_GRANT_STATE_DEFAULT ?
+                            mDevicePolicyEngine.removeLocalPolicy(
+                                    PolicyDefinition.PERMISSION_GRANT(packageName, permission),
+                                    enforcingAdmin,
+                                    caller.getUserId())
+                            : mDevicePolicyEngine.setLocalPolicy(
+                                    PolicyDefinition.PERMISSION_GRANT(packageName, permission),
+                                    enforcingAdmin,
+                                    new IntegerPolicyValue(grantState),
+                                    caller.getUserId());
+
+            setPolicyFuture.thenAccept((result) ->
+                    callback.sendResult(result == RESULT_POLICY_SET ||
+                            result == RESULT_POLICY_CLEARED? Bundle.EMPTY : null));
         } else {
             Preconditions.checkCallAuthorization((caller.hasAdminComponent()
                     && (isProfileOwner(caller) || isDefaultDeviceOwner(caller)
