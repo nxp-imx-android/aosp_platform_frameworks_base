@@ -398,13 +398,6 @@ flag {
 }
 
 flag {
-    name: "light_reveal_migration"
-    namespace: "systemui"
-    description: "Move LightRevealScrim to recommended architecture"
-    bug: "281655028"
-}
-
-flag {
    name: "theme_overlay_controller_wakefulness_deprecation"
    namespace: "systemui"
    description: "Replacing WakefulnessLifecycle by KeyguardTransitionInteractor in "

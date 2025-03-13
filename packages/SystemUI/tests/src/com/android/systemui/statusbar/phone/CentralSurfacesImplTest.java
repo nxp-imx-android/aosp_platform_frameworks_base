@@ -28,8 +28,8 @@ import static android.provider.Settings.Global.HEADS_UP_NOTIFICATIONS_ENABLED;
 import static android.provider.Settings.Global.HEADS_UP_ON;
 
 import static com.android.systemui.Flags.FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE;
-import static com.android.systemui.Flags.FLAG_LIGHT_REVEAL_MIGRATION;
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
+import static com.android.systemui.shared.Flags.FLAG_AMBIENT_AOD;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
 import static com.android.systemui.statusbar.phone.CentralSurfaces.MSG_DISMISS_KEYBOARD_SHORTCUTS_MENU;
@@ -242,7 +242,7 @@ import javax.inject.Provider;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper(setAsMainLooper = true)
-@EnableFlags(FLAG_LIGHT_REVEAL_MIGRATION)
+@EnableFlags(FLAG_AMBIENT_AOD)
 public class CentralSurfacesImplTest extends SysuiTestCase {
 
     private static final DeviceState FOLD_STATE_FOLDED = new DeviceState(
