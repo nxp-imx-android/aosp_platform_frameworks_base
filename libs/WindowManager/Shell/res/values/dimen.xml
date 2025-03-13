@@ -302,6 +302,8 @@
     <dimen name="bubble_transform_area_width">140dp</dimen>
     <!-- Width of the box at the corner of the screen where drag leads to app moving to bubble -->
     <dimen name="bubble_transform_area_height">140dp</dimen>
+    <!-- How much elevation a bubble ui needs when dragged, must be above drop target & dismiss. -->
+    <dimen name="dragged_bubble_elevation">3dp</dimen>
 
     <!-- Bottom and end margin for compat buttons. -->
     <dimen name="compat_button_margin">24dp</dimen>
