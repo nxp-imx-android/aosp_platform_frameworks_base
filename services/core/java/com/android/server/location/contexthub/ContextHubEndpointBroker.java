@@ -301,7 +301,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             throw new IllegalArgumentException(
                     "Unknown session ID in closeSession: id=" + sessionId);
         }
-        halCloseEndpointSession(sessionId, ContextHubServiceUtil.toHalReason(reason));
+        mEndpointManager.halCloseEndpointSession(
+                sessionId, ContextHubServiceUtil.toHalReason(reason));
     }
 
     @Override
@@ -312,7 +313,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
             // Iterate in reverse since cleanupSessionResources will remove the entry
             for (int i = mSessionMap.size() - 1; i >= 0; i--) {
                 int id = mSessionMap.keyAt(i);
-                halCloseEndpointSessionNoThrow(id, Reason.ENDPOINT_GONE);
+                mEndpointManager.halCloseEndpointSessionNoThrow(id, Reason.ENDPOINT_GONE);
                 cleanupSessionResources(id);
             }
         }
@@ -444,7 +445,8 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                     int id = mSessionMap.keyAt(i);
                     HubEndpointInfo target = mSessionMap.get(id).getRemoteEndpointInfo();
                     if (!hasEndpointPermissions(target)) {
-                        halCloseEndpointSessionNoThrow(id, Reason.PERMISSION_DENIED);
+                        mEndpointManager.halCloseEndpointSessionNoThrow(
+                                id, Reason.PERMISSION_DENIED);
                         onCloseEndpointSession(id, Reason.PERMISSION_DENIED);
                         // Resource cleanup is done in onCloseEndpointSession
                     }
@@ -503,17 +505,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         mContextHubEndpointCallback.asBinder().linkToDeath(this, 0 /* flags */);
     }
 
-    /* package */ void onEndpointSessionOpenRequest(
-            int sessionId, HubEndpointInfo initiator, String serviceDescriptor) {
-        Optional<Byte> error =
-                onEndpointSessionOpenRequestInternal(sessionId, initiator, serviceDescriptor);
-        if (error.isPresent()) {
-            halCloseEndpointSessionNoThrow(sessionId, error.get());
-            onCloseEndpointSession(sessionId, error.get());
-            // Resource cleanup is done in onCloseEndpointSession
-        }
-    }
-
+    /** Handle close endpoint callback to the client side */
     /* package */ void onCloseEndpointSession(int sessionId, byte reason) {
         if (!cleanupSessionResources(sessionId)) {
             Log.w(TAG, "Unknown session ID in onCloseEndpointSession: id=" + sessionId);
@@ -585,7 +577,7 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
         }
     }
 
-    private Optional<Byte> onEndpointSessionOpenRequestInternal(
+    /* package */ Optional<Byte> onEndpointSessionOpenRequest(
             int sessionId, HubEndpointInfo initiator, String serviceDescriptor) {
         if (!hasEndpointPermissions(initiator)) {
             Log.e(
@@ -594,15 +586,41 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                             + initiator
                             + " doesn't have permission for "
                             + mEndpointInfo);
-            return Optional.of(Reason.PERMISSION_DENIED);
+            byte reason = Reason.PERMISSION_DENIED;
+            onCloseEndpointSession(sessionId, reason);
+            return Optional.of(reason);
         }
 
+        // Check & handle error cases for duplicated session id.
+        final boolean existingSession;
+        final boolean existingSessionActive;
         synchronized (mOpenSessionLock) {
             if (hasSessionId(sessionId)) {
-                Log.e(TAG, "Existing session in onEndpointSessionOpenRequest: id=" + sessionId);
-                return Optional.of(Reason.UNSPECIFIED);
+                existingSession = true;
+                existingSessionActive = mSessionMap.get(sessionId).isActive();
+                Log.w(
+                        TAG,
+                        "onEndpointSessionOpenRequest: "
+                                + "Existing session ID: "
+                                + sessionId
+                                + ", isActive: "
+                                + existingSessionActive);
+            } else {
+                existingSession = false;
+                existingSessionActive = false;
+                mSessionMap.put(sessionId, new Session(initiator, true));
             }
-            mSessionMap.put(sessionId, new Session(initiator, true));
+        }
+
+        if (existingSession) {
+            if (existingSessionActive) {
+                // Existing session is already active, call onSessionOpenComplete.
+                openSessionRequestComplete(sessionId);
+                return Optional.empty();
+            }
+            // Reject the session open request for now. Consider invalidating previous pending
+            // session open request based on timeout.
+            return Optional.of(Reason.OPEN_ENDPOINT_SESSION_REQUEST_REJECTED);
         }
 
         boolean success =
@@ -610,7 +628,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                         (consumer) ->
                                 consumer.onSessionOpenRequest(
                                         sessionId, initiator, serviceDescriptor));
-        return success ? Optional.empty() : Optional.of(Reason.UNSPECIFIED);
+        byte reason = Reason.UNSPECIFIED;
+        if (!success) {
+            onCloseEndpointSession(sessionId, reason);
+        }
+        return success ? Optional.empty() : Optional.of(reason);
     }
 
     private byte onMessageReceivedInternal(int sessionId, HubMessage message) {
@@ -653,29 +675,6 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 mSessionMap.get(sessionId).addReliableMessageToHistory(message);
             }
             return success ? ErrorCode.OK : ErrorCode.TRANSIENT_ERROR;
-        }
-    }
-
-    /**
-     * Calls the HAL closeEndpointSession API.
-     *
-     * @param sessionId The session ID to close
-     * @param halReason The HAL reason
-     */
-    private void halCloseEndpointSession(int sessionId, byte halReason) throws RemoteException {
-        try {
-            mHubInterface.closeEndpointSession(sessionId, halReason);
-        } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
-            throw e;
-        }
-    }
-
-    /** Same as halCloseEndpointSession but does not throw the exception */
-    private void halCloseEndpointSessionNoThrow(int sessionId, byte halReason) {
-        try {
-            halCloseEndpointSession(sessionId, halReason);
-        } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
-            Log.e(TAG, "Exception while calling HAL closeEndpointSession", e);
         }
     }
 

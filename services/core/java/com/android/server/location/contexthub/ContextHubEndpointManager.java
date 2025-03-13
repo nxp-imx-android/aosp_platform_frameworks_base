@@ -29,6 +29,7 @@ import android.hardware.contexthub.IContextHubEndpoint;
 import android.hardware.contexthub.IContextHubEndpointCallback;
 import android.hardware.contexthub.IEndpointCommunication;
 import android.hardware.contexthub.MessageDeliveryStatus;
+import android.hardware.contexthub.Reason;
 import android.os.RemoteException;
 import android.os.ServiceSpecificException;
 import android.util.Log;
@@ -42,6 +43,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -316,6 +318,11 @@ import java.util.function.Consumer;
         }
     }
 
+    /** Returns if a sessionId can be allocated for the service hub. */
+    private boolean isSessionIdAllocatedForService(int sessionId) {
+        return sessionId > mMaxSessionId || sessionId < mMinSessionId;
+    }
+
     /**
      * Unregisters an endpoint given its ID.
      *
@@ -337,8 +344,7 @@ import java.util.function.Consumer;
         }
     }
 
-    @Override
-    public void onEndpointSessionOpenRequest(
+    private Optional<Byte> onEndpointSessionOpenRequestInternal(
             int sessionId,
             HubEndpointInfo.HubEndpointIdentifier destination,
             HubEndpointInfo.HubEndpointIdentifier initiator,
@@ -348,7 +354,7 @@ import java.util.function.Consumer;
                     TAG,
                     "onEndpointSessionOpenRequest: invalid destination hub ID: "
                             + destination.getHub());
-            return;
+            return Optional.of(Reason.ENDPOINT_INVALID);
         }
         ContextHubEndpointBroker broker = mEndpointMap.get(destination.getEndpoint());
         if (broker == null) {
@@ -356,7 +362,7 @@ import java.util.function.Consumer;
                     TAG,
                     "onEndpointSessionOpenRequest: unknown destination endpoint ID: "
                             + destination.getEndpoint());
-            return;
+            return Optional.of(Reason.ENDPOINT_INVALID);
         }
         HubEndpointInfo initiatorInfo = mHubInfoRegistry.getEndpointInfo(initiator);
         if (initiatorInfo == null) {
@@ -364,9 +370,29 @@ import java.util.function.Consumer;
                     TAG,
                     "onEndpointSessionOpenRequest: unknown initiator endpoint ID: "
                             + initiator.getEndpoint());
-            return;
+            return Optional.of(Reason.ENDPOINT_INVALID);
         }
-        broker.onEndpointSessionOpenRequest(sessionId, initiatorInfo, serviceDescriptor);
+        if (!isSessionIdAllocatedForService(sessionId)) {
+            Log.e(
+                    TAG,
+                    "onEndpointSessionOpenRequest: invalid session ID, rejected:"
+                            + " sessionId="
+                            + sessionId);
+            return Optional.of(Reason.OPEN_ENDPOINT_SESSION_REQUEST_REJECTED);
+        }
+        return broker.onEndpointSessionOpenRequest(sessionId, initiatorInfo, serviceDescriptor);
+    }
+
+    @Override
+    public void onEndpointSessionOpenRequest(
+            int sessionId,
+            HubEndpointInfo.HubEndpointIdentifier destination,
+            HubEndpointInfo.HubEndpointIdentifier initiator,
+            String serviceDescriptor) {
+        Optional<Byte> errorOptional =
+                onEndpointSessionOpenRequestInternal(
+                        sessionId, destination, initiator, serviceDescriptor);
+        errorOptional.ifPresent((error) -> halCloseEndpointSessionNoThrow(sessionId, error));
     }
 
     @Override
@@ -415,6 +441,30 @@ import java.util.function.Consumer;
                                         sessionId, sequenceNumber, errorCode));
         if (!callbackInvoked) {
             Log.w(TAG, "onMessageDeliveryStatusReceived: unknown session ID " + sessionId);
+        }
+    }
+
+    /**
+     * Calls the HAL closeEndpointSession API.
+     *
+     * @param sessionId The session ID to close
+     * @param halReason The HAL reason
+     */
+    /* package */ void halCloseEndpointSession(int sessionId, byte halReason)
+            throws RemoteException {
+        try {
+            mHubInterface.closeEndpointSession(sessionId, halReason);
+        } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
+            throw e;
+        }
+    }
+
+    /** Same as halCloseEndpointSession but does not throw the exception */
+    /* package */ void halCloseEndpointSessionNoThrow(int sessionId, byte halReason) {
+        try {
+            halCloseEndpointSession(sessionId, halReason);
+        } catch (RemoteException | IllegalArgumentException | UnsupportedOperationException e) {
+            Log.e(TAG, "Exception while calling HAL closeEndpointSession", e);
         }
     }
 
