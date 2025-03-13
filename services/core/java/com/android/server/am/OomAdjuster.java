@@ -2643,7 +2643,7 @@ public class OomAdjuster {
         }
 
         capability |= getDefaultCapability(app, procState);
-        capability |= getCpuCapability(app, now);
+        capability |= getCpuCapability(app, now, foregroundActivities);
 
         // Procstates below BFGS should never have this capability.
         if (procState > PROCESS_STATE_BOUND_FOREGROUND_SERVICE) {
@@ -3422,15 +3422,18 @@ public class OomAdjuster {
         return baseCapabilities | networkCapabilities;
     }
 
-    private static int getCpuCapability(ProcessRecord app, long nowUptime) {
+    private static int getCpuCapability(ProcessRecord app, long nowUptime,
+            boolean hasForegroundActivities) {
         // Note: persistent processes get all capabilities, including CPU_TIME.
         final UidRecord uidRec = app.getUidRecord();
         if (uidRec != null && uidRec.isCurAllowListed()) {
             // Process is in the power allowlist.
             return PROCESS_CAPABILITY_CPU_TIME;
         }
-        if (app.mState.getCachedHasVisibleActivities()) {
-            // Process has user visible activities.
+        if (hasForegroundActivities) {
+            // TODO: b/402987519 - This grants the Top Sleeping process CPU_TIME but eventually
+            //  should not.
+            // Process has user perceptible activities.
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (Flags.prototypeAggressiveFreezing()) {
