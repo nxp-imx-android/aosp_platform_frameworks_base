@@ -17,16 +17,20 @@
 package com.android.wm.shell.desktopmode
 
 import android.content.Context
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
 import com.android.wm.shell.desktopmode.multidesks.OnDeskRemovedListener
 import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
+import com.android.wm.shell.sysui.UserChangeListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -36,7 +40,9 @@ class DesktopDisplayEventHandler(
     private val context: Context,
     shellInit: ShellInit,
     private val mainScope: CoroutineScope,
+    private val shellController: ShellController,
     private val displayController: DisplayController,
+    private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
     private val desktopRepositoryInitializer: DesktopRepositoryInitializer,
     private val desktopUserRepositories: DesktopUserRepositories,
     private val desktopTasksController: DesktopTasksController,
@@ -53,8 +59,17 @@ class DesktopDisplayEventHandler(
     private fun onInit() {
         displayController.addDisplayWindowListener(this)
 
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desktopTasksController.onDeskRemovedListener = this
+
+            shellController.addUserChangeListener(
+                object : UserChangeListener {
+                    override fun onUserChanged(newUserId: Int, userContext: Context) {
+                        val displayIds = rootTaskDisplayAreaOrganizer.displayIds
+                        createDefaultDesksIfNeeded(displayIds.toSet())
+                    }
+                }
+            )
         }
     }
 
@@ -63,23 +78,7 @@ class DesktopDisplayEventHandler(
             desktopDisplayModeController.refreshDisplayWindowingMode()
         }
 
-        if (!supportsDesks(displayId)) {
-            logV("Display #$displayId does not support desks")
-            return
-        }
-
-        mainScope.launch {
-            desktopRepositoryInitializer.isInitialized.collect { initialized ->
-                if (!initialized) return@collect
-                if (desktopRepository.getNumberOfDesks(displayId) == 0) {
-                    logV("Creating new desk in new display#$displayId")
-                    // TODO: b/393978539 - consider activating the desk on creation when
-                    //  applicable, such as for connected displays.
-                    desktopTasksController.createDesk(displayId)
-                }
-                cancel()
-            }
-        }
+        createDefaultDesksIfNeeded(displayIds = setOf(displayId))
     }
 
     override fun onDisplayRemoved(displayId: Int) {
@@ -93,8 +92,34 @@ class DesktopDisplayEventHandler(
     override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {
         val remainingDesks = desktopRepository.getNumberOfDesks(lastDisplayId)
         if (remainingDesks == 0) {
-            logV("All desks removed from display#$lastDisplayId, creating empty desk")
-            desktopTasksController.createDesk(lastDisplayId)
+            logV("All desks removed from display#$lastDisplayId")
+            createDefaultDesksIfNeeded(setOf(lastDisplayId))
+        }
+    }
+
+    private fun createDefaultDesksIfNeeded(displayIds: Set<Int>) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
+        logV("createDefaultDesksIfNeeded displays=%s", displayIds)
+        mainScope.launch {
+            desktopRepositoryInitializer.isInitialized.collect { initialized ->
+                if (!initialized) return@collect
+                displayIds
+                    .filter { displayId -> displayId != Display.INVALID_DISPLAY }
+                    .filter { displayId -> supportsDesks(displayId) }
+                    .filter { displayId -> desktopRepository.getNumberOfDesks(displayId) == 0 }
+                    .also { displaysNeedingDesk ->
+                        logV(
+                            "createDefaultDesksIfNeeded creating default desks in displays=%s",
+                            displaysNeedingDesk,
+                        )
+                    }
+                    .forEach { displayId ->
+                        // TODO: b/393978539 - consider activating the desk on creation when
+                        //  applicable, such as for connected displays.
+                        desktopTasksController.createDesk(displayId)
+                    }
+                cancel()
+            }
         }
     }
 
