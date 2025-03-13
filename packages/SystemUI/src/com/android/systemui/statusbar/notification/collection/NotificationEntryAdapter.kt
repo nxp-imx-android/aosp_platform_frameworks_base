@@ -121,7 +121,7 @@ class NotificationEntryAdapter(
         return false
     }
 
-    override fun isBubbleCapable(): Boolean {
+    override fun isBubble(): Boolean {
         return entry.isBubble
     }
 
