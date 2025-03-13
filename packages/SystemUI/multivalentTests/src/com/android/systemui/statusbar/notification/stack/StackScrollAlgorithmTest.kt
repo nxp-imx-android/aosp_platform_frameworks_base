@@ -129,7 +129,7 @@ class StackScrollAlgorithmTest(flags: FlagsParameterization) : SysuiTestCase() {
         whenever(notificationShelf.viewState).thenReturn(ExpandableViewState())
         whenever(notificationRow.key).thenReturn("key")
         whenever(notificationRow.viewState).thenReturn(ExpandableViewState())
-        whenever(notificationRow.entry).thenReturn(notificationEntry)
+        whenever(notificationRow.entryLegacy).thenReturn(notificationEntry)
         whenever(notificationRow.entryAdapter).thenReturn(notificationEntryAdapter)
         whenever(notificationRow.roundableState)
             .thenReturn(RoundableState(notificationRow, notificationRow, 0f))

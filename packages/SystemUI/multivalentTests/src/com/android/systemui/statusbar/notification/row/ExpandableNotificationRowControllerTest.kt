@@ -51,6 +51,7 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRowController.BUBBLES_SETTING_URI
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainer
 import com.android.systemui.statusbar.notification.stack.NotificationChildrenContainerLogger
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
@@ -318,7 +319,7 @@ class ExpandableNotificationRowControllerTest : SysuiTestCase() {
         val notification = Notification.Builder(mContext).build()
         val sbn =
             SbnBuilder().setNotification(notification).setUser(UserHandle.of(USER_ALL)).build()
-        whenever(view.entry)
+        whenever(view.entryLegacy)
             .thenReturn(
                 NotificationEntryBuilder().setSbn(sbn).setUser(UserHandle.of(USER_ALL)).build()
             )
