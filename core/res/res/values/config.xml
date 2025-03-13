@@ -3203,6 +3203,10 @@
          Note that HSUM devices without this enabled will not automatically have a main user. -->
     <bool name="config_isMainUserPermanentAdmin">true</bool>
 
+    <!-- Whether all secondary users (and the system user) are eligible to have profiles.
+         If false, only the MainUser is eligible to have profiles. -->
+    <bool name="config_supportProfilesOnNonMainUser">false</bool>
+
     <!-- Whether switch to headless system user is allowed. If allowed,
     headless system user can run in the foreground even though it is not a full user. -->
     <bool name="config_canSwitchToHeadlessSystemUser">false</bool>
