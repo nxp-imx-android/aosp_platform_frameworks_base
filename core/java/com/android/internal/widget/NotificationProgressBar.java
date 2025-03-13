@@ -78,6 +78,13 @@ public final class NotificationProgressBar extends ProgressBar implements
     @Nullable
     private List<DrawablePart> mProgressDrawableParts = null;
 
+    /** @see R.styleable#NotificationProgressBar_segMinWidth */
+    private final float mSegMinWidth;
+    /** @see R.styleable#NotificationProgressBar_segSegGap */
+    private final float mSegSegGap;
+    /** @see R.styleable#NotificationProgressBar_segPointGap */
+    private final float mSegPointGap;
+
     @Nullable
     private Drawable mTracker = null;
     private boolean mHasTrackerIcon = false;
@@ -127,6 +134,10 @@ public final class NotificationProgressBar extends ProgressBar implements
         } catch (IllegalStateException ex) {
             Log.e(TAG, "Can't get NotificationProgressDrawable", ex);
         }
+
+        mSegMinWidth = a.getDimension(R.styleable.NotificationProgressBar_segMinWidth, 0f);
+        mSegSegGap = a.getDimension(R.styleable.NotificationProgressBar_segSegGap, 0f);
+        mSegPointGap = a.getDimension(R.styleable.NotificationProgressBar_segPointGap, 0f);
 
         // Supports setting the tracker in xml, but ProgressStyle notifications set/override it
         // via {@code #setProgressTrackerIcon}.
@@ -444,30 +455,26 @@ public final class NotificationProgressBar extends ProgressBar implements
             return;
         }
 
-        final float segSegGap = mNotificationProgressDrawable.getSegSegGap();
-        final float segPointGap = mNotificationProgressDrawable.getSegPointGap();
         final float pointRadius = mNotificationProgressDrawable.getPointRadius();
         mProgressDrawableParts = processPartsAndConvertToDrawableParts(
                 mParts,
                 width,
-                segSegGap,
-                segPointGap,
+                mSegSegGap,
+                mSegPointGap,
                 pointRadius,
                 mHasTrackerIcon,
                 mTrackerDrawWidth
         );
 
-        final float segmentMinWidth = mNotificationProgressDrawable.getSegmentMinWidth();
         final float progressFraction = getProgressFraction();
         final boolean isStyledByProgress = mProgressModel.isStyledByProgress();
-        final float progressGap =
-                mHasTrackerIcon ? 0F : mNotificationProgressDrawable.getSegSegGap();
+        final float progressGap = mHasTrackerIcon ? 0F : mSegSegGap;
         Pair<List<DrawablePart>, Float> p = null;
         try {
             p = maybeStretchAndRescaleSegments(
                     mParts,
                     mProgressDrawableParts,
-                    segmentMinWidth,
+                    mSegMinWidth,
                     pointRadius,
                     progressFraction,
                     isStyledByProgress,
@@ -492,11 +499,11 @@ public final class NotificationProgressBar extends ProgressBar implements
                         mProgressModel.getProgress(),
                         getMax(),
                         width,
-                        segSegGap,
-                        segPointGap,
+                        mSegSegGap,
+                        mSegPointGap,
                         pointRadius,
                         mHasTrackerIcon,
-                        segmentMinWidth,
+                        mSegMinWidth,
                         isStyledByProgress,
                         mTrackerDrawWidth);
             } catch (NotEnoughWidthToFitAllPartsException ex) {
@@ -521,11 +528,11 @@ public final class NotificationProgressBar extends ProgressBar implements
                         mProgressModel.getProgress(),
                         getMax(),
                         width,
-                        segSegGap,
-                        segPointGap,
+                        mSegSegGap,
+                        mSegPointGap,
                         pointRadius,
                         mHasTrackerIcon,
-                        segmentMinWidth,
+                        mSegMinWidth,
                         isStyledByProgress,
                         mTrackerDrawWidth);
             } catch (NotEnoughWidthToFitAllPartsException ex) {

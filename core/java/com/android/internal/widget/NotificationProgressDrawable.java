@@ -84,27 +84,6 @@ public final class NotificationProgressDrawable extends Drawable {
     }
 
     /**
-     * Returns the gap between two segments.
-     */
-    public float getSegSegGap() {
-        return mState.mSegSegGap;
-    }
-
-    /**
-     * Returns the gap between a segment and a point.
-     */
-    public float getSegPointGap() {
-        return mState.mSegPointGap;
-    }
-
-    /**
-     * Returns the gap between a segment and a point.
-     */
-    public float getSegmentMinWidth() {
-        return mState.mSegmentMinWidth;
-    }
-
-    /**
      * Returns the radius for the points.
      */
     public float getPointRadius() {
@@ -241,11 +220,6 @@ public final class NotificationProgressDrawable extends Drawable {
 
         mState.setDensity(resolveDensity(r, 0));
 
-        final TypedArray a = obtainAttributes(r, theme, attrs,
-                R.styleable.NotificationProgressDrawable);
-        updateStateFromTypedArray(a);
-        a.recycle();
-
         inflateChildElements(r, parser, attrs, theme);
 
         updateLocalState();
@@ -262,13 +236,6 @@ public final class NotificationProgressDrawable extends Drawable {
 
         state.setDensity(resolveDensity(t.getResources(), 0));
 
-        if (state.mThemeAttrs != null) {
-            final TypedArray a = t.resolveAttributes(
-                    state.mThemeAttrs, R.styleable.NotificationProgressDrawable);
-            updateStateFromTypedArray(a);
-            a.recycle();
-        }
-
         applyThemeChildElements(t);
 
         updateLocalState();
@@ -277,21 +244,6 @@ public final class NotificationProgressDrawable extends Drawable {
     @Override
     public boolean canApplyTheme() {
         return (mState.canApplyTheme()) || super.canApplyTheme();
-    }
-
-    private void updateStateFromTypedArray(TypedArray a) {
-        final State state = mState;
-
-        // Account for any configuration changes.
-        state.mChangingConfigurations |= a.getChangingConfigurations();
-
-        // Extract the theme attributes, if any.
-        state.mThemeAttrs = a.extractThemeAttrs();
-
-        state.mSegSegGap = a.getDimension(R.styleable.NotificationProgressDrawable_segSegGap,
-                state.mSegSegGap);
-        state.mSegPointGap = a.getDimension(R.styleable.NotificationProgressDrawable_segPointGap,
-                state.mSegPointGap);
     }
 
     private void inflateChildElements(Resources r, XmlPullParser parser, AttributeSet attrs,
@@ -357,8 +309,6 @@ public final class NotificationProgressDrawable extends Drawable {
         // Extract the theme attributes, if any.
         state.mThemeAttrsSegments = a.extractThemeAttrs();
 
-        state.mSegmentMinWidth = a.getDimension(
-                R.styleable.NotificationProgressDrawableSegments_minWidth, state.mSegmentMinWidth);
         state.mSegmentHeight = a.getDimension(
                 R.styleable.NotificationProgressDrawableSegments_height, state.mSegmentHeight);
         state.mFadedSegmentHeight = a.getDimension(
@@ -588,9 +538,6 @@ public final class NotificationProgressDrawable extends Drawable {
     static final class State extends ConstantState {
         @Config
         int mChangingConfigurations;
-        float mSegSegGap = 0.0f;
-        float mSegPointGap = 0.0f;
-        float mSegmentMinWidth = 0.0f;
         float mSegmentHeight;
         float mFadedSegmentHeight;
         float mSegmentCornerRadius;
@@ -610,9 +557,6 @@ public final class NotificationProgressDrawable extends Drawable {
 
         State(@NonNull State orig, @Nullable Resources res) {
             mChangingConfigurations = orig.mChangingConfigurations;
-            mSegSegGap = orig.mSegSegGap;
-            mSegPointGap = orig.mSegPointGap;
-            mSegmentMinWidth = orig.mSegmentMinWidth;
             mSegmentHeight = orig.mSegmentHeight;
             mFadedSegmentHeight = orig.mFadedSegmentHeight;
             mSegmentCornerRadius = orig.mSegmentCornerRadius;
@@ -631,18 +575,6 @@ public final class NotificationProgressDrawable extends Drawable {
         }
 
         private void applyDensityScaling(int sourceDensity, int targetDensity) {
-            if (mSegSegGap > 0) {
-                mSegSegGap = scaleFromDensity(
-                        mSegSegGap, sourceDensity, targetDensity);
-            }
-            if (mSegPointGap > 0) {
-                mSegPointGap = scaleFromDensity(
-                        mSegPointGap, sourceDensity, targetDensity);
-            }
-            if (mSegmentMinWidth > 0) {
-                mSegmentMinWidth = scaleFromDensity(
-                        mSegmentMinWidth, sourceDensity, targetDensity);
-            }
             if (mSegmentHeight > 0) {
                 mSegmentHeight = scaleFromDensity(
                         mSegmentHeight, sourceDensity, targetDensity);
