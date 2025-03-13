@@ -2154,11 +2154,10 @@ public class CachedAppOptimizer {
                             synchronized (mAm.mPidsSelfLocked) {
                                 pr = mAm.mPidsSelfLocked.get(blocked);
                             }
-                            if (pr != null && pr.mState.getCurAdj()
-                                    < mAm.mConstants.FREEZER_CUTOFF_ADJ) {
+                            if (pr != null && !pr.isFreezable()) {
                                 Slog.d(TAG_AM, app.processName + " (" + pid + ") blocks "
                                         + pr.processName + " (" + blocked + ")");
-                                // Found at least one blocked non-cached process
+                                // Found at least one blocked unfrozen process
                                 unfreezeAppLSP(app, UNFREEZE_REASON_FILE_LOCKS);
                                 break;
                             }
