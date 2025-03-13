@@ -302,13 +302,23 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public Intent getLaunchIntentForPackage(String packageName) {
+        return getLaunchIntentForPackage(packageName, false);
+    }
+
+    @Override
+    @Nullable
+    public Intent getLaunchIntentForPackage(@NonNull String packageName,
+            boolean includeDirectBootUnaware) {
+        ResolveInfoFlags queryFlags = ResolveInfoFlags.of(
+                includeDirectBootUnaware ? MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE : 0);
+
         // First see if the package has an INFO activity; the existence of
         // such an activity is implied to be the desired front-door for the
         // overall package (such as if it has multiple launcher entries).
         Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
         intentToResolve.addCategory(Intent.CATEGORY_INFO);
         intentToResolve.setPackage(packageName);
-        List<ResolveInfo> ris = queryIntentActivities(intentToResolve, 0);
+        List<ResolveInfo> ris = queryIntentActivities(intentToResolve, queryFlags);
 
         // Otherwise, try to find a main launcher activity.
         if (ris == null || ris.size() <= 0) {
@@ -316,7 +326,7 @@ public class ApplicationPackageManager extends PackageManager {
             intentToResolve.removeCategory(Intent.CATEGORY_INFO);
             intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
             intentToResolve.setPackage(packageName);
-            ris = queryIntentActivities(intentToResolve, 0);
+            ris = queryIntentActivities(intentToResolve, queryFlags);
         }
         if (ris == null || ris.size() <= 0) {
             return null;
