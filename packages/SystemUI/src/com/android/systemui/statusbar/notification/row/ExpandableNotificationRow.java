@@ -4011,7 +4011,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             }
         } else if (isChildInGroup()) {
             final int childColor = getShowingLayout().getBackgroundColorForExpansionState();
-            if (Flags.notificationRowTransparency() && childColor == Color.TRANSPARENT) {
+            if ((Flags.notificationRowTransparency() || notificationsRedesignTemplates())
+                    && childColor == Color.TRANSPARENT) {
                 // If child is not customizing its background color, switch from the parent to
                 // the child background when the expansion finishes.
                 mShowNoBackground = !mNotificationParent.mShowNoBackground;
