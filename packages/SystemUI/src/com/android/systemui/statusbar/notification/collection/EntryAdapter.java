@@ -150,5 +150,9 @@ public interface EntryAdapter {
      * Processes a click on a notification action
      */
     void onNotificationActionClicked();
+
+    NotificationEntry.DismissState getDismissState();
+
+    void onEntryClicked(ExpandableNotificationRow row);
 }
 
