@@ -5583,6 +5583,13 @@ final class ActivityRecord extends WindowToken {
         // called for updating snapshot states.
         if (!fromTransition) {
             mWmService.mSnapshotController.notifyAppVisibilityChanged(this, visible);
+            if (visible) {
+                // In case the activity becomes visible without transition, the client still expects
+                // to receive Activity#onEnterAnimationComplete.
+                mEnteringAnimation = true;
+                mWmService.mActivityManagerAppTransitionNotifier.onAppTransitionFinishedLocked(
+                        token);
+            }
         }
     }
 
