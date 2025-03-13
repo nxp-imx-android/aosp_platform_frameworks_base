@@ -848,6 +848,95 @@ public class LocalDisplayAdapterTest {
     }
 
     @Test
+    public void testAfterOnModeChanged_presentationOffsetsAreNotUpdatedWithFlagOff()
+            throws Exception {
+        doReturn(false).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
+        long appVsyncOffsetNanosMode1 = 100;
+        long presentationDeadlineNanosMode1 = 200;
+        long appVsyncOffsetNanosMode2 = 101;
+        long presentationDeadlineNanosMode2 = 201;
+        SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f,
+                appVsyncOffsetNanosMode1, presentationDeadlineNanosMode1);
+        SurfaceControl.DisplayMode displayMode2 = createFakeDisplayMode(1, 1920, 1080, 120f,
+                appVsyncOffsetNanosMode2, presentationDeadlineNanosMode2);
+        SurfaceControl.DisplayMode[] modes =
+                new SurfaceControl.DisplayMode[]{displayMode1, displayMode2};
+        FakeDisplay display = new FakeDisplay(PORT_A, modes, 0, displayMode1.peakRefreshRate);
+        setUpDisplay(display);
+        updateAvailableDisplays();
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        assertThat(mListener.addedDisplays.size()).isEqualTo(1);
+        assertThat(mListener.changedDisplays).isEmpty();
+
+        DisplayDeviceInfo displayDeviceInfo = mListener.addedDisplays.get(
+                0).getDisplayDeviceInfoLocked();
+        assertEquals(appVsyncOffsetNanosMode1, displayDeviceInfo.appVsyncOffsetNanos);
+        assertEquals(presentationDeadlineNanosMode1, displayDeviceInfo.presentationDeadlineNanos);
+
+        long newAppVsyncOffsetNanos = 400;
+        long newPresentationDeadlineNanos = 500;
+
+        mInjector.getTransmitter().sendOnModeChanged(display,
+                1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
+                newPresentationDeadlineNanos);
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        assertTrue(mListener.traversalRequested);
+
+        DisplayDevice displayDevice = mListener.changedDisplays.get(0);
+        displayDevice.applyPendingDisplayDeviceInfoChangesLocked();
+        displayDeviceInfo = mListener.addedDisplays.get(0).getDisplayDeviceInfoLocked();
+        // Returns the values captured through mode.
+        assertEquals(appVsyncOffsetNanosMode2, displayDeviceInfo.appVsyncOffsetNanos);
+        assertEquals(presentationDeadlineNanosMode2, displayDeviceInfo.presentationDeadlineNanos);
+        assertThat(mListener.changedDisplays.size()).isEqualTo(1);
+    }
+
+    @Test
+    public void testAfterOnModeChanged_presentationOffsetsAreUpdatedWithFlagOn() throws Exception {
+        doReturn(true).when(mFlags).isDispatchDisplayModeWithVsyncOffsetsEnabled();
+        long appVsyncOffsetNanosMode1 = 100;
+        long presentationDeadlineNanosMode1 = 200;
+        long appVsyncOffsetNanosMode2 = 101;
+        long presentationDeadlineNanosMode2 = 201;
+        SurfaceControl.DisplayMode displayMode1 = createFakeDisplayMode(0, 1920, 1080, 60f,
+                appVsyncOffsetNanosMode1, presentationDeadlineNanosMode1);
+        SurfaceControl.DisplayMode displayMode2 = createFakeDisplayMode(1, 1920, 1080, 120f,
+                appVsyncOffsetNanosMode2, presentationDeadlineNanosMode2);
+        SurfaceControl.DisplayMode[] modes =
+                new SurfaceControl.DisplayMode[]{displayMode1, displayMode2};
+        FakeDisplay display = new FakeDisplay(PORT_A, modes, 0, displayMode1.peakRefreshRate);
+        setUpDisplay(display);
+        updateAvailableDisplays();
+        mAdapter.registerLocked();
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        assertThat(mListener.addedDisplays.size()).isEqualTo(1);
+        assertThat(mListener.changedDisplays).isEmpty();
+
+        DisplayDeviceInfo displayDeviceInfo = mListener.addedDisplays.get(
+                0).getDisplayDeviceInfoLocked();
+        assertEquals(appVsyncOffsetNanosMode1, displayDeviceInfo.appVsyncOffsetNanos);
+        assertEquals(presentationDeadlineNanosMode1, displayDeviceInfo.presentationDeadlineNanos);
+
+        long newAppVsyncOffsetNanos = 400;
+        long newPresentationDeadlineNanos = 500;
+
+        mInjector.getTransmitter().sendOnModeChanged(display,
+                1, (long) displayMode2.peakRefreshRate, newAppVsyncOffsetNanos,
+                newPresentationDeadlineNanos);
+        waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        assertTrue(mListener.traversalRequested);
+
+        DisplayDevice displayDevice = mListener.changedDisplays.get(0);
+        displayDevice.applyPendingDisplayDeviceInfoChangesLocked();
+        displayDeviceInfo = mListener.addedDisplays.get(0).getDisplayDeviceInfoLocked();
+        // Returns the values captured from the onModeChanged event.
+        assertEquals(newAppVsyncOffsetNanos, displayDeviceInfo.appVsyncOffsetNanos);
+        assertEquals(newPresentationDeadlineNanos, displayDeviceInfo.presentationDeadlineNanos);
+        assertThat(mListener.changedDisplays.size()).isEqualTo(1);
+    }
+
+    @Test
     public void testAfterDisplayChange_HdrCapabilitiesAreUpdated() throws Exception {
         FakeDisplay display = new FakeDisplay(PORT_A);
         Display.HdrCapabilities initialHdrCapabilities = new Display.HdrCapabilities(new int[0],
@@ -1715,18 +1804,28 @@ public class LocalDisplayAdapterTest {
     }
 
     private static SurfaceControl.DisplayMode createFakeDisplayMode(int id, int width, int height,
-                                                                   float refreshRate,
-                                                                    float vsyncRate) {
-        return createFakeDisplayMode(id, width, height, refreshRate, vsyncRate, /* group */ 0);
-    }
-
-    private static SurfaceControl.DisplayMode createFakeDisplayMode(int id, int width, int height,
                                                                     float refreshRate, int group) {
-        return createFakeDisplayMode(id, width, height, refreshRate, refreshRate, group);
+        return createFakeDisplayMode(id, width, height, refreshRate, refreshRate, group,
+                /* appVsyncOffsetNanos */ 0, /* presentationDeadlineNanos */ 0);
     }
 
     private static SurfaceControl.DisplayMode createFakeDisplayMode(int id, int width, int height,
-            float refreshRate, float vsyncRate, int group) {
+                                                                    float refreshRate,
+                                                                    float vsyncRate) {
+        return createFakeDisplayMode(id, width, height, refreshRate, vsyncRate, /* group */ 0,
+                /* appVsyncOffsetNanos */ 0,
+                /* presentationDeadlineNanos */ 0);
+    }
+
+    private static SurfaceControl.DisplayMode createFakeDisplayMode(int id, int width, int height,
+            float refreshRate, long appVsyncOffsetNanos, long presentationDeadlineNanos) {
+        return createFakeDisplayMode(id, width, height, refreshRate, refreshRate, /* group */ 0,
+                appVsyncOffsetNanos, presentationDeadlineNanos);
+    }
+
+    private static SurfaceControl.DisplayMode createFakeDisplayMode(int id, int width, int height,
+            float refreshRate, float vsyncRate, int group,
+            long appVsyncOffsetNanos, long presentationDeadlineNanos) {
         final SurfaceControl.DisplayMode mode = new SurfaceControl.DisplayMode();
         mode.id = id;
         mode.width = width;
@@ -1737,6 +1836,8 @@ public class LocalDisplayAdapterTest {
         mode.yDpi = 100;
         mode.group = group;
         mode.supportedHdrTypes = HDR_TYPES;
+        mode.appVsyncOffsetNanos = appVsyncOffsetNanos;
+        mode.presentationDeadlineNanos = presentationDeadlineNanos;
         return mode;
     }
 
@@ -1747,11 +1848,11 @@ public class LocalDisplayAdapterTest {
         assertTrue(fence.await(waitTimeMs, TimeUnit.MILLISECONDS));
     }
 
-    private class HotplugTransmitter {
+    private static class EventTransmitter {
         private final Handler mHandler;
         private final LocalDisplayAdapter.DisplayEventListener mListener;
 
-        HotplugTransmitter(Looper looper, LocalDisplayAdapter.DisplayEventListener listener) {
+        EventTransmitter(Looper looper, LocalDisplayAdapter.DisplayEventListener listener) {
             mHandler = new Handler(looper);
             mListener = listener;
         }
@@ -1762,17 +1863,26 @@ public class LocalDisplayAdapterTest {
                     display.address.getPhysicalDisplayId(), connected));
             waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
         }
+
+        public void sendOnModeChanged(FakeDisplay display, int modeId,
+                long renderPeriod, long appVsyncOffsetNanos, long presentationDeadlineNanos)
+                throws InterruptedException {
+            mHandler.post(() -> mListener.onModeChanged(/* timestampNanos = */ 0,
+                    display.address.getPhysicalDisplayId(), modeId, renderPeriod,
+                    appVsyncOffsetNanos, presentationDeadlineNanos));
+            waitForHandlerToComplete(mHandler, HANDLER_WAIT_MS);
+        }
     }
 
     private class Injector extends LocalDisplayAdapter.Injector {
-        private HotplugTransmitter mTransmitter;
+        private EventTransmitter mTransmitter;
         @Override
         public void setDisplayEventListenerLocked(Looper looper,
                 LocalDisplayAdapter.DisplayEventListener listener) {
-            mTransmitter = new HotplugTransmitter(looper, listener);
+            mTransmitter = new EventTransmitter(looper, listener);
         }
 
-        public HotplugTransmitter getTransmitter() {
+        public EventTransmitter getTransmitter() {
             return mTransmitter;
         }
 

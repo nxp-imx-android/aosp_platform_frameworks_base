@@ -96,7 +96,8 @@ private:
     void dispatchHotplug(nsecs_t timestamp, PhysicalDisplayId displayId, bool connected) override;
     void dispatchHotplugConnectionError(nsecs_t timestamp, int errorCode) override;
     void dispatchModeChanged(nsecs_t timestamp, PhysicalDisplayId displayId, int32_t modeId,
-                             nsecs_t renderPeriod) override;
+                             nsecs_t renderPeriod, nsecs_t appVsyncOffset,
+                             nsecs_t presentationDeadline) override;
     void dispatchModeRejected(PhysicalDisplayId displayId, int32_t modeId) override;
     void dispatchFrameRateOverrides(nsecs_t timestamp, PhysicalDisplayId displayId,
                                     std::vector<FrameRateOverride> overrides) override;
@@ -260,14 +261,17 @@ void NativeDisplayEventReceiver::dispatchHotplugConnectionError(nsecs_t timestam
 }
 
 void NativeDisplayEventReceiver::dispatchModeChanged(nsecs_t timestamp, PhysicalDisplayId displayId,
-                                                     int32_t modeId, nsecs_t renderPeriod) {
+                                                     int32_t modeId, nsecs_t renderPeriod,
+                                                     nsecs_t appVsyncOffset,
+                                                     nsecs_t presentationDeadline) {
     JNIEnv* env = AndroidRuntime::getJNIEnv();
 
     ScopedLocalRef<jobject> receiverObj(env, GetReferent(env, mReceiverWeakGlobal));
     if (receiverObj.get()) {
         ALOGV("receiver %p ~ Invoking mode changed handler.", this);
         env->CallVoidMethod(receiverObj.get(), gDisplayEventReceiverClassInfo.dispatchModeChanged,
-                            timestamp, displayId.value, modeId, renderPeriod);
+                            timestamp, displayId.value, modeId, renderPeriod, appVsyncOffset,
+                            presentationDeadline);
         ALOGV("receiver %p ~ Returned from mode changed handler.", this);
     }
 
@@ -421,7 +425,7 @@ int register_android_view_DisplayEventReceiver(JNIEnv* env) {
                              "dispatchHotplugConnectionError", "(JI)V");
     gDisplayEventReceiverClassInfo.dispatchModeChanged =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz, "dispatchModeChanged",
-                             "(JJIJ)V");
+                             "(JJIJJJ)V");
     gDisplayEventReceiverClassInfo.dispatchModeRejected =
             GetMethodIDOrDie(env, gDisplayEventReceiverClassInfo.clazz, "dispatchModeRejected",
                              "(JI)V");
