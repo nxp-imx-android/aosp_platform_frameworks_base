@@ -2639,9 +2639,13 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
      */
     void endDeferResume() {
         mDeferResumeCount--;
-        if (readyToResume() && mLastReportedTopResumedActivity != null
-                && mTopResumedActivity != mLastReportedTopResumedActivity) {
-            scheduleTopResumedActivityStateLossIfNeeded();
+        if (readyToResume()) {
+            if (mLastReportedTopResumedActivity != null
+                    && mTopResumedActivity != mLastReportedTopResumedActivity) {
+                scheduleTopResumedActivityStateLossIfNeeded();
+            } else if (mLastReportedTopResumedActivity == null) {
+                scheduleTopResumedActivityStateIfNeeded();
+            }
         }
     }
 
