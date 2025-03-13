@@ -16,6 +16,8 @@
 
 package com.android.systemui.display.data.repository
 
+import com.android.app.displaylib.PerDisplayInstanceProviderWithTeardown
+import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
