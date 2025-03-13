@@ -18,6 +18,7 @@ package com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel
 
 import android.app.Flags
 import android.app.NotificationManager.INTERRUPTION_FILTER_NONE
+import android.graphics.drawable.TestStubDrawable
 import android.media.AudioManager
 import android.platform.test.annotations.EnableFlags
 import android.service.notification.ZenPolicy
@@ -28,7 +29,6 @@ import com.android.settingslib.notification.modes.TestModeBuilder
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.collectLastValue
@@ -39,8 +39,6 @@ import com.android.systemui.statusbar.policy.data.repository.fakeZenModeReposito
 import com.android.systemui.testKosmos
 import com.android.systemui.volume.data.repository.audioSharingRepository
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runCurrent
-import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
@@ -173,6 +171,12 @@ class AudioStreamSliderViewModelTest : SysuiTestCase() {
 
             assertThat(mediaSlider!!.label).isEqualTo("my headset 1")
             assertThat(mediaSlider!!.icon)
-                .isEqualTo(Icon.Resource(R.drawable.ic_volume_media_bt, null))
+                .isEqualTo(
+                    Icon.Loaded(
+                        drawable = TestStubDrawable(),
+                        res = R.drawable.ic_volume_media_bt,
+                        contentDescription = null,
+                    )
+                )
         }
 }

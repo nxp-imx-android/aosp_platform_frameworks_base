@@ -40,7 +40,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -52,7 +51,6 @@ import androidx.compose.ui.semantics.stateDescription
 import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.res.R
 import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigsProvider
 import kotlin.math.round
 import kotlinx.coroutines.Job
@@ -108,7 +106,8 @@ fun Slider(
         }
     }
     val semantics =
-        accessibilityParams.createSemantics(
+        createSemantics(
+            accessibilityParams,
             animatable.targetValue,
             valueRange,
             valueChange,
@@ -167,24 +166,18 @@ private fun snapValue(
     return Math.round(coercedValue / stepDistance) * stepDistance
 }
 
-@Composable
-private fun AccessibilityParams.createSemantics(
+private fun createSemantics(
+    params: AccessibilityParams,
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChanged: (Float) -> Unit,
     isEnabled: Boolean,
     stepDistance: Float,
 ): SemanticsPropertyReceiver.() -> Unit {
-    val semanticsContentDescription =
-        disabledMessage
-            ?.takeIf { !isEnabled }
-            ?.let { message ->
-                stringResource(R.string.volume_slider_disabled_message_template, label, message)
-            } ?: label
     return {
-        contentDescription = semanticsContentDescription
+        contentDescription = params.contentDescription
         if (isEnabled) {
-            currentStateDescription?.let { stateDescription = it }
+            params.stateDescription?.let { stateDescription = it }
             progressBarRangeInfo = ProgressBarRangeInfo(value, valueRange)
         } else {
             disabled()
@@ -253,9 +246,8 @@ private fun Haptics.createViewModel(
 }
 
 data class AccessibilityParams(
-    val label: String,
-    val currentStateDescription: String? = null,
-    val disabledMessage: String? = null,
+    val contentDescription: String,
+    val stateDescription: String? = null,
 )
 
 sealed interface Haptics {

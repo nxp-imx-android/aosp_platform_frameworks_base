@@ -108,11 +108,9 @@ constructor(
                                     isMuted = isMuted,
                                     isRoutedToBluetooth = routedToBluetooth,
                                 )
-
                             is VolumeDialogSliderType.RemoteMediaStream -> {
                                 volumeDialogSliderIconProvider.getCastIcon(isMuted)
                             }
-
                             is VolumeDialogSliderType.AudioSharingStream -> {
                                 volumeDialogSliderIconProvider.getAudioSharingIcon(isMuted)
                             }
