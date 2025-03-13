@@ -79,6 +79,8 @@ final class ConnectionServiceAdapterServant {
     private static final int MSG_HANDLE_CREATE_CONFERENCE_COMPLETE = 37;
     private static final int MSG_SET_CALL_DIRECTION = 38;
     private static final int MSG_QUERY_LOCATION = 39;
+    private static final int MSG_ADD_CONFERENCE_CALL_FROM_CONN = 40;
+
 
     private final IConnectionServiceAdapter mDelegate;
 
@@ -171,6 +173,17 @@ final class ConnectionServiceAdapterServant {
                     SomeArgs args = (SomeArgs) msg.obj;
                     try {
                         mDelegate.addConferenceCall(
+                                (String) args.arg1, (ParcelableConference) args.arg2,
+                                null /*Session.Info*/);
+                    } finally {
+                        args.recycle();
+                    }
+                    break;
+                }
+                case MSG_ADD_CONFERENCE_CALL_FROM_CONN: {
+                    SomeArgs args = (SomeArgs) msg.obj;
+                    try {
+                        mDelegate.addConferenceCallFromConnection(
                                 (String) args.arg1, (ParcelableConference) args.arg2,
                                 null /*Session.Info*/);
                     } finally {
@@ -499,6 +512,16 @@ final class ConnectionServiceAdapterServant {
             args.arg1 = callId;
             args.arg2 = parcelableConference;
             mHandler.obtainMessage(MSG_ADD_CONFERENCE_CALL, args).sendToTarget();
+        }
+
+        @Override
+        public void addConferenceCallFromConnection(String callId,
+                ParcelableConference parcelableConference,
+                Session.Info sessionInfo) {
+            SomeArgs args = SomeArgs.obtain();
+            args.arg1 = callId;
+            args.arg2 = parcelableConference;
+            mHandler.obtainMessage(MSG_ADD_CONFERENCE_CALL_FROM_CONN, args).sendToTarget();
         }
 
         @Override

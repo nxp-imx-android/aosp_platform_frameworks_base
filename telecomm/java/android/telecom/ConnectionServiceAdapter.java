@@ -334,6 +334,21 @@ final class ConnectionServiceAdapter implements DeathRecipient {
     }
 
     /**
+     * Indicates that a conference call has been created by converting an existing telecom call.
+     *
+     * @param callId The unique ID of the conference call.
+     */
+    void addConferenceCallFromConnection(String callId, ParcelableConference parcelableConference) {
+        for (IConnectionServiceAdapter adapter : mAdapters) {
+            try {
+                adapter.addConferenceCallFromConnection(callId, parcelableConference,
+                        Log.getExternalSession());
+            } catch (RemoteException ignored) {
+            }
+        }
+    }
+
+    /**
      * Retrieves a list of remote connection services usable to place calls.
      */
     void queryRemoteConnectionServices(RemoteServiceCallback callback, String callingPackage) {

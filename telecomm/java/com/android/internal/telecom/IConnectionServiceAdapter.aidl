@@ -80,6 +80,9 @@ oneway interface IConnectionServiceAdapter {
     void addConferenceCall(String callId, in ParcelableConference conference,
     in Session.Info sessionInfo);
 
+    void addConferenceCallFromConnection(String callId, in ParcelableConference conference,
+    in Session.Info sessionInfo);
+
     void removeCall(String callId, in Session.Info sessionInfo);
 
     void onPostDialWait(String callId, String remaining, in Session.Info sessionInfo);

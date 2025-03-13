@@ -44181,6 +44181,7 @@ package android.telecom {
   public abstract class ConnectionService extends android.app.Service {
     ctor public ConnectionService();
     method public final void addConference(android.telecom.Conference);
+    method @FlaggedApi("com.android.server.telecom.flags.reuse_original_conn_remote_conf_api") public final void addConferenceFromConnection(@NonNull android.telecom.Conference, @NonNull android.telecom.Connection);
     method public final void addExistingConnection(android.telecom.PhoneAccountHandle, android.telecom.Connection);
     method public final void conferenceRemoteConnections(android.telecom.RemoteConnection, android.telecom.RemoteConnection);
     method public final void connectionServiceFocusReleased();

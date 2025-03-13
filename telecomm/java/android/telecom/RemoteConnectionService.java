@@ -231,6 +231,10 @@ final class RemoteConnectionService {
         public void onConnectionServiceFocusReleased(Session.Info sessionInfo) {}
 
         @Override
+        public void addConferenceCallFromConnection(
+                final String callId, ParcelableConference parcel, Session.Info sessionInfo) {}
+
+        @Override
         public void addConferenceCall(
                 final String callId, ParcelableConference parcel, Session.Info sessionInfo) {
             RemoteConference conference = new RemoteConference(callId,
