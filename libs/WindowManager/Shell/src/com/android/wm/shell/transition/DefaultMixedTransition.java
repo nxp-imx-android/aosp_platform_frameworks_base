@@ -34,6 +34,7 @@ import com.android.wm.shell.activityembedding.ActivityEmbeddingController;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.keyguard.KeyguardTransitionHandler;
 import com.android.wm.shell.pip.PipTransitionController;
+import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.splitscreen.StageCoordinator;
 import com.android.wm.shell.unfold.UnfoldTransitionHandler;
@@ -132,7 +133,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
 
         TransitionInfo.Change pipActivityChange = null;
         if (pipChange != null) {
-            pipActivityChange = mPipHandler.getDeferConfigActivityChange(
+            pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
                     info, pipChange.getContainer());
             everythingElse.getChanges().remove(pipActivityChange);
         }
