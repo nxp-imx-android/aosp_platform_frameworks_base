@@ -192,8 +192,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
 
     @Override
     public boolean getDetailsViewModel(Consumer<TileDetailsViewModel> callback) {
-        CastDetailsViewModel viewModel = mCastDetailsViewModelFactory
-                .create(mShadeDialogContextInteractor.getContext(), ROUTE_TYPE_REMOTE_DISPLAY);
+        CastDetailsViewModel viewModel = mCastDetailsViewModelFactory.create();
         handleClick(() -> {
             if (!mKeyguard.isShowing()) {
                 callback.accept(viewModel);
