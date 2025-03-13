@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Vra ontsluitpatroon voordat jy ontspeld"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Vra wagwoord voordat jy ontspeld"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Deur jou admin geïnstalleer.\nGaan na instellings om toegestaande toestemmings te sien"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Deur jou admin opgedateer.\nGaan na instellings om toegestaande toestemmings te sien"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Uitgevee deur jou administrateur"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Batterybespaarder skakel Donkertema aan en beperk of skakel agtergrondaktiwiteit, sommige visuele effekte, sekere kenmerke en sommige netwerkverbindings af"</string>

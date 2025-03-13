@@ -25,7 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.CollectionInfo;
-import android.widget.GridView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.internal.R;
@@ -131,7 +131,7 @@ public class ChooserGridLayoutManager extends GridLayoutManager {
         super.onInitializeAccessibilityNodeInfoForItem(recycler, state, host, info);
         if (announceShortcutsAndSuggestedAppsLegacy() && host instanceof ViewGroup) {
             if (host.getId() == R.id.shortcuts_container) {
-                info.setClassName(GridView.class.getName());
+                info.setClassName(ListView.class.getName());
                 info.setContainerTitle(mShortcutGroupTitle);
                 info.setCollectionInfo(createShortcutsA11yCollectionInfo((ViewGroup) host));
             } else if (host.getId() == R.id.chooser_row) {
@@ -140,7 +140,7 @@ public class ChooserGridLayoutManager extends GridLayoutManager {
                 ChooserListAdapter gridAdapter = adapter instanceof ChooserGridAdapter
                         ? ((ChooserGridAdapter) adapter).getListAdapter()
                         : null;
-                info.setClassName(GridView.class.getName());
+                info.setClassName(ListView.class.getName());
                 info.setCollectionInfo(createSuggestedAppsA11yCollectionInfo((ViewGroup) host));
                 if (gridAdapter == null || gridAdapter.getAlphaTargetCount() > 0) {
                     info.setContainerTitle(mSuggestedAppsGroupTitle);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.Flags
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.log.table.logcatTableLogBuffer
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.WifiIcons

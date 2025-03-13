@@ -764,6 +764,8 @@ public class NotificationManagerService extends SystemService {
     private long mLastOverRateLogTime;
     private float mMaxPackageEnqueueRate = DEFAULT_MAX_NOTIFICATION_ENQUEUE_RATE;
 
+    private boolean mRedactOtpNotifications = true;
+
     private NotificationHistoryManager mHistoryManager;
     protected SnoozeHelper mSnoozeHelper;
     private TimeToLiveHelper mTtlHelper;
@@ -2410,6 +2412,8 @@ public class NotificationManagerService extends SystemService {
                 = Secure.getUriFor(Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS);
         private final Uri SHOW_NOTIFICATION_SNOOZE
                 = Secure.getUriFor(Secure.SHOW_NOTIFICATION_SNOOZE);
+        private final Uri REDACT_OTP_NOTIFICATIONS = Settings.Global.getUriFor(
+                Settings.Global.REDACT_OTP_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS);
 
         SettingsObserver(Handler handler) {
             super(handler);
@@ -2434,6 +2438,8 @@ public class NotificationManagerService extends SystemService {
                     false, this, USER_ALL);
 
             resolver.registerContentObserver(SHOW_NOTIFICATION_SNOOZE,
+                    false, this, USER_ALL);
+            resolver.registerContentObserver(REDACT_OTP_NOTIFICATIONS,
                     false, this, USER_ALL);
 
             update(null);
@@ -2480,6 +2486,10 @@ public class NotificationManagerService extends SystemService {
                 if (!snoozeEnabled) {
                     unsnoozeAll();
                 }
+            }
+            if (REDACT_OTP_NOTIFICATIONS.equals(uri)) {
+                mRedactOtpNotifications = Settings.Global.getInt(resolver,
+                        Settings.Global.REDACT_OTP_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS, 1) != 0;
             }
         }
 
@@ -6163,10 +6173,15 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public Map<String, AutomaticZenRule> getAutomaticZenRules() {
+        public ParceledListSlice getAutomaticZenRules() {
             int callingUid = Binder.getCallingUid();
             enforcePolicyAccess(callingUid, "getAutomaticZenRules");
-            return mZenModeHelper.getAutomaticZenRules(getCallingZenUser(), callingUid);
+            List<AutomaticZenRule.AzrWithId> ruleList = new ArrayList<>();
+            for (Map.Entry<String, AutomaticZenRule> rule : mZenModeHelper.getAutomaticZenRules(
+                    getCallingZenUser(), callingUid).entrySet()) {
+                ruleList.add(new AutomaticZenRule.AzrWithId(rule.getKey(), rule.getValue()));
+            }
+            return new ParceledListSlice<>(ruleList);
         }
 
         @Override
@@ -13453,13 +13468,13 @@ public class NotificationManagerService extends SystemService {
                 StatusBarNotification oldRedactedSbn = null;
                 boolean isNewSensitive = hasSensitiveContent(r);
                 boolean isOldSensitive = hasSensitiveContent(old);
+                boolean redactionEnabled = redactSensitiveNotificationsFromUntrustedListeners()
+                        && mRedactOtpNotifications;
 
                 for (final ManagedServiceInfo info : getServices()) {
                     boolean isTrusted = isUidTrusted(info.uid);
-                    boolean sendRedacted = redactSensitiveNotificationsFromUntrustedListeners()
-                            && isNewSensitive && !isTrusted;
-                    boolean sendOldRedacted = redactSensitiveNotificationsFromUntrustedListeners()
-                            && isOldSensitive && !isTrusted;
+                    boolean sendRedacted = redactionEnabled && isNewSensitive && !isTrusted;
+                    boolean sendOldRedacted = redactionEnabled && isOldSensitive && !isTrusted;
                     boolean sbnVisible = isVisibleToListener(sbn, r.getNotificationType(), info);
                     boolean oldSbnVisible = (oldSbn != null)
                             && isVisibleToListener(oldSbn, old.getNotificationType(), info);

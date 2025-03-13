@@ -23,7 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
 import com.android.systemui.testKosmos

@@ -122,7 +122,7 @@ constructor(
         }
 
     /** Interface of the ambient light mode callback, which gets triggered when the mode changes. */
-    interface Callback {
+    fun interface Callback {
         fun onChange(@AmbientLightMode mode: Int)
     }
 

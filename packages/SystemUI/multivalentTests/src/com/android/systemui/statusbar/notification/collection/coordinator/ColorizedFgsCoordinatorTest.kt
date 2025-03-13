@@ -27,7 +27,6 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -35,10 +34,10 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.core.StatusBarRootModernization
-import com.android.systemui.statusbar.notification.buildNotificationEntry
-import com.android.systemui.statusbar.notification.buildOngoingCallEntry
-import com.android.systemui.statusbar.notification.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.collection.buildEntry
+import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
+import com.android.systemui.statusbar.notification.collection.buildOngoingCallEntry
+import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
 import com.android.systemui.statusbar.notification.collection.notifPipeline
@@ -49,7 +48,6 @@ import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernizat
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before

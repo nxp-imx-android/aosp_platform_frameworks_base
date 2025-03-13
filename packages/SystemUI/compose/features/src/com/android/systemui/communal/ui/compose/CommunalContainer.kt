@@ -47,6 +47,7 @@ import com.android.compose.animation.scene.observableTransitionState
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.compose.modifiers.thenIf
+import com.android.systemui.Flags
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.CommunalTransitionKeys
@@ -104,7 +105,9 @@ val sceneTransitionsV2 = transitions {
             fade(Communal.Elements.Grid)
             fade(Communal.Elements.IndicationArea)
             fade(Communal.Elements.LockIcon)
-            fade(Communal.Elements.StatusBar)
+            if (!Flags.glanceableHubV2()) {
+                fade(Communal.Elements.StatusBar)
+            }
         }
         timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.Scrim) }
     }
@@ -131,7 +134,9 @@ val sceneTransitions = transitions {
             fade(Communal.Elements.Grid)
             fade(Communal.Elements.IndicationArea)
             fade(Communal.Elements.LockIcon)
-            fade(Communal.Elements.StatusBar)
+            if (!Flags.glanceableHubV2()) {
+                fade(Communal.Elements.StatusBar)
+            }
         }
         timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.Scrim) }
     }

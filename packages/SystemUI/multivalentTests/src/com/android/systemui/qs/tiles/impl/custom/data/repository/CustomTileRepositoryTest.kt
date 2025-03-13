@@ -28,11 +28,11 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.external.TileServiceKey
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.tiles.impl.custom.TileSubject.Companion.assertThat
-import com.android.systemui.qs.tiles.impl.custom.commons.copy
 import com.android.systemui.qs.tiles.impl.custom.customTileSpec
 import com.android.systemui.qs.tiles.impl.custom.customTileStatePersister
-import com.android.systemui.qs.tiles.impl.custom.data.entity.CustomTileDefaults
+import com.android.systemui.qs.tiles.impl.custom.data.model.CustomTileDefaults
 import com.android.systemui.qs.tiles.impl.custom.packageManagerAdapterFacade
+import com.android.systemui.qs.tiles.impl.custom.shared.model.copy
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.first

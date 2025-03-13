@@ -79,6 +79,9 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
     // True by default for all the ARC-enabled ports.
     private final SparseBooleanArray mArcFeatureEnabled = new SparseBooleanArray();
 
+    @GuardedBy("mLock")
+    private List<byte[]> mSupportedSads = new ArrayList<>();
+
     // Whether the System Audio Control feature is enabled or not. True by default.
     @GuardedBy("mLock")
     private boolean mSystemAudioControlFeatureEnabled;
@@ -858,6 +861,13 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
                 new SystemAudioActionFromTv(this, avr.getLogicalAddress(), enabled, callback));
     }
 
+    void clearSads() {
+        synchronized (mLock) {
+            mSupportedSads.clear();
+        }
+    }
+
+
     // # Seq 25
     void setSystemAudioMode(boolean on) {
         if (!isSystemAudioControlFeatureEnabled() && on) {
@@ -911,13 +921,41 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
     }
 
     @ServiceThreadOnly
-    void enableArc(List<byte[]> supportedSads) {
+    void enableArc() {
         assertRunOnServiceThread();
         HdmiLogger.debug("Set Arc Status[old:%b new:true]", mArcEstablished);
 
         enableAudioReturnChannel(true);
-        notifyArcStatusToAudioService(true, supportedSads);
+        //Ensure mSupportedSads is empty before fetching SADs
+        synchronized (mLock) {
+            mSupportedSads.clear();
+            notifyArcStatusToAudioService(true, mSupportedSads);
+        }
         mArcEstablished = true;
+
+        // Avoid triggering duplicate RequestSadAction events.
+        // This could lead to unexpected responses from the AVR and cause the TV to receive data
+        // out of order. The SAD report does not provide information about the order of events.
+        if (hasAction(RequestSadAction.class)) {
+            return;
+        }
+
+        // Send Request SAD to get real SAD instead of default empty
+        RequestSadAction action = new RequestSadAction(
+                this, Constants.ADDR_AUDIO_SYSTEM,
+                new RequestSadAction.RequestSadCallback() {
+                    @Override
+                    public void onRequestSadDone(List<byte[]> supportedSadsDone) {
+                        synchronized (mLock) {
+                            mSupportedSads = supportedSadsDone;
+                        }
+                        notifyArcStatusToAudioService(false, new ArrayList<>());
+                        synchronized (mLock) {
+                            notifyArcStatusToAudioService(true, mSupportedSads);
+                        }
+                    }
+                });
+        addAndStartAction(action);
     }
 
     @ServiceThreadOnly
@@ -928,6 +966,7 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
         enableAudioReturnChannel(false);
         notifyArcStatusToAudioService(false, new ArrayList<>());
         mArcEstablished = false;
+        clearSads();
     }
 
     /**

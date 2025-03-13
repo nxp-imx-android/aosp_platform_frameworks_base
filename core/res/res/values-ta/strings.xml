@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"அகற்றும் முன் அன்லாக் பேட்டர்னைக் கேள்"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"அகற்றும் முன் கடவுச்சொல்லைக் கேள்"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"உங்கள் நிர்வாகி நிறுவியுள்ளார்.\nவழங்கப்பட்டுள்ள அனுமதிகளை பார்க்க அமைப்புகளுக்குச் செல்லவும்"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"உங்கள் நிர்வாகி புதுப்பித்துள்ளார்.\nவழங்கப்பட்டுள்ள அனுமதிகளைப் பார்க்க அமைப்புகளுக்குச் செல்லவும்"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"உங்கள் நிர்வாகி நீக்கியுள்ளார்"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"சரி"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"பேட்டரி சேமிப்பான் அம்சம் டார்க் தீமை இயக்குவதோடு பின்னணிச் செயல்பாடு, சில விஷுவல் எஃபக்ட்கள், குறிப்பிட்ட அம்சங்கள், சில நெட்வொர்க் இணைப்புகள் ஆகியவற்றைக் கட்டுப்படுத்தும் அல்லது முடக்கும்."</string>

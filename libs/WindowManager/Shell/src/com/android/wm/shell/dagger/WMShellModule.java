@@ -969,8 +969,15 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static DesktopModeMoveToDisplayTransitionHandler provideMoveToDisplayTransitionHandler() {
-        return new DesktopModeMoveToDisplayTransitionHandler(new SurfaceControl.Transaction());
+    static DesktopModeMoveToDisplayTransitionHandler provideMoveToDisplayTransitionHandler(
+            InteractionJankMonitor interactionJankMonitor,
+            @ShellMainThread Handler shellMainHandler,
+            DisplayController displayController) {
+        return new DesktopModeMoveToDisplayTransitionHandler(
+                new SurfaceControl.Transaction(),
+                interactionJankMonitor,
+                shellMainHandler,
+                displayController);
     }
 
     @WMSingleton

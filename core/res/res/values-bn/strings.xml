@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"আনপিন করার আগে আনলক প্যাটার্ন চান"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"আনপিন করার আগে পাসওয়ার্ড চান"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"আপনার অ্যাডমিন ইনস্টল করেছেন।\nঅনুমোদন করা অনুমতি দেখতে সেটিংসে যান"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"আপনার অ্যাডমিন আপডেট করেছেন।\nঅনুমোদন করা অনুমতি দেখতে সেটিংসে যান"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"আপনার প্রশাসক মুছে দিয়েছেন"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ঠিক আছে"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ব্যাটারি সেভার ডার্ক থিম চালু করে এবং ব্যাকগ্রাউন্ড অ্যাক্টিভিটি, কিছু ভিজ্যুয়াল এফেক্ট, নির্দিষ্ট ফিচার ও কয়েকটি নেটওয়ার্ক কানেকশনের ব্যবহার সীমিত করে বা বন্ধ করে দেয়।"</string>

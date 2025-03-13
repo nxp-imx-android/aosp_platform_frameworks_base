@@ -423,20 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Âm lượng xung quanh"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Trái"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Phải"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Môi trường xung quanh"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Môi trường xung quanh bên trái"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Môi trường xung quanh bên phải"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"Mở rộng thành các nút điều khiển tách biệt bên trái và bên phải"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"Thu gọn thành nút điều khiển hợp nhất"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"Tắt tiếng xung quanh"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Bật tiếng xung quanh"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Công cụ"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Phụ đề trực tiếp"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Cài đặt"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Ghi chú"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Bỏ chặn micrô của thiết bị?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Bỏ chặn camera của thiết bị?"</string>
@@ -798,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Đang bật – Dựa trên khuôn mặt"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Xong"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Áp dụng"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Tắt thông báo"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Im lặng"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Mặc định"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Tự động"</string>
@@ -909,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Dùng tính năng chia đôi màn hình với ứng dụng ở bên phải"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Dùng tính năng chia đôi màn hình với ứng dụng ở bên trái"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Dùng chế độ toàn màn hình"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Sử dụng chế độ cửa sổ trên máy tính"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Chuyển sang ứng dụng bên phải hoặc ở dưới khi đang chia đôi màn hình"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Chuyển sang ứng dụng bên trái hoặc ở trên khi đang chia đôi màn hình"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Trong chế độ chia đôi màn hình: thay một ứng dụng bằng ứng dụng khác"</string>
@@ -1006,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Thêm vào vị trí <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"Vị trí không hợp lệ."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Vị trí <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"Đã thêm ô"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"Đã thêm thẻ thông tin"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"Đã xóa thẻ thông tin"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Trình chỉnh sửa cài đặt nhanh."</string>
@@ -1208,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Ẩn tính năng điều khiển này cho <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Không thể ẩn phiên phát nội dung nghe nhìn hiện tại."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Ẩn"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Tiếp tục"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Cài đặt"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"Đang phát <xliff:g id="SONG_NAME">%1$s</xliff:g> của <xliff:g id="ARTIST_NAME">%2$s</xliff:g> trên <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

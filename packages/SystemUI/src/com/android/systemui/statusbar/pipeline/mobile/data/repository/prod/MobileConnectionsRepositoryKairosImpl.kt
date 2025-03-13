@@ -131,6 +131,8 @@ constructor(
     private val mobileRepoFactory: Lazy<ConnectionRepoFactory>,
 ) : MobileConnectionsRepositoryKairos, Dumpable, KairosBuilder by kairosBuilder() {
 
+    private var dumpCache: DumpCache? = null
+
     init {
         dumpManager.registerNormalDumpable("MobileConnectionsRepositoryKairos", this)
     }
@@ -253,6 +255,7 @@ constructor(
                 .asIncremental()
                 .mapValues { (subId, sub) -> mobileRepoFactory.get().create(subId) }
                 .applyLatestSpecForKey()
+                .apply { observe { dumpCache = DumpCache(it) } }
         }
 
     private val telephonyManagerState: State<Pair<Int?, Set<Int>>> = buildState {
@@ -479,10 +482,6 @@ constructor(
             profileClass = profileClass,
         )
 
-    private var dumpCache: DumpCache? = null
-
-    private data class DumpCache(val repos: Map<Int, FullMobileConnectionRepositoryKairos>)
-
     override fun dump(pw: PrintWriter, args: Array<String>) {
         val cache = dumpCache ?: return
         val ipw = IndentingPrintWriter(pw, " ")
@@ -494,9 +493,15 @@ constructor(
 
         ipw.println("Connections (${cache.repos.size} total):")
         ipw.increaseIndent()
-        cache.repos.values.forEach { it.dump(ipw) }
+        cache.repos.values.forEach {
+            if (it is FullMobileConnectionRepositoryKairos) {
+                it.dump(ipw)
+            }
+        }
         ipw.decreaseIndent()
     }
+
+    private data class DumpCache(val repos: Map<Int, MobileConnectionRepositoryKairos>)
 
     fun interface ConnectionRepoFactory {
         fun create(subId: Int): BuildSpec<MobileConnectionRepositoryKairos>

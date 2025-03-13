@@ -1747,7 +1747,15 @@ public class NotificationManager {
     public Map<String, AutomaticZenRule> getAutomaticZenRules() {
         INotificationManager service = service();
         try {
-            return service.getAutomaticZenRules();
+            Map<String, AutomaticZenRule> result = new HashMap<>();
+            ParceledListSlice<AutomaticZenRule.AzrWithId> parceledRules =
+                    service.getAutomaticZenRules();
+            if (parceledRules != null) {
+                for (AutomaticZenRule.AzrWithId rule : parceledRules.getList()) {
+                    result.put(rule.mId, rule.mRule);
+                }
+            }
+            return result;
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

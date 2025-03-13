@@ -276,6 +276,7 @@ import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STR
 import static com.android.server.SystemTimeZone.TIME_ZONE_CONFIDENCE_HIGH;
 import static com.android.server.am.ActivityManagerService.STOCK_PM_FLAGS;
 import static com.android.server.devicepolicy.DevicePolicyEngine.DEFAULT_POLICY_SIZE_LIMIT;
+import static com.android.server.devicepolicy.DevicePolicyEngine.SYSTEM_SUPERVISION_ROLE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_MANAGEMENT_MODE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_MANAGEMENT_MODE__MANAGEMENT_MODE__COPE;
 import static com.android.server.devicepolicy.DevicePolicyStatsLog.DEVICE_POLICY_MANAGEMENT_MODE__MANAGEMENT_MODE__DEVICE_OWNER;
@@ -16296,6 +16297,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         return null;
     }
 
+    /**
+     * When multiple admins enforce a policy, this method returns an admin according to this order:
+     * 1. Supervision
+     * 2. DPC
+     *
+     * Otherwise, it returns any other admin.
+     */
     private android.app.admin.EnforcingAdmin getEnforcingAdminInternal(int userId,
             String identifier) {
         Objects.requireNonNull(identifier);
@@ -16304,16 +16312,22 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         if (admins.isEmpty()) {
             return null;
         }
-
-        final EnforcingAdmin admin;
         if (admins.size() == 1) {
-            admin = admins.iterator().next();
-        } else {
-            Optional<EnforcingAdmin> dpc = admins.stream()
-                    .filter(a -> a.hasAuthority(EnforcingAdmin.DPC_AUTHORITY)).findFirst();
-            admin = dpc.orElseGet(() -> admins.stream().findFirst().get());
+            return admins.iterator().next().getParcelableAdmin();
         }
-        return admin == null ? null : admin.getParcelableAdmin();
+        Optional<EnforcingAdmin> supervision = admins.stream()
+                .filter(a -> a.hasAuthority(
+                        EnforcingAdmin.getRoleAuthorityOf(SYSTEM_SUPERVISION_ROLE)))
+                .findFirst();
+        if (supervision.isPresent()) {
+            return supervision.get().getParcelableAdmin();
+        }
+        Optional<EnforcingAdmin> dpc = admins.stream()
+                .filter(a -> a.hasAuthority(EnforcingAdmin.DPC_AUTHORITY)).findFirst();
+        if (dpc.isPresent()) {
+            return dpc.get().getParcelableAdmin();
+        }
+        return admins.iterator().next().getParcelableAdmin();
     }
 
     private <V> Set<EnforcingAdmin> getEnforcingAdminsForIdentifier(int userId, String identifier) {

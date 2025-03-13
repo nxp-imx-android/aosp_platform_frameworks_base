@@ -423,20 +423,16 @@
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"সারাউন্ডিং"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"বাঁদিক"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"ডানদিক"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"সারাউন্ডিং"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"লেফ্ট সারাউন্ডিং"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"রাইট সারাউন্ডিং"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"বাঁদিক ও ডানদিকের আলাদা করা কন্ট্রোল বড় করুন"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"ইউনিফায়েড কন্ট্রোল আড়াল করুন"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"সারাউন্ডিং মিউট করুন"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"সারাউন্ডিং আনমিউট করুন"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"টুল"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"লাইভ ক্যাপশন"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"সেটিংস"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"মনে রাখবেন"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"ডিভাইসের মাইক্রোফোন আনব্লক করতে চান?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"ডিভাইসের ক্যামেরা আনব্লক করতে চান?"</string>
@@ -798,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"চালু আছে - মুখের হিসেবে"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"হয়ে গেছে"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"প্রয়োগ করুন"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"বিজ্ঞপ্তি বন্ধ করুন"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"সাইলেন্ট"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ডিফল্ট"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"অটোমেটিক"</string>
@@ -909,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ডানদিকে বর্তমান অ্যাপে স্প্লিট স্ক্রিন ব্যবহার করুন"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"বাঁদিকে বর্তমান অ্যাপে স্প্লিট স্ক্রিন ব্যবহার করুন"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ফুল-স্ক্রিন মোড ব্যবহার করুন"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"ডেস্কটপ উইন্ডোয়িং ব্যবহার করুন"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"স্প্লিট স্ক্রিন ব্যবহার করার সময় ডানদিকের বা নিচের অ্যাপে পাল্টে নিন"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"স্প্লিট স্ক্রিন ব্যবহার করার সময় বাঁদিকের বা উপরের অ্যাপে পাল্টে নিন"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"\'স্প্লিট স্ক্রিন\' থাকাকালীন: একটি অ্যাপ থেকে অন্যটিতে পাল্টান"</string>
@@ -1006,8 +1002,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"অবস্থান <xliff:g id="POSITION">%1$d</xliff:g>-এ যোগ করুন"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"পজিশন সঠিক নয়।"</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"অবস্থান <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"টাইল আগেই যোগ করা হয়েছে"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"টাইল যোগ করা হয়েছে"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"টাইল সরানো হয়েছে"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"দ্রুত সেটিংস সম্পাদক৷"</string>
@@ -1208,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"<xliff:g id="APP_NAME">%1$s</xliff:g>-এর মিডিয়া কন্ট্রোল লুকিয়ে রাখতে চান?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"বর্তমান মিডিয়া সেশন লুকিয়ে রাখা যাবে না।"</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"লুকান"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"আবার চালু করুন"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"সেটিংস"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="ARTIST_NAME">%2$s</xliff:g>-এর <xliff:g id="SONG_NAME">%1$s</xliff:g> গানটি <xliff:g id="APP_LABEL">%3$s</xliff:g> অ্যাপে চলছে"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="TOTAL_TIME">%2$s</xliff:g>টির মধ্যে <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>টি"</string>

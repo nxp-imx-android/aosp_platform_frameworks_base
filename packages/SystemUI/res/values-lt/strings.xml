@@ -794,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Įjungta – pagal veidą"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Atlikta"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Taikyti"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Išjungti pranešimus"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Tylūs"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Numatytasis"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatinis"</string>
@@ -905,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Naudokite išskaidyto ekrano režimą su programa dešinėje"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Naudokite išskaidyto ekrano režimą su programa kairėje"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Naudoti viso ekrano režimą"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Įjungti darbalaukio pateikimo lange režimą"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Perjunkite į programą dešinėje arba apačioje išskaidyto ekrano režimu"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Perjunkite į programą kairėje arba viršuje išskaidyto ekrano režimu"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Išskaidyto ekrano režimu: pakeisti iš vienos programos į kitą"</string>
@@ -1203,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Slėpti šį programos „<xliff:g id="APP_NAME">%1$s</xliff:g>“ medijos valdiklį?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Dabartinio medijos seanso negalima paslėpti."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Slėpti"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Tęsti"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Nustatymai"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="ARTIST_NAME">%2$s</xliff:g> – „<xliff:g id="SONG_NAME">%1$s</xliff:g>“ leidžiama iš „<xliff:g id="APP_LABEL">%3$s</xliff:g>“"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> iš <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

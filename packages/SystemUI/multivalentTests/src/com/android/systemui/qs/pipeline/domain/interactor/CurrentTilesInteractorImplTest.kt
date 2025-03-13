@@ -49,7 +49,7 @@ import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
 import com.android.systemui.qs.pipeline.shared.logging.qsLogger
 import com.android.systemui.qs.qsTileFactory
-import com.android.systemui.qs.tiles.di.newQSTileFactory
+import com.android.systemui.qs.tiles.base.ui.model.newQSTileFactory
 import com.android.systemui.qs.toProto
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.testKosmos

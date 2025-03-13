@@ -1821,9 +1821,9 @@
     <string name="accessibility_gesture_3finger_instructional_text" msgid="1124458279366968154">"Funkcija se bo odprla, ko boste naslednjič uporabili to bližnjico. S tremi prsti povlecite navzgor z dna zaslona in hitro spustite."</string>
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Povečava"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Želite preklopiti na mikrofon telefona?"</string>
-    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Želite preklopiti na mikrofon za slušni aparat?"</string>
+    <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Želite preklopiti na mikrofon slušnega aparata?"</string>
     <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Za boljši zvok ali pri skoraj prazni bateriji slušnega aparata. S tem preklopite mikrofon samo med klicem."</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Mikrofon za slušni aparat lahko uporabljate za prostoročno klicanje. S tem preklopite mikrofon samo med klicem."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Mikrofon slušnega aparata lahko uporabljate za prostoročno klicanje. S tem preklopite mikrofon samo med klicem."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Preklopi"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Nastavitve"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"Preklapljanje na uporabnika <xliff:g id="NAME">%1$s</xliff:g> …"</string>
@@ -2275,18 +2275,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Drsenje"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Začasna zaustavitev"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Položaj"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Pomik gor"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Pomik dol"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Pomik levo"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Pomik desno"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Izhod iz načina pomikanja"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Podokno za pomikanje"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"Paket <xliff:g id="PACKAGE_NAME">%1$s</xliff:g> je bil dodan v segment OMEJENO"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"je poslal(-a) sliko"</string>

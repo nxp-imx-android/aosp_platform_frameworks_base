@@ -145,7 +145,14 @@ internal class MuxDeferredNode<W, K, V>(
                 val conn = branchNode.upstream
                 severed.add(conn)
                 conn.removeDownstream(downstream = branchNode.schedulable)
-                depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                if (conn.depthTracker.snapshotIsDirect) {
+                    depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                } else {
+                    depthTracker.removeIndirectUpstream(conn.depthTracker.snapshotIndirectDepth)
+                    depthTracker.updateIndirectRoots(
+                        removals = conn.depthTracker.snapshotIndirectRoots
+                    )
+                }
             }
         }
 
@@ -156,7 +163,14 @@ internal class MuxDeferredNode<W, K, V>(
                 val conn = branchNode.upstream
                 severed.add(conn)
                 conn.removeDownstream(downstream = branchNode.schedulable)
-                depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                if (conn.depthTracker.snapshotIsDirect) {
+                    depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                } else {
+                    depthTracker.removeIndirectUpstream(conn.depthTracker.snapshotIndirectDepth)
+                    depthTracker.updateIndirectRoots(
+                        removals = conn.depthTracker.snapshotIndirectRoots
+                    )
+                }
             }
 
             // add new
@@ -343,13 +357,8 @@ private class MuxDeferredActivator<W, K, V>(
                 val (patchesConn, needsEval) =
                     getPatches(evalScope).activate(evalScope, downstream = muxNode.schedulable)
                         ?: run {
-                            // Turns out we can't connect to patches, so update our depth and
-                            // propagate
-                            if (muxNode.depthTracker.setIsIndirectRoot(false)) {
-                                // TODO: schedules might not be necessary now that we're not
-                                // parallel?
-                                muxNode.depthTracker.schedule(evalScope.scheduler, muxNode)
-                            }
+                            // Turns out we can't connect to patches, so update our depth
+                            muxNode.depthTracker.setIsIndirectRoot(false)
                             return
                         }
                 muxNode.patches = patchesConn

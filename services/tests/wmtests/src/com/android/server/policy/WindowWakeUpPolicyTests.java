@@ -145,8 +145,8 @@ public final class WindowWakeUpPolicyTests {
         // Verify the policy wake up call succeeds because of the call on the delegate, and not
         // because of a PowerManager wake up.
         assertThat(mPolicy.wakeUpFromMotion(
-                mDefaultDisplay.getDisplayId(), 200, SOURCE_TOUCHSCREEN, true)).isTrue();
-        verify(mInputWakeUpDelegate).wakeUpFromMotion(200, SOURCE_TOUCHSCREEN, true);
+                mDefaultDisplay.getDisplayId(), 200, SOURCE_TOUCHSCREEN, true, false)).isTrue();
+        verify(mInputWakeUpDelegate).wakeUpFromMotion(200, SOURCE_TOUCHSCREEN, true, false);
         verifyNoPowerManagerWakeUp();
 
         setDelegatedMotionWakeUpResult(false);
@@ -154,8 +154,8 @@ public final class WindowWakeUpPolicyTests {
         // Verify the policy wake up call succeeds because of the PowerManager wake up, since the
         // delegate would not handle the wake up request.
         assertThat(mPolicy.wakeUpFromMotion(
-                mDefaultDisplay.getDisplayId(), 300, SOURCE_ROTARY_ENCODER, false)).isTrue();
-        verify(mInputWakeUpDelegate).wakeUpFromMotion(300, SOURCE_ROTARY_ENCODER, false);
+                mDefaultDisplay.getDisplayId(), 300, SOURCE_ROTARY_ENCODER, false, false)).isTrue();
+        verify(mInputWakeUpDelegate).wakeUpFromMotion(300, SOURCE_ROTARY_ENCODER, false, false);
         verify(mPowerManager).wakeUp(300, WAKE_REASON_WAKE_MOTION, "android.policy:MOTION");
     }
 
@@ -214,8 +214,9 @@ public final class WindowWakeUpPolicyTests {
 
         // Check that the wake up does not happen because the theater mode policy check fails.
         assertThat(mPolicy.wakeUpFromMotion(
-                mDefaultDisplay.getDisplayId(), 200, SOURCE_TOUCHSCREEN, true)).isFalse();
-        verify(mInputWakeUpDelegate, never()).wakeUpFromMotion(anyLong(), anyInt(), anyBoolean());
+                mDefaultDisplay.getDisplayId(), 200, SOURCE_TOUCHSCREEN, true, false)).isFalse();
+        verify(mInputWakeUpDelegate, never())
+                .wakeUpFromMotion(anyLong(), anyInt(), anyBoolean(), anyBoolean());
     }
 
     @Test
@@ -227,7 +228,8 @@ public final class WindowWakeUpPolicyTests {
         setBooleanRes(config_allowTheaterModeWakeFromMotion, false);
         mPolicy = new WindowWakeUpPolicy(mContextSpy, mClock);
 
-        mPolicy.wakeUpFromMotion(mDefaultDisplay.getDisplayId(), 200L, SOURCE_TOUCHSCREEN, true);
+        mPolicy.wakeUpFromMotion(
+                mDefaultDisplay.getDisplayId(), 200L, SOURCE_TOUCHSCREEN, true, false);
 
         verify(mPowerManager).wakeUp(200L, WAKE_REASON_WAKE_MOTION, "android.policy:MOTION");
     }
@@ -237,7 +239,7 @@ public final class WindowWakeUpPolicyTests {
     public void testWakeUpFromMotion() {
         runPowerManagerUpChecks(
                 () -> mPolicy.wakeUpFromMotion(mDefaultDisplay.getDisplayId(),
-                        mClock.uptimeMillis(), SOURCE_TOUCHSCREEN, true),
+                        mClock.uptimeMillis(), SOURCE_TOUCHSCREEN, true, false),
                 config_allowTheaterModeWakeFromMotion,
                 WAKE_REASON_WAKE_MOTION,
                 "android.policy:MOTION");
@@ -251,7 +253,8 @@ public final class WindowWakeUpPolicyTests {
         mPolicy = new WindowWakeUpPolicy(mContextSpy, mClock);
 
         boolean displayWokeUp = mPolicy.wakeUpFromMotion(
-                displayId, mClock.uptimeMillis(), SOURCE_TOUCHSCREEN, /* isDown= */ true);
+                displayId, mClock.uptimeMillis(), SOURCE_TOUCHSCREEN, /* isDown= */ true,
+                /* deviceGoingToSleep= */ false);
 
         // Verify that display is woken up
         assertThat(displayWokeUp).isTrue();
@@ -267,7 +270,8 @@ public final class WindowWakeUpPolicyTests {
         mPolicy = new WindowWakeUpPolicy(mContextSpy, mClock);
 
         boolean displayWokeUp = mPolicy.wakeUpFromMotion(
-                displayId, mClock.uptimeMillis(), SOURCE_TOUCHSCREEN, /* isDown= */ true);
+                displayId, mClock.uptimeMillis(), SOURCE_TOUCHSCREEN, /* isDown= */ true,
+                /* deviceGoingToSleep= */ false);
 
         // Verify that power is woken up and display isn't woken up individually
         assertThat(displayWokeUp).isTrue();
@@ -442,7 +446,7 @@ public final class WindowWakeUpPolicyTests {
     }
 
     private void setDelegatedMotionWakeUpResult(boolean result) {
-        when(mInputWakeUpDelegate.wakeUpFromMotion(anyLong(), anyInt(), anyBoolean()))
+        when(mInputWakeUpDelegate.wakeUpFromMotion(anyLong(), anyInt(), anyBoolean(), anyBoolean()))
                 .thenReturn(result);
     }
 

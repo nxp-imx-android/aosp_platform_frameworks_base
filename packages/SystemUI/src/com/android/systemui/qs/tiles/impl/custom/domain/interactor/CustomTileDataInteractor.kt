@@ -20,14 +20,14 @@ import android.os.UserHandle
 import android.service.quicksettings.Tile
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.qs.pipeline.shared.TileSpec
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
-import com.android.systemui.qs.tiles.base.interactor.QSTileDataInteractor
-import com.android.systemui.qs.tiles.base.logging.QSTileLogger
-import com.android.systemui.qs.tiles.impl.custom.data.entity.CustomTileDefaults
+import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.shared.logging.QSTileLogger
+import com.android.systemui.qs.tiles.base.shared.model.QSTileScope
+import com.android.systemui.qs.tiles.impl.custom.data.model.CustomTileDefaults
 import com.android.systemui.qs.tiles.impl.custom.data.repository.CustomTileDefaultsRepository
 import com.android.systemui.qs.tiles.impl.custom.data.repository.CustomTilePackageUpdatesRepository
-import com.android.systemui.qs.tiles.impl.custom.domain.entity.CustomTileDataModel
-import com.android.systemui.qs.tiles.impl.di.QSTileScope
+import com.android.systemui.qs.tiles.impl.custom.domain.model.CustomTileDataModel
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject

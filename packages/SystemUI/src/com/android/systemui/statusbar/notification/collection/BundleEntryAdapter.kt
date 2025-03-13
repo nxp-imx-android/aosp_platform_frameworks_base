@@ -22,6 +22,7 @@ import android.os.Build
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.android.systemui.statusbar.notification.icon.IconPack
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -113,12 +114,21 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
         return false
     }
 
+    override fun getPeopleNotificationType(): Int {
+        return TYPE_NON_PERSON
+    }
+
     override fun isPromotedOngoing(): Boolean {
         return false
     }
 
     override fun isFullScreenCapable(): Boolean {
         return false
+    }
+
+    override fun onDragSuccess() {
+        // do nothing. these should not be draggable
+        Log.wtf(TAG, "onDragSuccess() called")
     }
 
     override fun onNotificationBubbleIconClicked() {
@@ -129,6 +139,16 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
     override fun onNotificationActionClicked() {
         // do nothing. these have no actions
         Log.wtf(TAG, "onNotificationActionClicked() called")
+    }
+
+    override fun getDismissState(): NotificationEntry.DismissState {
+        // TODO(b/394483200): setDismissState is only called in NotifCollection so it does not
+        // work on bundles yet
+        return NotificationEntry.DismissState.NOT_DISMISSED
+    }
+
+    override fun onEntryClicked(row: ExpandableNotificationRow) {
+        // TODO(b/396446620): should anything happen when you click on a bundle?
     }
 }
 

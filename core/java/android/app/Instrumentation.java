@@ -101,14 +101,20 @@ public class Instrumentation {
      */
     public static final String REPORT_KEY_STREAMRESULT = "stream";
 
-    static final String TAG = "Instrumentation";
+    /**
+     * @hide
+     */
+    public static final String TAG = "Instrumentation";
 
     private static final long CONNECT_TIMEOUT_MILLIS = 60_000;
 
     private static final boolean VERBOSE = Log.isLoggable(TAG, Log.VERBOSE);
 
-    // If set, will print the stack trace for activity starts within the process
-    static final boolean DEBUG_START_ACTIVITY = Build.IS_DEBUGGABLE &&
+    /**
+     * If set, will print the stack trace for activity starts within the process
+     * @hide
+     */
+    public static final boolean DEBUG_START_ACTIVITY = Build.IS_DEBUGGABLE &&
             SystemProperties.getBoolean("persist.wm.debug.start_activity", false);
     static final boolean DEBUG_FINISH_ACTIVITY = Build.IS_DEBUGGABLE &&
             SystemProperties.getBoolean("persist.wm.debug.finish_activity", false);

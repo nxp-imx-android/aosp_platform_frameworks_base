@@ -24,6 +24,7 @@ import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
@@ -151,5 +152,11 @@ class BundleEntryAdapterTest : SysuiTestCase() {
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun canShowFullScreen() {
         assertThat(underTest.isFullScreenCapable()).isFalse()
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getPeopleNotificationType() {
+        assertThat(underTest.getPeopleNotificationType()).isEqualTo(TYPE_NON_PERSON)
     }
 }

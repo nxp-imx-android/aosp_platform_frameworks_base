@@ -518,7 +518,6 @@ public class GnssNative {
         if (!Flags.gnssAssistanceInterfaceJni()) {
             return;
         }
-        Preconditions.checkState(!mRegistered);
         Preconditions.checkState(mGnssAssistanceCallbacks == null);
         mGnssAssistanceCallbacks = Objects.requireNonNull(callbacks);
     }

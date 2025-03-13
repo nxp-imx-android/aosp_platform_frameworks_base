@@ -24,7 +24,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.reduceBrightColorsController
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.reducebrightness.domain.model.ReduceBrightColorsTileModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat

@@ -1966,8 +1966,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"અનપિન કરતા પહેલાં અનલૉક પૅટર્ન માટે પૂછો"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"અનપિન કરતાં પહેલાં પાસવર્ડ માટે પૂછો"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"તમારા ઍડમિન દ્વારા ઇન્સ્ટૉલ કરવામાં આવ્યું છે.\nઆપેલી પરવાનગીઓ જોવા માટે સેટિંગ પર જાઓ"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"તમારા ઍડમિન દ્વારા અપડેટ કરવામાં આવ્યું છે.\nઆપેલી પરવાનગીઓ જોવા માટે સેટિંગ પર જાઓ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"તમારા વ્યવસ્થાપક દ્વારા કાઢી નાખવામાં આવેલ છે"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ઓકે"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"બૅટરી સેવર ઘેરી થીમની સુવિધા ચાલુ કરે છે અને બૅકગ્રાઉન્ડ પ્રવૃત્તિ, અમુક વિઝ્યુઅલ ઇફેક્ટ, અમુક સુવિધાઓ અને કેટલાક નેટવર્ક કનેક્શન મર્યાદિત કે બંધ કરે છે."</string>

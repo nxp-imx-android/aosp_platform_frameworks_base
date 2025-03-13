@@ -112,6 +112,16 @@ interface NestedDraggable {
 
     interface Controller {
         /**
+         * Whether this controller is ready to drag. [onDrag] will be called only if this returns
+         * `true`, and any drag event will be ignored until then.
+         *
+         * This can for instance be used to wait for the content we are dragging to to be composed
+         * before actually dragging, reducing perceivable jank at the beginning of a drag.
+         */
+        val isReadyToDrag: Boolean
+            get() = true
+
+        /**
          * Whether drags that were started from nested scrolls should be automatically
          * [stopped][onDragStopped] as soon as they don't consume the entire `delta` passed to
          * [onDrag].
@@ -274,6 +284,9 @@ private class NestedDraggableNode(
     /** The pointers currently down, in order of which they were done and mapping to their type. */
     private val pointersDown = linkedMapOf<PointerId, PointerType>()
 
+    /** Whether the next drag event should be ignored. */
+    private var ignoreNextDrag = false
+
     init {
         delegate(nestedScrollModifierNode(this, nestedScrollDispatcher))
     }
@@ -426,11 +439,29 @@ private class NestedDraggableNode(
         velocityTracker: VelocityTracker,
     ) {
         velocityTracker.addPointerInputChange(change)
+        if (shouldIgnoreDrag(controller)) return
 
         scrollWithOverscroll(delta.toOffset()) { deltaFromOverscroll ->
             scrollWithNestedScroll(deltaFromOverscroll) { deltaFromNestedScroll ->
                 controller.onDrag(deltaFromNestedScroll.toFloat()).toOffset()
             }
+        }
+    }
+
+    private fun shouldIgnoreDrag(controller: NestedDraggable.Controller): Boolean {
+        return when {
+            !controller.isReadyToDrag -> {
+                // The controller is not ready yet, so we are waiting for an expensive frame to be
+                // composed. We should ignore this drag and the next one, given that the first delta
+                // after an expensive frame will be large.
+                ignoreNextDrag = true
+                true
+            }
+            ignoreNextDrag -> {
+                ignoreNextDrag = false
+                true
+            }
+            else -> false
         }
     }
 
@@ -617,6 +648,8 @@ private class NestedDraggableNode(
     }
 
     private fun scrollWithOverscroll(controller: NestedScrollController, offset: Offset): Offset {
+        if (shouldIgnoreDrag(controller.controller)) return offset
+
         return scrollWithOverscroll(offset) { delta ->
             val available = delta.toFloat()
             val consumed = controller.controller.onDrag(available)

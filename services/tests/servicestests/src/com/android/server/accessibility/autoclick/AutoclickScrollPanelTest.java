@@ -21,8 +21,12 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.never;
 
 import android.content.Context;
 import android.testing.AndroidTestingRunner;
@@ -125,37 +129,107 @@ public class AutoclickScrollPanelTest {
     }
 
     @Test
-    public void directionButtons_onHover_callsHandleScroll() {
-        // Test up button.
-        triggerHoverEvent(mUpButton);
-        verify(mMockScrollPanelController).handleScroll(AutoclickScrollPanel.DIRECTION_UP);
+    public void directionButtons_hoverEvents_callsHoverButtonChange() {
+        // Test hover enter on direction button.
+        triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_ENTER);
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_UP), eq(/* hovered= */ true));
 
-        // Test down button.
-        triggerHoverEvent(mDownButton);
-        verify(mMockScrollPanelController).handleScroll(AutoclickScrollPanel.DIRECTION_DOWN);
+        // Test hover move.
+        reset(mMockScrollPanelController);
+        triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_MOVE);
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_UP), eq(/* hovered= */ true));
 
-        // Test left button.
-        triggerHoverEvent(mLeftButton);
-        verify(mMockScrollPanelController).handleScroll(AutoclickScrollPanel.DIRECTION_LEFT);
-
-        // Test right button.
-        triggerHoverEvent(mRightButton);
-        verify(mMockScrollPanelController).handleScroll(AutoclickScrollPanel.DIRECTION_RIGHT);
+        // Test hover exit.
+        reset(mMockScrollPanelController);
+        triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_EXIT);
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_UP), eq(/* hovered= */ false));
     }
 
     @Test
-    public void exitButton_onHover_callsExitScrollMode() {
-        // Test exit button.
-        triggerHoverEvent(mExitButton);
-        verify(mMockScrollPanelController).exitScrollMode();
+    public void exitButton_hoverEvents_callsHoverButtonChange() {
+        // Test hover enter on exit button.
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_ENTER);
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_EXIT), eq(/* hovered= */ true));
+
+        // Test hover exit - should call the hover change method with false.
+        reset(mMockScrollPanelController);
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_EXIT);
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_EXIT), eq(/* hovered= */ false));
+
+        // Test exit button hover move - should be ignored.
+        reset(mMockScrollPanelController);
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_MOVE);
+        verify(mMockScrollPanelController, never()).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_EXIT), anyBoolean());
+    }
+
+    @Test
+    public void hoverOnButtonSequence_handledCorrectly() {
+        // Test a realistic sequence of events.
+        // Case 1. Hover enter on up button, then hover move with in up button twice.
+        reset(mMockScrollPanelController);
+        triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_ENTER);
+        triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_MOVE);
+        triggerHoverEvent(mUpButton, MotionEvent.ACTION_HOVER_MOVE);
+        verify(mMockScrollPanelController, times(3)).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_UP), eq(true));
+
+        // Case 2. Move from left button to exit button.
+        reset(mMockScrollPanelController);
+        triggerHoverEvent(mLeftButton, MotionEvent.ACTION_HOVER_ENTER);
+        triggerHoverEvent(mLeftButton, MotionEvent.ACTION_HOVER_MOVE);
+        triggerHoverEvent(mLeftButton, MotionEvent.ACTION_HOVER_EXIT);
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_MOVE);
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_ENTER);
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_EXIT);
+
+        // Verify left button events - 2 'true' calls (enter+move) and 1 'false' call (exit).
+        verify(mMockScrollPanelController, times(2)).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_LEFT), eq(/* hovered= */ true));
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_LEFT), eq(/* hovered= */ false));
+        // Verify exit button events - hover_move is ignored so 1 'true' call (enter) and 1
+        // 'false' call (exit).
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_EXIT), eq(/* hovered= */ true));
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_EXIT), eq(/* hovered= */ false));
+
+        // Case 3. Quick transitions between buttons: left → right → down → exit
+        reset(mMockScrollPanelController);
+        triggerHoverEvent(mLeftButton, MotionEvent.ACTION_HOVER_EXIT);
+        triggerHoverEvent(mRightButton, MotionEvent.ACTION_HOVER_ENTER);
+        triggerHoverEvent(mRightButton, MotionEvent.ACTION_HOVER_EXIT);
+        triggerHoverEvent(mDownButton, MotionEvent.ACTION_HOVER_ENTER);
+        triggerHoverEvent(mDownButton, MotionEvent.ACTION_HOVER_EXIT);
+        triggerHoverEvent(mExitButton, MotionEvent.ACTION_HOVER_ENTER);
+
+        // Verify all hover enter/exit events were properly handled
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_LEFT), eq(/* hovered= */ false));
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_RIGHT), eq(/* hovered= */ true));
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_RIGHT), eq(/* hovered= */ false));
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_DOWN), eq(/* hovered= */ true));
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_DOWN), eq(/* hovered= */ false));
+        verify(mMockScrollPanelController).onHoverButtonChange(
+                eq(AutoclickScrollPanel.DIRECTION_EXIT), eq(/* hovered= */ true));
     }
 
     // Helper method to simulate a hover event on a view.
-    private void triggerHoverEvent(View view) {
+    private void triggerHoverEvent(View view, int action) {
         MotionEvent event = MotionEvent.obtain(
                 /* downTime= */ 0,
                 /* eventTime= */ 0,
-                /* action= */ MotionEvent.ACTION_HOVER_ENTER,
+                /* action= */ action,
                 /* x= */ 0,
                 /* y= */ 0,
                 /* metaState= */ 0);

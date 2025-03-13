@@ -50,15 +50,6 @@ object ActivatableNotificationViewBinder {
                 view.registerListenersWhileAttached(touchHandler)
             }
         }
-        view.repeatWhenAttached {
-            repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.isBlurSupported.collect { supported ->
-                        view.setIsBlurSupported(supported)
-                    }
-                }
-            }
-        }
     }
 
     private suspend fun ActivatableNotificationView.registerListenersWhileAttached(

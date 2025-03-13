@@ -29,10 +29,10 @@ import com.android.systemui.animation.LaunchableView
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.qs.shared.QSSettingsPackageRepository
-import com.android.systemui.qs.tiles.base.actions.FakeQSTileIntentUserInputHandler
-import com.android.systemui.qs.tiles.base.actions.intentInputs
-import com.android.systemui.qs.tiles.base.interactor.QSTileInputTestKtx
-import com.android.systemui.qs.tiles.base.interactor.QSTileInputTestKtx.click
+import com.android.systemui.qs.tiles.base.domain.actions.FakeQSTileIntentUserInputHandler
+import com.android.systemui.qs.tiles.base.domain.actions.intentInputs
+import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
+import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx.click
 import com.android.systemui.qs.tiles.impl.fontscaling.domain.model.FontScalingTileModel
 import com.android.systemui.statusbar.phone.FakeKeyguardStateController
 import com.android.systemui.statusbar.phone.SystemUIDialog

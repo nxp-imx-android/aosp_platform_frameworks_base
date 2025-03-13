@@ -48,14 +48,15 @@
             android:clipChildren="false"
             >
 
-            <include layout="@layout/notification_template_part_line1"/>
+            <include layout="@layout/notification_2025_title"/>
 
             <com.android.internal.widget.MessagingLinearLayout
                 android:id="@+id/notification_messaging"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/notification_2025_margin"
                 android:clipChildren="false"
-                android:spacing="@dimen/notification_messaging_spacing" />
+                android:spacing="@dimen/notification_2025_messaging_spacing" />
         </com.android.internal.widget.RemeasuringLinearLayout>
 
         <include layout="@layout/notification_template_smart_reply_container"

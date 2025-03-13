@@ -794,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ON - 顔ベース"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完了"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"適用"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"通知を OFF にする"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"サイレント"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"デフォルト"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"自動"</string>
@@ -905,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"分割画面の使用（アプリを右側に表示）"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"分割画面の使用（アプリを左側に表示）"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"全画面表示に切り替える"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"デスクトップ ウィンドウを使用する"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"分割画面の使用時に右側または下部のアプリに切り替える"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"分割画面の使用時に左側または上部のアプリに切り替える"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"分割画面中: アプリを順に置換する"</string>
@@ -1203,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"<xliff:g id="APP_NAME">%1$s</xliff:g> のこのコントロールを非表示にしますか？"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"現在のメディア セッションは非表示にできません。"</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"非表示"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"再開"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"設定"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="SONG_NAME">%1$s</xliff:g>（アーティスト名: <xliff:g id="ARTIST_NAME">%2$s</xliff:g>）が <xliff:g id="APP_LABEL">%3$s</xliff:g> で再生中"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g>/<xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

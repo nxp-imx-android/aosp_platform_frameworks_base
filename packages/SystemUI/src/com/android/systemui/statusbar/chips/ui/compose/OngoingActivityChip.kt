@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
@@ -84,11 +85,21 @@ fun OngoingActivityChip(
         shape =
             RoundedCornerShape(dimensionResource(id = R.dimen.ongoing_activity_chip_corner_radius)),
         modifier =
-            modifier.height(dimensionResource(R.dimen.ongoing_appops_chip_height)).semantics {
-                if (contentDescription != null) {
-                    this.contentDescription = contentDescription
+            modifier
+                .height(dimensionResource(R.dimen.ongoing_appops_chip_height))
+                .semantics {
+                    if (contentDescription != null) {
+                        this.contentDescription = contentDescription
+                    }
                 }
-            },
+                .graphicsLayer(
+                    alpha =
+                        if (model.transitionManager?.hideChipForTransition == true) {
+                            0f
+                        } else {
+                            1f
+                        }
+                ),
         borderStroke = borderStroke,
         onClick = onClick,
         useModifierBasedImplementation = StatusBarChipsReturnAnimations.isEnabled,

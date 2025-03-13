@@ -1604,12 +1604,15 @@ public class NotificationContentView extends FrameLayout implements Notification
         }
 
         if (shouldShowBubbleButton(entry)) {
+            boolean isBubble = NotificationBundleUi.isEnabled()
+                    ? mContainingNotification.getEntryAdapter().isBubbleCapable()
+                    : entry.isBubble();
             // explicitly resolve drawable resource using SystemUI's theme
-            Drawable d = mContext.getDrawable(entry.isBubble()
+            Drawable d = mContext.getDrawable(isBubble
                     ? com.android.wm.shell.R.drawable.bubble_ic_stop_bubble
                     : com.android.wm.shell.R.drawable.bubble_ic_create_bubble);
 
-            String contentDescription = mContext.getResources().getString(entry.isBubble()
+            String contentDescription = mContext.getResources().getString(isBubble
                     ? R.string.notification_conversation_unbubble
                     : R.string.notification_conversation_bubble);
 
@@ -1652,12 +1655,18 @@ public class NotificationContentView extends FrameLayout implements Notification
 
     @VisibleForTesting
     boolean shouldShowBubbleButton(NotificationEntry entry) {
-        boolean isPersonWithShortcut =
-                mPeopleIdentifier.getPeopleNotificationType(entry)
-                        >= PeopleNotificationIdentifier.TYPE_FULL_PERSON;
+        int peopleType = NotificationBundleUi.isEnabled()
+                ? mContainingNotification.getEntryAdapter().getPeopleNotificationType()
+                : mPeopleIdentifier.getPeopleNotificationType(entry);
+        Notification.BubbleMetadata bubbleMetadata = NotificationBundleUi.isEnabled()
+                ? mContainingNotification.getEntryAdapter().getSbn().getNotification()
+                        .getBubbleMetadata()
+                : entry.getBubbleMetadata();
+        boolean isPersonWithShortcut = peopleType
+                >= PeopleNotificationIdentifier.TYPE_FULL_PERSON;
         return mBubblesEnabledForUser
                 && isPersonWithShortcut
-                && entry.getBubbleMetadata() != null;
+                && bubbleMetadata != null;
     }
 
     private void applySnoozeAction(View layout) {

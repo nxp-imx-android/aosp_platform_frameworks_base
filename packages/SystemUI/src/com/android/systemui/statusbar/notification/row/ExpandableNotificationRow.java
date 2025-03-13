@@ -22,9 +22,9 @@ import static android.service.notification.NotificationListenerService.REASON_CA
 import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_EXPANDED;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED;
 
+import static com.android.systemui.Flags.notificationRowAccessibilityExpanded;
 import static com.android.systemui.Flags.notificationRowTransparency;
 import static com.android.systemui.Flags.notificationsPinnedHunInShade;
-import static com.android.systemui.Flags.notificationRowAccessibilityExpanded;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
@@ -671,8 +671,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private boolean isConversation() {
-        return mPeopleNotificationIdentifier.getPeopleNotificationType(getEntry())
-                != PeopleNotificationIdentifier.TYPE_NON_PERSON;
+        if (NotificationBundleUi.isEnabled()) {
+            return getEntryAdapter().getPeopleNotificationType()
+                    != PeopleNotificationIdentifier.TYPE_NON_PERSON;
+        } else {
+            return mPeopleNotificationIdentifier.getPeopleNotificationType(getEntryLegacy())
+                    != PeopleNotificationIdentifier.TYPE_NON_PERSON;
+        }
     }
 
     public void onNotificationUpdated() {
@@ -1786,7 +1791,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     /** @return true if the User has dismissed this notif's parent */
     public boolean isParentDismissed() {
-        return getEntry().getDismissState() == PARENT_DISMISSED;
+        if (NotificationBundleUi.isEnabled()) {
+            return getEntryAdapter().getDismissState() == PARENT_DISMISSED;
+        } else {
+            return getEntryLegacy().getDismissState() == PARENT_DISMISSED;
+        }
     }
 
     @Override
@@ -2511,7 +2520,11 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     public void dragAndDropSuccess() {
         if (mOnDragSuccessListener != null) {
-            mOnDragSuccessListener.onDragSuccess(getEntry());
+            if (NotificationBundleUi.isEnabled()) {
+                mOnDragSuccessListener.onDragSuccess(getEntryAdapter());
+            } else {
+                mOnDragSuccessListener.onDragSuccess(getEntryLegacy());
+            }
         }
     }
 
@@ -4412,6 +4425,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
          * @param entry NotificationEntry that succeed to drop on proper target window.
          */
         void onDragSuccess(NotificationEntry entry);
+
+        /**
+         * @param entryAdapter The EntryAdapter that successfully dropped on the proper
+         *            target window
+         */
+        void onDragSuccess(EntryAdapter entryAdapter);
     }
 
     /**
@@ -4684,8 +4703,6 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     protected boolean usesTransparentBackground() {
         // Row background should be opaque when it's displayed as a heads-up notification or
         // displayed on keyguard.
-        // TODO(b/388891313): Account for isBlurSupported when it is initialized and updated
-        // correctly.
-        return  notificationRowTransparency() && !mIsHeadsUp && !mOnKeyguard;
+        return super.usesTransparentBackground() && !mIsHeadsUp && !mOnKeyguard;
     }
 }

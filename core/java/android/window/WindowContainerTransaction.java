@@ -16,6 +16,7 @@
 
 package android.window;
 
+import static android.app.Instrumentation.DEBUG_START_ACTIVITY;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.window.TaskFragmentOperation.OP_TYPE_CLEAR_ADJACENT_TASK_FRAGMENTS;
 import static android.window.TaskFragmentOperation.OP_TYPE_CREATE_TASK_FRAGMENT;
@@ -32,6 +33,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
+import android.app.Instrumentation;
 import android.app.PendingIntent;
 import android.app.WindowConfiguration;
 import android.app.WindowConfiguration.WindowingMode;
@@ -45,6 +47,7 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.view.InsetsFrameProvider;
 import android.view.InsetsSource;
 import android.view.SurfaceControl;
@@ -642,6 +645,10 @@ public final class WindowContainerTransaction implements Parcelable {
      */
     @NonNull
     public WindowContainerTransaction startTask(int taskId, @Nullable Bundle options) {
+        if (DEBUG_START_ACTIVITY) {
+            Log.d(Instrumentation.TAG, "WCT.startTask: taskId=" + taskId
+                    + " options=" + options, new Throwable());
+        }
         mHierarchyOps.add(HierarchyOp.createForTaskLaunch(taskId, options));
         return this;
     }
@@ -655,11 +662,15 @@ public final class WindowContainerTransaction implements Parcelable {
      */
     @NonNull
     public WindowContainerTransaction sendPendingIntent(@Nullable PendingIntent sender,
-            @Nullable Intent intent, @Nullable Bundle options) {
+            @Nullable Intent fillInIntent, @Nullable Bundle options) {
+        if (DEBUG_START_ACTIVITY) {
+            Log.d(Instrumentation.TAG, "WCT.sendPendingIntent: sender=" + sender.getIntent()
+                    + " fillInIntent=" + fillInIntent + " options=" + options, new Throwable());
+        }
         mHierarchyOps.add(new HierarchyOp.Builder(HierarchyOp.HIERARCHY_OP_TYPE_PENDING_INTENT)
                 .setLaunchOptions(options)
                 .setPendingIntent(sender)
-                .setActivityIntent(intent)
+                .setActivityIntent(fillInIntent)
                 .build());
         return this;
     }
@@ -674,6 +685,10 @@ public final class WindowContainerTransaction implements Parcelable {
     @NonNull
     public WindowContainerTransaction startShortcut(@NonNull String callingPackage,
             @NonNull ShortcutInfo shortcutInfo, @Nullable Bundle options) {
+        if (DEBUG_START_ACTIVITY) {
+            Log.d(Instrumentation.TAG, "WCT.startShortcut: shortcutInfo=" + shortcutInfo
+                    + " options=" + options, new Throwable());
+        }
         mHierarchyOps.add(HierarchyOp.createForStartShortcut(
                 callingPackage, shortcutInfo, options));
         return this;

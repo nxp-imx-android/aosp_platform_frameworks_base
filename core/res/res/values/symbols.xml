@@ -3244,6 +3244,7 @@
   <java-symbol type="id" name="expand_button_pill_colorized_layer" />
   <java-symbol type="id" name="expand_button_number" />
   <java-symbol type="id" name="expand_button_icon" />
+  <java-symbol type="id" name="close_button_pill_colorized_layer" />
   <java-symbol type="id" name="alternate_expand_target" />
   <java-symbol type="id" name="notification_header" />
   <java-symbol type="id" name="notification_top_line" />

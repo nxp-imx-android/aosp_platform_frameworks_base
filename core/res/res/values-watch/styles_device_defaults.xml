@@ -42,5 +42,8 @@
         <item name="indeterminateOnly">false</item>
         <!-- Use Wear Material3 ring shape as default determinate drawable -->
         <item name="progressDrawable">@drawable/progress_ring_watch</item>
+        <item name="indeterminateDrawable">@drawable/loader_horizontal_watch</item>
+        <item name="android:minWidth">@dimen/loader_horizontal_min_width_watch</item>
+        <item name="android:minHeight">@dimen/loader_horizontal_min_height_watch</item>
     </style>
 </resources>

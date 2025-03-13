@@ -78,6 +78,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.app.AssistUtils;
 import com.android.internal.app.IVoiceInteractionSessionListener;
@@ -90,7 +91,6 @@ import com.android.systemui.contextualeducation.GestureType;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.display.data.repository.DisplayRepository;
-import com.android.systemui.display.data.repository.PerDisplayRepository;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.keyguard.KeyguardUnlockAnimationController;
 import com.android.systemui.keyguard.KeyguardWmStateRefactor;
@@ -126,8 +126,6 @@ import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.sysui.ShellInterface;
 
-import dagger.Lazy;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -138,6 +136,8 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+
+import dagger.Lazy;
 
 /**
  * Class to send information from SysUI to Launcher with a binder.

@@ -115,11 +115,57 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
                 userId = DEFAULT_USER_ID,
+                leftTiledTask = null,
+                rightTiledTask = null,
             )
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
             assertThat(actualDesktop?.tasksByTaskIdMap).hasSize(2)
             assertThat(actualDesktop?.getZOrderedTasks(0)).isEqualTo(2)
+        }
+    }
+
+    @Test
+    fun addTiledTasks_addsTiledTasksToDesktop() {
+        runTest(StandardTestDispatcher()) {
+            // Create a basic repository state
+            val task = createDesktopTask(1)
+            val desktopPersistentRepositories = createRepositoryWithOneDesk(task)
+            testDatastore.updateData { desktopPersistentRepositories }
+            // Create a new state to be initialized
+            val visibleTasks = ArraySet(listOf(1, 2))
+
+            // Update with new state
+            datastoreRepository.addOrUpdateDesktop(
+                visibleTasks = visibleTasks,
+                minimizedTasks = ArraySet(),
+                freeformTasksInZOrder = ArrayList(),
+                userId = DEFAULT_USER_ID,
+                leftTiledTask = 1,
+                rightTiledTask = null,
+            )
+
+            var actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(1)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.LEFT)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(2)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.NONE)
+
+            // Update with new state
+            datastoreRepository.addOrUpdateDesktop(
+                visibleTasks = visibleTasks,
+                minimizedTasks = ArraySet(),
+                freeformTasksInZOrder = ArrayList(),
+                userId = DEFAULT_USER_ID,
+                leftTiledTask = null,
+                rightTiledTask = 2,
+            )
+
+            actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(1)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.NONE)
+            assertThat(actualDesktop?.tasksByTaskIdMap?.get(2)?.desktopTaskTilingState)
+                .isEqualTo(DesktopTaskTilingState.RIGHT)
         }
     }
 
@@ -138,12 +184,16 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
                 userId = DEFAULT_USER_ID,
+                leftTiledTask = null,
+                rightTiledTask = null,
             )
             datastoreRepository.addOrUpdateDesktop(
                 visibleTasks = visibleTasks,
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
                 userId = USER_ID_2,
+                leftTiledTask = null,
+                rightTiledTask = null,
             )
 
             datastoreRepository.removeUsers(mutableListOf(USER_ID_2))
@@ -175,6 +225,8 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
                 userId = DEFAULT_USER_ID,
+                leftTiledTask = null,
+                rightTiledTask = null,
             )
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)
@@ -200,6 +252,8 @@ class DesktopPersistentRepositoryTest : ShellTestCase() {
                 minimizedTasks = minimizedTasks,
                 freeformTasksInZOrder = freeformTasksInZOrder,
                 userId = DEFAULT_USER_ID,
+                leftTiledTask = null,
+                rightTiledTask = null,
             )
 
             val actualDesktop = datastoreRepository.readDesktop(DEFAULT_USER_ID, DEFAULT_DESKTOP_ID)

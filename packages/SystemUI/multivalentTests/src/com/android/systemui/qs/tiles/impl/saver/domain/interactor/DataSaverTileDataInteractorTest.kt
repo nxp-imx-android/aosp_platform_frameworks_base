@@ -24,7 +24,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.saver.domain.model.DataSaverTileModel
 import com.android.systemui.utils.leaks.FakeDataSaverController
 import com.google.common.truth.Truth

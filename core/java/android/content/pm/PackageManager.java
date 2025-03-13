@@ -5964,7 +5964,39 @@ public abstract class PackageManager {
      *
      * @see #getLaunchIntentSenderForPackage(String)
      */
-    public abstract @Nullable Intent getLaunchIntentForPackage(@NonNull String packageName);
+     public abstract @Nullable Intent getLaunchIntentForPackage(@NonNull String packageName);
+
+    /**
+     * Returns a "good" intent to launch a front-door activity in a package.
+     * This is used, for example, to implement an "open" button when browsing
+     * through packages.  The current implementation looks first for a main
+     * activity in the category {@link Intent#CATEGORY_INFO}, and next for a
+     * main activity in the category {@link Intent#CATEGORY_LAUNCHER}. Returns
+     * <code>null</code> if neither are found.
+     *
+     * <p>Consider using {@link #getLaunchIntentSenderForPackage(String)} if
+     * the caller is not allowed to query for the <code>packageName</code>.
+     *
+     * @param packageName The name of the package to inspect.
+     * @param includeDirectBootUnaware When {@code true}, activities that are direct-boot-unaware
+     *    will be considered even if the device hasn't been unlocked (i.e. querying will be done
+     *    with {@code MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE}).
+     *
+     * @return A fully-qualified {@link Intent} that can be used to launch the
+     * main activity in the package. Returns <code>null</code> if the package
+     * does not contain such an activity, or if <em>packageName</em> is not
+     * recognized.
+     *
+     * @see #getLaunchIntentSenderForPackage(String)
+     *
+     * @hide
+     */
+    public @Nullable Intent getLaunchIntentForPackage(@NonNull String packageName,
+            boolean includeDirectBootUnaware) {
+        throw new UnsupportedOperationException(
+                "getLaunchIntentForPackage(packageName, includeDirectBootUnaware) not implemented"
+                        + " in subclass");
+    }
 
     /**
      * Return a "good" intent to launch a front-door Leanback activity in a

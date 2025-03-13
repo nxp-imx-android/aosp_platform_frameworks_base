@@ -23,6 +23,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.systemui.statusbar.notification.icon.IconPack;
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 
 import kotlinx.coroutines.flow.StateFlow;
@@ -132,6 +133,8 @@ public interface EntryAdapter {
 
     boolean isAmbient();
 
+    @PeopleNotificationIdentifier.Companion.PeopleNotificationType int getPeopleNotificationType();
+
     /**
      * Returns whether this row represents promoted ongoing notification.
      */
@@ -140,6 +143,8 @@ public interface EntryAdapter {
     default boolean isFullScreenCapable() {
         return false;
     }
+
+    void onDragSuccess();
 
     /**
      * Process a click on a notification bubble icon
@@ -150,5 +155,9 @@ public interface EntryAdapter {
      * Processes a click on a notification action
      */
     void onNotificationActionClicked();
+
+    NotificationEntry.DismissState getDismissState();
+
+    void onEntryClicked(ExpandableNotificationRow row);
 }
 

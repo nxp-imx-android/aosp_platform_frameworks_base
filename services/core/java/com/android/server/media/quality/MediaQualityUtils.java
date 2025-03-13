@@ -373,323 +373,403 @@ public final class MediaQualityUtils {
         if (params.containsKey(PictureQuality.PARAMETER_BRIGHTNESS)) {
             pictureParams.add(PictureParameter.brightness(params.getLong(
                     PictureQuality.PARAMETER_BRIGHTNESS)));
+            params.remove(PictureQuality.PARAMETER_BRIGHTNESS);
         }
         if (params.containsKey(PictureQuality.PARAMETER_CONTRAST)) {
             pictureParams.add(PictureParameter.contrast(params.getInt(
                     PictureQuality.PARAMETER_CONTRAST)));
+            params.remove(PictureQuality.PARAMETER_CONTRAST);
         }
         if (params.containsKey(PictureQuality.PARAMETER_SHARPNESS)) {
             pictureParams.add(PictureParameter.sharpness(params.getInt(
                     PictureQuality.PARAMETER_SHARPNESS)));
+            params.remove(PictureQuality.PARAMETER_SHARPNESS);
         }
         if (params.containsKey(PictureQuality.PARAMETER_SATURATION)) {
             pictureParams.add(PictureParameter.saturation(params.getInt(
                     PictureQuality.PARAMETER_SATURATION)));
+            params.remove(PictureQuality.PARAMETER_SATURATION);
         }
         if (params.containsKey(PictureQuality.PARAMETER_HUE)) {
             pictureParams.add(PictureParameter.hue(params.getInt(
                     PictureQuality.PARAMETER_HUE)));
+            params.remove(PictureQuality.PARAMETER_HUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS)) {
             pictureParams.add(PictureParameter.colorTunerBrightness(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_BRIGHTNESS);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION)) {
             pictureParams.add(PictureParameter.colorTunerSaturation(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE)) {
             pictureParams.add(PictureParameter.colorTunerHue(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_RED_OFFSET)) {
             pictureParams.add(PictureParameter.colorTunerRedOffset(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_RED_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_RED_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_OFFSET)) {
             pictureParams.add(PictureParameter.colorTunerGreenOffset(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_GREEN_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_OFFSET)) {
             pictureParams.add(PictureParameter.colorTunerBlueOffset(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_BLUE_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN)) {
             pictureParams.add(PictureParameter.colorTunerRedGain(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN)) {
             pictureParams.add(PictureParameter.colorTunerGreenGain(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN)) {
             pictureParams.add(PictureParameter.colorTunerBlueGain(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_NOISE_REDUCTION)) {
             pictureParams.add(PictureParameter.noiseReduction(
                     (byte) params.getInt(PictureQuality.PARAMETER_NOISE_REDUCTION)));
+            params.remove(PictureQuality.PARAMETER_NOISE_REDUCTION);
         }
         if (params.containsKey(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION)) {
             pictureParams.add(PictureParameter.mpegNoiseReduction(
                     (byte) params.getInt(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION)));
+            params.remove(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION);
         }
         if (params.containsKey(PictureQuality.PARAMETER_FLESH_TONE)) {
             pictureParams.add(PictureParameter.fleshTone(
                     (byte) params.getInt(PictureQuality.PARAMETER_FLESH_TONE)));
+            params.remove(PictureQuality.PARAMETER_FLESH_TONE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_DECONTOUR)) {
             pictureParams.add(PictureParameter.deContour(
                     (byte) params.getInt(PictureQuality.PARAMETER_DECONTOUR)));
+            params.remove(PictureQuality.PARAMETER_DECONTOUR);
         }
         if (params.containsKey(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL)) {
             pictureParams.add(PictureParameter.dynamicLumaControl(
                     (byte) params.getInt(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL)));
+            params.remove(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL);
         }
         if (params.containsKey(PictureQuality.PARAMETER_FILM_MODE)) {
             pictureParams.add(PictureParameter.filmMode(params.getBoolean(
                     PictureQuality.PARAMETER_FILM_MODE)));
+            params.remove(PictureQuality.PARAMETER_FILM_MODE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_BLUE_STRETCH)) {
             pictureParams.add(PictureParameter.blueStretch(params.getBoolean(
                     PictureQuality.PARAMETER_BLUE_STRETCH)));
+            params.remove(PictureQuality.PARAMETER_BLUE_STRETCH);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNE)) {
             pictureParams.add(PictureParameter.colorTune(params.getBoolean(
                     PictureQuality.PARAMETER_COLOR_TUNE)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE)) {
             pictureParams.add(PictureParameter.colorTemperature(
                     (byte) params.getInt(
                             PictureQuality.PARAMETER_COLOR_TEMPERATURE)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_GLOBAL_DIMMING)) {
             pictureParams.add(PictureParameter.globeDimming(params.getBoolean(
                     PictureQuality.PARAMETER_GLOBAL_DIMMING)));
+            params.remove(PictureQuality.PARAMETER_GLOBAL_DIMMING);
         }
         if (params.containsKey(PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED)) {
             pictureParams.add(PictureParameter.autoPictureQualityEnabled(params.getBoolean(
                     PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED)));
+            params.remove(PictureQuality.PARAMETER_AUTO_PICTURE_QUALITY_ENABLED);
         }
         if (params.containsKey(PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED)) {
             pictureParams.add(PictureParameter.autoSuperResolutionEnabled(params.getBoolean(
                     PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED)));
+            params.remove(PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN)) {
             pictureParams.add(PictureParameter.colorTemperatureRedGain(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN)) {
             pictureParams.add(PictureParameter.colorTemperatureGreenGain(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN)) {
             pictureParams.add(PictureParameter.colorTemperatureBlueGain(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LEVEL_RANGE)) {
             pictureParams.add(PictureParameter.levelRange(
                     (byte) params.getInt(PictureQuality.PARAMETER_LEVEL_RANGE)));
+            params.remove(PictureQuality.PARAMETER_LEVEL_RANGE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_GAMUT_MAPPING)) {
             pictureParams.add(PictureParameter.gamutMapping(params.getBoolean(
                     PictureQuality.PARAMETER_GAMUT_MAPPING)));
+            params.remove(PictureQuality.PARAMETER_GAMUT_MAPPING);
         }
         if (params.containsKey(PictureQuality.PARAMETER_PC_MODE)) {
             pictureParams.add(PictureParameter.pcMode(params.getBoolean(
                     PictureQuality.PARAMETER_PC_MODE)));
+            params.remove(PictureQuality.PARAMETER_PC_MODE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LOW_LATENCY)) {
             pictureParams.add(PictureParameter.lowLatency(params.getBoolean(
                     PictureQuality.PARAMETER_LOW_LATENCY)));
+            params.remove(PictureQuality.PARAMETER_LOW_LATENCY);
         }
         if (params.containsKey(PictureQuality.PARAMETER_VRR)) {
             pictureParams.add(PictureParameter.vrr(params.getBoolean(
                     PictureQuality.PARAMETER_VRR)));
+            params.remove(PictureQuality.PARAMETER_VRR);
         }
         if (params.containsKey(PictureQuality.PARAMETER_CVRR)) {
             pictureParams.add(PictureParameter.cvrr(params.getBoolean(
                     PictureQuality.PARAMETER_CVRR)));
+            params.remove(PictureQuality.PARAMETER_CVRR);
         }
         if (params.containsKey(PictureQuality.PARAMETER_HDMI_RGB_RANGE)) {
             pictureParams.add(PictureParameter.hdmiRgbRange(
                     (byte) params.getInt(PictureQuality.PARAMETER_HDMI_RGB_RANGE)));
+            params.remove(PictureQuality.PARAMETER_HDMI_RGB_RANGE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_SPACE)) {
             pictureParams.add(PictureParameter.colorSpace(
                     (byte) params.getInt(PictureQuality.PARAMETER_COLOR_SPACE)));
+            params.remove(PictureQuality.PARAMETER_COLOR_SPACE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS)) {
             pictureParams.add(PictureParameter.panelInitMaxLuminceNits(
                     params.getInt(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS)));
+            params.remove(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS);
         }
         if (params.containsKey(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID)) {
             pictureParams.add(PictureParameter.panelInitMaxLuminceValid(
                     params.getBoolean(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID)));
+            params.remove(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID);
         }
         if (params.containsKey(PictureQuality.PARAMETER_GAMMA)) {
             pictureParams.add(PictureParameter.gamma(
                     (byte) params.getInt(PictureQuality.PARAMETER_GAMMA)));
+            params.remove(PictureQuality.PARAMETER_GAMMA);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET)) {
             pictureParams.add(PictureParameter.colorTemperatureRedOffset(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET)) {
             pictureParams.add(PictureParameter.colorTemperatureGreenOffset(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET)) {
             pictureParams.add(PictureParameter.colorTemperatureBlueOffset(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_ELEVEN_POINT_RED)) {
             pictureParams.add(PictureParameter.elevenPointRed(params.getIntArray(
                     PictureQuality.PARAMETER_ELEVEN_POINT_RED)));
+            params.remove(PictureQuality.PARAMETER_ELEVEN_POINT_RED);
         }
         if (params.containsKey(PictureQuality.PARAMETER_ELEVEN_POINT_GREEN)) {
             pictureParams.add(PictureParameter.elevenPointGreen(params.getIntArray(
                     PictureQuality.PARAMETER_ELEVEN_POINT_GREEN)));
+            params.remove(PictureQuality.PARAMETER_ELEVEN_POINT_GREEN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_ELEVEN_POINT_BLUE)) {
             pictureParams.add(PictureParameter.elevenPointBlue(params.getIntArray(
                     PictureQuality.PARAMETER_ELEVEN_POINT_BLUE)));
+            params.remove(PictureQuality.PARAMETER_ELEVEN_POINT_BLUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LOW_BLUE_LIGHT)) {
             pictureParams.add(PictureParameter.lowBlueLight(
                     (byte) params.getInt(PictureQuality.PARAMETER_LOW_BLUE_LIGHT)));
+            params.remove(PictureQuality.PARAMETER_LOW_BLUE_LIGHT);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LD_MODE)) {
             pictureParams.add(PictureParameter.LdMode(
                     (byte) params.getInt(PictureQuality.PARAMETER_LD_MODE)));
+            params.remove(PictureQuality.PARAMETER_LD_MODE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_RED_GAIN)) {
             pictureParams.add(PictureParameter.osdRedGain(params.getInt(
                     PictureQuality.PARAMETER_OSD_RED_GAIN)));
+            params.remove(PictureQuality.PARAMETER_OSD_RED_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_GREEN_GAIN)) {
             pictureParams.add(PictureParameter.osdGreenGain(params.getInt(
                     PictureQuality.PARAMETER_OSD_GREEN_GAIN)));
+            params.remove(PictureQuality.PARAMETER_OSD_GREEN_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_BLUE_GAIN)) {
             pictureParams.add(PictureParameter.osdBlueGain(params.getInt(
                     PictureQuality.PARAMETER_OSD_BLUE_GAIN)));
+            params.remove(PictureQuality.PARAMETER_OSD_BLUE_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_RED_OFFSET)) {
             pictureParams.add(PictureParameter.osdRedOffset(params.getInt(
                     PictureQuality.PARAMETER_OSD_RED_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_OSD_RED_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_GREEN_OFFSET)) {
             pictureParams.add(PictureParameter.osdGreenOffset(params.getInt(
                     PictureQuality.PARAMETER_OSD_GREEN_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_OSD_GREEN_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_BLUE_OFFSET)) {
             pictureParams.add(PictureParameter.osdBlueOffset(params.getInt(
                     PictureQuality.PARAMETER_OSD_BLUE_OFFSET)));
+            params.remove(PictureQuality.PARAMETER_OSD_BLUE_OFFSET);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_HUE)) {
             pictureParams.add(PictureParameter.osdHue(params.getInt(
                     PictureQuality.PARAMETER_OSD_HUE)));
+            params.remove(PictureQuality.PARAMETER_OSD_HUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_SATURATION)) {
             pictureParams.add(PictureParameter.osdSaturation(params.getInt(
                     PictureQuality.PARAMETER_OSD_SATURATION)));
+            params.remove(PictureQuality.PARAMETER_OSD_SATURATION);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_CONTRAST)) {
             pictureParams.add(PictureParameter.osdContrast(params.getInt(
                     PictureQuality.PARAMETER_OSD_CONTRAST)));
+            params.remove(PictureQuality.PARAMETER_OSD_CONTRAST);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SWITCH)) {
             pictureParams.add(PictureParameter.colorTunerSwitch(params.getBoolean(
                     PictureQuality.PARAMETER_COLOR_TUNER_SWITCH)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SWITCH);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE_RED)) {
             pictureParams.add(PictureParameter.colorTunerHueRed(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE_RED)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE_RED);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE_GREEN)) {
             pictureParams.add(PictureParameter.colorTunerHueGreen(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE_GREEN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE_GREEN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE_BLUE)) {
             pictureParams.add(PictureParameter.colorTunerHueBlue(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE_BLUE)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE_BLUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE_CYAN)) {
             pictureParams.add(PictureParameter.colorTunerHueCyan(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE_CYAN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE_CYAN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE_MAGENTA)) {
             pictureParams.add(PictureParameter.colorTunerHueMagenta(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE_MAGENTA)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE_MAGENTA);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE_YELLOW)) {
             pictureParams.add(PictureParameter.colorTunerHueYellow(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE_YELLOW)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE_YELLOW);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_HUE_FLESH)) {
             pictureParams.add(PictureParameter.colorTunerHueFlesh(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_HUE_FLESH)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_HUE_FLESH);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_RED)) {
             pictureParams.add(PictureParameter.colorTunerSaturationRed(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_RED)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_RED);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_GREEN)) {
             pictureParams.add(PictureParameter.colorTunerSaturationGreen(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_GREEN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_GREEN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_BLUE)) {
             pictureParams.add(PictureParameter.colorTunerSaturationBlue(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_BLUE)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_BLUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_CYAN)) {
             pictureParams.add(PictureParameter.colorTunerSaturationCyan(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_CYAN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_CYAN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_MAGENTA)) {
             pictureParams.add(PictureParameter.colorTunerSaturationMagenta(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_MAGENTA)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_MAGENTA);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_YELLOW)) {
             pictureParams.add(PictureParameter.colorTunerSaturationYellow(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_YELLOW)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_YELLOW);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_FLESH)) {
             pictureParams.add(PictureParameter.colorTunerSaturationFlesh(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_FLESH)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_SATURATION_FLESH);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_RED)) {
             pictureParams.add(PictureParameter.colorTunerLuminanceRed(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_RED)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_RED);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_GREEN)) {
             pictureParams.add(PictureParameter.colorTunerLuminanceGreen(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_GREEN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_GREEN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_BLUE)) {
             pictureParams.add(PictureParameter.colorTunerLuminanceBlue(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_BLUE)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_BLUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_CYAN)) {
             pictureParams.add(PictureParameter.colorTunerLuminanceCyan(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_CYAN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_CYAN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA)) {
             pictureParams.add(PictureParameter.colorTunerLuminanceMagenta(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_MAGENTA);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW)) {
             pictureParams.add(PictureParameter.colorTunerLuminanceYellow(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_YELLOW);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH)) {
             pictureParams.add(PictureParameter.colorTunerLuminanceFlesh(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH);
         }
         if (params.containsKey(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE)) {
             pictureParams.add(PictureParameter.pictureQualityEventType(
                     (byte) params.getInt(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE)));
+            params.remove(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE);
         }
         return pictureParams.toArray(new PictureParameter[0]);
     }

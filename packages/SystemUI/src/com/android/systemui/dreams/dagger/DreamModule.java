@@ -42,9 +42,9 @@ import com.android.systemui.dreams.homecontrols.system.HomeControlsRemoteService
 import com.android.systemui.qs.QsEventLogger;
 import com.android.systemui.qs.pipeline.shared.TileSpec;
 import com.android.systemui.qs.shared.model.TileCategory;
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfig;
-import com.android.systemui.qs.tiles.viewmodel.QSTilePolicy;
-import com.android.systemui.qs.tiles.viewmodel.QSTileUIConfig;
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfig;
+import com.android.systemui.qs.tiles.base.shared.model.QSTilePolicy;
+import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig;
 import com.android.systemui.res.R;
 import com.android.systemui.touch.TouchInsetManager;
 

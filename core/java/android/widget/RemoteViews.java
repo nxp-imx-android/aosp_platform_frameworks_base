@@ -9216,7 +9216,13 @@ public class RemoteViews implements Parcelable, Filter {
         public static RemoteResponse fromFillInIntent(@NonNull Intent fillIntent) {
             RemoteResponse response = new RemoteResponse();
             response.mFillIntent = fillIntent;
-            fillIntent.collectExtraIntentKeys();
+            if (fillIntent != null) {
+                // Although the parameter is marked as @NonNull, it is nullable. The method that
+                // calls it (RemoteReviews.setOnClickFillInIntent()) passes its fillInIntent
+                // parameter to this method and it does not guarantee that the fillInIntent is
+                // non-null.
+                fillIntent.collectExtraIntentKeys();
+            }
             return response;
         }
 

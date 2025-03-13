@@ -45,6 +45,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -102,6 +103,7 @@ fun LargeTileContent(
     sideDrawable: Drawable?,
     colors: TileColors,
     squishiness: () -> Float,
+    isVisible: () -> Boolean = { true },
     accessibilityUiState: AccessibilityUiState? = null,
     iconShape: RoundedCornerShape = RoundedCornerShape(CommonTileDefaults.InactiveCornerRadius),
     toggleClick: (() -> Unit)? = null,
@@ -158,6 +160,7 @@ fun LargeTileContent(
             secondaryLabel = secondaryLabel,
             colors = colors,
             accessibilityUiState = accessibilityUiState,
+            isVisible = isVisible,
         )
 
         if (sideDrawable != null) {
@@ -176,6 +179,7 @@ fun LargeTileLabels(
     secondaryLabel: String?,
     colors: TileColors,
     modifier: Modifier = Modifier,
+    isVisible: () -> Boolean = { true },
     accessibilityUiState: AccessibilityUiState? = null,
 ) {
     val animatedLabelColor by animateColorAsState(colors.label, label = "QSTileLabelColor")
@@ -186,12 +190,14 @@ fun LargeTileLabels(
             text = label,
             style = MaterialTheme.typography.labelLarge,
             color = { animatedLabelColor },
+            isVisible = isVisible,
         )
         if (!TextUtils.isEmpty(secondaryLabel)) {
             TileLabel(
                 secondaryLabel ?: "",
                 color = { animatedSecondaryLabelColor },
                 style = MaterialTheme.typography.bodyMedium,
+                isVisible = isVisible,
                 modifier =
                     Modifier.thenIf(
                         accessibilityUiState?.stateDescription?.contains(secondaryLabel ?: "") ==
@@ -277,36 +283,50 @@ private fun TileLabel(
     color: ColorProducer,
     style: TextStyle,
     modifier: Modifier = Modifier,
+    isVisible: () -> Boolean = { true },
 ) {
+    var textSize by remember { mutableIntStateOf(0) }
+
     BasicText(
         text = text,
         color = color,
         style = style,
         maxLines = 1,
+        onTextLayout = { textSize = it.size.width },
         modifier =
             modifier
                 .fillMaxWidth()
-                .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+                .graphicsLayer {
+                    if (textSize > size.width) {
+                        compositingStrategy = CompositingStrategy.Offscreen
+                    }
+                }
                 .drawWithContent {
                     drawContent()
-                    // Draw a blur over the end of the text
-                    val edgeWidthPx = TileLabelBlurWidth.toPx()
-                    drawRect(
-                        topLeft = Offset(size.width - edgeWidthPx, 0f),
-                        size = Size(edgeWidthPx, size.height),
-                        brush =
-                            Brush.horizontalGradient(
-                                colors = listOf(Color.Transparent, Color.Black),
-                                startX = size.width,
-                                endX = size.width - edgeWidthPx,
-                            ),
-                        blendMode = BlendMode.DstIn,
-                    )
+                    if (textSize > size.width) {
+                        // Draw a blur over the end of the text
+                        val edgeWidthPx = TileLabelBlurWidth.toPx()
+                        drawRect(
+                            topLeft = Offset(size.width - edgeWidthPx, 0f),
+                            size = Size(edgeWidthPx, size.height),
+                            brush =
+                                Brush.horizontalGradient(
+                                    colors = listOf(Color.Transparent, Color.Black),
+                                    startX = size.width,
+                                    endX = size.width - edgeWidthPx,
+                                ),
+                            blendMode = BlendMode.DstIn,
+                        )
+                    }
                 }
-                .basicMarquee(
-                    iterations = TILE_MARQUEE_ITERATIONS,
-                    initialDelayMillis = TILE_INITIAL_DELAY_MILLIS,
-                ),
+                .thenIf(isVisible()) {
+                    // Only apply the marquee when the label is visible, which is needed for the
+                    // always composed QS
+                    Modifier.basicMarquee(
+                        iterations = TILE_MARQUEE_ITERATIONS,
+                        initialDelayMillis = TILE_INITIAL_DELAY_MILLIS,
+                    )
+                },
     )
 }
 

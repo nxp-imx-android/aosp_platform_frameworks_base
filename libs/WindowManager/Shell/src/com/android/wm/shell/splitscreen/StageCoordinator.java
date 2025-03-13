@@ -101,6 +101,7 @@ import android.content.pm.LauncherApps;
 import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
 import android.hardware.devicestate.DeviceStateManager;
+import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
@@ -278,6 +279,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     // because we will be posting and removing it from the handler.
     private final Runnable mReEnableLaunchAdjacentOnRoot = () -> setLaunchAdjacentDisabled(false);
 
+    private SplitMultiDisplayHelper mSplitMultiDisplayHelper;
+
     /**
      * Since StageCoordinator only coordinates MainStage and SideStage, it shouldn't support
      * CompatUI layouts. CompatUI is handled separately by MainStage and SideStage.
@@ -392,6 +395,11 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mSplitState = splitState;
         mDesktopTasksController = desktopTasksController;
         mRootTDAOrganizer = rootTDAOrganizer;
+
+        DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+
+        mSplitMultiDisplayHelper = new SplitMultiDisplayHelper(
+                Objects.requireNonNull(displayManager));
 
         taskOrganizer.createRootTask(displayId, WINDOWING_MODE_FULLSCREEN, this /* listener */);
 

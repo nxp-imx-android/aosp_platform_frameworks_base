@@ -19,7 +19,7 @@ fun Flow<Boolean>.toCondition(
     return object : Condition(scope, initialValue, false) {
         var job: Job? = null
 
-        override fun start() {
+        override suspend fun start() {
             job = scope.launch { collect { updateCondition(it) } }
         }
 

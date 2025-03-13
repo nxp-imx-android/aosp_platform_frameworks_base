@@ -23,10 +23,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigTestBuilder
+import com.android.systemui.qs.tiles.base.shared.model.QSTileState
+import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfigTestBuilder
-import com.android.systemui.qs.tiles.viewmodel.QSTileState
-import com.android.systemui.qs.tiles.viewmodel.QSTileUIConfig
 import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test

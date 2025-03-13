@@ -18,7 +18,9 @@ package com.android.systemui.display
 
 import android.hardware.display.DisplayManager
 import android.os.Handler
+import com.android.app.displaylib.DisplayLibBackground
 import com.android.app.displaylib.DisplayLibComponent
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.app.displaylib.createDisplayLibComponent
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
@@ -34,7 +36,6 @@ import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepos
 import com.android.systemui.display.data.repository.FocusedDisplayRepository
 import com.android.systemui.display.data.repository.FocusedDisplayRepositoryImpl
 import com.android.systemui.display.data.repository.PerDisplayRepoDumpHelper
-import com.android.systemui.display.data.repository.PerDisplayRepository
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractorImpl
 import com.android.systemui.display.domain.interactor.DisplayWindowPropertiesInteractorModule
@@ -84,6 +85,10 @@ interface DisplayModule {
 
     @Binds
     fun dumpRegistrationLambda(helper: PerDisplayRepoDumpHelper): PerDisplayRepository.InitCallback
+
+    @Binds
+    @DisplayLibBackground
+    fun bindDisplayLibBackground(@Background bgScope: CoroutineScope): CoroutineScope
 
     companion object {
         @Provides

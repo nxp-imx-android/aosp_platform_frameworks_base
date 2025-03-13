@@ -81,6 +81,7 @@ import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlag
 import com.android.systemui.statusbar.notification.collection.provider.visualStabilityProvider
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.seenNotificationsInteractor
+import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.sharedNotificationContainerInteractor
 import com.android.systemui.statusbar.phone.fakeAutoHideControllerStore
@@ -206,4 +207,5 @@ class KosmosJavaAdapter() {
     val displayTracker by lazy { kosmos.displayTracker }
     val fakeShadeDisplaysRepository by lazy { kosmos.fakeShadeDisplaysRepository }
     val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
+    val entryAdapterFactory by lazy { kosmos.entryAdapterFactory }
 }

@@ -33,12 +33,12 @@ import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl
-import com.android.systemui.qs.tiles.impl.notes.domain.NotesTileMapper
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigProvider
+import com.android.systemui.qs.tiles.base.shared.model.QSTileState
 import com.android.systemui.qs.tiles.impl.notes.domain.interactor.NotesTileDataInteractor
 import com.android.systemui.qs.tiles.impl.notes.domain.interactor.NotesTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.notes.domain.model.NotesTileModel
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfigProvider
-import com.android.systemui.qs.tiles.viewmodel.QSTileState
+import com.android.systemui.qs.tiles.impl.notes.ui.mapper.NotesTileMapper
 import com.android.systemui.res.R
 import javax.inject.Inject
 

@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Побарај шема за откл. пред откачување"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Побарај лозинка пред откачување"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Инсталирано од администраторот.\nОдете во „Поставки“ за да ги прегледате доделените дозволи"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Ажурирано од администраторот.\nОдете во „Поставки“ за да ги прегледате доделените дозволи"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Избришано од администраторот"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Во ред"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"„Штедачот на батерија“ вклучува „Темна тема“ и ограничува или исклучува активност во заднина, некои визуелни ефекти, одредени функции и некои мрежни врски."</string>

@@ -137,6 +137,10 @@ class NotificationEntryAdapter(
         return entry.ranking.isAmbient
     }
 
+    override fun getPeopleNotificationType(): Int {
+        return peopleNotificationIdentifier.getPeopleNotificationType(entry)
+    }
+
     override fun isPromotedOngoing(): Boolean {
         return entry.isPromotedOngoing
     }
@@ -145,11 +149,23 @@ class NotificationEntryAdapter(
         return entry.sbn.notification.fullScreenIntent != null
     }
 
+    override fun onDragSuccess() {
+        notificationActivityStarter.onDragSuccess(entry)
+    }
+
     override fun onNotificationBubbleIconClicked() {
         notificationActivityStarter.onNotificationBubbleIconClicked(entry)
     }
 
     override fun onNotificationActionClicked() {
         notificationActionClickManager.onNotificationActionClicked(entry)
+    }
+
+    override fun getDismissState(): NotificationEntry.DismissState {
+        return entry.dismissState
+    }
+
+    override fun onEntryClicked(row: ExpandableNotificationRow) {
+        notificationActivityStarter.onNotificationClicked(entry, row)
     }
 }

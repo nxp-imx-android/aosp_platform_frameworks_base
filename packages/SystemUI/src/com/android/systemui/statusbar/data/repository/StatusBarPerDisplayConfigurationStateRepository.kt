@@ -17,14 +17,14 @@
 package com.android.systemui.statusbar.data.repository
 
 import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
+import com.android.app.displaylib.PerDisplayInstanceProvider
+import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
+import com.android.app.displaylib.PerDisplayRepository
+import com.android.app.displaylib.SingleInstanceRepositoryImpl
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
-import com.android.systemui.display.data.repository.PerDisplayInstanceProvider
-import com.android.systemui.display.data.repository.PerDisplayInstanceRepositoryImpl
-import com.android.systemui.display.data.repository.PerDisplayRepository
-import com.android.systemui.display.data.repository.SingleInstanceRepositoryImpl
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import dagger.Lazy
 import dagger.Module
@@ -39,7 +39,6 @@ constructor(
     private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val factory: ConfigurationStateImpl.Factory,
 ) : PerDisplayInstanceProvider<ConfigurationState> {
-
     override fun createInstance(displayId: Int): ConfigurationState? {
         val displayWindowProperties =
             displayWindowPropertiesRepository.get(displayId, TYPE_STATUS_BAR) ?: return null

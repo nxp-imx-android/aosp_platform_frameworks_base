@@ -790,6 +790,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_affectsAlpha() =
         testScope.runTest {
             try {
@@ -809,6 +810,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_alphaResetOnCommunalNotShowing() =
         testScope.runTest {
             try {

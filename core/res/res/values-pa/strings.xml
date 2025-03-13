@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ਅਨਪਿੰਨ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਅਣਲਾਕ ਪੈਟਰਨ ਵਾਸਤੇ ਪੁੱਛੋ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ਅਣਪਿੰਨ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਪਾਸਵਰਡ ਮੰਗੋ"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਸਥਾਪਤ ਕੀਤਾ ਗਿਆ।\nਦਿੱਤੀਆਂ ਗਈਆਂ ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਦੇਖਣ ਲਈ ਸੈਟਿੰਗਾਂ \'ਤੇ ਜਾਓ"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਅੱਪਡੇਟ ਕੀਤਾ ਗਿਆ।\nਦਿੱਤੀਆਂ ਗਈਆਂ ਇਜਾਜ਼ਤਾਂ ਨੂੰ ਦੇਖਣ ਲਈ ਸੈਟਿੰਗਾਂ \'ਤੇ ਜਾਓ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਮਿਟਾਇਆ ਗਿਆ"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ਠੀਕ ਹੈ"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ਬੈਟਰੀ ਸੇਵਰ ਗੂੜ੍ਹੇ ਥੀਮ ਨੂੰ ਚਾਲੂ ਕਰਦਾ ਹੈ ਅਤੇ ਬੈਕਗ੍ਰਾਊਂਡ ਸਰਗਰਮੀ, ਕੁਝ ਦ੍ਰਿਸ਼ਟੀਗਤ ਪ੍ਰਭਾਵਾਂ, ਕੁਝ ਖਾਸ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਅਤੇ ਕੁਝ ਨੈੱਟਵਰਕ ਕਨੈਕਸ਼ਨਾਂ ਨੂੰ ਸੀਮਤ ਜਾਂ ਬੰਦ ਕਰਦਾ ਹੈ।"</string>

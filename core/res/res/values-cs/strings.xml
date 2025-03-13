@@ -1967,8 +1967,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Před uvolněním požádat o bezpečnostní gesto"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Před odepnutím požádat o heslo"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Nainstalováno administrátorem.\nUdělená oprávnění si můžete prohlédnout v nastavení."</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Aktualizováno administrátorem.\nUdělená oprávnění si můžete prohlédnout v nastavení."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Smazáno administrátorem"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"OK"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Spořič baterie zapíná tmavý motiv a omezuje či vypíná aktivitu na pozadí, některé vizuální efekty, některé funkce a připojení k některým sítím."</string>

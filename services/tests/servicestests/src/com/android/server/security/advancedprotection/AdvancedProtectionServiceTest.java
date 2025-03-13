@@ -259,7 +259,7 @@ public class AdvancedProtectionServiceTest {
 
         AdvancedProtectionProvider provider = new AdvancedProtectionProvider() {
             @Override
-            public List<AdvancedProtectionFeature> getFeatures() {
+            public List<AdvancedProtectionFeature> getFeatures(Context context) {
                 return List.of(feature2);
             }
         };
@@ -291,7 +291,7 @@ public class AdvancedProtectionServiceTest {
 
         AdvancedProtectionProvider provider = new AdvancedProtectionProvider() {
             @Override
-            public List<AdvancedProtectionFeature> getFeatures() {
+            public List<AdvancedProtectionFeature> getFeatures(Context context) {
                 return List.of(feature2);
             }
         };

@@ -794,7 +794,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ಆನ್ ಆಗಿದೆ - ಮುಖ-ಆಧಾರಿತ"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ಅನ್ವಯಿಸಿ"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"ಅಧಿಸೂಚನೆಗಳನ್ನು ಆಫ್ ಮಾಡಿ"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"ನಿಶ್ಶಬ್ದ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ಡೀಫಾಲ್ಟ್"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ಸ್ವಯಂಚಾಲಿತ"</string>
@@ -905,8 +906,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"ಬಲಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"ಎಡಭಾಗದಲ್ಲಿ ಆ್ಯಪ್ ಮೂಲಕ ಸ್ಪ್ಲಿಟ್ ಸ್ಕ್ರೀನ್ ಬಳಸಿ"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"ಫುಲ್‌ಸ್ಕ್ರೀನ್ ಅನ್ನು ಬಳಸಿ"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"ಡೆಸ್ಕ್‌ಟಾಪ್ ವಿಂಡೋಯಿಂಗ್ ಅನ್ನು ಬಳಸಿ"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಬಲಭಾಗ ಅಥವಾ ಕೆಳಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸಿ ಮೋಡ್ ಬಳಸುವಾಗ ಎಡಭಾಗ ಅಥವಾ ಮೇಲ್ಭಾಗದಲ್ಲಿರುವ ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"ಸ್ಕ್ರೀನ್ ಬೇರ್ಪಡಿಸುವ ಸಮಯದಲ್ಲಿ: ಒಂದು ಆ್ಯಪ್‌ನಿಂದ ಮತ್ತೊಂದು ಆ್ಯಪ್‌ಗೆ ಬದಲಿಸಿ"</string>
@@ -1203,7 +1203,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"<xliff:g id="APP_NAME">%1$s</xliff:g> ಗಾಗಿ ಈ ಮಾಧ್ಯಮ ಕಂಟ್ರೋಲ್‌ಗಳನ್ನು ಮರೆಮಾಡಬೇಕೆ?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"ಪ್ರಸ್ತುತ ಮಾಧ್ಯಮ ಸೆಶನ್ ಅನ್ನು ಮರೆಮಾಡಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"ಮರೆಮಾಡಿ"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"ಪುನರಾರಂಭಿಸಿ"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"ಸೆಟ್ಟಿಂಗ್‌ಗಳು"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="ARTIST_NAME">%2$s</xliff:g> ಅವರ <xliff:g id="SONG_NAME">%1$s</xliff:g> ಹಾಡನ್ನು <xliff:g id="APP_LABEL">%3$s</xliff:g> ನಲ್ಲಿ ಪ್ಲೇ ಮಾಡಲಾಗುತ್ತಿದೆ"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="TOTAL_TIME">%2$s</xliff:g> ರಲ್ಲಿ <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>

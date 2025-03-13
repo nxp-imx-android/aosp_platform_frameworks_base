@@ -48,6 +48,9 @@ a similar way.
         <item name="disabledAlpha">@dimen/disabled_alpha_device_default</item>
         <item name="primaryContentAlpha">@dimen/primary_content_alpha_device_default</item>
         <item name="secondaryContentAlpha">@dimen/secondary_content_alpha_device_default</item>
+
+        <!-- Material3 default delay before scroll bar fading animation. -->
+        <item name="scrollbarDefaultDelayBeforeFade">1000</item>
     </style>
 
     <!-- Variant of {@link #Theme_DeviceDefault} with no action bar -->

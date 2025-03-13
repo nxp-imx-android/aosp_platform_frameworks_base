@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"고정 해제 시 잠금 해제 패턴 요청"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"고정 해제 이전에 비밀번호 요청"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"관리자에 의해 설치되었습니다.\n부여된 권한을 확인하려면 설정으로 이동하세요."</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"관리자에 의해 업데이트되었습니다.\n부여된 권한을 확인하려면 설정으로 이동하세요."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"관리자에 의해 삭제되었습니다."</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"확인"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"절전 모드는 어두운 테마를 사용하고 백그라운드 활동, 일부 시각 효과, 특정 기능 및 일부 네트워크 연결을 제한하거나 사용 중지합니다."</string>
