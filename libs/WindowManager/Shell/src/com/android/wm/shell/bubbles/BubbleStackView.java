@@ -89,6 +89,8 @@ import com.android.wm.shell.bubbles.animation.PhysicsAnimationLayout;
 import com.android.wm.shell.bubbles.animation.StackAnimationController;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.ShellExecutor;
+import com.android.wm.shell.shared.TypefaceUtils;
+import com.android.wm.shell.shared.TypefaceUtils.FontFamily;
 import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.shared.animation.PhysicsAnimator;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
@@ -1397,6 +1399,14 @@ public class BubbleStackView extends FrameLayout
         // The menu itself should respect locale direction so the icons are on the correct side.
         mManageMenu.setLayoutDirection(LAYOUT_DIRECTION_LOCALE);
         addView(mManageMenu);
+
+        // Doesn't seem to work unless view is added; so set font after.
+        TypefaceUtils.setTypeface(findViewById(R.id.manage_dismiss), FontFamily.GSF_LABEL_LARGE);
+        TypefaceUtils.setTypeface(findViewById(R.id.manage_dont_bubble),
+                FontFamily.GSF_LABEL_LARGE);
+        TypefaceUtils.setTypeface(mManageSettingsText, FontFamily.GSF_LABEL_LARGE);
+        TypefaceUtils.setTypeface(findViewById(R.id.bubble_manage_menu_fullscreen_title),
+                FontFamily.GSF_LABEL_LARGE);
     }
 
     /**
