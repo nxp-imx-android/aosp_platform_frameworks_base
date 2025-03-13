@@ -985,8 +985,8 @@ public final class OverlayManagerService extends SystemService {
                 final String pkgName = request.overlay.getPackageName();
                 if (callingUid != Process.ROOT_UID && !ArrayUtils.contains(
                         mPackageManager.getPackagesForUid(callingUid), pkgName)) {
-                    throw new IllegalArgumentException("UID " + callingUid + " does own package"
-                            + "name " + pkgName);
+                    throw new IllegalArgumentException("UID " + callingUid + " does not own "
+                            + "packageName " + pkgName);
                 }
             } else {
                 // Enforce actor requirements for enabling, disabling, and reordering overlays.
