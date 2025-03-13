@@ -137,6 +137,10 @@ class NotificationEntryAdapter(
         return entry.ranking.isAmbient
     }
 
+    override fun getPeopleNotificationType(): Int {
+        return peopleNotificationIdentifier.getPeopleNotificationType(entry)
+    }
+
     override fun isPromotedOngoing(): Boolean {
         return entry.isPromotedOngoing
     }

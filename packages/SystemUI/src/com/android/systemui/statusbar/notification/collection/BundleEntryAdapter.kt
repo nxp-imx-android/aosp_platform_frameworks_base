@@ -22,6 +22,7 @@ import android.os.Build
 import android.service.notification.StatusBarNotification
 import android.util.Log
 import com.android.systemui.statusbar.notification.icon.IconPack
+import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -111,6 +112,10 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
 
     override fun isAmbient(): Boolean {
         return false
+    }
+
+    override fun getPeopleNotificationType(): Int {
+        return TYPE_NON_PERSON
     }
 
     override fun isPromotedOngoing(): Boolean {

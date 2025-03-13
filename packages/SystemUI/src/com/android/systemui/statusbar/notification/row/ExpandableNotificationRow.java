@@ -671,8 +671,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     private boolean isConversation() {
-        return mPeopleNotificationIdentifier.getPeopleNotificationType(getEntry())
-                != PeopleNotificationIdentifier.TYPE_NON_PERSON;
+        if (NotificationBundleUi.isEnabled()) {
+            return getEntryAdapter().getPeopleNotificationType()
+                    != PeopleNotificationIdentifier.TYPE_NON_PERSON;
+        } else {
+            return mPeopleNotificationIdentifier.getPeopleNotificationType(getEntryLegacy())
+                    != PeopleNotificationIdentifier.TYPE_NON_PERSON;
+        }
     }
 
     public void onNotificationUpdated() {
