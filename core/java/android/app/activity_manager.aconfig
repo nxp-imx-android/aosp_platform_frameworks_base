@@ -163,3 +163,10 @@ flag {
     description: "Narrow the scope of Jank Perceptible"
     bug: "304837972"
 }
+
+flag {
+    name: "jank_perceptible_narrow_holdback"
+    namespace: "system_performance"
+    description: "Holdback study for jank_perceptible_narrow"
+    bug: "304837972"
+}
