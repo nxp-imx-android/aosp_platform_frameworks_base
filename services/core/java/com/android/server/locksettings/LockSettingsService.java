@@ -1917,7 +1917,7 @@ public class LockSettingsService extends ILockSettings.Stub {
      * Set a new LSKF for the given user/profile. Only succeeds if the synthetic password for the
      * user is protected by the given {@param savedCredential}.
      * <p>
-     * When {@link android.security.Flags#clearStrongAuthOnAddPrimaryCredential()} is enabled and
+     * When {@link android.security.Flags#clearStrongAuthOnAddingPrimaryCredential()} is enabled and
      * setting a new credential where there was none, updates the strong auth state for
      * {@param userId} to <tt>STRONG_AUTH_NOT_REQUIRED</tt>.
      *
@@ -1969,7 +1969,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
             onSyntheticPasswordUnlocked(userId, sp);
             setLockCredentialWithSpLocked(credential, sp, userId);
-            if (android.security.Flags.clearStrongAuthOnAddPrimaryCredential()
+            if (android.security.Flags.clearStrongAuthOnAddingPrimaryCredential()
                     && savedCredential.isNone() && !credential.isNone()) {
                 // Clear the strong auth value, since the LSKF has just been entered and set,
                 // but only when the previous credential was None.
