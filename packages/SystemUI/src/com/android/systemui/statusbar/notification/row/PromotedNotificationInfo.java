@@ -80,7 +80,6 @@ public class PromotedNotificationInfo extends NotificationInfo {
                 assistantFeedbackController, metricsLogger, onCloseClick);
 
         mNotificationManager = iNotificationManager;
-
         mPackageDemotionInteractor = packageDemotionInteractor;
 
         bindDemote(entry.getSbn(), pkg);

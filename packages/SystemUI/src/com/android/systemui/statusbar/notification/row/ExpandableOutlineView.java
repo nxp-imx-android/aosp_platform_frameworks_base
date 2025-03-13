@@ -292,8 +292,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
      *                             translationX, otherwise the contents will be
      *                             translated.
      */
-    public void setDismissUsingRowTranslationX(boolean usingRowTranslationX,
-            boolean forceUpdateChildren) {
+    public void setDismissUsingRowTranslationX(boolean usingRowTranslationX) {
         mDismissUsingRowTranslationX = usingRowTranslationX;
     }
 
