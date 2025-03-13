@@ -20,12 +20,13 @@ package com.android.systemui.notifications.ui.composable
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollBy
@@ -308,8 +309,6 @@ fun ContentScope.NotificationScrollingStack(
             ScrollState(initial = 0)
         }
     val syntheticScroll = viewModel.syntheticScroll.collectAsStateWithLifecycle(0f)
-    val isCurrentGestureOverscroll =
-        viewModel.isCurrentGestureOverscroll.collectAsStateWithLifecycle(false)
     val expansionFraction by viewModel.expandFraction.collectAsStateWithLifecycle(0f)
     val shadeToQsFraction by viewModel.shadeToQsFraction.collectAsStateWithLifecycle(0f)
 
@@ -454,15 +453,15 @@ fun ContentScope.NotificationScrollingStack(
         }
     }
 
-    val flingBehavior = ScrollableDefaults.flingBehavior()
     val scrimNestedScrollConnection =
         shadeSession.rememberSession(
             scrimOffset,
-            maxScrimTop,
             minScrimTop,
-            isCurrentGestureOverscroll,
-            flingBehavior,
+            viewModel.isCurrentGestureOverscroll,
+            density,
         ) {
+            val flingSpec: DecayAnimationSpec<Float> = splineBasedDecay(density)
+            val flingBehavior = NotificationScrimFlingBehavior(flingSpec)
             NotificationScrimNestedScrollConnection(
                 scrimOffset = { scrimOffset.value },
                 snapScrimOffset = { value -> coroutineScope.launch { scrimOffset.snapTo(value) } },
@@ -473,7 +472,7 @@ fun ContentScope.NotificationScrollingStack(
                 maxScrimOffset = 0f,
                 contentHeight = { stackHeight.intValue.toFloat() },
                 minVisibleScrimHeight = minVisibleScrimHeight,
-                isCurrentGestureOverscroll = { isCurrentGestureOverscroll.value },
+                isCurrentGestureOverscroll = { viewModel.isCurrentGestureOverscroll },
                 flingBehavior = flingBehavior,
             )
         }
