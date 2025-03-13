@@ -1066,6 +1066,7 @@ public abstract class Layout {
                 lastLine,
                 new CharacterBoundsListener() {
                     int mLastLineNum = -1;
+                    int mNumCharactersToSkip = 0;
                     final RectF mLineBackground = new RectF();
 
                     @ColorInt int mLastColor = originalTextColor;
@@ -1073,15 +1074,13 @@ public abstract class Layout {
                     @Override
                     public void onCharacterBounds(int index, int lineNum, float left, float top,
                             float right, float bottom) {
-
                         // Skip processing if the character is a space or a tap to avoid
                         // rendering an abrupt, empty rectangle.
-                        if (TextLine.isLineEndSpace(mText.charAt(index))) {
+                        if (TextLine.isLineEndSpace(mText.charAt(index))
+                                || mNumCharactersToSkip > 0) {
+                            mNumCharactersToSkip--;
                             return;
                         }
-
-                        var newBackground = determineContrastingBackgroundColor(index);
-                        var hasBgColorChanged = newBackground != bgPaint.getColor();
 
                         // To avoid highlighting emoji sequences, we use Extended_Pictgraphs as a
                         // heuristic. Highlighting is skipped based on code points, not glyph type
@@ -1094,8 +1093,12 @@ public abstract class Layout {
                         var isEmoji = Character.isEmojiComponent(codePoint)
                                 || Character.isExtendedPictographic(codePoint);
                         if (isEmoji && !isStandardNumber(index)) {
+                            mNumCharactersToSkip = Character.charCount(codePoint) - 1;
                             return;
                         }
+
+                        var newBackground = determineContrastingBackgroundColor(index);
+                        var hasBgColorChanged = newBackground != bgPaint.getColor();
 
                         if (lineNum != mLastLineNum || hasBgColorChanged) {
                             // Draw what we have so far, then reset the rect and update its color
