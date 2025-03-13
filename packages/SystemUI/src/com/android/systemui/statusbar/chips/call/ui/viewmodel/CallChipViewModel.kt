@@ -329,6 +329,7 @@ constructor(
                     cookie,
                     component,
                     launchCujType = Cuj.CUJ_STATUS_BAR_APP_LAUNCH_FROM_CALL_CHIP,
+                    returnCujType = Cuj.CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP,
                 ) {
                 override suspend fun createController(
                     forLaunch: Boolean
