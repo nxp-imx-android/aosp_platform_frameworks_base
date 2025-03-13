@@ -455,6 +455,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
         assertThat(content).isNotNull()
         assertThat(content?.style).isEqualTo(Style.Call)
+        assertThat(content?.title).isEqualTo(TEST_PERSON_NAME)
     }
 
     @Test
