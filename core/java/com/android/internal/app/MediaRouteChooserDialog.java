@@ -19,22 +19,13 @@ package com.android.internal.app;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.media.MediaRouter;
-import android.media.MediaRouter.RouteInfo;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import com.android.internal.R;
-
-import java.util.Comparator;
 
 /**
  * This class implements the route chooser dialog for {@link MediaRouter}.
@@ -47,15 +38,11 @@ import java.util.Comparator;
  *
  * TODO: Move this back into the API, as in the support library media router.
  */
-public class MediaRouteChooserDialog extends AlertDialog {
-    private final MediaRouter mRouter;
-    private final MediaRouterCallback mCallback;
-
-    private int mRouteTypes;
+public class MediaRouteChooserDialog extends AlertDialog implements
+        MediaRouteChooserContentManager.Delegate {
     private View.OnClickListener mExtendedSettingsClickListener;
-    private RouteAdapter mAdapter;
     private Button mExtendedSettingsButton;
-    private boolean mAttachedToWindow;
+    private final boolean mShowProgressBarWhenEmpty;
 
     private final MediaRouteChooserContentManager mContentManager;
 
@@ -66,19 +53,8 @@ public class MediaRouteChooserDialog extends AlertDialog {
     public MediaRouteChooserDialog(Context context, int theme, boolean showProgressBarWhenEmpty) {
         super(context, theme);
 
-        mRouter = (MediaRouter) context.getSystemService(Context.MEDIA_ROUTER_SERVICE);
-        mCallback = new MediaRouterCallback();
-        mContentManager = new MediaRouteChooserContentManager(context, showProgressBarWhenEmpty);
-    }
-
-    /**
-     * Gets the media route types for filtering the routes that the user can
-     * select using the media route chooser dialog.
-     *
-     * @return The route types.
-     */
-    public int getRouteTypes() {
-        return mRouteTypes;
+        mShowProgressBarWhenEmpty = showProgressBarWhenEmpty;
+        mContentManager = new MediaRouteChooserContentManager(context, this);
     }
 
     /**
@@ -88,17 +64,7 @@ public class MediaRouteChooserDialog extends AlertDialog {
      * @param types The route types to match.
      */
     public void setRouteTypes(int types) {
-        if (mRouteTypes != types) {
-            mRouteTypes = types;
-
-            if (mAttachedToWindow) {
-                mRouter.removeCallback(mCallback);
-                mRouter.addCallback(types, mCallback,
-                        MediaRouter.CALLBACK_FLAG_PERFORM_ACTIVE_SCAN);
-            }
-
-            refreshRoutes();
-        }
+        mContentManager.setRouteTypes(types);
     }
 
     public void setExtendedSettingsClickListener(View.OnClickListener listener) {
@@ -108,21 +74,6 @@ public class MediaRouteChooserDialog extends AlertDialog {
         }
     }
 
-    /**
-     * Returns true if the route should be included in the list.
-     * <p>
-     * The default implementation returns true for enabled non-default routes that
-     * match the route types.  Subclasses can override this method to filter routes
-     * differently.
-     * </p>
-     *
-     * @param route The route to consider, never null.
-     * @return True if the route should be included in the chooser dialog.
-     */
-    public boolean onFilterRoute(MediaRouter.RouteInfo route) {
-        return !route.isDefault() && route.isEnabled() && route.matchesTypes(mRouteTypes);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // Note: setView must be called before super.onCreate().
@@ -130,7 +81,7 @@ public class MediaRouteChooserDialog extends AlertDialog {
                 R.layout.media_route_chooser_dialog, null);
         setView(containerView);
 
-        setTitle(mRouteTypes == MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY
+        setTitle(mContentManager.getRouteTypes() == MediaRouter.ROUTE_TYPE_REMOTE_DISPLAY
                 ? R.string.media_route_chooser_title_for_remote_display
                 : R.string.media_route_chooser_title);
 
@@ -138,11 +89,6 @@ public class MediaRouteChooserDialog extends AlertDialog {
                 : R.drawable.ic_media_route_off_holo_dark);
 
         super.onCreate(savedInstanceState);
-
-        mAdapter = new RouteAdapter(getContext());
-        ListView listView = findViewById(R.id.media_route_list);
-        listView.setAdapter(mAdapter);
-        listView.setOnItemClickListener(mAdapter);
 
         mExtendedSettingsButton = findViewById(R.id.media_route_extended_settings_button);
         updateExtendedSettingsButton();
@@ -161,127 +107,28 @@ public class MediaRouteChooserDialog extends AlertDialog {
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-
-        mAttachedToWindow = true;
-        mRouter.addCallback(mRouteTypes, mCallback, MediaRouter.CALLBACK_FLAG_PERFORM_ACTIVE_SCAN);
-        refreshRoutes();
+        mContentManager.onAttachedToWindow();
     }
 
     @Override
     public void onDetachedFromWindow() {
-        mAttachedToWindow = false;
-        mRouter.removeCallback(mCallback);
-
+        mContentManager.onDetachedFromWindow();
         super.onDetachedFromWindow();
     }
 
-    /**
-     * Refreshes the list of routes that are shown in the chooser dialog.
-     */
-    public void refreshRoutes() {
-        if (mAttachedToWindow) {
-            mAdapter.update();
-        }
+    @Override
+    public void dismissView() {
+        dismiss();
+    }
+
+    @Override
+    public boolean showProgressBarWhenEmpty() {
+        return mShowProgressBarWhenEmpty;
     }
 
     static boolean isLightTheme(Context context) {
         TypedValue value = new TypedValue();
         return context.getTheme().resolveAttribute(R.attr.isLightTheme, value, true)
                 && value.data != 0;
-    }
-
-    private final class RouteAdapter extends ArrayAdapter<MediaRouter.RouteInfo>
-            implements ListView.OnItemClickListener {
-        private final LayoutInflater mInflater;
-
-        public RouteAdapter(Context context) {
-            super(context, 0);
-            mInflater = LayoutInflater.from(context);
-        }
-
-        public void update() {
-            clear();
-            final int count = mRouter.getRouteCount();
-            for (int i = 0; i < count; i++) {
-                MediaRouter.RouteInfo route = mRouter.getRouteAt(i);
-                if (onFilterRoute(route)) {
-                    add(route);
-                }
-            }
-            sort(RouteComparator.sInstance);
-            notifyDataSetChanged();
-        }
-
-        @Override
-        public boolean areAllItemsEnabled() {
-            return false;
-        }
-
-        @Override
-        public boolean isEnabled(int position) {
-            return getItem(position).isEnabled();
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = convertView;
-            if (view == null) {
-                view = mInflater.inflate(R.layout.media_route_list_item, parent, false);
-            }
-            MediaRouter.RouteInfo route = getItem(position);
-            TextView text1 = view.findViewById(android.R.id.text1);
-            TextView text2 = view.findViewById(android.R.id.text2);
-            text1.setText(route.getName());
-            CharSequence description = route.getDescription();
-            if (TextUtils.isEmpty(description)) {
-                text2.setVisibility(View.GONE);
-                text2.setText("");
-            } else {
-                text2.setVisibility(View.VISIBLE);
-                text2.setText(description);
-            }
-            view.setEnabled(route.isEnabled());
-            return view;
-        }
-
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            MediaRouter.RouteInfo route = getItem(position);
-            if (route.isEnabled()) {
-                route.select();
-                dismiss();
-            }
-        }
-    }
-
-    private final class MediaRouterCallback extends MediaRouter.SimpleCallback {
-        @Override
-        public void onRouteAdded(MediaRouter router, MediaRouter.RouteInfo info) {
-            refreshRoutes();
-        }
-
-        @Override
-        public void onRouteRemoved(MediaRouter router, MediaRouter.RouteInfo info) {
-            refreshRoutes();
-        }
-
-        @Override
-        public void onRouteChanged(MediaRouter router, MediaRouter.RouteInfo info) {
-            refreshRoutes();
-        }
-
-        @Override
-        public void onRouteSelected(MediaRouter router, int type, RouteInfo info) {
-            dismiss();
-        }
-    }
-
-    private static final class RouteComparator implements Comparator<MediaRouter.RouteInfo> {
-        public static final RouteComparator sInstance = new RouteComparator();
-
-        @Override
-        public int compare(MediaRouter.RouteInfo lhs, MediaRouter.RouteInfo rhs) {
-            return lhs.getName().toString().compareTo(rhs.getName().toString());
-        }
     }
 }
