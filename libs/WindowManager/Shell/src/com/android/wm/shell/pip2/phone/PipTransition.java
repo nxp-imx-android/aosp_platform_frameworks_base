@@ -76,6 +76,7 @@ import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
 import com.android.wm.shell.pip2.animation.PipEnterAnimator;
 import com.android.wm.shell.pip2.phone.transition.PipExpandHandler;
+import com.android.wm.shell.pip2.phone.transition.PipTransitionUtils;
 import com.android.wm.shell.shared.TransitionUtil;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellInit;
@@ -387,8 +388,8 @@ public class PipTransition extends PipTransitionController implements
         mFinishCallback = finishCallback;
         // We expect the PiP activity as a separate change in a config-at-end transition;
         // only flings are not using config-at-end for resize bounds changes
-        TransitionInfo.Change pipActivityChange = getDeferConfigActivityChange(info,
-                pipChange.getTaskInfo().getToken());
+        TransitionInfo.Change pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
+                info, pipChange.getTaskInfo().getToken());
         if (pipActivityChange != null) {
             // Transform calculations use PiP params by default, so make sure they are null to
             // default to using bounds for scaling calculations instead.
@@ -427,8 +428,8 @@ public class PipTransition extends PipTransitionController implements
         }
 
         // We expect the PiP activity as a separate change in a config-at-end transition.
-        TransitionInfo.Change pipActivityChange = getDeferConfigActivityChange(info,
-                pipChange.getTaskInfo().getToken());
+        TransitionInfo.Change pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
+                info, pipChange.getTaskInfo().getToken());
         if (pipActivityChange == null) {
             return false;
         }
@@ -497,8 +498,8 @@ public class PipTransition extends PipTransitionController implements
         }
 
         // We expect the PiP activity as a separate change in a config-at-end transition.
-        TransitionInfo.Change pipActivityChange = getDeferConfigActivityChange(info,
-                pipChange.getTaskInfo().getToken());
+        TransitionInfo.Change pipActivityChange = PipTransitionUtils.getDeferConfigActivityChange(
+                info, pipChange.getTaskInfo().getToken());
         if (pipActivityChange == null) {
             return false;
         }
