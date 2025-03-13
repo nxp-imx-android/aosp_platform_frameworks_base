@@ -16,6 +16,7 @@
 package com.android.test.input
 
 import android.app.ActivityManager
+import android.app.ActivityTaskManager
 import android.app.ApplicationExitInfo
 import android.app.Instrumentation
 import android.content.Intent
@@ -28,6 +29,7 @@ import android.os.SystemClock
 import android.server.wm.CtsWindowInfoUtils.getWindowCenter
 import android.server.wm.CtsWindowInfoUtils.waitForWindowOnTop
 import android.testing.PollingCheck
+import android.util.Log
 import android.view.InputEvent
 import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_DOWN
@@ -46,21 +48,19 @@ import com.android.cts.input.inputeventmatchers.withMotionAction
 import java.time.Duration
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.function.Supplier
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
-import org.junit.Before
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * Click on the center of the window identified by the provided window token.
- * The click is performed using "UinputTouchScreen" device.
- * If the touchscreen device is closed too soon, it may cause the click to be dropped. Therefore,
- * the provided runnable can ensure that the click is delivered before the device is closed, thus
- * avoiding this race.
+ * Click on the center of the window identified by the provided window token. The click is performed
+ * using "UinputTouchScreen" device. If the touchscreen device is closed too soon, it may cause the
+ * click to be dropped. Therefore, the provided runnable can ensure that the click is delivered
+ * before the device is closed, thus avoiding this race.
  */
 private fun clickOnWindow(
     token: IBinder,
@@ -104,6 +104,10 @@ class AnrTest {
     private val remoteInputEvents = LinkedBlockingQueue<InputEvent>()
     private val verifier = BlockingQueueEventVerifier(remoteInputEvents)
 
+    // Some devices don't support ANR error dialogs, such as cars, TVs, etc.
+    private val anrDialogsAreSupported =
+        ActivityTaskManager.currentUiModeSupportsErrorDialogs(instrumentation.targetContext)
+
     val binder =
         object : IAnrTestService.Stub() {
             override fun provideActivityInfo(token: IBinder, displayId: Int, pid: Int) {
@@ -121,34 +125,37 @@ class AnrTest {
 
     @get:Rule val debugInputRule = DebugInputRule()
 
-    @Before
-    fun setUp() {
-        startUnresponsiveActivity()
-        PACKAGE_NAME = UnresponsiveGestureMonitorActivity::class.java.getPackage()!!.getName()
-    }
-
-    @After fun tearDown() {}
-
     @Test
     @DebugInputRule.DebugInput(bug = 339924248)
     fun testGestureMonitorAnr_Close() {
+        startUnresponsiveActivity()
+        val timestamp = System.currentTimeMillis()
         triggerAnr()
-        clickCloseAppOnAnrDialog()
+        if (anrDialogsAreSupported) {
+            clickCloseAppOnAnrDialog()
+        } else {
+            Log.i(TAG, "The device does not support ANR dialogs, skipping check for ANR window")
+            // We still want to wait for the app to get killed by the ActivityManager
+        }
+        waitForNewExitReasonAfter(timestamp)
     }
 
     @Test
     @DebugInputRule.DebugInput(bug = 339924248)
     fun testGestureMonitorAnr_Wait() {
+        assumeTrue(anrDialogsAreSupported)
+        startUnresponsiveActivity()
         triggerAnr()
         clickWaitOnAnrDialog()
         SystemClock.sleep(500) // Wait at least 500ms after tapping on wait
         // ANR dialog should reappear after a delay - find the close button on it to verify
+        val timestamp = System.currentTimeMillis()
         clickCloseAppOnAnrDialog()
+        waitForNewExitReasonAfter(timestamp)
     }
 
     private fun clickCloseAppOnAnrDialog() {
         // Find anr dialog and kill app
-        val timestamp = System.currentTimeMillis()
         val uiDevice: UiDevice = UiDevice.getInstance(instrumentation)
         val closeAppButton: UiObject2? =
             uiDevice.wait(Until.findObject(By.res("android:id/aerr_close")), 20000)
@@ -157,14 +164,6 @@ class AnrTest {
             return
         }
         closeAppButton.click()
-        /**
-         * We must wait for the app to be fully closed before exiting this test. This is because
-         * another test may again invoke 'am start' for the same activity. If the 1st process that
-         * got ANRd isn't killed by the time second 'am start' runs, the killing logic will apply to
-         * the newly launched 'am start' instance, and the second test will fail because the
-         * unresponsive activity will never be launched.
-         */
-        waitForNewExitReasonAfter(timestamp)
     }
 
     private fun clickWaitOnAnrDialog() {
@@ -180,16 +179,27 @@ class AnrTest {
     }
 
     private fun getExitReasons(): List<ApplicationExitInfo> {
+        val packageName = UnresponsiveGestureMonitorActivity::class.java.getPackage()!!.name
         lateinit var infos: List<ApplicationExitInfo>
         instrumentation.runOnMainSync {
             val am = instrumentation.getContext().getSystemService(ActivityManager::class.java)!!
-            infos = am.getHistoricalProcessExitReasons(PACKAGE_NAME, remotePid!!, NO_MAX)
+            infos = am.getHistoricalProcessExitReasons(packageName, remotePid!!, NO_MAX)
         }
         return infos
     }
 
+    /**
+     * We must wait for the app to be fully closed before exiting this test. This is because another
+     * test may again invoke 'am start' for the same activity. If the 1st process that got ANRd
+     * isn't killed by the time second 'am start' runs, the killing logic will apply to the newly
+     * launched 'am start' instance, and the second test will fail because the unresponsive activity
+     * will never be launched.
+     *
+     * Also, we must ensure that we wait until it's killed, so that the next test can launch this
+     * activity again.
+     */
     private fun waitForNewExitReasonAfter(timestamp: Long) {
-        PollingCheck.waitFor {
+        PollingCheck.waitFor(Duration.ofSeconds(20).toMillis() * Build.HW_TIMEOUT_MULTIPLIER) {
             val reasons = getExitReasons()
             !reasons.isEmpty() && reasons[0].timestamp >= timestamp
         }
@@ -199,16 +209,15 @@ class AnrTest {
     }
 
     private fun triggerAnr() {
-        clickOnWindow(
-            remoteWindowToken!!,
-            remoteDisplayId!!,
-            instrumentation,
-        ) { verifier.assertReceivedMotion(withMotionAction(ACTION_DOWN)) }
+        clickOnWindow(remoteWindowToken!!, remoteDisplayId!!, instrumentation) {
+            verifier.assertReceivedMotion(withMotionAction(ACTION_DOWN))
+        }
 
         SystemClock.sleep(DISPATCHING_TIMEOUT.toLong()) // default ANR timeout for gesture monitors
     }
 
     private fun startUnresponsiveActivity() {
+        remoteWindowToken = null
         val intent =
             Intent(instrumentation.targetContext, UnresponsiveGestureMonitorActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NEW_DOCUMENT
@@ -218,12 +227,17 @@ class AnrTest {
         instrumentation.targetContext.startActivity(intent)
         // first, wait for the token to become valid
         PollingCheck.check(
-                "UnresponsiveGestureMonitorActivity failed to call 'provideActivityInfo'",
-                Duration.ofSeconds(5).toMillis()) { remoteWindowToken != null }
+            "UnresponsiveGestureMonitorActivity failed to call 'provideActivityInfo'",
+            Duration.ofSeconds(10).toMillis() * Build.HW_TIMEOUT_MULTIPLIER,
+        ) {
+            remoteWindowToken != null
+        }
         // next, wait for the window of the activity to get on top
         // we could combine the two checks above, but the current setup makes it easier to detect
         // errors
-        assertTrue("Remote activity window did not become visible",
-          waitForWindowOnTop(Duration.ofSeconds(5), Supplier { remoteWindowToken }))
+        assertTrue(
+            "Remote activity window did not become visible",
+            waitForWindowOnTop(Duration.ofSeconds(5), Supplier { remoteWindowToken }),
+        )
     }
 }
