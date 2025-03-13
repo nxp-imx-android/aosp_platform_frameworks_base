@@ -23,7 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.FakeColorCorrectionRepository
 import com.android.systemui.coroutines.collectValues
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.colorcorrection.domain.model.ColorCorrectionTileModel
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.flowOf

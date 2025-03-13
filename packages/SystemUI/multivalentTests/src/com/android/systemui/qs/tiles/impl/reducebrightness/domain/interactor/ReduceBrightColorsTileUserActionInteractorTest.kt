@@ -28,9 +28,9 @@ import com.android.server.display.feature.flags.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.extradim.ExtraDimDialogManager
 import com.android.systemui.accessibility.reduceBrightColorsController
-import com.android.systemui.qs.tiles.base.actions.FakeQSTileIntentUserInputHandler
-import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandlerSubject
-import com.android.systemui.qs.tiles.base.interactor.QSTileInputTestKtx
+import com.android.systemui.qs.tiles.base.domain.actions.FakeQSTileIntentUserInputHandler
+import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandlerSubject
+import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
 import com.android.systemui.qs.tiles.impl.reducebrightness.domain.model.ReduceBrightColorsTileModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat

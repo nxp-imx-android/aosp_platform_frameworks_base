@@ -19,7 +19,7 @@ package com.android.systemui.qs.tiles.dialog
 import android.content.Intent
 import android.provider.Settings
 import com.android.systemui.plugins.qs.TileDetailsViewModel
-import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandler
+import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandler
 import com.android.systemui.statusbar.connectivity.AccessPointController
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject

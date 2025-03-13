@@ -25,7 +25,7 @@ import com.android.systemui.accessibility.hearingaid.HearingDevicesChecker
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.hearingdevices.domain.model.HearingDevicesTileModel
 import com.android.systemui.statusbar.policy.fakeBluetoothController
 import com.android.systemui.testKosmos

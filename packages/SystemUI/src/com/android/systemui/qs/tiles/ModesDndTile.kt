@@ -39,12 +39,12 @@ import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.asQSTileIcon
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigProvider
+import com.android.systemui.qs.tiles.base.shared.model.QSTileState
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesDndTileDataInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesDndTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
 import com.android.systemui.qs.tiles.impl.modes.ui.ModesDndTileMapper
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfigProvider
-import com.android.systemui.qs.tiles.viewmodel.QSTileState
 import com.android.systemui.res.R
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking

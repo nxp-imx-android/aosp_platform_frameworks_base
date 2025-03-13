@@ -24,8 +24,8 @@ import com.android.settingslib.notification.modes.ZenMode
 import com.android.settingslib.notification.modes.ZenModeDescriptions
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.modes.shared.ModesUi
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
-import com.android.systemui.qs.tiles.base.interactor.QSTileDataInteractor
+import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.policy.domain.interactor.ZenModeInteractor

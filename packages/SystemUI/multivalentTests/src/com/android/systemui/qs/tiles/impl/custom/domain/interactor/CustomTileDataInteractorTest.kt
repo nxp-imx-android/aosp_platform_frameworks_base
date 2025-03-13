@@ -31,7 +31,7 @@ import com.android.systemui.qs.external.iQSTileService
 import com.android.systemui.qs.external.tileServiceManagerFacade
 import com.android.systemui.qs.external.tileServicesFacade
 import com.android.systemui.qs.pipeline.shared.TileSpec
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.custom.TileSubject.Companion.assertThat
 import com.android.systemui.qs.tiles.impl.custom.customTileDefaultsRepository
 import com.android.systemui.qs.tiles.impl.custom.customTileInteractor
@@ -39,7 +39,7 @@ import com.android.systemui.qs.tiles.impl.custom.customTilePackagesUpdatesReposi
 import com.android.systemui.qs.tiles.impl.custom.customTileRepository
 import com.android.systemui.qs.tiles.impl.custom.customTileServiceInteractor
 import com.android.systemui.qs.tiles.impl.custom.customTileSpec
-import com.android.systemui.qs.tiles.impl.custom.data.entity.CustomTileDefaults
+import com.android.systemui.qs.tiles.impl.custom.data.model.CustomTileDefaults
 import com.android.systemui.qs.tiles.impl.custom.qsTileLogger
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository

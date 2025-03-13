@@ -31,8 +31,8 @@ import com.android.systemui.qs.external.CustomTileInterface
 import com.android.systemui.qs.external.TileServiceManager
 import com.android.systemui.qs.external.TileServices
 import com.android.systemui.qs.pipeline.shared.TileSpec
-import com.android.systemui.qs.tiles.base.logging.QSTileLogger
-import com.android.systemui.qs.tiles.impl.di.QSTileScope
+import com.android.systemui.qs.tiles.base.shared.logging.QSTileLogger
+import com.android.systemui.qs.tiles.base.shared.model.QSTileScope
 import com.android.systemui.user.data.repository.UserRepository
 import dagger.Lazy
 import javax.inject.Inject

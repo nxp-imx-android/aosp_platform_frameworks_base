@@ -25,8 +25,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.modes.shared.ModesUi
 import com.android.systemui.modes.shared.ModesUiIcons
 import com.android.systemui.qs.tiles.ModesTile
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
-import com.android.systemui.qs.tiles.base.interactor.QSTileDataInteractor
+import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesTileModel
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.policy.domain.interactor.ZenModeInteractor
