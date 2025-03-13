@@ -28,6 +28,7 @@ import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
+import android.view.InputDevice
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
@@ -62,12 +63,28 @@ class DesktopDisplayModeController(
             }
         }
 
+    private val inputDeviceListener =
+        object : InputManager.InputDeviceListener {
+            override fun onInputDeviceAdded(deviceId: Int) {
+                refreshDisplayWindowingMode()
+            }
+
+            override fun onInputDeviceChanged(deviceId: Int) {
+                refreshDisplayWindowingMode()
+            }
+
+            override fun onInputDeviceRemoved(deviceId: Int) {
+                refreshDisplayWindowingMode()
+            }
+        }
+
     init {
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
             inputManager.registerOnTabletModeChangedListener(
                 onTabletModeChangedListener,
                 mainHandler,
             )
+            inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
         }
     }
 
@@ -122,7 +139,7 @@ class DesktopDisplayModeController(
                 return true
             }
             if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-                if (isInClamshellMode()) {
+                if (isInClamshellMode() || hasAnyMouseDevice()) {
                     return true
                 }
             }
@@ -168,6 +185,11 @@ class DesktopDisplayModeController(
 
     private fun hasExternalDisplay() =
         rootTaskDisplayAreaOrganizer.getDisplayIds().any { it != DEFAULT_DISPLAY }
+
+    private fun hasAnyMouseDevice() =
+        inputManager.inputDeviceIds.any {
+            inputManager.getInputDevice(it)?.supportsSource(InputDevice.SOURCE_MOUSE) == true
+        }
 
     private fun isInClamshellMode() = inputManager.isInTabletMode() == InputManager.SWITCH_STATE_OFF
 
