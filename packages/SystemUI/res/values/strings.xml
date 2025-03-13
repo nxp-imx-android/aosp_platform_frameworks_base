@@ -2560,6 +2560,9 @@
     <!-- Button to edit the tile ordering of quick settings [CHAR LIMIT=60] -->
     <string name="qs_edit">Edit</string>
 
+    <!-- Title for QS Edit mode screen [CHAR LIMIT=30] -->
+    <string name="qs_edit_tiles">Edit tiles</string>
+
     <!-- SysUI Tuner: Options for how clock is displayed [CHAR LIMIT=NONE] -->
     <string name="tuner_time">Time</string>
 
