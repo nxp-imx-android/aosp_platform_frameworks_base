@@ -43,6 +43,7 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 /**
  * A Task Listener implementation used only for CUJs and trigger paths that cannot be initiated via
@@ -114,6 +115,17 @@ public class PipTaskListener implements ShellTaskOrganizer.TaskListener,
         // Set the new params but make sure mPictureInPictureParams is not null.
         mPictureInPictureParams = params == null
                 ? new PictureInPictureParams.Builder().build() : params;
+        logRemoteActions(mPictureInPictureParams);
+    }
+
+    private void logRemoteActions(@android.annotation.NonNull PictureInPictureParams params) {
+        StringJoiner sj = new StringJoiner("|", "[", "]");
+        if (params.hasSetActions()) {
+            params.getActions().forEach((action) -> sj.add(action.getTitle()));
+        }
+
+        ProtoLog.d(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
+                "PIP remote actions=%s", sj.toString());
     }
 
     /** Add a PipParamsChangedCallback listener. */
