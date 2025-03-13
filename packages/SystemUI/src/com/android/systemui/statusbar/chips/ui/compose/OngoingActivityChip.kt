@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,8 +37,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.animation.Expandable
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.load
@@ -79,6 +82,17 @@ fun OngoingActivityChip(
                 }
             is OngoingActivityChipModel.ClickBehavior.None -> null
         }
+    val isClickable = onClick != null
+
+    val chipSidePadding = dimensionResource(id = R.dimen.ongoing_activity_chip_side_padding)
+    val minWidth =
+        if (isClickable) {
+            dimensionResource(id = R.dimen.min_clickable_item_size)
+        } else if (model.icon != null) {
+            dimensionResource(id = R.dimen.ongoing_activity_chip_icon_size) + chipSidePadding
+        } else {
+            dimensionResource(id = R.dimen.ongoing_activity_chip_min_text_width) + chipSidePadding
+        }
 
     Expandable(
         color = Color(model.colors.background(LocalContext.current).defaultColor),
@@ -92,6 +106,15 @@ fun OngoingActivityChip(
                         this.contentDescription = contentDescription
                     }
                 }
+                .thenIf(isClickable) { Modifier.widthIn(min = minWidth) }
+                .layout { measurable, constraints ->
+                    val placeable = measurable.measure(constraints)
+                    layout(placeable.width, placeable.height) {
+                        if (constraints.maxWidth >= minWidth.roundToPx()) {
+                            placeable.place(0, 0)
+                        }
+                    }
+                }
                 .graphicsLayer(
                     alpha =
                         if (model.transitionManager?.hideChipForTransition == true) {
@@ -103,9 +126,12 @@ fun OngoingActivityChip(
         borderStroke = borderStroke,
         onClick = onClick,
         useModifierBasedImplementation = StatusBarChipsReturnAnimations.isEnabled,
+        // Some chips like the 3-2-1 countdown chip should be very small, smaller than a
+        // reasonable minimum size.
+        defaultMinSize = false,
         transitionControllerFactory = model.transitionManager?.controllerFactory,
     ) {
-        ChipBody(model, iconViewStore, isClickable = onClick != null)
+        ChipBody(model, iconViewStore, isClickable = isClickable, minWidth = minWidth)
     }
 }
 
@@ -114,21 +140,12 @@ private fun ChipBody(
     model: OngoingActivityChipModel.Active,
     iconViewStore: NotificationIconContainerViewBinder.IconViewStore?,
     isClickable: Boolean,
+    minWidth: Dp,
     modifier: Modifier = Modifier,
 ) {
     val hasEmbeddedIcon =
         model.icon is OngoingActivityChipModel.ChipIcon.StatusBarView ||
             model.icon is OngoingActivityChipModel.ChipIcon.StatusBarNotificationIcon
-
-    val chipSidePadding = dimensionResource(id = R.dimen.ongoing_activity_chip_side_padding)
-    val minWidth =
-        if (isClickable) {
-            dimensionResource(id = R.dimen.min_clickable_item_size)
-        } else if (model.icon != null) {
-            dimensionResource(id = R.dimen.ongoing_activity_chip_icon_size) + chipSidePadding
-        } else {
-            dimensionResource(id = R.dimen.ongoing_activity_chip_min_text_width) + chipSidePadding
-        }
 
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -136,14 +153,9 @@ private fun ChipBody(
         modifier =
             modifier
                 .fillMaxHeight()
-                .layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    layout(placeable.width, placeable.height) {
-                        if (constraints.maxWidth >= minWidth.roundToPx()) {
-                            placeable.place(0, 0)
-                        }
-                    }
-                }
+                // Set the minWidth here as well as on the Expandable so that the content within
+                // this row is still centered correctly horizontally
+                .thenIf(isClickable) { Modifier.widthIn(min = minWidth) }
                 .padding(
                     horizontal =
                         if (hasEmbeddedIcon) {

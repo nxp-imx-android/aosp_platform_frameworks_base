@@ -127,6 +127,8 @@ import kotlin.math.min
  *
  * @sample com.android.systemui.compose.gallery.ActivityLaunchScreen
  * @sample com.android.systemui.compose.gallery.DialogLaunchScreen
+ * @param defaultMinSize true if a default minimum size should be enforced even if this Expandable
+ *   isn't currently clickable and false otherwise.
  */
 @Composable
 fun Expandable(
@@ -140,6 +142,7 @@ fun Expandable(
     // TODO(b/285250939): Default this to true then remove once the Compose QS expandables have
     // proven that the new implementation is robust.
     useModifierBasedImplementation: Boolean = false,
+    defaultMinSize: Boolean = true,
     transitionControllerFactory: ComposableControllerFactory? = null,
     content: @Composable (Expandable) -> Unit,
 ) {
@@ -155,6 +158,7 @@ fun Expandable(
         onClick,
         interactionSource,
         useModifierBasedImplementation,
+        defaultMinSize,
         content,
     )
 }
@@ -182,6 +186,8 @@ fun Expandable(
  *
  * @sample com.android.systemui.compose.gallery.ActivityLaunchScreen
  * @sample com.android.systemui.compose.gallery.DialogLaunchScreen
+ * @param defaultMinSize true if a default minimum size should be enforced even if this Expandable
+ *   isn't currently clickable and false otherwise.
  */
 @Composable
 fun Expandable(
@@ -192,6 +198,7 @@ fun Expandable(
     // TODO(b/285250939): Default this to true then remove once the Compose QS expandables have
     // proven that the new implementation is robust.
     useModifierBasedImplementation: Boolean = false,
+    defaultMinSize: Boolean = true,
     content: @Composable (Expandable) -> Unit,
 ) {
     val controller = controller as ExpandableControllerImpl
@@ -209,7 +216,12 @@ fun Expandable(
 
     if (useModifierBasedImplementation) {
         Box(modifier.expandable(controller, onClick, interactionSource)) {
-            WrappedContent(controller.expandable, controller.contentColor, content)
+            WrappedContent(
+                controller.expandable,
+                controller.contentColor,
+                defaultMinSize = defaultMinSize,
+                content,
+            )
         }
         return
     }
@@ -221,7 +233,7 @@ fun Expandable(
     val wrappedContent =
         remember(content) {
             movableContentOf { expandable: Expandable ->
-                WrappedContent(expandable, contentColor, content)
+                WrappedContent(expandable, contentColor, defaultMinSize = defaultMinSize, content)
             }
         }
 
@@ -306,21 +318,24 @@ fun Expandable(
 private fun WrappedContent(
     expandable: Expandable,
     contentColor: Color,
+    defaultMinSize: Boolean,
     content: @Composable (Expandable) -> Unit,
 ) {
     val minSizeContent =
         @Composable {
-            // We make sure that the content itself (wrapped by the background) is at least 40.dp,
-            // which is the same as the M3 buttons. This applies even if onClick is null, to make it
-            // easier to write expandables that are sometimes clickable and sometimes not. There
-            // shouldn't be any Expandable smaller than 40dp because if the expandable is not
-            // clickable directly, then something in its content should be (and with a size >=
-            // 40dp).
-            val minSize = 40.dp
-            Box(
-                Modifier.defaultMinSize(minWidth = minSize, minHeight = minSize),
-                contentAlignment = Alignment.Center,
-            ) {
+            if (defaultMinSize) {
+                // We make sure that the content itself (wrapped by the background) is at
+                // least 40.dp, which is the same as the M3 buttons. This applies even if
+                // onClick is null, to make it easier to write expandables that are
+                // sometimes clickable and sometimes not.
+                val minSize = 40.dp
+                Box(
+                    modifier = Modifier.defaultMinSize(minWidth = minSize, minHeight = minSize),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    content(expandable)
+                }
+            } else {
                 content(expandable)
             }
         }
