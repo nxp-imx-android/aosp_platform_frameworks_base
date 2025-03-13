@@ -70,6 +70,9 @@ public class BluetoothEventManagerTest {
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final String DEVICE_NAME = "test_device_name";
+    private static final String DEVICE_ADDRESS_1 = "AA:BB:CC:DD:EE:11";
+    private static final String DEVICE_ADDRESS_2 = "AA:BB:CC:DD:EE:22";
+    private static final String DEVICE_ADDRESS_3 = "AA:BB:CC:DD:EE:33";
 
     @Mock
     private LocalBluetoothAdapter mLocalAdapter;
@@ -132,6 +135,9 @@ public class BluetoothEventManagerTest {
         when(mA2dpProfile.isProfileReady()).thenReturn(true);
         when(mHearingAidProfile.isProfileReady()).thenReturn(true);
         when(mLeAudioProfile.isProfileReady()).thenReturn(true);
+        when(mDevice1.getAddress()).thenReturn(DEVICE_ADDRESS_1);
+        when(mDevice2.getAddress()).thenReturn(DEVICE_ADDRESS_2);
+        when(mDevice3.getAddress()).thenReturn(DEVICE_ADDRESS_3);
         mCachedDevice1 = new CachedBluetoothDevice(mContext, mLocalProfileManager, mDevice1);
         mCachedDevice2 = new CachedBluetoothDevice(mContext, mLocalProfileManager, mDevice2);
         mCachedDevice3 = new CachedBluetoothDevice(mContext, mLocalProfileManager, mDevice3);
@@ -515,7 +521,6 @@ public class BluetoothEventManagerTest {
         cachedDevices.add(mCachedDevice2);
 
         int group1 = 1;
-        when(mDevice3.getAddress()).thenReturn("testAddress3");
         mCachedDevice1.setGroupId(group1);
         mCachedDevice3.setGroupId(group1);
         mCachedDevice1.addMemberDevice(mCachedDevice3);
@@ -620,18 +625,32 @@ public class BluetoothEventManagerTest {
     }
 
     @Test
-    public void dispatchActiveDeviceChanged_activeFromSubDevice_mainCachedDeviceActive() {
+    public void dispatchActiveDeviceChanged_activeFromSubDevice_bothCachedDevicesActive() {
         CachedBluetoothDevice subDevice = new CachedBluetoothDevice(mContext, mLocalProfileManager,
                 mDevice3);
         mCachedDevice1.setSubDevice(subDevice);
         when(mCachedDeviceManager.getCachedDevicesCopy()).thenReturn(
                 Collections.singletonList(mCachedDevice1));
-        mCachedDevice1.onProfileStateChanged(mHearingAidProfile,
-                BluetoothProfile.STATE_CONNECTED);
+        mCachedDevice1.onProfileStateChanged(mHearingAidProfile, BluetoothProfile.STATE_CONNECTED);
 
-        assertThat(mCachedDevice1.isActiveDevice(BluetoothProfile.HEARING_AID)).isFalse();
         mBluetoothEventManager.dispatchActiveDeviceChanged(subDevice, BluetoothProfile.HEARING_AID);
+
         assertThat(mCachedDevice1.isActiveDevice(BluetoothProfile.HEARING_AID)).isTrue();
+        assertThat(subDevice.isActiveDevice(BluetoothProfile.HEARING_AID)).isTrue();
+    }
+
+    @Test
+    public void dispatchActiveDeviceChanged_activeFromMemberDevice_allCachedDevicesActive() {
+        mCachedDevice1.addMemberDevice(mCachedDevice2);
+        when(mCachedDeviceManager.getCachedDevicesCopy()).thenReturn(
+                Collections.singletonList(mCachedDevice1));
+        mCachedDevice1.onProfileStateChanged(mLeAudioProfile, BluetoothProfile.STATE_CONNECTED);
+
+        mBluetoothEventManager.dispatchActiveDeviceChanged(mCachedDevice2,
+                BluetoothProfile.LE_AUDIO);
+
+        assertThat(mCachedDevice1.isActiveDevice(BluetoothProfile.LE_AUDIO)).isTrue();
+        assertThat(mCachedDevice2.isActiveDevice(BluetoothProfile.LE_AUDIO)).isTrue();
     }
 
     @Test
