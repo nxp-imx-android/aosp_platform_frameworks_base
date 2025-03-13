@@ -18,21 +18,20 @@ package com.android.hoststubgen.asm
 import com.android.hoststubgen.ClassParseException
 import com.android.hoststubgen.InvalidJarFileException
 import com.android.hoststubgen.log
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.tree.AnnotationNode
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.FieldNode
-import org.objectweb.asm.tree.MethodNode
-import org.objectweb.asm.tree.TypeAnnotationNode
-import java.io.BufferedInputStream
 import java.io.PrintWriter
 import java.util.Arrays
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Consumer
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
+import org.apache.commons.compress.archivers.zip.ZipFile
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.tree.AnnotationNode
+import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.FieldNode
+import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.tree.TypeAnnotationNode
 
 /**
  * Stores all classes loaded from a jar file, in a form of [ClassNode]
@@ -189,7 +188,8 @@ class ClassNodes {
          * Load all the classes, without code.
          */
         fun loadClassStructures(
-            inJar: String,
+            inJar: ZipFile,
+            jarName: String,
             timeCollector: Consumer<Double>? = null,
         ): ClassNodes {
             val allClasses = ClassNodes()
@@ -201,20 +201,19 @@ class ClassNodes {
             val exception = AtomicReference<Throwable>()
 
             // Called on a BG thread. Read a single jar entry and add it to [allClasses].
-            fun parseClass(inZip: ZipFile, entry: ZipEntry) {
+            fun parseClass(inZip: ZipFile, entry: ZipArchiveEntry) {
                 try {
-                    inZip.getInputStream(entry).use { ins ->
-                        val cr = ClassReader(BufferedInputStream(ins))
-                        val cn = ClassNode()
-                        cr.accept(
-                            cn, ClassReader.SKIP_CODE
-                                    or ClassReader.SKIP_DEBUG
-                                    or ClassReader.SKIP_FRAMES
-                        )
-                        synchronized(allClasses) {
-                            if (!allClasses.addClass(cn)) {
-                                log.w("Duplicate class found: ${cn.name}")
-                            }
+                    val classBytes = inZip.getInputStream(entry).use { it.readAllBytes() }
+                    val cr = ClassReader(classBytes)
+                    val cn = ClassNode()
+                    cr.accept(
+                        cn, ClassReader.SKIP_CODE
+                                or ClassReader.SKIP_DEBUG
+                                or ClassReader.SKIP_FRAMES
+                    )
+                    synchronized(allClasses) {
+                        if (!allClasses.addClass(cn)) {
+                            log.w("Duplicate class found: ${cn.name}")
                         }
                     }
                 } catch (e: Throwable) {
@@ -224,35 +223,30 @@ class ClassNodes {
             }
 
             // Actually open the jar and read it on worker threads.
-            val time = log.iTime("Reading class structure from $inJar") {
+            val time = log.iTime("Reading class structure from $jarName") {
                 log.withIndent {
-                    ZipFile(inJar).use { inZip ->
-                        val inEntries = inZip.entries()
-
-                        while (inEntries.hasMoreElements()) {
-                            val entry = inEntries.nextElement()
-
-                            if (entry.name.endsWith(".class")) {
-                                executor.submit {
-                                    parseClass(inZip, entry)
-                                }
-                            } else if (entry.name.endsWith(".dex")) {
-                                // Seems like it's an ART jar file. We can't process it.
-                                // It's a fatal error.
-                                throw InvalidJarFileException(
-                                    "$inJar is not a desktop jar file."
-                                            + " It contains a *.dex file."
-                                )
-                            } else {
-                                // Unknown file type. Skip.
+                    inJar.entries.asSequence().forEach { entry ->
+                        if (entry.name.endsWith(".class")) {
+                            executor.submit {
+                                parseClass(inJar, entry)
                             }
+                        } else if (entry.name.endsWith(".dex")) {
+                            // Seems like it's an ART jar file. We can't process it.
+                            // It's a fatal error.
+                            throw InvalidJarFileException(
+                                "$jarName is not a desktop jar file."
+                                        + " It contains a *.dex file."
+                            )
+                        } else {
+                            // Unknown file type. Skip.
                         }
-                        // Wait for all the work to complete. (must do it before closing the zip)
-                        log.i("Waiting for all loaders to finish...")
-                        executor.shutdown()
-                        executor.awaitTermination(5, TimeUnit.MINUTES)
-                        log.i("All loaders to finished.")
                     }
+
+                    // Wait for all the work to complete. (must do it before closing the zip)
+                    log.i("Waiting for all loaders to finish...")
+                    executor.shutdown()
+                    executor.awaitTermination(5, TimeUnit.MINUTES)
+                    log.i("All loaders to finished.")
                 }
 
                 // If any exception is detected, throw it.
@@ -261,9 +255,9 @@ class ClassNodes {
                 }
 
                 if (allClasses.size == 0) {
-                    log.w("$inJar contains no *.class files.")
+                    log.w("$jarName contains no *.class files.")
                 } else {
-                    log.i("Loaded ${allClasses.size} classes from $inJar.")
+                    log.i("Loaded ${allClasses.size} classes from $jarName.")
                 }
             }
             timeCollector?.accept(time)
