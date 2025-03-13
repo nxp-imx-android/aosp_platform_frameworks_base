@@ -759,9 +759,20 @@ public class BatteryStatsHistory {
                     break;
                 }
 
-                if (fragment.monotonicTimeMs >= startTimeMs && fragment != mActiveFragment) {
-                    containers.add(new BatteryHistoryParcelContainer(fragment));
+                if (fragment.monotonicTimeMs >= mHistoryBufferStartTime) {
+                    // Do not include the backup of the current buffer, which is explicitly
+                    // included later
+                    continue;
                 }
+
+                if (i < fragments.size() - 1
+                        && fragments.get(i + 1).monotonicTimeMs < startTimeMs) {
+                    // Since fragments are ordered, an early start of next fragment implies an
+                    // early end for this one.
+                    continue;
+                }
+
+                containers.add(new BatteryHistoryParcelContainer(fragment));
             }
         }
 
