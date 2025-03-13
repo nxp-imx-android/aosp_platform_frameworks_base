@@ -1080,6 +1080,9 @@ public class RemoteViewsTest {
         rv.setOnClickFillInIntent(R.id.view, fillInIntent);
         assertNotEquals(0, fillInIntent.getExtendedFlags()
                 & Intent.EXTENDED_FLAG_NESTED_INTENT_KEYS_COLLECTED);
+
+        RemoteViews.RemoteResponse rr = RemoteViews.RemoteResponse.fromFillInIntent(null);
+        assertNotNull(rr);
     }
 
     private static LayoutInflater.Factory2 createLayoutInflaterFactory(String viewTypeToReplace,
