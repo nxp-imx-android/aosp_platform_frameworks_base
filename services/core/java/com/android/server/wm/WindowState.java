@@ -5507,10 +5507,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 || mKeyInterceptionInfo.layoutParamsPrivateFlags != mAttrs.privateFlags
                 || mKeyInterceptionInfo.layoutParamsType != mAttrs.type
                 || mKeyInterceptionInfo.windowTitle != getWindowTag()
-                || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()
-                || mKeyInterceptionInfo.inputFeaturesFlags != mAttrs.inputFeatures) {
+                || mKeyInterceptionInfo.windowOwnerUid != getOwningUid()) {
             mKeyInterceptionInfo = new KeyInterceptionInfo(mAttrs.type, mAttrs.privateFlags,
-                    getWindowTag().toString(), getOwningUid(), mAttrs.inputFeatures);
+                    getWindowTag().toString(), getOwningUid());
         }
         return mKeyInterceptionInfo;
     }
