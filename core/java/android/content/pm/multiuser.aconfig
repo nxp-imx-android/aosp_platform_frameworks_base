@@ -646,3 +646,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+     name: "profiles_for_all"
+     namespace: "multiuser"
+     description: "Allows any regular user to have profiles"
+     bug: "374832167"
+}

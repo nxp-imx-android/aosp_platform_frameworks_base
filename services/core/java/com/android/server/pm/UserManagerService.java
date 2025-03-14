@@ -7724,6 +7724,7 @@ public class UserManagerService extends IUserManager.Stub {
 
         pw.print("    Has profile owner: ");
         pw.println(mIsUserManaged.get(userId));
+
         pw.println("    Restrictions:");
         synchronized (mRestrictionsLock) {
             UserRestrictionsUtils.dumpRestrictions(
@@ -7755,6 +7756,9 @@ public class UserManagerService extends IUserManager.Stub {
                 pw.println();
             }
         }
+
+        pw.print("    Can have profile: ");
+        pw.println(userInfo.canHaveProfile());
 
         if (userData.userProperties != null) {
             userData.userProperties.println(pw, "    ");

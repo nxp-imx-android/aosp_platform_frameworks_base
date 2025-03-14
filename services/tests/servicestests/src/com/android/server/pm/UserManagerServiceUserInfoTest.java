@@ -274,7 +274,7 @@ public class UserManagerServiceUserInfoTest {
     /** Test UserInfo.canHaveProfile for main user */
     @Test
     public void testCanHaveProfile() throws Exception {
-        UserInfo userInfo = createUser(100, FLAG_MAIN, null);
+        UserInfo userInfo = createUser(100, FLAG_FULL | FLAG_MAIN, null);
         assertTrue("Main users can have profile", userInfo.canHaveProfile());
     }
 
