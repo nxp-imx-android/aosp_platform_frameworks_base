@@ -746,7 +746,16 @@ constructor(
                                 Box(
                                     Modifier.systemGestureExclusionInShade(
                                         enabled = {
-                                            layoutState.transitionState is TransitionState.Idle
+                                            /*
+                                             * While we are transitioning into QS (either from QQS
+                                             * or from gone), the global position of the brightness
+                                             * slider will change in every frame. This causes
+                                             * the modifier to send a new gesture exclusion
+                                             * rectangle on every frame. Instead, only apply the
+                                             * modifier when this is settled.
+                                             */
+                                            layoutState.transitionState is TransitionState.Idle &&
+                                                viewModel.isNotTransitioning
                                         }
                                     )
                                 ) {
