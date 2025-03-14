@@ -139,7 +139,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
 
             // WHEN setting a translation that will fall below the threshold
-            val translation = threshold / underTest.swipedRowMultiplier - 50f
+            val translation = 50f
             underTest.setMagneticRowTranslation(swipedRow, translation)
 
             // THEN the targets continue to be pulled and translations are set
@@ -162,7 +162,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
 
             // WHEN setting a translation that will fall below the threshold
-            val translation = threshold / underTest.swipedRowMultiplier - 50f
+            val translation = 50f
             underTest.setMagneticRowTranslation(swipedRow, translation)
 
             // THEN the targets continue to be pulled and reduced translations are set
@@ -185,7 +185,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
 
             // WHEN setting a translation that will fall above the threshold
-            val translation = threshold / underTest.swipedRowMultiplier + 50f
+            val translation = 150f
             underTest.setMagneticRowTranslation(swipedRow, translation)
 
             // THEN the swiped view detaches and the correct detach haptics play
@@ -208,7 +208,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
 
             // WHEN setting a translation that will fall above the threshold
-            val translation = threshold / underTest.swipedRowMultiplier + 50f
+            val translation = 150f
             underTest.setMagneticRowTranslation(swipedRow, translation)
 
             // THEN the swiped view does not detach and the reduced translation is set
@@ -355,7 +355,7 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         underTest.setMagneticRowTranslation(swipedRow, translation = 100f)
 
         // Set a translation that will fall above the threshold
-        val translation = threshold / underTest.swipedRowMultiplier + 50f
+        val translation = 150f
         underTest.setMagneticRowTranslation(swipedRow, translation)
 
         assertThat(underTest.currentState).isEqualTo(State.DETACHED)
