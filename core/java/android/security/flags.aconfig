@@ -97,10 +97,13 @@ flag {
 }
 
 flag {
-    name: "clear_strong_auth_on_add_primary_credential"
+    name: "clear_strong_auth_on_adding_primary_credential"
     namespace: "biometrics"
-    description: "Clear StrongAuth on add credential"
+    description: "Clear StrongAuth on adding credential"
     bug: "320817991"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
