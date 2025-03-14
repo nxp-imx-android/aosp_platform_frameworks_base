@@ -166,3 +166,10 @@ flag {
     bug: "393517834"
     is_exported: true
 }
+
+flag {
+    name: "external_virtual_cameras"
+    namespace: "virtual_devices"
+    description: "Allow external virtual cameras visible only in the Context of the virtual device"
+    bug: "375609768"
+}
