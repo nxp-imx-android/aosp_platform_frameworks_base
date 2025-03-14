@@ -1284,13 +1284,14 @@ class TransitionController {
             // ignore ourself obviously
             if (mPlayingTransitions.get(i) == transition) continue;
             if (getIsIndependent(mPlayingTransitions.get(i), transition)) continue;
-            if (track >= 0) {
+            if (track < 0) {
+                track = mPlayingTransitions.get(i).mAnimationTrack;
+            } else if (track != mPlayingTransitions.get(i).mAnimationTrack) {
                 // At this point, transition overlaps with multiple tracks, so just wait for
                 // everything
                 sync = true;
                 break;
             }
-            track = mPlayingTransitions.get(i).mAnimationTrack;
         }
         if (sync) {
             track = 0;
