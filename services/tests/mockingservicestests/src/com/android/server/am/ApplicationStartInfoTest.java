@@ -680,6 +680,67 @@ public class ApplicationStartInfoTest {
                 ApplicationStartInfo.START_TIMESTAMP_FORK));
     }
 
+    /**
+     * Test that cleanup old records works as expected, removing records that are older than the max
+     * retention length.
+     */
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_APP_START_INFO_CLEANUP_OLD_RECORDS)
+    public void testOldRecordsCleanup() throws Exception {
+        // Use a different start timestamp for each record so we can identify which was removed.
+        // This timestamp is not used for ordering and has no impact on removal.
+        final long startTimeRecord1 = 123L;
+        final long startTimeRecord2 = 456L;
+        final long startTimeRecord3 = 789L;
+
+        // Create a process record to use with all starts.
+        ProcessRecord app = makeProcessRecord(
+                APP_1_PID_1,                     // pid
+                APP_1_UID,                       // uid
+                APP_1_UID,                       // packageUid
+                null,                            // definingUid
+                APP_1_PROCESS_NAME,              // processName
+                APP_1_PACKAGE_NAME);             // packageName
+
+        // Set monotonic time to 1, and then trigger a start info record.
+        doReturn(1L).when(mAppStartInfoTracker).getMonotonicTimeMs();
+        mAppStartInfoTracker.handleProcessBroadcastStart(startTimeRecord1, app,
+                buildIntent(COMPONENT), false /* isAlarm */);
+
+        // Set monotonic time to 2, and then trigger another start info record.
+        doReturn(2L).when(mAppStartInfoTracker).getMonotonicTimeMs();
+        mAppStartInfoTracker.handleProcessBroadcastStart(startTimeRecord2, app,
+                buildIntent(COMPONENT), false /* isAlarm */);
+
+        // Set monotonic time to 3, then trigger another start info record.
+        doReturn(3L).when(mAppStartInfoTracker).getMonotonicTimeMs();
+        mAppStartInfoTracker.handleProcessBroadcastStart(startTimeRecord3, app,
+                buildIntent(COMPONENT), false /* isAlarm */);
+
+        // Verify that all 3 records were added successfully.
+        ArrayList<ApplicationStartInfo> list = new ArrayList<ApplicationStartInfo>();
+        mAppStartInfoTracker.getStartInfo(null, APP_1_UID, 0, 0, list);
+        assertEquals(3, list.size());
+        assertEquals(startTimeRecord3, list.get(0).getStartupTimestamps().get(0).longValue());
+        assertEquals(startTimeRecord2, list.get(1).getStartupTimestamps().get(0).longValue());
+        assertEquals(startTimeRecord1, list.get(2).getStartupTimestamps().get(0).longValue());
+
+        // Set monotonic time to max history length + 3 so that the older 2 records will be removed
+        // but that newest 1 will remain.
+        doReturn(AppStartInfoTracker.APP_START_INFO_HISTORY_LENGTH_MS + 3L)
+                .when(mAppStartInfoTracker).getMonotonicTimeMs();
+
+        // Trigger a persist which will trigger the cleanup of old records.
+        mAppStartInfoTracker.persistProcessStartInfo();
+
+        // Now verify that the records older than max were removed, and that the records not older
+        // remain.
+        list.clear();
+        mAppStartInfoTracker.getStartInfo(null, APP_1_UID, 0, 0, list);
+        assertEquals(1, list.size());
+        assertEquals(startTimeRecord3, list.get(0).getStartupTimestamps().get(0).longValue());
+    }
+
     private static <T> void setFieldValue(Class clazz, Object obj, String fieldName, T val) {
         try {
             Field field = clazz.getDeclaredField(fieldName);

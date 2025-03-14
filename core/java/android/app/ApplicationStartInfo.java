@@ -231,9 +231,9 @@ public final class ApplicationStartInfo implements Parcelable {
     public static final int START_COMPONENT_OTHER = 5;
 
     /**
-     * @see #getMonoticCreationTimeMs
+     * @see #getMonotonicCreationTimeMs
      */
-    private long mMonoticCreationTimeMs;
+    private long mMonotonicCreationTimeMs;
 
     /**
      * @see #getStartupState
@@ -545,8 +545,8 @@ public final class ApplicationStartInfo implements Parcelable {
      *
      * @hide
      */
-    public long getMonoticCreationTimeMs() {
-        return mMonoticCreationTimeMs;
+    public long getMonotonicCreationTimeMs() {
+        return mMonotonicCreationTimeMs;
     }
 
     /**
@@ -751,14 +751,14 @@ public final class ApplicationStartInfo implements Parcelable {
         dest.writeParcelable(mStartIntent, flags);
         dest.writeInt(mLaunchMode);
         dest.writeBoolean(mWasForceStopped);
-        dest.writeLong(mMonoticCreationTimeMs);
+        dest.writeLong(mMonotonicCreationTimeMs);
         dest.writeInt(mStartComponent);
     }
     // LINT.ThenChange(:read_parcel)
 
     /** @hide */
     public ApplicationStartInfo(long monotonicCreationTimeMs) {
-        mMonoticCreationTimeMs = monotonicCreationTimeMs;
+        mMonotonicCreationTimeMs = monotonicCreationTimeMs;
     }
 
     /** @hide */
@@ -776,7 +776,7 @@ public final class ApplicationStartInfo implements Parcelable {
         mStartIntent = other.mStartIntent;
         mLaunchMode = other.mLaunchMode;
         mWasForceStopped = other.mWasForceStopped;
-        mMonoticCreationTimeMs = other.mMonoticCreationTimeMs;
+        mMonotonicCreationTimeMs = other.mMonotonicCreationTimeMs;
         mStartComponent = other.mStartComponent;
     }
 
@@ -803,7 +803,7 @@ public final class ApplicationStartInfo implements Parcelable {
                 in.readParcelable(Intent.class.getClassLoader(), android.content.Intent.class);
         mLaunchMode = in.readInt();
         mWasForceStopped = in.readBoolean();
-        mMonoticCreationTimeMs = in.readLong();
+        mMonotonicCreationTimeMs = in.readLong();
         mStartComponent = in.readInt();
     }
     // LINT.ThenChange(:write_parcel)
@@ -887,7 +887,7 @@ public final class ApplicationStartInfo implements Parcelable {
         }
         proto.write(ApplicationStartInfoProto.LAUNCH_MODE, mLaunchMode);
         proto.write(ApplicationStartInfoProto.WAS_FORCE_STOPPED, mWasForceStopped);
-        proto.write(ApplicationStartInfoProto.MONOTONIC_CREATION_TIME_MS, mMonoticCreationTimeMs);
+        proto.write(ApplicationStartInfoProto.MONOTONIC_CREATION_TIME_MS, mMonotonicCreationTimeMs);
         proto.write(ApplicationStartInfoProto.START_COMPONENT, mStartComponent);
         proto.end(token);
     }
@@ -980,7 +980,7 @@ public final class ApplicationStartInfo implements Parcelable {
                             ApplicationStartInfoProto.WAS_FORCE_STOPPED);
                     break;
                 case (int) ApplicationStartInfoProto.MONOTONIC_CREATION_TIME_MS:
-                    mMonoticCreationTimeMs = proto.readLong(
+                    mMonotonicCreationTimeMs = proto.readLong(
                             ApplicationStartInfoProto.MONOTONIC_CREATION_TIME_MS);
                     break;
                 case (int) ApplicationStartInfoProto.START_COMPONENT:
@@ -999,7 +999,7 @@ public final class ApplicationStartInfo implements Parcelable {
         sb.append(prefix)
                 .append("ApplicationStartInfo ").append(seqSuffix).append(':')
                 .append('\n')
-                .append(" monotonicCreationTimeMs=").append(mMonoticCreationTimeMs)
+                .append(" monotonicCreationTimeMs=").append(mMonotonicCreationTimeMs)
                 .append('\n')
                 .append(" pid=").append(mPid)
                 .append(" realUid=").append(mRealUid)
@@ -1094,7 +1094,7 @@ public final class ApplicationStartInfo implements Parcelable {
                 && TextUtils.equals(mProcessName, o.mProcessName)
                 && timestampsEquals(o)
                 && mWasForceStopped == o.mWasForceStopped
-                && mMonoticCreationTimeMs == o.mMonoticCreationTimeMs
+                && mMonotonicCreationTimeMs == o.mMonotonicCreationTimeMs
                 && mStartComponent == o.mStartComponent;
     }
 
@@ -1102,7 +1102,7 @@ public final class ApplicationStartInfo implements Parcelable {
     public int hashCode() {
         return Objects.hash(mPid, mRealUid, mPackageUid, mDefiningUid, mReason, mStartupState,
                 mStartType, mLaunchMode, mPackageName, mProcessName, mStartupTimestampsNs,
-                mMonoticCreationTimeMs, mStartComponent);
+                mMonotonicCreationTimeMs, mStartComponent);
     }
 
     private boolean timestampsEquals(@NonNull ApplicationStartInfo other) {
