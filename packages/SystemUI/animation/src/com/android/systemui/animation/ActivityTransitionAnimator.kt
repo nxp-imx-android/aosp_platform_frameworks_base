@@ -1476,9 +1476,14 @@ constructor(
                 transitionAnimator.isExpandingFullyAbove(controller.transitionContainer, endState)
             val windowState = startingWindowState ?: controller.windowAnimatorState
 
+            // We only reparent launch animations. In current integrations, returns are
+            // not affected by the issue solved by reparenting, and they present
+            // additional problems when the view lives in the Status Bar.
+            // TODO(b/397646693): remove this exception.
+            val isEligibleForReparenting = controller.isLaunching
             val viewRoot = controller.transitionContainer.viewRootImpl
             val skipReparenting = skipReparentTransaction || viewRoot == null
-            if (moveTransitionAnimationLayer() && !skipReparenting) {
+            if (moveTransitionAnimationLayer() && isEligibleForReparenting && !skipReparenting) {
                 reparent = true
             }
 
