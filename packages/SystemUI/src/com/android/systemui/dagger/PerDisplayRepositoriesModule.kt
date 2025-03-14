@@ -19,6 +19,7 @@ package com.android.systemui.dagger
 import com.android.app.displaylib.DefaultDisplayOnlyInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.app.displaylib.PerDisplayRepository
+import com.android.systemui.display.data.repository.DisplayComponentRepository
 import com.android.systemui.display.data.repository.PerDisplayCoroutineScopeRepositoryModule
 import com.android.systemui.model.SysUIStateInstanceProvider
 import com.android.systemui.model.SysUiState
@@ -27,7 +28,9 @@ import dagger.Module
 import dagger.Provides
 
 /** This module is meant to contain all the code to create the various [PerDisplayRepository<>]. */
-@Module(includes = [PerDisplayCoroutineScopeRepositoryModule::class])
+@Module(
+    includes = [PerDisplayCoroutineScopeRepositoryModule::class, DisplayComponentRepository::class]
+)
 class PerDisplayRepositoriesModule {
 
     @SysUISingleton
