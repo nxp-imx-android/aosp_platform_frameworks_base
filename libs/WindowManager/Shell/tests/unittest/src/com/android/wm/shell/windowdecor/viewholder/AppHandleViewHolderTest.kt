@@ -78,7 +78,8 @@ class AppHandleViewHolderTest : ShellTestCase() {
                 position = captionPosition,
                 width = CAPTION_WIDTH,
                 height = CAPTION_HEIGHT,
-                showInputLayer = false
+                showInputLayer = false,
+                isCaptionVisible = true
             )
         )
 

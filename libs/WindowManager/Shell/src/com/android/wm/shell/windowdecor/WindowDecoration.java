@@ -48,6 +48,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowlessWindowManager;
 import android.window.DesktopExperienceFlags;
+import android.window.DesktopModeFlags;
 import android.window.SurfaceSyncGroup;
 import android.window.TaskConstants;
 import android.window.WindowContainerToken;
@@ -652,7 +653,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
      */
     private void updateCaptionVisibility(View rootView, @NonNull RelayoutParams params) {
         mIsCaptionVisible = params.mIsCaptionVisible;
-        setCaptionVisibility(rootView, mIsCaptionVisible);
+        if (!DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
+            setCaptionVisibility(rootView, mIsCaptionVisible);
+        }
     }
 
     void setTaskDragResizer(TaskDragResizer taskDragResizer) {
