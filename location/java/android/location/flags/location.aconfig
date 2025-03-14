@@ -212,3 +212,10 @@ flag {
     bug: "402997842"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "missing_attribution_tags_in_overlay"
+    namespace: "location"
+    description: "Adds missing attribution tags in the Fused and Gnss overlay"
+    bug: "403337028"
+}
