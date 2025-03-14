@@ -14544,23 +14544,23 @@ public class NotificationManagerService extends SystemService {
      */
     private class NotificationTrampolineCallback implements BackgroundActivityStartCallback {
         @Override
-        public boolean isActivityStartAllowed(Collection<IBinder> tokens, int uid,
-                String packageName) {
+        public BackgroundActivityStartCallbackResult isActivityStartAllowed(
+                Collection<IBinder> tokens, int uid, String packageName) {
             checkArgument(!tokens.isEmpty());
             for (IBinder token : tokens) {
                 if (token != ALLOWLIST_TOKEN) {
                     // We only block or warn if the start is exclusively due to notification
-                    return true;
+                    return RESULT_TRUE;
                 }
             }
             String logcatMessage =
                     "Indirect notification activity start (trampoline) from " + packageName;
             if (blockTrampoline(uid)) {
                 Slog.e(TAG, logcatMessage + " blocked");
-                return false;
+                return RESULT_FALSE;
             } else {
                 Slog.w(TAG, logcatMessage + ", this should be avoided for performance reasons");
-                return true;
+                return new BackgroundActivityStartCallbackResult(true, ALLOWLIST_TOKEN);
             }
         }
 
