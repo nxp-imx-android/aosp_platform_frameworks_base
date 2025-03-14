@@ -238,6 +238,7 @@ void VulkanManager::setupDevice(skgpu::VulkanExtensions& grExtensions,
     for (uint32_t i = 0; i < queueCount; i++) {
         queuePriorityProps[i].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_GLOBAL_PRIORITY_PROPERTIES_EXT;
         queuePriorityProps[i].pNext = nullptr;
+        queueProps[i].sType = VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2;
         queueProps[i].pNext = &queuePriorityProps[i];
     }
     mGetPhysicalDeviceQueueFamilyProperties2(mPhysicalDevice, &queueCount, queueProps.get());
