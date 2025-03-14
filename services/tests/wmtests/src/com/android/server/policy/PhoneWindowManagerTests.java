@@ -63,6 +63,7 @@ import android.view.contentprotection.flags.Flags;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.util.test.LocalServiceKeeperRule;
+import com.android.internal.widget.LockPatternUtils;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.policy.keyguard.KeyguardServiceDelegate;
@@ -119,6 +120,8 @@ public class PhoneWindowManagerTests {
     private DisplayPolicy mDisplayPolicy;
     @Mock
     private KeyguardServiceDelegate mKeyguardServiceDelegate;
+    @Mock
+    private LockPatternUtils mLockPatternUtils;
 
     @Before
     public void setUp() {
@@ -253,6 +256,7 @@ public class PhoneWindowManagerTests {
     @Test
     public void powerPress_hubOrDreamOrSleep_goesToSleepFromDream() {
         when(mDisplayPolicy.isAwake()).thenReturn(true);
+        when(mLockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false);
         initPhoneWindowManager();
 
         // Set power button behavior.
@@ -274,6 +278,7 @@ public class PhoneWindowManagerTests {
     @Test
     public void powerPress_hubOrDreamOrSleep_hubAvailableLocks() {
         when(mDisplayPolicy.isAwake()).thenReturn(true);
+        when(mLockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false);
         mContext.getTestablePermissions().setPermission(android.Manifest.permission.DEVICE_POWER,
                 PERMISSION_GRANTED);
         initPhoneWindowManager();
@@ -302,6 +307,7 @@ public class PhoneWindowManagerTests {
     @Test
     public void powerPress_hubOrDreamOrSleep_hubNotAvailableDreams() {
         when(mDisplayPolicy.isAwake()).thenReturn(true);
+        when(mLockPatternUtils.isLockScreenDisabled(anyInt())).thenReturn(false);
         initPhoneWindowManager();
 
         // Set power button behavior.
@@ -343,6 +349,11 @@ public class PhoneWindowManagerTests {
 
         KeyguardServiceDelegate getKeyguardServiceDelegate() {
             return mKeyguardServiceDelegate;
+        }
+
+        @Override
+        LockPatternUtils getLockPatternUtils() {
+            return mLockPatternUtils;
         }
 
         /**
