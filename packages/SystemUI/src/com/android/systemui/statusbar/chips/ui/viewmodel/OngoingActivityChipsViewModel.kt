@@ -265,11 +265,12 @@ constructor(
         // [shouldSquish] returns false for that model, but protect against it just in case.)
         val currentIcon = icon ?: return this
         return OngoingActivityChipModel.Active.IconOnly(
-            key,
-            currentIcon,
-            colors,
-            onClickListenerLegacy,
-            clickBehavior,
+            key = key,
+            isImportantForPrivacy = isImportantForPrivacy,
+            icon = currentIcon,
+            colors = colors,
+            onClickListenerLegacy = onClickListenerLegacy,
+            clickBehavior = clickBehavior,
         )
     }
 

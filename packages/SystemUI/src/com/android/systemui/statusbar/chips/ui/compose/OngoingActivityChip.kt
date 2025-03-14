@@ -107,11 +107,15 @@ fun OngoingActivityChip(
                     }
                 }
                 .thenIf(isClickable) { Modifier.widthIn(min = minWidth) }
-                .layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    layout(placeable.width, placeable.height) {
-                        if (constraints.maxWidth >= minWidth.roundToPx()) {
-                            placeable.place(0, 0)
+                // For non-privacy-related chips, only show the chip if there's enough space for at
+                // least the minimum width.
+                .thenIf(!model.isImportantForPrivacy) {
+                    Modifier.layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        layout(placeable.width, placeable.height) {
+                            if (constraints.maxWidth >= minWidth.roundToPx()) {
+                                placeable.place(0, 0)
+                            }
                         }
                     }
                 }

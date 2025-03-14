@@ -110,6 +110,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Starting(400)
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Countdown::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active).icon).isNull()
             assertThat((latest as OngoingActivityChipModel.Active).onClickListenerLegacy).isNull()
         }
@@ -156,6 +157,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
             screenRecordRepo.screenRecordState.value = ScreenRecordModel.Recording
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             val icon =
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
@@ -261,6 +263,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
             mediaProjectionRepo.mediaProjectionState.value = MediaProjectionState.NotProjecting
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
                 .isEqualTo(1234)
 
@@ -275,6 +278,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             // THEN the start time is still the old start time
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
             assertThat((latest as OngoingActivityChipModel.Active.Timer).startTimeMs)
                 .isEqualTo(1234)
         }
