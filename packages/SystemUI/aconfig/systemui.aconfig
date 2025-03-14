@@ -2124,7 +2124,7 @@ flag {
     name: "media_projection_grey_error_text"
     namespace: "systemui"
     description: "Set the error text color to grey when app sharing is hidden by the requesting app"
-    bug: "390624334"
+    bug: "400877402"
     metadata {
        purpose: PURPOSE_BUGFIX
     }
