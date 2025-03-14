@@ -100,8 +100,7 @@
     <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"未修正問題嗎？\n輕觸即可還原"</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"相機沒問題嗎？輕觸即可關閉。"</string>
     <string name="windowing_app_handle_education_tooltip" msgid="2929643449849791854">"你可以在這裡查看應用程式選單"</string>
-    <!-- no translation found for windowing_desktop_mode_image_button_education_tooltip (7171915734817051666) -->
-    <skip />
+    <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"進入電腦分割視窗模式可同時開啟多個應用程式"</string>
     <string name="windowing_desktop_mode_exit_education_tooltip" msgid="5225660258192054132">"你隨時可以從應用程式選單返回全螢幕模式"</string>
     <string name="letterbox_education_dialog_title" msgid="7739895354143295358">"瀏覽更多內容及執行更多操作"</string>
     <string name="letterbox_education_split_screen_text" msgid="449233070804658627">"拖進另一個應用程式即可使用分割畫面模式"</string>
@@ -122,8 +121,7 @@
     <string name="handle_text" msgid="4419667835599523257">"應用程式控制代碼"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"應用程式圖示"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"全螢幕"</string>
-    <!-- no translation found for desktop_text (9058641752519570266) -->
-    <skip />
+    <string name="desktop_text" msgid="9058641752519570266">"電腦分割視窗"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"分割畫面"</string>
     <string name="more_button_text" msgid="3655388105592893530">"更多"</string>
     <string name="float_button_text" msgid="9221657008391364581">"浮動"</string>
@@ -136,8 +134,7 @@
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"變更顯示比例"</string>
     <string name="close_text" msgid="4986518933445178928">"關閉"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"關閉選單"</string>
-    <!-- no translation found for desktop_mode_app_header_chip_text (7617377295944971651) -->
-    <skip />
+    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (電腦分割視窗)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"畫面最大化"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"調整大小"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"應用程式無法移至此處"</string>
