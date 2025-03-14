@@ -138,6 +138,7 @@ class BubbleTaskStackListener(
 
         val wct = WindowContainerTransaction()
         wct.setTaskForceExcludedFromRecents(task.token, false /* forceExcluded */)
+            .setLaunchNextToBubble(task.token, false /* launchNextToBubble */)
         taskOrganizer.applyTransaction(wct)
 
         taskOrganizer.setInterceptBackPressedOnTaskRoot(task.token, false /* intercept */)

@@ -226,6 +226,19 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
+     * Sets whether the container should launch next as Bubble
+     * @hide
+     */
+    @NonNull
+    public WindowContainerTransaction setLaunchNextToBubble(
+            @NonNull WindowContainerToken container, boolean launchNextToBubble) {
+        final Change chg = getOrCreateChange(container.asBinder());
+        chg.mLaunchNextToBubble = launchNextToBubble;
+        chg.mChangeMask |= Change.CHANGE_LAUNCH_NEXT_TO_BUBBLE;
+        return this;
+    }
+
+    /**
      * Sets whether a container or any of its children can be focusable. When {@code false}, no
      * child can be focused; however, when {@code true}, it is still possible for children to be
      * non-focusable due to WM policy.
@@ -1341,6 +1354,7 @@ public final class WindowContainerTransaction implements Parcelable {
         public static final int CHANGE_DRAG_RESIZING = 1 << 7;
         public static final int CHANGE_RELATIVE_BOUNDS = 1 << 8;
         public static final int CHANGE_FORCE_EXCLUDED_FROM_RECENTS = 1 << 9;
+        public static final int CHANGE_LAUNCH_NEXT_TO_BUBBLE = 1 << 10;
 
         @IntDef(flag = true, prefix = { "CHANGE_" }, value = {
                 CHANGE_FOCUSABLE,
@@ -1353,6 +1367,7 @@ public final class WindowContainerTransaction implements Parcelable {
                 CHANGE_DRAG_RESIZING,
                 CHANGE_RELATIVE_BOUNDS,
                 CHANGE_FORCE_EXCLUDED_FROM_RECENTS,
+                CHANGE_LAUNCH_NEXT_TO_BUBBLE,
         })
         @Retention(RetentionPolicy.SOURCE)
         public @interface ChangeMask {}
@@ -1376,6 +1391,8 @@ public final class WindowContainerTransaction implements Parcelable {
 
         private int mActivityWindowingMode = -1;
         private int mWindowingMode = -1;
+
+        private boolean mLaunchNextToBubble = false;
 
         private Change() {}
 
@@ -1402,6 +1419,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
             mWindowingMode = in.readInt();
             mActivityWindowingMode = in.readInt();
+            mLaunchNextToBubble = in.readBoolean();
         }
 
         /**
@@ -1435,6 +1453,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((other.mChangeMask & CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
                 mForceExcludedFromRecents = other.mForceExcludedFromRecents;
             }
+            if ((other.mChangeMask & CHANGE_LAUNCH_NEXT_TO_BUBBLE) != 0) {
+                mLaunchNextToBubble = other.mLaunchNextToBubble;
+            }
             mChangeMask |= other.mChangeMask;
             if (other.mActivityWindowingMode >= WINDOWING_MODE_UNDEFINED) {
                 mActivityWindowingMode = other.mActivityWindowingMode;
@@ -1462,6 +1483,15 @@ public final class WindowContainerTransaction implements Parcelable {
         @NonNull
         public Configuration getConfiguration() {
             return mConfiguration;
+        }
+
+        /** Gets the requested mLaunchNextToBubble state */
+        public boolean getLaunchNextToBubble() {
+            if ((mChangeMask & CHANGE_LAUNCH_NEXT_TO_BUBBLE) == 0) {
+                throw new RuntimeException(
+                        "mLaunchNextToBubble not set. check CHANGE_LAUNCH_NEXT_TO_BUBBLE first");
+            }
+            return mLaunchNextToBubble;
         }
 
         /** Gets the requested focusable state */
@@ -1598,6 +1628,9 @@ public final class WindowContainerTransaction implements Parcelable {
             if ((mChangeMask & CHANGE_RELATIVE_BOUNDS) != 0) {
                 sb.append("relativeBounds:").append(mRelativeBounds).append(",");
             }
+            if ((mChangeMask & CHANGE_LAUNCH_NEXT_TO_BUBBLE) != 0) {
+                sb.append("launchNextToBubble:").append(mLaunchNextToBubble).append(",");
+            }
             if (mConfigAtTransitionEnd) {
                 sb.append("configAtTransitionEnd").append(",");
             }
@@ -1628,6 +1661,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
             dest.writeInt(mWindowingMode);
             dest.writeInt(mActivityWindowingMode);
+            dest.writeBoolean(mLaunchNextToBubble);
         }
 
         @Override

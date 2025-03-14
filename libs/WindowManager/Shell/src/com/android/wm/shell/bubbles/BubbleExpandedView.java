@@ -249,7 +249,7 @@ public class BubbleExpandedView extends LinearLayout {
                                 // Needs to be mutable for the fillInIntent
                                 PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_UPDATE_CURRENT,
                                 /* options= */ null);
-                        options.setLaunchNextToBubble(true);
+                        options.setLaunchNextToBubble(true /* launchNextToBubble */);
                         mTaskView.startActivity(pi, fillInIntent, options, launchBounds);
                     } else if (!mIsOverflow && isShortcutBubble) {
                         ProtoLog.v(WM_SHELL_BUBBLES, "startingShortcutBubble=%s", getBubbleKey());
@@ -257,7 +257,7 @@ public class BubbleExpandedView extends LinearLayout {
                             options.setLaunchedFromBubble(true);
                             options.setApplyActivityFlagsForBubbles(true);
                         } else {
-                            options.setLaunchNextToBubble(true);
+                            options.setLaunchNextToBubble(true /* launchNextToBubble */);
                             options.setApplyMultipleTaskFlagForShortcut(true);
                         }
                         mTaskView.startShortcutActivity(mBubble.getShortcutInfo(),

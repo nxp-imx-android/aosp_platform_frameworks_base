@@ -453,6 +453,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setWindowingMode(taskToken, WINDOWING_MODE_UNDEFINED);
         wct.setAlwaysOnTop(taskToken, false /* alwaysOnTop */);
+        wct.setLaunchNextToBubble(taskToken, false /* launchNextToBubble */);
         if (com.android.window.flags.Flags.excludeTaskFromRecents()) {
             wct.setTaskForceExcludedFromRecents(taskToken, false /* forceExcluded */);
         }
