@@ -405,7 +405,7 @@ public class StackStateAnimator {
             public void onAnimationEnd(DynamicAnimation animation, boolean canceled, float value,
                     float velocity) {
                 mAnimatorSet.remove(animation);
-                if (mAnimatorSet.isEmpty() && !canceled) {
+                if (mAnimatorSet.isEmpty()) {
                     onAnimationFinished();
                 }
                 mAnimationEndPool.push(this);
