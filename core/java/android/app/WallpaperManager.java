@@ -248,12 +248,26 @@ public class WallpaperManager {
     /**
      * Command for {@link #sendWallpaperCommand}: reported by System UI when the device keyguard
      * starts going away.
-     * This command is triggered by {@link android.app.IActivityTaskManager#keyguardGoingAway(int)}.
+     * <p>
+     * This command is triggered by {@link android.app.IActivityTaskManager#keyguardGoingAway(int)}
+     * or by {@link android.app.IActivityTaskManager#setLockScreenShown(boolean, boolean)}.
      *
      * @hide
      */
     public static final String COMMAND_KEYGUARD_GOING_AWAY =
             "android.wallpaper.keyguardgoingaway";
+
+    /**
+     * Command for {@link #sendWallpaperCommand}: reported by System UI when the device keyguard
+     * starts going away.
+     *
+     * <p>This command is triggered by
+     * {@link android.app.IActivityTaskManager#setLockScreenShown(boolean, boolean)}.
+     *
+     * @hide
+     */
+    public static final String COMMAND_KEYGUARD_APPEARING =
+            "android.wallpaper.keyguardappearing";
 
     /**
      * Command for {@link #sendWallpaperCommand}: reported by System UI when the device is going to

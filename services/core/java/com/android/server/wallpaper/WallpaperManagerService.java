@@ -22,6 +22,7 @@ import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
 import static android.app.Flags.fixWallpaperChanged;
 import static android.app.Flags.liveWallpaperContentHandling;
+import static android.app.Flags.notifyKeyguardEvents;
 import static android.app.Flags.removeNextWallpaperComponent;
 import static android.app.WallpaperManager.COMMAND_REAPPLY;
 import static android.app.WallpaperManager.FLAG_LOCK;
@@ -1709,7 +1710,31 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         mWallpaperDataParser = new WallpaperDataParser(mContext, mWallpaperDisplayHelper,
                 mWallpaperCropper);
         LocalServices.addService(WallpaperManagerInternal.class, new LocalService());
+
+        LocalServices.getService(ActivityTaskManagerInternal.class)
+                .registerScreenObserver(mKeyguardObserver);
+
     }
+
+    private final ActivityTaskManagerInternal.ScreenObserver mKeyguardObserver =
+            new ActivityTaskManagerInternal.ScreenObserver() {
+                @Override
+                public void onKeyguardStateChanged(boolean isShowing) {
+                    if (!notifyKeyguardEvents()) {
+                        return;
+                    }
+                    if (isShowing) {
+                        notifyKeyguardAppearing();
+                    } else {
+                        notifyKeyguardGoingAway();
+                    }
+                }
+
+                @Override
+                public void onKeyguardGoingAway() {
+                    notifyKeyguardGoingAway();
+                }
+            };
 
     private final class LocalService extends WallpaperManagerInternal {
         @Override
@@ -1732,11 +1757,6 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         @Override
         public void onScreenTurningOn(int displayId) {
             notifyScreenTurningOn(displayId);
-        }
-
-        @Override
-        public void onKeyguardGoingAway() {
-            notifyKeyguardGoingAway();
         }
     }
 
@@ -2571,6 +2591,18 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         return mContext.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED;
     }
 
+    private boolean hasPermission(WallpaperData data, String permission) {
+        try {
+            return PackageManager.PERMISSION_GRANTED == mIPackageManager.checkPermission(
+                    permission,
+                    data.getComponent().getPackageName(),
+                    data.userId);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Failed to check wallpaper service permission", e);
+            return false;
+        }
+    }
+
     private boolean hasAppOpPermission(String permission, int callingUid, String callingPackage,
             String attributionTag, String message) {
         final String op = AppOpsManager.permissionToOp(permission);
@@ -2873,16 +2905,37 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
      * Propagate a keyguard going away event to the wallpaper engine.
      */
     private void notifyKeyguardGoingAway() {
+        dispatchKeyguardCommand(WallpaperManager.COMMAND_KEYGUARD_GOING_AWAY);
+    }
+
+    /**
+     * Propagate a keyguard appearing event to the wallpaper engine.
+     */
+    private void notifyKeyguardAppearing() {
+        dispatchKeyguardCommand(WallpaperManager.COMMAND_KEYGUARD_APPEARING);
+    }
+
+    /**
+     * Propagate a keyguard-related event to the wallpaper engine.
+     *
+     * When the flag below is enabled, the event will only be dispatched in case the recipient
+     * has {@link android.Manifest.pertmission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE} permission.
+     */
+    private void dispatchKeyguardCommand(String command) {
         synchronized (mLock) {
             for (WallpaperData data : getActiveWallpapers()) {
+                if (notifyKeyguardEvents() && !hasPermission(
+                        data, android.Manifest.permission.SUBSCRIBE_TO_KEYGUARD_LOCKED_STATE)) {
+                    continue;
+                }
+
                 data.connection.forEachDisplayConnector(displayConnector -> {
                     if (displayConnector.mEngine != null) {
                         try {
                             displayConnector.mEngine.dispatchWallpaperCommand(
-                                    WallpaperManager.COMMAND_KEYGUARD_GOING_AWAY,
-                                    -1, -1, -1, new Bundle());
+                                    command, -1, -1, -1, new Bundle());
                         } catch (RemoteException e) {
-                            Slog.w(TAG, "Failed to notify that the keyguard is going away", e);
+                            Slog.w(TAG, "Failed to dispatch wallpaper command: " + command, e);
                         }
                     }
                 });
