@@ -44,9 +44,10 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
     private val fakeDisplayRepository = kosmos.displayRepository
     private val fakePerDisplayInstanceProviderWithTeardown =
         kosmos.fakePerDisplayInstanceProviderWithTeardown
+    private val lifecycleManager = kosmos.fakeDisplayInstanceLifecycleManager
 
     private val underTest: PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> =
-        kosmos.fakePerDisplayInstanceRepository
+        kosmos.createPerDisplayInstanceRepository(overrideLifecycleManager = null)
 
     @Before
     fun addDisplays() = runBlocking {
@@ -108,6 +109,43 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
     fun start_registersDumpable() {
         verify(kosmos.dumpManager).registerNormalDumpable(anyString(), any())
     }
+
+    @Test
+    fun perDisplay_afterCustomLifecycleManagerRemovesDisplay_destroyInstanceInvoked() =
+        testScope.runTest {
+            val underTest =
+                kosmos.createPerDisplayInstanceRepository(
+                    overrideLifecycleManager = lifecycleManager
+                )
+            // Let's start with both
+            lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
+
+            val instance = underTest[NON_DEFAULT_DISPLAY_ID]
+
+            lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID)
+
+            // Now that the lifecycle manager says so, let's make sure it was destroyed
+            assertThat(fakePerDisplayInstanceProviderWithTeardown.destroyed)
+                .containsExactly(instance)
+        }
+
+    @Test
+    fun perDisplay_lifecycleManagerDoesNotContainIt_displayRepositoryDoes_returnsNull() =
+        testScope.runTest {
+            val underTest =
+                kosmos.createPerDisplayInstanceRepository(
+                    overrideLifecycleManager = lifecycleManager
+                )
+            // only default display, so getting for the non-default one should fail, despite the
+            // repository having both displays already
+            lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID)
+
+            assertThat(underTest[NON_DEFAULT_DISPLAY_ID]).isNull()
+
+            lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
+
+            assertThat(underTest[NON_DEFAULT_DISPLAY_ID]).isNotNull()
+        }
 
     private fun createDisplay(displayId: Int): Display =
         display(type = Display.TYPE_INTERNAL, id = displayId)

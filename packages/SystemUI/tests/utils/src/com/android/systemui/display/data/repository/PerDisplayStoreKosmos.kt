@@ -16,6 +16,8 @@
 
 package com.android.systemui.display.data.repository
 
+import com.android.app.displaylib.DisplayInstanceLifecycleManager
+import com.android.app.displaylib.FakeDisplayInstanceLifecycleManager
 import com.android.app.displaylib.PerDisplayInstanceProviderWithTeardown
 import com.android.app.displaylib.PerDisplayInstanceRepositoryImpl
 import com.android.systemui.dump.dumpManager
@@ -69,13 +71,25 @@ val Kosmos.fakePerDisplayInstanceProviderWithTeardown by
     Kosmos.Fixture { FakePerDisplayInstanceProviderWithTeardown() }
 
 val Kosmos.perDisplayDumpHelper by Kosmos.Fixture { PerDisplayRepoDumpHelper(dumpManager) }
+val Kosmos.fakeDisplayInstanceLifecycleManager by
+    Kosmos.Fixture { FakeDisplayInstanceLifecycleManager() }
+
 val Kosmos.fakePerDisplayInstanceRepository by
     Kosmos.Fixture {
-        PerDisplayInstanceRepositoryImpl(
-            debugName = "fakePerDisplayInstanceRepository",
-            instanceProvider = fakePerDisplayInstanceProviderWithTeardown,
-            testScope.backgroundScope,
-            displayRepository,
-            perDisplayDumpHelper,
-        )
+        { lifecycleManager: DisplayInstanceLifecycleManager? ->
+            PerDisplayInstanceRepositoryImpl(
+                debugName = "fakePerDisplayInstanceRepository",
+                instanceProvider = fakePerDisplayInstanceProviderWithTeardown,
+                lifecycleManager,
+                testScope.backgroundScope,
+                displayRepository,
+                perDisplayDumpHelper,
+            )
+        }
     }
+
+fun Kosmos.createPerDisplayInstanceRepository(
+    overrideLifecycleManager: DisplayInstanceLifecycleManager? = null
+): PerDisplayInstanceRepositoryImpl<TestPerDisplayInstance> {
+    return fakePerDisplayInstanceRepository(overrideLifecycleManager)
+}
