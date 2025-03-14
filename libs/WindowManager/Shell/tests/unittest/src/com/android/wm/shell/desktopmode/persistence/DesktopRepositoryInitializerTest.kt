@@ -27,6 +27,7 @@ import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
 import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.google.common.truth.Truth.assertThat
@@ -240,6 +241,36 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
                 )
                 .containsExactly(4)
                 .inOrder()
+        }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_DESKTOP_WINDOWING_PERSISTENCE,
+        FLAG_ENABLE_DESKTOP_WINDOWING_HSUM,
+        FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun initWithPersistence_deskRecreationFailed_deskNotAdded() =
+        runTest(StandardTestDispatcher()) {
+            whenever(persistentRepository.getUserDesktopRepositoryMap())
+                .thenReturn(mapOf(USER_ID_1 to desktopRepositoryState1))
+            whenever(persistentRepository.getDesktopRepositoryState(USER_ID_1))
+                .thenReturn(desktopRepositoryState1)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_1)).thenReturn(desktop1)
+            whenever(persistentRepository.readDesktop(USER_ID_1, DESKTOP_ID_2)).thenReturn(desktop2)
+
+            // Make [DESKTOP_ID_2] re-creation fail.
+            repositoryInitializer.deskRecreationFactory =
+                DeskRecreationFactory { userId, destinationDisplayId, deskId ->
+                    if (deskId == DESKTOP_ID_2) {
+                        null
+                    } else {
+                        deskId
+                    }
+                }
+            repositoryInitializer.initialize(desktopUserRepositories)
+
+            assertThat(desktopUserRepositories.getProfile(USER_ID_1).getDeskIds(DEFAULT_DISPLAY))
+                .containsExactly(DESKTOP_ID_1)
         }
 
     @After

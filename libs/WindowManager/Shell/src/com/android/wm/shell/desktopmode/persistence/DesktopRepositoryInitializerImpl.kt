@@ -69,7 +69,7 @@ class DesktopRepositoryInitializerImpl(
                         desksToRestore.map { it.desktopId },
                         userId,
                     )
-                    desksToRestore.forEach { persistentDesktop ->
+                    for (persistentDesktop in desksToRestore) {
                         val maxTasks = getTaskLimit(persistentDesktop)
                         val displayId = persistentDesktop.displayId
                         val deskId = persistentDesktop.desktopId
@@ -81,16 +81,28 @@ class DesktopRepositoryInitializerImpl(
                                 destinationDisplayId = newDisplayId,
                                 deskId = deskId,
                             )
-                        logV(
-                            "Recreated desk=%d in display=%d using new deskId=%d and displayId=%d",
-                            deskId,
-                            displayId,
-                            newDeskId,
-                            newDisplayId,
-                        )
-                        if (newDeskId != deskId || newDisplayId != displayId) {
+                        if (newDeskId != null) {
+                            logV(
+                                "Re-created desk=%d in display=%d using new" +
+                                    " deskId=%d and displayId=%d",
+                                deskId,
+                                displayId,
+                                newDeskId,
+                                newDisplayId,
+                            )
+                        }
+                        if (newDeskId == null || newDeskId != deskId || newDisplayId != displayId) {
                             logV("Removing obsolete desk from persistence under deskId=%d", deskId)
                             persistentRepository.removeDesktop(userId, deskId)
+                        }
+                        if (newDeskId == null) {
+                            logW(
+                                "Could not re-create desk=%d from display=%d in displayId=%d",
+                                deskId,
+                                displayId,
+                                newDisplayId,
+                            )
+                            continue
                         }
 
                         // TODO: b/393961770 - [DesktopRepository] doesn't save desks to the
@@ -175,6 +187,10 @@ class DesktopRepositoryInitializerImpl(
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     /** A default implementation of [DeskRecreationFactory] that reuses the desk id. */

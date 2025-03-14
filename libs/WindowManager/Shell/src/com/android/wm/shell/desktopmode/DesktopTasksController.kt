@@ -287,8 +287,8 @@ class DesktopTasksController(
                 DeskRecreationFactory { deskUserId, destinationDisplayId, deskId ->
                     if (deskUserId != userId) {
                         // TODO: b/400984250 - add multi-user support for multi-desk restoration.
-                        logW("Tried to recreated desk of another user.")
-                        deskId
+                        logW("Tried to re-create desk of another user.")
+                        null
                     } else {
                         desksOrganizer.createDesk(destinationDisplayId)
                     }
