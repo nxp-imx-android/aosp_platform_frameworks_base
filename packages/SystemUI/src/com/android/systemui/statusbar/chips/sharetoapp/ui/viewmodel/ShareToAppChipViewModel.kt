@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.chips.sharetoapp.ui.viewmodel
 
 import android.content.Context
 import androidx.annotation.DrawableRes
-import androidx.annotation.VisibleForTesting
 import com.android.internal.jank.Cuj
 import com.android.systemui.CoreStartable
 import com.android.systemui.animation.DialogCuj
@@ -44,6 +43,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickCallback
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickListener
+import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
@@ -72,7 +72,10 @@ constructor(
     private val endMediaProjectionDialogHelper: EndMediaProjectionDialogHelper,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     @StatusBarChipsLog private val logger: LogBuffer,
+    uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel, CoreStartable {
+    // There can only be 1 active cast-to-other-device chip at a time, so we can re-use the ID.
+    private val instanceId = uiEventLogger.createNewInstanceId()
 
     private val _stopDialogToShow: MutableStateFlow<MediaProjectionStopDialogModel> =
         MutableStateFlow(MediaProjectionStopDialogModel.Hidden)
@@ -252,6 +255,7 @@ constructor(
                             TAG,
                         )
                 ),
+            instanceId = instanceId,
         )
     }
 
@@ -287,6 +291,7 @@ constructor(
                         TAG,
                     )
                 ),
+            instanceId = instanceId,
         )
     }
 
@@ -306,7 +311,7 @@ constructor(
         )
 
     companion object {
-        @VisibleForTesting const val KEY = "ShareToApp"
+        const val KEY = "ShareToApp"
         @DrawableRes val SHARE_TO_APP_ICON = R.drawable.ic_present_to_all
         private val DIALOG_CUJ =
             DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Share to app")

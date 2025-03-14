@@ -20,6 +20,7 @@ import android.annotation.CurrentTimeMillisLong
 import android.annotation.ElapsedRealtimeLong
 import android.os.SystemClock
 import android.view.View
+import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.ContentDescription
@@ -81,6 +82,11 @@ sealed class OngoingActivityChipModel {
         open val isHidden: Boolean,
         /** Whether the transition from hidden to shown should be animated. */
         open val shouldAnimate: Boolean,
+        /**
+         * An optional per-chip ID used for logging. Should stay the same throughout the lifetime of
+         * a single chip.
+         */
+        open val instanceId: InstanceId? = null,
     ) : OngoingActivityChipModel() {
 
         /** This chip shows only an icon and nothing else. */
@@ -94,6 +100,7 @@ sealed class OngoingActivityChipModel {
             override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
+            override val instanceId: InstanceId? = null,
         ) :
             Active(
                 key,
@@ -105,6 +112,7 @@ sealed class OngoingActivityChipModel {
                 transitionManager,
                 isHidden,
                 shouldAnimate,
+                instanceId,
             ) {
             override val logName = "Active.Icon"
         }
@@ -143,6 +151,7 @@ sealed class OngoingActivityChipModel {
             override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
+            override val instanceId: InstanceId? = null,
         ) :
             Active(
                 key,
@@ -154,6 +163,7 @@ sealed class OngoingActivityChipModel {
                 transitionManager,
                 isHidden,
                 shouldAnimate,
+                instanceId,
             ) {
             override val logName = "Active.Timer"
         }
@@ -182,6 +192,7 @@ sealed class OngoingActivityChipModel {
             override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
+            override val instanceId: InstanceId? = null,
         ) :
             Active(
                 key,
@@ -193,6 +204,7 @@ sealed class OngoingActivityChipModel {
                 transitionManager,
                 isHidden,
                 shouldAnimate,
+                instanceId,
             ) {
             init {
                 StatusBarNotifChips.unsafeAssertInNewMode()
@@ -214,6 +226,7 @@ sealed class OngoingActivityChipModel {
             override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
+            override val instanceId: InstanceId? = null,
         ) :
             Active(
                 key,
@@ -225,6 +238,7 @@ sealed class OngoingActivityChipModel {
                 transitionManager,
                 isHidden,
                 shouldAnimate,
+                instanceId,
             ) {
             override val logName = "Active.Countdown"
         }
@@ -242,6 +256,7 @@ sealed class OngoingActivityChipModel {
             override val transitionManager: TransitionManager? = null,
             override val isHidden: Boolean = false,
             override val shouldAnimate: Boolean = true,
+            override val instanceId: InstanceId? = null,
         ) :
             Active(
                 key,
@@ -253,6 +268,7 @@ sealed class OngoingActivityChipModel {
                 transitionManager,
                 isHidden,
                 shouldAnimate,
+                instanceId,
             ) {
             override val logName = "Active.Text"
         }

@@ -166,6 +166,7 @@ constructor(
             appName = model.appName,
             promotedContent = model.promotedContent,
             isAppVisible = isVisible,
+            notificationInstanceId = model.instanceId,
         )
     }
 

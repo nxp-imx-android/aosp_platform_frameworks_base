@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.phone.ongoingcall.shared.model
 
 import android.app.PendingIntent
+import com.android.internal.logging.InstanceId
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 
@@ -40,6 +41,8 @@ sealed interface OngoingCallModel {
      * @property promotedContent if the call notification also meets promoted notification criteria,
      *   this field is filled in with the content related to promotion. Otherwise null.
      * @property isAppVisible whether the app to which the call belongs is currently visible.
+     * @property notificationInstanceId an optional per-chip ID used for logging. Should stay the
+     *   same throughout the lifetime of a single chip.
      */
     data class InCall(
         val startTimeMs: Long,
@@ -49,5 +52,6 @@ sealed interface OngoingCallModel {
         val appName: String,
         val promotedContent: PromotedNotificationContentModels?,
         val isAppVisible: Boolean,
+        val notificationInstanceId: InstanceId?,
     ) : OngoingCallModel
 }

@@ -59,7 +59,7 @@ import kotlinx.coroutines.flow.stateIn
 
 /** View model for the ongoing phone call chip shown in the status bar. */
 @SysUISingleton
-open class CallChipViewModel
+class CallChipViewModel
 @Inject
 constructor(
     @Main private val context: Context,
@@ -180,7 +180,7 @@ constructor(
         isHidden: Boolean,
         transitionState: TransitionState = TransitionState.NoTransition,
     ): OngoingActivityChipModel.Active {
-        val key = state.notificationKey
+        val key = "$KEY_PREFIX${state.notificationKey}"
         val contentDescription = getContentDescription(state.appName)
         val icon =
             if (state.notificationIconView != null) {
@@ -212,6 +212,7 @@ constructor(
                 clickBehavior = getClickBehavior(state.intent),
                 isHidden = isHidden,
                 transitionManager = getTransitionManager(state, transitionState),
+                instanceId = state.notificationInstanceId,
             )
         } else {
             val startTimeInElapsedRealtime =
@@ -225,6 +226,7 @@ constructor(
                 clickBehavior = getClickBehavior(state.intent),
                 isHidden = isHidden,
                 transitionManager = getTransitionManager(state, transitionState),
+                instanceId = state.notificationInstanceId,
             )
         }
     }
@@ -412,6 +414,8 @@ constructor(
                 ContentDescription.Resource(R.string.ongoing_call_content_description),
             )
         private val TAG = "CallVM".pad()
+
+        const val KEY_PREFIX = "callChip-"
 
         /** Determines whether or not an active call chip should be hidden. */
         private fun shouldChipBeHidden(

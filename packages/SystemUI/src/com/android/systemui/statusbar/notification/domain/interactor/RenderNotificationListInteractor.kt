@@ -27,6 +27,7 @@ import android.graphics.drawable.Icon
 import android.service.notification.StatusBarNotification
 import android.util.ArrayMap
 import com.android.app.tracing.traceSection
+import com.android.internal.logging.InstanceId
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -167,7 +168,7 @@ private class ActiveNotificationsStoreBuilder(
             packageName = sbn.packageName,
             appName = sbn.notification.loadHeaderAppName(context),
             contentIntent = sbn.notification.contentIntent,
-            instanceId = sbn.instanceId?.id,
+            instanceId = sbn.instanceId,
             isGroupSummary = sbn.notification.isGroupSummary,
             bucket = bucket,
             callType = sbn.toCallType(),
@@ -196,7 +197,7 @@ private fun ActiveNotificationsStore.createOrReuse(
     packageName: String,
     appName: String,
     contentIntent: PendingIntent?,
-    instanceId: Int?,
+    instanceId: InstanceId?,
     isGroupSummary: Boolean,
     bucket: Int,
     callType: CallType,
@@ -278,7 +279,7 @@ private fun ActiveNotificationModel.isCurrent(
     packageName: String,
     appName: String,
     contentIntent: PendingIntent?,
-    instanceId: Int?,
+    instanceId: InstanceId?,
     isGroupSummary: Boolean,
     bucket: Int,
     callType: CallType,

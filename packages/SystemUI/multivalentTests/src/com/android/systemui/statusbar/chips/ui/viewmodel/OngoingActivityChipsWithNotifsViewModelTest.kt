@@ -42,6 +42,7 @@ import com.android.systemui.mediaprojection.taskswitcher.FakeActivityTaskManager
 import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.screenRecordRepository
+import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModel
 import com.android.systemui.statusbar.chips.call.ui.viewmodel.CallChipViewModelTest.Companion.createStatusBarIconViewOrNull
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.NORMAL_PACKAGE
 import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.MediaProjectionChipInteractorTest.Companion.setUpPackageManagerForMediaProjection
@@ -269,7 +270,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             addOngoingCallState(callNotificationKey)
 
             assertThat(latest)
-                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey)
+                .containsExactly(
+                    ScreenRecordChipViewModel.KEY,
+                    "${CallChipViewModel.KEY_PREFIX}$callNotificationKey",
+                )
                 .inOrder()
         }
 
@@ -1103,7 +1107,10 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest)
-                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey)
+                .containsExactly(
+                    ScreenRecordChipViewModel.KEY,
+                    "${CallChipViewModel.KEY_PREFIX}$callNotificationKey",
+                )
                 .inOrder()
         }
 
@@ -1132,7 +1139,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
             )
 
             assertThat(latest)
-                .containsExactly(ScreenRecordChipViewModel.KEY, callNotificationKey, "notif1")
+                .containsExactly(
+                    ScreenRecordChipViewModel.KEY,
+                    "${CallChipViewModel.KEY_PREFIX}$callNotificationKey",
+                    "notif1",
+                )
                 .inOrder()
         }
 
