@@ -33,6 +33,7 @@ import com.android.internal.widget.remotecompose.core.operations.DataListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DataListIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapLookup;
+import com.android.internal.widget.remotecompose.core.operations.DebugMessage;
 import com.android.internal.widget.remotecompose.core.operations.DrawArc;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmap;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapFontText;
@@ -1332,7 +1333,7 @@ public class RemoteComposeBuffer {
      * @return the nan id of float
      */
     public float reserveFloatVariable() {
-        int id = mRemoteComposeState.cacheFloat(0f);
+        int id = mRemoteComposeState.nextId();
         return Utils.asNan(id);
     }
 
@@ -1866,6 +1867,46 @@ public class RemoteComposeBuffer {
                 new float[] {notches, notchMax},
                 null);
 
+        ContainerEnd.apply(mBuffer);
+    }
+
+    /**
+     * Add a scroll modifier
+     *
+     * @param direction HORIZONTAL(0) or VERTICAL(1)
+     * @param positionId the position id as a NaN
+     */
+    public void addModifierScroll(int direction, float positionId) {
+        float max = this.reserveFloatVariable();
+        float notchMax = this.reserveFloatVariable();
+        float touchExpressionDirection =
+                direction != 0 ? RemoteContext.FLOAT_TOUCH_POS_X : RemoteContext.FLOAT_TOUCH_POS_Y;
+
+        ScrollModifierOperation.apply(mBuffer, direction, positionId, max, notchMax);
+        this.addTouchExpression(
+                positionId,
+                0f,
+                0f,
+                max,
+                0f,
+                3,
+                new float[] {
+                    touchExpressionDirection, -1, MUL,
+                },
+                TouchExpression.STOP_GENTLY,
+                null,
+                null);
+        ContainerEnd.apply(mBuffer);
+    }
+
+    /**
+     * Add a scroll modifier
+     *
+     * @param direction HORIZONTAL(0) or VERTICAL(1)
+     */
+    public void addModifierScroll(int direction) {
+        float max = this.reserveFloatVariable();
+        ScrollModifierOperation.apply(mBuffer, direction, 0f, max, 0f);
         ContainerEnd.apply(mBuffer);
     }
 
@@ -2463,5 +2504,16 @@ public class RemoteComposeBuffer {
      */
     public void addConditionalOperations(byte type, float a, float b) {
         ConditionalOperations.apply(mBuffer, type, a, b);
+    }
+
+    /**
+     * Add a debug message
+     *
+     * @param textId text id
+     * @param value
+     * @param flags
+     */
+    public void addDebugMessage(int textId, float value, int flags) {
+        DebugMessage.apply(mBuffer, textId, value, flags);
     }
 }
