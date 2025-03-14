@@ -144,23 +144,25 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
             listOf(
                 GSFAxes.WEIGHT.toClockAxis(
                     type = AxisType.Float,
-                    currentValue = 475f,
+                    currentValue = 400f,
                     name = "Weight",
                     description = "Glyph Weight",
                 ),
                 GSFAxes.WIDTH.toClockAxis(
                     type = AxisType.Float,
-                    currentValue = 85f,
+                    currentValue = 80f,
                     name = "Width",
                     description = "Glyph Width",
                 ),
                 GSFAxes.ROUND.toClockAxis(
                     type = AxisType.Boolean,
+                    currentValue = 100f,
                     name = "Round",
                     description = "Glyph Roundness",
                 ),
                 GSFAxes.SLANT.toClockAxis(
                     type = AxisType.Boolean,
+                    currentValue = 0f,
                     name = "Slant",
                     description = "Glyph Slant",
                 ),
