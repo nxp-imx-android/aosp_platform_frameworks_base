@@ -24,10 +24,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.systemui.dagger.qualifiers.Application;
-import com.android.systemui.statusbar.notification.collection.ListEntry;
-import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifComparator;
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter;
@@ -100,7 +99,7 @@ public class ColorizedFgsCoordinator implements Coordinator {
         public boolean isInSection(PipelineEntry entry) {
             NotificationEntry notificationEntry = entry.getRepresentativeEntry();
             if (notificationEntry != null) {
-                return isRichOngoing(notificationEntry);
+                return isRichOngoing(notificationEntry) || isPromotedNotifChip(notificationEntry);
             }
             return false;
         }
@@ -158,5 +157,11 @@ public class ColorizedFgsCoordinator implements Coordinator {
         Notification notification = entry.getSbn().getNotification();
         return entry.getImportance() > IMPORTANCE_MIN
                 && notification.isStyle(Notification.CallStyle.class);
+    }
+
+    private boolean isPromotedNotifChip(NotificationEntry entry) {
+        return PromotedNotificationUi.isEnabled()
+                && entry.getImportance() > IMPORTANCE_MIN
+                && mOrderedPromotedNotifKeys.contains(entry.getKey());
     }
 }
