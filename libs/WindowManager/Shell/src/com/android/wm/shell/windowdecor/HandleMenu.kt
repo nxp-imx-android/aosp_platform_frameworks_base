@@ -758,6 +758,7 @@ class HandleMenu(
             floatingBtn.isEnabled = !taskInfo.isPinned
             floatingBtn.imageTintList = style.windowingButtonColor
             desktopBtn.isGone = !shouldShowDesktopModeButton
+            desktopBtnSpace.isGone = !shouldShowDesktopModeButton
             desktopBtn.isSelected = taskInfo.isFreeform
             desktopBtn.isEnabled = !taskInfo.isFreeform
             desktopBtn.imageTintList = style.windowingButtonColor
