@@ -21,8 +21,17 @@ import androidx.dynamicanimation.animation.SpringForce
 /** A listener that responds to magnetic forces applied to an [ExpandableNotificationRow] */
 interface MagneticRowListener {
 
-    /** Set a translation due to a magnetic attachment. */
-    fun setMagneticTranslation(translation: Float)
+    /**
+     * Set a translation due to a magnetic attachment.
+     *
+     * If a magnetic animation is running, [trackEagerly] decides if the new translation is applied
+     * immediately or if the animation finishes first. When applying the translation immediately,
+     * the change in translation must be greater than a touch slop threshold.
+     *
+     * @param[translation] Incoming gesture translation.
+     * @param[trackEagerly] Whether we eagerly track the incoming translation or not.
+     */
+    fun setMagneticTranslation(translation: Float, trackEagerly: Boolean = true)
 
     /**
      * Trigger the magnetic behavior when the row detaches or snaps back from its magnetic

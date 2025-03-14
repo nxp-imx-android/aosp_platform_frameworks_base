@@ -46,7 +46,6 @@ import com.android.systemui.Flags;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.AlphaOptimizedImageView;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -363,7 +362,9 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             final float dismissThreshold = getDismissThreshold();
             final boolean snappingToDismiss = delta < -dismissThreshold || delta > dismissThreshold;
             if (mSnappingToDismiss != snappingToDismiss) {
-                getMenuView().performHapticFeedback(CLOCK_TICK);
+                if (!Flags.magneticNotificationSwipes()) {
+                    getMenuView().performHapticFeedback(CLOCK_TICK);
+                }
             }
             mSnappingToDismiss = snappingToDismiss;
         }
