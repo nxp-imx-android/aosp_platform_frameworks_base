@@ -153,7 +153,6 @@ public class HomeTransitionObserver implements TransitionObserver,
             return;
         }
         mPendingStartDragTransition = null;
-        if (aborted) return;
 
         if (mPendingHomeVisibilityUpdate != null) {
             notifyHomeVisibilityChanged(mPendingHomeVisibilityUpdate);
