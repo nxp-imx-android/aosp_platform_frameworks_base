@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"नया डिवाइस जोड़ने के लिए क्लिक करें"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"प्रीसेट अपडेट नहीं किया जा सका"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"प्रीसेट"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"चुना गया"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"आस-पास का वॉल्यूम"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"बाईं ओर के वॉल्यूम के लिए"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"जब कोई ऐप्लिकेशन शेयर किया जाता है, तो उस ऐप्लिकेशन में दिख रहा या चलाया जा रहा पूरा कॉन्टेंट <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> पर दिखता है. इसलिए, पासवर्ड, पेमेंट के तरीके की जानकारी, मैसेज, फ़ोटो, ऑडियो, और वीडियो को लेकर सावधानी बरतें."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"स्क्रीन शेयर करें"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ने इस विकल्प को बंद कर दिया है"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"शेयर करने के लिए ऐप्लिकेशन चुनें"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"क्या स्क्रीन को कास्ट करना है?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"एक ऐप्लिकेशन को कास्ट करें"</string>
@@ -980,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"हटाने के लिए यहां खींचें और छोड़ें"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"आपके पास कम से कम <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> टाइलें होनी चाहिए"</string>
     <string name="qs_edit" msgid="5583565172803472437">"बदलाव करें"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"समय"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"घंटे, मिनट और सेकंड दिखाएं"</item>

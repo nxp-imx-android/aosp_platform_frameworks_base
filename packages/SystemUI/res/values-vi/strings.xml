@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Nhấp để ghép nối thiết bị mới"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Không cập nhật được giá trị đặt trước"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Chế độ đặt sẵn"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Đã chọn"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Âm lượng xung quanh"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Trái"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Khi bạn chia sẻ một ứng dụng, <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> sẽ thấy được mọi nội dung hiển thị hoặc phát trong ứng dụng đó. Vì vậy, hãy thận trọng để không làm lộ thông tin như mật khẩu, thông tin thanh toán, tin nhắn, ảnh, âm thanh và video."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Chia sẻ màn hình"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> đã tắt lựa chọn này"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Chọn ứng dụng để chia sẻ"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Truyền màn hình?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Truyền một ứng dụng"</string>
@@ -980,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Kéo vào đây để xóa"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Bạn cần ít nhất <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ô"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Chỉnh sửa"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Thời gian"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Hiển thị giờ, phút và giây"</item>
