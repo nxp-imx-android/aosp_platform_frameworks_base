@@ -37,7 +37,7 @@ class BackTouchTrackerTest {
     fun generatesProgress_onStart() {
         val linearTracker = linearTouchTracker()
         linearTracker.setGestureStartLocation(INITIAL_X_LEFT_EDGE, 0f, BackEvent.EDGE_LEFT)
-        val event = linearTracker.createStartEvent()
+        val event = linearTracker.createStartEvent(null)
         assertEquals(0f, event.progress, 0f)
     }
 
