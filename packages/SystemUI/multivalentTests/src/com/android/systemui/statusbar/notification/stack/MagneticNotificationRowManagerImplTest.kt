@@ -248,6 +248,19 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
         }
 
     @Test
+    fun onMagneticInteractionEnd_whileTargetsSet_goesToIdle() =
+        kosmos.testScope.runTest {
+            // GIVEN that targets are set
+            setTargets()
+
+            // WHEN the interaction ends on the row
+            underTest.onMagneticInteractionEnd(swipedRow, velocity = null)
+
+            // THEN the state resets
+            assertThat(underTest.currentState).isEqualTo(State.IDLE)
+        }
+
+    @Test
     fun onMagneticInteractionEnd_whileDetached_goesToIdle() =
         kosmos.testScope.runTest {
             // GIVEN the swiped row is detached
