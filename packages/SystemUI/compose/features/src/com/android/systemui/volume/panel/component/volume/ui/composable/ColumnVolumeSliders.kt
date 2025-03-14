@@ -30,9 +30,11 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -42,7 +44,6 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -154,9 +155,7 @@ fun ColumnVolumeSliders(
                                                 totalCount = viewModels.size,
                                             ),
                                     )
-                                    .thenIf(!Flags.volumeRedesign()) {
-                                        Modifier.padding(top = 16.dp)
-                                    },
+                                    .padding(top = if (Flags.volumeRedesign()) 4.dp else 16.dp),
                             state = sliderState,
                             onValueChange = { newValue: Float ->
                                 sliderViewModel.onValueChanged(sliderState, newValue)
@@ -223,7 +222,7 @@ private fun ExpandButtonLegacy(
 }
 
 @Composable
-private fun ExpandButton(
+private fun RowScope.ExpandButton(
     isExpanded: Boolean,
     isExpandable: Boolean,
     onExpandedChanged: (Boolean) -> Unit,
@@ -243,16 +242,17 @@ private fun ExpandButton(
     ) {
         PlatformIconButton(
             modifier =
-                Modifier.size(width = 48.dp, height = 40.dp).semantics {
+                Modifier.size(40.dp).semantics {
                     role = Role.Switch
                     stateDescription = expandButtonStateDescription
                 },
             onClick = { onExpandedChanged(!isExpanded) },
             colors =
                 IconButtonDefaults.iconButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
                 ),
+            shape = RoundedCornerShape(12.dp),
             iconResource =
                 if (isExpanded) {
                     R.drawable.ic_arrow_down_24dp
