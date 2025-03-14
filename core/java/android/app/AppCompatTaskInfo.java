@@ -74,6 +74,12 @@ public class AppCompatTaskInfo implements Parcelable {
     public Rect topActivityLetterboxBounds;
 
     /**
+     * Contains the aspect ratio of the top non-resizable activity or
+     * {@link TaskInfo#PROPERTY_VALUE_UNSET} otherwise.
+     */
+    public float topNonResizableActivityAspectRatio = PROPERTY_VALUE_UNSET;
+
+    /**
      * Stores camera-related app compat information about a particular Task.
      */
     public CameraCompatTaskInfo cameraCompatTaskInfo = CameraCompatTaskInfo.create();
@@ -382,12 +388,13 @@ public class AppCompatTaskInfo implements Parcelable {
         return (mTopActivityFlags & FLAGS_ORGANIZER_INTERESTED)
                     == (that.mTopActivityFlags & FLAGS_ORGANIZER_INTERESTED)
                 && topActivityLetterboxVerticalPosition == that.topActivityLetterboxVerticalPosition
-                && topActivityLetterboxWidth == that.topActivityLetterboxWidth
-                && topActivityLetterboxHeight == that.topActivityLetterboxHeight
-                && topActivityAppBounds.equals(that.topActivityAppBounds)
                 && topActivityLetterboxHorizontalPosition
                     == that.topActivityLetterboxHorizontalPosition
-                && cameraCompatTaskInfo.equalsForTaskOrganizer(that.cameraCompatTaskInfo);
+                && topActivityLetterboxWidth == that.topActivityLetterboxWidth
+                && topActivityLetterboxHeight == that.topActivityLetterboxHeight
+                && Objects.equals(topActivityAppBounds, that.topActivityAppBounds)
+                && cameraCompatTaskInfo.equalsForTaskOrganizer(that.cameraCompatTaskInfo)
+                && topNonResizableActivityAspectRatio == that.topNonResizableActivityAspectRatio;
     }
 
     /**
@@ -404,7 +411,7 @@ public class AppCompatTaskInfo implements Parcelable {
                     == that.topActivityLetterboxHorizontalPosition
                 && topActivityLetterboxWidth == that.topActivityLetterboxWidth
                 && topActivityLetterboxHeight == that.topActivityLetterboxHeight
-                && topActivityAppBounds.equals(that.topActivityAppBounds)
+                && Objects.equals(topActivityAppBounds, that.topActivityAppBounds)
                 && cameraCompatTaskInfo.equalsForCompatUi(that.cameraCompatTaskInfo);
     }
 
@@ -420,6 +427,7 @@ public class AppCompatTaskInfo implements Parcelable {
         topActivityAppBounds.set(Objects.requireNonNull(source.readTypedObject(Rect.CREATOR)));
         topActivityLetterboxBounds = source.readTypedObject(Rect.CREATOR);
         cameraCompatTaskInfo = source.readTypedObject(CameraCompatTaskInfo.CREATOR);
+        topNonResizableActivityAspectRatio = source.readFloat();
     }
 
     /**
@@ -435,6 +443,7 @@ public class AppCompatTaskInfo implements Parcelable {
         dest.writeTypedObject(topActivityAppBounds, flags);
         dest.writeTypedObject(topActivityLetterboxBounds, flags);
         dest.writeTypedObject(cameraCompatTaskInfo, flags);
+        dest.writeFloat(topNonResizableActivityAspectRatio);
     }
 
     @Override
@@ -457,6 +466,7 @@ public class AppCompatTaskInfo implements Parcelable {
                 + " hasMinAspectRatioOverride=" + hasMinAspectRatioOverride()
                 + " topActivityLetterboxBounds=" + topActivityLetterboxBounds
                 + " cameraCompatTaskInfo=" + cameraCompatTaskInfo.toString()
+                + " topNonResizableActivityAspectRatio=" + topNonResizableActivityAspectRatio
                 + "}";
     }
 
