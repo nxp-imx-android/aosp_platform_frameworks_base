@@ -751,7 +751,8 @@ constructor(
                 OriginTransition(createLongLivedRunner(controllerFactory, scope, forLaunch = true)),
                 "${cookie}_launchTransition",
             )
-        transitionRegister.register(launchFilter, launchRemoteTransition, includeTakeover = true)
+        // TODO(b/403529740): re-enable takeovers once we solve the Compose jank issues.
+        transitionRegister.register(launchFilter, launchRemoteTransition, includeTakeover = false)
 
         // Cross-task close transitions should not use this animation, so we only register it for
         // when the opening window is Launcher.
@@ -777,7 +778,8 @@ constructor(
                 ),
                 "${cookie}_returnTransition",
             )
-        transitionRegister.register(returnFilter, returnRemoteTransition, includeTakeover = true)
+        // TODO(b/403529740): re-enable takeovers once we solve the Compose jank issues.
+        transitionRegister.register(returnFilter, returnRemoteTransition, includeTakeover = false)
 
         longLivedTransitions[cookie] = Pair(launchRemoteTransition, returnRemoteTransition)
     }

@@ -249,10 +249,12 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             var factory = controllerFactory(controller)
             underTest.register(factory.cookie, factory, testScope)
             assertEquals(2, testShellTransitions.remotes.size)
+            assertTrue(testShellTransitions.remotesForTakeover.isEmpty())
 
             factory = controllerFactory(controller)
             underTest.register(factory.cookie, factory, testScope)
             assertEquals(4, testShellTransitions.remotes.size)
+            assertTrue(testShellTransitions.remotesForTakeover.isEmpty())
         }
     }
 
