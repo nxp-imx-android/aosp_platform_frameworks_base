@@ -272,8 +272,8 @@ class FlexClockView(clockCtx: ClockContext) : ViewGroup(clockCtx.context) {
         invalidate()
     }
 
-    fun updateAxes(axes: ClockAxisStyle) {
-        childViews.forEach { view -> view.updateAxes(axes) }
+    fun updateAxes(axes: ClockAxisStyle, isAnimated: Boolean) {
+        childViews.forEach { view -> view.updateAxes(axes, isAnimated) }
         requestLayout()
     }
 

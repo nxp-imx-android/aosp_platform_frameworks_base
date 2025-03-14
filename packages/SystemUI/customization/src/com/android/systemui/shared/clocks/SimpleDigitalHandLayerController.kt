@@ -171,10 +171,6 @@ open class SimpleDigitalHandLayerController(
             override fun onAlarmDataChanged(data: AlarmData) {}
 
             override fun onZenDataChanged(data: ZenData) {}
-
-            override fun onFontAxesChanged(axes: ClockAxisStyle) {
-                view.updateAxes(axes)
-            }
         }
 
     override val animations =
@@ -193,6 +189,13 @@ open class SimpleDigitalHandLayerController(
                     if (hasChanged) view.animateDoze(dozeState!!.isActive, !hasJumped)
                 }
                 view.dozeFraction = fraction
+            }
+
+            private var hasFontAxes = false
+
+            override fun onFontAxesChanged(style: ClockAxisStyle) {
+                view.updateAxes(style, isAnimated = hasFontAxes)
+                hasFontAxes = true
             }
 
             override fun fold(fraction: Float) {

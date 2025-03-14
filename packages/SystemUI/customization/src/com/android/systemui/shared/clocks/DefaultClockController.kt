@@ -231,8 +231,6 @@ class DefaultClockController(
         override fun onAlarmDataChanged(data: AlarmData) {}
 
         override fun onZenDataChanged(data: ZenData) {}
-
-        override fun onFontAxesChanged(axes: ClockAxisStyle) {}
     }
 
     open inner class DefaultClockAnimations(
@@ -285,6 +283,8 @@ class DefaultClockController(
         override fun onPositionUpdated(distance: Float, fraction: Float) {}
 
         override fun onFidgetTap(x: Float, y: Float) {}
+
+        override fun onFontAxesChanged(style: ClockAxisStyle) {}
     }
 
     inner class LargeClockAnimations(
