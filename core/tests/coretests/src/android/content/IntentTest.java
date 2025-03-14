@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -32,14 +33,21 @@ import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.security.Flags;
 import android.util.ArraySet;
+import android.util.Xml;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
+
+import com.android.internal.util.XmlUtils;
+import com.android.modules.utils.TypedXmlPullParser;
+import com.android.modules.utils.TypedXmlSerializer;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -275,6 +283,42 @@ public class IntentTest {
         Bundle b2 = new Bundle();
         b2.putAll(target.getBundleExtra("b1"));
         assertThat(b2.getBundle("bundle").getClassLoader()).isEqualTo(cl);
+    }
+
+    @Test
+    @RequiresFlagsEnabled(android.content.flags.Flags.FLAG_INTENT_SAVE_TO_XML_PACKAGE)
+    public void testSaveToXmlAndRestore() throws Exception {
+        // Create an intent and set fields.
+        Intent original = new Intent();
+        original.setAction(Intent.ACTION_MAIN);
+        original.setComponent(ComponentName.createRelative("com.intent.test", "IntentTest"));
+        original.setData(Uri.parse("content://path/to/file.txt"));
+        original.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        original.setIdentifier("unique_identifier");
+        original.setPackage("com.intent.test");
+        original.addCategory(Intent.CATEGORY_LAUNCHER);
+        original.putExtra("Name", "Some really important data");
+
+        String tag = "intent";
+
+        // Write to xml.
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        TypedXmlSerializer serializer = Xml.resolveSerializer(byteArrayOutputStream);
+        serializer.startDocument(null, true);
+        serializer.startTag(null, tag);
+        original.saveToXml(serializer);
+        serializer.endTag(null, tag);
+        serializer.endDocument();
+
+        // Restore from xml.
+        ByteArrayInputStream byteArrayInputStream =
+                new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
+        TypedXmlPullParser parser = Xml.resolvePullParser(byteArrayInputStream);
+        XmlUtils.beginDocument(parser, tag);
+        Intent restored = Intent.restoreFromXml(parser);
+
+        // Verify that the restored intent passed filterEquals on the original.
+        assertTrue(original.filterEquals(restored));
     }
 
 }
