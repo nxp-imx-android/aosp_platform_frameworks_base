@@ -16,11 +16,11 @@
 
 package com.android.systemui.statusbar.data.repository
 
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
-import com.android.systemui.display.data.repository.DisplayScopeRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.display.data.repository.SingleDisplayStore
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
@@ -44,7 +44,7 @@ constructor(
     @Background backgroundApplicationScope: CoroutineScope,
     displayRepository: DisplayRepository,
     private val factory: PrivacyDotViewControllerImpl.Factory,
-    private val displayScopeRepository: DisplayScopeRepository,
+    private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
     private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val contentInsetsProviderStore: StatusBarContentInsetsProviderStore,
 ) :
@@ -58,11 +58,8 @@ constructor(
         val configurationController =
             statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
         val contentInsetsProvider = contentInsetsProviderStore.forDisplay(displayId) ?: return null
-        return factory.create(
-            displayScopeRepository.scopeForDisplay(displayId),
-            configurationController,
-            contentInsetsProvider,
-        )
+        val displayScope = displayScopeRepository[displayId] ?: return null
+        return factory.create(displayScope, configurationController, contentInsetsProvider)
     }
 
     override suspend fun onDisplayRemovalAction(instance: PrivacyDotViewController) {

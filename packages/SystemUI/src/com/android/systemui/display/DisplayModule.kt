@@ -29,8 +29,6 @@ import com.android.systemui.display.data.repository.DeviceStateRepository
 import com.android.systemui.display.data.repository.DeviceStateRepositoryImpl
 import com.android.systemui.display.data.repository.DisplayRepository
 import com.android.systemui.display.data.repository.DisplayRepositoryImpl
-import com.android.systemui.display.data.repository.DisplayScopeRepository
-import com.android.systemui.display.data.repository.DisplayScopeRepositoryImpl
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepository
 import com.android.systemui.display.data.repository.DisplayWindowPropertiesRepositoryImpl
 import com.android.systemui.display.data.repository.DisplaysWithDecorationsRepository
@@ -78,8 +76,6 @@ interface DisplayModule {
         focusedDisplayRepository: FocusedDisplayRepositoryImpl
     ): FocusedDisplayRepository
 
-    @Binds fun displayScopeRepository(impl: DisplayScopeRepositoryImpl): DisplayScopeRepository
-
     @Binds
     fun displayWindowPropertiesRepository(
         impl: DisplayWindowPropertiesRepositoryImpl
@@ -98,20 +94,6 @@ interface DisplayModule {
     fun bindDisplayLibBackground(@Background bgScope: CoroutineScope): CoroutineScope
 
     companion object {
-        @Provides
-        @SysUISingleton
-        @IntoMap
-        @ClassKey(DisplayScopeRepositoryImpl::class)
-        fun displayScopeRepoCoreStartable(
-            repoImplLazy: Lazy<DisplayScopeRepositoryImpl>
-        ): CoreStartable {
-            return if (StatusBarConnectedDisplays.isEnabled) {
-                repoImplLazy.get()
-            } else {
-                CoreStartable.NOP
-            }
-        }
-
         @Provides
         @SysUISingleton
         @IntoMap
