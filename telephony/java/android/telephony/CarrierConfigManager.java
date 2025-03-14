@@ -11476,17 +11476,17 @@ public class CarrierConfigManager {
                         + "target=GERAN|UTRAN|EUTRAN|NGRAN|IWLAN, type=allowed"});
         PersistableBundle auto_data_switch_rat_signal_score_string_bundle = new PersistableBundle();
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
-                "NR_SA_MMWAVE", new int[]{10000, 13227, 16000, 18488, 20017});
+                "NR_SA_MMWAVE", new int[]{6300, 10227, 16000, 18488, 19017});
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
-                "NR_NSA_MMWAVE", new int[]{8000, 10227, 12488, 15017, 15278});
+                "NR_NSA_MMWAVE", new int[]{5700, 9227, 12488, 13517, 15978});
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
                 "LTE", new int[]{3731, 5965, 8618, 11179, 13384});
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
-                "LTE_CA", new int[]{3831, 6065, 8718, 11379, 13484});
+                "LTE_CA", new int[]{3831, 6065, 8718, 11379, 14484});
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
-                "NR_SA", new int[]{5288, 6795, 6955, 7562, 9713});
+                "NR_SA", new int[]{2288, 6795, 6955, 7562, 15484});
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
-                "NR_NSA", new int[]{5463, 6827, 8029, 9007, 9428});
+                "NR_NSA", new int[]{2463, 6827, 8029, 9007, 15884});
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
                 "UMTS", new int[]{100, 169, 183, 192, 300});
         auto_data_switch_rat_signal_score_string_bundle.putIntArray(
