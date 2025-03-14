@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,137 +16,149 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
-import androidx.annotation.VisibleForTesting
-import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.coroutines.newTracingContext
+import androidx.compose.runtime.State as ComposeState
+import androidx.compose.runtime.mutableStateOf
+import com.android.systemui.Flags
+import com.android.systemui.KairosActivatable
+import com.android.systemui.KairosBuilder
+import com.android.systemui.activated
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.flags.FeatureFlagsClassic
+import com.android.systemui.kairos.BuildScope
+import com.android.systemui.kairos.BuildSpec
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.Incremental
+import com.android.systemui.kairos.State as KairosState
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.buildSpec
+import com.android.systemui.kairos.changes
+import com.android.systemui.kairos.combine
+import com.android.systemui.kairos.flatten
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.mapValues
+import com.android.systemui.kairos.stateOf
+import com.android.systemui.kairosBuilder
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractorKairos
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.VerboseMobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernStatusBarMobileView
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
-import java.util.concurrent.ConcurrentHashMap
+import dagger.Provides
+import dagger.multibindings.ElementsIntoSet
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
+import javax.inject.Provider
 
 /**
  * View model for describing the system's current mobile cellular connections. The result is a list
  * of [MobileIconViewModel]s which describe the individual icons and can be bound to
  * [ModernStatusBarMobileView].
  */
+@ExperimentalKairosApi
 @SysUISingleton
 class MobileIconsViewModelKairos
 @Inject
 constructor(
     val logger: MobileViewLogger,
     private val verboseLogger: VerboseMobileViewLogger,
-    private val interactor: MobileIconsInteractor,
+    private val interactor: MobileIconsInteractorKairos,
     private val airplaneModeInteractor: AirplaneModeInteractor,
     private val constants: ConnectivityConstants,
-    @Background private val scope: CoroutineScope,
-) {
-    @VisibleForTesting
-    val reuseCache = ConcurrentHashMap<Int, Pair<MobileIconViewModel, CoroutineScope>>()
+    private val flags: FeatureFlagsClassic,
+) : KairosBuilder by kairosBuilder() {
 
-    val activeMobileDataSubscriptionId: StateFlow<Int?> = interactor.activeMobileDataSubscriptionId
+    val activeSubscriptionId: State<Int?>
+        get() = interactor.activeDataIconInteractor.map { it?.subscriptionId }
 
-    val subscriptionIdsFlow: StateFlow<List<Int>> =
-        interactor.filteredSubscriptions
-            .mapLatest { subscriptions ->
-                subscriptions.map { subscriptionModel -> subscriptionModel.subscriptionId }
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), listOf())
+    val subscriptionIds: KairosState<List<Int>> =
+        interactor.filteredSubscriptions.map { subscriptions ->
+            subscriptions.map { it.subscriptionId }
+        }
 
-    val mobileSubViewModels: StateFlow<List<MobileIconViewModelCommon>> =
-        subscriptionIdsFlow
-            .map { ids -> ids.map { commonViewModelForSub(it) } }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), emptyList())
-
-    private val firstMobileSubViewModel: StateFlow<MobileIconViewModelCommon?> =
-        mobileSubViewModels
-            .map {
-                if (it.isEmpty()) {
-                    null
-                } else {
-                    // Mobile icons get reversed by [StatusBarIconController], so the last element
-                    // in this list will show up visually first.
-                    it.last()
-                }
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
-
-    /**
-     * A flow that emits `true` if the mobile sub that's displayed first visually is showing its
-     * network type icon and `false` otherwise.
-     */
-    val firstMobileSubShowingNetworkTypeIcon: StateFlow<Boolean> =
-        firstMobileSubViewModel
-            .flatMapLatest { firstMobileSubViewModel ->
-                firstMobileSubViewModel?.networkTypeIcon?.map { it != null } ?: flowOf(false)
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
-
-    val isStackable: StateFlow<Boolean> = interactor.isStackable
-
-    init {
-        scope.launch { subscriptionIdsFlow.collect { invalidateCaches(it) } }
+    val icons: Incremental<Int, MobileIconViewModelKairos> = buildIncremental {
+        interactor.icons
+            .mapValues { (subId, icon) -> buildSpec { commonViewModel(subId, icon) } }
+            .applyLatestSpecForKey()
     }
 
-    fun viewModelForSub(subId: Int, location: StatusBarLocation): LocationBasedMobileViewModel {
-        val common = commonViewModelForSub(subId)
-        return LocationBasedMobileViewModel.viewModelForLocation(
-            common,
-            interactor.getMobileConnectionInteractorForSubId(subId),
+    /** Whether the mobile sub that's displayed first visually is showing its network type icon. */
+    val firstMobileSubShowingNetworkTypeIcon: KairosState<Boolean> = buildState {
+        combine(subscriptionIds.map { it.lastOrNull() }, icons) { lastId, icons ->
+                icons[lastId]?.networkTypeIcon?.map { it != null } ?: stateOf(false)
+            }
+            .flatten()
+    }
+
+    val isStackable: KairosState<Boolean>
+        get() = interactor.isStackable
+
+    fun viewModelForSub(
+        subId: Int,
+        location: StatusBarLocation,
+    ): BuildSpec<LocationBasedMobileViewModelKairos> = buildSpec {
+        val iconInteractor =
+            interactor.icons.sample().getOrElse(subId) { error("Unknown subscription id: $subId") }
+        val commonViewModel =
+            icons.sample().getOrElse(subId) { error("Unknown subscription id: $subId") }
+        LocationBasedMobileViewModelKairos.viewModelForLocation(
+            commonViewModel,
+            iconInteractor,
             verboseLogger,
             location,
-            scope,
         )
     }
 
-    private fun commonViewModelForSub(subId: Int): MobileIconViewModelCommon {
-        return reuseCache.getOrPut(subId) { createViewModel(subId) }.first
-    }
+    fun shadeCarrierGroupIcon(subId: Int): BuildSpec<ShadeCarrierGroupMobileIconViewModelKairos> =
+        buildSpec {
+            val iconInteractor =
+                interactor.icons.sample().getOrElse(subId) {
+                    error("Unknown subscription id: $subId")
+                }
+            val commonViewModel =
+                icons.sample().getOrElse(subId) { error("Unknown subscription id: $subId") }
+            ShadeCarrierGroupMobileIconViewModelKairos(commonViewModel, iconInteractor)
+        }
 
-    private fun createViewModel(subId: Int): Pair<MobileIconViewModel, CoroutineScope> {
-        // Create a child scope so we can cancel it
-        val vmScope = scope.createChildScope(newTracingContext("MobileIconViewModel"))
-        val vm =
-            MobileIconViewModel(
-                subId,
-                interactor.getMobileConnectionInteractorForSubId(subId),
-                airplaneModeInteractor,
-                constants,
-                vmScope,
+    private fun BuildScope.commonViewModel(subId: Int, iconInteractor: MobileIconInteractorKairos) =
+        activated {
+            MobileIconViewModelKairos(
+                subscriptionId = subId,
+                iconInteractor = iconInteractor,
+                airplaneModeInteractor = airplaneModeInteractor,
+                constants = constants,
+                flags = flags,
             )
+        }
 
-        return Pair(vm, vmScope)
+    @dagger.Module
+    object Module {
+        @Provides
+        @ElementsIntoSet
+        fun bindKairosActivatable(
+            impl: Provider<MobileIconsViewModelKairos>
+        ): Set<@JvmSuppressWildcards KairosActivatable> =
+            if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
     }
+}
 
-    private fun CoroutineScope.createChildScope(extraContext: CoroutineContext) =
-        CoroutineScope(coroutineContext + Job(coroutineContext[Job]) + extraContext)
+@ExperimentalKairosApi
+class MobileIconsViewModelKairosComposeWrapper(
+    val icons: ComposeState<Map<Int, MobileIconViewModelKairos>>
+)
 
-    private fun invalidateCaches(subIds: List<Int>) {
-        reuseCache.keys
-            .filter { !subIds.contains(it) }
-            .forEach { id ->
-                reuseCache
-                    .remove(id)
-                    // Cancel the view model's scope after removing it
-                    ?.second
-                    ?.cancel()
-            }
-    }
+@ExperimentalKairosApi
+fun composeWrapper(
+    viewModel: MobileIconsViewModelKairos
+): BuildSpec<MobileIconsViewModelKairosComposeWrapper> = buildSpec {
+    MobileIconsViewModelKairosComposeWrapper(icons = toComposeState(viewModel.icons))
+}
+
+@ExperimentalKairosApi
+fun <T> BuildScope.toComposeState(state: KairosState<T>): ComposeState<T> {
+    val initial = state.sample()
+    val cState = mutableStateOf(initial)
+    state.changes.observe { cState.value = it }
+    return cState
 }

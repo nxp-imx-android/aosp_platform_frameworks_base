@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,110 +19,69 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.FakeFeatureFlagsClassic
 import com.android.systemui.flags.Flags
+import com.android.systemui.flags.fake
+import com.android.systemui.flags.featureFlagsClassic
+import com.android.systemui.kairos.ActivatedKairosFixture
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.kairos
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.statusbar.connectivity.MobileIconCarrierIdOverridesFake
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepository
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractor
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractorImpl
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
+import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.FakeMobileConnectionRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractorKairos
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractorKairosImpl
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairos
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.mobileIconsInteractorKairos
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
-import com.android.systemui.statusbar.policy.data.repository.FakeUserSetupRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.testKosmos
-import com.android.systemui.util.CarrierConfigTracker
-import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.mock
 
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class LocationBasedMobileIconViewModelKairosTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
 
-    private lateinit var commonImpl: MobileIconViewModelCommonKairos
-    private lateinit var homeIcon: HomeMobileIconViewModelKairos
-    private lateinit var qsIcon: QsMobileIconViewModelKairos
-    private lateinit var keyguardIcon: KeyguardMobileIconViewModelKairos
-    private lateinit var iconsInteractor: MobileIconsInteractor
-    private lateinit var interactor: MobileIconInteractor
-    private val connectionsRepository = kosmos.fakeMobileConnectionsRepository
-    private lateinit var repository: FakeMobileConnectionRepository
-    private lateinit var airplaneModeInteractor: AirplaneModeInteractor
+    private val Kosmos.commonImpl: MobileIconViewModelKairosCommon by ActivatedKairosFixture {
+        MobileIconViewModelKairos(
+            SUB_1_ID,
+            interactor,
+            airplaneModeInteractor,
+            constants,
+            featureFlagsClassic,
+        )
+    }
 
-    private val connectivityRepository = FakeConnectivityRepository()
-    private val flags =
-        FakeFeatureFlagsClassic().also {
-            it.set(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS, true)
-        }
+    private val Kosmos.homeIcon: HomeMobileIconViewModelKairos by
+        Kosmos.Fixture { HomeMobileIconViewModelKairos(commonImpl, mock()) }
 
-    @Mock private lateinit var constants: ConnectivityConstants
-    private val tableLogBuffer =
-        logcatTableLogBuffer(kosmos, "LocationBasedMobileIconViewModelTest")
-    @Mock private lateinit var carrierConfigTracker: CarrierConfigTracker
+    private val Kosmos.qsIcon: QsMobileIconViewModelKairos by
+        Kosmos.Fixture { QsMobileIconViewModelKairos(commonImpl) }
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    private val Kosmos.keyguardIcon: KeyguardMobileIconViewModelKairos by
+        Kosmos.Fixture { KeyguardMobileIconViewModelKairos(commonImpl) }
 
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-        airplaneModeInteractor =
-            AirplaneModeInteractor(
-                FakeAirplaneModeRepository(),
-                FakeConnectivityRepository(),
-                connectionsRepository,
-            )
-        repository =
-            FakeMobileConnectionRepository(SUB_1_ID, tableLogBuffer).apply {
-                isInService.value = true
-                cdmaLevel.value = 1
-                primaryLevel.value = 1
-                isEmergencyOnly.value = false
-                numberOfLevels.value = 4
-                resolvedNetworkType.value = ResolvedNetworkType.DefaultNetworkType(lookupKey = "3G")
-                dataConnectionState.value = DataConnectionState.Connected
-            }
+    private val Kosmos.iconsInteractor: MobileIconsInteractorKairos
+        get() = mobileIconsInteractorKairos
 
-        connectionsRepository.activeMobileDataRepository.value = repository
-
-        connectivityRepository.apply { setMobileConnected() }
-
-        iconsInteractor =
-            MobileIconsInteractorImpl(
-                connectionsRepository,
-                carrierConfigTracker,
-                tableLogBuffer,
-                connectivityRepository,
-                FakeUserSetupRepository(),
-                testScope.backgroundScope,
-                context,
-                flags,
-            )
-
-        interactor =
-            MobileIconInteractorImpl(
-                testScope.backgroundScope,
+    private val Kosmos.interactor: MobileIconInteractorKairos by
+        Kosmos.Fixture {
+            MobileIconInteractorKairosImpl(
                 iconsInteractor.activeDataConnectionHasDataEnabled,
                 iconsInteractor.alwaysShowDataRatIcon,
                 iconsInteractor.alwaysUseCdmaLevel,
@@ -136,50 +95,74 @@ class LocationBasedMobileIconViewModelKairosTest : SysuiTestCase() {
                 context,
                 MobileIconCarrierIdOverridesFake(),
             )
+        }
 
-        commonImpl =
-            MobileIconViewModelKairos(
-                SUB_1_ID,
-                interactor,
-                airplaneModeInteractor,
-                constants,
-                testScope.backgroundScope,
-            )
+    private val Kosmos.repository: FakeMobileConnectionRepositoryKairos by
+        Kosmos.Fixture {
+            FakeMobileConnectionRepositoryKairos(SUB_1_ID, kairos, tableLogBuffer).apply {
+                isInService.setValue(true)
+                cdmaLevel.setValue(1)
+                primaryLevel.setValue(1)
+                isEmergencyOnly.setValue(false)
+                numberOfLevels.setValue(4)
+                resolvedNetworkType.setValue(
+                    ResolvedNetworkType.DefaultNetworkType(lookupKey = "3G")
+                )
+                dataConnectionState.setValue(DataConnectionState.Connected)
+            }
+        }
 
-        homeIcon = HomeMobileIconViewModelKairos(commonImpl, mock())
-        qsIcon = QsMobileIconViewModelKairos(commonImpl)
-        keyguardIcon = KeyguardMobileIconViewModelKairos(commonImpl)
-    }
+    private val Kosmos.constants: ConnectivityConstants by Kosmos.Fixture { mock() }
+    private val Kosmos.tableLogBuffer by
+        Kosmos.Fixture { logcatTableLogBuffer(this, "LocationBasedMobileIconViewModelTest") }
+
+    private val kosmos =
+        testKosmos().apply {
+            useUnconfinedTestDispatcher()
+            mobileConnectionsRepositoryKairos =
+                fakeMobileConnectionsRepositoryKairos.apply {
+                    setActiveMobileDataSubscriptionId(SUB_1_ID)
+                    subscriptions.setValue(
+                        listOf(
+                            SubscriptionModel(
+                                SUB_1_ID,
+                                carrierName = "carrierName",
+                                profileClass = 0,
+                            )
+                        )
+                    )
+                }
+            connectivityRepository.fake.apply { setMobileConnected() }
+            featureFlagsClassic.fake.apply {
+                set(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS, true)
+            }
+        }
+
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
 
     @Test
-    fun locationBasedViewModelsReceiveSameIconIdWhenCommonImplUpdates() =
-        testScope.runTest {
-            var latestHome: SignalIconModel? = null
-            val homeJob = homeIcon.icon.onEach { latestHome = it }.launchIn(this)
+    fun locationBasedViewModelsReceiveSameIconIdWhenCommonImplUpdates() = runTest {
+        repository.dataEnabled.setValue(true)
+        repository.isInService.setValue(true)
 
-            var latestQs: SignalIconModel? = null
-            val qsJob = qsIcon.icon.onEach { latestQs = it }.launchIn(this)
+        val latestHome by homeIcon.icon.collectLastValue()
+        val latestQs by qsIcon.icon.collectLastValue()
+        val latestKeyguard by keyguardIcon.icon.collectLastValue()
 
-            var latestKeyguard: SignalIconModel? = null
-            val keyguardJob = keyguardIcon.icon.onEach { latestKeyguard = it }.launchIn(this)
+        var expected = defaultSignal(level = 1)
 
-            var expected = defaultSignal(level = 1)
+        assertThat(latestHome).isEqualTo(expected)
+        assertThat(latestQs).isEqualTo(expected)
+        assertThat(latestKeyguard).isEqualTo(expected)
 
-            assertThat(latestHome).isEqualTo(expected)
-            assertThat(latestQs).isEqualTo(expected)
-            assertThat(latestKeyguard).isEqualTo(expected)
+        repository.setAllLevels(2)
+        expected = defaultSignal(level = 2)
 
-            repository.setAllLevels(2)
-            expected = defaultSignal(level = 2)
-
-            assertThat(latestHome).isEqualTo(expected)
-            assertThat(latestQs).isEqualTo(expected)
-            assertThat(latestKeyguard).isEqualTo(expected)
-
-            homeJob.cancel()
-            qsJob.cancel()
-            keyguardJob.cancel()
-        }
+        assertThat(latestHome).isEqualTo(expected)
+        assertThat(latestQs).isEqualTo(expected)
+        assertThat(latestKeyguard).isEqualTo(expected)
+    }
 
     companion object {
         private const val SUB_1_ID = 1
