@@ -272,6 +272,12 @@ class ActivityStartInterceptor {
             mActivityOptions = interceptResult.getActivityOptions();
             mCallingPid = mRealCallingPid;
             mCallingUid = mRealCallingUid;
+            // When an activity launch is intercepted, Intent#prepareToLeaveProcess is not called
+            // since the interception happens in the system_server. So if any activity is calling
+            // a trampoline activity, the keys do not get collected. Since all the interceptors
+            // are present in the system_server, add the creator token before launching the
+            // intercepted intent.
+            mService.mAmInternal.addCreatorToken(mIntent, mCallingPackage);
             if (interceptResult.isActivityResolved()) {
                 return true;
             }
