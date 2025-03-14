@@ -76,6 +76,7 @@ import android.os.BatteryManagerInternal;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
@@ -93,6 +94,7 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.internal.util.ArrayUtils;
 import com.android.server.LocalServices;
 import com.android.server.PowerAllowlistInternal;
+import com.android.server.compat.PlatformCompat;
 import com.android.server.job.Flags;
 import com.android.server.job.JobSchedulerInternal;
 import com.android.server.job.JobSchedulerService;
@@ -103,8 +105,6 @@ import com.android.server.job.controllers.QuotaController.ShrinkableDebits;
 import com.android.server.job.controllers.QuotaController.TimedEvent;
 import com.android.server.job.controllers.QuotaController.TimingSession;
 import com.android.server.usage.AppStandbyInternal;
-
-import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
 
 import org.junit.After;
 import org.junit.Before;
@@ -168,6 +168,8 @@ public class QuotaControllerTest {
     private PowerAllowlistInternal mPowerAllowlistInternal;
     @Mock
     private UsageStatsManagerInternal mUsageStatsManager;
+    @Mock
+    private PlatformCompat mPlatformCompat;
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule =
@@ -182,6 +184,7 @@ public class QuotaControllerTest {
                 .strictness(Strictness.LENIENT)
                 .spyStatic(DeviceConfig.class)
                 .mockStatic(LocalServices.class)
+                .mockStatic(ServiceManager.class)
                 .startMocking();
 
         // Called in StateController constructor.
@@ -198,6 +201,7 @@ public class QuotaControllerTest {
         }
         when(mContext.getMainLooper()).thenReturn(Looper.getMainLooper());
         when(mContext.getSystemService(AlarmManager.class)).thenReturn(mAlarmManager);
+
         doReturn(mActivityMangerInternal)
                 .when(() -> LocalServices.getService(ActivityManagerInternal.class));
         doReturn(mock(AppStandbyInternal.class))
@@ -253,6 +257,8 @@ public class QuotaControllerTest {
                 ArgumentCaptor.forClass(PowerAllowlistInternal.TempAllowlistChangeListener.class);
         ArgumentCaptor<UsageStatsManagerInternal.UsageEventListener> ueListenerCaptor =
                 ArgumentCaptor.forClass(UsageStatsManagerInternal.UsageEventListener.class);
+        doReturn(mPlatformCompat)
+                .when(() -> ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE));
         mQuotaController = new QuotaController(mJobSchedulerService,
                 mock(BackgroundJobsController.class), mock(ConnectivityController.class));
 
@@ -5591,12 +5597,16 @@ public class QuotaControllerTest {
     }
 
     @Test
-    @EnableCompatChanges({QuotaController.OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS,
-            QuotaController.OVERRIDE_QUOTA_ENFORCEMENT_TO_FGS_JOBS})
     @RequiresFlagsEnabled({Flags.FLAG_ENFORCE_QUOTA_POLICY_TO_TOP_STARTED_JOBS,
             Flags.FLAG_ENFORCE_QUOTA_POLICY_TO_FGS_JOBS})
     public void testTracking_OutOfQuota_ForegroundAndBackground_CompactChangeOverrides() {
         setDischarging();
+
+        // Mock the OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS compat change overrides.
+        doReturn(true).when(mPlatformCompat).isChangeEnabledByUid(
+                eq(QuotaController.OVERRIDE_QUOTA_ENFORCEMENT_TO_TOP_STARTED_JOBS), anyInt());
+        doReturn(true).when(mPlatformCompat).isChangeEnabledByUid(
+                eq(QuotaController.OVERRIDE_QUOTA_ENFORCEMENT_TO_FGS_JOBS), anyInt());
 
         JobStatus jobBg = createJobStatus("testTracking_OutOfQuota_ForegroundAndBackground", 1);
         JobStatus jobTop = createJobStatus("testTracking_OutOfQuota_ForegroundAndBackground", 2);
