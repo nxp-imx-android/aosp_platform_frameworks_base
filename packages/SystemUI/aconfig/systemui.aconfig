@@ -1436,16 +1436,6 @@ flag {
 }
 
 flag {
-  name: "dozeui_scheduling_alarms_background_execution"
-  namespace: "systemui"
-  description: "Decide whether to execute binder calls to schedule alarms in background thread"
-  bug: "330492575"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "media_lockscreen_launch_animation"
     namespace : "systemui"
     description : "Enable the origin launch animation for UMO when opening on top of lockscreen."

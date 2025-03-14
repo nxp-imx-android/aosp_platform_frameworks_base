@@ -1744,6 +1744,9 @@ public class KeyguardViewMediator implements CoreStartable,
         mJavaAdapter.alwaysCollectFlow(
                 mWallpaperRepository.getWallpaperSupportsAmbientMode(),
                 this::setWallpaperSupportsAmbientMode);
+        mJavaAdapter.alwaysCollectFlow(
+                mKeyguardInteractor.getDozeTimeTick(),
+                this::triggerTimeUpdate);
     }
 
     @Override
@@ -4054,6 +4057,10 @@ public class KeyguardViewMediator implements CoreStartable,
      */
     private void setWallpaperSupportsAmbientMode(boolean supportsAmbientMode) {
         mWallpaperSupportsAmbientMode = supportsAmbientMode;
+    }
+
+    private void triggerTimeUpdate(long timeInMillis) {
+        mUpdateMonitor.triggerTimeUpdate();
     }
 
     private static class StartKeyguardExitAnimParams {
