@@ -169,8 +169,7 @@ constructor(
     }
 
     private fun pullDismissibleRow(translation: Float) {
-        val targetTranslation = swipedRowMultiplier * translation
-        val crossedThreshold = abs(targetTranslation) >= magneticDetachThreshold
+        val crossedThreshold = abs(translation) >= magneticDetachThreshold
         if (crossedThreshold) {
             snapNeighborsBack()
             currentMagneticListeners.swipedListener()?.let { detach(it, translation) }
@@ -247,8 +246,7 @@ constructor(
     }
 
     private fun translateDetachedRow(translation: Float) {
-        val targetTranslation = swipedRowMultiplier * translation
-        val crossedThreshold = abs(targetTranslation) <= magneticAttachThreshold
+        val crossedThreshold = abs(translation) <= magneticAttachThreshold
         if (crossedThreshold) {
             translationOffset += translation
             updateRoundness(translation = 0f, animate = true)
