@@ -22,6 +22,9 @@ import com.android.hoststubgen.asm.isNative
  *  For native methods that weren't handled by outer filters, we keep it so that
  *  native method registration will not crash at runtime. Ideally we shouldn't need
  *  this, but in practice unsupported native method registrations do occur.
+ *
+ *  Native methods kept by this filter will all have a "Keep" policy, but they won't show
+ *  up as "supported" in the stats dashboard beucase we set reallySupported to false.
  */
 class KeepNativeFilter(
     private val classes: ClassNodes,
@@ -34,7 +37,7 @@ class KeepNativeFilter(
     ): FilterPolicyWithReason {
         return classes.findMethod(className, methodName, descriptor)?.let { mn ->
             if (mn.isNative()) {
-                FilterPolicy.Keep.withReason("native-preserve")
+                FilterPolicy.Keep.withReason("native-preserve", StatsLabel.NotSupported)
             } else {
                 null
             }
