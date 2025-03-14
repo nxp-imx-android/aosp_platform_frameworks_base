@@ -1230,7 +1230,7 @@ public class InputManagerService extends IInputManager.Stub
                 "registerTabletModeChangedListener()")) {
             throw new SecurityException("Requires TABLET_MODE_LISTENER permission");
         }
-        Objects.requireNonNull(listener, "listener must not be null");
+        Objects.requireNonNull(listener, "event must not be null");
 
         synchronized (mTabletModeLock) {
             final int callingPid = Binder.getCallingPid();
@@ -1342,7 +1342,7 @@ public class InputManagerService extends IInputManager.Stub
 
     @Override
     public void requestPointerCapture(IBinder inputChannelToken, boolean enabled) {
-        Objects.requireNonNull(inputChannelToken, "inputChannelToken must not be null");
+        Objects.requireNonNull(inputChannelToken, "event must not be null");
 
         mNative.requestPointerCapture(inputChannelToken, enabled);
     }
