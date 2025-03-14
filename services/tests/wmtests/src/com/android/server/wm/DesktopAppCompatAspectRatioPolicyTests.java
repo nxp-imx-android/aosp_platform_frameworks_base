@@ -35,6 +35,7 @@ import static com.android.server.wm.AppCompatConfiguration.DEFAULT_LETTERBOX_ASP
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 
 import android.compat.testing.PlatformCompatChangeRule;
 import android.content.pm.ActivityInfo;
@@ -413,7 +414,7 @@ public class DesktopAppCompatAspectRatioPolicyTests extends WindowTestsBase {
 
         void setDesiredAspectRatio(float aspectRatio) {
             doReturn(aspectRatio).when(getDesktopAppCompatAspectRatioPolicy())
-                    .getDesiredAspectRatio(any());
+                    .getDesiredAspectRatio(any(), anyBoolean());
         }
 
         DesktopAppCompatAspectRatioPolicy getDesktopAppCompatAspectRatioPolicy() {
@@ -422,7 +423,7 @@ public class DesktopAppCompatAspectRatioPolicyTests extends WindowTestsBase {
 
         float calculateAspectRatio() {
             return getDesktopAppCompatAspectRatioPolicy().calculateAspectRatio(
-                    getTopActivity().getTask());
+                    getTopActivity().getTask(), /* hasOrientationMismatch */ true);
         }
 
         ActivityRecord getTopActivity() {
