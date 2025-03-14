@@ -115,6 +115,7 @@ public enum DesktopModeFlags {
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(
             Flags::enableOpaqueBackgroundForTransparentWindows, true),
     ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
+    ENABLE_REQUEST_FULLSCREEN_BUGFIX(Flags::enableRequestFullscreenBugfix, false),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
             Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),

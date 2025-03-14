@@ -971,6 +971,16 @@ flag {
 }
 
 flag {
+    name: "enable_request_fullscreen_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes split to fullscreen restoration using the Activity#requestFullscreenMode API"
+    bug: "402973271"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_dynamic_radius_computation_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to compute the corner/shadow radius of desktop windows dynamically with the current window context."
