@@ -5968,6 +5968,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onDesktopDragEnd_noIndicatorAndMoveToNewDisplay_reparent() {
         val task = setUpFreeformTask()
         val spyController = spy(controller)
@@ -6001,6 +6002,41 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 },
                 eq(dragToDisplayTransitionHandler),
             )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onDesktopDragEnd_noIndicatorAndMoveToNewDisplay_reparentToDesk() {
+        val deskId = 5
+        val task = setUpFreeformTask()
+        val spyController = spy(controller)
+        val mockSurface = mock(SurfaceControl::class.java)
+        val mockDisplayLayout = mock(DisplayLayout::class.java)
+        taskRepository.addDesk(displayId = SECONDARY_DISPLAY_ID, deskId = deskId)
+        whenever(displayController.getDisplayLayout(task.displayId)).thenReturn(mockDisplayLayout)
+        whenever(mockDisplayLayout.stableInsets()).thenReturn(Rect(0, 100, 2000, 2000))
+        spyController.onDragPositioningMove(task, mockSurface, 200f, Rect(100, 200, 500, 1000))
+
+        val currentDragBounds = Rect(100, 200, 500, 1000)
+        whenever(spyController.getVisualIndicator()).thenReturn(desktopModeVisualIndicator)
+        whenever(desktopModeVisualIndicator.updateIndicatorType(anyOrNull()))
+            .thenReturn(DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR)
+        whenever(motionEvent.displayId).thenReturn(SECONDARY_DISPLAY_ID)
+
+        spyController.onDragPositioningEnd(
+            task,
+            mockSurface,
+            inputCoordinate = PointF(200f, 300f),
+            currentDragBounds,
+            validDragArea = Rect(0, 50, 2000, 2000),
+            dragStartBounds = Rect(),
+            motionEvent,
+        )
+
+        verify(desksOrganizer).moveTaskToDesk(any(), eq(deskId), eq(task))
     }
 
     @Test
