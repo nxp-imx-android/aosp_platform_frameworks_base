@@ -17,11 +17,13 @@
 package com.android.server.security.advancedprotection;
 
 import static android.provider.Settings.Secure.ADVANCED_PROTECTION_MODE;
+import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 
 import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.StatsManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Binder;
@@ -45,6 +47,7 @@ import android.security.advancedprotection.IAdvancedProtectionService;
 import android.security.advancedprotection.AdvancedProtectionProtoEnums;
 import android.util.ArrayMap;
 import android.util.Slog;
+import android.util.StatsEvent;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.DumpUtils;
@@ -135,6 +138,15 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         }
 
         mProviders.add(new DisallowWepAdvancedProtectionProvider());
+    }
+
+    private void initLogging() {
+        StatsManager statsManager = mContext.getSystemService(StatsManager.class);
+        statsManager.setPullAtomCallback(
+                FrameworkStatsLog.ADVANCED_PROTECTION_STATE_INFO,
+                null, // use default PullAtomMetadata values
+                DIRECT_EXECUTOR,
+                new AdvancedProtectionStatePullAtomCallback());
     }
 
     // Only for tests
@@ -399,6 +411,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
                     Slog.i(TAG, "Advanced protection is enabled");
                 }
                 mService.initFeatures(enabled);
+                mService.initLogging();
             }
         }
     }
@@ -498,6 +511,24 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
             synchronized (mCallbacks) {
                 mCallbacks.remove(mBinder);
             }
+        }
+    }
+
+    private class AdvancedProtectionStatePullAtomCallback
+            implements StatsManager.StatsPullAtomCallback {
+
+        @Override
+        public int onPullAtom(int atomTag, List<StatsEvent> data) {
+            if (atomTag != FrameworkStatsLog.ADVANCED_PROTECTION_STATE_INFO) {
+                return StatsManager.PULL_SKIP;
+            }
+
+            data.add(
+                    FrameworkStatsLog.buildStatsEvent(
+                            FrameworkStatsLog.ADVANCED_PROTECTION_STATE_INFO,
+                            /*enabled*/ isAdvancedProtectionEnabledInternal(),
+                            /*hours_since_enabled*/ hoursSinceLastChange()));
+            return StatsManager.PULL_SUCCESS;
         }
     }
 }
