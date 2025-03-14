@@ -270,6 +270,7 @@ constructor(
         translationOffset = 0f
         if (row.isSwipedTarget()) {
             when (currentState) {
+                State.TARGETS_SET -> currentState = State.IDLE
                 State.PULLING -> {
                     snapNeighborsBack(velocity)
                     currentState = State.IDLE
