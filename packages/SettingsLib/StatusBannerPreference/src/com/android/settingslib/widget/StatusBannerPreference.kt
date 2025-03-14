@@ -43,7 +43,8 @@ class StatusBannerPreference @JvmOverloads constructor(
         MEDIUM,
         HIGH,
         OFF,
-        LOADING_DETERMINATE // The loading progress is set by the caller.
+        LOADING_DETERMINATE, // The loading progress is set by the caller.
+        LOADING_INDETERMINATE // No loading progress. Just loading animation
     }
     var iconLevel: BannerStatus = BannerStatus.GENERIC
         set(value) {
@@ -94,6 +95,7 @@ class StatusBannerPreference @JvmOverloads constructor(
         3 -> BannerStatus.HIGH
         4 -> BannerStatus.OFF
         5 -> BannerStatus.LOADING_DETERMINATE
+        6 -> BannerStatus.LOADING_INDETERMINATE
         else -> BannerStatus.GENERIC
     }
 
@@ -109,7 +111,8 @@ class StatusBannerPreference @JvmOverloads constructor(
         holder.findViewById(android.R.id.icon_frame)?.apply {
             visibility =
                 if (
-                    icon != null || iconLevel == BannerStatus.LOADING_DETERMINATE
+                    icon != null || iconLevel == BannerStatus.LOADING_DETERMINATE ||
+                    iconLevel == BannerStatus.LOADING_INDETERMINATE
                 )
                     View.VISIBLE
                 else View.GONE
@@ -117,7 +120,8 @@ class StatusBannerPreference @JvmOverloads constructor(
 
         holder.findViewById(android.R.id.icon)?.apply {
             visibility =
-                if (iconLevel == BannerStatus.LOADING_DETERMINATE)
+                if (iconLevel == BannerStatus.LOADING_DETERMINATE ||
+                    iconLevel == BannerStatus.LOADING_INDETERMINATE)
                     View.GONE
                 else View.VISIBLE
         }
@@ -128,6 +132,13 @@ class StatusBannerPreference @JvmOverloads constructor(
         (circularProgressIndicator)?.apply {
             visibility =
                 if (iconLevel == BannerStatus.LOADING_DETERMINATE)
+                    View.VISIBLE
+                else View.GONE
+        }
+
+        holder.findViewById(R.id.loading_indicator)?.apply {
+            visibility =
+                if (iconLevel == BannerStatus.LOADING_INDETERMINATE)
                     View.VISIBLE
                 else View.GONE
         }
