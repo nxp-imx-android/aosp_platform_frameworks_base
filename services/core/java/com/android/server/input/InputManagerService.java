@@ -750,7 +750,8 @@ public class InputManagerService extends IInputManager.Stub
      * @return True if the lookup was successful, false otherwise.
      */
     @Override // Binder call
-    public boolean hasKeys(int deviceId, int sourceMask, int[] keyCodes, boolean[] keyExists) {
+    public boolean hasKeys(int deviceId, int sourceMask, @NonNull int[] keyCodes,
+            @NonNull boolean[] keyExists) {
         Objects.requireNonNull(keyCodes, "keyCodes must not be null");
         Objects.requireNonNull(keyExists, "keyExists must not be null");
         if (keyExists.length < keyCodes.length) {
@@ -791,7 +792,7 @@ public class InputManagerService extends IInputManager.Stub
      * @deprecated Use {@link #transferTouchGesture(IBinder, IBinder)}
      */
     @Deprecated
-    public boolean transferTouch(IBinder destChannelToken, int displayId) {
+    public boolean transferTouch(@NonNull IBinder destChannelToken, int displayId) {
         // TODO(b/162194035): Replace this with a SPY window
         Objects.requireNonNull(destChannelToken, "destChannelToken must not be null");
         return mNative.transferTouch(destChannelToken, displayId);
@@ -803,7 +804,7 @@ public class InputManagerService extends IInputManager.Stub
      * @param displayId Target display id.
      * @return The input channel.
      */
-    public InputChannel monitorInput(String inputChannelName, int displayId) {
+    public InputChannel monitorInput(@NonNull String inputChannelName, int displayId) {
         Objects.requireNonNull(inputChannelName, "inputChannelName not be null");
 
         if (displayId < Display.DEFAULT_DISPLAY) {
@@ -835,7 +836,7 @@ public class InputManagerService extends IInputManager.Stub
         return outInputChannel;
     }
 
-    private void removeSpyWindowGestureMonitor(IBinder inputChannelToken) {
+    private void removeSpyWindowGestureMonitor(@NonNull IBinder inputChannelToken) {
         final GestureMonitorSpyWindow monitor;
         synchronized (mInputMonitors) {
             monitor = mInputMonitors.remove(inputChannelToken);
@@ -854,8 +855,8 @@ public class InputManagerService extends IInputManager.Stub
      * @return The input channel.
      */
     @Override // Binder call
-    public InputMonitor monitorGestureInput(IBinder monitorToken, @NonNull String requestedName,
-            int displayId) {
+    public InputMonitor monitorGestureInput(@NonNull IBinder monitorToken,
+            @NonNull String requestedName, int displayId) {
         if (!checkCallingPermission(android.Manifest.permission.MONITOR_INPUT,
                 "monitorGestureInput()")) {
             throw new SecurityException("Requires MONITOR_INPUT permission");
@@ -902,7 +903,7 @@ public class InputManagerService extends IInputManager.Stub
      * Removes an input channel.
      * @param connectionToken The input channel to unregister.
      */
-    public void removeInputChannel(IBinder connectionToken) {
+    public void removeInputChannel(@NonNull IBinder connectionToken) {
         Objects.requireNonNull(connectionToken, "connectionToken must not be null");
         mNative.removeInputChannel(connectionToken);
     }
@@ -977,12 +978,12 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public boolean injectInputEvent(InputEvent event, int mode) {
+    public boolean injectInputEvent(@NonNull InputEvent event, int mode) {
         return injectInputEventToTarget(event, mode, Process.INVALID_UID);
     }
 
     @Override // Binder call
-    public boolean injectInputEventToTarget(InputEvent event, int mode, int targetUid) {
+    public boolean injectInputEventToTarget(@NonNull InputEvent event, int mode, int targetUid) {
         if (!checkCallingPermission(android.Manifest.permission.INJECT_EVENTS,
                 "injectInputEvent()", true /*checkInstrumentationSource*/)) {
             throw new SecurityException(
@@ -1032,7 +1033,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public VerifiedInputEvent verifyInputEvent(InputEvent event) {
+    public VerifiedInputEvent verifyInputEvent(@NonNull InputEvent event) {
         Objects.requireNonNull(event, "event must not be null");
         return mNative.verifyInputEvent(event);
     }
@@ -1106,7 +1107,8 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public void registerInputDevicesChangedListener(IInputDevicesChangedListener listener) {
+    public void registerInputDevicesChangedListener(
+            @NonNull IInputDevicesChangedListener listener) {
         Objects.requireNonNull(listener, "listener must not be null");
 
         synchronized (mInputDevicesLock) {
@@ -1176,7 +1178,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call & native callback
-    public TouchCalibration getTouchCalibrationForInputDevice(String inputDeviceDescriptor,
+    public TouchCalibration getTouchCalibrationForInputDevice(@NonNull String inputDeviceDescriptor,
             int surfaceRotation) {
         Objects.requireNonNull(inputDeviceDescriptor, "inputDeviceDescriptor must not be null");
 
@@ -1186,8 +1188,8 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public void setTouchCalibrationForInputDevice(String inputDeviceDescriptor, int surfaceRotation,
-            TouchCalibration calibration) {
+    public void setTouchCalibrationForInputDevice(@NonNull String inputDeviceDescriptor,
+            int surfaceRotation, @NonNull TouchCalibration calibration) {
         if (!checkCallingPermission(android.Manifest.permission.SET_INPUT_CALIBRATION,
                 "setTouchCalibrationForInputDevice()")) {
             throw new SecurityException("Requires SET_INPUT_CALIBRATION permission");
@@ -1225,7 +1227,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public void registerTabletModeChangedListener(ITabletModeChangedListener listener) {
+    public void registerTabletModeChangedListener(@NonNull ITabletModeChangedListener listener) {
         if (!checkCallingPermission(android.Manifest.permission.TABLET_MODE,
                 "registerTabletModeChangedListener()")) {
             throw new SecurityException("Requires TABLET_MODE_LISTENER permission");
@@ -1341,7 +1343,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override
-    public void requestPointerCapture(IBinder inputChannelToken, boolean enabled) {
+    public void requestPointerCapture(@NonNull IBinder inputChannelToken, boolean enabled) {
         Objects.requireNonNull(inputChannelToken, "inputChannelToken must not be null");
 
         mNative.requestPointerCapture(inputChannelToken, enabled);
@@ -1664,7 +1666,8 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public boolean registerVibratorStateListener(int deviceId, IVibratorStateListener listener) {
+    public boolean registerVibratorStateListener(int deviceId,
+            @NonNull IVibratorStateListener listener) {
         Objects.requireNonNull(listener, "listener must not be null");
 
         RemoteCallbackList<IVibratorStateListener> listeners;
@@ -1717,8 +1720,8 @@ public class InputManagerService extends IInputManager.Stub
 
     // Binder call
     @Override
-    public boolean setPointerIcon(PointerIcon icon, int displayId, int deviceId, int pointerId,
-            IBinder inputToken) {
+    public boolean setPointerIcon(@NonNull PointerIcon icon, int displayId, int deviceId,
+            int pointerId, IBinder inputToken) {
         Objects.requireNonNull(icon);
         return mNative.setPointerIcon(icon, displayId, deviceId, pointerId, inputToken);
     }
@@ -1896,7 +1899,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public boolean registerSensorListener(IInputSensorEventListener listener) {
+    public boolean registerSensorListener(@NonNull IInputSensorEventListener listener) {
         if (DEBUG) {
             Slog.d(TAG, "registerSensorListener: listener=" + listener + " callingPid="
                     + Binder.getCallingPid());
@@ -1927,7 +1930,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override // Binder call
-    public void unregisterSensorListener(IInputSensorEventListener listener) {
+    public void unregisterSensorListener(@NonNull IInputSensorEventListener listener) {
         if (DEBUG) {
             Slog.d(TAG, "unregisterSensorListener: listener=" + listener + " callingPid="
                     + Binder.getCallingPid());
@@ -2016,7 +2019,8 @@ public class InputManagerService extends IInputManager.Stub
     /**
      * Set specified light state with for a specific input device.
      */
-    private void setLightStateInternal(int deviceId, Light light, LightState lightState) {
+    private void setLightStateInternal(int deviceId, @NonNull Light light,
+            @NonNull LightState lightState) {
         Objects.requireNonNull(light, "light does not exist");
         if (DEBUG) {
             Slog.d(TAG, "setLightStateInternal device " + deviceId + " light " + light
@@ -2079,7 +2083,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override
-    public void openLightSession(int deviceId, String opPkg, IBinder token) {
+    public void openLightSession(int deviceId, String opPkg, @NonNull IBinder token) {
         Objects.requireNonNull(token);
         synchronized (mLightLock) {
             Preconditions.checkState(mLightSessions.get(token) == null, "already registered");
@@ -2098,7 +2102,7 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override
-    public void closeLightSession(int deviceId, IBinder token) {
+    public void closeLightSession(int deviceId, @NonNull IBinder token) {
         Objects.requireNonNull(token);
         synchronized (mLightLock) {
             LightSession lightSession = mLightSessions.get(token);
@@ -2128,13 +2132,15 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override
-    public void registerBatteryListener(int deviceId, IInputDeviceBatteryListener listener) {
+    public void registerBatteryListener(int deviceId,
+            @NonNull IInputDeviceBatteryListener listener) {
         Objects.requireNonNull(listener);
         mBatteryController.registerBatteryListener(deviceId, listener, Binder.getCallingPid());
     }
 
     @Override
-    public void unregisterBatteryListener(int deviceId, IInputDeviceBatteryListener listener) {
+    public void unregisterBatteryListener(int deviceId,
+            @NonNull IInputDeviceBatteryListener listener) {
         Objects.requireNonNull(listener);
         mBatteryController.unregisterBatteryListener(deviceId, listener, Binder.getCallingPid());
     }
@@ -2155,7 +2161,7 @@ public class InputManagerService extends IInputManager.Stub
 
     @EnforcePermission(Manifest.permission.MONITOR_INPUT)
     @Override
-    public void pilferPointers(IBinder inputChannelToken) {
+    public void pilferPointers(@NonNull IBinder inputChannelToken) {
         super.pilferPointers_enforcePermission();
 
         Objects.requireNonNull(inputChannelToken);
@@ -2164,7 +2170,7 @@ public class InputManagerService extends IInputManager.Stub
 
     @Override
     @EnforcePermission(Manifest.permission.MONITOR_KEYBOARD_BACKLIGHT)
-    public void registerKeyboardBacklightListener(IKeyboardBacklightListener listener) {
+    public void registerKeyboardBacklightListener(@NonNull IKeyboardBacklightListener listener) {
         super.registerKeyboardBacklightListener_enforcePermission();
         Objects.requireNonNull(listener);
         mKeyboardBacklightController.registerKeyboardBacklightListener(listener,
@@ -2173,7 +2179,7 @@ public class InputManagerService extends IInputManager.Stub
 
     @Override
     @EnforcePermission(Manifest.permission.MONITOR_KEYBOARD_BACKLIGHT)
-    public void unregisterKeyboardBacklightListener(IKeyboardBacklightListener listener) {
+    public void unregisterKeyboardBacklightListener(@NonNull IKeyboardBacklightListener listener) {
         super.unregisterKeyboardBacklightListener_enforcePermission();
         Objects.requireNonNull(listener);
         mKeyboardBacklightController.unregisterKeyboardBacklightListener(listener,
@@ -3425,7 +3431,7 @@ public class InputManagerService extends IInputManager.Stub
         }
 
         @Override
-        public void sendInputEvent(InputEvent event, int policyFlags) {
+        public void sendInputEvent(@NonNull InputEvent event, int policyFlags) {
             if (!checkCallingPermission(android.Manifest.permission.INJECT_EVENTS,
                     "sendInputEvent()")) {
                 throw new SecurityException(
@@ -3447,9 +3453,9 @@ public class InputManagerService extends IInputManager.Stub
      * Interface for the system to handle request from InputMonitors.
      */
     private final class InputMonitorHost extends IInputMonitorHost.Stub {
-        private final IBinder mInputChannelToken;
+        private final @NonNull IBinder mInputChannelToken;
 
-        InputMonitorHost(IBinder inputChannelToken) {
+        InputMonitorHost(@NonNull IBinder inputChannelToken) {
             mInputChannelToken = inputChannelToken;
         }
 
