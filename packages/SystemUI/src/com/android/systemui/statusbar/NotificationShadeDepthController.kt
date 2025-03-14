@@ -272,7 +272,7 @@ constructor(
         var blur = shadeRadius.toInt()
         // If the blur comes from waking up, we don't want to zoom out the background
         val zoomOut =
-            if (shadeRadius != wakeAndUnlockBlurData.radius|| wakeAndUnlockBlurData.useZoom)
+            if (shadeRadius != wakeAndUnlockBlurData.radius || wakeAndUnlockBlurData.useZoom)
                 blurRadiusToZoomOut(blurRadius = shadeRadius)
             else 0f
         // Make blur be 0 if it is necessary to stop blur effect.
@@ -360,7 +360,9 @@ constructor(
                         interpolator = Interpolators.FAST_OUT_SLOW_IN
                         addUpdateListener { animation: ValueAnimator ->
                             wakeAndUnlockBlurData =
-                                WakeAndUnlockBlurData(blurUtils.blurRadiusOfRatio(animation.animatedValue as Float))
+                                WakeAndUnlockBlurData(
+                                    blurUtils.blurRadiusOfRatio(animation.animatedValue as Float)
+                                )
                         }
                         addListener(
                             object : AnimatorListenerAdapter() {
@@ -443,8 +445,10 @@ constructor(
         applicationScope.launch {
             wallpaperInteractor.wallpaperSupportsAmbientMode.collect { supported ->
                 wallpaperSupportsAmbientMode = supported
-                if (getNewWakeBlurRadius(prevDozeAmount) == wakeAndUnlockBlurData.radius
-                    && !wakeAndUnlockBlurData.useZoom) {
+                if (
+                    getNewWakeBlurRadius(prevDozeAmount) == wakeAndUnlockBlurData.radius &&
+                        !wakeAndUnlockBlurData.useZoom
+                ) {
                     // Update wake and unlock radius only if the previous value comes from wake-up.
                     updateWakeBlurRadius(prevDozeAmount)
                 }
@@ -465,6 +469,21 @@ constructor(
             } else {
                 // Try scheduling an update now, maybe our blur request will be scheduled now.
                 scheduleUpdate()
+            }
+        }
+
+        applicationScope.launch {
+            windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
+                if (supported) {
+                    // when battery saver changes, try scheduling an update.
+                    scheduleUpdate()
+                } else {
+                    // when blur becomes unsupported, no more updates will be scheduled,
+                    // reset updateScheduled state.
+                    updateScheduled = false
+                    // reset blur and internal state to 0
+                    onBlurApplied(0, 0.0f)
+                }
             }
         }
     }

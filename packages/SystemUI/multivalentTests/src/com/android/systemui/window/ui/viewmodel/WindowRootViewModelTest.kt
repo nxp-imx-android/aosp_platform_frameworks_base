@@ -73,7 +73,7 @@ class WindowRootViewModelTest : SysuiTestCase() {
 
             assertThat(blurRadius).isEqualTo(0f)
 
-            kosmos.windowRootViewBlurRepository.blurRadius.value = 60
+            kosmos.windowRootViewBlurRepository.blurRequestedByShade.value = 60
             runCurrent()
 
             assertThat(blurRadius).isEqualTo(0f)
