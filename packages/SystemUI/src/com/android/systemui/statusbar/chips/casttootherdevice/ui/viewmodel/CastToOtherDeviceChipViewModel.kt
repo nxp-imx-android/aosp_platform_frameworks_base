@@ -194,6 +194,7 @@ constructor(
     ): OngoingActivityChipModel.Active {
         return OngoingActivityChipModel.Active.Timer(
             key = KEY,
+            isImportantForPrivacy = true,
             icon =
                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(
                     Icon.Resource(
@@ -232,6 +233,7 @@ constructor(
     private fun createIconOnlyCastChip(deviceName: String?): OngoingActivityChipModel.Active {
         return OngoingActivityChipModel.Active.IconOnly(
             key = KEY,
+            isImportantForPrivacy = true,
             icon =
                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(
                     Icon.Resource(

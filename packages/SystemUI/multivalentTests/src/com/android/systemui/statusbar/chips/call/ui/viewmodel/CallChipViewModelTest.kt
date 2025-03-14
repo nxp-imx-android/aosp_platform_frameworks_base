@@ -106,6 +106,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
 
     @Test
@@ -117,6 +118,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
 
     @Test
@@ -128,6 +130,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isFalse()
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
 
     @Test
@@ -152,6 +155,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
 
     @Test
@@ -176,6 +180,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
 
     @Test
@@ -200,6 +205,7 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isHidden).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isFalse()
         }
 
     @Test

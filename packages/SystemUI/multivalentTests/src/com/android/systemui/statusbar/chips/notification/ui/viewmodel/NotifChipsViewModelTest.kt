@@ -842,6 +842,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             expectedContentDescriptionSubstrings: List<String> = emptyList(),
         ) {
             val active = latest as OngoingActivityChipModel.Active
+            assertThat(active.isImportantForPrivacy).isFalse()
             if (StatusBarConnectedDisplays.isEnabled) {
                 assertThat(active.icon)
                     .isInstanceOf(
