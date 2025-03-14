@@ -190,11 +190,22 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_basicTimeZero() {
+        assertExtractedTime(
+            hasTime = true,
+            hasChronometer = false,
+            provided = ProvidedTime.Value(0L),
+            expected = ExpectedTime.Time,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
     fun extractTime_basicTimeNow() {
         assertExtractedTime(
             hasTime = true,
             hasChronometer = false,
-            whenOffset = Duration.ZERO,
+            provided = ProvidedTime.Offset(Duration.ZERO),
             expected = ExpectedTime.Time,
         )
     }
@@ -205,7 +216,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         assertExtractedTime(
             hasTime = true,
             hasChronometer = false,
-            whenOffset = (-5).minutes,
+            provided = ProvidedTime.Offset((-5).minutes),
             expected = ExpectedTime.Time,
         )
     }
@@ -216,8 +227,20 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         assertExtractedTime(
             hasTime = true,
             hasChronometer = false,
-            whenOffset = 5.minutes,
+            provided = ProvidedTime.Offset(5.minutes),
             expected = ExpectedTime.Time,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countUpZero() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = false,
+            provided = ProvidedTime.Value(0L),
+            expected = ExpectedTime.CountUp,
         )
     }
 
@@ -228,7 +251,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             hasTime = false,
             hasChronometer = true,
             isCountDown = false,
-            whenOffset = Duration.ZERO,
+            provided = ProvidedTime.Offset(Duration.ZERO),
             expected = ExpectedTime.CountUp,
         )
     }
@@ -240,7 +263,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             hasTime = false,
             hasChronometer = true,
             isCountDown = false,
-            whenOffset = (-5).minutes,
+            provided = ProvidedTime.Offset((-5).minutes),
             expected = ExpectedTime.CountUp,
         )
     }
@@ -252,8 +275,20 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             hasTime = false,
             hasChronometer = true,
             isCountDown = false,
-            whenOffset = 5.minutes,
+            provided = ProvidedTime.Offset(5.minutes),
             expected = ExpectedTime.CountUp,
+        )
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractTime_countDownZero() {
+        assertExtractedTime(
+            hasTime = false,
+            hasChronometer = true,
+            isCountDown = true,
+            provided = ProvidedTime.Value(0L),
+            expected = ExpectedTime.CountDown,
         )
     }
 
@@ -264,7 +299,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             hasTime = false,
             hasChronometer = true,
             isCountDown = true,
-            whenOffset = Duration.ZERO,
+            provided = ProvidedTime.Offset(Duration.ZERO),
             expected = ExpectedTime.CountDown,
         )
     }
@@ -276,7 +311,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             hasTime = false,
             hasChronometer = true,
             isCountDown = true,
-            whenOffset = (-5).minutes,
+            provided = ProvidedTime.Offset((-5).minutes),
             expected = ExpectedTime.CountDown,
         )
     }
@@ -288,7 +323,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             hasTime = false,
             hasChronometer = true,
             isCountDown = true,
-            whenOffset = 5.minutes,
+            provided = ProvidedTime.Offset(5.minutes),
             expected = ExpectedTime.CountDown,
         )
     }
@@ -297,6 +332,12 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
     fun extractTime_prefersChronometerToWhen() {
         assertExtractedTime(hasTime = true, hasChronometer = true, expected = ExpectedTime.CountUp)
+    }
+
+    private sealed class ProvidedTime {
+        data class Value(val value: Long) : ProvidedTime()
+
+        data class Offset(val offset: Duration = Duration.ZERO) : ProvidedTime()
     }
 
     private enum class ExpectedTime {
@@ -310,7 +351,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         hasTime: Boolean = false,
         hasChronometer: Boolean = false,
         isCountDown: Boolean = false,
-        whenOffset: Duration = Duration.ZERO,
+        provided: ProvidedTime = ProvidedTime.Offset(),
         expected: ExpectedTime,
     ) {
         // Set the two timebases to different (arbitrary) numbers, so we can verify whether the
@@ -318,14 +359,24 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         systemClock.setCurrentTimeMillis(1_739_570_992_579L)
         systemClock.setElapsedRealtime(1_380_967_080L)
 
-        val whenCurrentTime = systemClock.currentTimeMillis() + whenOffset.inWholeMilliseconds
-        val whenElapsedRealtime = systemClock.elapsedRealtime() + whenOffset.inWholeMilliseconds
+        val providedCurrentTime =
+            when (provided) {
+                is ProvidedTime.Value -> provided.value
+                is ProvidedTime.Offset ->
+                    systemClock.currentTimeMillis() + provided.offset.inWholeMilliseconds
+            }
+
+        val expectedCurrentTime =
+            when (providedCurrentTime) {
+                0L -> systemClock.currentTimeMillis()
+                else -> providedCurrentTime
+            }
 
         val entry = createEntry {
             setShowWhen(hasTime)
             setUsesChronometer(hasChronometer)
             setChronometerCountDown(isCountDown)
-            setWhen(whenCurrentTime)
+            setWhen(providedCurrentTime)
         }
 
         val content = extractContent(entry)
@@ -338,14 +389,18 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             ExpectedTime.Time -> {
                 val actual = content?.time as? When.Time
                 assertThat(actual).isNotNull()
-                assertThat(actual?.currentTimeMillis).isEqualTo(whenCurrentTime)
+                assertThat(actual?.currentTimeMillis).isEqualTo(expectedCurrentTime)
             }
 
             ExpectedTime.CountDown,
             ExpectedTime.CountUp -> {
+                val expectedElapsedRealtime =
+                    expectedCurrentTime + systemClock.elapsedRealtime() -
+                        systemClock.currentTimeMillis()
+
                 val actual = content?.time as? When.Chronometer
                 assertThat(actual).isNotNull()
-                assertThat(actual?.elapsedRealtimeMillis).isEqualTo(whenElapsedRealtime)
+                assertThat(actual?.elapsedRealtimeMillis).isEqualTo(expectedElapsedRealtime)
                 assertThat(actual?.isCountDown).isEqualTo(expected == ExpectedTime.CountDown)
             }
         }
@@ -544,6 +599,11 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
                 .build()
         if (promoted) {
             notif.flags = FLAG_PROMOTED_ONGOING
+        }
+        // Notification uses System.currentTimeMillis() to initialize creationTime; overwrite that
+        // with the value from our mock clock.
+        if (notif.creationTime != 0L) {
+            notif.creationTime = systemClock.currentTimeMillis()
         }
         return NotificationEntryBuilder().setNotification(notif).build()
     }
