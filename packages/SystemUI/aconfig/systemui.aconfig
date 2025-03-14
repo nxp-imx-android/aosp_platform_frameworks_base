@@ -1856,6 +1856,13 @@ flag {
 }
 
 flag {
+  name: "shade_header_fonts"
+  namespace: "systemui"
+  description: "Updates the fonts of the shade header"
+  bug: "393609724"
+}
+
+flag {
     name: "keyboard_shortcut_helper_shortcut_customizer"
     namespace: "systemui"
     description: "An implementation of shortcut customizations through shortcut helper."
