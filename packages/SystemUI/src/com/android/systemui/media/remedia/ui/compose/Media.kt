@@ -110,6 +110,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastForEach
@@ -517,16 +518,19 @@ private fun ContentScope.CardForegroundContent(
                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                 )
 
+                val playPauseSize = DpSize(width = 48.dp, height = 48.dp)
                 if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
                     AnimatedVisibility(visible = viewModel.playPauseAction != null) {
                         PlayPauseAction(
                             viewModel = checkNotNull(viewModel.playPauseAction),
-                            buttonWidth = 48.dp,
+                            buttonSize = playPauseSize,
                             buttonColor = colorScheme.primary,
                             iconColor = colorScheme.onPrimary,
                             buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
                         )
                     }
+                } else {
+                    Spacer(Modifier.size(playPauseSize))
                 }
             }
 
@@ -586,14 +590,19 @@ private fun ContentScope.CardForegroundContent(
                     }
                 }
 
-                AnimatedVisibility(visible = viewModel.playPauseAction != null) {
-                    PlayPauseAction(
-                        viewModel = checkNotNull(viewModel.playPauseAction),
-                        buttonWidth = 48.dp,
-                        buttonColor = colorScheme.primary,
-                        iconColor = colorScheme.onPrimary,
-                        buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
-                    )
+                val playPauseSize = DpSize(width = 48.dp, height = 48.dp)
+                if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
+                    AnimatedVisibility(visible = viewModel.playPauseAction != null) {
+                        PlayPauseAction(
+                            viewModel = checkNotNull(viewModel.playPauseAction),
+                            buttonSize = playPauseSize,
+                            buttonColor = colorScheme.primary,
+                            iconColor = colorScheme.onPrimary,
+                            buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
+                        )
+                    }
+                } else {
+                    Spacer(Modifier.size(playPauseSize))
                 }
             }
         }
@@ -649,7 +658,7 @@ private fun ContentScope.CompactCardForeground(
         AnimatedVisibility(visible = viewModel.playPauseAction != null) {
             PlayPauseAction(
                 viewModel = checkNotNull(viewModel.playPauseAction),
-                buttonWidth = 72.dp,
+                buttonSize = DpSize(width = 72.dp, height = 48.dp),
                 buttonColor = MaterialTheme.colorScheme.primaryContainer,
                 iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 24.dp },
@@ -1105,7 +1114,7 @@ private fun OutputSwitcherChip(
 @Composable
 private fun ContentScope.PlayPauseAction(
     viewModel: MediaPlayPauseActionViewModel,
-    buttonWidth: Dp,
+    buttonSize: DpSize,
     buttonColor: Color,
     iconColor: Color,
     buttonCornerRadius: (isPlaying: Boolean) -> Dp,
@@ -1123,7 +1132,7 @@ private fun ContentScope.PlayPauseAction(
             enabled = viewModel.onClick != null,
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
             shape = RoundedCornerShape(cornerRadius),
-            modifier = Modifier.size(width = buttonWidth, height = 48.dp),
+            modifier = Modifier.size(buttonSize),
         ) {
             when (viewModel.state) {
                 is MediaSessionState.Playing,
