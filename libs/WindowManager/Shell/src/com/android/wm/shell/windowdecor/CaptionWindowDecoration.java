@@ -49,6 +49,7 @@ import android.view.ViewConfiguration;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.WindowContainerTransaction;
 
@@ -218,11 +219,17 @@ public class CaptionWindowDecoration extends WindowDecoration<WindowDecorLinearL
         relayoutParams.mRunningTaskInfo = taskInfo;
         relayoutParams.mLayoutResId = R.layout.caption_window_decor;
         relayoutParams.mCaptionHeightId = getCaptionHeightIdStatic(taskInfo.getWindowingMode());
-        relayoutParams.mShadowRadius = hasGlobalFocus
-                ? context.getResources().getDimensionPixelSize(
-                        R.dimen.freeform_decor_shadow_focused_thickness)
-                : context.getResources().getDimensionPixelSize(
-                        R.dimen.freeform_decor_shadow_unfocused_thickness);
+        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+            relayoutParams.mShadowRadiusId = hasGlobalFocus
+                    ? R.dimen.freeform_decor_shadow_focused_thickness
+                    : R.dimen.freeform_decor_shadow_unfocused_thickness;
+        } else {
+            relayoutParams.mShadowRadius = hasGlobalFocus
+                    ? context.getResources().getDimensionPixelSize(
+                    R.dimen.freeform_decor_shadow_focused_thickness)
+                    : context.getResources().getDimensionPixelSize(
+                            R.dimen.freeform_decor_shadow_unfocused_thickness);
+        }
         relayoutParams.mApplyStartTransactionOnDraw = applyStartTransactionOnDraw;
         relayoutParams.mSetTaskVisibilityPositionAndCrop = shouldSetTaskVisibilityPositionAndCrop;
         relayoutParams.mIsCaptionVisible = taskInfo.isFreeform()

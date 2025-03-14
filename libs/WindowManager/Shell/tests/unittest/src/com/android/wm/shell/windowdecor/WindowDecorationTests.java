@@ -61,7 +61,8 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.os.Handler;
 import android.os.LocaleList;
-import android.testing.AndroidTestingRunner;
+import android.platform.test.annotations.UsesFlags;
+import android.platform.test.flag.junit.FlagsParameterization;
 import android.util.DisplayMetrics;
 import android.view.AttachedSurfaceControl;
 import android.view.Display;
@@ -78,6 +79,7 @@ import android.window.WindowContainerTransaction;
 
 import androidx.test.filters.SmallTest;
 
+import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
@@ -96,6 +98,9 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
+import platform.test.runner.parameterized.Parameters;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -108,13 +113,20 @@ import java.util.function.Supplier;
  * atest WMShellUnitTests:WindowDecorationTests
  */
 @SmallTest
-@RunWith(AndroidTestingRunner.class)
+@RunWith(ParameterizedAndroidJunit4.class)
+@UsesFlags(com.android.window.flags.Flags.class)
 public class WindowDecorationTests extends ShellTestCase {
     private static final Rect TASK_BOUNDS = new Rect(100, 300, 400, 400);
     private static final Point TASK_POSITION_IN_PARENT = new Point(40, 60);
     private static final int CORNER_RADIUS = 20;
     private static final int SHADOW_RADIUS = 10;
     private static final int STATUS_BAR_INSET_SOURCE_ID = 0;
+
+    @Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX);
+    }
 
     private final WindowDecoration.RelayoutResult<TestView> mRelayoutResult =
             new WindowDecoration.RelayoutResult<>();
@@ -156,6 +168,10 @@ public class WindowDecorationTests extends ShellTestCase {
     private WindowDecoration.RelayoutParams mRelayoutParams = new WindowDecoration.RelayoutParams();
     private int mCaptionMenuWidthId;
 
+    public WindowDecorationTests(FlagsParameterization flags) {
+        mSetFlagsRule.setFlagsParameterization(flags);
+    }
+
     @Before
     public void setUp() {
         mMockSurfaceControlStartT = createMockSurfaceControlTransaction();
@@ -165,8 +181,13 @@ public class WindowDecorationTests extends ShellTestCase {
         mRelayoutParams.mLayoutResId = 0;
         mRelayoutParams.mCaptionHeightId = R.dimen.test_freeform_decor_caption_height;
         mCaptionMenuWidthId = R.dimen.test_freeform_decor_caption_menu_width;
-        mRelayoutParams.mShadowRadius = SHADOW_RADIUS;
-        mRelayoutParams.mCornerRadius = CORNER_RADIUS;
+        if (Flags.enableDynamicRadiusComputationBugfix()) {
+            mRelayoutParams.mShadowRadiusId = R.dimen.test_freeform_shadow_radius;
+            mRelayoutParams.mCornerRadiusId = R.dimen.test_freeform_corner_radius;
+        } else {
+            mRelayoutParams.mShadowRadius = SHADOW_RADIUS;
+            mRelayoutParams.mCornerRadius = CORNER_RADIUS;
+        }
 
         when(mMockDisplayController.getDisplay(Display.DEFAULT_DISPLAY))
                 .thenReturn(mock(Display.class));
@@ -282,9 +303,21 @@ public class WindowDecorationTests extends ShellTestCase {
                 any(),
                 anyInt());
 
-        verify(mMockSurfaceControlStartT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
-        verify(mMockSurfaceControlFinishT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
-        verify(mMockSurfaceControlStartT).setShadowRadius(mMockTaskSurface, SHADOW_RADIUS);
+        if (Flags.enableDynamicRadiusComputationBugfix()) {
+            final int cornerRadius = WindowDecoration.loadDimensionPixelSize(
+                    windowDecor.mDecorWindowContext.getResources(),
+                    mRelayoutParams.mCornerRadiusId);
+            verify(mMockSurfaceControlStartT).setCornerRadius(mMockTaskSurface, cornerRadius);
+            verify(mMockSurfaceControlFinishT).setCornerRadius(mMockTaskSurface, cornerRadius);
+            final int shadowRadius = WindowDecoration.loadDimensionPixelSize(
+                    windowDecor.mDecorWindowContext.getResources(),
+                    mRelayoutParams.mShadowRadiusId);
+            verify(mMockSurfaceControlStartT).setShadowRadius(mMockTaskSurface, shadowRadius);
+        } else {
+            verify(mMockSurfaceControlStartT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
+            verify(mMockSurfaceControlFinishT).setCornerRadius(mMockTaskSurface, CORNER_RADIUS);
+            verify(mMockSurfaceControlStartT).setShadowRadius(mMockTaskSurface, SHADOW_RADIUS);
+        }
 
         assertEquals(300, mRelayoutResult.mWidth);
         assertEquals(100, mRelayoutResult.mHeight);
@@ -1198,7 +1231,8 @@ public class WindowDecorationTests extends ShellTestCase {
         }
 
         @Override
-        public void setTaskFocusState(boolean focused) {}
+        public void setTaskFocusState(boolean focused) {
+        }
     }
 
     private class TestWindowDecoration extends WindowDecoration<TestView> {

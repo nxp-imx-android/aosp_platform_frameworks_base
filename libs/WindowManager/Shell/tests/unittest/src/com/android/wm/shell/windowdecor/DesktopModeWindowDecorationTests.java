@@ -59,6 +59,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -341,7 +342,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreSetForFreeform() {
+    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreSetForFreeform_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
         RelayoutParams relayoutParams = new RelayoutParams();
@@ -353,7 +355,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForFullscreen() {
+    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForFullscreen_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
         RelayoutParams relayoutParams = new RelayoutParams();
@@ -364,7 +367,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForSplit() {
+    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForSplit_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         RelayoutParams relayoutParams = new RelayoutParams();
@@ -375,7 +379,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersSetForFreeform() {
+    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersSetForFreeform_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
         fillRoundedCornersResources(/* fillValue= */ 30);
@@ -387,7 +392,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersNotSetForFullscreen() {
+    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersNotSetForFullscreen_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
         fillRoundedCornersResources(/* fillValue= */ 30);
@@ -399,7 +405,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersNotSetForSplit() {
+    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersNotSetForSplit_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
         fillRoundedCornersResources(/* fillValue= */ 30);
@@ -411,7 +418,8 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
-    public void updateRelayoutParams_shouldIgnoreCornerRadius_roundedCornersNotSet() {
+    @DisableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_shouldIgnoreCornerRadius_roundedCornersNotSet_dynamicDisabled() {
         final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
         taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
         fillRoundedCornersResources(/* fillValue= */ 30);
@@ -437,6 +445,107 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 DEFAULT_IS_MOVING_TO_BACK);
 
         assertThat(relayoutParams.mCornerRadius).isEqualTo(INVALID_CORNER_RADIUS);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreSetForFreeform() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mShadowRadiusId).isNotEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForFullscreen() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mShadowRadiusId).isEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_windowShadowsAreNotSetForSplit() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mShadowRadiusId).isEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersSetForFreeform() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mShadowRadiusId).isNotEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersNotSetForFullscreen() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FULLSCREEN);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_noSysPropFlagsSet_roundedCornersNotSetForSplit() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_MULTI_WINDOW);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX)
+    public void updateRelayoutParams_shouldIgnoreCornerRadius_roundedCornersNotSet() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        DesktopModeWindowDecoration.updateRelayoutParams(
+                relayoutParams,
+                mTestableContext,
+                taskInfo,
+                mMockSplitScreenController,
+                DEFAULT_APPLY_START_TRANSACTION_ON_DRAW,
+                DEFAULT_SHOULD_SET_TASK_POSITIONING_AND_CROP,
+                DEFAULT_IS_STATUSBAR_VISIBLE,
+                DEFAULT_IS_KEYGUARD_VISIBLE_AND_OCCLUDED,
+                DEFAULT_IS_IN_FULL_IMMERSIVE_MODE,
+                DEFAULT_IS_DRAGGING,
+                new InsetsState(),
+                DEFAULT_HAS_GLOBAL_FOCUS,
+                mExclusionRegion,
+                /* shouldIgnoreCornerRadius= */ true,
+                DEFAULT_SHOULD_EXCLUDE_CAPTION_FROM_APP_BOUNDS,
+                DEFAULT_IS_RECENTS_TRANSITION_RUNNING,
+                DEFAULT_IS_MOVING_TO_BACK);
+
+        assertThat(relayoutParams.mCornerRadiusId).isEqualTo(Resources.ID_NULL);
     }
 
     @Test
