@@ -32,6 +32,7 @@ import static android.view.WindowManager.TRANSIT_KEYGUARD_OCCLUDE;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
+import static android.window.TransitionInfo.FLAG_NONE;
 import static android.window.WindowContainerTransaction.HierarchyOp.HIERARCHY_OP_TYPE_REORDER;
 
 import static com.android.window.flags.Flags.enableFullScreenWindowOnRemovingSplitScreenStageBugfix;
@@ -277,6 +278,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
     @VisibleForTesting
     SplitMultiDisplayHelper mSplitMultiDisplayHelper;
+    private final SplitTransitionModifier mSplitTransitionModifier;
+
 
     /**
      * Since StageCoordinator only coordinates MainStage and SideStage, it shouldn't support
@@ -314,6 +317,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         int mActivateTaskId2;
         Intent mStartIntent;
         Intent mStartIntent2;
+
 
         SplitRequest(int taskId, Intent startIntent, int position) {
             mActivateTaskId = taskId;
@@ -452,6 +456,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mFoldLockSettingsObserver.register();
         mStatusBarHider = new SplitStatusBarHider(taskOrganizer, splitState,
                 rootDisplayAreaOrganizer);
+        mSplitTransitionModifier = new SplitTransitionModifier();
     }
 
     @VisibleForTesting
@@ -504,6 +509,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mRootDisplayAreaOrganizer = rootDisplayAreaOrganizer;
         mStatusBarHider = new SplitStatusBarHider(taskOrganizer, splitState,
                 rootDisplayAreaOrganizer);
+        mSplitTransitionModifier = new SplitTransitionModifier();
     }
 
     public void setMixedHandler(DefaultMixedHandler mixedHandler) {
@@ -3420,6 +3426,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "startPendingAnimation: transition=%d",
                 info.getDebugId());
         boolean shouldAnimate = true;
+        ActivityManager.RunningTaskInfo displayRootTaskInfo = mSplitMultiDisplayHelper
+                .getDisplayRootTaskInfo(DEFAULT_DISPLAY);
         if (mSplitTransitions.isPendingEnter(transition)) {
             shouldAnimate = startPendingEnterAnimation(transition,
                     mSplitTransitions.mPendingEnter, info, startTransaction, finishTransaction);
@@ -3431,6 +3439,11 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             mMainHandler.removeCallbacks(mReEnableLaunchAdjacentOnRoot);
             mMainHandler.postDelayed(mReEnableLaunchAdjacentOnRoot,
                     DISABLE_LAUNCH_ADJACENT_AFTER_ENTER_TIMEOUT_MS);
+            if (shouldAnimate && mSplitTransitions.mPendingEnter.mRequireRootsInTransition) {
+                mSplitTransitionModifier.addStageRootsToTransition(info,
+                        mMainStage, mSideStage, getMainStageBounds(), getSideStageBounds(),
+                        displayRootTaskInfo, mRootTaskLeash, mSplitLayout.getRootBounds());
+            }
         } else if (mSplitTransitions.isPendingDismiss(transition)) {
             final SplitScreenTransitions.DismissSession dismiss = mSplitTransitions.mPendingDismiss;
             shouldAnimate = startPendingDismissAnimation(
@@ -3446,8 +3459,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 }
                 mSplitTransitions.playDragDismissAnimation(transition, info, startTransaction,
                         finishTransaction, finishCallback, toTopStage.mRootTaskInfo.token,
-                        toTopStage.getSplitDecorManager(), mSplitMultiDisplayHelper
-                                .getDisplayRootTaskInfo(DEFAULT_DISPLAY).token);
+                        toTopStage.getSplitDecorManager(), displayRootTaskInfo.token);
                 return true;
             }
         } else if (mSplitTransitions.isPendingResize(transition)) {
@@ -3479,7 +3491,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
         mSplitTransitions.playAnimation(transition, info, startTransaction, finishTransaction,
                 finishCallback, mainToken, sideToken,
-                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY).token);
+                displayRootTaskInfo.token);
         return true;
     }
 
@@ -4051,35 +4063,21 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             return;
         }
 
+        WindowContainerToken rootToken =
+                mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY).token;
         if (Flags.enableFlexibleSplit()) {
             List<StageTaskListener> stages = mStageOrderOperator.getActiveStages();
             for (int i = 0; i < stages.size(); i++) {
                 final StageTaskListener stage = stages.get(i);
                 mSplitState.getCurrentLayout().get(i).roundOut(mTempRect1);
-                addDimLayerToTransition(info, show, stage, mTempRect1);
+                mSplitTransitionModifier.addDimLayerToTransition(info, show, stage,
+                        mTempRect1, rootToken);
             }
         } else if (enableFlexibleTwoAppSplit()) {
-            addDimLayerToTransition(info, show, mMainStage, getMainStageBounds());
-            addDimLayerToTransition(info, show, mSideStage, getSideStageBounds());
-        }
-    }
-
-    /** Adds a single dim layer to the given TransitionInfo. */
-    private void addDimLayerToTransition(@NonNull TransitionInfo info, boolean show,
-            StageTaskListener stage, Rect bounds) {
-        final SurfaceControl dimLayer = stage.mDimLayer;
-        if (dimLayer == null || !dimLayer.isValid()) {
-            Slog.w(TAG, "addDimLayerToTransition but leash was released or not created");
-        } else {
-            final TransitionInfo.Change change =
-                    new TransitionInfo.Change(null /* token */, dimLayer);
-            change.setParent(mSplitMultiDisplayHelper.getDisplayRootTaskInfo(DEFAULT_DISPLAY)
-                    .token);
-            change.setStartAbsBounds(bounds);
-            change.setEndAbsBounds(bounds);
-            change.setMode(show ? TRANSIT_TO_FRONT : TRANSIT_TO_BACK);
-            change.setFlags(FLAG_IS_DIM_LAYER);
-            info.addChange(change);
+            mSplitTransitionModifier.addDimLayerToTransition(info, show, mMainStage,
+                    getMainStageBounds(), rootToken);
+            mSplitTransitionModifier.addDimLayerToTransition(info, show, mSideStage,
+                    getSideStageBounds(), rootToken);
         }
     }
 

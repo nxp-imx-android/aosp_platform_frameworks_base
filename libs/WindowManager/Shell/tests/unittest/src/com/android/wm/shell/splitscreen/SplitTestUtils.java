@@ -57,6 +57,7 @@ public class SplitTestUtils {
         final Rect dividerBounds = new Rect(48, 0, 52, 100);
         final Rect bounds1 = new Rect(0, 0, 40, 100);
         final Rect bounds2 = new Rect(60, 0, 100, 100);
+        final Rect rootBounds = new Rect(0, 0, 100, 100);
         final SurfaceControl leash = createMockSurface();
         SplitLayout out = mock(SplitLayout.class);
         doReturn(dividerBounds).when(out).getDividerBounds();
@@ -64,6 +65,7 @@ public class SplitTestUtils {
         doReturn(leash).when(out).getDividerLeash();
         doReturn(bounds1).when(out).getTopLeftBounds();
         doReturn(bounds2).when(out).getBottomRightBounds();
+        doReturn(rootBounds).when(out).getRootBounds();
         doReturn(SNAP_TO_2_50_50).when(out).calculateCurrentSnapPosition();
         return out;
     }
