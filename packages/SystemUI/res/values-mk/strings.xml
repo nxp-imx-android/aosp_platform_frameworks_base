@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Кликнете за да спарите нов уред"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Не можеше да се ажурира зададената вредност"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Зададени вредности"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Избрано"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Опкружување"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Лево"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Додека споделувате апликација, сѐ што се прикажува или пушта на таа апликација е видливо за <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Затоа, бидете внимателни со работи како лозинки, детали за плаќање, пораки, фотографии и аудио и видео."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Сподели екран"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ја оневозможи опцијава"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Изберете апликација за споделување"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Да се емитува вашиот екран?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Емитувајте една апликација"</string>
@@ -980,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Повлечете тука за да се отстрани"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Потребни ви се најмалку <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> плочки"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Измени"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Време"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Прикажи часови, минути и секунди"</item>

@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"คลิกเพื่อจับคู่อุปกรณ์ใหม่"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"ไม่สามารถอัปเดตค่าที่กำหนดล่วงหน้า"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ค่าที่กำหนดล่วงหน้า"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"เลือกแล้ว"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"เสียงแวดล้อม"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ซ้าย"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"เมื่อกำลังแชร์แอป <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> จะมองเห็นทุกสิ่งที่แสดงหรือเล่นอยู่ในแอปดังกล่าว ดังนั้นโปรดระวังสิ่งต่างๆ อย่างเช่นรหัสผ่าน รายละเอียดการชำระเงิน ข้อความ รูปภาพ รวมถึงเสียงและวิดีโอ"</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"แชร์หน้าจอ"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ปิดใช้ตัวเลือกนี้"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"เลือกแอปที่จะแชร์"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"แคสต์หน้าจอของคุณไหม"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"แคสต์แอปเดียว"</string>
@@ -980,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ลากมาที่นี่เพื่อนำออก"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"คุณต้องมีการ์ดอย่างน้อย <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> รายการ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"แก้ไข"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"เวลา"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"แสดงชั่วโมง นาที และวินาที"</item>

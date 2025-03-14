@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"စက်အသစ် တွဲချိတ်ရန် နှိပ်ပါ"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"အသင့်သုံးကို အပ်ဒိတ်လုပ်၍မရပါ"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ကြိုတင်သတ်မှတ်ချက်"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"ရွေးထားသည်"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ဝန်းကျင်အသံ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ဘယ်"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"အက်ပ်ကို မျှဝေနေချိန်တွင် ယင်းအက်ပ်တွင် ပြထားသော (သို့) ဖွင့်ထားသော အရာအားလုံးကို <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> က မြင်နိုင်သည်။ စကားဝှက်၊ ငွေပေးချေမှု အချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံနှင့် ဗီဒီယိုကဲ့သို့ အရာများကို ဂရုစိုက်ပါ။"</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"စခရင် မျှဝေရန်"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> သည် ဤရွေးစရာကို ပိတ်ထားသည်"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"မျှဝေရန် အက်ပ်ရွေးခြင်း"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"သင့်ဖန်သားပြင်ကို ကာစ်လုပ်မလား။"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"အက်ပ်တစ်ခုကို ကာစ်လုပ်ရန်"</string>
@@ -980,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ဖယ်ရှားရန် ဤနေရာသို့ဖိဆွဲပါ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"အနည်းဆုံး <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ကွက် ရှိရမည်"</string>
     <string name="qs_edit" msgid="5583565172803472437">"တည်းဖြတ်ရန်"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"အချိန်"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"နာရီ၊ မိနစ်နှင့် စက္ကန့်ကိုပြပါ"</item>

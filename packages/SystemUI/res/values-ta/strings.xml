@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"புதிய சாதனத்தை இணைக்க கிளிக் செய்யலாம்"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"முன்னமைவைப் புதுப்பிக்க முடியவில்லை"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"முன்னமைவு"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"தேர்ந்தெடுக்கப்பட்டது"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"சுற்றுப்புறங்கள்"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"இடது"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"ஓர் ஆப்ஸைப் பகிரும்போது, அதில் காட்டப்படும்/பிளே செய்யப்படும் அனைத்தும் <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> இல் தெரியும். எனவே கடவுச்சொற்கள், பேமெண்ட் விவரங்கள், மெசேஜ்கள், படங்கள், ஆடியோ, வீடியோ போன்றவை குறித்துக் கவனத்துடன் இருங்கள்."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"திரையைப் பகிர்"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ஆப்ஸ் இந்த விருப்பத்தை முடக்கியுள்ளது"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"பகிர ஆப்ஸைத் தேர்வுசெய்க"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"உங்கள் திரையை அலைபரப்ப வேண்டுமா?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"ஓர் ஆப்ஸை அலைபரப்பு"</string>
@@ -980,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"அகற்ற, இங்கே இழுக்கவும்"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"குறைந்தது <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> கட்டங்கள் தேவை"</string>
     <string name="qs_edit" msgid="5583565172803472437">"மாற்று"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"நேரம்"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"மணிநேரம், நிமிடங்கள், வினாடிகளைக் காட்டு"</item>

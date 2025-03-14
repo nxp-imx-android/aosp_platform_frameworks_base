@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Kliko për të çiftuar një pajisje të re"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Paravendosja nuk mund të përditësohej"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Paravendosja"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Zgjedhur"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Ambienti rrethues"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Majtas"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Kur ti ndan një aplikacion, çdo gjë që shfaqet ose luhet në atë aplikacion është e dukshme për <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Prandaj, ki kujdes me gjërat si fjalëkalimet, detajet e pagesave, mesazhet, fotografitë, si dhe audion dhe videon."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Ndaj ekranin"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> e ka çaktivizuar këtë opsion"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Zgjidh aplikacionin për të ndarë"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Të transmetohet ekrani yt?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Transmeto një aplikacion"</string>
@@ -980,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Zvarrit këtu për ta hequr"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Të duhen të paktën <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> pllakëza"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Redakto"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Ora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Shfaq orët, minutat dhe sekondat"</item>
