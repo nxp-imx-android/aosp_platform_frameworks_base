@@ -627,6 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Built-in speaker"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"TV Audio"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Problem connecting. Turn device off &amp; back on"</string>
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"Can’t connect"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Wired audio device"</string>
     <string name="help_label" msgid="3528360748637781274">"Help and feedback"</string>
     <string name="storage_category" msgid="2287342585424631813">"Storage"</string>

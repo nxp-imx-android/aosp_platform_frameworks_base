@@ -539,8 +539,7 @@
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"પ્રતિબંધિત સેટિંગ દ્વારા નિયંત્રિત"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"કૉલ દરમિયાન અનુપલબ્ધ"</string>
     <string name="disabled" msgid="8017887509554714950">"બંધ કરી"</string>
-    <!-- no translation found for enabled (3997122818554810678) -->
-    <skip />
+    <string name="enabled" msgid="3997122818554810678">"ચાલુ છે"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"મંજૂરી છે"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"મંજૂરી નથી"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"અજાણી ઍપ ઇન્સ્ટૉલ કરો"</string>
@@ -612,7 +611,7 @@
     <string name="media_transfer_this_phone" msgid="7194341457812151531">"આ ફોન"</string>
     <string name="media_transfer_digital_line_name" msgid="312091711951124301">"S/PDIF"</string>
     <string name="media_transfer_analog_line_name" msgid="1841163866716302104">"એનાલોગ"</string>
-    <string name="media_transfer_aux_line_name" msgid="894135835967856689">"ઑગ્ઝિલરી"</string>
+    <string name="media_transfer_aux_line_name" msgid="894135835967856689">"AUX"</string>
     <string name="media_output_status_unknown_error" msgid="5098565887497902222">"આ ડિવાઇસ પર ચલાવી શકતા નથી"</string>
     <string name="media_output_status_require_premium" msgid="8411255800047014822">"સ્વિચ કરવા માટે એકાઉન્ટ અપગ્રેડ કરો"</string>
     <string name="media_output_status_not_support_downloads" msgid="4523828729240373315">"ડાઉનલોડ કરેલું કન્ટેન્ટ અહીં ચલાવી શકતા નથી"</string>
@@ -628,6 +627,8 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"બિલ્ટ-ઇન સ્પીકર"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"ટીવીનો ઑડિયો"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"કનેક્ટ કરવામાં સમસ્યા આવી રહી છે. ડિવાઇસને બંધ કરીને ફરી ચાલુ કરો"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"વાયરવાળો ઑડિયો ડિવાઇસ"</string>
     <string name="help_label" msgid="3528360748637781274">"સહાય અને પ્રતિસાદ"</string>
     <string name="storage_category" msgid="2287342585424631813">"સ્ટોરેજ"</string>
