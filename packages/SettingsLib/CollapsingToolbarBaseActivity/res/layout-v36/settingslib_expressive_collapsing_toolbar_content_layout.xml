@@ -35,6 +35,7 @@
             android:layout_height="@dimen/settingslib_toolbar_layout_height"
             app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
             app:toolbarId="@id/action_bar"
+            app:maxLines="2"
             style="@style/SettingsLibCollapsingToolbarLayoutStyle.Expressive">
 
             <Toolbar
@@ -44,7 +45,24 @@
                 android:layout_marginStart="@dimen/settingslib_expressive_space_extrasmall4"
                 android:theme="?android:attr/actionBarTheme"
                 android:transitionName="shared_element_view"
-                app:layout_collapseMode="pin"/>
+                app:layout_collapseMode="pin">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="@dimen/settingslib_expressive_space_extrasmall6"
+                    android:layout_marginEnd="@dimen/settingslib_expressive_space_small4"
+                    android:layout_gravity="end">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/action_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        style="@style/SettingsLibButtonStyle.Expressive.Filled"
+                        android:visibility="gone"/>
+                </LinearLayout>
+
+            </Toolbar>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
