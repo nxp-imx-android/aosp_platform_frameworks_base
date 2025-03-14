@@ -111,7 +111,7 @@ public enum DesktopModeFlags {
     ENABLE_HOLD_TO_DRAG_APP_HANDLE(Flags::enableHoldToDragAppHandle, true),
     ENABLE_INPUT_LAYER_TRANSITION_FIX(Flags::enableInputLayerTransitionFix, false),
     ENABLE_MINIMIZE_BUTTON(Flags::enableMinimizeButton, true),
-    ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, false),
+    ENABLE_MODALS_FULLSCREEN_WITH_PERMISSIONS(Flags::enableModalsFullscreenWithPermission, true),
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(
             Flags::enableOpaqueBackgroundForTransparentWindows, true),
     ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
