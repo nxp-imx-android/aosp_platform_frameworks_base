@@ -374,6 +374,9 @@ constructor(
      * Sort the given chip [bundle] in order of priority, and divide the chips between active,
      * overflow, and inactive (see [MultipleOngoingActivityChipsModel] for a description of each).
      */
+    // IMPORTANT: PromotedNotificationsInteractor re-implements this same ordering scheme. Any
+    // changes here should also be made in PromotedNotificationsInteractor.
+    // TODO(b/402471288): Create a single source of truth for the ordering.
     private fun rankChips(bundle: ChipBundle): MultipleOngoingActivityChipsModel {
         val activeChips = mutableListOf<OngoingActivityChipModel.Active>()
         val overflowChips = mutableListOf<OngoingActivityChipModel.Active>()
