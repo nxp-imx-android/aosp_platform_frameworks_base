@@ -20,6 +20,7 @@ import static android.Manifest.permission.MANAGE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.READ_WALLPAPER_INTERNAL;
 import static android.Manifest.permission.SET_WALLPAPER_DIM_AMOUNT;
 import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
+import static android.app.Flags.enableConnectedDisplaysWallpaper;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
 
@@ -874,7 +875,13 @@ public class WallpaperManager {
                     return null;
                 }
                 try (InputStream is = new ParcelFileDescriptor.AutoCloseInputStream(pfd)) {
-                    ImageDecoder.Source src = ImageDecoder.createSource(context.getResources(), is);
+                    ImageDecoder.Source src;
+                    if (enableConnectedDisplaysWallpaper()) {
+                        src = ImageDecoder.createSource(context.getResources(), is,
+                                /* density= */ 0);
+                    } else {
+                        src = ImageDecoder.createSource(context.getResources(), is);
+                    }
                     return ImageDecoder.decodeBitmap(src, ((decoder, info, source) -> {
                         // Mutable and hardware config can't be set at the same time.
                         decoder.setMutableRequired(!hardware);
