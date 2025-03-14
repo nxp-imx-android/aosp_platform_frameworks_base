@@ -58,7 +58,8 @@ public class BackProgressAnimatorTest extends ShellTestCase {
                 /* frameTime = */ 0,
                 /* progress = */ progress,
                 /* triggerBack = */ false,
-                /* swipeEdge = */ BackEvent.EDGE_LEFT);
+                /* swipeEdge = */ BackEvent.EDGE_LEFT,
+                /* departingAnimationTarget = */ null);
     }
 
     @Before
