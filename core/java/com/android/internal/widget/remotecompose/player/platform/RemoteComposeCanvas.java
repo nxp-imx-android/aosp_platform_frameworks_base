@@ -42,9 +42,6 @@ import java.util.Set;
 public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachStateChangeListener {
 
     static final boolean USE_VIEW_AREA_CLICK = true; // Use views to represent click areas
-    static final float DEFAULT_FRAME_RATE = 60f;
-    static final float POST_TO_NEXT_FRAME_THRESHOLD = 60f;
-
     RemoteComposeDocument mDocument = null;
     int mTheme = Theme.LIGHT;
     boolean mInActionDown = false;
@@ -56,10 +53,8 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
     long mStart = System.nanoTime();
 
     long mLastFrameDelay = 1;
-    float mMaxFrameRate = DEFAULT_FRAME_RATE; // frames per seconds
+    float mMaxFrameRate = 60f; // frames per seconds
     long mMaxFrameDelay = (long) (1000 / mMaxFrameRate);
-
-    long mLastFrameCall = System.currentTimeMillis();
 
     private Choreographer mChoreographer;
     private Choreographer.FrameCallback mFrameCallback =
@@ -105,7 +100,6 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
 
     public void setDocument(RemoteComposeDocument value) {
         mDocument = value;
-        mMaxFrameRate = DEFAULT_FRAME_RATE;
         mDocument.initializeContext(mARContext);
         mDisable = false;
         mARContext.setDocLoadTime();
@@ -552,25 +546,8 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
             }
             int nextFrame = mDocument.needsRepaint();
             if (nextFrame > 0) {
-                if (mMaxFrameRate >= POST_TO_NEXT_FRAME_THRESHOLD) {
-                    mLastFrameDelay = nextFrame;
-                } else {
-                    mLastFrameDelay = Math.max(mMaxFrameDelay, nextFrame);
-                }
+                mLastFrameDelay = Math.max(mMaxFrameDelay, nextFrame);
                 if (mChoreographer != null) {
-                    if (mDebug == 1) {
-                        System.err.println(
-                                "RC : POST CHOREOGRAPHER WITH "
-                                        + mLastFrameDelay
-                                        + " (nextFrame was "
-                                        + nextFrame
-                                        + ", max delay "
-                                        + mMaxFrameDelay
-                                        + ", "
-                                        + " max framerate is "
-                                        + mMaxFrameRate
-                                        + ")");
-                    }
                     mChoreographer.postFrameCallbackDelayed(mFrameCallback, mLastFrameDelay);
                 }
                 if (!mARContext.useChoreographer()) {
@@ -589,16 +566,6 @@ public class RemoteComposeCanvas extends FrameLayout implements View.OnAttachSta
             mARContext.getLastOpCount();
             mDisable = true;
             invalidate();
-        }
-        if (mDebug == 1) {
-            long frameDelay = System.currentTimeMillis() - mLastFrameCall;
-            System.err.println(
-                    "RC : Delay since last frame "
-                            + frameDelay
-                            + " ms ("
-                            + (1000f / (float) frameDelay)
-                            + " fps)");
-            mLastFrameCall = System.currentTimeMillis();
         }
     }
 

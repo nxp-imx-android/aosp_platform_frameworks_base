@@ -30,7 +30,6 @@ import com.android.internal.widget.remotecompose.core.operations.DataListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DataListIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapLookup;
-import com.android.internal.widget.remotecompose.core.operations.DebugMessage;
 import com.android.internal.widget.remotecompose.core.operations.DrawArc;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmap;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapFontText;
@@ -232,7 +231,6 @@ public class Operations {
     public static final int PATH_COMBINE = 175;
     public static final int HAPTIC_FEEDBACK = 177;
     public static final int CONDITIONAL_OPERATIONS = 178;
-    public static final int DEBUG_MESSAGE = 179;
 
     ///////////////////////////////////////// ======================
 
@@ -445,7 +443,6 @@ public class Operations {
         map.put(PATH_COMBINE, PathCombine::read);
         map.put(HAPTIC_FEEDBACK, HapticFeedback::read);
         map.put(CONDITIONAL_OPERATIONS, ConditionalOperations::read);
-        map.put(DEBUG_MESSAGE, DebugMessage::read);
 
         //        map.put(ACCESSIBILITY_CUSTOM_ACTION, CoreSemantics::read);
     }

@@ -494,7 +494,7 @@ public class TouchExpression extends Operation
         mTouchUpTime = context.getAnimationTime();
 
         float dest = getStopPosition(value, slope);
-        float time = Math.min(2, mMaxTime * Math.abs(dest - value) / (2 * mMaxVelocity));
+        float time = mMaxTime * Math.abs(dest - value) / (2 * mMaxVelocity);
         mEasyTouch.config(value, dest, slope, time, mMaxAcceleration, mMaxVelocity, null);
         mEasingToStop = true;
         context.needsRepaint();
