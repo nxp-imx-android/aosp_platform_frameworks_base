@@ -41,7 +41,6 @@ import org.junit.runners.model.Statement
 class SimulatedConnectedDisplayTestRule : TestRule {
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
     private val displayManager = context.getSystemService(DisplayManager::class.java)
     private val addedDisplays = mutableListOf<Int>()
 
@@ -102,7 +101,8 @@ class SimulatedConnectedDisplayTestRule : TestRule {
         // Add the overlay displays
         Settings.Global.putString(
             InstrumentationRegistry.getInstrumentation().context.contentResolver,
-            Settings.Global.OVERLAY_DISPLAY_DEVICES, displaySettings
+            Settings.Global.OVERLAY_DISPLAY_DEVICES,
+            displaySettings
         )
         withTimeoutOrNull(TIMEOUT) {
             displayAddedFlow.take(displays.size).collect { displayId ->
@@ -125,10 +125,6 @@ class SimulatedConnectedDisplayTestRule : TestRule {
     }
 
     private fun cleanupTestDisplays() = runBlocking {
-        if (addedDisplays.isEmpty()) {
-            return@runBlocking
-        }
-
         val displayRemovedFlow: Flow<Int> = callbackFlow {
             val listener = object : DisplayListener {
                 override fun onDisplayAdded(displayId: Int) {}
@@ -146,16 +142,24 @@ class SimulatedConnectedDisplayTestRule : TestRule {
             }
         }
 
-        // Remove overlay displays
+        // Remove overlay displays. We'll execute this regardless of addedDisplays just to
+        // ensure all overlay displays are removed before and after the test.
+        // Note: If we want to restore the original overlay display added before this test (and its
+        // topology), it will be complicated as re-adding overlay display would lead to different
+        // displayId and topology could not be restored easily.
         Settings.Global.putString(
             InstrumentationRegistry.getInstrumentation().context.contentResolver,
-            Settings.Global.OVERLAY_DISPLAY_DEVICES, null)
+            Settings.Global.OVERLAY_DISPLAY_DEVICES,
+            null
+        )
 
-        withTimeoutOrNull(TIMEOUT) {
-            displayRemovedFlow.take(addedDisplays.size).collect { displayId ->
-                addedDisplays.remove(displayId)
-            }
-        } ?: error("Timed out waiting for displays to be removed.")
+        if (!addedDisplays.isEmpty()) {
+            withTimeoutOrNull(TIMEOUT) {
+                displayRemovedFlow.take(addedDisplays.size).collect { displayId ->
+                    addedDisplays.remove(displayId)
+                }
+            } ?: error("Timed out waiting for displays to be removed: $addedDisplays")
+        }
     }
 
     private companion object {
