@@ -2201,3 +2201,9 @@ flag {
     bug: "403422950"
 }
 
+flag {
+    name: "tv_global_actions_focus"
+    namespace: "systemui"
+    description: "Enables global actions focus on TV."
+    bug: "402759931"
+}
