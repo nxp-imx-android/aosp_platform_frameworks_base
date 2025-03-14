@@ -180,6 +180,21 @@ public class TouchExplorerTest {
         assertState(STATE_TOUCH_EXPLORING);
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_TOUCH_EXPLORER_USE_VIRTUAL_DEVICE_ID)
+    public void testOneFingerMove_injectedEventsUseVirtualDeviceId() {
+        goFromStateClearTo(STATE_TOUCH_EXPLORING_1FINGER);
+        // Wait for transiting to touch exploring state.
+        mHandler.fastForward(2 * USER_INTENT_TIMEOUT);
+        goToStateClearFrom(STATE_TOUCH_EXPLORING_1FINGER);
+
+        assertThat(getCapturedEvents()).hasSize(2);
+        assertThat(getCapturedEvents().get(0).getDeviceId()).isEqualTo(
+                EventDispatcher.VIRTUAL_TOUCHSCREEN_DEVICE_ID);
+        assertThat(getCapturedEvents().get(1).getDeviceId()).isEqualTo(
+                EventDispatcher.VIRTUAL_TOUCHSCREEN_DEVICE_ID);
+    }
+
     /**
      * Test the case where ACTION_DOWN is followed by a number of ACTION_MOVE events that do not
      * change the coordinates.
