@@ -100,8 +100,7 @@
     <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"Не се поправи?\nДопрете за враќање"</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"Нема проблеми со камерата? Допрете за отфрлање."</string>
     <string name="windowing_app_handle_education_tooltip" msgid="2929643449849791854">"Менито со апликации може да го најдете овде"</string>
-    <!-- no translation found for windowing_desktop_mode_image_button_education_tooltip (7171915734817051666) -->
-    <skip />
+    <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"Влезете во режимот со прозорци на работната површина за да отворите повеќе апликации заедно"</string>
     <string name="windowing_desktop_mode_exit_education_tooltip" msgid="5225660258192054132">"Вратете се на цел екран од менито со апликации кога сакате"</string>
     <string name="letterbox_education_dialog_title" msgid="7739895354143295358">"Погледнете и направете повеќе"</string>
     <string name="letterbox_education_split_screen_text" msgid="449233070804658627">"Повлечете друга апликација за поделен екран"</string>
@@ -122,8 +121,7 @@
     <string name="handle_text" msgid="4419667835599523257">"Прекар на апликацијата"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"Икона на апликацијата"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"Цел екран"</string>
-    <!-- no translation found for desktop_text (9058641752519570266) -->
-    <skip />
+    <string name="desktop_text" msgid="9058641752519570266">"Режим со прозорци на работната површина"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"Поделен екран"</string>
     <string name="more_button_text" msgid="3655388105592893530">"Повеќе"</string>
     <string name="float_button_text" msgid="9221657008391364581">"Лебдечко"</string>
@@ -136,8 +134,7 @@
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"Промени го соодносот"</string>
     <string name="close_text" msgid="4986518933445178928">"Затворете"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"Затворете го менито"</string>
-    <!-- no translation found for desktop_mode_app_header_chip_text (7617377295944971651) -->
-    <skip />
+    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (режим со прозорци на работната површина)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"Максимизирај го екранот"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"Смени големина"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"Апликацијата не може да се премести овде"</string>

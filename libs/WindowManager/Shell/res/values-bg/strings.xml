@@ -100,8 +100,7 @@
     <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"Проблемът не се отстрани?\nДокоснете за връщане в предишното състояние"</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"Нямате проблеми с камерата? Докоснете, за да отхвърлите."</string>
     <string name="windowing_app_handle_education_tooltip" msgid="2929643449849791854">"Можете да намерите менюто на приложението тук"</string>
-    <!-- no translation found for windowing_desktop_mode_image_button_education_tooltip (7171915734817051666) -->
-    <skip />
+    <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"Активирайте режима за настолни компютри, за да отворите няколко приложения едновременно"</string>
     <string name="windowing_desktop_mode_exit_education_tooltip" msgid="5225660258192054132">"Преминете към цял екран по всяко време от менюто на приложението"</string>
     <string name="letterbox_education_dialog_title" msgid="7739895354143295358">"Преглеждайте и правете повече неща"</string>
     <string name="letterbox_education_split_screen_text" msgid="449233070804658627">"Преместете друго приложение с плъзгане, за да преминете в режим за разделен екран"</string>
@@ -122,8 +121,7 @@
     <string name="handle_text" msgid="4419667835599523257">"Манипулатор за приложението"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"Икона на приложението"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"Цял екран"</string>
-    <!-- no translation found for desktop_text (9058641752519570266) -->
-    <skip />
+    <string name="desktop_text" msgid="9058641752519570266">"Режим за настолни компютри"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"Разделяне на екрана"</string>
     <string name="more_button_text" msgid="3655388105592893530">"Още"</string>
     <string name="float_button_text" msgid="9221657008391364581">"Плаващо"</string>
@@ -136,8 +134,7 @@
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"Промяна на съотношението"</string>
     <string name="close_text" msgid="4986518933445178928">"Затваряне"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"Затваряне на менюто"</string>
-    <!-- no translation found for desktop_mode_app_header_chip_text (7617377295944971651) -->
-    <skip />
+    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (режим за настолни компютри)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"Увеличаване на екрана"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"Нов размер"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"Приложението не може да бъде преместено тук"</string>

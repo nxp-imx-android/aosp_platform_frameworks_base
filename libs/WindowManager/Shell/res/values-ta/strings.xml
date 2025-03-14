@@ -100,8 +100,7 @@
     <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"சிக்கல்கள் சரிசெய்யப்படவில்லையா?\nமாற்றியமைக்க தட்டவும்"</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"கேமரா தொடர்பான சிக்கல்கள் எதுவும் இல்லையா? நிராகரிக்க தட்டவும்."</string>
     <string name="windowing_app_handle_education_tooltip" msgid="2929643449849791854">"ஆப்ஸ் மெனுவை இங்கே பார்க்கலாம்"</string>
-    <!-- no translation found for windowing_desktop_mode_image_button_education_tooltip (7171915734817051666) -->
-    <skip />
+    <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"பல ஆப்ஸை ஒன்றாகத் திறக்க டெஸ்க்டாப் சாளரமாக்குதலுக்குச் செல்லலாம்"</string>
     <string name="windowing_desktop_mode_exit_education_tooltip" msgid="5225660258192054132">"ஆப்ஸ் மெனுவிலிருந்து எப்போது வேண்டுமானாலும் முழுத்திரைக்குத் திரும்பலாம்"</string>
     <string name="letterbox_education_dialog_title" msgid="7739895354143295358">"பலவற்றைப் பார்த்தல் மற்றும் செய்தல்"</string>
     <string name="letterbox_education_split_screen_text" msgid="449233070804658627">"திரைப் பிரிப்புக்கு மற்றொரு ஆப்ஸை இழுக்கலாம்"</string>
@@ -122,8 +121,7 @@
     <string name="handle_text" msgid="4419667835599523257">"ஆப்ஸ் ஹேண்டில்"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"ஆப்ஸ் ஐகான்"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"முழுத்திரை"</string>
-    <!-- no translation found for desktop_text (9058641752519570266) -->
-    <skip />
+    <string name="desktop_text" msgid="9058641752519570266">"டெஸ்க்டாப் சாளரமாக்குதல்"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"திரையைப் பிரிக்கும்"</string>
     <string name="more_button_text" msgid="3655388105592893530">"கூடுதல் விருப்பத்தேர்வுகள்"</string>
     <string name="float_button_text" msgid="9221657008391364581">"மிதக்கும் சாளரம்"</string>
@@ -136,8 +134,7 @@
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"தோற்ற விகிதத்தை மாற்று"</string>
     <string name="close_text" msgid="4986518933445178928">"மூடும்"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"மெனுவை மூடும்"</string>
-    <!-- no translation found for desktop_mode_app_header_chip_text (7617377295944971651) -->
-    <skip />
+    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (டெஸ்க்டாப் சாளரமாக்குதல்)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"திரையைப் பெரிதாக்கு"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"அளவை மாற்று"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"ஆப்ஸை இங்கே நகர்த்த முடியாது"</string>
