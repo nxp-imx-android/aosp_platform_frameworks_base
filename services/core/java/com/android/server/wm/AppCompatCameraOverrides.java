@@ -35,6 +35,7 @@ import static com.android.server.wm.AppCompatUtils.isChangeEnabled;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.window.DesktopModeFlags;
 
 import com.android.server.wm.utils.OptPropFactory;
 import com.android.window.flags.Flags;
@@ -177,7 +178,7 @@ class AppCompatCameraOverrides {
      * </ul>
      */
     boolean shouldApplyFreeformTreatmentForCameraCompat() {
-        return Flags.enableCameraCompatForDesktopWindowing()
+        return DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
                 && (shouldEnableCameraCompatFreeformTreatmentForApp()
                 || shouldEnableCameraCompatFreeformTreatmentForAllApps());
     }
