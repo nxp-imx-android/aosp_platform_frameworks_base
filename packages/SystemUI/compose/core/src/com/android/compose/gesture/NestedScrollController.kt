@@ -134,6 +134,7 @@ private class NestedScrollControllerNode(
     private var bounds: NestedScrollableBound,
 ) : DelegatingNode(), NestedScrollConnection {
     private var childrenConsumedAnyScroll = false
+    private var availableOnPreScroll = Offset.Zero
 
     init {
         delegate(nestedScrollModifierNode(this, dispatcher = null))
@@ -153,12 +154,21 @@ private class NestedScrollControllerNode(
         this.bounds = bounds
     }
 
+    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        availableOnPreScroll = available
+        return Offset.Zero
+    }
+
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
         source: NestedScrollSource,
     ): Offset {
-        if (hasConsumedScrollInBounds(consumed.x) || hasConsumedScrollInBounds(consumed.y)) {
+        val consumedIncludingPreScroll = availableOnPreScroll - available
+        if (
+            hasConsumedScrollInBounds(consumedIncludingPreScroll.x) ||
+                hasConsumedScrollInBounds(consumedIncludingPreScroll.y)
+        ) {
             childrenConsumedAnyScroll = true
         }
 
