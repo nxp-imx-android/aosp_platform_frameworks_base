@@ -62,7 +62,9 @@ constructor(
         listOf(
                 *bouncerBlurRadiusFlows.toTypedArray(),
                 *glanceableHubBlurRadiusFlows.toTypedArray(),
-                blurInteractor.blurRadius.map { it.toFloat() }.logIfPossible("ShadeBlur"),
+                blurInteractor.blurRadiusRequestedByShade
+                    .map { it.toFloat() }
+                    .logIfPossible("ShadeBlur"),
             )
             .merge()
 
