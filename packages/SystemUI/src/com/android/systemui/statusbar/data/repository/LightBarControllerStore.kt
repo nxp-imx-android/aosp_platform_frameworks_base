@@ -16,11 +16,11 @@
 
 package com.android.systemui.statusbar.data.repository
 
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
-import com.android.systemui.display.data.repository.DisplayScopeRepository
 import com.android.systemui.display.data.repository.PerDisplayStore
 import com.android.systemui.statusbar.phone.LightBarController
 import com.android.systemui.statusbar.phone.LightBarControllerImpl
@@ -41,7 +41,7 @@ constructor(
     @Background backgroundApplicationScope: CoroutineScope,
     displayRepository: DisplayRepository,
     private val factory: LightBarControllerImpl.Factory,
-    private val displayScopeRepository: DisplayScopeRepository,
+    private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
     private val darkIconDispatcherStore: DarkIconDispatcherStore,
 ) :
@@ -55,13 +55,9 @@ constructor(
         val darkIconDispatcher = darkIconDispatcherStore.forDisplay(displayId) ?: return null
         val statusBarModePerDisplayRepository =
             statusBarModeRepositoryStore.forDisplay(displayId) ?: return null
+        val displayScope = displayScopeRepository[displayId] ?: return null
         return factory
-            .create(
-                displayId,
-                displayScopeRepository.scopeForDisplay(displayId),
-                darkIconDispatcher,
-                statusBarModePerDisplayRepository,
-            )
+            .create(displayId, displayScope, darkIconDispatcher, statusBarModePerDisplayRepository)
             .also { it.start() }
     }
 
