@@ -136,7 +136,7 @@ public class AppCompatTaskInfo implements Parcelable {
     private static final int FLAGS_ORGANIZER_INTERESTED = FLAG_IS_FROM_LETTERBOX_DOUBLE_TAP
             | FLAG_ELIGIBLE_FOR_USER_ASPECT_RATIO_BUTTON | FLAG_FULLSCREEN_OVERRIDE_SYSTEM
             | FLAG_FULLSCREEN_OVERRIDE_USER | FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE
-            | FLAG_OPT_OUT_EDGE_TO_EDGE;
+            | FLAG_OPT_OUT_EDGE_TO_EDGE | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE;
 
     @TopActivityFlag
     private static final int FLAGS_COMPAT_UI_INTERESTED = FLAGS_ORGANIZER_INTERESTED
@@ -179,7 +179,8 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public boolean hasCompatUI() {
         return isTopActivityInSizeCompat() || eligibleForLetterboxEducation()
-                || isLetterboxDoubleTapEnabled() || eligibleForUserAspectRatioButton();
+                || isLetterboxDoubleTapEnabled() || eligibleForUserAspectRatioButton()
+                || isRestartMenuEnabledForDisplayMove();
     }
 
     /**
