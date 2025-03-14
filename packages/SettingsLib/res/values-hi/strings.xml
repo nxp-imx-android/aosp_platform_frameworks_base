@@ -539,8 +539,7 @@
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"इसे पाबंदी मोड वाली सेटिंग से कंट्रोल किया जाता है"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"कॉल के दौरान उपलब्ध नहीं है"</string>
     <string name="disabled" msgid="8017887509554714950">"बंद किया गया"</string>
-    <!-- no translation found for enabled (3997122818554810678) -->
-    <skip />
+    <string name="enabled" msgid="3997122818554810678">"चालू है"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"अनुमति है"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"अनुमति नहीं है"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"अनजान ऐप्लिकेशन इंस्टॉल करने की अनुमति"</string>
@@ -612,7 +611,7 @@
     <string name="media_transfer_this_phone" msgid="7194341457812151531">"यह फ़ोन"</string>
     <string name="media_transfer_digital_line_name" msgid="312091711951124301">"S/PDIF"</string>
     <string name="media_transfer_analog_line_name" msgid="1841163866716302104">"ऐनालॉग"</string>
-    <string name="media_transfer_aux_line_name" msgid="894135835967856689">"ऑक्स"</string>
+    <string name="media_transfer_aux_line_name" msgid="894135835967856689">"सहायक डिवाइस"</string>
     <string name="media_output_status_unknown_error" msgid="5098565887497902222">"इस डिवाइस पर मीडिया नहीं चलाया जा सकता"</string>
     <string name="media_output_status_require_premium" msgid="8411255800047014822">"प्रीमियम खाते में स्विच करने के लिए, अपना खाता अपग्रेड करें"</string>
     <string name="media_output_status_not_support_downloads" msgid="4523828729240373315">"डाउनलोड किए गए वीडियो यहां नहीं चलाए जा सकते"</string>
@@ -628,6 +627,8 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"डिवाइस में पहले से मौजूद स्पीकर"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"टीवी ऑडियो"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"कनेक्ट करने में समस्या हो रही है. डिवाइस को बंद करके चालू करें"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"वायर वाला ऑडियो डिवाइस"</string>
     <string name="help_label" msgid="3528360748637781274">"सहायता और सुझाव"</string>
     <string name="storage_category" msgid="2287342585424631813">"डिवाइस का स्टोरेज"</string>

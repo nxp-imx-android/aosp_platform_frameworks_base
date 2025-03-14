@@ -627,6 +627,8 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"ಅಂತರ್ ನಿರ್ಮಿತ ಧ್ವನಿ ವರ್ಧಕ"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"TV ಆಡಿಯೊ"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"ಕನೆಕ್ಟ್ ಮಾಡುವಾಗ ಸಮಸ್ಯೆ ಎದುರಾಗಿದೆ ಸಾಧನವನ್ನು ಆಫ್ ಮಾಡಿ ಹಾಗೂ ನಂತರ ಪುನಃ ಆನ್ ಮಾಡಿ"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"ವೈರ್ ಹೊಂದಿರುವ ಆಡಿಯೋ ಸಾಧನ"</string>
     <string name="help_label" msgid="3528360748637781274">"ಸಹಾಯ ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆ"</string>
     <string name="storage_category" msgid="2287342585424631813">"ಸಂಗ್ರಹಣೆ"</string>

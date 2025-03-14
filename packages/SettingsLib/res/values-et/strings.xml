@@ -539,8 +539,7 @@
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Haldavad piiranguga seaded"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Pole kõnede ajal saadaval"</string>
     <string name="disabled" msgid="8017887509554714950">"Keelatud"</string>
-    <!-- no translation found for enabled (3997122818554810678) -->
-    <skip />
+    <string name="enabled" msgid="3997122818554810678">"Lubatud"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"Lubatud"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"Pole lubatud"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"Tundmatute rakenduste installimine"</string>
@@ -628,6 +627,8 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Sisseehitatud kõlar"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"Teleri heli"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Probleem ühendamisel. Lülitage seade välja ja uuesti sisse"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Juhtmega heliseade"</string>
     <string name="help_label" msgid="3528360748637781274">"Abi ja tagasiside"</string>
     <string name="storage_category" msgid="2287342585424631813">"Salvestusruum"</string>
