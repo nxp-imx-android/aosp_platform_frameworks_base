@@ -322,8 +322,18 @@ public class Cuj {
      */
     public static final int CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY = 129;
 
+    /**
+     * Track the animation of an ongoing call app back into its status bar chip (displaying the call
+     * icon and timer) when returning Home.
+     *
+     * <p>Tracking starts when the RemoteTransition registered to handle the transition from the app
+     * to Home is sent the onAnimationStart() signal and start the animation. Tracking ends when
+     * the animation is fully settled and the transition is complete.</p>
+     */
+    public static final int CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP = 130;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
 
     /** @hide */
     @IntDef({
@@ -444,7 +454,8 @@ public class Cuj {
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_EXPAND,
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK,
             CUJ_DEFAULT_TASK_TO_TASK_ANIMATION,
-            CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY
+            CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY,
+            CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -576,6 +587,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WORK_UTILITY_VIEW_SHRINK;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DEFAULT_TASK_TO_TASK_ANIMATION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DEFAULT_TASK_TO_TASK_ANIMATION;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
     }
 
     private Cuj() {
@@ -830,6 +842,8 @@ public class Cuj {
                 return "DEFAULT_TASK_TO_TASK_ANIMATION";
             case CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY:
                 return "DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY";
+            case CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP:
+                return "STATUS_BAR_APP_RETURN_TO_CALL_CHIP";
         }
         return "UNKNOWN";
     }
