@@ -508,6 +508,9 @@ class HandleMenu(
         private val iconButtonRippleRadius = context.resources.getDimensionPixelSize(
             R.dimen.desktop_mode_handle_menu_icon_button_ripple_radius
         )
+        private val handleMenuCornerRadius = context.resources.getDimensionPixelSize(
+            R.dimen.desktop_mode_handle_menu_corner_radius
+        )
         private val iconButtonDrawableInsetsBase = DrawableInsets(
             t = iconButtondrawableBaseInset,
             b = iconButtondrawableBaseInset, l = iconButtondrawableBaseInset,
@@ -866,14 +869,21 @@ class HandleMenu(
 
         private fun bindMoreActionsPill(style: MenuStyle) {
             moreActionsPill.background.setTint(style.backgroundColor)
-
-            arrayOf(
+            val buttons = arrayOf(
                 screenshotBtn to SHOULD_SHOW_SCREENSHOT_BUTTON,
                 newWindowBtn to shouldShowNewWindowButton,
                 manageWindowBtn to shouldShowManageWindowsButton,
                 changeAspectRatioBtn to shouldShowChangeAspectRatioButton,
                 restartBtn to shouldShowRestartButton,
-            ).forEach { (button, shouldShow) ->
+            )
+            val firstVisible = buttons.find { it.second }?.first
+            val lastVisible = buttons.findLast { it.second }?.first
+
+            buttons.forEach { (button, shouldShow) ->
+                val topRadius =
+                    if (button == firstVisible) handleMenuCornerRadius.toFloat() else 0f
+                val bottomRadius =
+                    if (button == lastVisible) handleMenuCornerRadius.toFloat() else 0f
                 button.apply {
                     isGone = !shouldShow
                     textView.apply {
@@ -881,6 +891,13 @@ class HandleMenu(
                         startMarquee()
                     }
                     iconView.imageTintList = ColorStateList.valueOf(style.textColor)
+                    background = createBackgroundDrawable(
+                        color = style.textColor,
+                        cornerRadius = floatArrayOf(
+                            topRadius, topRadius, topRadius, topRadius,
+                            bottomRadius, bottomRadius, bottomRadius, bottomRadius
+                        ),
+                        drawableInsets = DrawableInsets())
                 }
             }
         }
@@ -899,6 +916,10 @@ class HandleMenu(
 
             openInAppOrBrowserBtn.apply {
                 contentDescription = btnText
+                background = createBackgroundDrawable(
+                    color = style.textColor,
+                    cornerRadius = handleMenuCornerRadius,
+                    drawableInsets = DrawableInsets())
                 textView.apply {
                     text = btnText
                     setTextColor(style.textColor)
