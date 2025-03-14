@@ -48,7 +48,7 @@ public class ListenerGroup<T> {
      * is a no op.
      */
     public void addListener(@NonNull Executor executor, @NonNull Consumer<T> consumer) {
-        if (isContained(consumer)) {
+        if (isConsumerPresent(consumer)) {
             return;
         }
         mListeners.add(new ListenerWrapper<>(executor, consumer));
@@ -69,7 +69,7 @@ public class ListenerGroup<T> {
      * Returns {@code true} if the {@link Consumer} is present in the list, {@code false}
      * otherwise.
      */
-    private boolean isContained(Consumer<T> consumer) {
+    public boolean isConsumerPresent(Consumer<T> consumer) {
         return computeIndex(consumer) > -1;
     }
 
