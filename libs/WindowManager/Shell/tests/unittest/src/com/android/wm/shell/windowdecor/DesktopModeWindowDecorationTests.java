@@ -1916,6 +1916,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 .setTaskDescriptionBuilder(taskDescriptionBuilder)
                 .setVisible(visible)
                 .build();
+        taskInfo.isVisibleRequested = visible;
         taskInfo.realActivity = new ComponentName("com.android.wm.shell.windowdecor",
                 "DesktopModeWindowDecorationTests");
         taskInfo.baseActivity = new ComponentName("com.android.wm.shell.windowdecor",
