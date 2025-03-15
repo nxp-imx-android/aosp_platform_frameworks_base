@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.chips.notification.domain.model
 
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 
 /** Modeling all the data needed to render a status bar notification chip. */
 data class NotificationChipModel(
@@ -25,7 +25,7 @@ data class NotificationChipModel(
     /** The user-readable name of the app that posted this notification. */
     val appName: String,
     val statusBarChipIconView: StatusBarIconView?,
-    val promotedContent: PromotedNotificationContentModel,
+    val promotedContent: PromotedNotificationContentModels,
     /** The time when the notification first appeared as promoted. */
     val creationTime: Long,
     /** True if the app managing this notification is currently visible to the user. */

@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.notification.collection.provider.SectionSt
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationEntryModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationGroupModel
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
@@ -141,7 +142,7 @@ private class ActiveNotificationsStoreBuilder(
     private fun NotificationEntry.toModel(): ActiveNotificationModel {
         val promotedContent =
             if (PromotedNotificationContentModel.featureFlagEnabled()) {
-                promotedNotificationContentModel
+                promotedNotificationContentModels
             } else {
                 null
             }
@@ -199,7 +200,7 @@ private fun ActiveNotificationsStore.createOrReuse(
     isGroupSummary: Boolean,
     bucket: Int,
     callType: CallType,
-    promotedContent: PromotedNotificationContentModel?,
+    promotedContent: PromotedNotificationContentModels?,
 ): ActiveNotificationModel {
     return individuals[key]?.takeIf {
         it.isCurrent(
@@ -281,7 +282,7 @@ private fun ActiveNotificationModel.isCurrent(
     isGroupSummary: Boolean,
     bucket: Int,
     callType: CallType,
-    promotedContent: PromotedNotificationContentModel?,
+    promotedContent: PromotedNotificationContentModels?,
 ): Boolean {
     return when {
         key != this.key -> false

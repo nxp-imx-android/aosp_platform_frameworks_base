@@ -44,7 +44,7 @@ import com.android.systemui.statusbar.notification.data.repository.activeNotific
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.testKosmos
@@ -562,14 +562,14 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 activeNotificationModel(
                     key = "notif1",
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                 )
             )
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
                     key = "notif2",
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                 )
             )
 
@@ -608,14 +608,14 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 activeNotificationModel(
                     key = "notif1",
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                 )
             )
             activeNotificationListRepository.addNotif(
                 activeNotificationModel(
                     key = "notif2",
                     statusBarChipIcon = createStatusBarIconViewOrNull(),
-                    promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                 )
             )
 
@@ -643,8 +643,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.aodPromotedNotification)
 
             // THEN the ron is first because the call has no content
-            assertThat(topPromotedNotificationContent?.identity?.key)
-                .isEqualTo("0|test_pkg|0|ron|0")
+            assertThat(topPromotedNotificationContent?.key).isEqualTo("0|test_pkg|0|ron|0")
         }
 
     @Test
@@ -663,8 +662,7 @@ class PromotedNotificationsInteractorTest : SysuiTestCase() {
                 collectLastValue(underTest.aodPromotedNotification)
 
             // THEN the call is the top notification
-            assertThat(topPromotedNotificationContent?.identity?.key)
-                .isEqualTo("0|test_pkg|0|call|0")
+            assertThat(topPromotedNotificationContent?.key).isEqualTo("0|test_pkg|0|call|0")
         }
 
     @Test

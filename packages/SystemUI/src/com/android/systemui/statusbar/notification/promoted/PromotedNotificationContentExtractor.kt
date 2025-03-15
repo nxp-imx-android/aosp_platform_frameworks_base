@@ -40,6 +40,8 @@ import android.graphics.drawable.Icon
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
@@ -48,6 +50,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.OldProgress
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider.ImageSizeClass.MediumSquare
@@ -60,8 +63,9 @@ interface PromotedNotificationContentExtractor {
     fun extractContent(
         entry: NotificationEntry,
         recoveredBuilder: Notification.Builder,
+        @RedactionType redactionType: Int,
         imageModelProvider: ImageModelProvider,
-    ): PromotedNotificationContentModel?
+    ): PromotedNotificationContentModels?
 }
 
 @SysUISingleton
@@ -76,8 +80,9 @@ constructor(
     override fun extractContent(
         entry: NotificationEntry,
         recoveredBuilder: Notification.Builder,
+        @RedactionType redactionType: Int,
         imageModelProvider: ImageModelProvider,
-    ): PromotedNotificationContentModel? {
+    ): PromotedNotificationContentModels? {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {
             logger.logExtractionSkipped(entry, "feature flags disabled")
             return null
@@ -95,7 +100,55 @@ constructor(
             return null
         }
 
-        val contentBuilder = PromotedNotificationContentModel.Builder(entry.key)
+        val privateVersion =
+            extractPrivateContent(
+                key = entry.key,
+                notification = notification,
+                recoveredBuilder = recoveredBuilder,
+                lastAudiblyAlertedMs = entry.lastAudiblyAlertedMs,
+                imageModelProvider = imageModelProvider,
+            )
+        val publicVersion =
+            if (redactionType == REDACTION_TYPE_NONE) {
+                privateVersion
+            } else {
+                if (notification.publicVersion == null) {
+                    privateVersion.toDefaultPublicVersion()
+                } else {
+                    // TODO(b/400991304): implement extraction for [Notification.publicVersion]
+                    privateVersion.toDefaultPublicVersion()
+                }
+            }
+        return PromotedNotificationContentModels(
+                privateVersion = privateVersion,
+                publicVersion = publicVersion,
+            )
+            .also { logger.logExtractionSucceeded(entry, it) }
+    }
+
+    private fun PromotedNotificationContentModel.toDefaultPublicVersion():
+        PromotedNotificationContentModel =
+        PromotedNotificationContentModel.Builder(key = identity.key).let {
+            it.style = if (style == Style.Ineligible) Style.Ineligible else Style.Base
+            it.smallIcon = smallIcon
+            it.iconLevel = iconLevel
+            it.appName = appName
+            it.time = time
+            it.lastAudiblyAlertedMs = lastAudiblyAlertedMs
+            it.profileBadgeResId = profileBadgeResId
+            it.colors = colors
+            it.build()
+        }
+
+    private fun extractPrivateContent(
+        key: String,
+        notification: Notification,
+        recoveredBuilder: Notification.Builder,
+        lastAudiblyAlertedMs: Long,
+        imageModelProvider: ImageModelProvider,
+    ): PromotedNotificationContentModel {
+
+        val contentBuilder = PromotedNotificationContentModel.Builder(key)
 
         // TODO: Pitch a fit if style is unsupported or mandatory fields are missing once
         // FLAG_PROMOTED_ONGOING is set reliably and we're not testing status bar chips.
@@ -108,7 +161,7 @@ constructor(
         contentBuilder.subText = notification.subText()
         contentBuilder.time = notification.extractWhen()
         contentBuilder.shortCriticalText = notification.shortCriticalText()
-        contentBuilder.lastAudiblyAlertedMs = entry.lastAudiblyAlertedMs
+        contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
         contentBuilder.profileBadgeResId = null // TODO
         contentBuilder.title = notification.title(recoveredBuilder.style)
         contentBuilder.text = notification.text(recoveredBuilder.style)
@@ -124,7 +177,7 @@ constructor(
 
         recoveredBuilder.extractStyleContent(notification, contentBuilder, imageModelProvider)
 
-        return contentBuilder.build().also { logger.logExtractionSucceeded(entry, it) }
+        return contentBuilder.build()
     }
 
     private fun Notification.smallIconModel(imageModelProvider: ImageModelProvider): ImageModel? =

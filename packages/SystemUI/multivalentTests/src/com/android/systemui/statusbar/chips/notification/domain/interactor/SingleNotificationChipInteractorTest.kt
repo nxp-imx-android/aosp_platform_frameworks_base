@@ -30,7 +30,7 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -420,7 +420,7 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
             // WHEN the notif gets a new UID that starts as visible
             activityManagerRepository.fake.startingIsAppVisibleValue = true
             val newPromotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.shortCriticalText = "Arrived"
                 }
             val newPromotedContent = newPromotedContentBuilder.build()
@@ -452,6 +452,6 @@ class SingleNotificationChipInteractorTest : SysuiTestCase() {
 
     companion object {
         private const val UID = 885
-        private val PROMOTED_CONTENT = PromotedNotificationContentModel.Builder("notif1").build()
+        private val PROMOTED_CONTENT = PromotedNotificationContentBuilder("notif1").build()
     }
 }

@@ -20,6 +20,7 @@ import android.graphics.drawable.Icon
 import android.util.Log
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.stack.PriorityBucket
 
 /**
@@ -88,7 +89,7 @@ data class ActiveNotificationModel(
      * The content needed to render this as a promoted notification on various surfaces, or null if
      * this notification cannot be rendered as a promoted notification.
      */
-    val promotedContent: PromotedNotificationContentModel?,
+    val promotedContent: PromotedNotificationContentModels?,
 ) : ActiveNotificationEntryModel() {
     init {
         if (!PromotedNotificationContentModel.featureFlagEnabled()) {

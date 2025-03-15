@@ -36,7 +36,7 @@ import com.android.systemui.statusbar.notification.data.repository.ActiveNotific
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.testKosmos
@@ -65,7 +65,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = mock<StatusBarIconView>(),
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -96,7 +96,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -115,7 +115,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -135,7 +135,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = icon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -158,12 +158,12 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif1",
                         statusBarChipIcon = firstIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                     ),
                     activeNotificationModel(
                         key = "notif2",
                         statusBarChipIcon = secondIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                     ),
                     activeNotificationModel(
                         key = "notif3",
@@ -195,7 +195,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                         key = "notif",
                         uid = uid,
                         statusBarChipIcon = mock<StatusBarIconView>(),
-                        promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                     )
                 )
             )
@@ -223,14 +223,14 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                         key = "promotedNormal",
                         statusBarChipIcon = mock(),
                         promotedContent =
-                            PromotedNotificationContentModel.Builder("promotedNormal").build(),
+                            PromotedNotificationContentBuilder("promotedNormal").build(),
                         callType = CallType.None,
                     ),
                     activeNotificationModel(
                         key = "promotedCall",
                         statusBarChipIcon = mock(),
                         promotedContent =
-                            PromotedNotificationContentModel.Builder("promotedCall").build(),
+                            PromotedNotificationContentBuilder("promotedCall").build(),
                         callType = CallType.Ongoing,
                     ),
                 )
@@ -256,7 +256,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = firstIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -269,7 +269,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = secondIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -282,7 +282,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = thirdIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -302,7 +302,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = mock(),
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -325,7 +325,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = mock(),
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -348,7 +348,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                 activeNotificationModel(
                     key = "notif1",
                     statusBarChipIcon = firstIcon,
-                    promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                 )
             setNotifs(listOf(notif1))
             assertThat(latest!!.map { it.key }).containsExactly("notif1").inOrder()
@@ -359,7 +359,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                 activeNotificationModel(
                     key = "notif2",
                     statusBarChipIcon = secondIcon,
-                    promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                 )
             setNotifs(listOf(notif1, notif2))
 
@@ -380,7 +380,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
             // WHEN notif1 gets an update
             val notif1NewPromotedContent =
-                PromotedNotificationContentModel.Builder("notif1").apply {
+                PromotedNotificationContentBuilder("notif1").applyToShared {
                     this.shortCriticalText = "Arrived"
                 }
             setNotifs(
@@ -426,8 +426,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif1Info.key,
                     uid = notif1Info.uid,
                     statusBarChipIcon = notif1Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif1Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif1Info.key).build(),
                 )
             )
             activityManagerRepository.fake.setIsAppVisible(notif1Info.uid, isAppVisible = false)
@@ -443,8 +442,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif2Info.key,
                     uid = notif2Info.uid,
                     statusBarChipIcon = notif2Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif2Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif2Info.key).build(),
                 )
             )
             activityManagerRepository.fake.setIsAppVisible(notif2Info.uid, isAppVisible = false)
@@ -482,16 +480,14 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif1Info.key,
                     uid = notif1Info.uid,
                     statusBarChipIcon = notif1Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif1Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif1Info.key).build(),
                 )
             val notif2 =
                 activeNotificationModel(
                     key = notif2Info.key,
                     uid = notif2Info.uid,
                     statusBarChipIcon = notif2Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif2Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif2Info.key).build(),
                 )
             setNotifs(listOf(notif1, notif2))
             assertThat(latest!!.map { it.key }).containsExactly("notif1", "notif2").inOrder()
@@ -537,16 +533,14 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif1Info.key,
                     uid = notif1Info.uid,
                     statusBarChipIcon = notif1Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif1Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif1Info.key).build(),
                 )
             val notif2 =
                 activeNotificationModel(
                     key = notif2Info.key,
                     uid = notif2Info.uid,
                     statusBarChipIcon = notif2Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif2Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif2Info.key).build(),
                 )
             setNotifs(listOf(notif1, notif2))
             assertThat(latest!!.map { it.key }).containsExactly("notif1", "notif2").inOrder()
@@ -567,8 +561,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif3Info.key,
                     uid = notif3Info.uid,
                     statusBarChipIcon = notif3Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif3Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif3Info.key).build(),
                 )
             setNotifs(listOf(notif1, notif2, notif3))
 
@@ -597,8 +590,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif1Info.key,
                     uid = notif1Info.uid,
                     statusBarChipIcon = notif1Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif1Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif1Info.key).build(),
                 )
             setNotifs(listOf(notif1))
 
@@ -609,8 +601,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif2Info.key,
                     uid = notif2Info.uid,
                     statusBarChipIcon = notif2Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif2Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif2Info.key).build(),
                 )
             setNotifs(listOf(notif1, notif2))
 
@@ -637,7 +628,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
 
             // WHEN notif2 gets an update
             val notif2NewPromotedContent =
-                PromotedNotificationContentModel.Builder("notif2").apply {
+                PromotedNotificationContentBuilder("notif2").applyToShared {
                     this.shortCriticalText = "Arrived"
                 }
             setNotifs(
@@ -662,8 +653,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     key = notif3Info.key,
                     uid = notif3Info.uid,
                     statusBarChipIcon = notif3Info.icon,
-                    promotedContent =
-                        PromotedNotificationContentModel.Builder(notif3Info.key).build(),
+                    promotedContent = PromotedNotificationContentBuilder(notif3Info.key).build(),
                 )
             setNotifs(listOf(notif1, notif2, notif3))
 
@@ -710,8 +700,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif|uid1",
                         statusBarChipIcon = firstIcon,
-                        promotedContent =
-                            PromotedNotificationContentModel.Builder("notif|uid1").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif|uid1").build(),
                     )
                 )
             )
@@ -725,8 +714,7 @@ class StatusBarNotificationChipsInteractorTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif|uid2",
                         statusBarChipIcon = secondIcon,
-                        promotedContent =
-                            PromotedNotificationContentModel.Builder("notif|uid2").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif|uid2").build(),
                     )
                 )
             )

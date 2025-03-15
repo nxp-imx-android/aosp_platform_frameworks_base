@@ -60,6 +60,7 @@ import com.android.systemui.statusbar.notification.NotificationUtils;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider;
@@ -1003,7 +1004,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
         row.mImageModelIndex = result.mRowImageInflater.getNewImageIndex();
 
         if (PromotedNotificationContentModel.featureFlagEnabled()) {
-            entry.setPromotedNotificationContentModel(result.mPromotedContent);
+            entry.setPromotedNotificationContentModels(result.mPromotedContent);
         }
 
         boolean setRepliesAndActions = true;
@@ -1387,9 +1388,9 @@ public class NotificationContentInflater implements NotificationRowContentBinder
                 mLogger.logAsyncTaskProgress(logKey, "extracting promoted notification content");
                 final ImageModelProvider imageModelProvider =
                         result.mRowImageInflater.useForContentModel();
-                final PromotedNotificationContentModel promotedContent =
+                final PromotedNotificationContentModels promotedContent =
                         mPromotedNotificationContentExtractor.extractContent(mEntry,
-                                recoveredBuilder, imageModelProvider);
+                                recoveredBuilder, mBindParams.redactionType, imageModelProvider);
                 mLogger.logAsyncTaskProgress(logKey, "extracted promoted notification content: "
                         + promotedContent);
 
@@ -1503,7 +1504,7 @@ public class NotificationContentInflater implements NotificationRowContentBinder
     static class InflationProgress {
         RowImageInflater mRowImageInflater;
 
-        PromotedNotificationContentModel mPromotedContent;
+        PromotedNotificationContentModels mPromotedContent;
 
         private RemoteViews newContentView;
         private RemoteViews newHeadsUpView;

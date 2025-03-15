@@ -44,7 +44,7 @@ import com.android.systemui.statusbar.notification.ConversationNotificationProce
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.promoted.FakePromotedNotificationContentExtractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.BindParams
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_CONTRACTED
@@ -456,7 +456,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
     @Test
     @DisableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
     fun testExtractsPromotedContent_notWhenBothFlagsDisabled() {
-        val content = PromotedNotificationContentModel.Builder("key").build()
+        val content = PromotedNotificationContentBuilder("key").build()
         promotedNotificationContentExtractor.resetForEntry(row.entry, content)
 
         inflateAndWait(notificationInflater, FLAG_CONTENT_VIEW_ALL, row)
@@ -468,38 +468,38 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(StatusBarNotifChips.FLAG_NAME)
     fun testExtractsPromotedContent_whenPromotedNotificationUiFlagEnabled() {
-        val content = PromotedNotificationContentModel.Builder("key").build()
+        val content = PromotedNotificationContentBuilder("key").build()
         promotedNotificationContentExtractor.resetForEntry(row.entry, content)
 
         inflateAndWait(notificationInflater, FLAG_CONTENT_VIEW_ALL, row)
 
         promotedNotificationContentExtractor.verifyOneExtractCall()
-        Assert.assertEquals(content, row.entry.promotedNotificationContentModel)
+        Assert.assertEquals(content, row.entry.promotedNotificationContentModels)
     }
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
     @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     fun testExtractsPromotedContent_whenStatusBarNotifChipsFlagEnabled() {
-        val content = PromotedNotificationContentModel.Builder("key").build()
+        val content = PromotedNotificationContentBuilder("key").build()
         promotedNotificationContentExtractor.resetForEntry(row.entry, content)
 
         inflateAndWait(notificationInflater, FLAG_CONTENT_VIEW_ALL, row)
 
         promotedNotificationContentExtractor.verifyOneExtractCall()
-        Assert.assertEquals(content, row.entry.promotedNotificationContentModel)
+        Assert.assertEquals(content, row.entry.promotedNotificationContentModels)
     }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
     fun testExtractsPromotedContent_whenBothFlagsEnabled() {
-        val content = PromotedNotificationContentModel.Builder("key").build()
+        val content = PromotedNotificationContentBuilder("key").build()
         promotedNotificationContentExtractor.resetForEntry(row.entry, content)
 
         inflateAndWait(notificationInflater, FLAG_CONTENT_VIEW_ALL, row)
 
         promotedNotificationContentExtractor.verifyOneExtractCall()
-        Assert.assertEquals(content, row.entry.promotedNotificationContentModel)
+        Assert.assertEquals(content, row.entry.promotedNotificationContentModels)
     }
 
     @Test
@@ -510,7 +510,7 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
         inflateAndWait(notificationInflater, FLAG_CONTENT_VIEW_ALL, row)
 
         promotedNotificationContentExtractor.verifyOneExtractCall()
-        Assert.assertNull(row.entry.promotedNotificationContentModel)
+        Assert.assertNull(row.entry.promotedNotificationContentModels)
     }
 
     @Test

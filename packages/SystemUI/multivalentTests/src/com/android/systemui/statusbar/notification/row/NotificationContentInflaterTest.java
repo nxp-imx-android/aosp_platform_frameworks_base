@@ -67,11 +67,11 @@ import com.android.systemui.media.controls.util.MediaFeatureFlag;
 import com.android.systemui.statusbar.NotificationRemoteInputManager;
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips;
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor;
-import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.promoted.FakePromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder;
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels;
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.BindParams;
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationCallback;
 import com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.InflationFlag;
@@ -389,8 +389,8 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     @Test
     @DisableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
     public void testExtractsPromotedContent_notWhenBothFlagsDisabled() throws Exception {
-        final PromotedNotificationContentModel content =
-                new PromotedNotificationContentModel.Builder("key").build();
+        final PromotedNotificationContentModels content =
+                new PromotedNotificationContentBuilder("key").build();
         mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
 
         inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
@@ -401,43 +401,43 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    public void testExtractsPromotedContent_whenPromotedNotificationUiFlagEnabled()
+    public void testExtractsPromotedContent_whePromotedNotificationUiFlagEnabled()
             throws Exception {
-        final PromotedNotificationContentModel content =
-                new PromotedNotificationContentModel.Builder("key").build();
+        final PromotedNotificationContentModels content =
+                new PromotedNotificationContentBuilder("key").build();
         mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
 
         inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
 
         mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModel());
+        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModels());
     }
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
     @DisableFlags(PromotedNotificationUi.FLAG_NAME)
     public void testExtractsPromotedContent_whenStatusBarNotifChipsFlagEnabled() throws Exception {
-        final PromotedNotificationContentModel content =
-                new PromotedNotificationContentModel.Builder("key").build();
+        final PromotedNotificationContentModels content =
+                new PromotedNotificationContentBuilder("key").build();
         mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
 
         inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
 
         mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModel());
+        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModels());
     }
 
     @Test
     @EnableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
     public void testExtractsPromotedContent_whenBothFlagsEnabled() throws Exception {
-        final PromotedNotificationContentModel content =
-                new PromotedNotificationContentModel.Builder("key").build();
+        final PromotedNotificationContentModels content =
+                new PromotedNotificationContentBuilder("key").build();
         mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
 
         inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
 
         mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModel());
+        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModels());
     }
 
     @Test
@@ -448,7 +448,7 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
         inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
 
         mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertNull(mRow.getEntry().getPromotedNotificationContentModel());
+        assertNull(mRow.getEntry().getPromotedNotificationContentModels());
     }
 
     @Test

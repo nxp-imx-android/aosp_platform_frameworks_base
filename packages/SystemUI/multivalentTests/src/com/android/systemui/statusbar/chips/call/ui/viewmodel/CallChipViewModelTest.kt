@@ -44,6 +44,7 @@ import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarRootModernization
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.phone.ongoingcall.DisableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
@@ -799,8 +800,8 @@ class CallChipViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
             }
 
         private val PROMOTED_CONTENT_WITH_COLOR =
-            PromotedNotificationContentModel.Builder("notif")
-                .apply {
+            PromotedNotificationContentBuilder("notif")
+                .applyToShared {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = PROMOTED_BACKGROUND_COLOR,

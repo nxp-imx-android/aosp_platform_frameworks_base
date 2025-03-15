@@ -33,8 +33,10 @@ import com.android.systemui.statusbar.notification.data.repository.notifications
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.headsUpNotificationIconInteractor
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.aodPromotedNotificationInteractor
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style.Base
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.byIsAmbient
 import com.android.systemui.statusbar.notification.shared.byIsLastMessageFromReply
 import com.android.systemui.statusbar.notification.shared.byIsPromoted
@@ -354,6 +356,6 @@ private val testIcons =
 private fun promotedContent(
     key: String,
     style: PromotedNotificationContentModel.Style,
-): PromotedNotificationContentModel {
-    return PromotedNotificationContentModel.Builder(key).apply { this.style = style }.build()
+): PromotedNotificationContentModels {
+    return PromotedNotificationContentBuilder(key).applyToShared { this.style = style }.build()
 }
