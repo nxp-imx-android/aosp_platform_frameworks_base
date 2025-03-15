@@ -533,10 +533,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
     private void handleBlurSupportedChanged(boolean isBlurSupported) {
         this.mIsBlurSupported = isBlurSupported;
         if (Flags.bouncerUiRevamp()) {
-            // TODO: animate blur fallback when the bouncer is pulled up.
-            for (ScrimState state : ScrimState.values()) {
-                state.setDefaultScrimAlpha(getDefaultScrimAlpha(true));
-            }
+            updateDefaultScrimAlphas();
             if (isBlurSupported) {
                 ScrimState.BOUNCER_SCRIMMED.setNotifBlurRadius(mBlurConfig.getMaxBlurRadiusPx());
             } else {
@@ -544,17 +541,7 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
             }
         }
         if (Flags.notificationShadeBlur()) {
-            float inFrontAlpha = mInFrontAlpha;
-            float behindAlpha = mBehindAlpha;
-            float notifAlpha = mNotificationsAlpha;
-
             mState.prepare(mState);
-            applyState();
-            startScrimAnimation(mScrimBehind, behindAlpha);
-            startScrimAnimation(mNotificationsScrim, notifAlpha);
-            startScrimAnimation(mScrimInFront, inFrontAlpha);
-            dispatchBackScrimState(mScrimBehind.getViewAlpha());
-        } else if (Flags.bouncerUiRevamp()) {
             applyAndDispatchState();
         }
     }
