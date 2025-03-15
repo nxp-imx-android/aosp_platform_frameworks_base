@@ -190,3 +190,10 @@ flag {
          purpose: PURPOSE_BUGFIX
      }
 }
+
+flag {
+     name: "enable_process_observer_broadcast_on_process_started"
+     namespace: "system_performance"
+     description: "Enable ProcessObserver's onProcessStarted callbacks."
+     bug: "323959187"
+}
