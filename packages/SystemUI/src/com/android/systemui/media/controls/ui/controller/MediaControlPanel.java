@@ -742,7 +742,7 @@ public class MediaControlPanel {
                         /* userInitiated */ true)) {
                     Log.w(TAG, "Manager failed to dismiss media " + mKey);
                     // Remove directly from carousel so user isn't stuck with defunct controls
-                    mMediaCarouselController.removePlayer(mKey, false, false, true);
+                    mMediaCarouselController.removePlayer(mKey, false, true);
                 }
             } else {
                 Log.w(TAG, "Dismiss media with null notification. Token uid="

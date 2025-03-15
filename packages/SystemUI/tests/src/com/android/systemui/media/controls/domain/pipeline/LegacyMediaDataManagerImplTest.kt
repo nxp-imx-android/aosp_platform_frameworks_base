@@ -22,15 +22,10 @@ import android.app.Notification.FLAG_NO_CLEAR
 import android.app.Notification.MediaStyle
 import android.app.PendingIntent
 import android.app.UriGrantsManager
-import android.app.smartspace.SmartspaceAction
-import android.app.smartspace.SmartspaceConfig
-import android.app.smartspace.SmartspaceManager
-import android.app.smartspace.SmartspaceTarget
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
-import android.graphics.drawable.Icon
 import android.media.MediaDescription
 import android.media.MediaMetadata
 import android.media.session.MediaController
@@ -63,7 +58,6 @@ import com.android.systemui.media.controls.domain.resume.ResumeMediaBrowser
 import com.android.systemui.media.controls.shared.mediaLogger
 import com.android.systemui.media.controls.shared.mockMediaLogger
 import com.android.systemui.media.controls.shared.model.MediaData
-import com.android.systemui.media.controls.shared.model.SmartspaceMediaDataProvider
 import com.android.systemui.media.controls.util.MediaUiEventLogger
 import com.android.systemui.media.controls.util.fakeMediaControllerFactory
 import com.android.systemui.media.controls.util.mediaFlags
@@ -103,9 +97,6 @@ import platform.test.runner.parameterized.Parameters
 
 private const val KEY = "KEY"
 private const val KEY_2 = "KEY_2"
-private const val KEY_MEDIA_SMARTSPACE = "MEDIA_SMARTSPACE_ID"
-private const val SMARTSPACE_CREATION_TIME = 1234L
-private const val SMARTSPACE_EXPIRY_TIME = 5678L
 private const val PACKAGE_NAME = "com.example.app"
 private const val SYSTEM_PACKAGE_NAME = "com.android.systemui"
 private const val APP_NAME = "SystemUI"
@@ -114,7 +105,6 @@ private const val SESSION_TITLE = "title"
 private const val SESSION_BLANK_TITLE = " "
 private const val SESSION_EMPTY_TITLE = ""
 private const val USER_ID = 0
-private val DISMISS_INTENT = Intent().apply { action = "dismiss" }
 
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
@@ -140,13 +130,7 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
     @Mock lateinit var mediaDataFilter: LegacyMediaDataFilterImpl
     @Mock lateinit var listener: MediaDataManager.Listener
     @Mock lateinit var pendingIntent: PendingIntent
-    @Mock lateinit var smartspaceManager: SmartspaceManager
     @Mock lateinit var keyguardUpdateMonitor: KeyguardUpdateMonitor
-    lateinit var smartspaceMediaDataProvider: SmartspaceMediaDataProvider
-    @Mock lateinit var mediaSmartspaceTarget: SmartspaceTarget
-    @Mock private lateinit var mediaRecommendationItem: SmartspaceAction
-    lateinit var validRecommendationList: List<SmartspaceAction>
-    @Mock private lateinit var mediaSmartspaceBaseAction: SmartspaceAction
     @Mock private lateinit var logger: MediaUiEventLogger
     lateinit var mediaDataManager: LegacyMediaDataManagerImpl
     lateinit var mediaNotification: StatusBarNotification
@@ -155,7 +139,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
     private val clock = FakeSystemClock()
     @Captor lateinit var stateCallbackCaptor: ArgumentCaptor<(String, PlaybackState) -> Unit>
     @Captor lateinit var sessionCallbackCaptor: ArgumentCaptor<(String) -> Unit>
-    @Captor lateinit var smartSpaceConfigBuilderCaptor: ArgumentCaptor<SmartspaceConfig>
     @Mock private lateinit var ugm: IUriGrantsManager
     @Mock private lateinit var imageSource: ImageDecoder.Source
 
@@ -186,21 +169,19 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
     fun setup() {
         staticMockSession =
             ExtendedMockito.mockitoSession()
-                .mockStatic<UriGrantsManager>(UriGrantsManager::class.java)
-                .mockStatic<ImageDecoder>(ImageDecoder::class.java)
+                .mockStatic(UriGrantsManager::class.java)
+                .mockStatic(ImageDecoder::class.java)
                 .strictness(Strictness.LENIENT)
                 .startMocking()
         whenever(UriGrantsManager.getService()).thenReturn(ugm)
         foregroundExecutor = FakeExecutor(clock)
         backgroundExecutor = FakeExecutor(clock)
         uiExecutor = FakeExecutor(clock)
-        smartspaceMediaDataProvider = SmartspaceMediaDataProvider()
         mediaDataManager =
             LegacyMediaDataManagerImpl(
                 context = context,
                 backgroundExecutor = backgroundExecutor,
                 backgroundDispatcher = testDispatcher,
-                uiExecutor = uiExecutor,
                 foregroundExecutor = foregroundExecutor,
                 mainDispatcher = testDispatcher,
                 applicationScope = testScope,
@@ -213,13 +194,11 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
                 mediaDeviceManager = mediaDeviceManager,
                 mediaDataCombineLatest = mediaDataCombineLatest,
                 mediaDataFilter = mediaDataFilter,
-                smartspaceMediaDataProvider = smartspaceMediaDataProvider,
                 useMediaResumption = true,
                 useQsMediaPlayer = true,
                 systemClock = clock,
                 mediaFlags = kosmos.mediaFlags,
                 logger = logger,
-                smartspaceManager = smartspaceManager,
                 keyguardUpdateMonitor = keyguardUpdateMonitor,
                 mediaDataLoader = { kosmos.mediaDataLoader },
                 mediaLogger = kosmos.mediaLogger,
@@ -256,7 +235,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
                 putString(MediaMetadata.METADATA_KEY_ARTIST, SESSION_ARTIST)
                 putString(MediaMetadata.METADATA_KEY_TITLE, SESSION_TITLE)
             }
-        verify(smartspaceManager).createSmartspaceSession(capture(smartSpaceConfigBuilderCaptor))
         mediaControllerFactory.setControllerForToken(session.sessionToken, controller)
         whenever(controller.sessionToken).thenReturn(session.sessionToken)
         whenever(controller.transportControls).thenReturn(transportControls)
@@ -266,28 +244,11 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
             .thenReturn(MediaController.PlaybackInfo.PLAYBACK_TYPE_LOCAL)
 
         // This is an ugly hack for now. The mediaSessionBasedFilter is one of the internal
-        // listeners in the internal processing pipeline. It receives events, but ince it is a
+        // listeners in the internal processing pipeline. It receives events, but since it is a
         // mock, it doesn't pass those events along the chain to the external listeners. So, just
         // treat mediaSessionBasedFilter as a listener for testing.
         listener = mediaSessionBasedFilter
 
-        val recommendationExtras =
-            Bundle().apply {
-                putString("package_name", PACKAGE_NAME)
-                putParcelable("dismiss_intent", DISMISS_INTENT)
-            }
-        val icon = Icon.createWithResource(context, android.R.drawable.ic_media_play)
-        whenever(mediaSmartspaceBaseAction.extras).thenReturn(recommendationExtras)
-        whenever(mediaSmartspaceTarget.baseAction).thenReturn(mediaSmartspaceBaseAction)
-        whenever(mediaRecommendationItem.extras).thenReturn(recommendationExtras)
-        whenever(mediaRecommendationItem.icon).thenReturn(icon)
-        validRecommendationList =
-            listOf(mediaRecommendationItem, mediaRecommendationItem, mediaRecommendationItem)
-        whenever(mediaSmartspaceTarget.smartspaceTargetId).thenReturn(KEY_MEDIA_SMARTSPACE)
-        whenever(mediaSmartspaceTarget.featureType).thenReturn(SmartspaceTarget.FEATURE_MEDIA)
-        whenever(mediaSmartspaceTarget.iconGrid).thenReturn(validRecommendationList)
-        whenever(mediaSmartspaceTarget.creationTimeMillis).thenReturn(SMARTSPACE_CREATION_TIME)
-        whenever(mediaSmartspaceTarget.expiryTimeMillis).thenReturn(SMARTSPACE_EXPIRY_TIME)
         fakeFeatureFlags.set(MEDIA_RETAIN_SESSIONS, false)
         fakeFeatureFlags.set(MEDIA_RESUME_PROGRESS, false)
         fakeFeatureFlags.set(MEDIA_REMOTE_RESUME, false)

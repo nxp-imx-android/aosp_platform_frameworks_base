@@ -16,13 +16,10 @@
 
 package com.android.systemui.media.controls.data.repository
 
-import android.util.Log
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.media.controls.shared.model.MediaData
-import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
-import com.android.systemui.media.controls.util.MediaFlags
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,29 +27,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 private const val TAG = "MediaDataRepository"
-private const val DEBUG = true
 
 /** A repository that holds the state of all media controls in carousel. */
 @SysUISingleton
-class MediaDataRepository
-@Inject
-constructor(private val mediaFlags: MediaFlags, dumpManager: DumpManager) : Dumpable {
+class MediaDataRepository @Inject constructor(dumpManager: DumpManager) : Dumpable {
 
     private val _mediaEntries: MutableStateFlow<Map<String, MediaData>> =
         MutableStateFlow(LinkedHashMap())
     val mediaEntries: StateFlow<Map<String, MediaData>> = _mediaEntries.asStateFlow()
 
-    private val _smartspaceMediaData: MutableStateFlow<SmartspaceMediaData> =
-        MutableStateFlow(SmartspaceMediaData())
-    val smartspaceMediaData: StateFlow<SmartspaceMediaData> = _smartspaceMediaData.asStateFlow()
-
     init {
         dumpManager.registerNormalDumpable(TAG, this)
-    }
-
-    /** Updates the recommendation data with a new smartspace media data. */
-    fun setRecommendation(recommendation: SmartspaceMediaData) {
-        _smartspaceMediaData.value = recommendation
     }
 
     /**
@@ -61,21 +46,7 @@ constructor(private val mediaFlags: MediaFlags, dumpManager: DumpManager) : Dump
      * @return true if the recommendation was dismissed or already inactive, false otherwise.
      */
     fun dismissSmartspaceRecommendation(key: String): Boolean {
-        val data = smartspaceMediaData.value
-        if (data.targetId != key || !data.isValid()) {
-            // If this doesn't match, or we've already invalidated the data, no action needed
-            return false
-        }
-
-        if (DEBUG) Log.d(TAG, "Dismissing Smartspace media target")
-        if (data.isActive) {
-            setRecommendation(
-                SmartspaceMediaData(
-                    targetId = smartspaceMediaData.value.targetId,
-                    instanceId = smartspaceMediaData.value.instanceId,
-                )
-            )
-        }
+        // TODO(b/382680767): remove
         return true
     }
 

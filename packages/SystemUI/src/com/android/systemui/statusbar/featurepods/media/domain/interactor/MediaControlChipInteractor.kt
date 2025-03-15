@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.featurepods.media.domain.interactor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.media.controls.data.repository.MediaFilterRepository
-import com.android.systemui.media.controls.shared.model.MediaCommonModel
 import com.android.systemui.media.controls.shared.model.MediaData
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -56,7 +55,6 @@ constructor(
             mediaList,
             userEntries ->
             mediaList
-                .filterIsInstance<MediaCommonModel.MediaControl>()
                 .mapNotNull { userEntries[it.mediaLoadedModel.instanceId] }
                 .firstOrNull { it.active }
                 ?.toMediaControlChipModel()

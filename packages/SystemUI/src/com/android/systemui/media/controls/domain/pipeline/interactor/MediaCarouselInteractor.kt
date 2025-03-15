@@ -41,7 +41,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 /** Encapsulates business logic for media pipeline. */
@@ -61,16 +61,10 @@ constructor(
 ) : MediaDataManager, CoreStartable {
 
     /** Are there any media notifications active, including the recommendations? */
+    // TODO(b/382680767): rename
     val hasActiveMediaOrRecommendation: StateFlow<Boolean> =
-        combine(
-                mediaFilterRepository.selectedUserEntries,
-                mediaFilterRepository.smartspaceMediaData,
-                mediaFilterRepository.reactivatedId,
-            ) { entries, smartspaceMediaData, reactivatedKey ->
-                entries.any { it.value.active } ||
-                    (smartspaceMediaData.isActive &&
-                        (smartspaceMediaData.isValid() || reactivatedKey != null))
-            }
+        mediaFilterRepository.selectedUserEntries
+            .map { entries -> entries.any { it.value.active } }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
@@ -78,14 +72,10 @@ constructor(
             )
 
     /** Are there any media entries we should display, including the recommendations? */
+    // TODO(b/382680767): rename
     val hasAnyMediaOrRecommendation: StateFlow<Boolean> =
-        combine(
-                mediaFilterRepository.selectedUserEntries,
-                mediaFilterRepository.smartspaceMediaData,
-            ) { entries, smartspaceMediaData ->
-                entries.isNotEmpty() ||
-                    (smartspaceMediaData.isActive && smartspaceMediaData.isValid())
-            }
+        mediaFilterRepository.selectedUserEntries
+            .map { entries -> entries.isNotEmpty() }
             .stateIn(
                 scope = applicationScope,
                 started = SharingStarted.WhileSubscribed(),
@@ -182,9 +172,7 @@ constructor(
         mediaDataProcessor.dismissMediaData(instanceId, delay, userInitiated = false)
     }
 
-    override fun dismissSmartspaceRecommendation(key: String, delay: Long) {
-        return mediaDataProcessor.dismissSmartspaceRecommendation(key, delay)
-    }
+    override fun dismissSmartspaceRecommendation(key: String, delay: Long) {}
 
     override fun onNotificationRemoved(key: String) {
         mediaDataProcessor.onNotificationRemoved(key)
@@ -198,16 +186,15 @@ constructor(
         mediaDataFilter.onSwipeToDismiss()
     }
 
-    override fun hasActiveMediaOrRecommendation() =
-        mediaFilterRepository.hasActiveMediaOrRecommendation()
+    override fun hasActiveMediaOrRecommendation() = mediaFilterRepository.hasActiveMedia()
 
-    override fun hasAnyMediaOrRecommendation() = hasAnyMediaOrRecommendation.value
+    override fun hasAnyMediaOrRecommendation() = mediaFilterRepository.hasAnyMedia()
 
     override fun hasActiveMedia() = mediaFilterRepository.hasActiveMedia()
 
     override fun hasAnyMedia() = mediaFilterRepository.hasAnyMedia()
 
-    override fun isRecommendationActive() = mediaFilterRepository.isRecommendationActive()
+    override fun isRecommendationActive() = false
 
     fun reorderMedia() {
         mediaFilterRepository.setOrderedMedia()

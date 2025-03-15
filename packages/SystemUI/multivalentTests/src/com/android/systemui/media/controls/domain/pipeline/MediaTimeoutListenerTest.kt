@@ -25,9 +25,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.media.controls.MediaTestUtils
 import com.android.systemui.media.controls.shared.model.MediaData
-import com.android.systemui.media.controls.shared.model.SmartspaceMediaData
 import com.android.systemui.media.controls.util.MediaControllerFactory
-import com.android.systemui.media.controls.util.MediaFlags
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -58,7 +56,6 @@ private const val PACKAGE = "PKG"
 private const val SESSION_KEY = "SESSION_KEY"
 private const val SESSION_ARTIST = "SESSION_ARTIST"
 private const val SESSION_TITLE = "SESSION_TITLE"
-private const val SMARTSPACE_KEY = "SMARTSPACE_KEY"
 
 private fun <T> anyObject(): T {
     return ArgumentMatchers.any<T>()
@@ -90,8 +87,6 @@ class MediaTimeoutListenerTest : SysuiTestCase() {
     private lateinit var mainExecutor: FakeExecutor
     private lateinit var bgExecutor: FakeExecutor
     private lateinit var uiExecutor: FakeExecutor
-    @Mock private lateinit var mediaFlags: MediaFlags
-    @Mock private lateinit var smartspaceData: SmartspaceMediaData
 
     @Before
     fun setup() {
@@ -108,7 +103,6 @@ class MediaTimeoutListenerTest : SysuiTestCase() {
                 logger,
                 statusBarStateController,
                 clock,
-                mediaFlags,
             )
         mediaTimeoutListener.timeoutCallback = timeoutCallback
         mediaTimeoutListener.stateCallback = stateCallback
