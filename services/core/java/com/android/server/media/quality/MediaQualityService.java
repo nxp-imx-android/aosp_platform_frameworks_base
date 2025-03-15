@@ -105,6 +105,7 @@ public class MediaQualityService extends SystemService {
     private final MediaQualityDbHelper mMediaQualityDbHelper;
     private final BiMap<Long, String> mPictureProfileTempIdMap;
     private final BiMap<Long, String> mSoundProfileTempIdMap;
+    private final Map<String, Long> mPackageDefaultPictureProfileHandleMap = new HashMap<>();
     private IMediaQuality mMediaQuality;
     private PictureProfileAdjustmentListenerImpl mPictureProfileAdjListener;
     private SoundProfileAdjustmentListenerImpl mSoundProfileAdjListener;
@@ -183,6 +184,8 @@ public class MediaQualityService extends SystemService {
 
                 mMediaQuality.setPictureProfileAdjustmentListener(mPictureProfileAdjListener);
                 mMediaQuality.setSoundProfileAdjustmentListener(mSoundProfileAdjListener);
+
+                // TODO: populate mPackageDefaultPictureProfileHandleMap
 
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to set ambient backlight detector callback", e);
@@ -443,6 +446,36 @@ public class MediaQualityService extends SystemService {
             return toReturn;
         }
 
+        @GuardedBy("mPictureProfileLock")
+        @Override
+        public long getPictureProfileHandleValue(String id, int userId) {
+            synchronized (mPictureProfileLock) {
+                Long value = mPictureProfileTempIdMap.getKey(id);
+                return value != null ? value : -1;
+            }
+        }
+
+        @GuardedBy("mPictureProfileLock")
+        @Override
+        public long getDefaultPictureProfileHandleValue(int userId) {
+            synchronized (mPictureProfileLock) {
+                String packageName = getPackageOfCallingUid();
+                Long value = null;
+                if (packageName != null) {
+                    value = mPackageDefaultPictureProfileHandleMap.get(packageName);
+                }
+                return value != null ? value : -1;
+            }
+        }
+
+        @GuardedBy("mPictureProfileLock")
+        @Override
+        public void notifyPictureProfileHandleSelection(long handle, int userId) {
+            PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle);
+            if (profile != null) {
+                mHalNotifier.notifyHalOnPictureProfileChange(handle, profile.getParameters());
+            }
+        }
 
         @GuardedBy("mSoundProfileLock")
         @Override
