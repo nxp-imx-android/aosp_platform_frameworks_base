@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalKairosApi::class)
+
 package com.android.systemui.shade.ui.viewmodel
 
 import android.content.Context
@@ -28,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.OverlayKey
 import com.android.systemui.battery.BatteryMeterViewController
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosNetwork
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.ActivityStarter
@@ -47,6 +51,7 @@ import com.android.systemui.statusbar.phone.ui.StatusBarIconController
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.Locale
@@ -76,6 +81,8 @@ constructor(
     private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val batteryMeterViewControllerFactory: BatteryMeterViewController.Factory,
     val statusBarIconController: StatusBarIconController,
+    val kairosNetwork: KairosNetwork,
+    val mobileIconsViewModelKairos: dagger.Lazy<MobileIconsViewModelKairos>,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("ShadeHeaderViewModel.hydrator")
