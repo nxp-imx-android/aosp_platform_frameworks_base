@@ -1483,6 +1483,8 @@
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen">Share screen</string>
     <!-- 1P/3P apps disabled the single app projection option. [CHAR LIMIT=NONE] -->
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled"><xliff:g id="app_name" example="Meet">%1$s</xliff:g> has disabled this option</string>
+    <!-- Explanation that the app requesting the projection does not support single app sharing[CHAR LIMIT=70] -->
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported">Not supported by the app</string>
     <!-- Title of the activity that allows users to select an app to share to a 1P/3P app [CHAR LIMIT=70] -->
     <string name="media_projection_entry_share_app_selector_title">Choose app to share</string>
 
@@ -2557,6 +2559,9 @@
 
     <!-- Button to edit the tile ordering of quick settings [CHAR LIMIT=60] -->
     <string name="qs_edit">Edit</string>
+
+    <!-- Title for QS Edit mode screen [CHAR LIMIT=30] -->
+    <string name="qs_edit_tiles">Edit tiles</string>
 
     <!-- SysUI Tuner: Options for how clock is displayed [CHAR LIMIT=NONE] -->
     <string name="tuner_time">Time</string>

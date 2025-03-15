@@ -221,6 +221,7 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
         when(enr.getEntry()).thenReturn(enrEntry);
+        when(enr.getEntryLegacy()).thenReturn(enrEntry);
         when(enr.getEntryAdapter()).thenReturn(enrEntryAdapter);
         when(enr.isChildInGroup()).thenReturn(true);
         when(enr.areChildrenExpanded()).thenReturn(false);
@@ -251,6 +252,7 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
         when(enr.getEntry()).thenReturn(enrEntry);
+        when(enr.getEntryLegacy()).thenReturn(enrEntry);
         when(enr.isChildInGroup()).thenReturn(true);
         when(enr.areChildrenExpanded()).thenReturn(true);
 
@@ -277,6 +279,7 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
         when(enr.getEntry()).thenReturn(enrEntry);
+        when(enr.getEntryLegacy()).thenReturn(enrEntry);
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(false);
         when(enr.isExpanded()).thenReturn(false);
@@ -305,6 +308,7 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
         when(enr.getEntry()).thenReturn(enrEntry);
+        when(enr.getEntryLegacy()).thenReturn(enrEntry);
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(false);
         when(enr.isExpanded()).thenReturn(true);
@@ -333,6 +337,7 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
         when(enr.getEntry()).thenReturn(enrEntry);
+        when(enr.getEntryLegacy()).thenReturn(enrEntry);
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(true);
         when(enr.isPinnedAndExpanded()).thenReturn(false);
@@ -361,6 +366,7 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
 
         when(enr.getPrivateLayout()).thenReturn(privateLayout);
         when(enr.getEntry()).thenReturn(enrEntry);
+        when(enr.getEntryLegacy()).thenReturn(enrEntry);
         when(enr.isChildInGroup()).thenReturn(false);
         when(enr.isPinned()).thenReturn(true);
         when(enr.isPinnedAndExpanded()).thenReturn(true);

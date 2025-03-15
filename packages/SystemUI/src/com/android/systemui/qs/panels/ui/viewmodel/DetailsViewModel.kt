@@ -23,11 +23,15 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.plugins.qs.TileDetailsViewModel
 import com.android.systemui.qs.pipeline.domain.interactor.CurrentTilesInteractor
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import javax.inject.Inject
 
 @SysUISingleton
 @Stable
-class DetailsViewModel @Inject constructor(val currentTilesInteractor: CurrentTilesInteractor) {
+class DetailsViewModel @Inject constructor(
+    val currentTilesInteractor: CurrentTilesInteractor,
+    val shadeModeInteractor: ShadeModeInteractor
+) {
 
     /**
      * The current active [TileDetailsViewModel]. If it's `null`, it means the qs overlay is not
@@ -52,6 +56,10 @@ class DetailsViewModel @Inject constructor(val currentTilesInteractor: CurrentTi
      * @see activeTileDetails
      */
     fun onTileClicked(spec: TileSpec?): Boolean {
+        if (!shadeModeInteractor.isDualShade){
+            return false
+        }
+
         if (spec == null) {
             _activeTileDetails.value = null
             return false

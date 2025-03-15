@@ -17,6 +17,7 @@
 package com.android.systemui.volume.panel.component.volume.slider.ui.viewmodel
 
 import android.bluetooth.BluetoothDevice
+import android.graphics.drawable.TestStubDrawable
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.bluetooth.CachedBluetoothDevice
@@ -63,6 +64,12 @@ class AudioSharingStreamSliderViewModelTest : SysuiTestCase() {
 
             assertThat(audioSharingSlider!!.label).isEqualTo("my headset 2")
             assertThat(audioSharingSlider!!.icon)
-                .isEqualTo(Icon.Resource(R.drawable.ic_volume_media_bt, null))
+                .isEqualTo(
+                    Icon.Loaded(
+                        drawable = TestStubDrawable(),
+                        res = R.drawable.ic_volume_media_bt,
+                        contentDescription = null,
+                    )
+                )
         }
 }

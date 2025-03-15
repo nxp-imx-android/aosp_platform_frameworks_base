@@ -4014,7 +4014,7 @@ public final class ActivityThread extends ClientTransactionHandler
             return VM_PROCESS_STATE_JANK_PERCEPTIBLE;
         }
 
-        if (Flags.jankPerceptibleNarrow()) {
+        if (Flags.jankPerceptibleNarrow() && !Flags.jankPerceptibleNarrowHoldback()) {
             // Unlike other persistent processes, system server is often on
             // the critical path for application startup. Mark it explicitly
             // as jank perceptible regardless of processState.

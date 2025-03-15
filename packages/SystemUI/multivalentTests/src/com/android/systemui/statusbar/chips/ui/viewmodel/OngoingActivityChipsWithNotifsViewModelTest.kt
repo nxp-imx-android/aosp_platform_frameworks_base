@@ -1159,6 +1159,11 @@ class OngoingActivityChipsWithNotifsViewModelTest : SysuiTestCase() {
                 .inOrder()
         }
 
+    // The ranking between different chips should stay consistent between
+    // OngoingActivityChipsViewModel and PromotedNotificationsInteractor.
+    // Make sure to also change
+    // PromotedNotificationsInteractorTest#orderedChipNotificationKeys_rankingIsCorrect
+    // if you change this test.
     @EnableChipsModernization
     @Test
     fun chips_screenRecordAndCallAndPromotedNotifs_secondNotifInOverflow() =

@@ -57,6 +57,11 @@ sealed class OngoingActivityChipModel {
          * A key that uniquely identifies this chip. Used for better visual effects, like animation.
          */
         open val key: String,
+        /**
+         * True if this chip is critical for privacy so we should keep it visible at all times, and
+         * false otherwise.
+         */
+        open val isImportantForPrivacy: Boolean = false,
         /** The icon to show on the chip. If null, no icon will be shown. */
         open val icon: ChipIcon?,
         /** What colors to use for the chip. */
@@ -81,6 +86,7 @@ sealed class OngoingActivityChipModel {
         /** This chip shows only an icon and nothing else. */
         data class IconOnly(
             override val key: String,
+            override val isImportantForPrivacy: Boolean = false,
             override val icon: ChipIcon,
             override val colors: ColorsModel,
             override val onClickListenerLegacy: View.OnClickListener?,
@@ -91,6 +97,7 @@ sealed class OngoingActivityChipModel {
         ) :
             Active(
                 key,
+                isImportantForPrivacy,
                 icon,
                 colors,
                 onClickListenerLegacy,
@@ -105,6 +112,7 @@ sealed class OngoingActivityChipModel {
         /** The chip shows a timer, counting up from [startTimeMs]. */
         data class Timer(
             override val key: String,
+            override val isImportantForPrivacy: Boolean = false,
             override val icon: ChipIcon,
             override val colors: ColorsModel,
             /**
@@ -138,6 +146,7 @@ sealed class OngoingActivityChipModel {
         ) :
             Active(
                 key,
+                isImportantForPrivacy,
                 icon,
                 colors,
                 onClickListenerLegacy,
@@ -155,6 +164,7 @@ sealed class OngoingActivityChipModel {
          */
         data class ShortTimeDelta(
             override val key: String,
+            override val isImportantForPrivacy: Boolean = false,
             override val icon: ChipIcon,
             override val colors: ColorsModel,
             /**
@@ -175,6 +185,7 @@ sealed class OngoingActivityChipModel {
         ) :
             Active(
                 key,
+                isImportantForPrivacy,
                 icon,
                 colors,
                 onClickListenerLegacy,
@@ -196,6 +207,7 @@ sealed class OngoingActivityChipModel {
          */
         data class Countdown(
             override val key: String,
+            override val isImportantForPrivacy: Boolean = false,
             override val colors: ColorsModel,
             /** The number of seconds until an event is started. */
             val secondsUntilStarted: Long,
@@ -205,6 +217,7 @@ sealed class OngoingActivityChipModel {
         ) :
             Active(
                 key,
+                isImportantForPrivacy,
                 icon = null,
                 colors,
                 onClickListenerLegacy = null,
@@ -219,6 +232,7 @@ sealed class OngoingActivityChipModel {
         /** This chip shows the specified [text] in the chip. */
         data class Text(
             override val key: String,
+            override val isImportantForPrivacy: Boolean = false,
             override val icon: ChipIcon,
             override val colors: ColorsModel,
             // TODO(b/361346412): Enforce a max length requirement?
@@ -231,6 +245,7 @@ sealed class OngoingActivityChipModel {
         ) :
             Active(
                 key,
+                isImportantForPrivacy,
                 icon,
                 colors,
                 onClickListenerLegacy,

@@ -21,6 +21,7 @@ import android.app.Notification.BigPictureStyle
 import android.app.Notification.BigTextStyle
 import android.app.Notification.CallStyle
 import android.app.Notification.EXTRA_BIG_TEXT
+import android.app.Notification.EXTRA_CALL_PERSON
 import android.app.Notification.EXTRA_CHRONOMETER_COUNT_DOWN
 import android.app.Notification.EXTRA_PROGRESS
 import android.app.Notification.EXTRA_PROGRESS_INDETERMINATE
@@ -33,6 +34,7 @@ import android.app.Notification.EXTRA_VERIFICATION_ICON
 import android.app.Notification.EXTRA_VERIFICATION_TEXT
 import android.app.Notification.InboxStyle
 import android.app.Notification.ProgressStyle
+import android.app.Person
 import android.content.Context
 import android.graphics.drawable.Icon
 import com.android.systemui.Flags
@@ -108,12 +110,12 @@ constructor(
         contentBuilder.shortCriticalText = notification.shortCriticalText()
         contentBuilder.lastAudiblyAlertedMs = entry.lastAudiblyAlertedMs
         contentBuilder.profileBadgeResId = null // TODO
-        contentBuilder.title = notification.resolveTitle(recoveredBuilder.style)
-        contentBuilder.text = notification.resolveText(recoveredBuilder.style)
+        contentBuilder.title = notification.title(recoveredBuilder.style)
+        contentBuilder.text = notification.text(recoveredBuilder.style)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
         contentBuilder.oldProgress = notification.oldProgress()
 
-        val colorsFromNotif = recoveredBuilder.getColors(/* header= */ false)
+        val colorsFromNotif = recoveredBuilder.getColors(/* isHeader= */ false)
         contentBuilder.colors =
             PromotedNotificationContentModel.Colors(
                 backgroundColor = colorsFromNotif.backgroundColor,
@@ -132,20 +134,16 @@ constructor(
 
     private fun Notification.bigTitle(): CharSequence? = extras?.getCharSequence(EXTRA_TITLE_BIG)
 
-    private fun Notification.Style.bigTitleOverridesTitle(): Boolean {
-        return when (this) {
+    private fun Notification.callPerson(): Person? =
+        extras?.getParcelable(EXTRA_CALL_PERSON, Person::class.java)
+
+    private fun Notification.title(style: Notification.Style?): CharSequence? {
+        return when (style) {
             is BigTextStyle,
             is BigPictureStyle,
-            is InboxStyle -> true
-            else -> false
-        }
-    }
-
-    private fun Notification.resolveTitle(style: Notification.Style?): CharSequence? {
-        return if (style?.bigTitleOverridesTitle() == true) {
-            bigTitle()
-        } else {
-            null
+            is InboxStyle -> bigTitle()
+            is CallStyle -> callPerson()?.name
+            else -> null
         } ?: title()
     }
 
@@ -153,13 +151,10 @@ constructor(
 
     private fun Notification.bigText(): CharSequence? = extras?.getCharSequence(EXTRA_BIG_TEXT)
 
-    private fun Notification.Style.bigTextOverridesText(): Boolean = this is BigTextStyle
-
-    private fun Notification.resolveText(style: Notification.Style?): CharSequence? {
-        return if (style?.bigTextOverridesText() == true) {
-            bigText()
-        } else {
-            null
+    private fun Notification.text(style: Notification.Style?): CharSequence? {
+        return when (style) {
+            is BigTextStyle -> bigText()
+            else -> null
         } ?: text()
     }
 
@@ -204,16 +199,18 @@ constructor(
         extras?.getBoolean(EXTRA_PROGRESS_INDETERMINATE)
 
     private fun Notification.extractWhen(): When? {
+        val whenTime = getWhen()
+
         return when {
             showsChronometer() -> {
                 When.Chronometer(
                     elapsedRealtimeMillis =
-                        `when` + systemClock.elapsedRealtime() - systemClock.currentTimeMillis(),
+                        whenTime + systemClock.elapsedRealtime() - systemClock.currentTimeMillis(),
                     isCountDown = chronometerCountDown(),
                 )
             }
 
-            showsTime() -> When.Time(currentTimeMillis = `when`)
+            showsTime() -> When.Time(currentTimeMillis = whenTime)
 
             else -> null
         }

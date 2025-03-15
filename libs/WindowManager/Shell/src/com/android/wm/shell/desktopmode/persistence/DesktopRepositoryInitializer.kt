@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 /** Interface for initializing the [DesktopUserRepositories]. */
 interface DesktopRepositoryInitializer {
-    /** A factory used to recreate a desk from persistence. */
+    /** A factory used to re-create a desk from persistence. */
     var deskRecreationFactory: DeskRecreationFactory
 
     /** A flow that emits true when the repository has been initialized. */
@@ -30,9 +30,11 @@ interface DesktopRepositoryInitializer {
     /** Initialize the user repositories from a persistent data store. */
     fun initialize(userRepositories: DesktopUserRepositories)
 
-    /** A factory for recreating desks. */
+    /** A factory for re-creating desks. */
     fun interface DeskRecreationFactory {
-        /** Recreates a restored desk and returns the new desk id. */
-        suspend fun recreateDesk(userId: Int, destinationDisplayId: Int, deskId: Int): Int
+        /**
+         * Re-creates a restored desk and returns the new desk id, or null if re-creation failed.
+         */
+        suspend fun recreateDesk(userId: Int, destinationDisplayId: Int, deskId: Int): Int?
     }
 }

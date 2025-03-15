@@ -18,32 +18,36 @@ package com.android.systemui.volume.dialog.sliders.ui.viewmodel
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.drawable.Drawable
 import android.media.AudioManager
 import androidx.annotation.DrawableRes
 import com.android.settingslib.R as SettingsR
 import com.android.settingslib.volume.domain.interactor.AudioVolumeInteractor
 import com.android.settingslib.volume.shared.model.AudioStream
 import com.android.settingslib.volume.shared.model.RingerMode
+import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.dagger.qualifiers.UiBackground
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.domain.interactor.ZenModeInteractor
 import com.android.systemui.statusbar.policy.domain.model.ActiveZenModes
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.withContext
 
 @SuppressLint("UseCompatLoadingForDrawables")
 class VolumeDialogSliderIconProvider
 @Inject
 constructor(
     private val context: Context,
+    @UiBackground private val uiBackgroundContext: CoroutineContext,
     private val zenModeInteractor: ZenModeInteractor,
     private val audioVolumeInteractor: AudioVolumeInteractor,
 ) {
 
-    fun getAudioSharingIcon(isMuted: Boolean): Flow<Drawable> {
+    fun getAudioSharingIcon(isMuted: Boolean): Flow<Icon.Loaded> {
         return flow {
             val iconRes =
                 if (isMuted) {
@@ -51,11 +55,12 @@ constructor(
                 } else {
                     R.drawable.ic_volume_media_bt
                 }
-            emit(context.getDrawable(iconRes)!!)
+            val drawable = withContext(uiBackgroundContext) { context.getDrawable(iconRes)!! }
+            emit(Icon.Loaded(drawable = drawable, contentDescription = null, res = iconRes))
         }
     }
 
-    fun getCastIcon(isMuted: Boolean): Flow<Drawable> {
+    fun getCastIcon(isMuted: Boolean): Flow<Icon.Loaded> {
         return flow {
             val iconRes =
                 if (isMuted) {
@@ -63,7 +68,8 @@ constructor(
                 } else {
                     SettingsR.drawable.ic_volume_remote
                 }
-            emit(context.getDrawable(iconRes)!!)
+            val drawable = withContext(uiBackgroundContext) { context.getDrawable(iconRes)!! }
+            emit(Icon.Loaded(drawable = drawable, contentDescription = null, res = iconRes))
         }
     }
 
@@ -74,15 +80,18 @@ constructor(
         levelMax: Int,
         isMuted: Boolean,
         isRoutedToBluetooth: Boolean,
-    ): Flow<Drawable> {
+    ): Flow<Icon.Loaded> {
         return combine(
             zenModeInteractor.activeModesBlockingStream(stream),
             ringerModeForStream(stream),
         ) { activeModesBlockingStream, ringerMode ->
             if (activeModesBlockingStream?.mainMode?.icon != null) {
-                return@combine activeModesBlockingStream.mainMode.icon.drawable
+                Icon.Loaded(
+                    drawable = activeModesBlockingStream.mainMode.icon.drawable,
+                    contentDescription = null,
+                )
             } else {
-                context.getDrawable(
+                val iconRes =
                     getIconRes(
                         stream,
                         level,
@@ -92,7 +101,8 @@ constructor(
                         isRoutedToBluetooth,
                         ringerMode,
                     )
-                )!!
+                val drawable = withContext(uiBackgroundContext) { context.getDrawable(iconRes)!! }
+                Icon.Loaded(drawable = drawable, contentDescription = null, res = iconRes)
             }
         }
     }

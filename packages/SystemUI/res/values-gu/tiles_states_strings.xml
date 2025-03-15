@@ -56,9 +56,11 @@
     <item msgid="5376619709702103243">"બંધ છે"</item>
     <item msgid="4875147066469902392">"ચાલુ છે"</item>
   </string-array>
-    <!-- no translation found for tile_states_modes_dnd:0 (6509540227356524582) -->
-    <!-- no translation found for tile_states_modes_dnd:1 (8589336868985358191) -->
-    <!-- no translation found for tile_states_modes_dnd:2 (726072717827778234) -->
+  <string-array name="tile_states_modes_dnd">
+    <item msgid="6509540227356524582">"અનુપલબ્ધ"</item>
+    <item msgid="8589336868985358191">"બંધ"</item>
+    <item msgid="726072717827778234">"ચાલુ"</item>
+  </string-array>
   <string-array name="tile_states_flashlight">
     <item msgid="3465257127433353857">"ઉપલબ્ધ નથી"</item>
     <item msgid="5044688398303285224">"બંધ છે"</item>

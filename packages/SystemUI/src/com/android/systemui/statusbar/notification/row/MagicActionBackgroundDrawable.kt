@@ -62,6 +62,7 @@ class BaseBackgroundDrawable(
 
     private val buttonShape = Path()
     // Color and style
+    private val outlineStaticColor = context.getColor(R.color.magic_action_button_stroke_color)
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         val bgColor =
             context.getColor(
@@ -70,15 +71,17 @@ class BaseBackgroundDrawable(
         color = bgColor
         style = Paint.Style.FILL
     }
-    private val outlinePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        val outlineColor =
-            context.getColor(
-                com.android.internal.R.color.materialColorOutlineVariant
-            )
-        color = outlineColor
+    private val outlineGradientPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = outlineStaticColor
         style = Paint.Style.STROKE
         strokeWidth = outlineStrokeWidth
     }
+    private val outlineSolidPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = outlineStaticColor
+        style = Paint.Style.STROKE
+        strokeWidth = outlineStrokeWidth
+    }
+
     private val outlineStartColor =
         context.getColor(
             com.android.internal.R.color.materialColorTertiaryContainer
@@ -91,21 +94,35 @@ class BaseBackgroundDrawable(
         context.getColor(
             com.android.internal.R.color.materialColorPrimary
         )
+
     // Animation
     private var gradientAnimator: ValueAnimator
     private var rotationAngle = 20f // Start rotation at 20 degrees
+    private var fadeAnimator: ValueAnimator? = null
+    private var gradientAlpha = 255    // Fading out gradient
+    private var solidAlpha = 0         // Fading in solid color
 
     init {
         gradientAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
-            duration = 5000 // 5 seconds
+            duration = 1500
             interpolator = Interpolators.LINEAR
-            repeatCount = 1
+            repeatCount = 0
             addUpdateListener { animator ->
                 val animatedValue = animator.animatedValue as Float
                 rotationAngle = 20f + animatedValue * 360f // Rotate in a spiral
                 invalidateSelf()
             }
-            // TODO: Reset the outline color when animation ends.
+            start()
+        }
+        fadeAnimator = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = 500
+            startDelay = 1000
+            addUpdateListener { animator ->
+                val progress = animator.animatedValue as Float
+                gradientAlpha = ((1 - progress) * 255).toInt()  // Fade out gradient
+                solidAlpha = (progress * 255).toInt()          // Fade in color
+                invalidateSelf()
+            }
             start()
         }
     }
@@ -120,14 +137,9 @@ class BaseBackgroundDrawable(
         // Draw background
         canvas.clipPath(buttonShape)
         canvas.drawPath(buttonShape, bgPaint)
-        // Apply gradient to outline
-        canvas.drawPath(buttonShape, outlinePaint)
-        updateGradient(boundsF)
-        canvas.restore()
-    }
 
-    private fun updateGradient(boundsF: RectF) {
-        val gradient = LinearGradient(
+        // Set up outline gradient
+        val gradientShader = LinearGradient(
             boundsF.left, boundsF.top,
             boundsF.right, boundsF.bottom,
             intArrayOf(outlineStartColor, outlineMiddleColor, outlineEndColor),
@@ -137,9 +149,17 @@ class BaseBackgroundDrawable(
         // Create a rotation matrix for the spiral effect
         val matrix = Matrix()
         matrix.setRotate(rotationAngle, boundsF.centerX(), boundsF.centerY())
-        gradient.setLocalMatrix(matrix)
+        gradientShader.setLocalMatrix(matrix)
 
-        outlinePaint.shader = gradient
+        // Apply gradient to outline
+        outlineGradientPaint.shader = gradientShader
+        outlineGradientPaint.alpha = gradientAlpha
+        canvas.drawPath(buttonShape, outlineGradientPaint)
+        // Apply solid color to outline
+        outlineSolidPaint.alpha = solidAlpha
+        canvas.drawPath(buttonShape, outlineSolidPaint)
+
+        canvas.restore()
     }
 
     override fun onBoundsChange(bounds: Rect) {
@@ -149,13 +169,15 @@ class BaseBackgroundDrawable(
 
     override fun setAlpha(alpha: Int) {
         bgPaint.alpha = alpha
-        outlinePaint.alpha = alpha
+        outlineGradientPaint.alpha = alpha
+        outlineSolidPaint.alpha = alpha
         invalidateSelf()
     }
 
     override fun setColorFilter(colorFilter: ColorFilter?) {
         bgPaint.colorFilter = colorFilter
-        outlinePaint.colorFilter = colorFilter
+        outlineGradientPaint.colorFilter = colorFilter
+        outlineSolidPaint.colorFilter = colorFilter
         invalidateSelf()
     }
 

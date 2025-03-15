@@ -5573,6 +5573,14 @@
 
     <!-- @hide internal use only -->
     <declare-styleable name="NotificationProgressBar">
+        <!-- Minimum required drawing width for segments. The drawing width refers to the width
+             after the original segments have been adjusted for the neighboring Points and gaps.
+             This is enforced by stretching the segments that are too short. -->
+        <attr name="segMinWidth" format="dimension" />
+        <!-- The gap between two segments. -->
+        <attr name="segSegGap" format="dimension" />
+        <!-- The gap between a segment and a point. -->
+        <attr name="segPointGap" format="dimension" />
         <!-- Draws the tracker on a NotificationProgressBar. -->
         <attr name="tracker" format="reference" />
         <!-- Height of the tracker. -->
@@ -7580,25 +7588,9 @@
     <!-- NotificationProgressDrawable class -->
     <!-- ================================== -->
 
-    <!-- Drawable used to render a notification progress bar, with segments and points. -->
-    <!-- @hide internal use only -->
-    <declare-styleable name="NotificationProgressDrawable">
-        <!-- The gap between two segments. -->
-        <attr name="segSegGap" format="dimension" />
-        <!-- The gap between a segment and a point. -->
-        <attr name="segPointGap" format="dimension" />
-    </declare-styleable>
-
     <!-- Used to config the segments of a NotificationProgressDrawable. -->
     <!-- @hide internal use only -->
     <declare-styleable name="NotificationProgressDrawableSegments">
-        <!-- TODO: b/390196782 - maybe move this to NotificationProgressBar, because that's the only
-         place this is used actually. Same for NotificationProgressDrawable.segSegGap/segPointGap
-         above. -->
-        <!-- Minimum required drawing width. The drawing width refers to the width after
-         the original segments have been adjusted for the neighboring Points and gaps. This is
-         enforced by stretching the segments that are too short. -->
-        <attr name="minWidth" />
         <!-- Height of the solid segments. -->
         <attr name="height" />
         <!-- Height of the faded segments. -->

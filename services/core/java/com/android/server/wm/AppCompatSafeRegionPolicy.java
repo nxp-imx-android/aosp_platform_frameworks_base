@@ -156,6 +156,8 @@ class AppCompatSafeRegionPolicy {
     void dump(@NonNull PrintWriter pw, @NonNull String prefix) {
         if (mNeedsSafeRegionBounds) {
             pw.println(prefix + " mNeedsSafeRegionBounds=true");
+            pw.println(
+                    prefix + " latestSafeRegionBoundsOnActivity=" + getLatestSafeRegionBounds());
         }
         if (isLetterboxedForSafeRegionOnlyAllowed()) {
             pw.println(prefix + " isLetterboxForSafeRegionOnlyAllowed=true");

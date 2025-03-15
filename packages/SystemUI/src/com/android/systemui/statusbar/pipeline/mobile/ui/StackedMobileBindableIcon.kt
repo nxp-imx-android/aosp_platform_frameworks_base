@@ -24,7 +24,7 @@ import com.android.systemui.statusbar.pipeline.icons.shared.model.BindableIcon
 import com.android.systemui.statusbar.pipeline.icons.shared.model.ModernStatusBarViewCreator
 import com.android.systemui.statusbar.pipeline.mobile.ui.binder.StackedMobileIconBinder
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
-import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModel
+import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.StackedMobileIconViewModelImpl
 import com.android.systemui.statusbar.pipeline.shared.ui.view.SingleBindableStatusBarComposeIconView
 import javax.inject.Inject
 
@@ -34,7 +34,7 @@ class StackedMobileBindableIcon
 constructor(
     context: Context,
     mobileIconsViewModel: MobileIconsViewModel,
-    viewModelFactory: StackedMobileIconViewModel.Factory,
+    viewModelFactory: StackedMobileIconViewModelImpl.Factory,
 ) : BindableIcon {
     override val slot: String =
         context.getString(com.android.internal.R.string.status_bar_stacked_mobile)

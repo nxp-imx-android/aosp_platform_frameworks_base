@@ -18,6 +18,7 @@ package com.android.wm.shell.shared;
 
 import static android.app.WindowConfiguration.windowingModeToString;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
+import static android.view.Display.INVALID_DISPLAY;
 
 import android.annotation.IntDef;
 import android.app.ActivityManager.RecentTaskInfo;
@@ -65,6 +66,11 @@ public class GroupedTaskInfo implements Parcelable {
     private final int mDeskId;
 
     /**
+     * The ID of the display that desk with [mDeskId] is in.
+     */
+    private final int mDeskDisplayId;
+
+    /**
      * The type of this particular task info, can be one of TYPE_FULLSCREEN, TYPE_SPLIT or
      * TYPE_DESK.
      */
@@ -109,17 +115,19 @@ public class GroupedTaskInfo implements Parcelable {
      * Create new for a stack of fullscreen tasks
      */
     public static GroupedTaskInfo forFullscreenTasks(@NonNull TaskInfo task) {
-        return new GroupedTaskInfo(/* deskId = */ -1, List.of(task), null, TYPE_FULLSCREEN,
-                /* minimizedFreeformTaskIds = */ null);
+        return new GroupedTaskInfo(/* deskId = */ -1, /* displayId = */ INVALID_DISPLAY,
+                List.of(task), null,
+                TYPE_FULLSCREEN, /* minimizedFreeformTaskIds = */ null);
     }
 
     /**
      * Create new for a pair of tasks in split screen
      */
     public static GroupedTaskInfo forSplitTasks(@NonNull TaskInfo task1,
-                    @NonNull TaskInfo task2, @NonNull SplitBounds splitBounds) {
-        return new GroupedTaskInfo(/* deskId = */ -1, List.of(task1, task2), splitBounds,
-                TYPE_SPLIT, /* minimizedFreeformTaskIds = */ null);
+            @NonNull TaskInfo task2, @NonNull SplitBounds splitBounds) {
+        return new GroupedTaskInfo(/* deskId = */ -1, /* displayId = */ INVALID_DISPLAY,
+                List.of(task1, task2),
+                splitBounds, TYPE_SPLIT, /* minimizedFreeformTaskIds = */ null);
     }
 
     /**
@@ -127,9 +135,11 @@ public class GroupedTaskInfo implements Parcelable {
      */
     public static GroupedTaskInfo forDeskTasks(
             int deskId,
+            int deskDisplayId,
             @NonNull List<TaskInfo> tasks,
             @NonNull Set<Integer> minimizedFreeformTaskIds) {
-        return new GroupedTaskInfo(deskId, tasks, /* splitBounds = */ null, TYPE_DESK,
+        return new GroupedTaskInfo(deskId, deskDisplayId, tasks, /* splitBounds = */ null,
+                TYPE_DESK,
                 minimizedFreeformTaskIds.stream().mapToInt(i -> i).toArray());
     }
 
@@ -149,11 +159,13 @@ public class GroupedTaskInfo implements Parcelable {
 
     private GroupedTaskInfo(
             int deskId,
+            int deskDisplayId,
             @NonNull List<TaskInfo> tasks,
             @Nullable SplitBounds splitBounds,
             @GroupType int type,
             @Nullable int[] minimizedFreeformTaskIds) {
         mDeskId = deskId;
+        mDeskDisplayId = deskDisplayId;
         mTasks = tasks;
         mGroupedTasks = null;
         mSplitBounds = splitBounds;
@@ -164,6 +176,7 @@ public class GroupedTaskInfo implements Parcelable {
 
     private GroupedTaskInfo(@NonNull List<GroupedTaskInfo> groupedTasks) {
         mDeskId = -1;
+        mDeskDisplayId = INVALID_DISPLAY;
         mTasks = null;
         mGroupedTasks = groupedTasks;
         mSplitBounds = null;
@@ -185,6 +198,7 @@ public class GroupedTaskInfo implements Parcelable {
 
     protected GroupedTaskInfo(@NonNull Parcel parcel) {
         mDeskId = parcel.readInt();
+        mDeskDisplayId = parcel.readInt();
         mTasks = new ArrayList();
         final int numTasks = parcel.readInt();
         for (int i = 0; i < numTasks; i++) {
@@ -295,6 +309,16 @@ public class GroupedTaskInfo implements Parcelable {
     }
 
     /**
+     * Returns the ID of the display that hosts the desk represented by [mDeskId].
+     */
+    public int getDeskDisplayId() {
+        if (mType != TYPE_DESK) {
+            throw new IllegalStateException("No display ID for non desktop task");
+        }
+        return mDeskDisplayId;
+    }
+
+    /**
      * Get type of this recents entry. One of {@link GroupType}.
      * Note: This is deprecated, callers should use `isBaseType()` and not make assumptions about
      *       specific group types
@@ -323,6 +347,7 @@ public class GroupedTaskInfo implements Parcelable {
         }
         GroupedTaskInfo other = (GroupedTaskInfo) obj;
         return mDeskId == other.mDeskId
+                && mDeskDisplayId == other.mDeskDisplayId
                 && mType == other.mType
                 && Objects.equals(mTasks, other.mTasks)
                 && Objects.equals(mGroupedTasks, other.mGroupedTasks)
@@ -332,7 +357,7 @@ public class GroupedTaskInfo implements Parcelable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mDeskId, mType, mTasks, mGroupedTasks, mSplitBounds,
+        return Objects.hash(mDeskId, mDeskDisplayId, mType, mTasks, mGroupedTasks, mSplitBounds,
                 Arrays.hashCode(mMinimizedTaskIds));
     }
 
@@ -345,6 +370,7 @@ public class GroupedTaskInfo implements Parcelable {
                     .collect(Collectors.joining(",\n\t", "[\n\t", "\n]")));
         } else {
             taskString.append("Desk ID= ").append(mDeskId).append(", ");
+            taskString.append("Desk Display ID=").append(mDeskDisplayId).append(", ");
             taskString.append("Tasks=" + mTasks.stream()
                     .map(taskInfo -> getTaskInfoDumpString(taskInfo))
                     .collect(Collectors.joining(", ", "[", "]")));
@@ -377,6 +403,7 @@ public class GroupedTaskInfo implements Parcelable {
     @Override
     public void writeToParcel(Parcel parcel, int flags) {
         parcel.writeInt(mDeskId);
+        parcel.writeInt(mDeskDisplayId);
         // We don't use the parcel list methods because we want to only write the TaskInfo state
         // and not the subclasses (Recents/RunningTaskInfo) whose fields are all deprecated
         final int tasksSize = mTasks != null ? mTasks.size() : 0;

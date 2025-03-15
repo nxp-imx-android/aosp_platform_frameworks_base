@@ -25,6 +25,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -205,6 +206,23 @@ public class HearingDevicePhoneCallNotificationControllerTest {
 
         verify(mNotificationManager).notify(
                 eq(SystemMessageProto.SystemMessage.NOTE_HEARING_DEVICE_INPUT_SWITCH), any());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HEARING_INPUT_CHANGE_WHEN_COMM_DEVICE)
+    public void onCallStateChanged_offHookMultiple_addListenerOnlyOneTime() {
+        AudioDeviceInfo a2dpDeviceInfo = createAudioDeviceInfo(TEST_ADDRESS,
+                AudioManager.DEVICE_OUT_BLUETOOTH_A2DP);
+        when(mAudioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)).thenReturn(
+                new AudioDeviceInfo[]{a2dpDeviceInfo});
+        when(mAudioManager.getCommunicationDevice()).thenReturn(a2dpDeviceInfo);
+
+        mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK);
+        mTestCallStateListener.onCallStateChanged(TelephonyManager.CALL_STATE_OFFHOOK);
+
+        verify(mAudioManager, times(1)).addOnCommunicationDeviceChangedListener(
+                any(Executor.class),
+                any(AudioManager.OnCommunicationDeviceChangedListener.class));
     }
 
     private AudioDeviceInfo createAudioDeviceInfo(String address, int type) {

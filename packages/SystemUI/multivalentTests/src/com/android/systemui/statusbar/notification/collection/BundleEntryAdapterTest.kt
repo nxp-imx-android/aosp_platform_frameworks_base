@@ -127,7 +127,7 @@ class BundleEntryAdapterTest : SysuiTestCase() {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isBubble() {
-        assertThat(underTest.isBubbleCapable).isFalse()
+        assertThat(underTest.isBubble).isFalse()
     }
 
     @Test

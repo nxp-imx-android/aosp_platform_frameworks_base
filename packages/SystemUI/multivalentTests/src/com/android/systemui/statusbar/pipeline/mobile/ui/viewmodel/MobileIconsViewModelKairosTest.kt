@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,348 +16,323 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
+import android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
 import android.telephony.SubscriptionManager.PROFILE_CLASS_UNSET
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.mobile.TelephonyIcons
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.flags.FakeFeatureFlagsClassic
-import com.android.systemui.statusbar.phone.StatusBarLocation
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import com.android.systemui.flags.Flags
+import com.android.systemui.flags.fake
+import com.android.systemui.flags.featureFlagsClassic
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.KairosTestScope
+import com.android.systemui.kairos.runKairosTest
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
+import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.DefaultNetworkType
+import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.UnknownNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
-import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepository
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.FakeMobileIconsInteractor
-import com.android.systemui.statusbar.pipeline.mobile.domain.model.NetworkTypeIconModel
-import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
-import com.android.systemui.statusbar.pipeline.mobile.ui.VerboseMobileViewLogger
-import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
-import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fake
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.fakeMobileConnectionsRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.mobileConnectionsRepositoryKairos
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
-import junit.framework.Assert.assertFalse
-import junit.framework.Assert.assertTrue
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.MockitoAnnotations
 
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class MobileIconsViewModelKairosTest : SysuiTestCase() {
-    private val kosmos = testKosmos()
 
-    private lateinit var underTest: MobileIconsViewModelKairos
-    private val interactor = FakeMobileIconsInteractor(FakeMobileMappingsProxy(), mock())
-    private val flags = FakeFeatureFlagsClassic()
+    private val Kosmos.underTest
+        get() = mobileIconsViewModelKairos
 
-    private lateinit var airplaneModeInteractor: AirplaneModeInteractor
-    @Mock private lateinit var constants: ConnectivityConstants
-    @Mock private lateinit var logger: MobileViewLogger
-    @Mock private lateinit var verboseLogger: VerboseMobileViewLogger
+    private val kosmos =
+        testKosmos().apply {
+            useUnconfinedTestDispatcher()
+            featureFlagsClassic.fake.apply {
+                setDefault(Flags.FILTER_PROVISIONING_NETWORK_SUBSCRIPTIONS)
+            }
+            mobileConnectionsRepositoryKairos =
+                fakeMobileConnectionsRepositoryKairos.apply {
+                    val subList = listOf(SUB_1, SUB_2)
+                    setActiveMobileDataSubscriptionId(SUB_1.subscriptionId)
+                    subscriptions.setValue(subList)
+                }
+        }
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    private fun runTest(block: suspend KairosTestScope.() -> Unit) =
+        kosmos.run { runKairosTest { block() } }
 
-    @Before
-    fun setUp() {
-        MockitoAnnotations.initMocks(this)
-
-        airplaneModeInteractor =
-            AirplaneModeInteractor(
-                FakeAirplaneModeRepository(),
-                FakeConnectivityRepository(),
-                kosmos.fakeMobileConnectionsRepository,
-            )
-
-        underTest =
-            MobileIconsViewModelKairos(
-                logger,
-                verboseLogger,
-                interactor,
-                airplaneModeInteractor,
-                constants,
-                testScope.backgroundScope,
-            )
-
-        interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
+    private fun KairosTestScope.setSubscriptions(
+        subList: List<SubscriptionModel>,
+        activeSubId: Int = subList.getOrNull(0)?.subscriptionId ?: INVALID_SUBSCRIPTION_ID,
+    ) {
+        println("setSubscriptions: mobileConnectionsRepositoryKairos.fake.subscriptions")
+        mobileConnectionsRepositoryKairos.fake.subscriptions.setValue(subList)
+        println(
+            "setSubscriptions: mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId"
+        )
+        mobileConnectionsRepositoryKairos.fake.setActiveMobileDataSubscriptionId(activeSubId)
     }
 
     @Test
-    fun subscriptionIdsFlow_matchesInteractor() =
-        testScope.runTest {
-            var latest: List<Int>? = null
-            val job = underTest.subscriptionIdsFlow.onEach { latest = it }.launchIn(this)
-
-            interactor.filteredSubscriptions.value =
-                listOf(
-                    SubscriptionModel(
-                        subscriptionId = 1,
-                        isOpportunistic = false,
-                        carrierName = "Carrier 1",
-                        profileClass = PROFILE_CLASS_UNSET,
-                    )
+    fun subscriptionIdsFlow_matchesInteractor() = runTest {
+        val latest by underTest.subscriptionIds.collectLastValue()
+        setSubscriptions(
+            listOf(
+                SubscriptionModel(
+                    subscriptionId = 1,
+                    isOpportunistic = false,
+                    carrierName = "Carrier 1",
+                    profileClass = PROFILE_CLASS_UNSET,
                 )
-            assertThat(latest).isEqualTo(listOf(1))
+            )
+        )
+        assertThat(latest).isEqualTo(listOf(1))
 
-            interactor.filteredSubscriptions.value =
-                listOf(
-                    SubscriptionModel(
-                        subscriptionId = 2,
-                        isOpportunistic = false,
-                        carrierName = "Carrier 2",
-                        profileClass = PROFILE_CLASS_UNSET,
-                    ),
-                    SubscriptionModel(
-                        subscriptionId = 5,
-                        isOpportunistic = true,
-                        carrierName = "Carrier 5",
-                        profileClass = PROFILE_CLASS_UNSET,
-                    ),
-                    SubscriptionModel(
-                        subscriptionId = 7,
-                        isOpportunistic = true,
-                        carrierName = "Carrier 7",
-                        profileClass = PROFILE_CLASS_UNSET,
-                    ),
-                )
-            assertThat(latest).isEqualTo(listOf(2, 5, 7))
+        setSubscriptions(
+            listOf(
+                SubscriptionModel(
+                    subscriptionId = 2,
+                    isOpportunistic = false,
+                    carrierName = "Carrier 2",
+                    profileClass = PROFILE_CLASS_UNSET,
+                ),
+                SubscriptionModel(
+                    subscriptionId = 5,
+                    isOpportunistic = true,
+                    carrierName = "Carrier 5",
+                    profileClass = PROFILE_CLASS_UNSET,
+                ),
+                SubscriptionModel(
+                    subscriptionId = 7,
+                    isOpportunistic = true,
+                    carrierName = "Carrier 7",
+                    profileClass = PROFILE_CLASS_UNSET,
+                ),
+            )
+        )
+        assertThat(latest).isEqualTo(listOf(2, 5, 7))
 
-            interactor.filteredSubscriptions.value = emptyList()
-            assertThat(latest).isEmpty()
-
-            job.cancel()
-        }
-
-    @Test
-    fun caching_mobileIconViewModelIsReusedForSameSubId() =
-        testScope.runTest {
-            val model1 = underTest.viewModelForSub(1, StatusBarLocation.HOME)
-            val model2 = underTest.viewModelForSub(1, StatusBarLocation.QS)
-
-            assertThat(model1.commonImpl).isSameInstanceAs(model2.commonImpl)
-        }
+        setSubscriptions(emptyList())
+        assertThat(latest).isEmpty()
+    }
 
     @Test
-    fun caching_invalidViewModelsAreRemovedFromCacheWhenSubDisappears() =
-        testScope.runTest {
-            // Retrieve models to trigger caching
-            val model1 = underTest.viewModelForSub(1, StatusBarLocation.HOME)
-            val model2 = underTest.viewModelForSub(2, StatusBarLocation.QS)
+    fun firstMobileSubShowingNetworkTypeIcon_noSubs_false() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
 
-            // Both impls are cached
-            assertThat(underTest.reuseCache.keys).containsExactly(1, 2)
+        setSubscriptions(emptyList())
 
-            // SUB_1 is removed from the list...
-            interactor.filteredSubscriptions.value = listOf(SUB_2)
-
-            // ... and dropped from the cache
-            assertThat(underTest.reuseCache.keys).containsExactly(2)
-        }
+        assertThat(latest).isEqualTo(false)
+    }
 
     @Test
-    fun caching_invalidatedViewModelsAreCanceled() =
-        testScope.runTest {
-            // Retrieve models to trigger caching
-            val model1 = underTest.viewModelForSub(1, StatusBarLocation.HOME)
-            val model2 = underTest.viewModelForSub(2, StatusBarLocation.QS)
+    fun firstMobileSubShowingNetworkTypeIcon_oneSub_notShowingRat_false() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
 
-            var scope1 = underTest.reuseCache[1]?.second
-            var scope2 = underTest.reuseCache[2]?.second
+        setSubscriptions(listOf(SUB_1))
 
-            // Scopes are not canceled
-            assertTrue(scope1!!.isActive)
-            assertTrue(scope2!!.isActive)
+        // The unknown icon group doesn't show a RAT
+        mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+            .sample()[SUB_1.subscriptionId]
+            ?.resolvedNetworkType
+            ?.setValue(UnknownNetworkType)
 
-            // SUB_1 is removed from the list...
-            interactor.filteredSubscriptions.value = listOf(SUB_2)
-
-            // scope1 is canceled
-            assertFalse(scope1!!.isActive)
-            assertTrue(scope2!!.isActive)
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun firstMobileSubShowingNetworkTypeIcon_noSubs_false() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
+    fun firstMobileSubShowingNetworkTypeIcon_oneSub_showingRat_true() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
+        setSubscriptions(listOf(SUB_1))
 
-            interactor.filteredSubscriptions.value = emptyList()
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
 
-            assertThat(latest).isFalse()
+        // The 3G icon group will show a RAT
+        val repo =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_1.subscriptionId]!!
 
-            job.cancel()
-        }
+        repo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileConnectionsRepositoryKairos.fake.GSM_KEY)
+        )
+        repo.dataConnectionState.setValue(DataConnectionState.Connected)
 
-    @Test
-    fun firstMobileSubShowingNetworkTypeIcon_oneSub_notShowingRat_false() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
-
-            interactor.filteredSubscriptions.value = listOf(SUB_1)
-            // The unknown icon group doesn't show a RAT
-            interactor.getInteractorForSubId(1)!!.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.UNKNOWN)
-
-            assertThat(latest).isFalse()
-
-            job.cancel()
-        }
+        assertThat(latest).isEqualTo(true)
+    }
 
     @Test
-    fun firstMobileSubShowingNetworkTypeIcon_oneSub_showingRat_true() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
+    fun firstMobileSubShowingNetworkTypeIcon_updatesAsSubUpdates() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
+        setSubscriptions(listOf(SUB_1))
 
-            interactor.filteredSubscriptions.value = listOf(SUB_1)
-            // The 3G icon group will show a RAT
-            interactor.getInteractorForSubId(1)!!.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G)
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
 
-            assertThat(latest).isTrue()
+        val repo =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_1.subscriptionId]!!
 
-            job.cancel()
-        }
+        repo.dataConnectionState.setValue(DataConnectionState.Connected)
 
-    @Test
-    fun firstMobileSubShowingNetworkTypeIcon_updatesAsSubUpdates() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
+        repo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileConnectionsRepositoryKairos.fake.GSM_KEY)
+        )
+        assertThat(latest).isEqualTo(true)
 
-            interactor.filteredSubscriptions.value = listOf(SUB_1)
-            val sub1Interactor = interactor.getInteractorForSubId(1)!!
+        mobileConnectionsRepositoryKairos.fake.defaultMobileIconGroup.setValue(
+            TelephonyIcons.UNKNOWN
+        )
 
-            sub1Interactor.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G)
-            assertThat(latest).isTrue()
+        repo.resolvedNetworkType.setValue(UnknownNetworkType)
+        assertThat(latest).isEqualTo(false)
 
-            sub1Interactor.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.UNKNOWN)
-            assertThat(latest).isFalse()
-
-            sub1Interactor.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.LTE)
-            assertThat(latest).isTrue()
-
-            job.cancel()
-        }
+        repo.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileConnectionsRepositoryKairos.fake.LTE_KEY)
+        )
+        assertThat(latest).isEqualTo(true)
+    }
 
     @Test
-    fun firstMobileSubShowingNetworkTypeIcon_multipleSubs_lastSubNotShowingRat_false() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
+    fun firstMobileSubShowingNetworkTypeIcon_multipleSubs_lastSubNotShowingRat_false() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
 
-            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
-            interactor.getInteractorForSubId(1)?.networkTypeIconGroup?.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G)
-            interactor.getInteractorForSubId(2)!!.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.UNKNOWN)
+        mobileConnectionsRepositoryKairos.fake.defaultMobileIconGroup.setValue(
+            TelephonyIcons.UNKNOWN
+        )
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
 
-            assertThat(latest).isFalse()
+        val repo1 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_1.subscriptionId]!!
 
-            job.cancel()
-        }
+        repo1.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileConnectionsRepositoryKairos.fake.GSM_KEY)
+        )
 
-    @Test
-    fun firstMobileSubShowingNetworkTypeIcon_multipleSubs_lastSubShowingRat_true() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
+        val repo2 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_2.subscriptionId]!!
 
-            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
-            interactor.getInteractorForSubId(1)?.networkTypeIconGroup?.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.UNKNOWN)
-            interactor.getInteractorForSubId(2)!!.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G)
+        repo2.resolvedNetworkType.setValue(UnknownNetworkType)
 
-            assertThat(latest).isTrue()
-            job.cancel()
-        }
+        assertThat(latest).isFalse()
+    }
 
     @Test
-    fun firstMobileSubShowingNetworkTypeIcon_subListUpdates_valAlsoUpdates() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
+    fun firstMobileSubShowingNetworkTypeIcon_multipleSubs_lastSubShowingRat_true() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
 
-            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
-            interactor.getInteractorForSubId(1)?.networkTypeIconGroup?.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.UNKNOWN)
-            interactor.getInteractorForSubId(2)!!.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G)
+        mobileConnectionsRepositoryKairos.fake.defaultMobileIconGroup.setValue(
+            TelephonyIcons.UNKNOWN
+        )
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
 
-            assertThat(latest).isTrue()
+        val repo1 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_1.subscriptionId]!!
 
-            // WHEN the sub list gets new subscriptions where the last subscription is not showing
-            // the network type icon
-            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2, SUB_3)
-            interactor.getInteractorForSubId(3)!!.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.UNKNOWN)
+        repo1.dataConnectionState.setValue(DataConnectionState.Connected)
+        repo1.resolvedNetworkType.setValue(UnknownNetworkType)
 
-            // THEN the flow updates
-            assertThat(latest).isFalse()
+        val repo2 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_2.subscriptionId]!!
 
-            job.cancel()
-        }
+        repo2.dataConnectionState.setValue(DataConnectionState.Connected)
+        repo2.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileConnectionsRepositoryKairos.fake.GSM_KEY)
+        )
+
+        assertThat(latest).isEqualTo(true)
+    }
 
     @Test
-    fun firstMobileSubShowingNetworkTypeIcon_subListReorders_valAlsoUpdates() =
-        testScope.runTest {
-            var latest: Boolean? = null
-            val job =
-                underTest.firstMobileSubShowingNetworkTypeIcon.onEach { latest = it }.launchIn(this)
+    fun firstMobileSubShowingNetworkTypeIcon_subListUpdates_valAlsoUpdates() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
 
-            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
-            // Immediately switch the order so that we've created both interactors
-            interactor.filteredSubscriptions.value = listOf(SUB_2, SUB_1)
-            val sub1Interactor = interactor.getInteractorForSubId(1)!!
-            val sub2Interactor = interactor.getInteractorForSubId(2)!!
+        mobileConnectionsRepositoryKairos.fake.defaultMobileIconGroup.setValue(
+            TelephonyIcons.UNKNOWN
+        )
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
 
-            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
-            sub1Interactor.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.UNKNOWN)
-            sub2Interactor.networkTypeIconGroup.value =
-                NetworkTypeIconModel.DefaultIcon(TelephonyIcons.THREE_G)
-            assertThat(latest).isTrue()
+        val repo1 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_1.subscriptionId]!!
 
-            // WHEN sub1 becomes last and sub1 has no network type icon
-            interactor.filteredSubscriptions.value = listOf(SUB_2, SUB_1)
+        repo1.dataConnectionState.setValue(DataConnectionState.Connected)
+        repo1.resolvedNetworkType.setValue(UnknownNetworkType)
 
-            // THEN the flow updates
-            assertThat(latest).isFalse()
+        val repo2 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_2.subscriptionId]!!
 
-            // WHEN sub2 becomes last and sub2 has a network type icon
-            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
+        repo2.dataConnectionState.setValue(DataConnectionState.Connected)
+        repo2.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileConnectionsRepositoryKairos.fake.GSM_KEY)
+        )
 
-            // THEN the flow updates
-            assertThat(latest).isTrue()
+        assertThat(latest).isEqualTo(true)
 
-            job.cancel()
-        }
+        // WHEN the sub list gets new subscriptions where the last subscription is not showing
+        // the network type icon
+        setSubscriptions(listOf(SUB_1, SUB_2, SUB_3))
+
+        val repo3 =
+            mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId
+                .sample()[SUB_3.subscriptionId]!!
+
+        repo3.dataConnectionState.setValue(DataConnectionState.Connected)
+        repo3.resolvedNetworkType.setValue(UnknownNetworkType)
+
+        // THEN the flow updates
+        assertThat(latest).isEqualTo(false)
+    }
+
+    @Test
+    fun firstMobileSubShowingNetworkTypeIcon_subListReorders_valAlsoUpdates() = runTest {
+        val latest by underTest.firstMobileSubShowingNetworkTypeIcon.collectLastValue()
+
+        mobileConnectionsRepositoryKairos.fake.defaultMobileIconGroup.setValue(
+            TelephonyIcons.UNKNOWN
+        )
+        mobileConnectionsRepositoryKairos.fake.mobileIsDefault.setValue(true)
+
+        setSubscriptions(listOf(SUB_1, SUB_2))
+        // Immediately switch the order so that we've created both interactors
+        setSubscriptions(listOf(SUB_2, SUB_1))
+
+        val repos = mobileConnectionsRepositoryKairos.fake.mobileConnectionsBySubId.sample()
+        val repo1 = repos[SUB_1.subscriptionId]!!
+        repo1.dataConnectionState.setValue(DataConnectionState.Connected)
+
+        val repo2 = repos[SUB_2.subscriptionId]!!
+        repo2.dataConnectionState.setValue(DataConnectionState.Connected)
+
+        setSubscriptions(listOf(SUB_1, SUB_2))
+        repo1.resolvedNetworkType.setValue(UnknownNetworkType)
+        repo2.resolvedNetworkType.setValue(
+            DefaultNetworkType(mobileConnectionsRepositoryKairos.fake.GSM_KEY)
+        )
+
+        assertThat(latest).isEqualTo(true)
+
+        // WHEN sub1 becomes last and sub1 has no network type icon
+        setSubscriptions(listOf(SUB_2, SUB_1))
+
+        // THEN the flow updates
+        assertThat(latest).isEqualTo(false)
+
+        // WHEN sub2 becomes last and sub2 has a network type icon
+        setSubscriptions(listOf(SUB_1, SUB_2))
+
+        // THEN the flow updates
+        assertThat(latest).isEqualTo(true)
+    }
 
     companion object {
         private val SUB_1 =

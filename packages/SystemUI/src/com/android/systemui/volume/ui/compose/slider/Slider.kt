@@ -16,7 +16,7 @@
 
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 
-package com.android.systemui.volume.ui.slider
+package com.android.systemui.volume.ui.compose.slider
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
@@ -40,7 +40,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -52,7 +51,6 @@ import androidx.compose.ui.semantics.stateDescription
 import com.android.systemui.haptics.slider.SliderHapticFeedbackFilter
 import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.res.R
 import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigsProvider
 import kotlin.math.round
 import kotlinx.coroutines.Job
@@ -63,8 +61,6 @@ import kotlinx.coroutines.launch
 
 private val defaultSpring =
     SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessHigh)
-private val defaultTrack: @Composable (SliderState) -> Unit =
-    @Composable { SliderDefaults.Track(it) }
 
 @Composable
 fun Slider(
@@ -81,7 +77,14 @@ fun Slider(
     haptics: Haptics = Haptics.Disabled,
     isVertical: Boolean = false,
     isReverseDirection: Boolean = false,
-    track: (@Composable (SliderState) -> Unit)? = null,
+    track: (@Composable (SliderState) -> Unit) = { SliderDefaults.Track(it) },
+    thumb: (@Composable (SliderState, MutableInteractionSource) -> Unit) = { _, _ ->
+        SliderDefaults.Thumb(
+            interactionSource = interactionSource,
+            colors = colors,
+            enabled = isEnabled,
+        )
+    },
 ) {
     require(stepDistance >= 0) { "stepDistance must not be negative" }
     val coroutineScope = rememberCoroutineScope()
@@ -108,7 +111,8 @@ fun Slider(
         }
     }
     val semantics =
-        accessibilityParams.createSemantics(
+        createSemantics(
+            accessibilityParams,
             animatable.targetValue,
             valueRange,
             valueChange,
@@ -140,7 +144,8 @@ fun Slider(
             reverseDirection = isReverseDirection,
             interactionSource = interactionSource,
             colors = colors,
-            track = track ?: defaultTrack,
+            track = track,
+            thumb = { thumb(it, interactionSource) },
             modifier = modifier.clearAndSetSemantics(semantics),
         )
     } else {
@@ -149,7 +154,8 @@ fun Slider(
             enabled = isEnabled,
             interactionSource = interactionSource,
             colors = colors,
-            track = track ?: defaultTrack,
+            track = track,
+            thumb = { thumb(it, interactionSource) },
             modifier = modifier.clearAndSetSemantics(semantics),
         )
     }
@@ -167,24 +173,18 @@ private fun snapValue(
     return Math.round(coercedValue / stepDistance) * stepDistance
 }
 
-@Composable
-private fun AccessibilityParams.createSemantics(
+private fun createSemantics(
+    params: AccessibilityParams,
     value: Float,
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChanged: (Float) -> Unit,
     isEnabled: Boolean,
     stepDistance: Float,
 ): SemanticsPropertyReceiver.() -> Unit {
-    val semanticsContentDescription =
-        disabledMessage
-            ?.takeIf { !isEnabled }
-            ?.let { message ->
-                stringResource(R.string.volume_slider_disabled_message_template, label, message)
-            } ?: label
     return {
-        contentDescription = semanticsContentDescription
+        contentDescription = params.contentDescription
         if (isEnabled) {
-            currentStateDescription?.let { stateDescription = it }
+            params.stateDescription?.let { stateDescription = it }
             progressBarRangeInfo = ProgressBarRangeInfo(value, valueRange)
         } else {
             disabled()
@@ -253,9 +253,8 @@ private fun Haptics.createViewModel(
 }
 
 data class AccessibilityParams(
-    val label: String,
-    val currentStateDescription: String? = null,
-    val disabledMessage: String? = null,
+    val contentDescription: String,
+    val stateDescription: String? = null,
 )
 
 sealed interface Haptics {

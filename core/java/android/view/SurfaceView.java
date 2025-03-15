@@ -1070,9 +1070,9 @@ public class SurfaceView extends View implements ViewRootImpl.SurfaceChangedCall
             }
 
             if (mSurfacePackage != null) {
-                mSurfaceControlViewHostParent.detach();
                 mEmbeddedWindowParams.clear();
                 if (releaseSurfacePackage) {
+                    mSurfaceControlViewHostParent.detach();
                     mSurfacePackage.release();
                     mSurfacePackage = null;
                 }

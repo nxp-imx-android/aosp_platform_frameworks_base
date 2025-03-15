@@ -310,12 +310,18 @@ object SplitScreenUtils {
         }
     }
 
+    /**
+     * Drags the divider, then releases, making it snap to a new snap point.
+     */
     fun dragDividerToResizeAndWait(device: UiDevice, wmHelper: WindowManagerStateHelper) {
+        // Find the first display that is turned on (making the assumption that there is only one).
         val displayBounds =
-            wmHelper.currentState.layerState.displays.firstOrNull { !it.isVirtual }?.layerStackSpace
-                ?: error("Display not found")
+            wmHelper.currentState.layerState.displays.firstOrNull { !it.isVirtual && it.isOn }
+                ?.layerStackSpace ?: error("Display not found")
         val dividerBar = device.wait(Until.findObject(dividerBarSelector), TIMEOUT_MS)
-        dividerBar.drag(Point(displayBounds.width() * 1 / 3, displayBounds.height() * 2 / 3), 200)
+        // Drag to a point on the lower left of the screen -- this will cause the divider to snap
+        // to the left- or bottom-side snap point, shrinking the "primary" test app.
+        dividerBar.drag(Point(displayBounds.width() * 1 / 4, displayBounds.height() * 3 / 4), 200)
 
         wmHelper
             .StateSyncBuilder()

@@ -19,13 +19,17 @@ package com.android.systemui.statusbar.notification.promoted.domain.interactor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.statusbar.chips.call.domain.interactor.callChipInteractor
+import com.android.systemui.statusbar.chips.mediaprojection.domain.interactor.mediaProjectionChipInteractor
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
+import com.android.systemui.statusbar.chips.screenrecord.domain.interactor.screenRecordChipInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 
 val Kosmos.promotedNotificationsInteractor by
     Kosmos.Fixture {
         PromotedNotificationsInteractor(
             activeNotificationsInteractor = activeNotificationsInteractor,
+            screenRecordChipInteractor = screenRecordChipInteractor,
+            mediaProjectionChipInteractor = mediaProjectionChipInteractor,
             callChipInteractor = callChipInteractor,
             notifChipsInteractor = statusBarNotificationChipsInteractor,
             backgroundDispatcher = testDispatcher,

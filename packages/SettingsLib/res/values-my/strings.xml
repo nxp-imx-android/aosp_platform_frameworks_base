@@ -624,9 +624,11 @@
     <string name="tv_media_transfer_earc_fallback_title" msgid="3098685494578519940">"HDMI eARC"</string>
     <string name="tv_media_transfer_arc_subtitle" msgid="1040017851325069082">"ARC မှတစ်ဆင့် ချိတ်ဆက်ထားသည်"</string>
     <string name="tv_media_transfer_earc_subtitle" msgid="645191413103303077">"eARC မှတစ်ဆင့် ချိတ်ဆက်ထားသည်"</string>
-    <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"မူလပါရှိသည့် စပီကာ"</string>
+    <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"အသင့်ပါ စပီကာ"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"TV အသံ"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"ချိတ်ဆက်ရာတွင် ပြဿနာရှိပါသည်။ စက်ကိုပိတ်ပြီး ပြန်ဖွင့်ပါ"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"ကြိုးတပ် အသံစက်ပစ္စည်း"</string>
     <string name="help_label" msgid="3528360748637781274">"အကူအညီနှင့် အကြံပြုချက်"</string>
     <string name="storage_category" msgid="2287342585424631813">"သိုလှောင်ခန်း"</string>

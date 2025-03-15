@@ -349,7 +349,8 @@ public final class AdvancedProtectionManager {
      *
      * @param featureId The feature identifier.
      * @param type The type of the feature describing the action that needs to be explained
-     *                 in the dialog or null for default explanation.
+     *                 in the dialog or {@link #SUPPORT_DIALOG_TYPE_UNKNOWN} for default
+     *                 explanation.
      * @return Intent An intent to be used to start the dialog-activity that explains a feature was
      *                disabled by advanced protection.
      * @hide
@@ -373,7 +374,27 @@ public final class AdvancedProtectionManager {
         return intent;
     }
 
-    /** @hide */
+    /**
+     * Called by a feature to display a support dialog when a feature was disabled by advanced
+     * protection based on a policy identifier or restriction. This returns an intent that can be
+     * used with {@link Context#startActivity(Intent)} to display the dialog.
+     *
+     * <p>At the moment, if the dialog is for {@link #FEATURE_ID_DISALLOW_CELLULAR_2G} or
+     * {@link #FEATURE_ID_ENABLE_MTE} and the provided type is
+     * {@link #SUPPORT_DIALOG_TYPE_UNKNOWN}, the type will be changed to
+     * {@link #SUPPORT_DIALOG_TYPE_DISABLED_SETTING} in the returned intent, as these features only
+     * have a disabled setting UI.
+     *
+     * <p>Note that this method doesn't check if the feature is actually disabled, i.e. this method
+     * will always return an intent.
+     *
+     * @param identifier The policy identifier or restriction.
+     * @param type The type of the feature describing the action that needs to be explained
+     *                 in the dialog or {@link #SUPPORT_DIALOG_TYPE_UNKNOWN} for default
+     *                 explanation.
+     * @return Intent An intent to be used to start the dialog-activity that explains a feature was
+     *                disabled by advanced protection.
+     * @hide */
     public static @NonNull Intent createSupportIntentForPolicyIdentifierOrRestriction(
             @NonNull String identifier, @SupportDialogType int type) {
         Objects.requireNonNull(identifier);
@@ -382,16 +403,21 @@ public final class AdvancedProtectionManager {
                     + " SUPPORT_DIALOG_TYPE_* APIs.");
         }
         final int featureId;
+        int dialogType = type;
         if (DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY.equals(identifier)) {
             featureId = FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
         } else if (DISALLOW_CELLULAR_2G.equals(identifier)) {
             featureId = FEATURE_ID_DISALLOW_CELLULAR_2G;
+            dialogType = (dialogType == SUPPORT_DIALOG_TYPE_UNKNOWN)
+                    ? SUPPORT_DIALOG_TYPE_DISABLED_SETTING : dialogType;
         } else if (MEMORY_TAGGING_POLICY.equals(identifier)) {
             featureId = FEATURE_ID_ENABLE_MTE;
+            dialogType = (dialogType == SUPPORT_DIALOG_TYPE_UNKNOWN)
+                    ? SUPPORT_DIALOG_TYPE_DISABLED_SETTING : dialogType;
         } else {
             throw new UnsupportedOperationException("Unsupported identifier: " + identifier);
         }
-        return createSupportIntent(featureId, type);
+        return createSupportIntent(featureId, dialogType);
     }
 
     /** @hide */

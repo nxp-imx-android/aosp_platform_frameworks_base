@@ -863,7 +863,7 @@ public class WallpaperCropper {
 
         double maxDisplayToImageRatio = Math.max((double) displaySize.x / croppedImageBound.width(),
                 (double) displaySize.y / croppedImageBound.height());
-        if (maxDisplayToImageRatio > 1.3) {
+        if (maxDisplayToImageRatio > 1.5) {
             return false;
         }
 

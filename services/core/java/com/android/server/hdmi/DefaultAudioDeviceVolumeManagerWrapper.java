@@ -16,11 +16,14 @@
 
 package com.android.server.hdmi;
 
+import static android.media.audio.Flags.unifyAbsoluteVolumeManagement;
+
 import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceVolumeManager;
+import android.media.AudioManager;
 import android.media.VolumeInfo;
 
 import java.util.concurrent.Executor;
@@ -38,9 +41,11 @@ public class DefaultAudioDeviceVolumeManagerWrapper
     private static final String TAG = "AudioDeviceVolumeManagerWrapper";
 
     private final AudioDeviceVolumeManager mAudioDeviceVolumeManager;
+    private final AudioManager mAudioManager;
 
     public DefaultAudioDeviceVolumeManagerWrapper(Context context) {
         mAudioDeviceVolumeManager = new AudioDeviceVolumeManager(context);
+        mAudioManager = context.getSystemService(AudioManager.class);
     }
 
     @Override
@@ -77,5 +82,25 @@ public class DefaultAudioDeviceVolumeManagerWrapper
             @NonNull AudioDeviceVolumeManager.OnAudioDeviceVolumeChangedListener vclistener) {
         mAudioDeviceVolumeManager.setDeviceAbsoluteVolumeAdjustOnlyBehavior(device, volume,
                 handlesVolumeAdjustment, executor, vclistener);
+    }
+
+    @Override
+    @AudioDeviceVolumeManager.DeviceVolumeBehavior
+    public int getDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device) {
+        if (!unifyAbsoluteVolumeManagement()) {
+            int deviceBehavior = mAudioManager.getDeviceVolumeBehavior(device);
+            return deviceBehavior;
+        }
+        return mAudioDeviceVolumeManager.getDeviceVolumeBehavior(device);
+    }
+
+    @Override
+    public void setDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device,
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior) {
+        if (!unifyAbsoluteVolumeManagement()) {
+            int deviceBehavior = deviceVolumeBehavior;
+            mAudioManager.setDeviceVolumeBehavior(device, deviceBehavior);
+        }
+        mAudioDeviceVolumeManager.setDeviceVolumeBehavior(device, deviceVolumeBehavior);
     }
 }

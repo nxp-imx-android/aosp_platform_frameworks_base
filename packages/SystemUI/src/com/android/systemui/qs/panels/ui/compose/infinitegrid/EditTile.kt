@@ -65,6 +65,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -109,11 +110,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastMap
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
 import com.android.compose.modifiers.height
@@ -165,7 +166,7 @@ import kotlinx.coroutines.launch
 
 object TileType
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun EditModeTopBar(onStopEditing: () -> Unit, onReset: (() -> Unit)?) {
     val primaryContainerColor = MaterialTheme.colorScheme.primaryContainer
@@ -177,7 +178,8 @@ private fun EditModeTopBar(onStopEditing: () -> Unit, onReset: (() -> Unit)?) {
             ),
         title = {
             Text(
-                text = stringResource(id = R.string.qs_edit),
+                text = stringResource(id = R.string.qs_edit_tiles),
+                style = MaterialTheme.typography.titleLargeEmphasized,
                 modifier = Modifier.padding(start = 24.dp),
             )
         },
@@ -204,7 +206,10 @@ private fun EditModeTopBar(onStopEditing: () -> Unit, onReset: (() -> Unit)?) {
                             contentColor = MaterialTheme.colorScheme.onPrimary,
                         ),
                 ) {
-                    Text(stringResource(id = com.android.internal.R.string.reset))
+                    Text(
+                        text = stringResource(id = com.android.internal.R.string.reset),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
             }
         },
@@ -212,6 +217,7 @@ private fun EditModeTopBar(onStopEditing: () -> Unit, onReset: (() -> Unit)?) {
     )
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DefaultEditTileGrid(
     listState: EditTileListState,
@@ -283,7 +289,9 @@ fun DefaultEditTileGrid(
                                 }
                             }
                         } else {
-                            Text(text = stringResource(id = R.string.drag_to_rearrange_tiles))
+                            EditGridCenteredText(
+                                text = stringResource(id = R.string.drag_to_rearrange_tiles)
+                            )
                         }
                     }
                 }
@@ -401,6 +409,11 @@ private fun EditGridHeader(
 }
 
 @Composable
+private fun EditGridCenteredText(text: String, modifier: Modifier = Modifier) {
+    Text(text = text, style = MaterialTheme.typography.titleSmall, modifier = modifier)
+}
+
+@Composable
 private fun RemoveTileTarget(onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -486,6 +499,7 @@ private fun CurrentTilesGrid(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AvailableTileGrid(
     tiles: List<AvailableTileGridCell>,
@@ -524,7 +538,7 @@ private fun AvailableTileGrid(
                 ) {
                     Text(
                         text = category.label.load() ?: "",
-                        fontSize = 20.sp,
+                        style = MaterialTheme.typography.titleMediumEmphasized,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 16.dp),
                     )
@@ -737,6 +751,7 @@ private fun TileGridCell(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AvailableTileGridCell(
     cell: AvailableTileGridCell,
@@ -803,6 +818,7 @@ private fun AvailableTileGridCell(
                 color = colors.label,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.labelMedium.copy(hyphens = Hyphens.Auto),
                 modifier = Modifier.align(Alignment.TopCenter),
             )
         }

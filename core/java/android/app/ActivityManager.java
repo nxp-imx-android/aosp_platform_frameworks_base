@@ -1188,7 +1188,7 @@ public class ActivityManager {
 
     /** @hide Should this process state be considered jank perceptible? */
     public static final boolean isProcStateJankPerceptible(int procState) {
-        if (Flags.jankPerceptibleNarrow()) {
+        if (Flags.jankPerceptibleNarrow() && !Flags.jankPerceptibleNarrowHoldback()) {
             return procState == PROCESS_STATE_PERSISTENT_UI
                 || procState == PROCESS_STATE_TOP
                 || procState == PROCESS_STATE_IMPORTANT_FOREGROUND

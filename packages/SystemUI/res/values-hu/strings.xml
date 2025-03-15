@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Kattintson új eszköz párosításához"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Nem sikerült frissíteni a beállításkészletet"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Beállításkészlet"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Kiválasztva"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Környezet"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Bal"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Alkalmazás megosztása közben az adott appban megjelenített vagy lejátszott minden tartalom látható a(z) <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> számára. Ezért legyen elővigyázatos a jelszavakkal, a fizetési adatokkal, az üzenetekkel, a fotókkal, valamint a hang- és videófelvételekkel."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Képernyő megosztása"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> letiltotta ezt a beállítást"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Válassza ki a megosztani kívánt alkalmazást"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Átküldi a képernyőt?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Egyetlen app átküldése"</string>
@@ -794,8 +800,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Be: Arcalapú"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Kész"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Alkalmaz"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Kikapcsolás"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Néma"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Alapértelmezett"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatikus"</string>
@@ -980,6 +985,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Húzza ide az eltávolításhoz"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Legalább <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> kártya szükséges"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Szerkesztés"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Idő"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Óra, perc és másodperc megjelenítése"</item>

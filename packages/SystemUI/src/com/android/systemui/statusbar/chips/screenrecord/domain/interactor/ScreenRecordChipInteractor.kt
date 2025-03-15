@@ -94,9 +94,11 @@ constructor(
                         TAG,
                         LogLevel.INFO,
                         {},
-                        { "State: Recording(taskPackage=null) due to force-start" },
+                        {
+                            "State: Recording(hostPackage=null, taskPackage=null) due to force-start"
+                        },
                     )
-                    ScreenRecordChipModel.Recording(recordedTask = null)
+                    ScreenRecordChipModel.Recording(hostPackage = null, recordedTask = null)
                 } else {
                     when (screenRecordState) {
                         is ScreenRecordModel.DoingNothing -> {
@@ -124,13 +126,25 @@ constructor(
                                 } else {
                                     null
                                 }
+                            val hostPackage =
+                                if (mediaProjectionState is MediaProjectionState.Projecting) {
+                                    mediaProjectionState.hostPackage
+                                } else {
+                                    null
+                                }
                             logger.log(
                                 TAG,
                                 LogLevel.INFO,
-                                { str1 = recordedTask?.baseIntent?.component?.packageName },
-                                { "State: Recording(taskPackage=$str1)" },
+                                {
+                                    str1 = hostPackage
+                                    str2 = recordedTask?.baseIntent?.component?.packageName
+                                },
+                                { "State: Recording(hostPackage=$str1, taskPackage=$str2)" },
                             )
-                            ScreenRecordChipModel.Recording(recordedTask)
+                            ScreenRecordChipModel.Recording(
+                                hostPackage = hostPackage,
+                                recordedTask = recordedTask,
+                            )
                         }
                     }
                 }

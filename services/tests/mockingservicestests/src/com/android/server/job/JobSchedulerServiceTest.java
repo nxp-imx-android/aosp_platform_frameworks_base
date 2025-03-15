@@ -56,12 +56,12 @@ import android.app.ActivityManagerInternal;
 import android.app.AppGlobals;
 import android.app.IActivityManager;
 import android.app.UiModeManager;
+import android.app.compat.CompatChanges;
 import android.app.job.JobInfo;
 import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import android.app.usage.UsageStatsManagerInternal;
-import android.compat.testing.PlatformCompatChangeRule;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -81,6 +81,7 @@ import android.os.BatteryManagerInternal.ChargingPolicyChangeListener;
 import android.os.Looper;
 import android.os.Process;
 import android.os.RemoteException;
+import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.os.WorkSource;
 import android.os.WorkSource.WorkChain;
@@ -98,6 +99,7 @@ import com.android.server.DeviceIdleInternal;
 import com.android.server.LocalServices;
 import com.android.server.PowerAllowlistInternal;
 import com.android.server.SystemServiceManager;
+import com.android.server.compat.PlatformCompat;
 import com.android.server.job.controllers.ConnectivityController;
 import com.android.server.job.controllers.JobStatus;
 import com.android.server.job.controllers.QuotaController;
@@ -106,14 +108,10 @@ import com.android.server.job.restrictions.ThermalStatusRestriction;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.usage.AppStandbyInternal;
 
-import libcore.junit.util.compat.CoreCompatChangeRule.DisableCompatChanges;
-import libcore.junit.util.compat.CoreCompatChangeRule.EnableCompatChanges;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
@@ -147,9 +145,6 @@ public class JobSchedulerServiceTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
-    @Rule
-    public TestRule compatChangeRule = new PlatformCompatChangeRule();
-
     private ChargingPolicyChangeListener mChargingPolicyChangeListener;
 
     private int mSourceUid;
@@ -166,8 +161,10 @@ public class JobSchedulerServiceTest {
         mMockingSession = mockitoSession()
                 .initMocks(this)
                 .strictness(Strictness.LENIENT)
+                .mockStatic(CompatChanges.class)
                 .mockStatic(LocalServices.class)
                 .mockStatic(PermissionChecker.class)
+                .mockStatic(ServiceManager.class)
                 .startMocking();
 
         // Called in JobSchedulerService constructor.
@@ -229,6 +226,9 @@ public class JobSchedulerServiceTest {
 
         ArgumentCaptor<ChargingPolicyChangeListener> chargingPolicyChangeListenerCaptor =
                 ArgumentCaptor.forClass(ChargingPolicyChangeListener.class);
+
+        doReturn(mock(PlatformCompat.class))
+                .when(() -> ServiceManager.getService(Context.PLATFORM_COMPAT_SERVICE));
 
         mService = new TestJobSchedulerService(mContext);
         mService.waitOnAsyncLoadingForTesting();
@@ -1074,11 +1074,14 @@ public class JobSchedulerServiceTest {
      */
     @Test
     @EnableFlags(FLAG_HANDLE_ABANDONED_JOBS)
-    @DisableCompatChanges({JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS})
     public void testGetRescheduleJobForFailure_abandonedJob() {
         final long nowElapsed = sElapsedRealtimeClock.millis();
         final long initialBackoffMs = MINUTE_IN_MILLIS;
         mService.mConstants.SYSTEM_STOP_TO_FAILURE_RATIO = 3;
+
+        // Mock the OVERRIDE_HANDLE_ABANDONED_JOBS compat change overrides.
+        when(CompatChanges.isChangeEnabled(
+                eq(JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS), anyInt())).thenReturn(false);
 
         JobStatus originalJob = createJobStatus("testGetRescheduleJobForFailure",
                 createJobInfo()
@@ -1148,8 +1151,10 @@ public class JobSchedulerServiceTest {
      */
     @Test
     @EnableFlags(FLAG_HANDLE_ABANDONED_JOBS)
-    @DisableCompatChanges({JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS})
     public void testGetRescheduleJobForFailure_EnableFlagDisableCompatCheckAggressiveBackoff() {
+        // Mock the OVERRIDE_HANDLE_ABANDONED_JOBS compat change overrides.
+        when(CompatChanges.isChangeEnabled(
+                eq(JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS), anyInt())).thenReturn(false);
         assertFalse(mService.shouldUseAggressiveBackoff(
                         mService.mConstants.ABANDONED_JOB_TIMEOUTS_BEFORE_AGGRESSIVE_BACKOFF - 1,
                         mSourceUid));
@@ -1167,8 +1172,10 @@ public class JobSchedulerServiceTest {
      */
     @Test
     @EnableFlags(FLAG_HANDLE_ABANDONED_JOBS)
-    @EnableCompatChanges({JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS})
     public void testGetRescheduleJobForFailure_EnableFlagEnableCompatCheckAggressiveBackoff() {
+        // Mock the OVERRIDE_HANDLE_ABANDONED_JOBS compat change overrides.
+        when(CompatChanges.isChangeEnabled(
+                eq(JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS), anyInt())).thenReturn(true);
         assertFalse(mService.shouldUseAggressiveBackoff(
                         mService.mConstants.ABANDONED_JOB_TIMEOUTS_BEFORE_AGGRESSIVE_BACKOFF - 1,
                         mSourceUid));

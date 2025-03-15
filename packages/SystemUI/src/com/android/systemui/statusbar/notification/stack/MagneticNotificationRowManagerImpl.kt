@@ -47,6 +47,7 @@ constructor(
         private set
 
     private var magneticDetachThreshold = Float.POSITIVE_INFINITY
+    private var magneticAttachThreshold = 0f
 
     // Has the roundable target been set for the magnetic view that is being swiped.
     val isSwipedViewRoundableSet: Boolean
@@ -57,13 +58,25 @@ constructor(
         SpringForce().setStiffness(DETACH_STIFFNESS).setDampingRatio(DETACH_DAMPING_RATIO)
     private val snapForce =
         SpringForce().setStiffness(SNAP_BACK_STIFFNESS).setDampingRatio(SNAP_BACK_DAMPING_RATIO)
+    private val attachForce =
+        SpringForce().setStiffness(ATTACH_STIFFNESS).setDampingRatio(ATTACH_DAMPING_RATIO)
 
     // Multiplier applied to the translation of a row while swiped
     val swipedRowMultiplier =
         MAGNETIC_TRANSLATION_MULTIPLIERS[MAGNETIC_TRANSLATION_MULTIPLIERS.size / 2]
 
-    override fun setSwipeThresholdPx(thresholdPx: Float) {
-        magneticDetachThreshold = thresholdPx
+    /**
+     * An offset applied to input translation that increases on subsequent re-attachments of a
+     * detached magnetic view. This helps keep computations consistent when the drag gesture input
+     * and the swiped notification don't share the same origin point after a re-attaching animation.
+     */
+    private var translationOffset = 0f
+
+    override fun onDensityChange(density: Float) {
+        magneticDetachThreshold =
+            density * MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
+        magneticAttachThreshold =
+            density * MagneticNotificationRowManager.MAGNETIC_ATTACH_THRESHOLD_DP
     }
 
     override fun setMagneticAndRoundableTargets(
@@ -72,6 +85,7 @@ constructor(
         sectionsManager: NotificationSectionsManager,
     ) {
         if (currentState == State.IDLE) {
+            translationOffset = 0f
             updateMagneticAndRoundableTargets(swipingRow, stackScrollLayout, sectionsManager)
             currentState = State.TARGETS_SET
         } else {
@@ -121,36 +135,36 @@ constructor(
 
         val canTargetBeDismissed =
             currentMagneticListeners.swipedListener()?.canRowBeDismissed() ?: false
+        val correctedTranslation = translation - translationOffset
         when (currentState) {
             State.IDLE -> {
                 logger.logMagneticRowTranslationNotSet(currentState, row.getLoggingKey())
                 return false
             }
             State.TARGETS_SET -> {
-                pullTargets(translation, canTargetBeDismissed)
+                pullTargets(correctedTranslation, canTargetBeDismissed)
                 currentState = State.PULLING
             }
             State.PULLING -> {
-                updateRoundness(translation)
+                updateRoundness(correctedTranslation)
                 if (canTargetBeDismissed) {
-                    pullDismissibleRow(translation)
+                    pullDismissibleRow(correctedTranslation)
                 } else {
-                    pullTargets(translation, canSwipedBeDismissed = false)
+                    pullTargets(correctedTranslation, canSwipedBeDismissed = false)
                 }
             }
             State.DETACHED -> {
-                val swiped = currentMagneticListeners.swipedListener()
-                swiped?.setMagneticTranslation(translation)
+                translateDetachedRow(correctedTranslation)
             }
         }
         return true
     }
 
-    private fun updateRoundness(translation: Float) {
+    private fun updateRoundness(translation: Float, animate: Boolean = false) {
         val normalizedTranslation = abs(swipedRowMultiplier * translation) / magneticDetachThreshold
         notificationRoundnessManager.setRoundnessForAffectedViews(
             /* roundness */ normalizedTranslation.coerceIn(0f, MAX_PRE_DETACH_ROUNDNESS),
-            /* animate */ false,
+            animate,
         )
     }
 
@@ -232,9 +246,31 @@ constructor(
         )
     }
 
+    private fun translateDetachedRow(translation: Float) {
+        val targetTranslation = swipedRowMultiplier * translation
+        val crossedThreshold = abs(targetTranslation) <= magneticAttachThreshold
+        if (crossedThreshold) {
+            translationOffset += translation
+            updateRoundness(translation = 0f, animate = true)
+            currentMagneticListeners.swipedListener()?.let { attach(it) }
+            currentState = State.PULLING
+        } else {
+            val swiped = currentMagneticListeners.swipedListener()
+            swiped?.setMagneticTranslation(translation, trackEagerly = false)
+        }
+    }
+
+    private fun attach(listener: MagneticRowListener) {
+        listener.cancelMagneticAnimations()
+        listener.triggerMagneticForce(endTranslation = 0f, attachForce)
+        msdlPlayer.playToken(MSDLToken.SWIPE_THRESHOLD_INDICATOR)
+    }
+
     override fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float?) {
+        translationOffset = 0f
         if (row.isSwipedTarget()) {
             when (currentState) {
+                State.TARGETS_SET -> currentState = State.IDLE
                 State.PULLING -> {
                     snapNeighborsBack(velocity)
                     currentState = State.IDLE
@@ -254,9 +290,13 @@ constructor(
         }
     }
 
+    override fun isMagneticRowSwipeDetached(row: ExpandableNotificationRow): Boolean =
+        row.isSwipedTarget() && currentState == State.DETACHED
+
     override fun resetRoundness() = notificationRoundnessManager.clear()
 
     override fun reset() {
+        translationOffset = 0f
         currentMagneticListeners.forEach {
             it?.cancelMagneticAnimations()
             it?.cancelTranslationAnimations()
@@ -300,6 +340,8 @@ constructor(
         private const val DETACH_DAMPING_RATIO = 0.95f
         private const val SNAP_BACK_STIFFNESS = 550f
         private const val SNAP_BACK_DAMPING_RATIO = 0.6f
+        private const val ATTACH_STIFFNESS = 800f
+        private const val ATTACH_DAMPING_RATIO = 0.95f
 
         // Maximum value of corner roundness that gets applied during the pre-detach dragging
         private const val MAX_PRE_DETACH_ROUNDNESS = 0.8f

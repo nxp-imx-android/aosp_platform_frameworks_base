@@ -16,13 +16,12 @@
 
 package com.android.systemui.window.data.repository
 
-import com.android.systemui.window.data.repository.WindowRootViewBlurRepository
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class NoopWindowRootViewBlurRepository @Inject constructor() : WindowRootViewBlurRepository {
-    override val blurRadius: MutableStateFlow<Int> = MutableStateFlow(0)
+    override val blurRequestedByShade: MutableStateFlow<Int> = MutableStateFlow(0)
     override val isBlurOpaque: MutableStateFlow<Boolean> = MutableStateFlow(true)
     override val isBlurSupported: StateFlow<Boolean> = MutableStateFlow(false)
     override var blurAppliedListener: BlurAppliedListener? = null

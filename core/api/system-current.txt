@@ -7354,7 +7354,15 @@ package android.media {
 
   public class AudioDeviceVolumeManager {
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public android.media.VolumeInfo getDeviceVolume(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
+    method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes);
     method @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolume(@NonNull android.media.VolumeInfo, @NonNull android.media.AudioDeviceAttributes);
+    method @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes, int);
+    field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE = 3; // 0x3
+    field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY = 5; // 0x5
+    field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE = 4; // 0x4
+    field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_FIXED = 2; // 0x2
+    field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_FULL = 1; // 0x1
+    field @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_VARIABLE = 0; // 0x0
   }
 
   public final class AudioFocusInfo implements android.os.Parcelable {
@@ -7399,7 +7407,7 @@ package android.media {
     method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public static java.util.List<android.media.audiopolicy.AudioVolumeGroup> getAudioVolumeGroups();
     method @NonNull @RequiresPermission(android.Manifest.permission.CALL_AUDIO_INTERCEPTION) public android.media.AudioRecord getCallDownlinkExtractionAudioRecord(@NonNull android.media.AudioFormat);
     method @NonNull @RequiresPermission(android.Manifest.permission.CALL_AUDIO_INTERCEPTION) public android.media.AudioTrack getCallUplinkInjectionAudioTrack(@NonNull android.media.AudioFormat);
-    method @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes);
+    method @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE", android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public int getDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes);
     method @NonNull @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, "android.permission.QUERY_AUDIO_STATE"}) public java.util.List<android.media.AudioDeviceAttributes> getDevicesForAttributes(@NonNull android.media.AudioAttributes);
     method @NonNull @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public java.util.List<java.lang.Integer> getIndependentStreamTypes();
     method @RequiresPermission("android.permission.QUERY_AUDIO_STATE") public int getLastAudibleStreamVolume(int);
@@ -7445,7 +7453,7 @@ package android.media {
     method public void setAudioServerStateCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.AudioManager.AudioServerStateCallback);
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public void setBluetoothVariableLatencyEnabled(boolean);
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public boolean setDeviceAsNonDefaultForStrategy(@NonNull android.media.audiopolicy.AudioProductStrategy, @NonNull android.media.AudioDeviceAttributes);
-    method @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes, int);
+    method @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") @RequiresPermission(anyOf={android.Manifest.permission.MODIFY_AUDIO_ROUTING, android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED}) public void setDeviceVolumeBehavior(@NonNull android.media.AudioDeviceAttributes, int);
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public void setFocusRequestResult(@NonNull android.media.AudioFocusInfo, int, @NonNull android.media.audiopolicy.AudioPolicy);
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public boolean setPreferredDeviceForCapturePreset(int, @NonNull android.media.AudioDeviceAttributes);
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public boolean setPreferredDeviceForStrategy(@NonNull android.media.audiopolicy.AudioProductStrategy, @NonNull android.media.AudioDeviceAttributes);
@@ -7465,12 +7473,12 @@ package android.media {
     field public static final int AUDIOFOCUS_FLAG_PAUSES_ON_DUCKABLE_LOSS = 2; // 0x2
     field @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public static final int DEVICE_CONNECTION_STATE_CONNECTED = 1; // 0x1
     field @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_ROUTING) public static final int DEVICE_CONNECTION_STATE_DISCONNECTED = 0; // 0x0
-    field public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE = 3; // 0x3
-    field public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY = 5; // 0x5
-    field public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE = 4; // 0x4
-    field public static final int DEVICE_VOLUME_BEHAVIOR_FIXED = 2; // 0x2
-    field public static final int DEVICE_VOLUME_BEHAVIOR_FULL = 1; // 0x1
-    field public static final int DEVICE_VOLUME_BEHAVIOR_VARIABLE = 0; // 0x0
+    field @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE = 3; // 0x3
+    field @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_ADJUST_ONLY = 5; // 0x5
+    field @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_ABSOLUTE_MULTI_MODE = 4; // 0x4
+    field @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_FIXED = 2; // 0x2
+    field @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_FULL = 1; // 0x1
+    field @Deprecated @FlaggedApi("android.media.audio.unify_absolute_volume_management") public static final int DEVICE_VOLUME_BEHAVIOR_VARIABLE = 0; // 0x0
     field public static final String EXTRA_VOLUME_STREAM_TYPE = "android.media.EXTRA_VOLUME_STREAM_TYPE";
     field public static final String EXTRA_VOLUME_STREAM_VALUE = "android.media.EXTRA_VOLUME_STREAM_VALUE";
     field public static final int FLAG_BLUETOOTH_ABS_VOLUME = 64; // 0x40
@@ -19263,7 +19271,6 @@ package android.webkit {
     method @Deprecated public abstract void setUseWebViewBackgroundForOverscrollBackground(boolean);
     method @Deprecated public abstract void setUserAgent(int);
     method public abstract void setVideoOverlayForEmbeddedEncryptedVideoEnabled(boolean);
-    field @FlaggedApi("android.webkit.enable_chips") public static final long ENABLE_CHIPS = 380890146L; // 0x16b3ec22L
     field public static final long ENABLE_SIMPLIFIED_DARK_MODE = 214741472L; // 0xcccb1e0L
     field @FlaggedApi("android.webkit.user_agent_reduction") public static final long ENABLE_USER_AGENT_REDUCTION = 371034303L; // 0x161d88bfL
   }

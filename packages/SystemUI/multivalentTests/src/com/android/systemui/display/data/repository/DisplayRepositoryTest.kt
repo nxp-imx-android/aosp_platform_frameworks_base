@@ -80,17 +80,18 @@ class DisplayRepositoryTest : SysuiTestCase() {
                 testScope.backgroundScope,
                 UnconfinedTestDispatcher(),
             )
-        DisplayRepositoryImpl(
+        val displaysWithDecorRepository =
+            DisplaysWithDecorationsRepositoryImpl(
                 commandQueue,
                 windowManager,
                 testScope.backgroundScope,
                 displayRepositoryFromLib,
             )
-            .also {
-                verify(displayManager, never()).registerDisplayListener(any(), any())
-                // It needs to be called, just once, for the initial value.
-                verify(displayManager).getDisplays()
-            }
+        DisplayRepositoryImpl(displayRepositoryFromLib, displaysWithDecorRepository).also {
+            verify(displayManager, never()).registerDisplayListener(any(), any())
+            // It needs to be called, just once, for the initial value.
+            verify(displayManager).getDisplays()
+        }
     }
 
     @Before

@@ -48,11 +48,13 @@ import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.qs.QSTile.BooleanState;
+import com.android.systemui.plugins.qs.TileDetailsViewModel;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
 import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
+import com.android.systemui.qs.tiles.dialog.CastDetailsViewModel;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor;
 import com.android.systemui.statusbar.connectivity.NetworkController;
@@ -93,6 +95,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
     private final ShadeDialogContextInteractor mShadeDialogContextInteractor;
     private boolean mCastTransportAllowed;
     private boolean mHotspotConnected;
+    private final CastDetailsViewModel.Factory mCastDetailsViewModelFactory;
 
     @Inject
     public CastTile(
@@ -113,7 +116,8 @@ public class CastTile extends QSTileImpl<BooleanState> {
             ConnectivityRepository connectivityRepository,
             TileJavaAdapter javaAdapter,
             FeatureFlags featureFlags,
-            ShadeDialogContextInteractor shadeDialogContextInteractor
+            ShadeDialogContextInteractor shadeDialogContextInteractor,
+            CastDetailsViewModel.Factory castDetailsViewModelFactory
     ) {
         super(host, uiEventLogger, backgroundLooper, mainHandler, falsingManager, metricsLogger,
                 statusBarStateController, activityStarter, qsLogger);
@@ -124,6 +128,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
         mJavaAdapter = javaAdapter;
         mFeatureFlags = featureFlags;
         mShadeDialogContextInteractor = shadeDialogContextInteractor;
+        mCastDetailsViewModelFactory = castDetailsViewModelFactory;
         mController.observe(this, mCallback);
         mKeyguard.observe(this, mCallback);
         if (!mFeatureFlags.isEnabled(SIGNAL_CALLBACK_DEPRECATION)) {
@@ -172,12 +177,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
 
     @Override
     protected void handleClick(@Nullable Expandable expandable) {
-        if (getState().state == Tile.STATE_UNAVAILABLE) {
-            return;
-        }
-
-        List<CastDevice> activeDevices = getActiveDevices();
-        if (willPopDialog()) {
+        handleClick(() -> {
             if (!mKeyguard.isShowing()) {
                 showDialog(expandable);
             } else {
@@ -187,16 +187,43 @@ public class CastTile extends QSTileImpl<BooleanState> {
                     showDialog(null /* view */);
                 });
             }
+        });
+    }
+
+    @Override
+    public boolean getDetailsViewModel(Consumer<TileDetailsViewModel> callback) {
+        CastDetailsViewModel viewModel = mCastDetailsViewModelFactory.create();
+        handleClick(() -> {
+            if (!mKeyguard.isShowing()) {
+                callback.accept(viewModel);
+            } else {
+                mActivityStarter.dismissKeyguardThenExecute(() -> {
+                    callback.accept(viewModel);
+                    return false;
+                },  null /* cancelAction */,  true/* afterKeyguardGone */);
+            }
+        });
+        return true;
+    }
+
+    private void handleClick(Runnable showPromptCallback) {
+        if (getState().state == Tile.STATE_UNAVAILABLE) {
+            return;
+        }
+
+        List<CastDevice> activeDevices = getActiveDevices();
+        if (willShowPrompt()) {
+            showPromptCallback.run();
         } else {
             mController.stopCasting(activeDevices.get(0), StopReason.STOP_QS_TILE);
         }
     }
 
-    // We want to pop up the media route selection dialog if we either have no active devices
-    // (neither routes nor projection), or if we have an active route. In other cases, we assume
-    // that a projection is active. This is messy, but this tile never correctly handled the
-    // case where multiple devices were active :-/.
-    private boolean willPopDialog() {
+    // We want to pop up the media route selection dialog (or show the cast details view) if we
+    // either have no active devices (neither routes nor projection), or if we have an active
+    // route. In other cases, we assume that a projection is active. This is messy, but this tile
+    // never correctly handled the case where multiple devices were active :-/.
+    private boolean willShowPrompt() {
         List<CastDevice> activeDevices = getActiveDevices();
         return activeDevices.isEmpty() || (activeDevices.get(0).getTag() instanceof RouteInfo);
     }
@@ -303,7 +330,7 @@ public class CastTile extends QSTileImpl<BooleanState> {
                 state.secondaryLabel = "";
             }
             state.expandedAccessibilityClassName = Button.class.getName();
-            state.forceExpandIcon = willPopDialog();
+            state.forceExpandIcon = willShowPrompt();
         } else {
             state.state = Tile.STATE_UNAVAILABLE;
             String noWifi = mContext.getString(R.string.quick_settings_cast_no_network);

@@ -26,4 +26,9 @@ interface BubbleDropTargetBoundsProvider {
      * Get bubble bar expanded view visual drop target bounds on screen
      */
     fun getBubbleBarExpandedViewDropTargetBounds(onLeft: Boolean): Rect
+
+    /**
+     * Get the bar visual drop target bounds on screen
+     */
+    fun getBarDropTargetBounds(onLeft: Boolean): Rect
 }

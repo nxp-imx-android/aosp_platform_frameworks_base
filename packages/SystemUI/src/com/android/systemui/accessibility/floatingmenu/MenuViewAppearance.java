@@ -317,14 +317,14 @@ class MenuViewAppearance {
     public static float avoidVerticalDisplayCutout(
             float y, float menuHeight, Rect bounds, Rect cutout) {
         if (cutout.top > y + menuHeight || cutout.bottom < y) {
-            return y;
+            return clampVerticalPosition(y, menuHeight, bounds.top, bounds.bottom);
         }
 
         boolean topAvailable = cutout.top - bounds.top >= menuHeight;
         boolean bottomAvailable = bounds.bottom - cutout.bottom >= menuHeight;
         boolean topOrBottom;
         if (!topAvailable && !bottomAvailable) {
-            return y;
+            return clampVerticalPosition(y, menuHeight, bounds.top, bounds.bottom);
         } else if (topAvailable && !bottomAvailable) {
             topOrBottom = true;
         } else if (!topAvailable && bottomAvailable) {
@@ -332,7 +332,16 @@ class MenuViewAppearance {
         } else {
             topOrBottom = y + menuHeight * 0.5f < cutout.centerY();
         }
-        return (topOrBottom) ? cutout.top - menuHeight : cutout.bottom;
+
+        float finalPosition = (topOrBottom) ? cutout.top - menuHeight : cutout.bottom;
+        return clampVerticalPosition(finalPosition, menuHeight, bounds.top, bounds.bottom);
+    }
+
+    private static float clampVerticalPosition(
+            float position, float height, float min, float max) {
+        position = Float.max(min + height / 2, position);
+        position = Float.min(max - height / 2, position);
+        return position;
     }
 
     boolean isMenuOnLeftSide() {

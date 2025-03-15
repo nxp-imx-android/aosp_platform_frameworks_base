@@ -72,6 +72,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.widget.ImageButton;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
 import android.window.WindowContainerTransaction;
@@ -719,7 +720,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 .getScaledTouchSlop();
         final Resources res = mResult.mRootView.getResources();
         final DragResizeWindowGeometry newGeometry = new DragResizeWindowGeometry(
-                mRelayoutParams.mCornerRadius,
+                DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()
+                        ? mResult.mCornerRadius : mRelayoutParams.mCornerRadius,
                 new Size(mResult.mWidth, mResult.mHeight),
                 getResizeEdgeHandleSize(res), getResizeHandleEdgeInset(res),
                 getFineResizeCornerSize(res), getLargeResizeCornerSize(res),
@@ -1072,13 +1074,23 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
         if (isAppHeader
                 && DesktopModeStatus.useWindowShadow(/* isFocusedWindow= */ hasGlobalFocus)) {
-            relayoutParams.mShadowRadius = hasGlobalFocus
-                    ? context.getResources().getDimensionPixelSize(
-                            R.dimen.freeform_decor_shadow_focused_thickness)
-                    : context.getResources().getDimensionPixelSize(
-                            R.dimen.freeform_decor_shadow_unfocused_thickness);
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                relayoutParams.mShadowRadiusId = hasGlobalFocus
+                        ? R.dimen.freeform_decor_shadow_focused_thickness
+                        : R.dimen.freeform_decor_shadow_unfocused_thickness;
+            } else {
+                relayoutParams.mShadowRadius = hasGlobalFocus
+                        ? context.getResources().getDimensionPixelSize(
+                        R.dimen.freeform_decor_shadow_focused_thickness)
+                        : context.getResources().getDimensionPixelSize(
+                                R.dimen.freeform_decor_shadow_unfocused_thickness);
+            }
         } else {
-            relayoutParams.mShadowRadius = INVALID_SHADOW_RADIUS;
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                relayoutParams.mShadowRadiusId = Resources.ID_NULL;
+            } else {
+                relayoutParams.mShadowRadius = INVALID_SHADOW_RADIUS;
+            }
         }
         relayoutParams.mApplyStartTransactionOnDraw = applyStartTransactionOnDraw;
         relayoutParams.mSetTaskVisibilityPositionAndCrop = shouldSetTaskVisibilityPositionAndCrop;
@@ -1104,8 +1116,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mWindowDecorConfig = windowDecorConfig;
 
         if (DesktopModeStatus.useRoundedCorners()) {
-            relayoutParams.mCornerRadius = shouldIgnoreCornerRadius ? INVALID_CORNER_RADIUS :
-                    getCornerRadius(context, relayoutParams.mLayoutResId);
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                relayoutParams.mCornerRadiusId = shouldIgnoreCornerRadius ? Resources.ID_NULL :
+                        getCornerRadiusId(relayoutParams.mLayoutResId);
+            } else {
+                relayoutParams.mCornerRadius = shouldIgnoreCornerRadius ? INVALID_CORNER_RADIUS :
+                        getCornerRadius(context, relayoutParams.mLayoutResId);
+            }
         }
         // Set opaque background for all freeform tasks to prevent freeform tasks below
         // from being visible if freeform task window above is translucent.
@@ -1113,6 +1130,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mShouldSetBackground = DesktopModeStatus.shouldSetBackground(taskInfo);
     }
 
+    @Deprecated
     private static int getCornerRadius(@NonNull Context context, int layoutResId) {
         if (layoutResId == R.layout.desktop_mode_app_header) {
             return loadDimensionPixelSize(context.getResources(),
@@ -1120,6 +1138,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                             .desktop_windowing_freeform_rounded_corner_radius);
         }
         return INVALID_CORNER_RADIUS;
+    }
+
+    private static int getCornerRadiusId(int layoutResId) {
+        if (layoutResId == R.layout.desktop_mode_app_header) {
+            return com.android.wm.shell.shared.R.dimen
+                    .desktop_windowing_freeform_rounded_corner_radius;
+        }
+        return Resources.ID_NULL;
     }
 
     /**
@@ -1756,8 +1782,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mExclusionRegionListener.onExclusionRegionDismissed(mTaskInfo.taskId);
         disposeResizeVeil();
         disposeStatusBarInputLayer();
-        mWindowDecorViewHolder.close();
-        mWindowDecorViewHolder = null;
+        if (mWindowDecorViewHolder != null) {
+            mWindowDecorViewHolder.close();
+            mWindowDecorViewHolder = null;
+        }
         if (canEnterDesktopMode(mContext) && isEducationEnabled()) {
             notifyNoCaptionHandle();
         }

@@ -343,12 +343,13 @@ public class BatteryStatsHistoryTest {
                 assertThat(mReadFiles).containsExactly("123.bh", "1000.bh");
             } else if (item.eventCode == HistoryItem.EVENT_ALARM) {
                 eventsRead++;
-                assertThat(mReadFiles).containsExactly("123.bh", "1000.bh", "2000.bh");
+                // This event is in the current buffer, so 2000.bh shouldn't be read from disk
+                assertThat(mReadFiles).containsExactly("123.bh", "1000.bh");
             }
         }
 
         assertThat(eventsRead).isEqualTo(3);
-        assertThat(mReadFiles).containsExactly("123.bh", "1000.bh", "2000.bh", "3000.bh");
+        assertThat(mReadFiles).containsExactly("123.bh", "1000.bh");
     }
 
     @Test
@@ -366,34 +367,41 @@ public class BatteryStatsHistoryTest {
             return invocation.callRealMethod();
         }).when(mHistory).readFragmentToParcel(any(), any());
 
-        BatteryStatsHistoryIterator iterator = mHistory.iterate(1000, 3000);
+        int eventsRead = 0;
+        BatteryStatsHistoryIterator iterator = mHistory.iterate(1001, 3000);
         while (iterator.hasNext()) {
             HistoryItem item = iterator.next();
             if (item.eventCode == HistoryItem.EVENT_JOB_START) {
                 fail("Event outside the range");
             } else if (item.eventCode == HistoryItem.EVENT_JOB_FINISH) {
+                eventsRead++;
                 assertThat(mReadFiles).containsExactly("1000.bh");
             } else if (item.eventCode == HistoryItem.EVENT_ALARM) {
                 fail("Event outside the range");
             }
         }
 
-        assertThat(mReadFiles).containsExactly("1000.bh", "2000.bh");
+        assertThat(eventsRead).isEqualTo(1);
+        assertThat(mReadFiles).containsExactly("1000.bh");
     }
 
     private void prepareMultiFileHistory() {
-        mClock.realtime = 1000;
-        mClock.uptime = 1000;
+        mClock.realtime = 500;
+        mClock.uptime = 500;
         mHistory.recordEvent(mClock.realtime, mClock.uptime,
                 BatteryStats.HistoryItem.EVENT_JOB_START, "job", 42);
 
+        mClock.realtime = 1000;
+        mClock.uptime = 1000;
         mHistory.startNextFragment(mClock.realtime);       // 1000.bh
 
-        mClock.realtime = 2000;
-        mClock.uptime = 2000;
+        mClock.realtime = 1500;
+        mClock.uptime = 1500;
         mHistory.recordEvent(mClock.realtime, mClock.uptime,
                 BatteryStats.HistoryItem.EVENT_JOB_FINISH, "job", 42);
 
+        mClock.realtime = 2000;
+        mClock.uptime = 2000;
         mHistory.startNextFragment(mClock.realtime);       // 2000.bh
 
         mClock.realtime = 3000;
@@ -401,8 +409,8 @@ public class BatteryStatsHistoryTest {
         mHistory.recordEvent(mClock.realtime, mClock.uptime,
                 HistoryItem.EVENT_ALARM, "alarm", 42);
 
-        // Flush accumulated history to disk
-        mHistory.startNextFragment(mClock.realtime);
+        // Back up accumulated history to disk
+        mHistory.writeHistory();
     }
 
     private void verifyActiveFile(BatteryStatsHistory history, String file) {

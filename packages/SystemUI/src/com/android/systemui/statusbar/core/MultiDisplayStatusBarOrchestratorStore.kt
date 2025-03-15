@@ -16,10 +16,10 @@
 
 package com.android.systemui.statusbar.core
 
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
-import com.android.systemui.display.data.repository.DisplayScopeRepository
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.statusbar.data.repository.StatusBarPerDisplayStoreImpl
 import com.android.systemui.statusbar.phone.AutoHideControllerStore
@@ -40,7 +40,7 @@ constructor(
     private val statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
     private val initializerStore: StatusBarInitializerStore,
     private val autoHideControllerStore: AutoHideControllerStore,
-    private val displayScopeRepository: DisplayScopeRepository,
+    private val displayScopeRepository: PerDisplayRepository<CoroutineScope>,
     private val statusBarWindowStateRepositoryStore: StatusBarWindowStateRepositoryStore,
 ) :
     StatusBarPerDisplayStoreImpl<StatusBarOrchestrator>(
@@ -59,10 +59,10 @@ constructor(
         val statusBarWindowController =
             statusBarWindowControllerStore.forDisplay(displayId) ?: return null
         val autoHideController = autoHideControllerStore.forDisplay(displayId) ?: return null
+        val displayScope = displayScopeRepository[displayId] ?: return null
         return factory.create(
             displayId,
-            // TODO: b/398825844 - Handle nullness to prevent leaking CoroutineScope.
-            displayScopeRepository.scopeForDisplay(displayId),
+            displayScope,
             statusBarWindowStateRepositoryStore.forDisplay(displayId),
             statusBarModeRepository,
             statusBarInitializer,

@@ -101,10 +101,17 @@ fun PlatformIconButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     colors: IconButtonColors = iconButtonColors(),
+    shape: Shape = IconButtonDefaults.standardShape,
     @DrawableRes iconResource: Int,
     contentDescription: String?,
 ) {
-    IconButton(modifier = modifier, onClick = onClick, enabled = enabled, colors = colors) {
+    IconButton(
+        modifier = modifier,
+        onClick = onClick,
+        enabled = enabled,
+        colors = colors,
+        shape = shape,
+    ) {
         Icon(
             painter = painterResource(id = iconResource),
             contentDescription = contentDescription,

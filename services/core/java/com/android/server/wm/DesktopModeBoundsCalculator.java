@@ -17,7 +17,6 @@
 package com.android.server.wm;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LOCKED;
-import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.isFixedOrientation;
 import static android.content.pm.ActivityInfo.isFixedOrientationLandscape;
 import static android.content.pm.ActivityInfo.isFixedOrientationPortrait;
@@ -32,8 +31,8 @@ import static com.android.server.wm.LaunchParamsUtil.calculateLayoutBounds;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions;
-import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.pm.ActivityInfo.WindowLayout;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.SystemProperties;
 import android.util.Size;
@@ -152,19 +151,25 @@ public final class DesktopModeBoundsCalculator {
         }
         final DesktopAppCompatAspectRatioPolicy desktopAppCompatAspectRatioPolicy =
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();
-        float appAspectRatio = desktopAppCompatAspectRatioPolicy.calculateAspectRatio(task);
+        final int stableBoundsOrientation = stableBounds.height() >= stableBounds.width()
+                ? ORIENTATION_PORTRAIT : ORIENTATION_LANDSCAPE;
+        int activityOrientation = getActivityConfigurationOrientation(
+                activity, task, stableBoundsOrientation);
+        // Use orientation mismatch to resolve aspect ratio to match fixed orientation letterboxing
+        // policy in {@link ActivityRecord.resolveFixedOrientationConfiguration}
+        final boolean hasOrientationMismatch = stableBoundsOrientation != activityOrientation;
+        float appAspectRatio = desktopAppCompatAspectRatioPolicy.calculateAspectRatio(
+                task, hasOrientationMismatch);
         final float tdaWidth = stableBounds.width();
         final float tdaHeight = stableBounds.height();
-        final int taskConfigOrientation = task.getConfiguration().orientation;
-        final int activityOrientation = getActivityOrientation(activity, task);
-        final Size initialSize = switch (taskConfigOrientation) {
+        final Size initialSize = switch (stableBoundsOrientation) {
             case ORIENTATION_LANDSCAPE -> {
                 // Device in landscape orientation.
                 if (appAspectRatio == 0) {
                     appAspectRatio = 1;
                 }
                 if (canChangeAspectRatio(desktopAppCompatAspectRatioPolicy, task)) {
-                    if (isFixedOrientationPortrait(activityOrientation)) {
+                    if (hasOrientationMismatch) {
                         // For portrait resizeable activities, respect apps fullscreen width but
                         // apply ideal size height.
                         yield new Size((int) ((tdaHeight / appAspectRatio) + 0.5f),
@@ -183,7 +188,7 @@ public final class DesktopModeBoundsCalculator {
                 final int customPortraitWidthForLandscapeApp = screenBounds.width()
                         - (DESKTOP_MODE_LANDSCAPE_APP_PADDING * 2);
                 if (canChangeAspectRatio(desktopAppCompatAspectRatioPolicy, task)) {
-                    if (isFixedOrientationLandscape(activityOrientation)) {
+                    if (hasOrientationMismatch) {
                         if (appAspectRatio == 0) {
                             appAspectRatio = tdaWidth / (tdaWidth - 1);
                         }
@@ -198,7 +203,7 @@ public final class DesktopModeBoundsCalculator {
                 if (appAspectRatio == 0) {
                     appAspectRatio = 1;
                 }
-                if (isFixedOrientationLandscape(activityOrientation)) {
+                if (hasOrientationMismatch) {
                     // For landscape unresizeable activities, apply custom app width to ideal size
                     // and calculate maximum size with this area while maintaining original aspect
                     // ratio.
@@ -230,19 +235,23 @@ public final class DesktopModeBoundsCalculator {
                 && !desktopAppCompatAspectRatioPolicy.hasMinAspectRatioOverride(task);
     }
 
-    private static @ScreenOrientation int getActivityOrientation(
-            @NonNull ActivityRecord activity, @NonNull Task task) {
+    private static @Configuration.Orientation int getActivityConfigurationOrientation(
+            @NonNull ActivityRecord activity, @NonNull Task task,
+            @Configuration.Orientation int stableBoundsOrientation) {
         final int activityOrientation = activity.getOverrideOrientation();
         final DesktopAppCompatAspectRatioPolicy desktopAppCompatAspectRatioPolicy =
                 activity.mAppCompatController.getDesktopAspectRatioPolicy();
-        if (desktopAppCompatAspectRatioPolicy.shouldApplyUserMinAspectRatioOverride(task)
+        if ((desktopAppCompatAspectRatioPolicy.shouldApplyUserMinAspectRatioOverride(task)
                 && (!isFixedOrientation(activityOrientation)
-                    || activityOrientation == SCREEN_ORIENTATION_LOCKED)) {
+                    || activityOrientation == SCREEN_ORIENTATION_LOCKED))
+                || isFixedOrientationPortrait(activityOrientation)) {
             // If a user aspect ratio override should be applied, treat the activity as portrait if
             // it has not specified a fix orientation.
-            return SCREEN_ORIENTATION_PORTRAIT;
+            return ORIENTATION_PORTRAIT;
         }
-        return activityOrientation;
+        // If activity orientation is undefined inherit task orientation.
+        return isFixedOrientationLandscape(activityOrientation)
+                ?  ORIENTATION_LANDSCAPE : stableBoundsOrientation;
     }
 
     /**
@@ -252,7 +261,7 @@ public final class DesktopModeBoundsCalculator {
     // TODO(b/400617906): Merge duplicate initial bounds calculations to shared class.
     @NonNull
     private static Size maximizeSizeGivenAspectRatio(
-            @ScreenOrientation int orientation,
+            @Configuration.Orientation int orientation,
             @NonNull Size targetArea,
             float aspectRatio,
             int captionHeight
@@ -261,7 +270,7 @@ public final class DesktopModeBoundsCalculator {
         final int targetWidth = targetArea.getWidth();
         final int finalHeight;
         final int finalWidth;
-        if (isFixedOrientationPortrait(orientation)) {
+        if (orientation == ORIENTATION_PORTRAIT) {
             // Portrait activity.
             // Calculate required width given ideal height and aspect ratio.
             int tempWidth = (int) (targetHeight / aspectRatio);

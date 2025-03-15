@@ -20,6 +20,7 @@ import static com.android.internal.util.Preconditions.checkArgument;
 
 import static java.util.Objects.requireNonNull;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -27,6 +28,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.app.AppOpsManager;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Flags;
 import android.ravenwood.annotation.RavenwoodClassLoadHook;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodReplace;
@@ -837,9 +839,8 @@ public final class Parcel {
      * @param buffer The ByteBuffer to write the data to.
      * @throws ReadOnlyBufferException if the buffer is read-only.
      * @throws BufferOverflowException if the buffer is too small.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_PARCEL_MARSHALL_BYTEBUFFER)
     public final void marshall(@NonNull ByteBuffer buffer) {
         if (buffer == null) {
             throw new NullPointerException();
@@ -875,9 +876,8 @@ public final class Parcel {
      * Fills the raw bytes of this Parcel with data from the supplied buffer.
      *
      * @param buffer will read buffer.remaining() bytes from the buffer.
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_PARCEL_MARSHALL_BYTEBUFFER)
     public final void unmarshall(@NonNull ByteBuffer buffer) {
         if (buffer == null) {
             throw new NullPointerException();

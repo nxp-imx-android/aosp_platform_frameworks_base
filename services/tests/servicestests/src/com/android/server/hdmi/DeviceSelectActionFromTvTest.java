@@ -251,6 +251,35 @@ public class DeviceSelectActionFromTvTest {
     }
 
     @Test
+    public void testDeviceSelect_DeviceAssertsActiveSource_singleSetStreamPathMessage() {
+        // TV was watching playback2 device connected at port 2, and wants to select
+        // playback1.
+        TestActionTimer actionTimer = new TestActionTimer();
+        TestCallback callback = new TestCallback();
+        DeviceSelectActionFromTv action = createDeviceSelectAction(actionTimer, callback,
+                /*isCec20=*/false);
+        mHdmiCecLocalDeviceTv.updateActiveSource(ADDR_PLAYBACK_2, PHYSICAL_ADDRESS_PLAYBACK_2,
+                "testDeviceSelect");
+        action.start();
+        mTestLooper.dispatchAll();
+
+        assertThat(mNativeWrapper.getResultMessages()).contains(SET_STREAM_PATH);
+        mNativeWrapper.clearResultMessages();
+        mHdmiCecLocalDeviceTv.updateActiveSource(ADDR_PLAYBACK_1, PHYSICAL_ADDRESS_PLAYBACK_1,
+                "testDeviceSelect");
+        mTestLooper.dispatchAll();
+
+        assertThat(actionTimer.getState()).isEqualTo(STATE_WAIT_FOR_POWER_STATE_CHANGE);
+        action.handleTimerEvent(STATE_WAIT_FOR_POWER_STATE_CHANGE);
+        assertThat(actionTimer.getState()).isEqualTo(STATE_WAIT_FOR_REPORT_POWER_STATUS);
+        action.processCommand(REPORT_POWER_STATUS_ON);
+        mTestLooper.dispatchAll();
+
+        assertThat(mNativeWrapper.getResultMessages()).doesNotContain(SET_STREAM_PATH);
+        assertThat(callback.getResult()).isEqualTo(HdmiControlManager.RESULT_SUCCESS);
+    }
+
+    @Test
     public void testDeviceSelect_DeviceInStandbyStatus_Cec14b() {
         mHdmiCecLocalDeviceTv.updateActiveSource(ADDR_PLAYBACK_2, PHYSICAL_ADDRESS_PLAYBACK_2,
                                                  "testDeviceSelect");

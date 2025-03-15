@@ -29,8 +29,6 @@ import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
-import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -417,64 +415,5 @@ public class ParcelTest {
         pA.writeStrongBinder(binder);
         int binderEndPos = pA.dataPosition();
         assertTrue(pA.hasBinders(binderStartPos, binderEndPos - binderStartPos));
-    }
-
-    private static final byte[] TEST_DATA = new byte[] {4, 8, 15, 16, 23, 42};
-
-    // Allow for some Parcel overhead
-    private static final int TEST_DATA_LENGTH = TEST_DATA.length + 100;
-
-    @Test
-    public void testMarshall_ByteBuffer_wrapped() {
-        ByteBuffer bb = ByteBuffer.allocate(TEST_DATA_LENGTH);
-        testMarshall_ByteBuffer(bb);
-    }
-
-    @Test
-    public void testMarshall_DirectByteBuffer() {
-        ByteBuffer bb = ByteBuffer.allocateDirect(TEST_DATA_LENGTH);
-        testMarshall_ByteBuffer(bb);
-    }
-
-    private void testMarshall_ByteBuffer(ByteBuffer bb) {
-        // Ensure that Parcel respects the starting offset by not starting at 0
-        bb.position(1);
-        bb.mark();
-
-        // Parcel test data, then marshall into the ByteBuffer
-        Parcel p1 = Parcel.obtain();
-        p1.writeByteArray(TEST_DATA);
-        p1.marshall(bb);
-        p1.recycle();
-
-        assertTrue(bb.position() > 1);
-        bb.reset();
-
-        // Unmarshall test data into a new Parcel
-        Parcel p2 = Parcel.obtain();
-        bb.reset();
-        p2.unmarshall(bb);
-        assertTrue(bb.position() > 1);
-        p2.setDataPosition(0);
-        byte[] marshalled = p2.marshall();
-
-        bb.reset();
-        for (int i = 0; i < TEST_DATA.length; i++) {
-            assertEquals(bb.get(), marshalled[i]);
-        }
-
-        byte[] testDataCopy = new byte[TEST_DATA.length];
-        p2.setDataPosition(0);
-        p2.readByteArray(testDataCopy);
-        for (int i = 0; i < TEST_DATA.length; i++) {
-            assertEquals(TEST_DATA[i], testDataCopy[i]);
-        }
-
-        // Test that overflowing the buffer throws an exception
-        bb.reset();
-        // Leave certainly not enough room for the test data
-        bb.limit(bb.position() + TEST_DATA.length - 1);
-        assertThrows(BufferOverflowException.class, () -> p2.marshall(bb));
-        p2.recycle();
     }
 }

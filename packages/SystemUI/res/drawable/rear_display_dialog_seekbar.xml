@@ -21,7 +21,7 @@
         android:height="2dp"
         android:width="@dimen/rear_display_progress_width">
         <shape android:shape="rectangle">
-            <solid android:color="@androidprv:color/materialColorSurfaceContainer" />
+            <solid android:color="?android:attr/colorAccent"/>
         </shape>
     </item>
     <item

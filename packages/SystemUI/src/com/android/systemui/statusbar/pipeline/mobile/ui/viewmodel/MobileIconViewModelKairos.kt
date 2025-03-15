@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,206 +17,192 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
 import com.android.systemui.Flags.statusBarStaticInoutIndicators
+import com.android.systemui.KairosBuilder
+import com.android.systemui.activated
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.flags.FeatureFlagsClassic
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.State as KairosState
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.combine
+import com.android.systemui.kairos.flatMap
+import com.android.systemui.kairos.map
+import com.android.systemui.kairos.stateOf
+import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractor
-import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
+import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconInteractorKairos
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.statusbar.pipeline.mobile.ui.model.MobileContentDescription
 import com.android.systemui.statusbar.pipeline.shared.ConnectivityConstants
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.stateIn
 
 /** Common interface for all of the location-based mobile icon view models. */
-interface MobileIconViewModelCommonKairos : MobileIconViewModelCommon {
-    override val subscriptionId: Int
+@ExperimentalKairosApi
+interface MobileIconViewModelKairosCommon {
+    val subscriptionId: Int
+    val iconInteractor: MobileIconInteractorKairos
     /** True if this view should be visible at all. */
-    override val isVisible: StateFlow<Boolean>
-    override val icon: Flow<SignalIconModel>
-    override val contentDescription: Flow<MobileContentDescription?>
-    override val roaming: Flow<Boolean>
+    val isVisible: KairosState<Boolean>
+    val icon: KairosState<SignalIconModel>
+    val contentDescription: KairosState<MobileContentDescription?>
+    val roaming: KairosState<Boolean>
     /** The RAT icon (LTE, 3G, 5G, etc) to be displayed. Null if we shouldn't show anything */
-    override val networkTypeIcon: Flow<Icon.Resource?>
+    val networkTypeIcon: KairosState<Icon.Resource?>
     /** The slice attribution. Drawn as a background layer */
-    override val networkTypeBackground: StateFlow<Icon.Resource?>
-    override val activityInVisible: Flow<Boolean>
-    override val activityOutVisible: Flow<Boolean>
-    override val activityContainerVisible: Flow<Boolean>
+    val networkTypeBackground: KairosState<Icon.Resource?>
+    val activityInVisible: KairosState<Boolean>
+    val activityOutVisible: KairosState<Boolean>
+    val activityContainerVisible: KairosState<Boolean>
 }
 
 /**
  * View model for the state of a single mobile icon. Each [MobileIconViewModel] will keep watch over
- * a single line of service via [MobileIconInteractor] and update the UI based on that
+ * a single line of service via [MobileIconInteractorKairos] and update the UI based on that
  * subscription's information.
  *
- * There will be exactly one [MobileIconViewModel] per filtered subscription offered from
- * [MobileIconsInteractor.filteredSubscriptions].
+ * There will be exactly one [MobileIconViewModelKairos] per filtered subscription offered from
+ * [MobileIconsInteractorKairos.filteredSubscriptions].
  *
- * For the sake of keeping log spam in check, every flow funding the [MobileIconViewModelCommon]
- * interface is implemented as a [StateFlow]. This ensures that each location-based mobile icon view
- * model gets the exact same information, as well as allows us to log that unified state only once
- * per icon.
+ * For the sake of keeping log spam in check, every flow funding the
+ * [MobileIconViewModelKairosCommon] interface is implemented as a [StateFlow]. This ensures that
+ * each location-based mobile icon view model gets the exact same information, as well as allows us
+ * to log that unified state only once per icon.
  */
+@ExperimentalKairosApi
 class MobileIconViewModelKairos(
     override val subscriptionId: Int,
-    iconInteractor: MobileIconInteractor,
-    airplaneModeInteractor: AirplaneModeInteractor,
-    constants: ConnectivityConstants,
-    scope: CoroutineScope,
-) : MobileIconViewModelCommonKairos {
-    private val cellProvider by lazy {
-        CellularIconViewModelKairos(
-            subscriptionId,
-            iconInteractor,
-            airplaneModeInteractor,
-            constants,
-            scope,
-        )
+    override val iconInteractor: MobileIconInteractorKairos,
+    private val airplaneModeInteractor: AirplaneModeInteractor,
+    private val constants: ConnectivityConstants,
+    private val flags: FeatureFlagsClassic,
+) : MobileIconViewModelKairosCommon, KairosBuilder by kairosBuilder() {
+
+    private val isAirplaneMode: State<Boolean> = buildState {
+        airplaneModeInteractor.isAirplaneMode.toState()
     }
 
     private val satelliteProvider by lazy {
-        CarrierBasedSatelliteViewModelKairosImpl(
-            subscriptionId,
-            airplaneModeInteractor,
-            iconInteractor,
-            scope,
-        )
+        CarrierBasedSatelliteViewModelKairosImpl(subscriptionId, iconInteractor, isAirplaneMode)
     }
 
     /**
      * Similar to repository switching, this allows us to split up the logic of satellite/cellular
      * states, since they are different by nature
      */
-    private val vmProvider: Flow<MobileIconViewModelCommon> =
-        iconInteractor.isNonTerrestrial
-            .mapLatest { nonTerrestrial ->
-                if (nonTerrestrial) {
-                    satelliteProvider
-                } else {
-                    cellProvider
+    private val vmProvider: KairosState<MobileIconViewModelKairosCommon> = buildState {
+        iconInteractor.isNonTerrestrial.mapLatestBuild { nonTerrestrial ->
+            if (nonTerrestrial) {
+                satelliteProvider
+            } else {
+                activated {
+                    CellularIconViewModelKairos(
+                        subscriptionId,
+                        iconInteractor,
+                        airplaneModeInteractor,
+                        constants,
+                        flags,
+                    )
                 }
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), cellProvider)
+        }
+    }
 
-    override val isVisible: StateFlow<Boolean> =
-        vmProvider
-            .flatMapLatest { it.isVisible }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+    override val isVisible: KairosState<Boolean> = vmProvider.flatMap { it.isVisible }
 
-    override val icon: Flow<SignalIconModel> = vmProvider.flatMapLatest { it.icon }
+    override val icon: KairosState<SignalIconModel> = vmProvider.flatMap { it.icon }
 
-    override val contentDescription: Flow<MobileContentDescription?> =
-        vmProvider.flatMapLatest { it.contentDescription }
+    override val contentDescription: KairosState<MobileContentDescription?> =
+        vmProvider.flatMap { it.contentDescription }
 
-    override val roaming: Flow<Boolean> = vmProvider.flatMapLatest { it.roaming }
+    override val roaming: KairosState<Boolean> = vmProvider.flatMap { it.roaming }
 
-    override val networkTypeIcon: Flow<Icon.Resource?> =
-        vmProvider.flatMapLatest { it.networkTypeIcon }
+    override val networkTypeIcon: KairosState<Icon.Resource?> =
+        vmProvider.flatMap { it.networkTypeIcon }
 
-    override val networkTypeBackground: StateFlow<Icon.Resource?> =
-        vmProvider
-            .flatMapLatest { it.networkTypeBackground }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+    override val networkTypeBackground: KairosState<Icon.Resource?> =
+        vmProvider.flatMap { it.networkTypeBackground }
 
-    override val activityInVisible: Flow<Boolean> =
-        vmProvider.flatMapLatest { it.activityInVisible }
+    override val activityInVisible: KairosState<Boolean> =
+        vmProvider.flatMap { it.activityInVisible }
 
-    override val activityOutVisible: Flow<Boolean> =
-        vmProvider.flatMapLatest { it.activityOutVisible }
+    override val activityOutVisible: KairosState<Boolean> =
+        vmProvider.flatMap { it.activityOutVisible }
 
-    override val activityContainerVisible: Flow<Boolean> =
-        vmProvider.flatMapLatest { it.activityContainerVisible }
+    override val activityContainerVisible: KairosState<Boolean> =
+        vmProvider.flatMap { it.activityContainerVisible }
 }
 
 /** Representation of this network when it is non-terrestrial (e.g., satellite) */
+@ExperimentalKairosApi
 private class CarrierBasedSatelliteViewModelKairosImpl(
     override val subscriptionId: Int,
-    airplaneModeInteractor: AirplaneModeInteractor,
-    interactor: MobileIconInteractor,
-    scope: CoroutineScope,
-) : MobileIconViewModelCommon, MobileIconViewModelCommonKairos {
-    override val isVisible: StateFlow<Boolean> =
-        airplaneModeInteractor.isAirplaneMode
-            .map { !it }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+    override val iconInteractor: MobileIconInteractorKairos,
+    isAirplaneMode: KairosState<Boolean>,
+) : MobileIconViewModelKairosCommon {
+    override val isVisible: KairosState<Boolean> = isAirplaneMode.map { !it }
+    override val icon: KairosState<SignalIconModel>
+        get() = iconInteractor.signalLevelIcon
 
-    override val icon: Flow<SignalIconModel> = interactor.signalLevelIcon
-
-    override val contentDescription: Flow<MobileContentDescription?> = MutableStateFlow(null)
+    override val contentDescription: KairosState<MobileContentDescription?> = stateOf(null)
 
     /** These fields are not used for satellite icons currently */
-    override val roaming: Flow<Boolean> = flowOf(false)
-    override val networkTypeIcon: Flow<Icon.Resource?> = flowOf(null)
-    override val networkTypeBackground: StateFlow<Icon.Resource?> = MutableStateFlow(null)
-    override val activityInVisible: Flow<Boolean> = flowOf(false)
-    override val activityOutVisible: Flow<Boolean> = flowOf(false)
-    override val activityContainerVisible: Flow<Boolean> = flowOf(false)
+    override val roaming: KairosState<Boolean> = stateOf(false)
+    override val networkTypeIcon: KairosState<Icon.Resource?> = stateOf(null)
+    override val networkTypeBackground: KairosState<Icon.Resource?> = stateOf(null)
+    override val activityInVisible: KairosState<Boolean> = stateOf(false)
+    override val activityOutVisible: KairosState<Boolean> = stateOf(false)
+    override val activityContainerVisible: KairosState<Boolean> = stateOf(false)
 }
 
 /** Terrestrial (cellular) icon. */
-@Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
+@ExperimentalKairosApi
 private class CellularIconViewModelKairos(
     override val subscriptionId: Int,
-    iconInteractor: MobileIconInteractor,
+    override val iconInteractor: MobileIconInteractorKairos,
     airplaneModeInteractor: AirplaneModeInteractor,
     constants: ConnectivityConstants,
-    scope: CoroutineScope,
-) : MobileIconViewModelCommon, MobileIconViewModelCommonKairos {
-    override val isVisible: StateFlow<Boolean> =
+    flags: FeatureFlagsClassic,
+) : MobileIconViewModelKairosCommon, KairosBuilder by kairosBuilder() {
+
+    override val isVisible: KairosState<Boolean> =
         if (!constants.hasDataCapabilities) {
-                flowOf(false)
-            } else {
+            stateOf(false)
+        } else {
+            buildState {
                 combine(
-                    airplaneModeInteractor.isAirplaneMode,
-                    iconInteractor.isAllowedDuringAirplaneMode,
-                    iconInteractor.isForceHidden,
-                ) { isAirplaneMode, isAllowedDuringAirplaneMode, isForceHidden ->
-                    if (isForceHidden) {
-                        false
-                    } else if (isAirplaneMode) {
-                        isAllowedDuringAirplaneMode
-                    } else {
-                        true
+                        airplaneModeInteractor.isAirplaneMode.toState(),
+                        iconInteractor.isAllowedDuringAirplaneMode,
+                        iconInteractor.isForceHidden,
+                    ) { isAirplaneMode, isAllowedDuringAirplaneMode, isForceHidden ->
+                        if (isForceHidden) {
+                            false
+                        } else if (isAirplaneMode) {
+                            isAllowedDuringAirplaneMode
+                        } else {
+                            true
+                        }
                     }
-                }
+                    .also {
+                        logDiffsForTable(it, iconInteractor.tableLogBuffer, columnName = "visible")
+                    }
             }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                iconInteractor.tableLogBuffer,
-                columnName = "visible",
-                initialValue = false,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+        }
 
-    override val icon: Flow<SignalIconModel> = iconInteractor.signalLevelIcon
+    override val icon: KairosState<SignalIconModel>
+        get() = iconInteractor.signalLevelIcon
 
-    override val contentDescription: Flow<MobileContentDescription?> =
+    override val contentDescription: KairosState<MobileContentDescription?> =
         combine(iconInteractor.signalLevelIcon, iconInteractor.networkName) { icon, nameModel ->
-                when (icon) {
-                    is SignalIconModel.Cellular ->
-                        MobileContentDescription.Cellular(
-                            nameModel.name,
-                            icon.levelDescriptionRes(),
-                        )
-                    else -> null
-                }
+            when (icon) {
+                is SignalIconModel.Cellular ->
+                    MobileContentDescription.Cellular(nameModel.name, icon.levelDescriptionRes())
+                else -> null
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+        }
 
     private fun SignalIconModel.Cellular.levelDescriptionRes() =
         when (level) {
@@ -241,7 +227,7 @@ private class CellularIconViewModelKairos(
             else -> R.string.accessibility_no_signal
         }
 
-    private val showNetworkTypeIcon: Flow<Boolean> =
+    private val showNetworkTypeIcon: KairosState<Boolean> =
         combine(
                 iconInteractor.isDataConnected,
                 iconInteractor.isDataEnabled,
@@ -252,77 +238,72 @@ private class CellularIconViewModelKairos(
                 alwaysShow ||
                     (!carrierNetworkChange && (dataEnabled && dataConnected && mobileIsDefault))
             }
-            .distinctUntilChanged()
-            .logDiffsForTable(
-                iconInteractor.tableLogBuffer,
-                columnName = "showNetworkTypeIcon",
-                initialValue = false,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+            .also {
+                onActivated {
+                    logDiffsForTable(
+                        it,
+                        iconInteractor.tableLogBuffer,
+                        columnName = "showNetworkTypeIcon",
+                    )
+                }
+            }
 
-    override val networkTypeIcon: Flow<Icon.Resource?> =
+    override val networkTypeIcon: KairosState<Icon.Resource?> =
         combine(iconInteractor.networkTypeIconGroup, showNetworkTypeIcon) {
-                networkTypeIconGroup,
-                shouldShow ->
-                val desc =
-                    if (networkTypeIconGroup.contentDescription != 0)
-                        ContentDescription.Resource(networkTypeIconGroup.contentDescription)
-                    else null
-                val icon =
-                    if (networkTypeIconGroup.iconId != 0)
-                        Icon.Resource(networkTypeIconGroup.iconId, desc)
-                    else null
-                return@combine when {
-                    !shouldShow -> null
-                    else -> icon
+            networkTypeIconGroup,
+            shouldShow ->
+            val desc =
+                if (networkTypeIconGroup.contentDescription != 0) {
+                    ContentDescription.Resource(networkTypeIconGroup.contentDescription)
+                } else {
+                    null
                 }
-            }
-            .distinctUntilChanged()
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
-
-    override val networkTypeBackground =
-        iconInteractor.showSliceAttribution
-            .map {
-                when {
-                    it && NewStatusBarIcons.isEnabled ->
-                        Icon.Resource(R.drawable.mobile_network_type_background_updated, null)
-                    it -> Icon.Resource(R.drawable.mobile_network_type_background, null)
-                    else -> null
+            val icon =
+                if (networkTypeIconGroup.iconId != 0) {
+                    Icon.Resource(networkTypeIconGroup.iconId, desc)
+                } else {
+                    null
                 }
+            when {
+                !shouldShow -> null
+                else -> icon
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+        }
 
-    override val roaming: StateFlow<Boolean> =
-        iconInteractor.isRoaming
-            .logDiffsForTable(
-                iconInteractor.tableLogBuffer,
-                columnName = "roaming",
-                initialValue = false,
-            )
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+    override val networkTypeBackground: KairosState<Icon.Resource?> =
+        iconInteractor.showSliceAttribution.map {
+            when {
+                it && NewStatusBarIcons.isEnabled ->
+                    Icon.Resource(R.drawable.mobile_network_type_background_updated, null)
+                it -> Icon.Resource(R.drawable.mobile_network_type_background, null)
+                else -> null
+            }
+        }
 
-    private val activity: Flow<DataActivityModel?> =
+    override val roaming: KairosState<Boolean> =
+        iconInteractor.isRoaming.also {
+            onActivated {
+                logDiffsForTable(it, iconInteractor.tableLogBuffer, columnName = "roaming")
+            }
+        }
+
+    private val activity: KairosState<DataActivityModel?> =
         if (!constants.shouldShowActivityConfig) {
-            flowOf(null)
+            stateOf(null)
         } else {
             iconInteractor.activity
         }
 
-    override val activityInVisible: Flow<Boolean> =
-        activity
-            .map { it?.hasActivityIn ?: false }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+    override val activityInVisible: KairosState<Boolean> =
+        activity.map { it?.hasActivityIn ?: false }
 
-    override val activityOutVisible: Flow<Boolean> =
-        activity
-            .map { it?.hasActivityOut ?: false }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+    override val activityOutVisible: KairosState<Boolean> =
+        activity.map { it?.hasActivityOut ?: false }
 
-    override val activityContainerVisible: Flow<Boolean> =
+    override val activityContainerVisible: KairosState<Boolean> =
         if (statusBarStaticInoutIndicators()) {
-                flowOf(constants.shouldShowActivityConfig)
-            } else {
-                activity.map { it != null && (it.hasActivityIn || it.hasActivityOut) }
-            }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
+            stateOf(constants.shouldShowActivityConfig)
+        } else {
+            activity.map { it != null && (it.hasActivityIn || it.hasActivityOut) }
+        }
 }

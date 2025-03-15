@@ -16,7 +16,11 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel
 
+import com.android.systemui.kairos.ActivatedKairosFixture
+import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kosmos.Kosmos
 
-val Kosmos.stackedMobileIconViewModelKairos by
-    Kosmos.Fixture { StackedMobileIconViewModelKairos(mobileIconsViewModel) }
+@ExperimentalKairosApi
+val Kosmos.stackedMobileIconViewModelKairos by ActivatedKairosFixture {
+    StackedMobileIconViewModelKairos(mobileIconsViewModelKairos)
+}

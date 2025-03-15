@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.util.ArrayMap
+import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
@@ -37,9 +38,17 @@ class GroupCountCoordinator @Inject constructor() : Coordinator {
     private fun onBeforeFinalizeFilter(entries: List<PipelineEntry>) {
         // save untruncated child counts to our internal map
         untruncatedChildCounts.clear()
-        entries.asSequence().filterIsInstance<GroupEntry>().forEach { groupEntry ->
-            untruncatedChildCounts[groupEntry] = groupEntry.children.size
-        }
+        entries.asSequence()
+            .flatMap { entry ->
+                when (entry) {
+                    is GroupEntry -> listOf(entry)
+                    is BundleEntry -> entry.children.filterIsInstance<GroupEntry>()
+                    else -> emptyList()
+                }
+            }
+            .forEach { groupEntry ->
+                untruncatedChildCounts[groupEntry] = groupEntry.children.size
+            }
     }
 
     private fun onAfterRenderGroup(group: GroupEntry, controller: NotifGroupController) {

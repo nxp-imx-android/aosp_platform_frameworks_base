@@ -155,7 +155,10 @@ enum class FilterPolicy(val policyStringOrPrefix: String) {
     /**
      * Create a [FilterPolicyWithReason] with a given reason.
      */
-    fun withReason(reason: String): FilterPolicyWithReason {
-        return FilterPolicyWithReason(this, reason)
+    fun withReason(
+        reason: String,
+        statsLabelOverride: StatsLabel? = null,
+    ): FilterPolicyWithReason {
+        return FilterPolicyWithReason(this, reason, statsLabelOverride = statsLabelOverride)
     }
 }

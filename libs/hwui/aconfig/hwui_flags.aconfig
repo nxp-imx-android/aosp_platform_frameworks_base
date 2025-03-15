@@ -204,3 +204,10 @@ flag {
   bug: "389908734"
   is_fixed_read_only: true
 }
+
+flag {
+  name: "bitmap_parcel_ashmem_as_immutable"
+  namespace: "system_performance"
+  description: "Whether to parcel implicit copies of bitmaps to ashmem as immutable"
+  bug: "400807118"
+}

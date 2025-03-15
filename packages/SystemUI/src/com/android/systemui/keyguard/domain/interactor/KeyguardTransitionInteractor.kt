@@ -20,6 +20,8 @@ package com.android.systemui.keyguard.domain.interactor
 import android.annotation.SuppressLint
 import android.util.Log
 import com.android.app.tracing.coroutines.flow.filterTraced
+import com.android.app.tracing.coroutines.flow.shareInTraced
+import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.app.tracing.coroutines.flow.traceAs
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.traceCoroutine
@@ -64,8 +66,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 
 /** Encapsulates business-logic related to the keyguard transitions. */
 @SysUISingleton
@@ -102,12 +102,18 @@ constructor(
     val transitions = repository.transitions
 
     val transitionState: StateFlow<TransitionStep> =
-        transitions.stateIn(scope, SharingStarted.Eagerly, TransitionStep())
+        transitions.stateInTraced(
+            "KTF-transitionState",
+            scope,
+            SharingStarted.Eagerly,
+            TransitionStep(),
+        )
 
     private val sceneTransitionPair =
         sceneInteractor.transitionState
             .pairwise()
-            .stateIn(
+            .stateInTraced(
+                "KTF-sceneTransitionPair",
                 scope,
                 SharingStarted.Eagerly,
                 WithPrev(
@@ -130,11 +136,16 @@ constructor(
         repository.transitions
             .pairwise()
             .filter { it.newValue.transitionState == TransitionState.STARTED }
-            .shareIn(scope, SharingStarted.Eagerly, replay = 1)
+            .shareInTraced(
+                "KTF-startedStepWithPrecedingStep",
+                scope,
+                SharingStarted.Eagerly,
+                replay = 1,
+            )
 
     init {
         // Collect non-canceled steps and emit transition values.
-        scope.launch {
+        scope.launch("KTF-update-non-canceled") {
             repository.transitions
                 .filter { it.transitionState != TransitionState.CANCELED }
                 .collect { step ->
@@ -145,7 +156,7 @@ constructor(
                 }
         }
 
-        scope.launch {
+        scope.launch("KTF-update-transitionMap") {
             repository.transitions.collect {
                 // FROM->TO
                 transitionMap[Edge.create(it.from, it.to)]?.emit(it)
@@ -160,7 +171,7 @@ constructor(
         // need to ensure we emit transitionValue(A) = 0f, since no further steps will be emitted
         // where the from or to states are A. This would leave transitionValue(A) stuck at an
         // arbitrary non-zero value.
-        scope.launch {
+        scope.launch("KTF-update-canceled") {
             startedStepWithPrecedingStep.collect { (prevStep, startedStep) ->
                 if (
                     prevStep.transitionState == TransitionState.CANCELED &&
@@ -180,7 +191,7 @@ constructor(
         // Safety: When any transition is FINISHED, ensure all other transitionValue flows other
         // than the FINISHED state are reset to a value of 0f. There have been rare but severe
         // bugs that get the device stuck in a bad state when these are not properly reset.
-        scope.launch {
+        scope.launch("KTF-update-finished") {
             repository.transitions
                 .filter { it.transitionState == TransitionState.FINISHED }
                 .collect {
@@ -201,7 +212,7 @@ constructor(
              * If the screen is turning off, finish the current transition immediately. Further
              * frames won't be visible anyway.
              */
-            scope.launch {
+            scope.launch("KTF-force-finish") {
                 powerInteractor.screenPowerState
                     .filter { it == ScreenPowerState.SCREEN_TURNING_OFF }
                     .collect { repository.forceFinishCurrentTransition() }
@@ -347,6 +358,7 @@ constructor(
                 }
             }
         }
+        .traceAs("KTF-transition-simulator")
 
     /**
      * This function is similar to flatMapLatest but it will additionally emit a FINISHED
@@ -372,7 +384,7 @@ constructor(
                         traceCoroutine("cancelAndJoin") { job?.cancelAndJoin() }
 
                         job =
-                            launch("inner") {
+                            launch("KTF-flatMapLatestWithFinished") {
                                 val innerFlow = transform(value)
                                 try {
                                     innerFlow.collect { step ->
@@ -398,7 +410,6 @@ constructor(
                     }
                 }
             }
-            .traceAs("flatMapLatestWithFinished")
 
     /**
      * Converts old KTF states to UNDEFINED when [SceneContainerFlag] is enabled.
@@ -451,7 +462,12 @@ constructor(
     val startedKeyguardTransitionStep: StateFlow<TransitionStep> =
         repository.transitions
             .filter { step -> step.transitionState == TransitionState.STARTED }
-            .stateIn(scope, SharingStarted.Eagerly, TransitionStep())
+            .stateInTraced(
+                "KTF-startedKeyguardTransitionStep",
+                scope,
+                SharingStarted.Eagerly,
+                TransitionStep(),
+            )
 
     /**
      * The [KeyguardState] we're currently in.
@@ -517,7 +533,7 @@ constructor(
                     it.from
                 }
             }
-            .stateIn(scope, SharingStarted.Eagerly, OFF)
+            .stateInTraced("KTF-currentKeyguardState", scope, SharingStarted.Eagerly, OFF)
 
     val isInTransition =
         combine(isInTransitionWhere({ true }, { true }), sceneInteractor.transitionState) {
@@ -629,7 +645,7 @@ constructor(
         repository.transitions
             .filter { it.transitionState == TransitionState.FINISHED }
             .map { it.to }
-            .stateIn(scope, SharingStarted.Eagerly, OFF)
+            .stateInTraced("KTF-finishedKeyguardState", scope, SharingStarted.Eagerly, OFF)
 
     companion object {
         private val TAG = KeyguardTransitionInteractor::class.simpleName

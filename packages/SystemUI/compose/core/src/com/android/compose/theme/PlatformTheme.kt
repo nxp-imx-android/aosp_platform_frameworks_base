@@ -43,7 +43,7 @@ fun PlatformTheme(isDarkTheme: Boolean = isSystemInDarkTheme(), content: @Compos
     val context = LocalContext.current
 
     val colorScheme = remember(context, isDarkTheme) { platformColorScheme(isDarkTheme, context) }
-    val androidColorScheme = remember(context) { AndroidColorScheme(context) }
+    val androidColorScheme = remember(context, isDarkTheme) { AndroidColorScheme(context) }
     val typefaceNames = remember(context) { TypefaceNames.get(context) }
     val typefaceTokens = remember(typefaceNames) { TypefaceTokens(typefaceNames) }
     val typography =

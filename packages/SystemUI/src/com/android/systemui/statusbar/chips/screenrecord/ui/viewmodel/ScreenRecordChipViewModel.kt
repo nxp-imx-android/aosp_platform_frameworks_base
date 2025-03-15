@@ -77,6 +77,7 @@ constructor(
                     is ScreenRecordChipModel.Starting -> {
                         OngoingActivityChipModel.Active.Countdown(
                             key = KEY,
+                            isImportantForPrivacy = true,
                             colors = ColorsModel.Red,
                             secondsUntilStarted = state.millisUntilStarted.toCountdownSeconds(),
                         )
@@ -84,6 +85,7 @@ constructor(
                     is ScreenRecordChipModel.Recording -> {
                         OngoingActivityChipModel.Active.Timer(
                             key = KEY,
+                            isImportantForPrivacy = true,
                             icon =
                                 OngoingActivityChipModel.ChipIcon.SingleColorIcon(
                                     Icon.Resource(

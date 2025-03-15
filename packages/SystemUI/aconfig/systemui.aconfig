@@ -398,13 +398,6 @@ flag {
 }
 
 flag {
-    name: "light_reveal_migration"
-    namespace: "systemui"
-    description: "Move LightRevealScrim to recommended architecture"
-    bug: "281655028"
-}
-
-flag {
    name: "theme_overlay_controller_wakefulness_deprecation"
    namespace: "systemui"
    description: "Replacing WakefulnessLifecycle by KeyguardTransitionInteractor in "
@@ -529,6 +522,14 @@ flag {
     description: "When there's a HUN, don't show the HUN text or icon in the status bar. Instead, "
        "continue showing the usual status bar."
     bug: "385740230"
+}
+
+flag {
+  name: "status_bar_font_updates"
+  namespace: "systemui"
+  description: "Read only flag for using a new font in the status bar"
+  bug: "393609116"
+  is_fixed_read_only: true
 }
 
 flag {
@@ -1443,16 +1444,6 @@ flag {
 }
 
 flag {
-  name: "dozeui_scheduling_alarms_background_execution"
-  namespace: "systemui"
-  description: "Decide whether to execute binder calls to schedule alarms in background thread"
-  bug: "330492575"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "media_lockscreen_launch_animation"
     namespace : "systemui"
     description : "Enable the origin launch animation for UMO when opening on top of lockscreen."
@@ -1865,6 +1856,13 @@ flag {
 }
 
 flag {
+  name: "shade_header_fonts"
+  namespace: "systemui"
+  description: "Updates the fonts of the shade header"
+  bug: "393609724"
+}
+
+flag {
     name: "keyboard_shortcut_helper_shortcut_customizer"
     namespace: "systemui"
     description: "An implementation of shortcut customizations through shortcut helper."
@@ -2136,3 +2134,14 @@ flag {
     description: "Enables return animations for status bar chips"
     bug: "202516970"
 }
+
+flag {
+    name: "media_projection_grey_error_text"
+    namespace: "systemui"
+    description: "Set the error text color to grey when app sharing is hidden by the requesting app"
+    bug: "400877402"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+

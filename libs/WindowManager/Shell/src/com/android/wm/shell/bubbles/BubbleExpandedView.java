@@ -27,6 +27,7 @@ import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_BUBBLES;
 import static com.android.wm.shell.bubbles.BubbleDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.wm.shell.bubbles.BubblePositioner.MAX_HEIGHT;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BUBBLES;
+import static com.android.wm.shell.shared.TypefaceUtils.setTypeface;
 
 import android.annotation.NonNull;
 import android.annotation.SuppressLint;
@@ -71,6 +72,7 @@ import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.AlphaOptimizedButton;
 import com.android.wm.shell.shared.TriangleShape;
+import com.android.wm.shell.shared.TypefaceUtils;
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.taskview.TaskView;
 
@@ -551,6 +553,7 @@ public class BubbleExpandedView extends LinearLayout {
         mManageButton = (AlphaOptimizedButton) LayoutInflater.from(ctw).inflate(
                 R.layout.bubble_manage_button, this /* parent */, false /* attach */);
         addView(mManageButton);
+        setTypeface(mManageButton, TypefaceUtils.FontFamily.GSF_LABEL_LARGE);
         mManageButton.setVisibility(visibility);
         setManageClickListener();
         post(() -> {

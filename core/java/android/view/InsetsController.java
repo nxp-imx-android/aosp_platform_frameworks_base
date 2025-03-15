@@ -1030,16 +1030,28 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 handlePendingControlRequest(statsToken);
             } else {
                 if (showTypes[0] != 0) {
+                    if ((showTypes[0] & ime()) != 0) {
+                        ImeTracker.forLogging().onProgress(statsToken,
+                                ImeTracker.PHASE_CLIENT_ON_CONTROLS_CHANGED);
+                    }
                     applyAnimation(showTypes[0], true /* show */, false /* fromIme */,
                             false /* skipsCallbacks */, statsToken);
                 }
                 if (hideTypes[0] != 0) {
+                    if ((hideTypes[0] & ime()) != 0) {
+                        ImeTracker.forLogging().onProgress(statsToken,
+                                ImeTracker.PHASE_CLIENT_ON_CONTROLS_CHANGED);
+                    }
                     applyAnimation(hideTypes[0], false /* show */, false /* fromIme */,
                             // The animation of hiding transient types shouldn't be detected by the
                             // app. Otherwise, it might be able to react to the callbacks and cause
                             // flickering.
                             (hideTypes[0] & ~transientTypes[0]) == 0 /* skipsCallbacks */,
                             statsToken);
+                }
+                if ((showTypes[0] & ime()) == 0 && (hideTypes[0] & ime()) == 0) {
+                    ImeTracker.forLogging().onCancelled(statsToken,
+                            ImeTracker.PHASE_CLIENT_ON_CONTROLS_CHANGED);
                 }
             }
         } else {

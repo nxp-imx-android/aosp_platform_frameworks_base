@@ -98,7 +98,7 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
         return false
     }
 
-    override fun isBubbleCapable(): Boolean {
+    override fun isBubble(): Boolean {
         return false
     }
 

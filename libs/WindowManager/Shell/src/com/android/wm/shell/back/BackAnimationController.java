@@ -332,7 +332,11 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
         @Override
         public void onThresholdCrossed() {
-            BackAnimationController.this.onThresholdCrossed();
+            if (predictiveBackDelayWmTransition()) {
+                mShellExecutor.execute(BackAnimationController.this::onThresholdCrossed);
+            } else {
+                BackAnimationController.this.onThresholdCrossed();
+            }
         }
 
         @Override
@@ -448,7 +452,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         final boolean shouldDispatchToAnimator = shouldDispatchToAnimator();
         if (!shouldDispatchToAnimator && mActiveCallback != null) {
             mCurrentTracker.updateStartLocation();
-            tryDispatchOnBackStarted(mActiveCallback, mCurrentTracker.createStartEvent());
+            tryDispatchOnBackStarted(mActiveCallback, mCurrentTracker.createStartEvent(null));
             if (mBackNavigationInfo != null && !isAppProgressGenerationAllowed()) {
                 tryPilferPointers();
             }
@@ -604,7 +608,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             mActiveCallback = mBackNavigationInfo.getOnBackInvokedCallback();
             // App is handling back animation. Cancel system animation latency tracking.
             cancelLatencyTracking();
-            tryDispatchOnBackStarted(mActiveCallback, touchTracker.createStartEvent());
+            tryDispatchOnBackStarted(mActiveCallback, touchTracker.createStartEvent(null));
             if (!isAppProgressGenerationAllowed()) {
                 tryPilferPointers();
             }
@@ -1041,7 +1045,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 () -> mShellExecutor.execute(this::onBackAnimationFinished));
 
         if (mApps.length >= 1) {
-            BackMotionEvent startEvent = mCurrentTracker.createStartEvent();
+            BackMotionEvent startEvent = mCurrentTracker.createStartEvent(mApps[0]);
             dispatchOnBackStarted(mActiveCallback, startEvent);
             if (startEvent.getSwipeEdge() == EDGE_NONE) {
                 // TODO(b/373544911): onBackStarted is dispatched here so that

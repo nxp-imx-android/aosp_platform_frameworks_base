@@ -23,6 +23,7 @@ import android.annotation.CallbackExecutor;
 import android.annotation.NonNull;
 import android.media.AudioDeviceAttributes;
 import android.media.AudioDeviceVolumeManager;
+import android.media.AudioManager;
 import android.media.VolumeInfo;
 
 import java.util.concurrent.Executor;
@@ -53,7 +54,7 @@ public interface AudioDeviceVolumeManagerWrapper {
 
     /**
      * Wrapper for {@link AudioDeviceVolumeManager#setDeviceAbsoluteVolumeBehavior(
-     * AudioDeviceAttributes, VolumeInfo, Executor, OnAudioDeviceVolumeChangedListener, boolean)}
+     * AudioDeviceAttributes, VolumeInfo, boolean, Executor, OnAudioDeviceVolumeChangedListener)}
      */
     void setDeviceAbsoluteVolumeBehavior(
             @NonNull AudioDeviceAttributes device,
@@ -64,7 +65,7 @@ public interface AudioDeviceVolumeManagerWrapper {
 
     /**
      * Wrapper for {@link AudioDeviceVolumeManager#setDeviceAbsoluteVolumeAdjustOnlyBehavior(
-     * AudioDeviceAttributes, VolumeInfo, Executor, OnAudioDeviceVolumeChangedListener, boolean)}
+     * AudioDeviceAttributes, VolumeInfo, boolean, Executor, OnAudioDeviceVolumeChangedListener)}
      */
     void setDeviceAbsoluteVolumeAdjustOnlyBehavior(
             @NonNull AudioDeviceAttributes device,
@@ -72,4 +73,16 @@ public interface AudioDeviceVolumeManagerWrapper {
             boolean handlesVolumeAdjustment,
             @NonNull @CallbackExecutor Executor executor,
             @NonNull AudioDeviceVolumeManager.OnAudioDeviceVolumeChangedListener vclistener);
+
+    /**
+     * Wraps {@link AudioDeviceVolumeManager#getDeviceVolumeBehavior(AudioDeviceAttributes)}
+     */
+    @AudioManager.DeviceVolumeBehavior
+    int getDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device);
+
+    /**
+     * Wraps {@link AudioDeviceVolumeManager#setDeviceVolumeBehavior(AudioDeviceAttributes, int)}
+     */
+    void setDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device,
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior);
 }

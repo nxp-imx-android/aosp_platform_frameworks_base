@@ -82,6 +82,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.content.pm.UserInfo;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Icon;
 import android.hardware.display.DisplayManager;
@@ -131,6 +132,7 @@ import com.android.internal.accessibility.util.ShortcutUtils;
 import com.android.internal.compat.IPlatformCompat;
 import com.android.internal.content.PackageMonitor;
 import com.android.server.LocalServices;
+import com.android.server.SystemService;
 import com.android.server.accessibility.AccessibilityManagerService.AccessibilityDisplayListener;
 import com.android.server.accessibility.magnification.FullScreenMagnificationController;
 import com.android.server.accessibility.magnification.MagnificationConnectionManager;
@@ -2116,6 +2118,36 @@ public class AccessibilityManagerServiceTest {
 
         int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
         mA11yms.switchUser(newUserId);
+        mTestableLooper.processAllMessages();
+
+        verify(mUserInitializationCompleteCallback).onUserInitializationComplete(newUserId);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
+    public void lifecycle_onUserSwitching_switchesUser() throws RemoteException {
+        mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
+        AccessibilityManagerService.Lifecycle lifecycle =
+                new AccessibilityManagerService.Lifecycle(mTestableContext, mA11yms);
+        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+
+        lifecycle.onUserSwitching(
+                new SystemService.TargetUser(new UserInfo(0, "USER", 0)),
+                new SystemService.TargetUser(new UserInfo(newUserId, "USER", 0)));
+        mTestableLooper.processAllMessages();
+
+        verify(mUserInitializationCompleteCallback).onUserInitializationComplete(newUserId);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
+    public void intent_user_switched_switchesUser() throws RemoteException {
+        mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
+        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        final Intent intent = new Intent(Intent.ACTION_USER_SWITCHED);
+        intent.putExtra(Intent.EXTRA_USER_HANDLE, newUserId);
+
+        sendBroadcastToAccessibilityManagerService(intent, mA11yms.getCurrentUserIdLocked());
         mTestableLooper.processAllMessages();
 
         verify(mUserInitializationCompleteCallback).onUserInitializationComplete(newUserId);

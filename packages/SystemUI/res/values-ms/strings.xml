@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Klik untuk menggandingkan peranti baharu"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Tidak dapat mengemaskinikan pratetapan"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Pratetapan"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Dipilih"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Persekitaran"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kiri"</string>
@@ -582,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Apabila anda berkongsi apl, apa-apa sahaja kandungan yang dipaparkan atau dimainkan dalam apl tersebut boleh dilihat oleh <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>. Oleh hal yang demikian, berhati-hati dengan perkara seperti kata laluan, butiran pembayaran, mesej, foto dan audio serta video."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Kongsi skrin"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> telah melumpuhkan pilihan ini"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Pilih apl untuk dikongsi"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Hantar skrin anda?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Hantar satu apl"</string>
@@ -794,8 +800,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Hidup - Berasaskan wajah"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Selesai"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Guna"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Matikan"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Senyap"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Lalai"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automatik"</string>
@@ -980,6 +985,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Seret ke sini untuk mengalih keluar"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Anda memerlukan sekurang-kurangnya <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> jubin"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edit"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Masa"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Tunjukkan jam, minit dan saat"</item>

@@ -50,6 +50,7 @@ import androidx.annotation.Nullable;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.shared.TriangleShape;
+import com.android.wm.shell.shared.TypefaceUtils;
 
 /**
  * Flyout view that appears as a 'chat bubble' alongside the bubble stack. The flyout can visually
@@ -165,8 +166,10 @@ public class BubbleFlyoutView extends FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.bubble_flyout, this, true);
         mFlyoutTextContainer = findViewById(R.id.bubble_flyout_text_container);
         mSenderText = findViewById(R.id.bubble_flyout_name);
+        TypefaceUtils.setTypeface(mSenderText, TypefaceUtils.FontFamily.GSF_LABEL_LARGE);
         mSenderAvatar = findViewById(R.id.bubble_flyout_avatar);
         mMessageText = mFlyoutTextContainer.findViewById(R.id.bubble_flyout_text);
+        TypefaceUtils.setTypeface(mMessageText, TypefaceUtils.FontFamily.GSF_BODY_MEDIUM);
 
         final Resources res = getResources();
         mFlyoutPadding = res.getDimensionPixelSize(R.dimen.bubble_flyout_padding_x);

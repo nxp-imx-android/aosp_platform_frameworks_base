@@ -24,6 +24,7 @@ import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPOR
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_CHECK_CREDENTIAL_UNLOCKED;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU;
+import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_EXPAND_PANEL;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_FACE_WAKE_AND_UNLOCK;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_FINGERPRINT_WAKE_AND_UNLOCK;
@@ -290,6 +291,16 @@ public class LatencyTracker {
      */
     public static final int ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU = 31;
 
+    /**
+     * Time it takes for the "exit desktop" mode animation to begin after the user provides input.
+     * <p>
+     * Starts when the user provides input to exit desktop mode and enter full screen mode for an
+     * app. This including selecting the full screen button in an app handle's menu, dragging an
+     * app's window handle to the top of the screen, and using the appropriate keyboard shortcut.
+     * Ends when the animation to exit desktop mode begins.
+     */
+    public static final int ACTION_DESKTOP_MODE_EXIT_MODE = 32;
+
     private static final int[] ACTIONS_ALL = {
         ACTION_EXPAND_PANEL,
         ACTION_TOGGLE_RECENTS,
@@ -323,6 +334,7 @@ public class LatencyTracker {
         ACTION_SHADE_WINDOW_DISPLAY_CHANGE,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
+        ACTION_DESKTOP_MODE_EXIT_MODE,
     };
 
     /** @hide */
@@ -359,6 +371,7 @@ public class LatencyTracker {
         ACTION_SHADE_WINDOW_DISPLAY_CHANGE,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
+        ACTION_DESKTOP_MODE_EXIT_MODE,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Action {}
@@ -397,6 +410,7 @@ public class LatencyTracker {
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_SHADE_WINDOW_DISPLAY_CHANGE,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
+            UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE,
     };
 
     private final Object mLock = new Object();
@@ -601,6 +615,8 @@ public class LatencyTracker {
                 return "ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG";
             case UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU:
                 return "ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU";
+            case UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE:
+                return "ACTION_DESKTOP_MODE_EXIT_MODE";
             default:
                 throw new IllegalArgumentException("Invalid action");
         }

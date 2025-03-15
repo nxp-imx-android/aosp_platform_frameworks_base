@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -81,6 +82,7 @@ import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.compose.modifiers.sysuiResTag
 import com.android.systemui.qs.flags.QSComposeFragment
+import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsButtonViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsForegroundServicesButtonViewModel
 import com.android.systemui.qs.footer.ui.viewmodel.FooterActionsSecurityButtonViewModel
@@ -388,6 +390,7 @@ private fun NewChangesDot(modifier: Modifier = Modifier) {
 }
 
 /** A larger button with an icon, some text and an optional dot (to indicate new changes). */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun TextButton(
     icon: Icon,
@@ -422,10 +425,13 @@ private fun TextButton(
             Text(
                 text,
                 Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium,
-                // TODO(b/242040009): Remove this letter spacing. We should only use the M3 text
-                // styles without modifying them.
-                letterSpacing = 0.01.em,
+                style =
+                    if (QsInCompose.isEnabled) {
+                        MaterialTheme.typography.labelLarge
+                    } else {
+                        MaterialTheme.typography.bodyMedium
+                    },
+                letterSpacing = if (QsInCompose.isEnabled) 0.em else 0.01.em,
                 color = colorAttr(R.attr.onShadeInactiveVariant),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

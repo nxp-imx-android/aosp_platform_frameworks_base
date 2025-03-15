@@ -87,7 +87,7 @@ constructor(
     val isBlurCurrentlySupported: StateFlow<Boolean> = repository.isBlurSupported
 
     /** Radius of blur to be applied on the window root view. */
-    val blurRadius: StateFlow<Int> = repository.blurRadius.asStateFlow()
+    val blurRadiusRequestedByShade: StateFlow<Int> = repository.blurRequestedByShade.asStateFlow()
 
     /** Whether the blur applied is opaque or transparent. */
     val isBlurOpaque: Flow<Boolean> =
@@ -128,7 +128,7 @@ constructor(
             return false
         }
         Log.d(TAG, "requestingBlurForShade for $blurRadius $opaque")
-        repository.blurRadius.value = blurRadius
+        repository.blurRequestedByShade.value = blurRadius
         repository.isBlurOpaque.value = opaque
         return true
     }

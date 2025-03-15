@@ -211,3 +211,10 @@ flag {
     description: "Makes the split divider snap 'magnetically' to available snap points during drag"
     bug: "383631946"
 }
+
+flag {
+    name: "enable_dynamic_insets_for_app_launch"
+    namespace: "multitasking"
+    description: "Enables dynamic insets for app launch so the window is properly cropped"
+    bug: "336511494"
+}
