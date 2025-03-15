@@ -863,7 +863,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (!isAppHandle(mWindowDecorViewHolder)) return;
         asAppHandle(mWindowDecorViewHolder).bindData(new AppHandleViewHolder.HandleData(
                 mTaskInfo, determineHandlePosition(), mResult.mCaptionWidth,
-                mResult.mCaptionHeight, isCaptionVisible()
+                mResult.mCaptionHeight, /* showInputLayer= */ isCaptionVisible(),
+                /* isCaptionVisible= */ isCaptionVisible()
         ));
     }
 
@@ -876,7 +877,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 inFullImmersive,
                 hasGlobalFocus,
                 /* maximizeHoverEnabled= */ canOpenMaximizeMenu(
-                    /* animatingTaskResizeOrReposition= */ false)
+                    /* animatingTaskResizeOrReposition= */ false),
+                isCaptionVisible()
         ));
     }
 
@@ -1866,7 +1868,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DesktopModeUtils.isTaskMaximized(mTaskInfo, mDisplayController),
                 inFullImmersive,
                 isFocused(),
-                /* maximizeHoverEnabled= */ canOpenMaximizeMenu(animatingTaskResizeOrReposition)));
+                /* maximizeHoverEnabled= */ canOpenMaximizeMenu(animatingTaskResizeOrReposition),
+                isCaptionVisible()));
     }
 
     /**

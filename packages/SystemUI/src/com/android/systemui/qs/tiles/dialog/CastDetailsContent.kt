@@ -20,18 +20,34 @@ import android.view.LayoutInflater
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.internal.R
+import com.android.internal.app.MediaRouteControllerContentManager
 
 @Composable
-fun CastDetailsContent() {
-    // TODO(b/378514236): Finish implementing this function.
+fun CastDetailsContent(castDetailsViewModel: CastDetailsViewModel) {
+    if (castDetailsViewModel.shouldShowChooserDialog()) {
+        // TODO(b/378514236): Show the chooser UI here.
+        return
+    }
+
+    val contentManager: MediaRouteControllerContentManager = remember {
+        castDetailsViewModel.createControllerContentManager()
+    }
+
     AndroidView(
         modifier = Modifier.fillMaxWidth().fillMaxHeight(),
         factory = { context ->
             // Inflate with the existing dialog xml layout
-            LayoutInflater.from(context).inflate(R.layout.media_route_controller_dialog, null)
+            val view =
+                LayoutInflater.from(context).inflate(R.layout.media_route_controller_dialog, null)
+            contentManager.bindViews(view)
+            contentManager.onAttachedToWindow()
+
+            view
         },
+        onRelease = { contentManager.onDetachedFromWindow() },
     )
 }

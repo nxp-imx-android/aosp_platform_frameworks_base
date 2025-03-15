@@ -252,6 +252,21 @@ constructor(
         }
     }
 
+    val settingsButtonViewModel =
+        MediaSettingsButtonViewModel(
+            icon =
+                Icon.Resource(
+                    res = R.drawable.ic_settings,
+                    contentDescription =
+                        ContentDescription.Resource(res = R.string.controls_media_settings_button),
+                ),
+            onClick = {
+                falsingSystem.runIfNotFalseTap(FalsingManager.LOW_PENALTY) {
+                    interactor.openMediaSettings()
+                }
+            },
+        )
+
     /** Whether the carousel should be visible. */
     val isCarouselVisible: Boolean
         get() =

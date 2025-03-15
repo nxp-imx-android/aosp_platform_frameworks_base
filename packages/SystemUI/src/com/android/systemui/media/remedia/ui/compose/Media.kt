@@ -33,6 +33,7 @@ import androidx.compose.animation.graphics.vector.AnimatedImageVector
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -54,6 +55,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
@@ -107,7 +110,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceIn
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.fastRoundToInt
@@ -120,6 +125,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
@@ -137,7 +143,9 @@ import com.android.systemui.media.remedia.ui.viewmodel.MediaNavigationViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaOutputSwitcherChipViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaPlayPauseActionViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaSecondaryActionViewModel
+import com.android.systemui.media.remedia.ui.viewmodel.MediaSettingsButtonViewModel
 import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -208,43 +216,16 @@ private fun CardCarouselContent(
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val pagerState =
-        rememberDismissibleHorizontalPagerState(
-            isDismissible = behavior.isCarouselDismissible,
-            isScrollingEnabled = behavior.isCarouselScrollingEnabled,
-        ) {
-            viewModel.cards.size
-        }
+    val pagerState = rememberPagerState { viewModel.cards.size }
+    LaunchedEffect(pagerState.currentPage) { viewModel.onCardSelected(pagerState.currentPage) }
+
     var isFalseTouchDetected: Boolean by
         remember(behavior.isCarouselScrollFalseTouch) { mutableStateOf(false) }
+    val isSwipingEnabled = behavior.isCarouselScrollingEnabled && !isFalseTouchDetected
 
     val roundedCornerShape = RoundedCornerShape(32.dp)
 
-    LaunchedEffect(pagerState.pagerState.currentPage) {
-        viewModel.onCardSelected(pagerState.pagerState.currentPage)
-    }
-
-    DismissibleHorizontalPager(
-        state = pagerState,
-        onDismissed = onDismissed,
-        pageSpacing = 8.dp,
-        key = { index -> viewModel.cards[index].key },
-        indicator = {
-            if (pagerState.pagerState.pageCount > 1) {
-                PagerDots(
-                    pagerState = pagerState.pagerState,
-                    activeColor = Color(0xffdee0ff),
-                    nonActiveColor = Color(0xffa7a9ca),
-                    dotSize = 6.dp,
-                    spaceSize = 6.dp,
-                    modifier =
-                        Modifier.align(Alignment.BottomCenter).padding(8.dp).graphicsLayer {
-                            translationX = pagerState.offset.value
-                        },
-                )
-            }
-        },
-        isFalseTouchDetected = isFalseTouchDetected,
+    Box(
         modifier =
             modifier.padding(8.dp).clip(roundedCornerShape).pointerInput(behavior) {
                 if (behavior.isCarouselScrollFalseTouch != null) {
@@ -253,13 +234,54 @@ private fun CardCarouselContent(
                         isFalseTouchDetected = behavior.isCarouselScrollFalseTouch.invoke()
                     }
                 }
-            },
-    ) { index ->
-        Card(
-            viewModel = viewModel.cards[index],
-            presentationStyle = presentationStyle,
-            modifier = Modifier.clip(roundedCornerShape),
-        )
+            }
+    ) {
+        @Composable
+        fun PagerContent(overscrollEffect: OverscrollEffect? = null) {
+            Box {
+                HorizontalPager(
+                    state = pagerState,
+                    userScrollEnabled = isSwipingEnabled,
+                    pageSpacing = 8.dp,
+                    key = { index: Int -> viewModel.cards[index].key },
+                    overscrollEffect = overscrollEffect ?: rememberOffsetOverscrollEffect(),
+                ) { pageIndex: Int ->
+                    Card(
+                        viewModel = viewModel.cards[pageIndex],
+                        presentationStyle = presentationStyle,
+                        modifier = Modifier.clip(roundedCornerShape),
+                    )
+                }
+
+                if (pagerState.pageCount > 1) {
+                    PagerDots(
+                        pagerState = pagerState,
+                        activeColor = Color(0xffdee0ff),
+                        nonActiveColor = Color(0xffa7a9ca),
+                        dotSize = 6.dp,
+                        spaceSize = 6.dp,
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
+                    )
+                }
+            }
+        }
+
+        if (behavior.isCarouselDismissible) {
+            SwipeToDismiss(content = { PagerContent() }, onDismissed = onDismissed)
+        } else {
+            val overscrollEffect = rememberOffsetOverscrollEffect()
+            SwipeToReveal(
+                foregroundContent = { PagerContent(overscrollEffect) },
+                foregroundContentEffect = overscrollEffect,
+                revealedContent = { revealAmount ->
+                    RevealedContent(
+                        viewModel = viewModel.settingsButtonViewModel,
+                        revealAmount = revealAmount,
+                    )
+                },
+                isSwipingEnabled = isSwipingEnabled,
+            )
+        }
     }
 }
 
@@ -496,16 +518,19 @@ private fun ContentScope.CardForegroundContent(
                     modifier = Modifier.weight(1f).padding(end = 8.dp),
                 )
 
+                val playPauseSize = DpSize(width = 48.dp, height = 48.dp)
                 if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
                     AnimatedVisibility(visible = viewModel.playPauseAction != null) {
                         PlayPauseAction(
                             viewModel = checkNotNull(viewModel.playPauseAction),
-                            buttonWidth = 48.dp,
+                            buttonSize = playPauseSize,
                             buttonColor = colorScheme.primary,
                             iconColor = colorScheme.onPrimary,
                             buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
                         )
                     }
+                } else {
+                    Spacer(Modifier.size(playPauseSize))
                 }
             }
 
@@ -565,14 +590,19 @@ private fun ContentScope.CardForegroundContent(
                     }
                 }
 
-                AnimatedVisibility(visible = viewModel.playPauseAction != null) {
-                    PlayPauseAction(
-                        viewModel = checkNotNull(viewModel.playPauseAction),
-                        buttonWidth = 48.dp,
-                        buttonColor = colorScheme.primary,
-                        iconColor = colorScheme.onPrimary,
-                        buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
-                    )
+                val playPauseSize = DpSize(width = 48.dp, height = 48.dp)
+                if (viewModel.actionButtonLayout == MediaCardActionButtonLayout.WithPlayPause) {
+                    AnimatedVisibility(visible = viewModel.playPauseAction != null) {
+                        PlayPauseAction(
+                            viewModel = checkNotNull(viewModel.playPauseAction),
+                            buttonSize = playPauseSize,
+                            buttonColor = colorScheme.primary,
+                            iconColor = colorScheme.onPrimary,
+                            buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 48.dp },
+                        )
+                    }
+                } else {
+                    Spacer(Modifier.size(playPauseSize))
                 }
             }
         }
@@ -628,7 +658,7 @@ private fun ContentScope.CompactCardForeground(
         AnimatedVisibility(visible = viewModel.playPauseAction != null) {
             PlayPauseAction(
                 viewModel = checkNotNull(viewModel.playPauseAction),
-                buttonWidth = 72.dp,
+                buttonSize = DpSize(width = 72.dp, height = 48.dp),
                 buttonColor = MaterialTheme.colorScheme.primaryContainer,
                 iconColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 buttonCornerRadius = { isPlaying -> if (isPlaying) 16.dp else 24.dp },
@@ -1084,7 +1114,7 @@ private fun OutputSwitcherChip(
 @Composable
 private fun ContentScope.PlayPauseAction(
     viewModel: MediaPlayPauseActionViewModel,
-    buttonWidth: Dp,
+    buttonSize: DpSize,
     buttonColor: Color,
     iconColor: Color,
     buttonCornerRadius: (isPlaying: Boolean) -> Dp,
@@ -1102,7 +1132,7 @@ private fun ContentScope.PlayPauseAction(
             enabled = viewModel.onClick != null,
             colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
             shape = RoundedCornerShape(cornerRadius),
-            modifier = Modifier.size(width = buttonWidth, height = 48.dp),
+            modifier = Modifier.size(buttonSize),
         ) {
             when (viewModel.state) {
                 is MediaSessionState.Playing,
@@ -1183,6 +1213,65 @@ private fun SecondaryActionContent(
         is MediaSecondaryActionViewModel.ReserveSpace -> Spacer(modifier = sharedModifier)
 
         is MediaSecondaryActionViewModel.None -> Unit
+    }
+}
+
+/**
+ * Renders the revealed content on the sides of the horizontal pager.
+ *
+ * @param revealAmount A callback that can return the amount of revealing done. This value will be
+ *   in a range slightly larger than `-1` to `+1` where `1` is fully revealed on the left-hand side,
+ *   `-1` is fully revealed on the right-hand side, and `0` is not revealed at all. Numbers lower
+ *   than `-1` or greater than `1` are possible when the overscroll effect adds additional pixels of
+ *   offset.
+ */
+@Composable
+private fun RevealedContent(
+    viewModel: MediaSettingsButtonViewModel,
+    revealAmount: () -> Float,
+    modifier: Modifier = Modifier,
+) {
+    val horizontalPadding = 18.dp
+
+    // This custom layout's purpose is only to place the icon in the center of the revealed content,
+    // taking into account the amount of reveal.
+    Layout(
+        content = {
+            Icon(
+                icon = viewModel.icon,
+                modifier =
+                    Modifier.size(48.dp)
+                        .padding(12.dp)
+                        .graphicsLayer {
+                            alpha = abs(revealAmount()).fastCoerceIn(0f, 1f)
+                            rotationZ = revealAmount() * 90
+                        }
+                        .clickable { viewModel.onClick() },
+            )
+        },
+        modifier = modifier,
+    ) { measurables, constraints ->
+        check(measurables.size == 1)
+        val placeable = measurables[0].measure(constraints)
+        val totalWidth =
+            min(horizontalPadding.roundToPx() * 2 + placeable.measuredWidth, constraints.maxWidth)
+
+        layout(totalWidth, constraints.maxHeight) {
+            coordinates?.size?.let { size ->
+                val reveal = revealAmount()
+                val x =
+                    if (reveal >= 0f) {
+                        ((size.width * abs(reveal)) - placeable.measuredWidth) / 2
+                    } else {
+                        size.width * (1 - abs(reveal) / 2) - placeable.measuredWidth / 2
+                    }
+
+                placeable.place(
+                    x = x.fastRoundToInt(),
+                    y = (size.height - placeable.measuredHeight) / 2,
+                )
+            }
+        }
     }
 }
 

@@ -1005,7 +1005,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else if (isAboveShelf() != wasAboveShelf) {
             mAboveShelfChangedListener.onAboveShelfStateChanged(!wasAboveShelf);
         }
-        updateBackgroundTint();
+        if (notificationRowTransparency()) {
+            updateBackgroundTint();
+        }
     }
 
     /**
@@ -3164,7 +3166,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     mChildrenContainer.setOnKeyguard(onKeyguard);
                 }
             }
-            updateBackgroundTint();
+            if (notificationRowTransparency()) {
+                updateBackgroundTint();
+            }
         }
     }
 

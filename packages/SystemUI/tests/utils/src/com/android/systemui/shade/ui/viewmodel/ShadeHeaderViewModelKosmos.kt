@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalKairosApi::class)
+
 package com.android.systemui.shade.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.battery.batteryMeterViewControllerFactory
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.kairos
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
@@ -46,6 +50,8 @@ val Kosmos.shadeHeaderViewModel: ShadeHeaderViewModel by
             tintedIconManagerFactory = tintedIconManagerFactory,
             batteryMeterViewControllerFactory = batteryMeterViewControllerFactory,
             statusBarIconController = mock<StatusBarIconController>(),
+            kairosNetwork = kairos,
+            mobileIconsViewModelKairos = mock(),
         )
     }
 

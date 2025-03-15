@@ -15,7 +15,6 @@
  */
 package com.android.wm.shell.windowdecor.viewholder
 
-import android.animation.ObjectAnimator
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.res.ColorStateList
@@ -40,8 +39,8 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.Accessibilit
 import com.android.internal.policy.SystemBarUtils
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
-import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
+import com.android.wm.shell.windowdecor.AppHandleAnimator
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 
@@ -57,22 +56,20 @@ class AppHandleViewHolder(
     private val handler: Handler
 ) : WindowDecorationViewHolder<AppHandleViewHolder.HandleData>(rootView) {
 
-    companion object {
-        private const val CAPTION_HANDLE_ANIMATION_DURATION: Long = 100
-    }
-
     data class HandleData(
         val taskInfo: RunningTaskInfo,
         val position: Point,
         val width: Int,
         val height: Int,
-        val showInputLayer: Boolean
+        val showInputLayer: Boolean,
+        val isCaptionVisible: Boolean,
     ) : Data()
 
     private lateinit var taskInfo: RunningTaskInfo
     private val captionView: View = rootView.requireViewById(R.id.desktop_mode_caption)
     private val captionHandle: ImageButton = rootView.requireViewById(R.id.caption_handle)
     private val inputManager = context.getSystemService(InputManager::class.java)
+    private val animator: AppHandleAnimator = AppHandleAnimator(rootView, captionHandle)
     private var statusBarInputLayerExists = false
 
     // An invisible View that takes up the same coordinates as captionHandle but is layered
@@ -101,7 +98,14 @@ class AppHandleViewHolder(
     }
 
     override fun bindData(data: HandleData) {
-        bindData(data.taskInfo, data.position, data.width, data.height, data.showInputLayer)
+        bindData(
+            data.taskInfo,
+            data.position,
+            data.width,
+            data.height,
+            data.showInputLayer,
+            data.isCaptionVisible
+        )
     }
 
     private fun bindData(
@@ -109,8 +113,10 @@ class AppHandleViewHolder(
         position: Point,
         width: Int,
         height: Int,
-        showInputLayer: Boolean
+        showInputLayer: Boolean,
+        isCaptionVisible: Boolean
     ) {
+        setVisibility(isCaptionVisible)
         captionHandle.imageTintList = ColorStateList.valueOf(getCaptionHandleBarColor(taskInfo))
         this.taskInfo = taskInfo
         // If handle is not in status bar region(i.e., bottom stage in vertical split),
@@ -131,11 +137,11 @@ class AppHandleViewHolder(
     }
 
     override fun onHandleMenuOpened() {
-        animateCaptionHandleAlpha(startValue = 1f, endValue = 0f)
+        animator.animateCaptionHandleAlpha(startValue = 1f, endValue = 0f)
     }
 
     override fun onHandleMenuClosed() {
-        animateCaptionHandleAlpha(startValue = 0f, endValue = 1f)
+        animator.animateCaptionHandleAlpha(startValue = 0f, endValue = 1f)
     }
 
     private fun createStatusBarInputLayer(handlePosition: Point,
@@ -239,6 +245,17 @@ class AppHandleViewHolder(
         }
     }
 
+    private fun setVisibility(visible: Boolean) {
+        val v = if (visible) View.VISIBLE else View.GONE
+        if (
+            captionView.visibility == v ||
+                !DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()
+        ) {
+            return
+        }
+        animator.animateVisibilityChange(v)
+    }
+
     private fun getCaptionHandleBarColor(taskInfo: RunningTaskInfo): Int {
         return if (shouldUseLightCaptionColors(taskInfo)) {
             context.getColor(R.color.desktop_mode_caption_handle_bar_light)
@@ -264,17 +281,9 @@ class AppHandleViewHolder(
             } ?: false
     }
 
-    /** Animate appearance/disappearance of caption handle as the handle menu is animated. */
-    private fun animateCaptionHandleAlpha(startValue: Float, endValue: Float) {
-        val animator =
-            ObjectAnimator.ofFloat(captionHandle, View.ALPHA, startValue, endValue).apply {
-                duration = CAPTION_HANDLE_ANIMATION_DURATION
-                interpolator = Interpolators.FAST_OUT_SLOW_IN
-            }
-        animator.start()
+    override fun close() {
+        animator.cancel()
     }
-
-    override fun close() {}
 
     /** Factory class for creating [AppHandleViewHolder] objects. */
     class Factory {

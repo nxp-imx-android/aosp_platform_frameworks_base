@@ -51,6 +51,7 @@ import static com.android.window.flags.Flags.balRequireOptInByPendingIntentCreat
 import static com.android.window.flags.Flags.balShowToastsBlocked;
 import static com.android.window.flags.Flags.balStrictModeGracePeriod;
 import static com.android.window.flags.Flags.balStrictModeRo;
+import static com.android.window.flags.Flags.balAdditionalLogging;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.util.Objects.requireNonNull;
@@ -1939,6 +1940,7 @@ public class BackgroundActivityStartController {
             }
         }
         logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NON_APP_VISIBLE_WINDOW);
+        logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_TOKEN);
 
         if (balImprovedMetrics()) {
             if (shouldLogStats(finalVerdict, state)) {
@@ -1998,8 +2000,10 @@ public class BackgroundActivityStartController {
                 return false;
             } else {
                 // log to determine grace period length distribution
-                Slog.wtf(TAG, "Activity start ONLY allowed by " + balCodeToString(balCode) + " "
-                        + finalVerdict.mMessage + ": " + state);
+                if (balAdditionalLogging()) {
+                    Slog.wtf(TAG, "Activity start ONLY allowed by " + balCodeToString(balCode) + " "
+                            + finalVerdict.mMessage + ": " + state);
+                }
                 return true;
             }
         }

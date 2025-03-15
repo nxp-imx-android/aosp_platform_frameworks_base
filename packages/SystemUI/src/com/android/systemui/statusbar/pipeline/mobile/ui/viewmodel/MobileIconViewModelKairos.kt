@@ -60,17 +60,12 @@ interface MobileIconViewModelKairosCommon {
 }
 
 /**
- * View model for the state of a single mobile icon. Each [MobileIconViewModel] will keep watch over
- * a single line of service via [MobileIconInteractorKairos] and update the UI based on that
- * subscription's information.
+ * View model for the state of a single mobile icon. Each [MobileIconViewModelKairos] will keep
+ * watch over a single line of service via [MobileIconInteractorKairos] and update the UI based on
+ * that subscription's information.
  *
  * There will be exactly one [MobileIconViewModelKairos] per filtered subscription offered from
  * [MobileIconsInteractorKairos.filteredSubscriptions].
- *
- * For the sake of keeping log spam in check, every flow funding the
- * [MobileIconViewModelKairosCommon] interface is implemented as a [StateFlow]. This ensures that
- * each location-based mobile icon view model gets the exact same information, as well as allows us
- * to log that unified state only once per icon.
  */
 @ExperimentalKairosApi
 class MobileIconViewModelKairos(

@@ -27,6 +27,7 @@ import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.View;
 import android.view.WindowInsets;
+import android.window.DesktopModeFlags;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.NonNull;
@@ -88,6 +89,9 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
         updateRelayoutParams(mRelayoutParams, taskInfo, isCaptionVisible);
 
         relayout(mRelayoutParams, startT, finishT, wct, mRootView, mResult);
+        if (DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
+            setCaptionVisibility(isCaptionVisible);
+        }
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo
         mBgExecutor.execute(() -> mTaskOrganizer.applyTransaction(wct));
 
@@ -100,6 +104,15 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
             mRootView = mResult.mRootView;
             setupRootView(mResult.mRootView, mClickListener);
         }
+    }
+
+    private void setCaptionVisibility(boolean visible) {
+        if (mRootView == null) {
+            return;
+        }
+        final int v = visible ? View.VISIBLE : View.GONE;
+        final View captionView = mRootView.findViewById(getCaptionViewId());
+        captionView.setVisibility(v);
     }
 
     @Override

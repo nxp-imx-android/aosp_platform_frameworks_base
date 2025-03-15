@@ -256,6 +256,7 @@ public class SettingsToPropertiesMapper {
         "pixel_vpn",
         "pixel_watch",
         "pixel_watch_debug_trace",
+        "pixel_watch_watchfaces",
         "pixel_wifi",
         "platform_compat",
         "platform_security",
