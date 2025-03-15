@@ -88,6 +88,23 @@ public class AutoclickControllerTest {
         }
     }
 
+    public static class ScrollEventCaptor extends BaseEventStreamTransformation {
+        public MotionEvent scrollEvent;
+        public int eventCount = 0;
+
+        @Override
+        public void onMotionEvent(MotionEvent event, MotionEvent rawEvent, int policyFlags) {
+            if (event.getAction() == MotionEvent.ACTION_SCROLL) {
+                if (scrollEvent != null) {
+                    scrollEvent.recycle();
+                }
+                scrollEvent = MotionEvent.obtain(event);
+                eventCount++;
+            }
+            super.onMotionEvent(event, rawEvent, policyFlags);
+        }
+    }
+
     @Before
     public void setUp() {
         mTestableLooper = TestableLooper.get(this);
@@ -916,6 +933,110 @@ public class AutoclickControllerTest {
         assertThat(motionEventCaptor.downEvent).isNotNull();
         assertThat(motionEventCaptor.downEvent.getButtonState()).isEqualTo(
                 MotionEvent.BUTTON_PRIMARY);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void sendClick_updateLastCursorAndScrollAtThatLocation() {
+        // Set up event capturer to track scroll events.
+        ScrollEventCaptor scrollCaptor = new ScrollEventCaptor();
+        mController.setNext(scrollCaptor);
+
+        // Initialize controller with mouse event.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Mock the scroll panel.
+        AutoclickScrollPanel mockScrollPanel = mock(AutoclickScrollPanel.class);
+        mController.mAutoclickScrollPanel = mockScrollPanel;
+
+        // Set click type to scroll.
+        mController.clickPanelController.handleAutoclickTypeChange(
+                AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL);
+
+        // Set cursor position.
+        float expectedX = 75f;
+        float expectedY = 125f;
+        mController.mLastCursorX = expectedX;
+        mController.mLastCursorY = expectedY;
+
+        // Trigger scroll action in up direction.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_UP, true);
+
+        // Verify scroll event happens at last cursor location.
+        assertThat(scrollCaptor.scrollEvent).isNotNull();
+        assertThat(scrollCaptor.scrollEvent.getX()).isEqualTo(expectedX);
+        assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(expectedY);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void handleScroll_generatesCorrectScrollEvents() {
+        ScrollEventCaptor scrollCaptor = new ScrollEventCaptor();
+        mController.setNext(scrollCaptor);
+
+        // Initialize controller.
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Set cursor position.
+        final float expectedX = 100f;
+        final float expectedY = 200f;
+        mController.mLastCursorX = expectedX;
+        mController.mLastCursorY = expectedY;
+
+        // Test UP direction.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_UP, true);
+
+        // Verify basic event properties.
+        assertThat(scrollCaptor.eventCount).isEqualTo(1);
+        assertThat(scrollCaptor.scrollEvent).isNotNull();
+        assertThat(scrollCaptor.scrollEvent.getAction()).isEqualTo(MotionEvent.ACTION_SCROLL);
+        assertThat(scrollCaptor.scrollEvent.getX()).isEqualTo(expectedX);
+        assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(expectedY);
+
+        // Verify UP direction uses correct axis values.
+        float vScrollUp = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_VSCROLL);
+        float hScrollUp = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_HSCROLL);
+        assertThat(vScrollUp).isGreaterThan(0);
+        assertThat(hScrollUp).isEqualTo(0);
+
+        // Test DOWN direction.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_DOWN, true);
+
+        // Verify DOWN direction uses correct axis values.
+        assertThat(scrollCaptor.eventCount).isEqualTo(2);
+        float vScrollDown = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_VSCROLL);
+        float hScrollDown = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_HSCROLL);
+        assertThat(vScrollDown).isLessThan(0);
+        assertThat(hScrollDown).isEqualTo(0);
+
+        // Test LEFT direction.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_LEFT, true);
+
+        // Verify LEFT direction uses correct axis values.
+        assertThat(scrollCaptor.eventCount).isEqualTo(3);
+        float vScrollLeft = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_VSCROLL);
+        float hScrollLeft = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_HSCROLL);
+        assertThat(hScrollLeft).isGreaterThan(0);
+        assertThat(vScrollLeft).isEqualTo(0);
+
+        // Test RIGHT direction.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_RIGHT, true);
+
+        // Verify RIGHT direction uses correct axis values.
+        assertThat(scrollCaptor.eventCount).isEqualTo(4);
+        float vScrollRight = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_VSCROLL);
+        float hScrollRight = scrollCaptor.scrollEvent.getAxisValue(MotionEvent.AXIS_HSCROLL);
+        assertThat(hScrollRight).isLessThan(0);
+        assertThat(vScrollRight).isEqualTo(0);
+
+        // Verify scroll cursor position is preserved.
+        assertThat(scrollCaptor.scrollEvent.getX()).isEqualTo(expectedX);
+        assertThat(scrollCaptor.scrollEvent.getY()).isEqualTo(expectedY);
     }
 
     private void injectFakeMouseActionHoverMoveEvent() {
