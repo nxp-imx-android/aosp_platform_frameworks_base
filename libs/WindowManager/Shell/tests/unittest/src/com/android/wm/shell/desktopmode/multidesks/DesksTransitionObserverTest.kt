@@ -264,6 +264,36 @@ class DesksTransitionObserverTest : ShellTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionFinish_deactivateDesk_updatesRepository() {
+        val transition = Binder()
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(deactivateTransition)
+        observer.onTransitionFinished(transition)
+
+        assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun onTransitionMergedAndFinished_deactivateDesk_updatesRepository() {
+        val transition = Binder()
+        val deactivateTransition = DeskTransition.DeactivateDesk(transition, deskId = 5)
+        repository.addDesk(DEFAULT_DISPLAY, deskId = 5)
+        repository.setActiveDesk(DEFAULT_DISPLAY, deskId = 5)
+
+        observer.addPendingTransition(deactivateTransition)
+        val bookEndTransition = Binder()
+        observer.onTransitionMerged(merged = transition, playing = bookEndTransition)
+        observer.onTransitionFinished(bookEndTransition)
+
+        assertThat(repository.getActiveDeskId(DEFAULT_DISPLAY)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun onTransitionReady_twoPendingTransitions_handlesBoth() {
         val transition = Binder()
         // Active one desk and deactivate another in different displays, such as in some

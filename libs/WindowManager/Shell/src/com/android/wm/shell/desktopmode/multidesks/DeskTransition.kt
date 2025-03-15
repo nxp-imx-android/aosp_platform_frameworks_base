@@ -18,9 +18,12 @@ package com.android.wm.shell.desktopmode.multidesks
 import android.os.IBinder
 
 /** Represents shell-started transitions involving desks. */
-sealed class DeskTransition {
+sealed interface DeskTransition {
     /** The transition token. */
-    abstract val token: IBinder
+    val token: IBinder
+
+    /** Returns a copy of this desk transition with a new transition token. */
+    fun copyWithToken(token: IBinder): DeskTransition
 
     /** A transition to remove a desk and its tasks from a display. */
     data class RemoveDesk(
@@ -29,11 +32,15 @@ sealed class DeskTransition {
         val deskId: Int,
         val tasks: Set<Int>,
         val onDeskRemovedListener: OnDeskRemovedListener?,
-    ) : DeskTransition()
+    ) : DeskTransition {
+        override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
+    }
 
     /** A transition to activate a desk in its display. */
     data class ActivateDesk(override val token: IBinder, val displayId: Int, val deskId: Int) :
-        DeskTransition()
+        DeskTransition {
+        override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
+    }
 
     /** A transition to activate a desk by moving an outside task to it. */
     data class ActiveDeskWithTask(
@@ -41,8 +48,12 @@ sealed class DeskTransition {
         val displayId: Int,
         val deskId: Int,
         val enterTaskId: Int,
-    ) : DeskTransition()
+    ) : DeskTransition {
+        override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
+    }
 
     /** A transition to deactivate a desk. */
-    data class DeactivateDesk(override val token: IBinder, val deskId: Int) : DeskTransition()
+    data class DeactivateDesk(override val token: IBinder, val deskId: Int) : DeskTransition {
+        override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
+    }
 }
