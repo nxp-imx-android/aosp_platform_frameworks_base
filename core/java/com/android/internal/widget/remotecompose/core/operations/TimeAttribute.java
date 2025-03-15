@@ -266,10 +266,12 @@ public class TimeAttribute extends PaintOperation {
             case TIME_FROM_NOW_SEC:
             case TIME_FROM_ARG_SEC:
                 ctx.loadFloat(mId, (delta) * 1E-3f);
+                ctx.needsRepaint();
                 break;
             case TIME_FROM_ARG_MIN:
             case TIME_FROM_NOW_MIN:
                 ctx.loadFloat(mId, (float) (delta * 1E-3 / 60));
+                ctx.needsRepaint();
                 break;
             case TIME_FROM_ARG_HR:
             case TIME_FROM_NOW_HR:
@@ -298,6 +300,7 @@ public class TimeAttribute extends PaintOperation {
                 break;
             case TIME_FROM_LOAD_SEC:
                 ctx.loadFloat(mId, (value - load_time) * 1E-3f);
+                ctx.needsRepaint();
                 break;
         }
     }
