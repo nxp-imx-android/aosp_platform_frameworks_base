@@ -30,6 +30,7 @@ import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.TaskInfo;
 import android.content.Context;
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
 import android.os.IBinder;
@@ -41,6 +42,11 @@ import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
+
+import androidx.core.animation.Animator;
+import androidx.core.animation.Animator.AnimatorUpdateListener;
+import androidx.core.animation.AnimatorListenerAdapter;
+import androidx.core.animation.ValueAnimator;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.launcher3.icons.BubbleIconFactory;
@@ -111,6 +117,11 @@ public class BubbleTransitions {
             TaskInfo taskInfo) {
         ConvertFromBubble convert = new ConvertFromBubble(bubble, taskInfo);
         return convert;
+    }
+
+    /** Starts a transition that converts a dragged bubble icon to a full screen task. */
+    public BubbleTransition startDraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation) {
+        return new DraggedBubbleIconToFullscreen(bubble, dropLocation);
     }
 
     /**
@@ -607,8 +618,7 @@ public class BubbleTransitions {
             mTaskLeash = taskChg.getLeash();
             mRootLeash = info.getRoot(0).getLeash();
 
-            SurfaceControl dest =
-                    mBubble.getBubbleBarExpandedView().getViewRootImpl().getSurfaceControl();
+            SurfaceControl dest = getExpandedView(mBubble).getViewRootImpl().getSurfaceControl();
             final Runnable onPlucked = () -> {
                 // Need to remove the taskview AFTER applying the startTransaction because
                 // it isn't synchronized.
@@ -618,12 +628,12 @@ public class BubbleTransitions {
                 mBubbleData.setExpanded(false /* expanded */);
             };
             if (dest != null) {
-                pluck(mTaskLeash, mBubble.getBubbleBarExpandedView(), dest,
+                pluck(mTaskLeash, getExpandedView(mBubble), dest,
                         taskChg.getStartAbsBounds().left - info.getRoot(0).getOffset().x,
                         taskChg.getStartAbsBounds().top - info.getRoot(0).getOffset().y,
-                        mBubble.getBubbleBarExpandedView().getCornerRadius(), startTransaction,
+                        getCornerRadius(mBubble), startTransaction,
                         onPlucked);
-                mBubble.getBubbleBarExpandedView().post(() -> mTransitions.dispatchTransition(
+                getExpandedView(mBubble).post(() -> mTransitions.dispatchTransition(
                         mTransition, info, startTransaction, finishTransaction, finishCallback,
                         null));
             } else {
@@ -639,10 +649,175 @@ public class BubbleTransitions {
         @Override
         public void continueCollapse() {
             mBubble.cleanupTaskView();
-            if (mTaskLeash == null || !mTaskLeash.isValid()) return;
+            if (mTaskLeash == null || !mTaskLeash.isValid() || !mRootLeash.isValid()) return;
             SurfaceControl.Transaction t = new SurfaceControl.Transaction();
             t.reparent(mTaskLeash, mRootLeash);
             t.apply();
         }
+
+        private View getExpandedView(@NonNull Bubble bubble) {
+            if (bubble.getBubbleBarExpandedView() != null) {
+                return bubble.getBubbleBarExpandedView();
+            }
+            return bubble.getExpandedView();
+        }
+
+        private float getCornerRadius(@NonNull Bubble bubble) {
+            if (bubble.getBubbleBarExpandedView() != null) {
+                return bubble.getBubbleBarExpandedView().getCornerRadius();
+            }
+            return bubble.getExpandedView().getCornerRadius();
+        }
+    }
+
+    /**
+     * A transition that converts a dragged bubble icon to a full screen window.
+     *
+     * <p>This transition assumes that the bubble is invisible so it is simply sent to front.
+     */
+    class DraggedBubbleIconToFullscreen implements Transitions.TransitionHandler, BubbleTransition {
+
+        IBinder mTransition;
+        final Bubble mBubble;
+        final Point mDropLocation;
+        final TransactionProvider mTransactionProvider;
+
+        DraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation) {
+            this(bubble, dropLocation, SurfaceControl.Transaction::new);
+        }
+
+        @VisibleForTesting
+        DraggedBubbleIconToFullscreen(Bubble bubble, Point dropLocation,
+                TransactionProvider transactionProvider) {
+            mBubble = bubble;
+            mDropLocation = dropLocation;
+            mTransactionProvider = transactionProvider;
+            bubble.setPreparingTransition(this);
+            WindowContainerToken token = bubble.getTaskView().getTaskInfo().getToken();
+            WindowContainerTransaction wct = new WindowContainerTransaction();
+            wct.setAlwaysOnTop(token, false);
+            wct.setWindowingMode(token, WINDOWING_MODE_UNDEFINED);
+            wct.reorder(token, /* onTop= */ true);
+            wct.setHidden(token, false);
+            mTaskOrganizer.setInterceptBackPressedOnTaskRoot(token, false);
+            mTaskViewTransitions.enqueueExternal(bubble.getTaskView().getController(), () -> {
+                mTransition = mTransitions.startTransition(TRANSIT_TO_FRONT, wct, this);
+                return mTransition;
+            });
+        }
+
+        @Override
+        public void skip() {
+            mBubble.setPreparingTransition(null);
+        }
+
+        @Override
+        public boolean startAnimation(@NonNull IBinder transition, @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startTransaction,
+                @NonNull SurfaceControl.Transaction finishTransaction,
+                @NonNull Transitions.TransitionFinishCallback finishCallback) {
+            if (mTransition != transition) {
+                return false;
+            }
+
+            final TaskViewTaskController taskViewTaskController =
+                    mBubble.getTaskView().getController();
+            if (taskViewTaskController == null) {
+                mTaskViewTransitions.onExternalDone(transition);
+                finishCallback.onTransitionFinished(null);
+                return true;
+            }
+
+            TransitionInfo.Change change = findTransitionChange(info);
+            if (change == null) {
+                Slog.w(TAG, "Expected a TaskView transition to front but didn't find "
+                        + "one, cleaning up the task view");
+                taskViewTaskController.setTaskNotFound();
+                mTaskViewTransitions.onExternalDone(transition);
+                finishCallback.onTransitionFinished(null);
+                return true;
+            }
+            mRepository.remove(taskViewTaskController);
+
+            final SurfaceControl taskLeash = change.getLeash();
+            // set the initial position of the task with 0 scale
+            startTransaction.setPosition(taskLeash, mDropLocation.x, mDropLocation.y);
+            startTransaction.setScale(taskLeash, 0, 0);
+            startTransaction.apply();
+
+            final SurfaceControl.Transaction animT = mTransactionProvider.get();
+            ValueAnimator animator = ValueAnimator.ofFloat(0, 1);
+            animator.setDuration(250);
+            animator.addUpdateListener(new AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(@NonNull Animator animation) {
+                    float progress = animator.getAnimatedFraction();
+                    float x = mDropLocation.x * (1 - progress);
+                    float y = mDropLocation.y * (1 - progress);
+                    animT.setPosition(taskLeash, x, y);
+                    animT.setScale(taskLeash, progress, progress);
+                    animT.apply();
+                }
+            });
+            animator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(@NonNull Animator animation) {
+                    animT.close();
+                    finishCallback.onTransitionFinished(null);
+                }
+            });
+            animator.start();
+            taskViewTaskController.notifyTaskRemovalStarted(mBubble.getTaskView().getTaskInfo());
+            mTaskViewTransitions.onExternalDone(transition);
+            return true;
+        }
+
+        private TransitionInfo.Change findTransitionChange(TransitionInfo info) {
+            TransitionInfo.Change result = null;
+            WindowContainerToken token = mBubble.getTaskView().getTaskInfo().getToken();
+            for (int i = 0; i < info.getChanges().size(); ++i) {
+                final TransitionInfo.Change change = info.getChanges().get(i);
+                if (change.getTaskInfo() == null) {
+                    continue;
+                }
+                if (change.getMode() != TRANSIT_TO_FRONT) {
+                    continue;
+                }
+                if (!token.equals(change.getTaskInfo().token)) {
+                    continue;
+                }
+                result = change;
+                break;
+            }
+            return result;
+        }
+
+        @Override
+        public void mergeAnimation(@NonNull IBinder transition, @NonNull TransitionInfo info,
+                @NonNull SurfaceControl.Transaction startTransaction,
+                @NonNull SurfaceControl.Transaction finishTransaction,
+                @NonNull IBinder mergeTarget,
+                @NonNull Transitions.TransitionFinishCallback finishCallback) {
+        }
+
+        @Override
+        public WindowContainerTransaction handleRequest(@NonNull IBinder transition,
+                @NonNull TransitionRequestInfo request) {
+            return null;
+        }
+
+        @Override
+        public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
+                @Nullable SurfaceControl.Transaction finishTransaction) {
+            if (!aborted) {
+                return;
+            }
+            mTransition = null;
+            mTaskViewTransitions.onExternalDone(transition);
+        }
+    }
+
+    interface TransactionProvider {
+        SurfaceControl.Transaction get();
     }
 }

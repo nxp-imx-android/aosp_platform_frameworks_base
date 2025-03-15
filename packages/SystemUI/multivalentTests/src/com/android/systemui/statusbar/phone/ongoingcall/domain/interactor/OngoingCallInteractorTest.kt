@@ -23,7 +23,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -36,6 +35,7 @@ import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCall
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.removeOngoingCallState
 import com.android.systemui.statusbar.window.fakeStatusBarWindowControllerStore
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -51,7 +51,7 @@ import org.mockito.kotlin.verify
 @RunWith(AndroidJUnit4::class)
 @EnableChipsModernization
 class OngoingCallInteractorTest : SysuiTestCase() {
-    private val kosmos = Kosmos().useUnconfinedTestDispatcher()
+    private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val underTest = kosmos.ongoingCallInteractor
 
     @Before

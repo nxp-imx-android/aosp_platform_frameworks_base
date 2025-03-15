@@ -394,7 +394,7 @@ constructor(
                 // Only drag down on sensitive views, otherwise the ExpandHelper will take this
                 return if (NotificationBundleUi.isEnabled)
                     view.entryAdapter?.isSensitive?.value == true
-                else view.entry.isSensitive.value
+                else view.entryLegacy.isSensitive.value
             }
         }
         return false
@@ -569,7 +569,7 @@ constructor(
             if (NotificationBundleUi.isEnabled) {
                 userId = expandView.entryAdapter?.sbn?.userId!!
             } else {
-                userId = expandView.entry.sbn.userId
+                userId = expandView.entryLegacy.sbn.userId
             }
         }
         var fullShadeNeedsBouncer =

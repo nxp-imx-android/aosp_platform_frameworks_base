@@ -3238,6 +3238,15 @@ interface ITelephony {
     boolean setOemEnabledSatelliteProvisionStatus(in boolean reset, in boolean isProvisioned);
 
     /**
+     * This API is used by CTS to override the version of the config data
+     *
+     * @param reset Whether to restore the original version
+     * @param version The overriding version
+     * @return {@code true} if successful, {@code false} otherwise
+     */
+    boolean overrideConfigDataVersion(in boolean reset, in int version);
+
+    /**
      * Test method to confirm the file contents are not altered.
      */
      @JavaPassthrough(annotation="@android.annotation.RequiresPermission("

@@ -74,7 +74,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 import android.Manifest;
 import android.app.ActivityManager;
@@ -584,7 +583,7 @@ public class ActivityManagerServiceTest {
             if (app.uid == uidRec.getUid() && expectedBlockState == NETWORK_STATE_BLOCK) {
                 verify(app.getThread()).setNetworkBlockSeq(uidRec.curProcStateSeq);
             } else {
-                verifyZeroInteractions(app.getThread());
+                verifyNoMoreInteractions(app.getThread());
             }
             Mockito.reset(app.getThread());
         }

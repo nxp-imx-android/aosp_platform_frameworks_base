@@ -167,7 +167,11 @@ final class DeviceSelectActionFromTv extends HdmiCecFeatureAction {
     private boolean handleReportPowerStatus(int powerStatus) {
         switch (powerStatus) {
             case HdmiControlManager.POWER_STATUS_ON:
-                selectDevice();
+                if (tv().getActiveSource().physicalAddress == mTarget.getPhysicalAddress()) {
+                    finishWithCallback(HdmiControlManager.RESULT_SUCCESS);
+                } else {
+                    selectDevice();
+                }
                 return true;
             case HdmiControlManager.POWER_STATUS_TRANSIENT_TO_STANDBY:
                 if (mPowerStatusCounter < 4) {

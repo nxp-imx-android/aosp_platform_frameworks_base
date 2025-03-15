@@ -277,8 +277,10 @@ interface IWindowSession {
      *
      * @param window The window that is insets animaiton is running.
      * @param animatingTypes Indicates the currently animating insets types.
+     * @param imeStatsToken the token tracking the current IME request or {@code null} otherwise.
      */
-    oneway void updateAnimatingTypes(IWindow window, int animatingTypes);
+    oneway void updateAnimatingTypes(IWindow window, int animatingTypes,
+            in @nullable ImeTracker.Token imeStatsToken);
 
     /**
      * Called when the system gesture exclusion has changed.
@@ -311,8 +313,9 @@ interface IWindowSession {
     /**
      * Update the flags on an input channel associated with a particular surface.
      */
-    oneway void updateInputChannel(in IBinder channelToken, int displayId,
-            in SurfaceControl surface, int flags, int privateFlags, int inputFeatures,
+    oneway void updateInputChannel(in IBinder channelToken,
+            in @nullable InputTransferToken hostInputTransferToken,
+            int displayId, in SurfaceControl surface, int flags, int privateFlags, int inputFeatures,
             in Region region);
 
     /**

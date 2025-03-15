@@ -37,7 +37,6 @@ import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.swipeWithVelocity
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.FeatureCaptures.elementAlpha
@@ -47,8 +46,8 @@ import com.android.compose.animation.scene.SceneTransitionLayoutForTesting
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.featureOfElement
 import com.android.compose.animation.scene.transitions
-import com.android.mechanics.behavior.EdgeContainerExpansionSpec
-import com.android.mechanics.behavior.edgeContainerExpansionBackground
+import com.android.mechanics.behavior.VerticalExpandContainerSpec
+import com.android.mechanics.behavior.verticalExpandContainerBackground
 import kotlin.math.sin
 import kotlinx.coroutines.CoroutineScope
 import org.junit.Rule
@@ -63,26 +62,48 @@ import platform.test.motion.compose.createFixedConfigurationComposeMotionTestRul
 import platform.test.motion.compose.recordMotion
 import platform.test.motion.compose.runTest
 import platform.test.motion.testing.createGoldenPathManager
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
+import platform.test.screenshot.PathConfig
+import platform.test.screenshot.PathElementNoContext
 
-@RunWith(AndroidJUnit4::class)
 @MotionTest
-class ContentRevealTest {
+@RunWith(ParameterizedAndroidJunit4::class)
+class ContentRevealTest(private val isFloating: Boolean) {
+
+    private val pathConfig =
+        PathConfig(
+            PathElementNoContext("floating", isDir = false) {
+                if (isFloating) "floating" else "edge"
+            }
+        )
 
     private val goldenPaths =
-        createGoldenPathManager("frameworks/base/packages/SystemUI/compose/scene/tests/goldens")
+        createGoldenPathManager(
+            "frameworks/base/packages/SystemUI/compose/scene/tests/goldens",
+            pathConfig,
+        )
 
     @get:Rule val motionRule = createFixedConfigurationComposeMotionTestRule(goldenPaths)
 
     private val fakeHaptics = FakeHaptics()
 
+    private val motionSpec = VerticalExpandContainerSpec(isFloating)
+
     @Test
     fun verticalReveal_triggeredRevealOpenTransition() {
-        assertVerticalContainerRevealMotion(TriggeredRevealMotion(SceneClosed, SceneOpen))
+        assertVerticalContainerRevealMotion(
+            TriggeredRevealMotion(SceneClosed, SceneOpen),
+            "verticalReveal_triggeredRevealOpenTransition",
+        )
     }
 
     @Test
     fun verticalReveal_triggeredRevealCloseTransition() {
-        assertVerticalContainerRevealMotion(TriggeredRevealMotion(SceneOpen, SceneClosed))
+        assertVerticalContainerRevealMotion(
+            TriggeredRevealMotion(SceneOpen, SceneClosed),
+            "verticalReveal_triggeredRevealCloseTransition",
+        )
     }
 
     @Test
@@ -90,15 +111,18 @@ class ContentRevealTest {
         assertVerticalContainerRevealMotion(
             GestureRevealMotion(SceneClosed) {
                 val gestureDurationMillis = 1000L
+                // detach position for the floating container is larger
+                val gestureHeight = if (isFloating) 160.dp.toPx() else 100.dp.toPx()
                 swipe(
                     curve = {
                         val progress = it / gestureDurationMillis.toFloat()
-                        val y = sin(progress * Math.PI).toFloat() * 100.dp.toPx()
+                        val y = sin(progress * Math.PI).toFloat() * gestureHeight
                         Offset(centerX, y)
                     },
                     gestureDurationMillis,
                 )
-            }
+            },
+            "verticalReveal_gesture_magneticDetachAndReattach",
         )
     }
 
@@ -107,7 +131,8 @@ class ContentRevealTest {
         assertVerticalContainerRevealMotion(
             GestureRevealMotion(SceneClosed) {
                 swipeDown(endY = 200.dp.toPx(), durationMillis = 500)
-            }
+            },
+            "verticalReveal_gesture_dragOpen",
         )
     }
 
@@ -117,7 +142,8 @@ class ContentRevealTest {
             GestureRevealMotion(SceneClosed) {
                 val end = Offset(centerX, 80.dp.toPx())
                 swipeWithVelocity(start = topCenter, end = end, endVelocity = FlingVelocity.toPx())
-            }
+            },
+            "verticalReveal_gesture_flingOpen",
         )
     }
 
@@ -126,7 +152,8 @@ class ContentRevealTest {
         assertVerticalContainerRevealMotion(
             GestureRevealMotion(SceneOpen) {
                 swipeUp(200.dp.toPx(), 0.dp.toPx(), durationMillis = 500)
-            }
+            },
+            "verticalReveal_gesture_dragFullyClose",
         )
     }
 
@@ -134,8 +161,9 @@ class ContentRevealTest {
     fun verticalReveal_gesture_dragHalfClose() {
         assertVerticalContainerRevealMotion(
             GestureRevealMotion(SceneOpen) {
-                swipeUp(350.dp.toPx(), 100.dp.toPx(), durationMillis = 500)
-            }
+                swipeUp(250.dp.toPx(), 100.dp.toPx(), durationMillis = 500)
+            },
+            "verticalReveal_gesture_dragHalfClose",
         )
     }
 
@@ -146,7 +174,8 @@ class ContentRevealTest {
                 val start = Offset(centerX, 260.dp.toPx())
                 val end = Offset(centerX, 200.dp.toPx())
                 swipeWithVelocity(start, end, FlingVelocity.toPx())
-            }
+            },
+            "verticalReveal_gesture_flingClose",
         )
     }
 
@@ -164,11 +193,14 @@ class ContentRevealTest {
         val gestureControl: TouchInjectionScope.() -> Unit,
     ) : RevealMotion
 
-    private fun assertVerticalContainerRevealMotion(testInstructions: RevealMotion) =
+    private fun assertVerticalContainerRevealMotion(
+        testInstructions: RevealMotion,
+        goldenName: String,
+    ) =
         motionRule.runTest {
             val transitions = transitions {
                 from(SceneClosed, to = SceneOpen) {
-                    verticalContainerReveal(RevealElement, MotionSpec, fakeHaptics)
+                    verticalContainerReveal(RevealElement, motionSpec, fakeHaptics)
                 }
             }
 
@@ -221,9 +253,9 @@ class ContentRevealTest {
                         SceneTransitionLayoutForTesting(
                             state,
                             modifier =
-                                Modifier.padding(50.dp)
+                                Modifier.padding(5.dp)
                                     .background(Color.Yellow)
-                                    .size(ContainerSize.width, ContainerSize.height + 200.dp)
+                                    .size(ContainerSize.width, ContainerSize.height + 100.dp)
                                     .testTag("stl"),
                         ) {
                             scene(
@@ -241,7 +273,7 @@ class ContentRevealTest {
                     recordingSpec,
                 )
 
-            assertThat(motion).timeSeriesMatchesGolden()
+            assertThat(motion).timeSeriesMatchesGolden(goldenName)
         }
 
     @Composable
@@ -256,7 +288,7 @@ class ContentRevealTest {
                 modifier =
                     Modifier.element(RevealElement)
                         .size(ContainerSize)
-                        .edgeContainerExpansionBackground(Color.DarkGray, MotionSpec)
+                        .verticalExpandContainerBackground(Color.DarkGray, motionSpec)
             )
         }
     }
@@ -266,7 +298,9 @@ class ContentRevealTest {
     }
 
     companion object {
-        val ContainerSize = DpSize(200.dp, 400.dp)
+        @get:Parameters @JvmStatic val parameterValues = listOf(true, false)
+
+        val ContainerSize = DpSize(150.dp, 300.dp)
 
         val FlingVelocity = 1000.dp // dp/sec
 
@@ -274,6 +308,5 @@ class ContentRevealTest {
         val SceneOpen = SceneKey("SceneB")
 
         val RevealElement = ElementKey("RevealElement")
-        val MotionSpec = EdgeContainerExpansionSpec()
     }
 }

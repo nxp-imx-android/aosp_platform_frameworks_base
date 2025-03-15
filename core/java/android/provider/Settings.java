@@ -4184,7 +4184,6 @@ public final class Settings {
             MOVED_TO_SECURE.add(Secure.PARENTAL_CONTROL_REDIRECT_URL);
             MOVED_TO_SECURE.add(Secure.SETTINGS_CLASSNAME);
             MOVED_TO_SECURE.add(Secure.USE_GOOGLE_MAIL);
-            MOVED_TO_SECURE.add(Secure.WIFI_NETWORKS_AVAILABLE_NOTIFICATION_ON);
             MOVED_TO_SECURE.add(Secure.WIFI_NETWORKS_AVAILABLE_REPEAT_DELAY);
             MOVED_TO_SECURE.add(Secure.WIFI_NUM_OPEN_NETWORKS_KEPT);
             MOVED_TO_SECURE.add(Secure.WIFI_ON);
@@ -4223,6 +4222,7 @@ public final class Settings {
             MOVED_TO_SECURE_THEN_GLOBAL.add(Global.USB_MASS_STORAGE_ENABLED);
             MOVED_TO_SECURE_THEN_GLOBAL.add(Global.WIFI_MOBILE_DATA_TRANSITION_WAKELOCK_TIMEOUT_MS);
             MOVED_TO_SECURE_THEN_GLOBAL.add(Global.WIFI_MAX_DHCP_RETRY_COUNT);
+            MOVED_TO_SECURE_THEN_GLOBAL.add(Global.WIFI_NETWORKS_AVAILABLE_NOTIFICATION_ON);
 
             // these are moving directly from system to global
             MOVED_TO_GLOBAL.add(Settings.Global.AIRPLANE_MODE_ON);
@@ -6482,6 +6482,14 @@ public final class Settings {
          *  @hide
          */
         public static final String SCREEN_FLASH_NOTIFICATION = "screen_flash_notification";
+
+        /**
+         * Setting to enable CV (proprietary)
+         *
+         * @hide
+         */
+        public static final String CV_ENABLED =
+                "cv_enabled";
 
         /**
          * Integer property that specifes the color for screen flash notification as a
@@ -12822,6 +12830,22 @@ public final class Settings {
         public static final String ADAPTIVE_CONNECTIVITY_ENABLED = "adaptive_connectivity_enabled";
 
         /**
+         * Whether the Adaptive wifi scorer switch is enabled.
+         *
+         * @hide
+         */
+        public static final String ADAPTIVE_CONNECTIVITY_WIFI_ENABLED =
+                "adaptive_connectivity_wifi_enabled";
+
+        /**
+         * Whether the Adaptive 5G PM switch is enabled.
+         *
+         * @hide
+         */
+        public static final String ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED =
+                "adaptive_connectivity_mobile_network_enabled";
+
+        /**
          * Controls the 'Sunlight boost' toggle in wearable devices (high brightness mode).
          *
          * Valid values for this key are: '0' (disabled) or '1' (enabled).
@@ -15498,7 +15522,8 @@ public final class Settings {
          * <ul>
          * <li><pre>secure</pre>: creates a secure display</li>
          * <li><pre>own_content_only</pre>: only shows this display's own content</li>
-         * <li><pre>should_show_system_decorations</pre>: supports system decorations</li>
+         * <li><pre>should_show_system_decorations</pre>: always shows system decorations</li>
+         * <li><pre>fixed_content_mode</pre>: does not allow the content mode switch</li>
          * </ul>
          * </p><p>
          * Example:
@@ -19790,6 +19815,14 @@ public final class Settings {
         public static final String REPAIR_MODE_ACTIVE = "repair_mode_active";
 
         /**
+         * Whether the notification manager service should redact notifications that contain otps
+         * from untrusted listeners. Defaults to 1/true.
+         * @hide
+         */
+        public static final String REDACT_OTP_NOTIFICATIONS_FROM_UNTRUSTED_LISTENERS =
+                "redact_otp_notifications_from_untrusted_listeners";
+
+        /**
          * Settings migrated from Wear OS settings provider.
          * @hide
          */
@@ -20798,6 +20831,24 @@ public final class Settings {
              */
             @Readable
             public static final String WEAR_LAUNCHER_UI_MODE = "wear_launcher_ui_mode";
+
+            /**
+             * Setting indicating whether the primary gesture input action has been enabled by the
+             * user.
+             *
+             * @hide
+             */
+            public static final String GESTURE_PRIMARY_ACTION_USER_PREFERENCE =
+                    "gesture_primary_action_user_preference";
+
+            /**
+             * Setting indicating whether the dismiss gesture input action has been enabled by the
+             * user.
+             *
+             * @hide
+             */
+            public static final String GESTURE_DISMISS_ACTION_USER_PREFERENCE =
+                    "gesture_dismiss_action_user_preference";
 
             /** Whether Wear Power Anomaly Service is enabled.
              *

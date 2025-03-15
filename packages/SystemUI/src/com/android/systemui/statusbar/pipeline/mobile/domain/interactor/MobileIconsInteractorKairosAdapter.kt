@@ -32,11 +32,20 @@ import com.android.systemui.kairos.map
 import com.android.systemui.kairos.mapValues
 import com.android.systemui.kairos.toColdConflatedFlow
 import com.android.systemui.kairosBuilder
+import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.log.table.TableLogBufferFactory
+import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepositoryKairos
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Factory.Companion.MOBILE_CONNECTION_BUFFER_SIZE
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Factory.Companion.tableBufferLogName
+import com.android.systemui.statusbar.pipeline.mobile.domain.model.NetworkTypeIconModel
+import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
 import com.android.systemui.statusbar.pipeline.mobile.util.MobileMappingsProxy
+import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
+import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import dagger.Provides
 import dagger.multibindings.ElementsIntoSet
 import javax.inject.Inject
@@ -45,6 +54,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 @ExperimentalKairosApi
@@ -60,6 +71,7 @@ constructor(
     context: Context,
     mobileMappingsProxy: MobileMappingsProxy,
     private val userSetupRepo: UserSetupRepository,
+    private val logFactory: TableLogBufferFactory,
 ) : MobileIconsInteractor, KairosBuilder by kairosBuilder() {
 
     private val interactorsBySubIdK = buildIncremental {
@@ -158,7 +170,37 @@ constructor(
         get() = repo.isDeviceEmergencyCallCapable
 
     override fun getMobileConnectionInteractorForSubId(subId: Int): MobileIconInteractor =
-        interactorsBySubId.value[subId] ?: error("Unknown subscription id: $subId")
+        object : MobileIconInteractor {
+            override val tableLogBuffer: TableLogBuffer =
+                logFactory.getOrCreate(tableBufferLogName(subId), MOBILE_CONNECTION_BUFFER_SIZE)
+            override val activity: Flow<DataActivityModel> = latest { activity }
+            override val mobileIsDefault: Flow<Boolean> = latest { mobileIsDefault }
+            override val isDataConnected: Flow<Boolean> = latest { isDataConnected }
+            override val isInService: Flow<Boolean> = latest { isInService }
+            override val isEmergencyOnly: Flow<Boolean> = latest { isEmergencyOnly }
+            override val isDataEnabled: Flow<Boolean> = latest { isDataEnabled }
+            override val alwaysShowDataRatIcon: Flow<Boolean> = latest { alwaysShowDataRatIcon }
+            override val signalLevelIcon: Flow<SignalIconModel> = latest { signalLevelIcon }
+            override val networkTypeIconGroup: Flow<NetworkTypeIconModel> = latest {
+                networkTypeIconGroup
+            }
+            override val showSliceAttribution: Flow<Boolean> = latest { showSliceAttribution }
+            override val isNonTerrestrial: Flow<Boolean> = latest { isNonTerrestrial }
+            override val networkName: Flow<NetworkNameModel> = latest { networkName }
+            override val carrierName: Flow<String> = latest { carrierName }
+            override val isSingleCarrier: Flow<Boolean> = latest { isSingleCarrier }
+            override val isRoaming: Flow<Boolean> = latest { isRoaming }
+            override val isForceHidden: Flow<Boolean> = latest { isForceHidden }
+            override val isAllowedDuringAirplaneMode: Flow<Boolean> = latest {
+                isAllowedDuringAirplaneMode
+            }
+            override val carrierNetworkChangeActive: Flow<Boolean> = latest {
+                carrierNetworkChangeActive
+            }
+
+            private fun <T> latest(block: MobileIconInteractor.() -> Flow<T>): Flow<T> =
+                interactorsBySubId.flatMapLatestConflated { it[subId]?.block() ?: emptyFlow() }
+        }
 
     @dagger.Module
     object Module {

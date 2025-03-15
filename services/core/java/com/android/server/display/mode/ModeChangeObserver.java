@@ -16,9 +16,11 @@
 
 package com.android.server.display.mode;
 
+import android.hardware.display.DisplayManager;
+import android.os.Handler;
 import android.os.Looper;
+import android.util.LongSparseArray;
 import android.util.Slog;
-import android.util.SparseArray;
 import android.view.Display;
 import android.view.DisplayAddress;
 import android.view.DisplayEventReceiver;
@@ -34,72 +36,128 @@ final class ModeChangeObserver {
 
     @SuppressWarnings("unused")
     private DisplayEventReceiver mModeChangeListener;
-    private final SparseArray<Set<Integer>> mRejectedModesByDisplay = new SparseArray<>();
-    private Looper mLooper;
+    private DisplayManager.DisplayListener mDisplayListener;
+    private final LongSparseArray<Set<Integer>> mRejectedModesMap =
+            new LongSparseArray<>();
+    private final LongSparseArray<Integer> mPhysicalIdToLogicalIdMap = new LongSparseArray<>();
+    private final Looper mLooper;
+    private final Handler mHandler;
 
+    /**
+     * Observer for display mode changes.
+     * This class observes display mode rejections and updates the vote storage
+     * for rejected modes vote accordingly.
+     */
     ModeChangeObserver(VotesStorage votesStorage, DisplayModeDirector.Injector injector,
                     Looper looper) {
         mVotesStorage = votesStorage;
         mInjector = injector;
         mLooper = looper;
+        mHandler = new Handler(mLooper);
     }
 
+    /**
+     * Start observing display mode changes.
+     */
     void observe() {
+        updatePhysicalIdToLogicalIdMap();
+        mDisplayListener = new DisplayManager.DisplayListener() {
+            @Override
+            public void onDisplayAdded(int displayId) {
+                updateVoteForDisplay(displayId);
+            }
+
+            @Override
+            public void onDisplayRemoved(int displayId) {
+                int oldPhysicalDisplayIdIndex = mPhysicalIdToLogicalIdMap.indexOfValue(displayId);
+                if (oldPhysicalDisplayIdIndex < 0) {
+                    Slog.e(TAG, "Removed display not found");
+                    return;
+                }
+                long oldPhysicalDisplayId =
+                        mPhysicalIdToLogicalIdMap.keyAt(oldPhysicalDisplayIdIndex);
+                mPhysicalIdToLogicalIdMap.delete(oldPhysicalDisplayId);
+                mRejectedModesMap.delete(oldPhysicalDisplayId);
+                mVotesStorage.updateVote(displayId, Vote.PRIORITY_REJECTED_MODES, null);
+            }
+
+            @Override
+            public void onDisplayChanged(int displayId) {
+                int oldPhysicalDisplayIdIndex = mPhysicalIdToLogicalIdMap.indexOfValue(displayId);
+                if (oldPhysicalDisplayIdIndex < 0) {
+                    Slog.e(TAG, "Changed display not found");
+                    return;
+                }
+                long oldPhysicalDisplayId =
+                        mPhysicalIdToLogicalIdMap.keyAt(oldPhysicalDisplayIdIndex);
+                mPhysicalIdToLogicalIdMap.delete(oldPhysicalDisplayId);
+
+                updateVoteForDisplay(displayId);
+            }
+        };
+        mInjector.registerDisplayListener(mDisplayListener, mHandler,
+                    DisplayManager.EVENT_TYPE_DISPLAY_ADDED
+                            | DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                            | DisplayManager.EVENT_TYPE_DISPLAY_REMOVED);
         mModeChangeListener = new DisplayEventReceiver(mLooper) {
             @Override
             public void onModeRejected(long physicalDisplayId, int modeId) {
                 Slog.d(TAG, "Mode Rejected event received");
-                int displayId = getLogicalDisplayId(physicalDisplayId);
-                if (displayId < 0) {
-                    Slog.e(TAG, "Logical Display Id not found");
+                updateRejectedModesListByDisplay(physicalDisplayId, modeId);
+                if (mPhysicalIdToLogicalIdMap.indexOfKey(physicalDisplayId) < 0) {
+                    Slog.d(TAG, "Rejected Modes Vote will be updated after display is added");
                     return;
                 }
-                populateRejectedModesListByDisplay(displayId, modeId);
-            }
-
-            @Override
-            public void onHotplug(long timestampNanos, long physicalDisplayId, boolean connected) {
-                Slog.d(TAG, "Hotplug event received");
-                if (!connected) {
-                    int displayId = getLogicalDisplayId(physicalDisplayId);
-                    if (displayId < 0) {
-                        Slog.e(TAG, "Logical Display Id not found");
-                        return;
-                    }
-                    clearRejectedModesListByDisplay(displayId);
-                }
+                mVotesStorage.updateVote(mPhysicalIdToLogicalIdMap.get(physicalDisplayId),
+                        Vote.PRIORITY_REJECTED_MODES,
+                        Vote.forRejectedModes(mRejectedModesMap.get(physicalDisplayId)));
             }
         };
     }
 
-    private int getLogicalDisplayId(long rejectedModePhysicalDisplayId) {
+    private void updateVoteForDisplay(int displayId) {
+        Display display = mInjector.getDisplay(displayId);
+        if (display == null) {
+            // We can occasionally get a display added or changed event for a display that was
+            // subsequently removed, which means this returns null. Check this case and bail
+            // out early; if it gets re-attached we will eventually get another call back for it.
+            Slog.e(TAG, "Added or Changed display has disappeared");
+            return;
+        }
+        DisplayAddress address = display.getAddress();
+        if (address instanceof DisplayAddress.Physical physical) {
+            long physicalDisplayId = physical.getPhysicalDisplayId();
+            mPhysicalIdToLogicalIdMap.put(physicalDisplayId, displayId);
+            Set<Integer> modes = mRejectedModesMap.get(physicalDisplayId);
+            mVotesStorage.updateVote(displayId, Vote.PRIORITY_REJECTED_MODES,
+                    modes != null ? Vote.forRejectedModes(modes) : null);
+        }
+    }
+
+    private void updatePhysicalIdToLogicalIdMap() {
         Display[] displays = mInjector.getDisplays();
 
         for (Display display : displays) {
+            if (display == null) {
+                continue;
+            }
             DisplayAddress address = display.getAddress();
             if (address instanceof DisplayAddress.Physical physical) {
-                long physicalDisplayId = physical.getPhysicalDisplayId();
-                if (physicalDisplayId == rejectedModePhysicalDisplayId) {
-                    return display.getDisplayId();
-                }
+                mPhysicalIdToLogicalIdMap.put(physical.getPhysicalDisplayId(),
+                        display.getDisplayId());
             }
         }
-        return -1;
     }
 
-    private void populateRejectedModesListByDisplay(int displayId, int rejectedModeId) {
-        Set<Integer> alreadyRejectedModes = mRejectedModesByDisplay.get(displayId);
+    private void updateRejectedModesListByDisplay(long rejectedModePhysicalDisplayId,
+                                                    int rejectedModeId) {
+        Set<Integer> alreadyRejectedModes =
+                mRejectedModesMap.get(rejectedModePhysicalDisplayId);
         if (alreadyRejectedModes == null) {
             alreadyRejectedModes = new HashSet<>();
-            mRejectedModesByDisplay.put(displayId, alreadyRejectedModes);
+            mRejectedModesMap.put(rejectedModePhysicalDisplayId,
+                    alreadyRejectedModes);
         }
         alreadyRejectedModes.add(rejectedModeId);
-        mVotesStorage.updateVote(displayId, Vote.PRIORITY_REJECTED_MODES,
-                Vote.forRejectedModes(alreadyRejectedModes));
-    }
-
-    private void clearRejectedModesListByDisplay(int displayId) {
-        mRejectedModesByDisplay.remove(displayId);
-        mVotesStorage.updateVote(displayId, Vote.PRIORITY_REJECTED_MODES, null);
     }
 }

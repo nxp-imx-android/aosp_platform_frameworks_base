@@ -313,8 +313,27 @@ public class Cuj {
      */
     public static final int CUJ_DEFAULT_TASK_TO_TASK_ANIMATION = 128;
 
+    /**
+     * Track moving a window to another display in Desktop Windowing mode.
+     *
+     * <p>Tracking starts when the DesktopModeMoveToDisplayTransitionHandler starts animating the
+     * task to move it to another display. This is triggered when the user presses a keyboard
+     * shortcut or clicks the menu in the overview. Tracking ends when the animation completes.</p>
+     */
+    public static final int CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY = 129;
+
+    /**
+     * Track the animation of an ongoing call app back into its status bar chip (displaying the call
+     * icon and timer) when returning Home.
+     *
+     * <p>Tracking starts when the RemoteTransition registered to handle the transition from the app
+     * to Home is sent the onAnimationStart() signal and start the animation. Tracking ends when
+     * the animation is fully settled and the transition is complete.</p>
+     */
+    public static final int CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP = 130;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_DEFAULT_TASK_TO_TASK_ANIMATION;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
 
     /** @hide */
     @IntDef({
@@ -434,7 +453,9 @@ public class Cuj {
             CUJ_DESKTOP_MODE_KEYBOARD_QUICK_SWITCH_APP_LAUNCH,
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_EXPAND,
             CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK,
-            CUJ_DEFAULT_TASK_TO_TASK_ANIMATION
+            CUJ_DEFAULT_TASK_TO_TASK_ANIMATION,
+            CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY,
+            CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -565,6 +586,8 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WORK_UTILITY_VIEW_EXPAND] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WORK_UTILITY_VIEW_EXPAND;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_WORK_UTILITY_VIEW_SHRINK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_WORK_UTILITY_VIEW_SHRINK;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DEFAULT_TASK_TO_TASK_ANIMATION] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DEFAULT_TASK_TO_TASK_ANIMATION;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__STATUS_BAR_APP_RETURN_TO_CALL_CHIP;
     }
 
     private Cuj() {
@@ -817,6 +840,10 @@ public class Cuj {
                 return "LAUNCHER_WORK_UTILITY_VIEW_SHRINK";
             case CUJ_DEFAULT_TASK_TO_TASK_ANIMATION:
                 return "DEFAULT_TASK_TO_TASK_ANIMATION";
+            case CUJ_DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY:
+                return "DESKTOP_MODE_MOVE_WINDOW_TO_DISPLAY";
+            case CUJ_STATUS_BAR_APP_RETURN_TO_CALL_CHIP:
+                return "STATUS_BAR_APP_RETURN_TO_CALL_CHIP";
         }
         return "UNKNOWN";
     }

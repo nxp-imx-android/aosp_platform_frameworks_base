@@ -37,8 +37,8 @@ import static android.view.Surface.FRAME_RATE_CATEGORY_HIGH_HINT;
 import static android.view.Surface.FRAME_RATE_CATEGORY_LOW;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NORMAL;
 import static android.view.Surface.FRAME_RATE_CATEGORY_NO_PREFERENCE;
-import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.Surface.FRAME_RATE_COMPATIBILITY_AT_LEAST;
+import static android.view.Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_BOOST;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_CONFLICTED;
 import static android.view.View.FRAME_RATE_CATEGORY_REASON_INTERMITTENT;
@@ -554,8 +554,6 @@ public final class ViewRootImpl implements ViewParent,
     @UnsupportedAppUsage
     @UiContext
     public final Context mContext;
-
-    private UiModeManager mUiModeManager;
 
     @UnsupportedAppUsage
     final IWindowSession mWindowSession;
@@ -2079,8 +2077,7 @@ public final class ViewRootImpl implements ViewParent,
                 // We also ignore dark theme, since the app developer can override the user's
                 // preference for dark mode in configuration.uiMode. Instead, we assume that both
                 // force invert and the system's dark theme are enabled.
-                if (getUiModeManager().getForceInvertState() ==
-                        UiModeManager.FORCE_INVERT_TYPE_DARK) {
+                if (shouldApplyForceInvertDark()) {
                     final boolean isLightTheme =
                         a.getBoolean(R.styleable.Theme_isLightTheme, false);
                     // TODO: b/372558459 - Also check the background ColorDrawable color lightness
@@ -2106,6 +2103,14 @@ public final class ViewRootImpl implements ViewParent,
         } finally {
             a.recycle();
         }
+    }
+
+    private boolean shouldApplyForceInvertDark() {
+        final UiModeManager uiModeManager = mContext.getSystemService(UiModeManager.class);
+        if (uiModeManager == null) {
+            return false;
+        }
+        return uiModeManager.getForceInvertState() == UiModeManager.FORCE_INVERT_TYPE_DARK;
     }
 
     private void updateForceDarkMode() {
@@ -2550,9 +2555,11 @@ public final class ViewRootImpl implements ViewParent,
 
     /**
      * Notify the when the animating insets types have changed.
+     *
+     * @hide
      */
-    @VisibleForTesting
-    public void updateAnimatingTypes(@InsetsType int animatingTypes) {
+    public void updateAnimatingTypes(@InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         if (sToolkitSetFrameRateReadOnlyFlagValue) {
             boolean running = animatingTypes != 0;
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
@@ -2562,7 +2569,7 @@ public final class ViewRootImpl implements ViewParent,
             }
             mInsetsAnimationRunning = running;
             try {
-                mWindowSession.updateAnimatingTypes(mWindow, animatingTypes);
+                mWindowSession.updateAnimatingTypes(mWindow, animatingTypes, statsToken);
             } catch (RemoteException e) {
             }
         }
@@ -2676,7 +2683,8 @@ public final class ViewRootImpl implements ViewParent,
             mStopped = stopped;
             final ThreadedRenderer renderer = mAttachInfo.mThreadedRenderer;
             if (renderer != null) {
-                if (DEBUG_DRAW) Log.d(mTag, "WindowStopped on " + getTitle() + " set to " + mStopped);
+                if (DEBUG_DRAW)
+                    Log.d(mTag, "WindowStopped on " + getTitle() + " set to " + mStopped);
                 renderer.setStopped(mStopped);
             }
             if (!mStopped) {
@@ -3474,6 +3482,9 @@ public final class ViewRootImpl implements ViewParent,
      * TODO(b/260382739): Apply this to all windows.
      */
     private static boolean shouldOptimizeMeasure(final WindowManager.LayoutParams lp) {
+        if (com.android.window.flags.Flags.reduceUnnecessaryMeasure()) {
+            return true;
+        }
         return (lp.privateFlags & PRIVATE_FLAG_OPTIMIZE_MEASURE) != 0;
     }
 
@@ -9410,13 +9421,6 @@ public final class ViewRootImpl implements ViewParent,
         return mAudioManager;
     }
 
-    private UiModeManager getUiModeManager() {
-        if (mUiModeManager == null) {
-            mUiModeManager = mContext.getSystemService(UiModeManager.class);
-        }
-        return mUiModeManager;
-    }
-
     private Vibrator getSystemVibrator() {
         if (mVibrator == null) {
             mVibrator = mContext.getSystemService(Vibrator.class);
@@ -13215,7 +13219,7 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
-    private static String categoryToString(int frameRateCategory) {
+    static String categoryToString(int frameRateCategory) {
         String category;
         switch (frameRateCategory) {
             case FRAME_RATE_CATEGORY_NO_PREFERENCE -> category = "no preference";

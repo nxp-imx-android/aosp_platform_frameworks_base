@@ -24,6 +24,8 @@ import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_M
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
 
 import static com.android.server.accessibility.autoclick.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_DOUBLE_CLICK;
+import static com.android.server.accessibility.autoclick.AutoclickScrollPanel.DIRECTION_NONE;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL;
@@ -45,6 +47,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.MotionEvent.PointerCoords;
 import android.view.MotionEvent.PointerProperties;
+import android.view.ViewConfiguration;
 import android.view.WindowManager;
 
 import androidx.annotation.VisibleForTesting;
@@ -95,6 +98,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
     // Default click type is left-click.
     private @AutoclickType int mActiveClickType = AUTOCLICK_TYPE_LEFT_CLICK;
 
+    // Default scroll direction is DIRECTION_NONE.
+    private @AutoclickScrollPanel.ScrollDirection int mHoveredDirection = DIRECTION_NONE;
+
     @VisibleForTesting
     final ClickPanelControllerInterface clickPanelController =
             new ClickPanelControllerInterface() {
@@ -129,14 +135,26 @@ public class AutoclickController extends BaseEventStreamTransformation {
     final AutoclickScrollPanel.ScrollPanelControllerInterface mScrollPanelController =
             new AutoclickScrollPanel.ScrollPanelControllerInterface() {
                 @Override
-                public void handleScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
-                    // TODO(b/388845721): Perform actual scroll.
-                }
+                public void onHoverButtonChange(
+                        @AutoclickScrollPanel.ScrollDirection int direction,
+                        boolean hovered) {
+                    // Update the hover direction.
+                    if (hovered) {
+                        mHoveredDirection = direction;
+                    } else if (mHoveredDirection == direction) {
+                        // Safety check: Only clear hover tracking if this is the same button
+                        // we're currently tracking.
+                        mHoveredDirection = AutoclickScrollPanel.DIRECTION_NONE;
+                    }
 
-                @Override
-                public void exitScrollMode() {
-                    if (mAutoclickScrollPanel != null) {
-                        mAutoclickScrollPanel.hide();
+                    // For exit button, we only trigger hover state changes, the autoclick system
+                    // will handle the countdown.
+                    if (direction == AutoclickScrollPanel.DIRECTION_EXIT) {
+                        return;
+                    }
+                    // For direction buttons, perform scroll action immediately.
+                    if (hovered && direction != AutoclickScrollPanel.DIRECTION_NONE) {
+                        handleScroll(direction);
                     }
                 }
             };
@@ -280,6 +298,22 @@ public class AutoclickController extends BaseEventStreamTransformation {
         }
         if (mAutoclickIndicatorScheduler != null) {
             mAutoclickIndicatorScheduler.cancel();
+        }
+    }
+
+    /**
+     * Handles scroll operations in the specified direction.
+     */
+    public void handleScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
+        // TODO(b/388845721): Perform actual scroll.
+    }
+
+    /**
+     * Exits scroll mode and hides the scroll panel UI.
+     */
+    public void exitScrollMode() {
+        if (mAutoclickScrollPanel != null) {
+            mAutoclickScrollPanel.hide();
         }
     }
 
@@ -774,6 +808,14 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 return;
             }
 
+            if (mAutoclickScrollPanel != null && mAutoclickScrollPanel.isVisible()) {
+                // If exit button is hovered, exit scroll mode after countdown and return early.
+                if (mHoveredDirection == AutoclickScrollPanel.DIRECTION_EXIT) {
+                    exitScrollMode();
+                }
+                return;
+            }
+
             // Handle scroll type specially, show scroll panel instead of sending click events.
             if (mActiveClickType == AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL) {
                 if (mAutoclickScrollPanel != null) {
@@ -799,7 +841,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             final long now = SystemClock.uptimeMillis();
 
-            int actionButton;
+            int actionButton = BUTTON_PRIMARY;
             if (mHoveredState) {
                 // Always triggers left-click when the cursor hovers over the autoclick type
                 // panel, to always allow users to change a different click type. Otherwise, if
@@ -807,15 +849,32 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 // select other click types.
                 actionButton = BUTTON_PRIMARY;
             } else {
-                actionButton = mActiveClickType == AUTOCLICK_TYPE_RIGHT_CLICK
-                        ? BUTTON_SECONDARY
-                        : BUTTON_PRIMARY;
+                switch (mActiveClickType) {
+                    case AUTOCLICK_TYPE_LEFT_CLICK:
+                        actionButton = BUTTON_PRIMARY;
+                        break;
+                    case AUTOCLICK_TYPE_RIGHT_CLICK:
+                        actionButton = BUTTON_SECONDARY;
+                        break;
+                    case AUTOCLICK_TYPE_DOUBLE_CLICK:
+                        actionButton = BUTTON_PRIMARY;
+                        long doubleTapMinimumTimeout = ViewConfiguration.getDoubleTapMinTime();
+                        sendMotionEvent(actionButton, now);
+                        sendMotionEvent(actionButton, now + doubleTapMinimumTimeout);
+                        return;
+                    default:
+                        break;
+                }
             }
 
+            sendMotionEvent(actionButton, now);
+        }
+
+        private void sendMotionEvent(int actionButton, long eventTime) {
             MotionEvent downEvent =
                     MotionEvent.obtain(
-                            /* downTime= */ now,
-                            /* eventTime= */ now,
+                            /* downTime= */ eventTime,
+                            /* eventTime= */ eventTime,
                             MotionEvent.ACTION_DOWN,
                             /* pointerCount= */ 1,
                             mTempPointerProperties,

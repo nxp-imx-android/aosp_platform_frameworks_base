@@ -1820,8 +1820,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"放大功能"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"要切换为手机麦克风吗？"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"要切换为助听器麦克风吗？"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"可改善音质，或在助听器电池电量不足时使用。此操作只会切换通话期间的麦克风。"</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"您可以使用助听器麦克风进行免提通话。此操作只会切换通话期间的麦克风。"</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"可改善音质，或在助听器电池电量不足时使用。系统仅会在通话期间切换麦克风。"</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"您可以使用助听器麦克风进行免提通话。系统只会在通话期间切换麦克风。"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"切换"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"设置"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"正在切换为<xliff:g id="NAME">%1$s</xliff:g>…"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"取消固定前要求绘制解锁图案"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"取消时要求输入密码"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"由您的管理员安装。\n前往设置可查看已授予的权限"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"由您的管理员更新。\n前往设置可查看已授予的权限"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"已由您的管理员删除"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"确定"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"在省电模式下，系统会启用深色主题，并限制或关闭后台活动、某些视觉效果、特定功能和部分网络连接。"</string>
@@ -2274,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"滚动"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"暂停"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"位置"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"向上滚动"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"向下滚动"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"向左滚动"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"向右滚动"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"退出滚动模式"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"滚动面板"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> 已被放入受限存储分区"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>："</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"发送了一张图片"</string>
@@ -2493,8 +2486,7 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"工作 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"测试"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"共用"</string>
-    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
-    <skip />
+    <string name="profile_label_supervising" msgid="5649312778545745371">"监管"</string>
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"工作资料"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"私密空间"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"克隆"</string>

@@ -113,6 +113,8 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         visibleTasks: ArraySet<Int> = ArraySet(),
         minimizedTasks: ArraySet<Int> = ArraySet(),
         freeformTasksInZOrder: ArrayList<Int> = ArrayList(),
+        leftTiledTask: Int? = null,
+        rightTiledTask: Int? = null,
     ) {
         // TODO: b/367609270 - Improve the API to support multi-user
         try {
@@ -125,7 +127,13 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                 val desktop =
                     getDesktop(currentRepository, desktopId)
                         .toBuilder()
-                        .updateTaskStates(visibleTasks, minimizedTasks, freeformTasksInZOrder)
+                        .updateTaskStates(
+                            visibleTasks,
+                            minimizedTasks,
+                            freeformTasksInZOrder,
+                            leftTiledTask,
+                            rightTiledTask,
+                        )
                         .updateZOrder(freeformTasksInZOrder)
 
                 persistentRepositories
@@ -222,6 +230,8 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             visibleTasks: ArraySet<Int>,
             minimizedTasks: ArraySet<Int>,
             freeformTasksInZOrder: ArrayList<Int>,
+            leftTiledTask: Int?,
+            rightTiledTask: Int?,
         ): Desktop.Builder {
             clearTasksByTaskId()
 
@@ -238,7 +248,11 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             }
             putAllTasksByTaskId(
                 visibleTasks.associateWith {
-                    createDesktopTask(it, state = DesktopTaskState.VISIBLE)
+                    createDesktopTask(
+                        it,
+                        state = DesktopTaskState.VISIBLE,
+                        getTilingStateForTask(it, leftTiledTask, rightTiledTask),
+                    )
                 }
             )
             putAllTasksByTaskId(
@@ -248,6 +262,17 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             )
             return this
         }
+
+        private fun getTilingStateForTask(
+            taskId: Int,
+            leftTiledTask: Int?,
+            rightTiledTask: Int?,
+        ): DesktopTaskTilingState =
+            when (taskId) {
+                leftTiledTask -> DesktopTaskTilingState.LEFT
+                rightTiledTask -> DesktopTaskTilingState.RIGHT
+                else -> DesktopTaskTilingState.NONE
+            }
 
         private fun Desktop.Builder.updateZOrder(
             freeformTasksInZOrder: ArrayList<Int>
@@ -260,7 +285,12 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         private fun createDesktopTask(
             taskId: Int,
             state: DesktopTaskState = DesktopTaskState.VISIBLE,
+            tiling_state: DesktopTaskTilingState = DesktopTaskTilingState.NONE,
         ): DesktopTask =
-            DesktopTask.newBuilder().setTaskId(taskId).setDesktopTaskState(state).build()
+            DesktopTask.newBuilder()
+                .setTaskId(taskId)
+                .setDesktopTaskState(state)
+                .setDesktopTaskTilingState(tiling_state)
+                .build()
     }
 }

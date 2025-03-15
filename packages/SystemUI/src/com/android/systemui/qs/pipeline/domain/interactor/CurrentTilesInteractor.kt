@@ -42,7 +42,7 @@ import com.android.systemui.qs.pipeline.domain.model.TileModel
 import com.android.systemui.qs.pipeline.shared.QSPipelineFlagsRepository
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.pipeline.shared.logging.QSPipelineLogger
-import com.android.systemui.qs.tiles.di.NewQSTileFactory
+import com.android.systemui.qs.tiles.base.ui.model.NewQSTileFactory
 import com.android.systemui.qs.toProto
 import com.android.systemui.retail.data.repository.RetailModeRepository
 import com.android.systemui.settings.UserTracker

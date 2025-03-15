@@ -539,8 +539,7 @@
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"Imedhibitiwa na Mpangilio wenye Mipaka"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"Haipatikani wakati unaongea kwa simu"</string>
     <string name="disabled" msgid="8017887509554714950">"Imezimwa"</string>
-    <!-- no translation found for enabled (3997122818554810678) -->
-    <skip />
+    <string name="enabled" msgid="3997122818554810678">"Imewashwa"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"Imeruhusiwa"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"Hairuhusiwi"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"Kuweka programu zisizojulikana"</string>
@@ -625,9 +624,11 @@
     <string name="tv_media_transfer_earc_fallback_title" msgid="3098685494578519940">"HDMI eARC"</string>
     <string name="tv_media_transfer_arc_subtitle" msgid="1040017851325069082">"Imeunganishwa kupitia ARC"</string>
     <string name="tv_media_transfer_earc_subtitle" msgid="645191413103303077">"Imeunganishwa kupitia eARC"</string>
-    <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Spika iliyojumuishwa ndani"</string>
+    <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Spika iliyojumuishwa"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"Sauti ya Televisheni"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Kuna tatizo la kuunganisha kwenye Intaneti. Zima kisha uwashe kifaa"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Kifaa cha sauti kinachotumia waya"</string>
     <string name="help_label" msgid="3528360748637781274">"Usaidizi na maoni"</string>
     <string name="storage_category" msgid="2287342585424631813">"Hifadhi"</string>

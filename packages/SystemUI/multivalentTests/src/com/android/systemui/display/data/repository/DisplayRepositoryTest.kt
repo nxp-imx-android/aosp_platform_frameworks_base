@@ -26,6 +26,7 @@ import android.view.Display.TYPE_INTERNAL
 import android.view.IWindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.displaylib.DisplayRepository.PendingDisplay
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.FlowValue
 import com.android.systemui.coroutines.collectLastValue
@@ -71,19 +72,26 @@ class DisplayRepositoryTest : SysuiTestCase() {
     // that the initial state (soon after construction) contains the expected ones set in every
     // test.
     private val displayRepository: DisplayRepositoryImpl by lazy {
-        DisplayRepositoryImpl(
+        // TODO b/401305290 - move this to kosmos
+        val displayRepositoryFromLib =
+            com.android.app.displaylib.DisplayRepositoryImpl(
                 displayManager,
-                commandQueue,
-                windowManager,
                 testHandler,
-                TestScope(UnconfinedTestDispatcher()),
+                testScope.backgroundScope,
                 UnconfinedTestDispatcher(),
             )
-            .also {
-                verify(displayManager, never()).registerDisplayListener(any(), any())
-                // It needs to be called, just once, for the initial value.
-                verify(displayManager).getDisplays()
-            }
+        val displaysWithDecorRepository =
+            DisplaysWithDecorationsRepositoryImpl(
+                commandQueue,
+                windowManager,
+                testScope.backgroundScope,
+                displayRepositoryFromLib,
+            )
+        DisplayRepositoryImpl(displayRepositoryFromLib, displaysWithDecorRepository).also {
+            verify(displayManager, never()).registerDisplayListener(any(), any())
+            // It needs to be called, just once, for the initial value.
+            verify(displayManager).getDisplays()
+        }
     }
 
     @Before
@@ -403,7 +411,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
             val pendingDisplay by lastPendingDisplay()
 
             sendOnDisplayConnected(1, TYPE_EXTERNAL)
-            val initialPendingDisplay: DisplayRepository.PendingDisplay? = pendingDisplay
+            val initialPendingDisplay: PendingDisplay? = pendingDisplay
             assertThat(pendingDisplay).isNotNull()
             sendOnDisplayChanged(1)
 
@@ -416,7 +424,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
             val pendingDisplay by lastPendingDisplay()
 
             sendOnDisplayConnected(1, TYPE_EXTERNAL)
-            val initialPendingDisplay: DisplayRepository.PendingDisplay? = pendingDisplay
+            val initialPendingDisplay: PendingDisplay? = pendingDisplay
             assertThat(pendingDisplay).isNotNull()
             sendOnDisplayConnected(2, TYPE_EXTERNAL)
 
@@ -648,7 +656,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
         return flowValue
     }
 
-    private fun TestScope.lastPendingDisplay(): FlowValue<DisplayRepository.PendingDisplay?> {
+    private fun TestScope.lastPendingDisplay(): FlowValue<PendingDisplay?> {
         val flowValue = collectLastValue(displayRepository.pendingDisplay)
         captureAddedRemovedListener()
         verify(displayManager)

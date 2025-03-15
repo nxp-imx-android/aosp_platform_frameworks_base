@@ -28,6 +28,7 @@ import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
+import android.view.InputDevice
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DesktopExperienceFlags
 import android.window.WindowContainerTransaction
@@ -35,9 +36,11 @@ import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.transition.Transitions
 
 /** Controls the display windowing mode in desktop mode */
@@ -49,6 +52,7 @@ class DesktopDisplayModeController(
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     private val inputManager: InputManager,
+    private val displayController: DisplayController,
     @ShellMainThread private val mainHandler: Handler,
 ) {
 
@@ -59,12 +63,28 @@ class DesktopDisplayModeController(
             }
         }
 
+    private val inputDeviceListener =
+        object : InputManager.InputDeviceListener {
+            override fun onInputDeviceAdded(deviceId: Int) {
+                refreshDisplayWindowingMode()
+            }
+
+            override fun onInputDeviceChanged(deviceId: Int) {
+                refreshDisplayWindowingMode()
+            }
+
+            override fun onInputDeviceRemoved(deviceId: Int) {
+                refreshDisplayWindowingMode()
+            }
+        }
+
     init {
         if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
             inputManager.registerOnTabletModeChangedListener(
                 onTabletModeChangedListener,
                 mainHandler,
             )
+            inputManager.registerInputDeviceListener(inputDeviceListener, mainHandler)
         }
     }
 
@@ -111,36 +131,74 @@ class DesktopDisplayModeController(
         transitions.startTransition(TRANSIT_CHANGE, wct, /* handler= */ null)
     }
 
-    @VisibleForTesting
-    fun getTargetWindowingModeForDefaultDisplay(): Int {
-        if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
-            return WINDOWING_MODE_FREEFORM
-        }
-        if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
-            if (isInClamshellMode()) {
-                return WINDOWING_MODE_FREEFORM
+    // Do not directly use this method to check the state of desktop-first mode. Check the display
+    // windowing mode instead.
+    private fun canDesktopFirstModeBeEnabledOnDefaultDisplay(): Boolean {
+        if (isDefaultDisplayDesktopEligible()) {
+            if (isExtendedDisplayEnabled() && hasExternalDisplay()) {
+                return true
             }
-            return WINDOWING_MODE_FULLSCREEN
+            if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
+                if (isInClamshellMode() || hasAnyMouseDevice()) {
+                    return true
+                }
+            }
         }
-
-        // If form factor-based desktop first switch is disabled, use the default display windowing
-        // mode here to keep the freeform mode for some form factors (e.g., FEATURE_PC).
-        return windowManager.getWindowingMode(DEFAULT_DISPLAY)
+        return false
     }
 
-    // TODO: b/375319538 - Replace the check with a DisplayManager API once it's available.
-    private fun isExtendedDisplayEnabled() =
-        0 !=
+    @VisibleForTesting
+    fun getTargetWindowingModeForDefaultDisplay(): Int {
+        if (canDesktopFirstModeBeEnabledOnDefaultDisplay()) {
+            return WINDOWING_MODE_FREEFORM
+        }
+
+        return if (DesktopExperienceFlags.FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH.isTrue) {
+            WINDOWING_MODE_FULLSCREEN
+        } else {
+            // If form factor-based desktop first switch is disabled, use the default display
+            // windowing mode here to keep the freeform mode for some form factors (e.g.,
+            // FEATURE_PC).
+            windowManager.getWindowingMode(DEFAULT_DISPLAY)
+        }
+    }
+
+    private fun isExtendedDisplayEnabled(): Boolean {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue) {
+            return rootTaskDisplayAreaOrganizer
+                .getDisplayIds()
+                .filter { it != DEFAULT_DISPLAY }
+                .any { displayId ->
+                    displayController.getDisplay(displayId)?.let { display ->
+                        DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+                    } ?: false
+                }
+        }
+
+        return 0 !=
             Settings.Global.getInt(
                 context.contentResolver,
                 DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS,
                 0,
             )
+    }
 
     private fun hasExternalDisplay() =
         rootTaskDisplayAreaOrganizer.getDisplayIds().any { it != DEFAULT_DISPLAY }
 
+    private fun hasAnyMouseDevice() =
+        inputManager.inputDeviceIds.any {
+            inputManager.getInputDevice(it)?.supportsSource(InputDevice.SOURCE_MOUSE) == true
+        }
+
     private fun isInClamshellMode() = inputManager.isInTabletMode() == InputManager.SWITCH_STATE_OFF
+
+    private fun isDefaultDisplayDesktopEligible(): Boolean {
+        val display = requireNotNull(displayController.getDisplay(DEFAULT_DISPLAY)) {
+            "Display object of DEFAULT_DISPLAY must be non-null."
+        }
+        return DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, display)
+    }
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)

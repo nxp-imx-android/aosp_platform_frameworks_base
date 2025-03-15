@@ -68,7 +68,7 @@ internal class DraggableHandler(
         return layoutImpl.swipeDetector.detectSwipe(change)
     }
 
-    override fun shouldConsumeNestedScroll(sign: Float): Boolean {
+    override fun shouldConsumeNestedPostScroll(sign: Float): Boolean {
         return this.enabled()
     }
 
@@ -289,6 +289,15 @@ private class DragControllerImpl(
      */
     val isDrivingTransition: Boolean
         get() = layoutState.transitionState == swipeAnimation.contentTransition
+
+    override val isReadyToDrag: Boolean
+        get() {
+            return !layoutState.deferTransitionProgress ||
+                with(draggableHandler.layoutImpl.elementStateScope) {
+                    swipeAnimation.fromContent.targetSize() != null &&
+                        swipeAnimation.toContent.targetSize() != null
+                }
+        }
 
     init {
         check(!isDrivingTransition) { "Multiple controllers with the same SwipeTransition" }

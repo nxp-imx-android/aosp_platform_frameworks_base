@@ -68,18 +68,13 @@ import java.util.concurrent.TimeUnit;
 @RunWith(AndroidJUnit4.class)
 public class BatteryUsageStatsProviderTest {
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final int APP_UID = Process.FIRST_APPLICATION_UID + 42;
     private static final long MINUTE_IN_MS = 60 * 1000;
     private static final double PRECISION = 0.00001;
 
-    @Rule(order = 2)
+    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule =
             new BatteryUsageStatsRule(12345)
                     .createTempDirectory()
@@ -94,7 +89,7 @@ public class BatteryUsageStatsProviderTest {
 
     @Before
     public void setup() throws IOException {
-        if (RavenwoodRule.isUnderRavenwood()) {
+        if (RavenwoodRule.isOnRavenwood()) {
             mContext = mock(Context.class);
             SensorManager sensorManager = mock(SensorManager.class);
             when(mContext.getSystemService(SensorManager.class)).thenReturn(sensorManager);
@@ -420,7 +415,7 @@ public class BatteryUsageStatsProviderTest {
         Parcel parcel = Parcel.obtain();
         parcel.writeParcelable(batteryUsageStats, 0);
 
-        if (!RavenwoodRule.isUnderRavenwood()) {
+        if (!RavenwoodRule.isOnRavenwood()) {
             assertThat(parcel.dataSize()).isAtMost(128_000);
         }
 
@@ -579,7 +574,7 @@ public class BatteryUsageStatsProviderTest {
         MockBatteryStatsImpl batteryStats = mStatsRule.getBatteryStats();
         accumulateBatteryUsageStats(batteryStats, 10000000, 0);
         // Accumulate every 200 bytes of battery history
-        accumulateBatteryUsageStats(batteryStats, 200, 2);
+        accumulateBatteryUsageStats(batteryStats, 200, 1);
         accumulateBatteryUsageStats(batteryStats, 50, 5);
         // Accumulate on every invocation of accumulateBatteryUsageStats
         accumulateBatteryUsageStats(batteryStats, 0, 7);

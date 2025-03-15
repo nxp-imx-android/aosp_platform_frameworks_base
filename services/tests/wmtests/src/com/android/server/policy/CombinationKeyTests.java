@@ -49,6 +49,7 @@ public class CombinationKeyTests extends ShortcutKeyTestBase {
     @Before
     public void setUp() {
         setUpPhoneWindowManager();
+        mPhoneWindowManager.overrideStatusBarManagerInternal();
     }
 
     /**

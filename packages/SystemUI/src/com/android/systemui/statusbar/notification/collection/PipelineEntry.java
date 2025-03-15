@@ -101,4 +101,13 @@ public abstract class PipelineEntry {
     public void setBucket(@PriorityBucket int bucket) {
         mBucket = bucket;
     }
+
+    /**
+     * Stores the current attach state into {@link #getPreviousAttachState()}} and then starts a
+     * fresh attach state (all entries will be null/default-initialized).
+     */
+    void beginNewAttachState() {
+        mPreviousAttachState.clone(mAttachState);
+        mAttachState.reset();
+    }
 }

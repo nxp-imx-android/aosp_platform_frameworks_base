@@ -38,14 +38,14 @@ import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.shared.QSSettingsPackageRepository
-import com.android.systemui.qs.tiles.base.actions.FakeQSTileIntentUserInputHandler
+import com.android.systemui.qs.tiles.base.domain.actions.FakeQSTileIntentUserInputHandler
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigProvider
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigTestBuilder
+import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesDndTileDataInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.interactor.ModesDndTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
 import com.android.systemui.qs.tiles.impl.modes.ui.ModesDndTileMapper
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfigProvider
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfigTestBuilder
-import com.android.systemui.qs.tiles.viewmodel.QSTileUIConfig
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
@@ -184,12 +184,12 @@ class ModesDndTileTest : SysuiTestCase() {
                     state = Tile.STATE_INACTIVE
                     secondaryLabel = "Old secondary label"
                 }
-            val model = ModesDndTileModel(isActivated = true)
+            val model = ModesDndTileModel(isActivated = true, extraStatus = "Until 14:30")
 
             underTest.handleUpdateState(tileState, model)
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
-            assertThat(tileState.secondaryLabel).isEqualTo("On")
+            assertThat(tileState.secondaryLabel).isEqualTo("Until 14:30")
         }
 
     @Test
@@ -206,6 +206,6 @@ class ModesDndTileTest : SysuiTestCase() {
             underTest.handleUpdateState(tileState, null)
 
             assertThat(tileState.state).isEqualTo(Tile.STATE_ACTIVE)
-            assertThat(tileState.secondaryLabel).isEqualTo("On")
+            assertThat(tileState.secondaryLabel).isEqualTo(null) // Tile will use default On text
         }
 }

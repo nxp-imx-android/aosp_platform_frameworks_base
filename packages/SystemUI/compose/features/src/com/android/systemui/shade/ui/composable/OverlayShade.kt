@@ -53,8 +53,8 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
-import com.android.mechanics.behavior.EdgeContainerExpansionSpec
-import com.android.mechanics.behavior.edgeContainerExpansionBackground
+import com.android.mechanics.behavior.VerticalExpandContainerSpec
+import com.android.mechanics.behavior.verticalExpandContainerBackground
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.OverlayShade.rememberShadeExpansionMotion
 
@@ -114,9 +114,9 @@ private fun ContentScope.Panel(
         modifier =
             modifier
                 .disableSwipesWhenScrolling()
-                .edgeContainerExpansionBackground(
-                    OverlayShade.Colors.PanelBackground,
-                    rememberShadeExpansionMotion(),
+                .verticalExpandContainerBackground(
+                    backgroundColor = OverlayShade.Colors.PanelBackground,
+                    spec = rememberShadeExpansionMotion(isFullWidthShade()),
                 )
     ) {
         Column {
@@ -202,8 +202,10 @@ object OverlayShade {
     }
 
     @Composable
-    fun rememberShadeExpansionMotion(): EdgeContainerExpansionSpec {
+    fun rememberShadeExpansionMotion(isFullWidth: Boolean): VerticalExpandContainerSpec {
         val radius = Dimensions.PanelCornerRadius
-        return remember(radius) { EdgeContainerExpansionSpec(radius = radius) }
+        return remember(radius, isFullWidth) {
+            VerticalExpandContainerSpec(isFloating = !isFullWidth, radius = radius)
+        }
     }
 }

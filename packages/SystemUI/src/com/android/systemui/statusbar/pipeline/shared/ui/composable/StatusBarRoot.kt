@@ -196,9 +196,8 @@ fun StatusBarRoot(
 
                                 setContent {
                                     PlatformTheme {
-                                        val chipsVisibilityModel by
+                                        val chipsVisibilityModel =
                                             statusBarViewModel.ongoingActivityChips
-                                                .collectAsStateWithLifecycle()
                                         if (chipsVisibilityModel.areChipsAllowed) {
                                             OngoingActivityChips(
                                                 chips = chipsVisibilityModel.chips,
@@ -255,7 +254,7 @@ fun StatusBarRoot(
                             expandedMatchesParentHeight = true
                             showsOnlyActiveMedia = true
                             falsingProtectionNeeded = false
-                            disablePagination = true
+                            disableScrolling = true
                             init(MediaHierarchyManager.LOCATION_STATUS_BAR_POPUP)
                         }
 

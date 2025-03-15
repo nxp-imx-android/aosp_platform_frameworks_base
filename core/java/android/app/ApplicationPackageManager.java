@@ -200,6 +200,8 @@ public class ApplicationPackageManager extends PackageManager {
     @GuardedBy("mPackageMonitorCallbacks")
     private final ArraySet<IRemoteCallback> mPackageMonitorCallbacks = new ArraySet<>();
 
+    private final boolean mUseSystemFeaturesCache;
+
     UserManager getUserManager() {
         if (mUserManager == null) {
             mUserManager = UserManager.get(mContext);
@@ -300,13 +302,23 @@ public class ApplicationPackageManager extends PackageManager {
 
     @Override
     public Intent getLaunchIntentForPackage(String packageName) {
+        return getLaunchIntentForPackage(packageName, false);
+    }
+
+    @Override
+    @Nullable
+    public Intent getLaunchIntentForPackage(@NonNull String packageName,
+            boolean includeDirectBootUnaware) {
+        ResolveInfoFlags queryFlags = ResolveInfoFlags.of(
+                includeDirectBootUnaware ? MATCH_DIRECT_BOOT_AWARE | MATCH_DIRECT_BOOT_UNAWARE : 0);
+
         // First see if the package has an INFO activity; the existence of
         // such an activity is implied to be the desired front-door for the
         // overall package (such as if it has multiple launcher entries).
         Intent intentToResolve = new Intent(Intent.ACTION_MAIN);
         intentToResolve.addCategory(Intent.CATEGORY_INFO);
         intentToResolve.setPackage(packageName);
-        List<ResolveInfo> ris = queryIntentActivities(intentToResolve, 0);
+        List<ResolveInfo> ris = queryIntentActivities(intentToResolve, queryFlags);
 
         // Otherwise, try to find a main launcher activity.
         if (ris == null || ris.size() <= 0) {
@@ -314,7 +326,7 @@ public class ApplicationPackageManager extends PackageManager {
             intentToResolve.removeCategory(Intent.CATEGORY_INFO);
             intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER);
             intentToResolve.setPackage(packageName);
-            ris = queryIntentActivities(intentToResolve, 0);
+            ris = queryIntentActivities(intentToResolve, queryFlags);
         }
         if (ris == null || ris.size() <= 0) {
             return null;
@@ -824,8 +836,7 @@ public class ApplicationPackageManager extends PackageManager {
         if (maybeHasSystemFeature != null) {
             return maybeHasSystemFeature;
         }
-        if (com.android.internal.os.Flags.applicationSharedMemoryEnabled()
-                && android.content.pm.Flags.cacheSdkSystemFeatures()) {
+        if (mUseSystemFeaturesCache) {
             maybeHasSystemFeature =
                     SystemFeaturesCache.getInstance().maybeHasFeature(name, version);
             if (maybeHasSystemFeature != null) {
@@ -2221,6 +2232,25 @@ public class ApplicationPackageManager extends PackageManager {
     protected ApplicationPackageManager(ContextImpl context, IPackageManager pm) {
         mContext = context;
         mPM = pm;
+        mUseSystemFeaturesCache = isSystemFeaturesCacheEnabledAndAvailable();
+    }
+
+    private static boolean isSystemFeaturesCacheEnabledAndAvailable() {
+        if (!android.content.pm.Flags.cacheSdkSystemFeatures()) {
+            return false;
+        }
+        if (!com.android.internal.os.Flags.applicationSharedMemoryEnabled()) {
+            return false;
+        }
+        if (ActivityThread.isSystem() && !SystemFeaturesCache.hasInstance()) {
+            // There are a handful of utility "system" processes that are neither system_server nor
+            // bound as applications. For these processes, we don't have access to application
+            // shared memory or the dependent system features cache.
+            // TODO(b/400713460): Revisit this exception after deprecating these command-like
+            // system processes.
+            return false;
+        }
+        return true;
     }
 
     /**

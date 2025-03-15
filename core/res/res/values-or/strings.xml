@@ -1820,7 +1820,7 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"ମେଗ୍ନିଫିକେସନ"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"ଫୋନ ମାଇକକୁ ସୁଇଚ କରିବେ?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"ଶ୍ରବଣ ଯନ୍ତ୍ର ମାଇକକୁ ସୁଇଚ କରିବେ?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"ଭଲ ସାଉଣ୍ଡ ପାଇଁ କିମ୍ବା ଯଦି ଆପଣଙ୍କର ଶ୍ରବଣ ଯନ୍ତ୍ର ବେଟେରୀ କମ ଥିଲେ। କଲ ସମୟରେ ଏହା କେବଳ ଆପଣଙ୍କର ମାଇକକୁ ସୁଇଚ କରିଥାଏ।"</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"ଭଲ ସାଉଣ୍ଡ ପାଇଁ କିମ୍ବା ଯଦି ଆପଣଙ୍କର ଶ୍ରବଣ ଯନ୍ତ୍ରର ବେଟେରୀ କମ ଥାଏ। କଲ ସମୟରେ ଏହା କେବଳ ଆପଣଙ୍କର ମାଇକକୁ ସୁଇଚ କରିଥାଏ।"</string>
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"ହେଣ୍ଡସ-ଫ୍ରି କଲିଂ ପାଇଁ ଆପଣ ଆପଣଙ୍କର ଶ୍ରବଣ ଯନ୍ତ୍ର ମାଇକ୍ରୋଫୋନ ବ୍ୟବହାର କରିପାରିବେ। କଲ ସମୟରେ ଏହା କେବଳ ଆପଣଙ୍କର ମାଇକକୁ ସୁଇଚ କରିଥାଏ।"</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"ସୁଇଚ କରନ୍ତୁ"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"ସେଟିଂସ"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"ଅନପିନ୍‌ କରିବା ପୂର୍ବରୁ ଲକ୍‌ ଖୋଲିବା ପାଟର୍ନ ପଚାରନ୍ତୁ"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"ଅନପିନ୍‌ କରିବା ପୂର୍ବରୁ ପାସ୍‌ୱର୍ଡ ପଚାରନ୍ତୁ"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"ଆପଣଙ୍କ ଆଡମିନଙ୍କ ଦ୍ୱାରା ଇନଷ୍ଟଲ କରାଯାଇଛି।\nଅନୁମୋଦିତ ଅମୁମତିଗୁଡ଼ିକ ଭ୍ୟୁ କରିବା ପାଇଁ ସେଟିଂସକୁ ଯାଆନ୍ତୁ"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"ଆପଣଙ୍କ ଆଡମିନଙ୍କ ଦ୍ୱାରା ଅପଡେଟ କରାଯାଇଛି।\nଅନୁମୋଦିତ ଅମୁମତିଗୁଡ଼ିକ ଭ୍ୟୁ କରିବା ପାଇଁ ସେଟିଂସକୁ ଯାଆନ୍ତୁ"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"ଆପଣଙ୍କ ଆଡମିନ୍‌‌ ଡିଲିଟ୍‍ କରିଛନ୍ତି"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"ଠିକ ଅଛି"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"ବେଟେରୀ ସେଭର ଗାଢ଼ା ଥିମକୁ ଚାଲୁ କରେ ଏବଂ ପୃଷ୍ଠପଟ କାର୍ଯ୍ୟକଳାପ, କିଛି ଭିଜୁଆଲ ଇଫେକ୍ଟ, କିଛି ଫିଚର ଏବଂ କିଛି ନେଟୱାର୍କ ସଂଯୋଗକୁ ସୀମିତ କିମ୍ବା ବନ୍ଦ କରେ।"</string>
@@ -2274,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"ସ୍କ୍ରୋଲ କରନ୍ତୁ"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"ବିରତ କରନ୍ତୁ"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"ସ୍ଥିତି"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"ଉପରକୁ ସ୍କ୍ରୋଲ କରନ୍ତୁ"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"ତଳକୁ ସ୍କ୍ରୋଲ କରନ୍ତୁ"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"ବାମକୁ ସ୍କ୍ରୋଲ କରନ୍ତୁ"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"ଡାହାଣକୁ ସ୍କ୍ରୋଲ କରନ୍ତୁ"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"ସ୍କ୍ରୋଲ ମୋଡରୁ ବାହାରି ଯାଆନ୍ତୁ"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"ସ୍କ୍ରୋଲ ପେନେଲ"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g>କୁ ପ୍ରତିବନ୍ଧିତ ବକେଟରେ ରଖାଯାଇଛି"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"ଏକ ଛବି ପଠାଯାଇଛି"</string>
@@ -2493,8 +2486,7 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"ୱାର୍କ 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"ଟେଷ୍ଟ"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"କମ୍ୟୁନାଲ"</string>
-    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
-    <skip />
+    <string name="profile_label_supervising" msgid="5649312778545745371">"ନିରୀକ୍ଷଣ କରାଯାଉଛି"</string>
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"ୱାର୍କ ପ୍ରୋଫାଇଲ"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"ପ୍ରାଇଭେଟ ସ୍ପେସ"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"କ୍ଲୋନ"</string>

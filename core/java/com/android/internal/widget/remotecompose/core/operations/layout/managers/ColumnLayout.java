@@ -33,6 +33,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.measure.
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.MeasurePass;
 import com.android.internal.widget.remotecompose.core.operations.layout.measure.Size;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.HeightInModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ScrollModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.utils.DebugLog;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
@@ -370,6 +371,17 @@ public class ColumnLayout extends LayoutManager {
             ty += mSpacedBy;
         }
         DebugLog.e();
+    }
+
+    @Override
+    public void getLocationInWindow(@NonNull float[] value, boolean forSelf) {
+        super.getLocationInWindow(value, forSelf);
+
+        if (!forSelf && mVerticalScrollDelegate instanceof ScrollModifierOperation) {
+            ScrollModifierOperation smo = (ScrollModifierOperation) mVerticalScrollDelegate;
+
+            value[1] += smo.getScrollY();
+        }
     }
 
     /**

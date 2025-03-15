@@ -19,8 +19,6 @@ package com.android.systemui.statusbar
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
-import android.content.Context
-import android.content.res.Configuration
 import android.os.SystemClock
 import android.util.IndentingPrintWriter
 import android.util.Log
@@ -42,16 +40,14 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.plugins.statusbar.StatusBarStateController
-import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeExpansionChangeEvent
 import com.android.systemui.shade.ShadeExpansionListener
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.phone.BiometricUnlockController
 import com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK
 import com.android.systemui.statusbar.phone.DozeParameters
 import com.android.systemui.statusbar.phone.ScrimController
-import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.KeyguardStateController
-import com.android.systemui.statusbar.policy.SplitShadeStateController
 import com.android.systemui.util.WallpaperController
 import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
@@ -82,13 +78,11 @@ constructor(
     private val wallpaperInteractor: WallpaperInteractor,
     private val notificationShadeWindowController: NotificationShadeWindowController,
     private val dozeParameters: DozeParameters,
-    @ShadeDisplayAware private val context: Context,
-    private val splitShadeStateController: SplitShadeStateController,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
     private val appZoomOutOptional: Optional<AppZoomOut>,
     @Application private val applicationScope: CoroutineScope,
     dumpManager: DumpManager,
-    configurationController: ConfigurationController,
 ) : ShadeExpansionListener, Dumpable {
     companion object {
         private const val WAKE_UP_ANIMATION_ENABLED = true
@@ -110,7 +104,6 @@ constructor(
     private var isOpen: Boolean = false
     private var isBlurred: Boolean = false
     private var listeners = mutableListOf<DepthListener>()
-    private var inSplitShade: Boolean = false
 
     private var prevTracking: Boolean = false
     private var prevTimestamp: Long = -1
@@ -272,7 +265,7 @@ constructor(
         var blur = shadeRadius.toInt()
         // If the blur comes from waking up, we don't want to zoom out the background
         val zoomOut =
-            if (shadeRadius != wakeAndUnlockBlurData.radius|| wakeAndUnlockBlurData.useZoom)
+            if (shadeRadius != wakeAndUnlockBlurData.radius || wakeAndUnlockBlurData.useZoom)
                 blurRadiusToZoomOut(blurRadius = shadeRadius)
             else 0f
         // Make blur be 0 if it is necessary to stop blur effect.
@@ -294,7 +287,7 @@ constructor(
 
     private fun blurRadiusToZoomOut(blurRadius: Float): Float {
         var zoomOut = MathUtils.saturate(blurUtils.ratioOfBlurRadius(blurRadius))
-        if (inSplitShade) {
+        if (shadeModeInteractor.isSplitShade) {
             zoomOut = 0f
         }
 
@@ -360,7 +353,9 @@ constructor(
                         interpolator = Interpolators.FAST_OUT_SLOW_IN
                         addUpdateListener { animation: ValueAnimator ->
                             wakeAndUnlockBlurData =
-                                WakeAndUnlockBlurData(blurUtils.blurRadiusOfRatio(animation.animatedValue as Float))
+                                WakeAndUnlockBlurData(
+                                    blurUtils.blurRadiusOfRatio(animation.animatedValue as Float)
+                                )
                         }
                         addListener(
                             object : AnimatorListenerAdapter() {
@@ -432,19 +427,13 @@ constructor(
         }
         shadeAnimation.setStiffness(SpringForce.STIFFNESS_LOW)
         shadeAnimation.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-        updateResources()
-        configurationController.addCallback(
-            object : ConfigurationController.ConfigurationListener {
-                override fun onConfigChanged(newConfig: Configuration?) {
-                    updateResources()
-                }
-            }
-        )
         applicationScope.launch {
             wallpaperInteractor.wallpaperSupportsAmbientMode.collect { supported ->
                 wallpaperSupportsAmbientMode = supported
-                if (getNewWakeBlurRadius(prevDozeAmount) == wakeAndUnlockBlurData.radius
-                    && !wakeAndUnlockBlurData.useZoom) {
+                if (
+                    getNewWakeBlurRadius(prevDozeAmount) == wakeAndUnlockBlurData.radius &&
+                        !wakeAndUnlockBlurData.useZoom
+                ) {
                     // Update wake and unlock radius only if the previous value comes from wake-up.
                     updateWakeBlurRadius(prevDozeAmount)
                 }
@@ -467,10 +456,21 @@ constructor(
                 scheduleUpdate()
             }
         }
-    }
 
-    private fun updateResources() {
-        inSplitShade = splitShadeStateController.shouldUseSplitNotificationShade(context.resources)
+        applicationScope.launch {
+            windowRootViewBlurInteractor.isBlurCurrentlySupported.collect { supported ->
+                if (supported) {
+                    // when battery saver changes, try scheduling an update.
+                    scheduleUpdate()
+                } else {
+                    // when blur becomes unsupported, no more updates will be scheduled,
+                    // reset updateScheduled state.
+                    updateScheduled = false
+                    // reset blur and internal state to 0
+                    onBlurApplied(0, 0.0f)
+                }
+            }
+        }
     }
 
     fun addListener(listener: DepthListener) {

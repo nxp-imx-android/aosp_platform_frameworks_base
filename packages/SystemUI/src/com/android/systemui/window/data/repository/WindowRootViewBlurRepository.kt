@@ -39,7 +39,7 @@ typealias BlurAppliedListener = Consumer<Int>
 
 /** Repository that maintains state for the window blur effect. */
 interface WindowRootViewBlurRepository {
-    val blurRadius: MutableStateFlow<Int>
+    val blurRequestedByShade: MutableStateFlow<Int>
     val isBlurOpaque: MutableStateFlow<Boolean>
 
     /** Is blur supported based on settings toggle and battery power saver mode. */
@@ -67,7 +67,7 @@ constructor(
     @Main private val executor: Executor,
     @Application private val scope: CoroutineScope,
 ) : WindowRootViewBlurRepository {
-    override val blurRadius = MutableStateFlow(0)
+    override val blurRequestedByShade = MutableStateFlow(0)
 
     override val isBlurOpaque = MutableStateFlow(false)
 

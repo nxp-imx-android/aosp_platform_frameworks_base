@@ -21,6 +21,8 @@ import android.graphics.Rect
 import android.view.Display
 import android.view.View
 import androidx.compose.runtime.getValue
+import com.android.app.tracing.FlowTracing.traceEach
+import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -130,7 +132,7 @@ interface HomeStatusBarViewModel : Activatable {
     val primaryOngoingActivityChip: StateFlow<OngoingActivityChipModel>
 
     /** All supported activity chips, whether they are currently active or not. */
-    val ongoingActivityChips: StateFlow<ChipsVisibilityModel>
+    val ongoingActivityChips: ChipsVisibilityModel
 
     /**
      * The multiple ongoing activity chips that should be shown on the left-hand side of the status
@@ -386,11 +388,9 @@ constructor(
         }
 
     override val isHomeStatusBarAllowed =
-        isHomeStatusBarAllowedCompat.stateIn(
-            bgScope,
-            SharingStarted.WhileSubscribed(),
-            initialValue = false,
-        )
+        isHomeStatusBarAllowedCompat
+            .traceEach(trackGroup(TRACK_GROUP, "isHomeStatusBarAllowed"), logcat = true)
+            .stateIn(bgScope, SharingStarted.WhileSubscribed(), initialValue = false)
 
     private val shouldHomeStatusBarBeVisible =
         combine(
@@ -461,24 +461,29 @@ constructor(
             isHomeStatusBarAllowed && !isSecureCameraActive && !hideStartSideContentForHeadsUp
         }
 
-    override val ongoingActivityChips =
+    private val chipsVisibilityModel: Flow<ChipsVisibilityModel> =
         combine(ongoingActivityChipsViewModel.chips, canShowOngoingActivityChips) { chips, canShow
                 ->
                 ChipsVisibilityModel(chips, areChipsAllowed = canShow)
             }
-            .stateIn(
-                bgScope,
-                SharingStarted.WhileSubscribed(),
-                initialValue =
-                    ChipsVisibilityModel(
-                        chips = MultipleOngoingActivityChipsModel(),
-                        areChipsAllowed = false,
-                    ),
-            )
+            .traceEach(trackGroup(TRACK_GROUP, "chips"), logcat = true) {
+                "Chips[allowed=${it.areChipsAllowed} numChips=${it.chips.active.size}]"
+            }
+
+    override val ongoingActivityChips: ChipsVisibilityModel by
+        hydrator.hydratedStateOf(
+            traceName = "ongoingActivityChips",
+            initialValue =
+                ChipsVisibilityModel(
+                    chips = MultipleOngoingActivityChipsModel(),
+                    areChipsAllowed = false,
+                ),
+            source = chipsVisibilityModel,
+        )
 
     private val hasOngoingActivityChips =
         if (StatusBarChipsModernization.isEnabled) {
-            ongoingActivityChips.map { it.chips.active.any { chip -> !chip.isHidden } }
+            chipsVisibilityModel.map { it.chips.active.any { chip -> !chip.isHidden } }
         } else if (StatusBarNotifChips.isEnabled) {
             ongoingActivityChipsLegacy.map { it.primary is OngoingActivityChipModel.Active }
         } else {
@@ -606,6 +611,8 @@ constructor(
         private const val COL_PREFIX_CLOCK = "clock"
         private const val COL_PREFIX_NOTIF_CONTAINER = "notifContainer"
         private const val COL_PREFIX_SYSTEM_INFO = "systemInfo"
+
+        private const val TRACK_GROUP = "StatusBar"
 
         fun tableLogBufferName(displayId: Int) = "HomeStatusBarViewModel[$displayId]"
     }

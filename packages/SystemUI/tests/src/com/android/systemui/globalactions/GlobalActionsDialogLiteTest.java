@@ -134,7 +134,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     @Mock private RingerModeTracker mRingerModeTracker;
     @Mock private RingerModeLiveData mRingerModeLiveData;
     @Mock private PackageManager mPackageManager;
-    @Mock private Handler mHandler;
     @Mock private UserContextProvider mUserContextProvider;
     @Mock private VibratorHelper mVibratorHelper;
     @Mock private ShadeController mShadeController;
@@ -148,6 +147,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     private TestableLooper mTestableLooper;
     private KosmosJavaAdapter mKosmos = new KosmosJavaAdapter(this);
     private GlobalActionsInteractor mInteractor;
+    private Handler mHandler;
 
     @Before
     public void setUp() throws Exception {
@@ -166,6 +166,7 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         mGlobalSettings = new FakeGlobalSettings();
         mSecureSettings = new FakeSettings();
         mInteractor = mKosmos.getGlobalActionsInteractor();
+        mHandler = new Handler(mTestableLooper.getLooper());
 
         mGlobalActionsDialogLite = new GlobalActionsDialogLite(mContext,
                 mWindowManagerFuncs,
@@ -769,6 +770,31 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Hide dialog
         mGlobalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
+    }
+
+    @Test
+    public void userSwitching_dismissDialog() {
+        String[] actions = {
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_POWER,
+                GlobalActionsDialogLite.GLOBAL_ACTION_KEY_RESTART,
+        };
+        doReturn(actions).when(mResources)
+                .getStringArray(com.android.internal.R.array.config_globalActionsList);
+
+        mGlobalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
+        mTestableLooper.processAllMessages();
+
+        assertThat(mGlobalActionsDialogLite.mDialog.isShowing()).isTrue();
+
+        ArgumentCaptor<UserTracker.Callback> captor =
+                ArgumentCaptor.forClass(UserTracker.Callback.class);
+
+        verify(mUserTracker).addCallback(captor.capture(), any());
+
+        captor.getValue().onBeforeUserSwitching(100);
+        mTestableLooper.processAllMessages();
+
+        assertThat(mGlobalActionsDialogLite.mDialog).isNull();
     }
 
     private UserInfo mockCurrentUser(int flags) {

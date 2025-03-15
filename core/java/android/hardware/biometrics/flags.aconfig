@@ -64,3 +64,11 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "move_fm_api_to_bm"
+  is_exported: true
+  namespace: "biometrics_framework"
+  description: "Feature flag for moving some FingerprintManager APIs to BiometricManager to unblock FM removal."
+  bug: "323957939"
+}

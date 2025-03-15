@@ -128,11 +128,16 @@ class BackgroundLaunchProcessController {
             return new BalVerdict(BAL_ALLOW_PERMISSION, /*background*/
                     "process instrumenting with background activity starts privileges");
         }
-        // Allow if the flag was explicitly set.
-        if (checkConfiguration.checkOtherExemptions && isBackgroundStartAllowedByToken(uid,
-                packageName, checkConfiguration.isCheckingForFgsStart)) {
-            return new BalVerdict(balImprovedMetrics() ? BAL_ALLOW_TOKEN : BAL_ALLOW_PERMISSION,
-                    /*background*/  "process allowed by token");
+        // Allow if the token is explicitly allowed.
+        if (checkConfiguration.checkOtherExemptions) {
+            BalVerdict tokenVerdict = isBackgroundStartAllowedByToken(uid,
+                    packageName, checkConfiguration.isCheckingForFgsStart);
+            if (tokenVerdict.allows()) {
+                if (!balImprovedMetrics()) {
+                    return new BalVerdict(BAL_ALLOW_PERMISSION, tokenVerdict.toString());
+                }
+                return tokenVerdict;
+            }
         }
         // Allow if the caller is bound by a UID that's currently foreground.
         // But still respect the appSwitchState.
@@ -174,42 +179,53 @@ class BackgroundLaunchProcessController {
      * isCheckingForFgsStart is false, we ask the callback if the start is allowed for these tokens,
      * otherwise if there is no callback we allow.
      */
-    private boolean isBackgroundStartAllowedByToken(int uid, String packageName,
+    private BalVerdict isBackgroundStartAllowedByToken(int uid, String packageName,
             boolean isCheckingForFgsStart) {
         synchronized (this) {
             if (mBackgroundStartPrivileges == null
                     || mBackgroundStartPrivileges.isEmpty()) {
                 // no tokens to allow anything
-                return false;
+                return BalVerdict.BLOCK;
             }
             if (isCheckingForFgsStart) {
                 // check if any token allows foreground service starts
                 for (int i = mBackgroundStartPrivileges.size(); i-- > 0; ) {
                     if (mBackgroundStartPrivileges.valueAt(i).allowsBackgroundFgsStarts()) {
-                        return true;
+                        return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token");
                     }
                 }
-                return false;
+                return BalVerdict.BLOCK;
             }
             if (mBackgroundActivityStartCallback == null) {
                 // without a callback just check if any token allows background activity starts
                 for (int i = mBackgroundStartPrivileges.size(); i-- > 0; ) {
                     if (mBackgroundStartPrivileges.valueAt(i)
                             .allowsBackgroundActivityStarts()) {
-                        return true;
+                        return new BalVerdict(BAL_ALLOW_TOKEN, "process allowed by token");
                     }
                 }
-                return false;
+                return BalVerdict.BLOCK;
             }
             List<IBinder> binderTokens = getOriginatingTokensThatAllowBal();
             if (binderTokens.isEmpty()) {
                 // no tokens to allow anything
-                return false;
+                return BalVerdict.BLOCK;
             }
 
             // The callback will decide.
-            return mBackgroundActivityStartCallback.isActivityStartAllowed(
+            BackgroundActivityStartCallback.BackgroundActivityStartCallbackResult
+                    activityStartAllowed = mBackgroundActivityStartCallback.isActivityStartAllowed(
                     binderTokens, uid, packageName);
+            if (!activityStartAllowed.allowed()) {
+                return BalVerdict.BLOCK;
+            }
+            if (activityStartAllowed.token() == null) {
+                return new BalVerdict(BAL_ALLOW_TOKEN,
+                        "process allowed by callback (token ignored) tokens: " + binderTokens);
+            }
+            return new BalVerdict(BAL_ALLOW_TOKEN,
+                    "process allowed by callback (token: " + activityStartAllowed.token()
+                            + ") tokens: " + binderTokens);
         }
     }
 

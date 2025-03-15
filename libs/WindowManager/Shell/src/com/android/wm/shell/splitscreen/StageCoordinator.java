@@ -101,6 +101,7 @@ import android.content.pm.LauncherApps;
 import android.content.pm.ShortcutInfo;
 import android.graphics.Rect;
 import android.hardware.devicestate.DeviceStateManager;
+import android.hardware.display.DisplayManager;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
@@ -123,6 +124,7 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.widget.Toast;
 import android.window.DesktopExperienceFlags;
+import android.window.DesktopModeFlags;
 import android.window.DisplayAreaInfo;
 import android.window.RemoteTransition;
 import android.window.TransitionInfo;
@@ -277,6 +279,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     // because we will be posting and removing it from the handler.
     private final Runnable mReEnableLaunchAdjacentOnRoot = () -> setLaunchAdjacentDisabled(false);
 
+    private SplitMultiDisplayHelper mSplitMultiDisplayHelper;
+
     /**
      * Since StageCoordinator only coordinates MainStage and SideStage, it shouldn't support
      * CompatUI layouts. CompatUI is handled separately by MainStage and SideStage.
@@ -391,6 +395,11 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mSplitState = splitState;
         mDesktopTasksController = desktopTasksController;
         mRootTDAOrganizer = rootTDAOrganizer;
+
+        DisplayManager displayManager = context.getSystemService(DisplayManager.class);
+
+        mSplitMultiDisplayHelper = new SplitMultiDisplayHelper(
+                Objects.requireNonNull(displayManager));
 
         taskOrganizer.createRootTask(displayId, WINDOWING_MODE_FULLSCREEN, this /* listener */);
 
@@ -675,7 +684,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         if (!enteredSplitSelect) {
             return null;
         }
-        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()
+                && !DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
             mTaskOrganizer.applyTransaction(wct);
             return null;
         }

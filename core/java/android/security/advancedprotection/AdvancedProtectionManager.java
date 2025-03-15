@@ -124,6 +124,18 @@ public final class AdvancedProtectionManager {
     @Retention(RetentionPolicy.SOURCE)
     public @interface FeatureId {}
 
+    /** @hide */
+    public static String featureIdToString(@FeatureId int featureId) {
+        return switch(featureId) {
+            case FEATURE_ID_DISALLOW_CELLULAR_2G -> "DISALLOW_CELLULAR_2G";
+            case FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES -> "DISALLOW_INSTALL_UNKNOWN_SOURCES";
+            case FEATURE_ID_DISALLOW_USB -> "DISALLOW_USB";
+            case FEATURE_ID_DISALLOW_WEP -> "DISALLOW_WEP";
+            case FEATURE_ID_ENABLE_MTE -> "ENABLE_MTE";
+            default -> "UNKNOWN";
+        };
+    }
+
     private static final Set<Integer> ALL_FEATURE_IDS = Set.of(
             FEATURE_ID_DISALLOW_CELLULAR_2G,
             FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES,
@@ -147,7 +159,7 @@ public final class AdvancedProtectionManager {
             "android.security.advancedprotection.action.SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG";
 
     /**
-     * A string extra used with {@link #createSupportIntent} to identify the feature that needs to
+     * An int extra used with {@link #createSupportIntent} to identify the feature that needs to
      * show a support dialog explaining it was disabled by advanced protection.
      *
      * @hide */
@@ -156,7 +168,7 @@ public final class AdvancedProtectionManager {
             "android.security.advancedprotection.extra.SUPPORT_DIALOG_FEATURE";
 
     /**
-     * A string extra used with {@link #createSupportIntent} to identify the type of the action that
+     * An int extra used with {@link #createSupportIntent} to identify the type of the action that
      * needs to be explained in the support dialog.
      *
      * @hide */
@@ -193,6 +205,16 @@ public final class AdvancedProtectionManager {
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface SupportDialogType {}
+
+    /** @hide */
+    public static String supportDialogTypeToString(@SupportDialogType int type) {
+        return switch(type) {
+            case SUPPORT_DIALOG_TYPE_UNKNOWN -> "UNKNOWN";
+            case SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION -> "BLOCKED_INTERACTION";
+            case SUPPORT_DIALOG_TYPE_DISABLED_SETTING -> "DISABLED_SETTING";
+            default -> "UNKNOWN";
+        };
+    }
 
     private static final Set<Integer> ALL_SUPPORT_DIALOG_TYPES = Set.of(
             SUPPORT_DIALOG_TYPE_UNKNOWN,
@@ -327,7 +349,8 @@ public final class AdvancedProtectionManager {
      *
      * @param featureId The feature identifier.
      * @param type The type of the feature describing the action that needs to be explained
-     *                 in the dialog or null for default explanation.
+     *                 in the dialog or {@link #SUPPORT_DIALOG_TYPE_UNKNOWN} for default
+     *                 explanation.
      * @return Intent An intent to be used to start the dialog-activity that explains a feature was
      *                disabled by advanced protection.
      * @hide
@@ -351,7 +374,27 @@ public final class AdvancedProtectionManager {
         return intent;
     }
 
-    /** @hide */
+    /**
+     * Called by a feature to display a support dialog when a feature was disabled by advanced
+     * protection based on a policy identifier or restriction. This returns an intent that can be
+     * used with {@link Context#startActivity(Intent)} to display the dialog.
+     *
+     * <p>At the moment, if the dialog is for {@link #FEATURE_ID_DISALLOW_CELLULAR_2G} or
+     * {@link #FEATURE_ID_ENABLE_MTE} and the provided type is
+     * {@link #SUPPORT_DIALOG_TYPE_UNKNOWN}, the type will be changed to
+     * {@link #SUPPORT_DIALOG_TYPE_DISABLED_SETTING} in the returned intent, as these features only
+     * have a disabled setting UI.
+     *
+     * <p>Note that this method doesn't check if the feature is actually disabled, i.e. this method
+     * will always return an intent.
+     *
+     * @param identifier The policy identifier or restriction.
+     * @param type The type of the feature describing the action that needs to be explained
+     *                 in the dialog or {@link #SUPPORT_DIALOG_TYPE_UNKNOWN} for default
+     *                 explanation.
+     * @return Intent An intent to be used to start the dialog-activity that explains a feature was
+     *                disabled by advanced protection.
+     * @hide */
     public static @NonNull Intent createSupportIntentForPolicyIdentifierOrRestriction(
             @NonNull String identifier, @SupportDialogType int type) {
         Objects.requireNonNull(identifier);
@@ -360,16 +403,32 @@ public final class AdvancedProtectionManager {
                     + " SUPPORT_DIALOG_TYPE_* APIs.");
         }
         final int featureId;
+        int dialogType = type;
         if (DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY.equals(identifier)) {
             featureId = FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
         } else if (DISALLOW_CELLULAR_2G.equals(identifier)) {
             featureId = FEATURE_ID_DISALLOW_CELLULAR_2G;
+            dialogType = (dialogType == SUPPORT_DIALOG_TYPE_UNKNOWN)
+                    ? SUPPORT_DIALOG_TYPE_DISABLED_SETTING : dialogType;
         } else if (MEMORY_TAGGING_POLICY.equals(identifier)) {
             featureId = FEATURE_ID_ENABLE_MTE;
+            dialogType = (dialogType == SUPPORT_DIALOG_TYPE_UNKNOWN)
+                    ? SUPPORT_DIALOG_TYPE_DISABLED_SETTING : dialogType;
         } else {
             throw new UnsupportedOperationException("Unsupported identifier: " + identifier);
         }
-        return createSupportIntent(featureId, type);
+        return createSupportIntent(featureId, dialogType);
+    }
+
+    /** @hide */
+    @RequiresPermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
+    public void logDialogShown(@FeatureId int featureId, @SupportDialogType int type,
+            boolean learnMoreClicked) {
+        try {
+            mService.logDialogShown(featureId, type, learnMoreClicked);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**

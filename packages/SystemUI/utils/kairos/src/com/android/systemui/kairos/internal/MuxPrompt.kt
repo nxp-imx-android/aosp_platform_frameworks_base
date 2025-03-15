@@ -109,7 +109,14 @@ internal class MuxPromptNode<W, K, V>(
                 val conn: NodeConnection<V> = branchNode.upstream
                 severed.add(conn)
                 conn.removeDownstream(downstream = branchNode.schedulable)
-                depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                if (conn.depthTracker.snapshotIsDirect) {
+                    depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                } else {
+                    depthTracker.removeIndirectUpstream(conn.depthTracker.snapshotIndirectDepth)
+                    depthTracker.updateIndirectRoots(
+                        removals = conn.depthTracker.snapshotIndirectRoots
+                    )
+                }
             }
         }
 
@@ -123,7 +130,14 @@ internal class MuxPromptNode<W, K, V>(
                 val conn: NodeConnection<V> = oldBranch.upstream
                 severed.add(conn)
                 conn.removeDownstream(downstream = oldBranch.schedulable)
-                depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                if (conn.depthTracker.snapshotIsDirect) {
+                    depthTracker.removeDirectUpstream(conn.depthTracker.snapshotDirectDepth)
+                } else {
+                    depthTracker.removeIndirectUpstream(conn.depthTracker.snapshotIndirectDepth)
+                    depthTracker.updateIndirectRoots(
+                        removals = conn.depthTracker.snapshotIndirectRoots
+                    )
+                }
             }
 
             // add new

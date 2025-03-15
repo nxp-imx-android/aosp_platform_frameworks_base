@@ -38,7 +38,9 @@ val Kosmos.sysUiStateFactory by Fixture {
     }
 }
 
-val Kosmos.fakeSysUIStatePerDisplayRepository by Fixture { FakePerDisplayRepository<SysUiState>() }
+val Kosmos.fakeSysUIStatePerDisplayRepository by Fixture {
+    FakePerDisplayRepository<SysUiState>().apply { add(Display.DEFAULT_DISPLAY, sysUiState) }
+}
 
 val Kosmos.sysuiStateInteractor by Fixture {
     SysUIStateDisplaysInteractor(fakeSysUIStatePerDisplayRepository, displayRepository)

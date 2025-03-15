@@ -67,6 +67,7 @@ import com.android.systemui.statusbar.notification.collection.provider.HighPrior
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.mockHeadsUpManager
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
 import com.android.systemui.statusbar.notification.row.icon.appIconProvider
 import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
@@ -146,6 +147,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     @Mock private lateinit var notificationManager: INotificationManager
     @Mock private lateinit var shortcutManager: ShortcutManager
     @Mock private lateinit var channelEditorDialogController: ChannelEditorDialogController
+    @Mock private lateinit var packageDemotionInteractor: PackageDemotionInteractor
     @Mock private lateinit var peopleNotificationIdentifier: PeopleNotificationIdentifier
     @Mock private lateinit var contextTracker: UserContextProvider
     @Mock private lateinit var bubblesManager: BubblesManager
@@ -185,6 +187,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 launcherApps,
                 shortcutManager,
                 channelEditorDialogController,
+                packageDemotionInteractor,
                 contextTracker,
                 assistantFeedbackController,
                 Optional.of(bubblesManager),
@@ -297,45 +300,6 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
     }
 
     @Test
-    fun testChangeDensityOrFontScale() {
-        val guts = spy(NotificationGuts(mContext))
-        whenever(guts.post(any())).thenAnswer { invocation: InvocationOnMock ->
-            handler.post((invocation.arguments[0] as Runnable))
-            null
-        }
-
-        // Test doesn't support animation since the guts view is not attached.
-        doNothing()
-            .whenever(guts)
-            .openControls(any<Int>(), any<Int>(), any<Boolean>(), any<Runnable>())
-        val realRow = createTestNotificationRow()
-        val menuItem = createTestMenuItem(realRow)
-        val row = spy(realRow)
-        whenever(row!!.windowToken).thenReturn(Binder())
-        whenever(row.guts).thenReturn(guts)
-        doNothing().whenever(row).ensureGutsInflated()
-        val realEntry = realRow!!.entry
-        val entry = spy(realEntry)
-        whenever(entry.row).thenReturn(row)
-        whenever(entry.getGuts()).thenReturn(guts)
-        Assert.assertTrue(gutsManager.openGutsInternal(row, 0, 0, menuItem))
-        executor.runAllReady()
-        verify(guts).openControls(any<Int>(), any<Int>(), any<Boolean>(), any<Runnable>())
-
-        // called once by mGutsManager.bindGuts() in mGutsManager.openGuts()
-        verify(row).setGutsView(any())
-        row.onDensityOrFontScaleChanged()
-        gutsManager.onDensityOrFontScaleChanged(entry)
-        executor.runAllReady()
-        gutsManager.closeAndSaveGuts(false, false, false, 0, 0, false)
-        verify(guts)
-            .closeControls(any<Boolean>(), any<Boolean>(), any<Int>(), any<Int>(), any<Boolean>())
-
-        // called again by mGutsManager.bindGuts(), in mGutsManager.onDensityOrFontScaleChanged()
-        verify(row, times(2)).setGutsView(any())
-    }
-
-    @Test
     fun testAppOpsSettingsIntent_camera() {
         val ops = ArraySet<Int>()
         ops.add(AppOpsManager.OP_CAMERA)
@@ -427,6 +391,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .setImportance(NotificationManager.IMPORTANCE_HIGH)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         whenever(highPriorityProvider.isHighPriority(entry)).thenReturn(true)
         val statusBarNotification = entry.sbn
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -438,6 +403,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                eq(packageDemotionInteractor),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),
@@ -447,7 +413,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 any<UiEventLogger>(),
                 eq(true),
                 eq(false),
-                eq(true), /* wasShownHighPriority */
+                eq(true),
+                eq(true),
                 eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
@@ -462,6 +429,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -473,6 +441,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                eq(packageDemotionInteractor),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),
@@ -482,7 +451,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 any<UiEventLogger>(),
                 eq(true),
                 eq(false),
-                eq(false), /* wasShownHighPriority */
+                eq(true), /* wasShownHighPriority */
+                eq(false),
                 eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),
@@ -497,6 +467,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
         NotificationEntryHelper.modifyRanking(row.entry)
             .setUserSentiment(Ranking.USER_SENTIMENT_NEGATIVE)
             .build()
+        whenever(row.canViewBeDismissed()).thenReturn(true)
         val statusBarNotification = row.entry.sbn
         val entry = row.entry
         gutsManager.initializeNotificationInfo(row, notificationInfoView)
@@ -508,6 +479,7 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 eq(iconStyleProvider),
                 eq(onUserInteractionCallback),
                 eq(channelEditorDialogController),
+                eq(packageDemotionInteractor),
                 eq(statusBarNotification.packageName),
                 any<NotificationChannel>(),
                 eq(entry),
@@ -517,7 +489,8 @@ class NotificationGutsManagerWithScenesTest : SysuiTestCase() {
                 any<UiEventLogger>(),
                 eq(true),
                 eq(false),
-                eq(false), /* wasShownHighPriority */
+                eq(true), /* wasShownHighPriority */
+                eq(false),
                 eq(assistantFeedbackController),
                 any<MetricsLogger>(),
                 any<View.OnClickListener>(),

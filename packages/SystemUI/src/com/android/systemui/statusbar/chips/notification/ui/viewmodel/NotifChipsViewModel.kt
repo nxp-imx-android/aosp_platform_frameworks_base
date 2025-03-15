@@ -115,22 +115,22 @@ constructor(
             // If the user tapped this chip to show the HUN, we want to just show the icon because
             // the HUN will show the rest of the information.
             return OngoingActivityChipModel.Active.IconOnly(
-                this.key,
-                icon,
-                colors,
-                onClickListenerLegacy,
-                clickBehavior,
+                key = this.key,
+                icon = icon,
+                colors = colors,
+                onClickListenerLegacy = onClickListenerLegacy,
+                clickBehavior = clickBehavior,
             )
         }
 
         if (this.promotedContent.shortCriticalText != null) {
             return OngoingActivityChipModel.Active.Text(
-                this.key,
-                icon,
-                colors,
-                this.promotedContent.shortCriticalText,
-                onClickListenerLegacy,
-                clickBehavior,
+                key = this.key,
+                icon = icon,
+                colors = colors,
+                text = this.promotedContent.shortCriticalText,
+                onClickListenerLegacy = onClickListenerLegacy,
+                clickBehavior = clickBehavior,
             )
         }
 
@@ -141,23 +141,23 @@ constructor(
             // When we're promoting notifications automatically, the `when` time set on the
             // notification will likely just be set to the current time, which would cause the chip
             // to always show "now". We don't want early testers to get that experience since it's
-            // not what will happen at launch, so just don't show any time.
+            // not what will happen at launch, so just don't show any time.onometerstate
             return OngoingActivityChipModel.Active.IconOnly(
-                this.key,
-                icon,
-                colors,
-                onClickListenerLegacy,
-                clickBehavior,
+                key = this.key,
+                icon = icon,
+                colors = colors,
+                onClickListenerLegacy = onClickListenerLegacy,
+                clickBehavior = clickBehavior,
             )
         }
 
         if (this.promotedContent.time == null) {
             return OngoingActivityChipModel.Active.IconOnly(
-                this.key,
-                icon,
-                colors,
-                onClickListenerLegacy,
-                clickBehavior,
+                key = this.key,
+                icon = icon,
+                colors = colors,
+                onClickListenerLegacy = onClickListenerLegacy,
+                clickBehavior = clickBehavior,
             )
         }
 
@@ -168,12 +168,12 @@ constructor(
                         systemClock.currentTimeMillis() + FUTURE_TIME_THRESHOLD_MILLIS
                 ) {
                     OngoingActivityChipModel.Active.ShortTimeDelta(
-                        this.key,
-                        icon,
-                        colors,
+                        key = this.key,
+                        icon = icon,
+                        colors = colors,
                         time = this.promotedContent.time.currentTimeMillis,
-                        onClickListenerLegacy,
-                        clickBehavior,
+                        onClickListenerLegacy = onClickListenerLegacy,
+                        clickBehavior = clickBehavior,
                     )
                 } else {
                     // Don't show a `when` time that's close to now or in the past because it's
@@ -185,23 +185,23 @@ constructor(
                     // automatically handles this for us and we're hoping to launch the notification
                     // chips at the same time as the Compose chips.
                     return OngoingActivityChipModel.Active.IconOnly(
-                        this.key,
-                        icon,
-                        colors,
-                        onClickListenerLegacy,
-                        clickBehavior,
+                        key = this.key,
+                        icon = icon,
+                        colors = colors,
+                        onClickListenerLegacy = onClickListenerLegacy,
+                        clickBehavior = clickBehavior,
                     )
                 }
             }
             is PromotedNotificationContentModel.When.Chronometer -> {
-                // TODO(b/364653005): Check isCountDown and support CountDown.
                 return OngoingActivityChipModel.Active.Timer(
-                    this.key,
-                    icon,
-                    colors,
+                    key = this.key,
+                    icon = icon,
+                    colors = colors,
                     startTimeMs = this.promotedContent.time.elapsedRealtimeMillis,
-                    onClickListenerLegacy,
-                    clickBehavior,
+                    isEventInFuture = this.promotedContent.time.isCountDown,
+                    onClickListenerLegacy = onClickListenerLegacy,
+                    clickBehavior = clickBehavior,
                 )
             }
         }

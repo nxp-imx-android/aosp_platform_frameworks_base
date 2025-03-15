@@ -36,6 +36,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
+import androidx.collection.ArraySet;
 
 import com.android.settingslib.R;
 import com.android.settingslib.flags.Flags;
@@ -274,29 +275,37 @@ public class BluetoothEventManager {
     @VisibleForTesting
     void dispatchActiveDeviceChanged(
             @Nullable CachedBluetoothDevice activeDevice, int bluetoothProfile) {
-        CachedBluetoothDevice targetDevice = activeDevice;
+        CachedBluetoothDevice mainActiveDevice = activeDevice;
         for (CachedBluetoothDevice cachedDevice : mDeviceManager.getCachedDevicesCopy()) {
-            // should report isActive from main device or it will cause trouble to other callers.
             CachedBluetoothDevice subDevice = cachedDevice.getSubDevice();
-            CachedBluetoothDevice finalTargetDevice = targetDevice;
-            if (targetDevice != null
-                    && ((subDevice != null && subDevice.equals(targetDevice))
-                    || cachedDevice.getMemberDevice().stream().anyMatch(
-                            memberDevice -> memberDevice.equals(finalTargetDevice)))) {
-                Log.d(TAG,
-                        "The active device is the sub/member device "
-                                + targetDevice.getDevice().getAnonymizedAddress()
-                                + ". change targetDevice as main device "
-                                + cachedDevice.getDevice().getAnonymizedAddress());
-                targetDevice = cachedDevice;
+            Set<CachedBluetoothDevice> memberDevices = cachedDevice.getMemberDevice();
+            final Set<CachedBluetoothDevice> cachedDevices = new ArraySet<>();
+            cachedDevices.add(cachedDevice);
+            if (!memberDevices.isEmpty()) {
+                cachedDevices.addAll(memberDevices);
+            } else if (subDevice != null) {
+                cachedDevices.add(subDevice);
             }
-            boolean isActiveDevice = cachedDevice.equals(targetDevice);
-            cachedDevice.onActiveDeviceChanged(isActiveDevice, bluetoothProfile);
+
+            // should report isActive from main device or it will cause trouble to other callers.
+            if (activeDevice != null
+                    && (cachedDevices.stream().anyMatch(
+                            device -> device.equals(activeDevice)))) {
+                Log.d(TAG, "The active device is in the set, report main device as active device:"
+                        + cachedDevice.getDevice() + ", active device:" + activeDevice.getDevice());
+                mainActiveDevice = cachedDevice;
+            }
+            boolean isActiveDevice = cachedDevice.equals(mainActiveDevice);
+            cachedDevices.forEach(
+                    device -> device.onActiveDeviceChanged(isActiveDevice, bluetoothProfile));
+            //TODO: b/400440223 - Check if we can call DeviceManager.onActiveDeviceChanged &
+            // Callback.onActiveDeviceChanged for cachedDevices Set also, so we don't need to report
+            // isActive from main device.
             mDeviceManager.onActiveDeviceChanged(cachedDevice);
         }
 
         for (BluetoothCallback callback : mCallbacks) {
-            callback.onActiveDeviceChanged(targetDevice, bluetoothProfile);
+            callback.onActiveDeviceChanged(mainActiveDevice, bluetoothProfile);
         }
     }
 

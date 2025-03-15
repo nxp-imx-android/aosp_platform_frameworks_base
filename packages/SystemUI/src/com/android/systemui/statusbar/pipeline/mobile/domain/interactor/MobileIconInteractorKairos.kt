@@ -48,6 +48,8 @@ interface MobileIconInteractorKairos {
     /** The table log created for this connection */
     val tableLogBuffer: TableLogBuffer
 
+    val subscriptionId: Int
+
     /** The current mobile data activity */
     val activity: State<DataActivityModel>
 
@@ -146,6 +148,9 @@ class MobileIconInteractorKairosImpl(
     private val carrierIdOverrides: MobileIconCarrierIdOverrides =
         MobileIconCarrierIdOverridesImpl(),
 ) : MobileIconInteractorKairos, KairosBuilder by kairosBuilder() {
+    override val subscriptionId: Int
+        get() = connectionRepository.subId
+
     override val tableLogBuffer: TableLogBuffer
         get() = connectionRepository.tableLogBuffer
 

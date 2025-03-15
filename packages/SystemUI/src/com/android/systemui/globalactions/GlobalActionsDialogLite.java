@@ -147,13 +147,13 @@ import com.android.systemui.util.RingerModeTracker;
 import com.android.systemui.util.settings.GlobalSettings;
 import com.android.systemui.util.settings.SecureSettings;
 
+import dagger.Lazy;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 import javax.inject.Inject;
-
-import dagger.Lazy;
 
 /**
  * Helper to show the global actions dialog.  Each item is an {@link Action} that may show depending
@@ -270,6 +270,16 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private final UserLogoutInteractor mLogoutInteractor;
     private final GlobalActionsInteractor mInteractor;
     private final Lazy<DisplayWindowPropertiesRepository> mDisplayWindowPropertiesRepositoryLazy;
+    private final Handler mHandler;
+
+    private final UserTracker.Callback mOnUserSwitched = new UserTracker.Callback() {
+        @Override
+        public void onBeforeUserSwitching(int newUser) {
+            // Dismiss the dialog as soon as we start switching. This will schedule a message
+            // in a handler so it will be pretty quick.
+            dismissDialog();
+        }
+    };
 
     @VisibleForTesting
     public enum GlobalActionsEvent implements UiEventLogger.UiEventEnum {
@@ -425,6 +435,29 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mInteractor = interactor;
         mDisplayWindowPropertiesRepositoryLazy = displayWindowPropertiesRepository;
 
+        mHandler = new Handler(mMainHandler.getLooper()) {
+            public void handleMessage(Message msg) {
+                switch (msg.what) {
+                    case MESSAGE_DISMISS:
+                        if (mDialog != null) {
+                            if (SYSTEM_DIALOG_REASON_DREAM.equals(msg.obj)) {
+                                // Hide instantly.
+                                mDialog.hide();
+                                mDialog.dismiss();
+                            } else {
+                                mDialog.dismiss();
+                            }
+                            mDialog = null;
+                        }
+                        break;
+                    case MESSAGE_REFRESH:
+                        refreshSilentMode();
+                        mAdapter.notifyDataSetChanged();
+                        break;
+                }
+            }
+        };
+
         // receive broadcasts
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
@@ -537,6 +570,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 expandable != null ? expandable.dialogTransitionController(
                         new DialogCuj(InteractionJankMonitor.CUJ_SHADE_DIALOG_OPEN,
                                 INTERACTION_JANK_TAG)) : null;
+        mUserTracker.addCallback(mOnUserSwitched, mBackgroundExecutor);
         if (controller != null) {
             mDialogTransitionAnimator.show(mDialog, controller);
         } else {
@@ -1404,6 +1438,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mWindowManagerFuncs.onGlobalActionsHidden();
         mLifecycle.setCurrentState(Lifecycle.State.CREATED);
         mInteractor.onDismissed();
+        mUserTracker.removeCallback(mOnUserSwitched);
     }
 
     /**
@@ -2227,29 +2262,6 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     @VisibleForTesting void setZeroDialogPressDelayForTesting() {
         mDialogPressDelay = 0; // ms
     }
-
-    private Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MESSAGE_DISMISS:
-                    if (mDialog != null) {
-                        if (SYSTEM_DIALOG_REASON_DREAM.equals(msg.obj)) {
-                            // Hide instantly.
-                            mDialog.hide();
-                            mDialog.dismiss();
-                        } else {
-                            mDialog.dismiss();
-                        }
-                        mDialog = null;
-                    }
-                    break;
-                case MESSAGE_REFRESH:
-                    refreshSilentMode();
-                    mAdapter.notifyDataSetChanged();
-                    break;
-            }
-        }
-    };
 
     private void onAirplaneModeChanged() {
         // Let the service state callbacks handle the state.

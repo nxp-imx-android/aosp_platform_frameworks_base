@@ -32,12 +32,11 @@
         android:orientation="vertical"
         >
 
-
-        <com.android.internal.widget.NotificationMaxHeightFrameLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="@dimen/notification_2025_min_height"
             android:clipChildren="false"
+            android:layout_weight="1"
             >
 
             <ImageView
@@ -78,17 +77,11 @@
                 android:clipChildren="false"
                 >
 
-                <!--
-                  NOTE: because messaging will always have 2 lines, this LinearLayout should NOT
-                  have the id/notification_headerless_view_column, as that is used for modifying
-                   vertical margins to accommodate the single-line state that base supports
-                  -->
                 <LinearLayout
+                    android:id="@+id/notification_headerless_view_column"
                     android:layout_width="0px"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
                     android:layout_weight="1"
-                    android:layout_marginBottom="@dimen/notification_2025_margin"
                     android:layout_marginTop="@dimen/notification_2025_margin"
                     android:layout_marginStart="@dimen/notification_2025_content_margin_start"
                     android:clipChildren="false"
@@ -150,7 +143,6 @@
                     android:layout_height="@dimen/notification_right_icon_size"
                     android:layout_gravity="center_vertical|end"
                     android:layout_marginTop="@dimen/notification_2025_margin"
-                    android:layout_marginBottom="@dimen/notification_2025_margin"
                     android:layout_marginStart="@dimen/notification_2025_right_icon_content_margin"
                     android:forceHasOverlappingRendering="false"
                     android:spacing="0dp"
@@ -175,7 +167,7 @@
                     android:id="@+id/expand_button_touch_container"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
-                    android:minWidth="@dimen/notification_content_margin_end"
+                    android:minWidth="@dimen/notification_2025_margin"
                     >
 
                     <include layout="@layout/notification_2025_expand_button"
@@ -194,22 +186,15 @@
                 android:layout_height="@dimen/notification_close_button_size"
                 android:layout_gravity="top|end" />
 
-        </com.android.internal.widget.NotificationMaxHeightFrameLayout>
+        </FrameLayout>
 
-    <LinearLayout
-            android:id="@+id/notification_action_list_margin_target"
+        <include layout="@layout/notification_template_smart_reply_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-20dp"
-            android:clipChildren="false"
-            android:orientation="vertical">
-        <include layout="@layout/notification_template_smart_reply_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin"
-                android:layout_marginStart="@dimen/notification_2025_content_margin_start"
-                android:layout_marginEnd="@dimen/notification_content_margin_end" />
+            android:layout_marginTop="@dimen/notification_2025_smart_reply_container_margin"
+            android:layout_marginStart="@dimen/notification_2025_content_margin_start"
+            android:layout_marginEnd="@dimen/notification_2025_margin" />
         <include layout="@layout/notification_2025_action_list" />
+
     </LinearLayout>
-</LinearLayout>
 </com.android.internal.widget.ConversationLayout>

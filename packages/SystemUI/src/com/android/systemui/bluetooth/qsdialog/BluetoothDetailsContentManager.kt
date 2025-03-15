@@ -419,6 +419,8 @@ constructor(
                 }
                 nameView.text = item.deviceName
                 summaryView.text = item.connectionSummary
+                // needed for marquee
+                summaryView.isSelected = true
 
                 actionIconView.setOnClickListener {
                     mutableDeviceItemClick.value =

@@ -1016,6 +1016,13 @@
     <string name="hearing_devices_presets_error">Couldn\'t update preset</string>
     <!-- QuickSettings: Title for hearing aids presets. Preset is a set of hearing aid settings. User can apply different settings in different environments (e.g. Outdoor, Restaurant, Home) [CHAR LIMIT=40]-->
     <string name="hearing_devices_preset_label">Preset</string>
+    <!-- QuickSettings: Title for hearing aids input routing control in hearing device dialog. [CHAR LIMIT=40]-->
+    <string name="hearing_devices_input_routing_label">Default microphone for calls</string>
+    <!-- QuickSettings: Option for hearing aids input routing control in hearing device dialog. It will alter input routing for calls for hearing aid. [CHAR LIMIT=40]-->
+    <string-array name="hearing_device_input_routing_options">
+        <item>Hearing aid microphone</item>
+        <item>This phone\'s microphone</item>
+    </string-array>
     <!-- QuickSettings: Content description for the icon that indicates the item is selected [CHAR LIMIT=NONE]-->
     <string name="hearing_devices_spinner_item_selected">Selected</string>
     <!-- QuickSettings: Title for ambient controls. [CHAR LIMIT=40]-->
@@ -1476,6 +1483,8 @@
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen">Share screen</string>
     <!-- 1P/3P apps disabled the single app projection option. [CHAR LIMIT=NONE] -->
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled"><xliff:g id="app_name" example="Meet">%1$s</xliff:g> has disabled this option</string>
+    <!-- Explanation that the app requesting the projection does not support single app sharing[CHAR LIMIT=70] -->
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported">Not supported by the app</string>
     <!-- Title of the activity that allows users to select an app to share to a 1P/3P app [CHAR LIMIT=70] -->
     <string name="media_projection_entry_share_app_selector_title">Choose app to share</string>
 
@@ -2056,7 +2065,7 @@
     <string name="inline_ok_button">Apply</string>
 
     <!-- Notification inline controls: button to show block screen [CHAR_LIMIT=35] -->
-    <string name="inline_turn_off_notifications">Turn off notifications</string>
+    <string name="inline_turn_off_notifications">Turn off</string>
 
     <!-- [CHAR LIMIT=100] Notification Importance title -->
     <string name="notification_silence_title">Silent</string>
@@ -2550,6 +2559,9 @@
 
     <!-- Button to edit the tile ordering of quick settings [CHAR LIMIT=60] -->
     <string name="qs_edit">Edit</string>
+
+    <!-- Title for QS Edit mode screen [CHAR LIMIT=30] -->
+    <string name="qs_edit_tiles">Edit tiles</string>
 
     <!-- SysUI Tuner: Options for how clock is displayed [CHAR LIMIT=NONE] -->
     <string name="tuner_time">Time</string>

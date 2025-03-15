@@ -48,6 +48,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor;
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider;
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider;
 
@@ -91,6 +92,8 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
     private OnUserInteractionCallback mOnUserInteractionCallback;
     @Mock
     private ChannelEditorDialogController mChannelEditorDialogController;
+    @Mock
+    private PackageDemotionInteractor mPackageDemotionInteractor;
     @Mock
     private AssistantFeedbackController mAssistantFeedbackController;
     @Mock
@@ -138,6 +141,7 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 mMockIconStyleProvider,
                 mOnUserInteractionCallback,
                 mChannelEditorDialogController,
+                mPackageDemotionInteractor,
                 TEST_PACKAGE_NAME,
                 mNotificationChannel,
                 mEntry,
@@ -147,6 +151,7 @@ public class PromotedNotificationInfoTest extends SysuiTestCase {
                 mUiEventLogger,
                 true,
                 false,
+                true,
                 true,
                 mAssistantFeedbackController,
                 mMetricsLogger,

@@ -738,12 +738,18 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes) {
+    public void updateAnimatingTypes(IWindow window, @InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         synchronized (mService.mGlobalLock) {
             final WindowState win = mService.windowForClientLocked(this, window,
                     false /* throwOnError */);
             if (win != null) {
-                win.setAnimatingTypes(animatingTypes);
+                ImeTracker.forLogging().onProgress(statsToken,
+                        ImeTracker.PHASE_WM_UPDATE_ANIMATING_TYPES);
+                win.setAnimatingTypes(animatingTypes, statsToken);
+            } else {
+                ImeTracker.forLogging().onFailed(statsToken,
+                        ImeTracker.PHASE_WM_UPDATE_ANIMATING_TYPES);
             }
         }
     }
@@ -910,10 +916,16 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             int privateFlags, int inputFeatures, int type, IBinder windowToken,
             InputTransferToken inputTransferToken, String inputHandleName,
             InputChannel outInputChannel) {
-        if (hostInputTransferToken == null && !mCanAddInternalSystemWindow) {
-            // Callers without INTERNAL_SYSTEM_WINDOW permission cannot grant input channel to
-            // embedded windows without providing a host window input token
-            throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
+        if (!Flags.updateHostInputTransferToken()) {
+            // This is not a valid security check, callers can pass in a bogus token. If the
+            // token is not known to wm, then input APIs is request focus or transferTouchGesture
+            // will fail. Removing this check allows SCVH to be created before associating with a
+            // host window.
+            if (hostInputTransferToken == null && !mCanAddInternalSystemWindow) {
+                // Callers without INTERNAL_SYSTEM_WINDOW permission cannot grant input channel to
+                // embedded windows without providing a host window input token
+                throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
+            }
         }
 
         final long identity = Binder.clearCallingIdentity();
@@ -928,12 +940,14 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public void updateInputChannel(IBinder channelToken, int displayId, SurfaceControl surface,
+    public void updateInputChannel(IBinder channelToken,
+            @Nullable InputTransferToken hostInputTransferToken,
+            int displayId, SurfaceControl surface,
             int flags, int privateFlags, int inputFeatures, Region region) {
         final long identity = Binder.clearCallingIdentity();
         try {
-            mService.updateInputChannel(channelToken, displayId, surface, flags,
-                    mCanAddInternalSystemWindow ? privateFlags : 0, inputFeatures, region);
+            mService.updateInputChannel(channelToken, hostInputTransferToken, displayId, surface,
+                    flags, mCanAddInternalSystemWindow ? privateFlags : 0, inputFeatures, region);
         } finally {
             Binder.restoreCallingIdentity(identity);
         }

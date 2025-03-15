@@ -282,6 +282,33 @@ public class ThemeOverlayControllerTest extends SysuiTestCase {
 
         assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(Style.TONAL_SPOT);
     }
+    @Test
+    @HardwareColors(color = "BLK", options = {
+            "BLK|MONOCHROMATIC|#FF0000",
+            "*|VIBRANT|home_wallpaper"
+    })
+    @EnableFlags(com.android.systemui.Flags.FLAG_HARDWARE_COLOR_STYLES)
+    public void start_checkHardwareColor_storeInSecureSetting() {
+        // getWallpaperColors should not be called
+        ArgumentCaptor<Runnable> registrationRunnable = ArgumentCaptor.forClass(Runnable.class);
+        verify(mMainExecutor).execute(registrationRunnable.capture());
+        registrationRunnable.getValue().run();
+        verify(mWallpaperManager, never()).getWallpaperColors(anyInt());
+
+        assertThat(mThemeOverlayController.mThemeStyle).isEqualTo(Style.MONOCHROMATIC);
+        assertThat(mThemeOverlayController.mCurrentColors.get(0).getMainColors().get(
+                0).toArgb()).isEqualTo(Color.RED);
+
+        ArgumentCaptor<String> updatedSetting = ArgumentCaptor.forClass(String.class);
+        verify(mSecureSettings).putStringForUser(
+                eq(Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES), updatedSetting.capture(),
+                anyInt());
+
+        assertThat(updatedSetting.getValue().contains(
+                "android.theme.customization.theme_style\":\"MONOCHROMATIC")).isTrue();
+        assertThat(updatedSetting.getValue().contains(
+                "android.theme.customization.system_palette\":\"ffff0000")).isTrue();
+    }
 
 
     @Test

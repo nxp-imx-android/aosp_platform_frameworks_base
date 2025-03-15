@@ -25,6 +25,8 @@ import androidx.annotation.ColorInt
 import com.android.internal.widget.NotificationProgressModel
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import com.android.systemui.statusbar.notification.row.ImageResult
+import com.android.systemui.statusbar.notification.row.LazyImage
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 
 /**
@@ -150,6 +152,54 @@ data class PromotedNotificationContentModel(
         Call,
         Progress,
         Ineligible,
+    }
+
+    fun toRedactedString(): String {
+        return ("PromotedNotificationContentModel(" +
+            "identity=$identity, " +
+            "wasPromotedAutomatically=$wasPromotedAutomatically, " +
+            "smallIcon=${smallIcon?.toRedactedString()}, " +
+            "appName=$appName, " +
+            "subText=${subText?.toRedactedString()}, " +
+            "shortCriticalText=$shortCriticalText, " +
+            "time=$time, " +
+            "lastAudiblyAlertedMs=$lastAudiblyAlertedMs, " +
+            "profileBadgeResId=$profileBadgeResId, " +
+            "title=${title?.toRedactedString()}, " +
+            "text=${text?.toRedactedString()}, " +
+            "skeletonLargeIcon=${skeletonLargeIcon?.toRedactedString()}, " +
+            "oldProgress=$oldProgress, " +
+            "colors=$colors, " +
+            "style=$style, " +
+            "personIcon=${personIcon?.toRedactedString()}, " +
+            "personName=${personName?.toRedactedString()}, " +
+            "verificationIcon=$verificationIcon, " +
+            "verificationText=$verificationText, " +
+            "newProgress=$newProgress)")
+    }
+
+    private fun CharSequence.toRedactedString(): String = "[$length]"
+
+    private fun ImageModel.toRedactedString(): String {
+        return when (this) {
+            is LazyImage -> this.toRedactedString()
+            else -> this.toString()
+        }
+    }
+
+    private fun LazyImage.toRedactedString(): String {
+        return ("LazyImage(" +
+            "icon=[${icon.javaClass.simpleName}], " +
+            "sizeClass=$sizeClass, " +
+            "transform=$transform, " +
+            "result=${result?.toRedactedString()})")
+    }
+
+    private fun ImageResult.toRedactedString(): String {
+        return when (this) {
+            is ImageResult.Empty -> this.toString()
+            is ImageResult.Image -> "Image(drawable=[${drawable.javaClass.simpleName}])"
+        }
     }
 
     companion object {

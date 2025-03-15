@@ -280,6 +280,11 @@ public class DisplayManagerFlags {
             Flags::committedStateSeparateEvent
     );
 
+    private final FlagState mSeparateTimeouts = new FlagState(
+            Flags.FLAG_SEPARATE_TIMEOUTS,
+            Flags::separateTimeouts
+    );
+
     private final FlagState mDelayImplicitRrRegistrationUntilRrAccessed = new FlagState(
             Flags.FLAG_DELAY_IMPLICIT_RR_REGISTRATION_UNTIL_RR_ACCESSED,
             Flags::delayImplicitRrRegistrationUntilRrAccessed
@@ -608,6 +613,14 @@ public class DisplayManagerFlags {
     }
 
     /**
+     * @return {@code true} if the flag for having a separate timeouts for power groups
+     * is enabled
+     */
+    public boolean isSeparateTimeoutsEnabled() {
+        return mSeparateTimeouts.isEnabled();
+    }
+
+    /**
      * @return {@code true} if the flag for only explicit subscription for RR changes is enabled
      */
     public boolean isDelayImplicitRrRegistrationUntilRrAccessedEnabled() {
@@ -671,6 +684,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mFramerateOverrideTriggersRrCallbacks);
         pw.println(" " + mRefreshRateEventForForegroundApps);
         pw.println(" " + mCommittedStateSeparateEvent);
+        pw.println(" " + mSeparateTimeouts);
         pw.println(" " + mDelayImplicitRrRegistrationUntilRrAccessed);
     }
 

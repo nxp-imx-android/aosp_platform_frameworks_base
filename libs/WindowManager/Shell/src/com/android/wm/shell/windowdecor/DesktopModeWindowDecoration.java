@@ -72,6 +72,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManagerGlobal;
 import android.widget.ImageButton;
+import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
 import android.window.WindowContainerTransaction;
@@ -190,6 +191,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private ExclusionRegionListener mExclusionRegionListener;
 
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
+    private final AppHandleViewHolder.Factory mAppHandleViewHolderFactory;
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
     private final MaximizeMenuFactory mMaximizeMenuFactory;
     private final HandleMenuFactory mHandleMenuFactory;
@@ -212,6 +214,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private boolean mIsDragging = false;
     private Runnable mLoadAppInfoRunnable;
     private Runnable mSetAppInfoRunnable;
+    private boolean mIsMovingToBack;
 
     public DesktopModeWindowDecoration(
             Context context,
@@ -231,6 +234,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             Choreographer choreographer,
             SyncTransactionQueue syncQueue,
             AppHeaderViewHolder.Factory appHeaderViewHolderFactory,
+            AppHandleViewHolder.Factory appHandleViewHolderFactory,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             AppToWebGenericLinksParser genericLinksParser,
             AssistContentRequester assistContentRequester,
@@ -242,10 +246,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
                 mainExecutor, mainDispatcher, bgScope, bgExecutor, choreographer, syncQueue,
-                appHeaderViewHolderFactory, rootTaskDisplayAreaOrganizer, genericLinksParser,
-                assistContentRequester, SurfaceControl.Builder::new,
-                SurfaceControl.Transaction::new, WindowContainerTransaction::new,
-                SurfaceControl::new, new WindowManagerWrapper(
+                appHeaderViewHolderFactory, appHandleViewHolderFactory,
+                rootTaskDisplayAreaOrganizer, genericLinksParser, assistContentRequester,
+                SurfaceControl.Builder::new, SurfaceControl.Transaction::new,
+                WindowContainerTransaction::new, SurfaceControl::new, new WindowManagerWrapper(
                         context.getSystemService(WindowManager.class)),
                 new SurfaceControlViewHostFactory() {},
                 windowDecorViewHostSupplier,
@@ -273,6 +277,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             Choreographer choreographer,
             SyncTransactionQueue syncQueue,
             AppHeaderViewHolder.Factory appHeaderViewHolderFactory,
+            AppHandleViewHolder.Factory appHandleViewHolderFactory,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             AppToWebGenericLinksParser genericLinksParser,
             AssistContentRequester assistContentRequester,
@@ -302,6 +307,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mChoreographer = choreographer;
         mSyncQueue = syncQueue;
         mAppHeaderViewHolderFactory = appHeaderViewHolderFactory;
+        mAppHandleViewHolderFactory = appHandleViewHolderFactory;
         mRootTaskDisplayAreaOrganizer = rootTaskDisplayAreaOrganizer;
         mGenericLinksParser = genericLinksParser;
         mAssistContentRequester = assistContentRequester;
@@ -462,7 +468,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         // causes flickering. See b/270202228.
         final boolean applyTransactionOnDraw = taskInfo.isFreeform();
         relayout(taskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
-                hasGlobalFocus, displayExclusionRegion);
+                hasGlobalFocus, displayExclusionRegion, mIsMovingToBack);
         if (!applyTransactionOnDraw) {
             t.apply();
         }
@@ -489,7 +495,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void relayout(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
-            boolean hasGlobalFocus, @NonNull Region displayExclusionRegion) {
+            boolean hasGlobalFocus, @NonNull Region displayExclusionRegion,
+            boolean isMovingToBack) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
 
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()) {
@@ -512,12 +519,17 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
         final boolean inFullImmersive = mDesktopUserRepositories.getProfile(taskInfo.userId)
                 .isTaskInFullImmersiveState(taskInfo.taskId);
+        mIsMovingToBack = isMovingToBack;
         updateRelayoutParams(mRelayoutParams, mContext, taskInfo, mSplitScreenController,
                 applyStartTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
                 mIsStatusBarVisible, mIsKeyguardVisibleAndOccluded, inFullImmersive,
                 mIsDragging, mDisplayController.getInsetsState(taskInfo.displayId), hasGlobalFocus,
-                displayExclusionRegion, mIsRecentsTransitionRunning,
-                mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo));
+                displayExclusionRegion,
+                /* shouldIgnoreCornerRadius= */ mIsRecentsTransitionRunning
+                        && DesktopModeFlags
+                        .ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue(),
+                mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
+                mIsRecentsTransitionRunning, mIsMovingToBack);
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;
@@ -542,7 +554,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             return;
         }
 
-        if (oldRootView != mResult.mRootView) {
+        if (DesktopModeFlags.SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX.isTrue()
+                ? (oldRootView != mResult.mRootView && taskInfo.isVisibleRequested)
+                : oldRootView != mResult.mRootView) {
             disposeStatusBarInputLayer();
             mWindowDecorViewHolder = createViewHolder();
             // Load these only when first creating the view.
@@ -558,29 +572,15 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             });
         }
 
-        final Point position = new Point();
-        if (isAppHandle(mWindowDecorViewHolder)) {
-            position.set(determineHandlePosition());
-        }
         if (canEnterDesktopMode(mContext) && isEducationEnabled()) {
             notifyCaptionStateChanged();
         }
 
         Trace.beginSection("DesktopModeWindowDecoration#relayout-bindData");
         if (isAppHandle(mWindowDecorViewHolder)) {
-            mWindowDecorViewHolder.bindData(new AppHandleViewHolder.HandleData(
-                    mTaskInfo, position, mResult.mCaptionWidth, mResult.mCaptionHeight,
-                    isCaptionVisible()
-            ));
+            updateAppHandleViewHolder();
         } else {
-            mWindowDecorViewHolder.bindData(new AppHeaderViewHolder.HeaderData(
-                    mTaskInfo,
-                    DesktopModeUtils.isTaskMaximized(mTaskInfo, mDisplayController),
-                    inFullImmersive,
-                    hasGlobalFocus,
-                    /* maximizeHoverEnabled= */ canOpenMaximizeMenu(
-                            /* animatingTaskResizeOrReposition= */ false)
-            ));
+            updateAppHeaderViewHolder(inFullImmersive, hasGlobalFocus);
         }
         Trace.endSection();
 
@@ -720,7 +720,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 .getScaledTouchSlop();
         final Resources res = mResult.mRootView.getResources();
         final DragResizeWindowGeometry newGeometry = new DragResizeWindowGeometry(
-                mRelayoutParams.mCornerRadius,
+                DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()
+                        ? mResult.mCornerRadius : mRelayoutParams.mCornerRadius,
                 new Size(mResult.mWidth, mResult.mHeight),
                 getResizeEdgeHandleSize(res), getResizeHandleEdgeInset(res),
                 getFineResizeCornerSize(res), getLargeResizeCornerSize(res),
@@ -857,9 +858,33 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         asAppHandle(mWindowDecorViewHolder).disposeStatusBarInputLayer();
     }
 
+    /** Update the view holder for app handle. */
+    private void updateAppHandleViewHolder() {
+        if (!isAppHandle(mWindowDecorViewHolder)) return;
+        asAppHandle(mWindowDecorViewHolder).bindData(new AppHandleViewHolder.HandleData(
+                mTaskInfo, determineHandlePosition(), mResult.mCaptionWidth,
+                mResult.mCaptionHeight, /* showInputLayer= */ isCaptionVisible(),
+                /* isCaptionVisible= */ isCaptionVisible()
+        ));
+    }
+
+    /** Update the view holder for app header. */
+    private void updateAppHeaderViewHolder(boolean inFullImmersive, boolean hasGlobalFocus) {
+        if (!isAppHeader(mWindowDecorViewHolder)) return;
+        asAppHeader(mWindowDecorViewHolder).bindData(new AppHeaderViewHolder.HeaderData(
+                mTaskInfo,
+                DesktopModeUtils.isTaskMaximized(mTaskInfo, mDisplayController),
+                inFullImmersive,
+                hasGlobalFocus,
+                /* maximizeHoverEnabled= */ canOpenMaximizeMenu(
+                    /* animatingTaskResizeOrReposition= */ false),
+                isCaptionVisible()
+        ));
+    }
+
     private WindowDecorationViewHolder createViewHolder() {
         if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_handle) {
-            return new AppHandleViewHolder(
+            return mAppHandleViewHolderFactory.create(
                     mResult.mRootView,
                     mOnCaptionTouchListener,
                     mOnCaptionButtonClickListener,
@@ -884,6 +909,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
     private boolean isAppHandle(WindowDecorationViewHolder viewHolder) {
         return viewHolder instanceof AppHandleViewHolder;
+    }
+
+    private boolean isAppHeader(WindowDecorationViewHolder viewHolder) {
+        return viewHolder instanceof AppHeaderViewHolder;
     }
 
     @Nullable
@@ -918,7 +947,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean hasGlobalFocus,
             @NonNull Region displayExclusionRegion,
             boolean shouldIgnoreCornerRadius,
-            boolean shouldExcludeCaptionFromAppBounds) {
+            boolean shouldExcludeCaptionFromAppBounds,
+            boolean isRecentsTransitionRunning,
+            boolean isMovingToBack) {
         final int captionLayoutId = getDesktopModeWindowDecorLayoutId(taskInfo.getWindowingMode());
         final boolean isAppHeader =
                 captionLayoutId == R.layout.desktop_mode_app_header;
@@ -935,11 +966,20 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         // the first frame.
         relayoutParams.mAsyncViewHost = isAppHandle;
 
-        final boolean showCaption;
-        if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue() && isDragging) {
+        boolean showCaption;
+        // If this relayout is occurring from an observed TRANSIT_TO_BACK transition, do not
+        // show caption (this includes split select transition).
+        if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()
+                && isMovingToBack && !isDragging) {
+            showCaption = false;
+        } else if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue() && isDragging) {
             // If the task is being dragged, the caption should not be hidden so that it continues
             // receiving input
             showCaption = true;
+        } else if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()
+                && isRecentsTransitionRunning) {
+            // Caption should not be visible in recents.
+            showCaption = false;
         } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
             if (inFullImmersiveMode) {
                 showCaption = (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
@@ -1036,13 +1076,23 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
         if (isAppHeader
                 && DesktopModeStatus.useWindowShadow(/* isFocusedWindow= */ hasGlobalFocus)) {
-            relayoutParams.mShadowRadius = hasGlobalFocus
-                    ? context.getResources().getDimensionPixelSize(
-                            R.dimen.freeform_decor_shadow_focused_thickness)
-                    : context.getResources().getDimensionPixelSize(
-                            R.dimen.freeform_decor_shadow_unfocused_thickness);
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                relayoutParams.mShadowRadiusId = hasGlobalFocus
+                        ? R.dimen.freeform_decor_shadow_focused_thickness
+                        : R.dimen.freeform_decor_shadow_unfocused_thickness;
+            } else {
+                relayoutParams.mShadowRadius = hasGlobalFocus
+                        ? context.getResources().getDimensionPixelSize(
+                        R.dimen.freeform_decor_shadow_focused_thickness)
+                        : context.getResources().getDimensionPixelSize(
+                                R.dimen.freeform_decor_shadow_unfocused_thickness);
+            }
         } else {
-            relayoutParams.mShadowRadius = INVALID_SHADOW_RADIUS;
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                relayoutParams.mShadowRadiusId = Resources.ID_NULL;
+            } else {
+                relayoutParams.mShadowRadius = INVALID_SHADOW_RADIUS;
+            }
         }
         relayoutParams.mApplyStartTransactionOnDraw = applyStartTransactionOnDraw;
         relayoutParams.mSetTaskVisibilityPositionAndCrop = shouldSetTaskVisibilityPositionAndCrop;
@@ -1068,8 +1118,13 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mWindowDecorConfig = windowDecorConfig;
 
         if (DesktopModeStatus.useRoundedCorners()) {
-            relayoutParams.mCornerRadius = shouldIgnoreCornerRadius ? INVALID_CORNER_RADIUS :
-                    getCornerRadius(context, relayoutParams.mLayoutResId);
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                relayoutParams.mCornerRadiusId = shouldIgnoreCornerRadius ? Resources.ID_NULL :
+                        getCornerRadiusId(relayoutParams.mLayoutResId);
+            } else {
+                relayoutParams.mCornerRadius = shouldIgnoreCornerRadius ? INVALID_CORNER_RADIUS :
+                        getCornerRadius(context, relayoutParams.mLayoutResId);
+            }
         }
         // Set opaque background for all freeform tasks to prevent freeform tasks below
         // from being visible if freeform task window above is translucent.
@@ -1077,6 +1132,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mShouldSetBackground = DesktopModeStatus.shouldSetBackground(taskInfo);
     }
 
+    @Deprecated
     private static int getCornerRadius(@NonNull Context context, int layoutResId) {
         if (layoutResId == R.layout.desktop_mode_app_header) {
             return loadDimensionPixelSize(context.getResources(),
@@ -1084,6 +1140,14 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                             .desktop_windowing_freeform_rounded_corner_radius);
         }
         return INVALID_CORNER_RADIUS;
+    }
+
+    private static int getCornerRadiusId(int layoutResId) {
+        if (layoutResId == R.layout.desktop_mode_app_header) {
+            return com.android.wm.shell.shared.R.dimen
+                    .desktop_windowing_freeform_rounded_corner_radius;
+        }
+        return Resources.ID_NULL;
     }
 
     /**
@@ -1683,6 +1747,17 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         }
     }
 
+    /**
+     * Indicates that an app handle drag has been interrupted, this can happen e.g. if we receive an
+     * unknown transition during the drag-to-desktop transition.
+     */
+    void handleDragInterrupted() {
+        if (mResult.mRootView == null) return;
+        final View handle = mResult.mRootView.findViewById(R.id.caption_handle);
+        handle.setHovered(false);
+        handle.setPressed(false);
+    }
+
     private boolean pointInView(View v, float x, float y) {
         return v != null && v.getLeft() <= x && v.getRight() >= x
                 && v.getTop() <= y && v.getBottom() >= y;
@@ -1709,8 +1784,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mExclusionRegionListener.onExclusionRegionDismissed(mTaskInfo.taskId);
         disposeResizeVeil();
         disposeStatusBarInputLayer();
-        mWindowDecorViewHolder.close();
-        mWindowDecorViewHolder = null;
+        if (mWindowDecorViewHolder != null) {
+            mWindowDecorViewHolder.close();
+            mWindowDecorViewHolder = null;
+        }
         if (canEnterDesktopMode(mContext) && isEducationEnabled()) {
             notifyNoCaptionHandle();
         }
@@ -1776,6 +1853,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return loadDimensionPixelSize(mContext.getResources(), getCaptionHeightId(windowingMode));
     }
 
+    @Override
+    int getCaptionViewId() {
+        return R.id.desktop_mode_caption;
+    }
+
     void setAnimatingTaskResizeOrReposition(boolean animatingTaskResizeOrReposition) {
         if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_handle) return;
         final boolean inFullImmersive =
@@ -1786,7 +1868,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DesktopModeUtils.isTaskMaximized(mTaskInfo, mDisplayController),
                 inFullImmersive,
                 isFocused(),
-                /* maximizeHoverEnabled= */ canOpenMaximizeMenu(animatingTaskResizeOrReposition)));
+                /* maximizeHoverEnabled= */ canOpenMaximizeMenu(animatingTaskResizeOrReposition),
+                isCaptionVisible()));
     }
 
     /**
@@ -1795,9 +1878,18 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * <p> When a Recents transition is active we allow that transition to take ownership of the
      * corner radius of its task surfaces, so each window decoration should stop updating the corner
      * radius of its task surface during that time.
+     *
+     * We should not allow input to reach the input layer during a Recents transition, so
+     * update the handle view holder accordingly if transition status changes.
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
-        mIsRecentsTransitionRunning = isRecentsTransitionRunning;
+        if (mIsRecentsTransitionRunning != isRecentsTransitionRunning) {
+            mIsRecentsTransitionRunning = isRecentsTransitionRunning;
+            if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+                // We don't relayout decor on recents transition, so we need to call it directly.
+                relayout(mTaskInfo, mHasGlobalFocus, mRelayoutParams.mDisplayExclusionRegion);
+            }
+        }
     }
 
     /**
@@ -1862,6 +1954,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 Choreographer choreographer,
                 SyncTransactionQueue syncQueue,
                 AppHeaderViewHolder.Factory appHeaderViewHolderFactory,
+                AppHandleViewHolder.Factory appHandleViewHolderFactory,
                 RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
                 AppToWebGenericLinksParser genericLinksParser,
                 AssistContentRequester assistContentRequester,
@@ -1889,6 +1982,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     choreographer,
                     syncQueue,
                     appHeaderViewHolderFactory,
+                    appHandleViewHolderFactory,
                     rootTaskDisplayAreaOrganizer,
                     genericLinksParser,
                     assistContentRequester,

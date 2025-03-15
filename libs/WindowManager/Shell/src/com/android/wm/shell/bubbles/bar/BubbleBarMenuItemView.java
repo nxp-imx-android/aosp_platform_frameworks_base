@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.wm.shell.R;
+import com.android.wm.shell.shared.TypefaceUtils;
 
 /**
  * Bubble bar expanded view menu item view to display menu action details
@@ -55,6 +56,7 @@ public class BubbleBarMenuItemView extends LinearLayout {
         super.onFinishInflate();
         mImageView = findViewById(R.id.bubble_bar_menu_item_icon);
         mTextView = findViewById(R.id.bubble_bar_menu_item_title);
+        TypefaceUtils.setTypeface(mTextView, TypefaceUtils.FontFamily.GSF_TITLE_MEDIUM);
     }
 
     /**

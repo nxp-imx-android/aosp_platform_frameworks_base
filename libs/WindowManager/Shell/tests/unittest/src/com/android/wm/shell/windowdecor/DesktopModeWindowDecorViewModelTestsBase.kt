@@ -84,6 +84,7 @@ import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
+import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import org.junit.After
 import org.mockito.Mockito
@@ -125,6 +126,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockShellController = mock<ShellController>()
     protected val testShellExecutor = TestShellExecutor()
     protected val mockAppHeaderViewHolderFactory = mock<AppHeaderViewHolder.Factory>()
+    protected val mockAppHandleViewHolderFactory = mock<AppHandleViewHolder.Factory>()
     protected val mockRootTaskDisplayAreaOrganizer = mock<RootTaskDisplayAreaOrganizer>()
     protected val mockShellCommandHandler = mock<ShellCommandHandler>()
     protected val mockWindowManager = mock<IWindowManager>()
@@ -222,6 +224,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockInputMonitorFactory,
             transactionFactory,
             mockAppHeaderViewHolderFactory,
+            mockAppHandleViewHolderFactory,
             mockRootTaskDisplayAreaOrganizer,
             windowDecorByTaskIdSpy,
             mockInteractionJankMonitor,
@@ -331,7 +334,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockDesktopModeWindowDecorFactory.create(
                 any(), any(), any(), any(), any(), any(), any(), eq(task), any(), any(), any(),
                 any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                any(), any(), any())
+                any(), any(), any(), any())
         ).thenReturn(decoration)
         decoration.mTaskInfo = task
         whenever(decoration.user).thenReturn(mockUserHandle)
@@ -353,12 +356,17 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         )
     }
 
-    protected fun onTaskChanging(task: RunningTaskInfo, leash: SurfaceControl = SurfaceControl()) {
+    protected fun onTaskChanging(
+        task: RunningTaskInfo,
+        leash: SurfaceControl = SurfaceControl(),
+        changeMode: Int
+    ) {
         desktopModeWindowDecorViewModel.onTaskChanging(
             task,
             leash,
             StubTransaction(),
-            StubTransaction()
+            StubTransaction(),
+            changeMode
         )
     }
 

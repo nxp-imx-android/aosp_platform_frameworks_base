@@ -40,7 +40,6 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.R;
-import com.android.settingslib.devicestate.DeviceStateRotationLockSettingsManager.SettableDeviceState;
 
 import com.google.common.truth.Expect;
 

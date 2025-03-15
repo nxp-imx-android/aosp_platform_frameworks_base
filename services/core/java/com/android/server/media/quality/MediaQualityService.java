@@ -371,12 +371,8 @@ public class MediaQualityService extends SystemService {
                     PictureParameter[] pictureParameters = MediaQualityUtils
                             .convertPersistableBundleToPictureParameterList(params);
 
-                    PersistableBundle vendorPictureParameters = params
-                            .getPersistableBundle(BaseParameters.VENDOR_PARAMETERS);
                     Parcel parcel = Parcel.obtain();
-                    if (vendorPictureParameters != null) {
-                        setVendorPictureParameters(pp, parcel, vendorPictureParameters);
-                    }
+                    setVendorPictureParameters(pp, parcel, params);
 
                     pp.pictureParameters = pictureParameters;
 
@@ -1429,11 +1425,9 @@ public class MediaQualityService extends SystemService {
                     MediaQualityUtils.convertPersistableBundleToPictureParameterList(
                             params);
 
-            PersistableBundle vendorPictureParameters = params
-                    .getPersistableBundle(BaseParameters.VENDOR_PARAMETERS);
             Parcel parcel = Parcel.obtain();
-            if (vendorPictureParameters != null) {
-                setVendorPictureParameters(pictureParameters, parcel, vendorPictureParameters);
+            if (params != null) {
+                setVendorPictureParameters(pictureParameters, parcel, params);
             }
 
             android.hardware.tv.mediaquality.PictureProfile toReturn =

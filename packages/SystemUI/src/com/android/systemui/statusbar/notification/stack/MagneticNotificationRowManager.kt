@@ -33,12 +33,12 @@ import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 interface MagneticNotificationRowManager {
 
     /**
-     * Set the swipe threshold in pixels. After crossing the threshold, the magnetic target detaches
-     * and the magnetic neighbors snap back.
+     * Notifies a change in the device density. The density can be used to compute the values of
+     * thresholds in pixels.
      *
-     * @param[threshold] Swipe threshold in pixels.
+     * @param[density] The device density.
      */
-    fun setSwipeThresholdPx(thresholdPx: Float)
+    fun onDensityChange(density: Float)
 
     /**
      * Set the magnetic and roundable targets of a magnetic swipe interaction.
@@ -87,6 +87,9 @@ interface MagneticNotificationRowManager {
      */
     fun onMagneticInteractionEnd(row: ExpandableNotificationRow, velocity: Float? = null)
 
+    /** Determine if the given [ExpandableNotificationRow] has been magnetically detached. */
+    fun isMagneticRowSwipeDetached(row: ExpandableNotificationRow): Boolean
+
     /* Reset any roundness that magnetic targets may have */
     fun resetRoundness()
 
@@ -104,12 +107,15 @@ interface MagneticNotificationRowManager {
         /** Detaching threshold in dp */
         const val MAGNETIC_DETACH_THRESHOLD_DP = 56
 
+        /** Re-attaching threshold in dp */
+        const val MAGNETIC_ATTACH_THRESHOLD_DP = 40
+
         /* An empty implementation of a manager */
         @JvmStatic
         val Empty: MagneticNotificationRowManager
             get() =
                 object : MagneticNotificationRowManager {
-                    override fun setSwipeThresholdPx(thresholdPx: Float) {}
+                    override fun onDensityChange(density: Float) {}
 
                     override fun setMagneticAndRoundableTargets(
                         swipingRow: ExpandableNotificationRow,
@@ -126,6 +132,10 @@ interface MagneticNotificationRowManager {
                         row: ExpandableNotificationRow,
                         velocity: Float?,
                     ) {}
+
+                    override fun isMagneticRowSwipeDetached(
+                        row: ExpandableNotificationRow
+                    ): Boolean = false
 
                     override fun resetRoundness() {}
 

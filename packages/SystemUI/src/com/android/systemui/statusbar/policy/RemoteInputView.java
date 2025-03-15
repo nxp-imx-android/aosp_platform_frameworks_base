@@ -79,6 +79,7 @@ import com.android.internal.logging.UiEvent;
 import com.android.internal.logging.UiEventLogger;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.systemui.Dependency;
+import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -245,7 +246,9 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
         mProgressBar.setProgressTintList(accentColor);
         mProgressBar.setIndeterminateTintList(accentColor);
         mProgressBar.setSecondaryProgressTintList(accentColor);
-        setBackgroundColor(backgroundColor);
+        if (!Flags.notificationRowTransparency()) {
+            setBackgroundColor(backgroundColor);
+        }
     }
 
     @Override
@@ -419,10 +422,10 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
         // case to prevent flicker.
         if (!mRemoved) {
             ViewGroup parent = (ViewGroup) getParent();
+            View actionsContainer = getActionsContainerLayout();
             if (animate && parent != null) {
 
                 ViewGroup grandParent = (ViewGroup) parent.getParent();
-                View actionsContainer = getActionsContainerLayout();
                 int actionsContainerHeight =
                         actionsContainer != null ? actionsContainer.getHeight() : 0;
 
@@ -458,6 +461,9 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
                 if (doAfterDefocus != null) doAfterDefocus.run();
                 if (mWrapper != null) {
                     mWrapper.setRemoteInputVisible(false);
+                }
+                if (Flags.notificationRowTransparency()) {
+                    if (actionsContainer != null) actionsContainer.setAlpha(1);
                 }
             }
         }
@@ -823,12 +829,14 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
                     ObjectAnimator.ofFloat(fadeOutView, View.ALPHA, 1f, 0f);
             fadeOutViewAlphaAnimator.setDuration(FOCUS_ANIMATION_CROSSFADE_DURATION);
             fadeOutViewAlphaAnimator.setInterpolator(InterpolatorsAndroidX.LINEAR);
-            animatorSet.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation, boolean isReverse) {
-                    fadeOutView.setAlpha(1f);
-                }
-            });
+            if (!Flags.notificationRowTransparency()) {
+                animatorSet.addListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation, boolean isReverse) {
+                        fadeOutView.setAlpha(1f);
+                    }
+                });
+            }
             animatorSet.playTogether(alphaAnimator, scaleAnimator, fadeOutViewAlphaAnimator);
         }
         return animatorSet;

@@ -74,6 +74,11 @@ public final class SystemFeaturesCache {
         return instance;
     }
 
+    /** Checks for existence of the process-global instance. */
+    public static boolean hasInstance() {
+        return sInstance != null;
+    }
+
     /** Clears the process-global cache instance for testing. */
     @VisibleForTesting
     public static void clearInstance() {

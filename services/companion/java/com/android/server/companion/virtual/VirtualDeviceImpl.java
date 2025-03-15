@@ -55,6 +55,7 @@ import android.companion.virtual.audio.IAudioConfigChangedCallback;
 import android.companion.virtual.audio.IAudioRoutingCallback;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.sensor.VirtualSensor;
+import android.companion.virtual.sensor.VirtualSensorAdditionalInfo;
 import android.companion.virtual.sensor.VirtualSensorEvent;
 import android.companion.virtualdevice.flags.Flags;
 import android.compat.annotation.ChangeId;
@@ -1288,6 +1289,18 @@ final class VirtualDeviceImpl extends IVirtualDevice.Stub
         final long ident = Binder.clearCallingIdentity();
         try {
             return mSensorController.sendSensorEvent(token, event);
+        } finally {
+            Binder.restoreCallingIdentity(ident);
+        }
+    }
+
+    @Override // Binder call
+    public boolean sendSensorAdditionalInfo(@NonNull IBinder token,
+            @NonNull VirtualSensorAdditionalInfo info) {
+        checkCallerIsDeviceOwner();
+        final long ident = Binder.clearCallingIdentity();
+        try {
+            return mSensorController.sendSensorAdditionalInfo(token, info);
         } finally {
             Binder.restoreCallingIdentity(ident);
         }

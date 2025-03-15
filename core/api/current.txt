@@ -24820,7 +24820,7 @@ package android.media {
     method public android.view.Surface getSurface();
     method public boolean isPrivacySensitive();
     method public void pause() throws java.lang.IllegalStateException;
-    method public void prepare() throws java.io.IOException, java.lang.IllegalStateException;
+    method @RequiresPermission(value=android.Manifest.permission.RECORD_AUDIO, conditional=true) public void prepare() throws java.io.IOException, java.lang.IllegalStateException;
     method public void registerAudioRecordingCallback(@NonNull java.util.concurrent.Executor, @NonNull android.media.AudioManager.AudioRecordingCallback);
     method public void release();
     method public void removeOnRoutingChangedListener(android.media.AudioRouting.OnRoutingChangedListener);
@@ -24861,7 +24861,7 @@ package android.media {
     method public void setVideoProfile(@NonNull android.media.EncoderProfiles.VideoProfile);
     method public void setVideoSize(int, int) throws java.lang.IllegalStateException;
     method public void setVideoSource(int) throws java.lang.IllegalStateException;
-    method public void start() throws java.lang.IllegalStateException;
+    method @RequiresPermission(value=android.Manifest.permission.RECORD_AUDIO, conditional=true) public void start() throws java.lang.IllegalStateException;
     method public void stop() throws java.lang.IllegalStateException;
     method public void unregisterAudioRecordingCallback(@NonNull android.media.AudioManager.AudioRecordingCallback);
     field public static final int MEDIA_ERROR_SERVER_DIED = 100; // 0x64
@@ -34264,6 +34264,7 @@ package android.os {
     method public boolean hasFileDescriptors();
     method public boolean hasFileDescriptors(int, int);
     method public byte[] marshall();
+    method @FlaggedApi("android.os.parcel_marshall_bytebuffer") public void marshall(@NonNull java.nio.ByteBuffer);
     method @NonNull public static android.os.Parcel obtain();
     method @NonNull public static android.os.Parcel obtain(@NonNull android.os.IBinder);
     method @Deprecated @Nullable public Object[] readArray(@Nullable ClassLoader);
@@ -34333,6 +34334,7 @@ package android.os {
     method public void setDataSize(int);
     method public void setPropagateAllowBlocking();
     method public void unmarshall(@NonNull byte[], int, int);
+    method @FlaggedApi("android.os.parcel_marshall_bytebuffer") public void unmarshall(@NonNull java.nio.ByteBuffer);
     method public void writeArray(@Nullable Object[]);
     method public void writeBinderArray(@Nullable android.os.IBinder[]);
     method public void writeBinderList(@Nullable java.util.List<android.os.IBinder>);
@@ -46681,16 +46683,16 @@ package android.telephony {
     method public int getLastCauseCode();
     method @Nullable public android.net.LinkProperties getLinkProperties();
     method public int getNetworkType();
-    method @FlaggedApi("com.android.internal.telephony.flags.network_validation") public int getNetworkValidationStatus();
+    method public int getNetworkValidationStatus();
     method public int getState();
     method public int getTransportType();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.PreciseDataConnectionState> CREATOR;
-    field @FlaggedApi("com.android.internal.telephony.flags.network_validation") public static final int NETWORK_VALIDATION_FAILURE = 4; // 0x4
-    field @FlaggedApi("com.android.internal.telephony.flags.network_validation") public static final int NETWORK_VALIDATION_IN_PROGRESS = 2; // 0x2
-    field @FlaggedApi("com.android.internal.telephony.flags.network_validation") public static final int NETWORK_VALIDATION_NOT_REQUESTED = 1; // 0x1
-    field @FlaggedApi("com.android.internal.telephony.flags.network_validation") public static final int NETWORK_VALIDATION_SUCCESS = 3; // 0x3
-    field @FlaggedApi("com.android.internal.telephony.flags.network_validation") public static final int NETWORK_VALIDATION_UNSUPPORTED = 0; // 0x0
+    field public static final int NETWORK_VALIDATION_FAILURE = 4; // 0x4
+    field public static final int NETWORK_VALIDATION_IN_PROGRESS = 2; // 0x2
+    field public static final int NETWORK_VALIDATION_NOT_REQUESTED = 1; // 0x1
+    field public static final int NETWORK_VALIDATION_SUCCESS = 3; // 0x3
+    field public static final int NETWORK_VALIDATION_UNSUPPORTED = 0; // 0x0
   }
 
   public final class RadioAccessSpecifier implements android.os.Parcelable {
@@ -55423,6 +55425,7 @@ package android.view {
     method public void dispatchOnDraw();
     method public void dispatchOnGlobalLayout();
     method public boolean dispatchOnPreDraw();
+    method @FlaggedApi("android.view.flags.enable_dispatch_on_scroll_changed") public void dispatchOnScrollChanged();
     method public boolean isAlive();
     method public void registerFrameCommitCallback(@NonNull Runnable);
     method @Deprecated public void removeGlobalOnLayoutListener(android.view.ViewTreeObserver.OnGlobalLayoutListener);

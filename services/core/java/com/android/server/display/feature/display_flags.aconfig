@@ -509,6 +509,14 @@ flag {
     }
 }
 
+
+flag {
+    name: "separate_timeouts"
+    namespace: "lse_desktop_experience"
+    description: "Allow separate timeouts for different power groups"
+    bug: "402356291"
+}
+
 flag {
     name: "delay_implicit_rr_registration_until_rr_accessed"
     namespace: "display_manager"

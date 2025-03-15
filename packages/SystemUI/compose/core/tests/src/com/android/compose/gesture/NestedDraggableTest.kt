@@ -971,6 +971,98 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
         assertThat(availableToEffectPostFling).isWithin(1f).of(100f)
     }
 
+    @Test
+    fun isReadyToDrag() {
+        var isReadyToDrag by mutableStateOf(false)
+        val draggable = TestDraggable(isReadyToDrag = { isReadyToDrag })
+        val touchSlop =
+            rule.setContentWithTouchSlop {
+                Box(Modifier.fillMaxSize().nestedDraggable(draggable, orientation))
+            }
+
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy((touchSlop + 10f).toOffset())
+        }
+
+        assertThat(draggable.onDragStartedCalled).isTrue()
+        assertThat(draggable.onDragDelta).isEqualTo(0f)
+
+        rule.onRoot().performTouchInput { moveBy(20f.toOffset()) }
+        assertThat(draggable.onDragDelta).isEqualTo(0f)
+
+        // Flag as ready to drag. We still ignore the next drag after that.
+        isReadyToDrag = true
+        rule.onRoot().performTouchInput { moveBy(30f.toOffset()) }
+        assertThat(draggable.onDragDelta).isEqualTo(0f)
+
+        // Now we drag.
+        rule.onRoot().performTouchInput { moveBy(40f.toOffset()) }
+        assertThat(draggable.onDragDelta).isEqualTo(40f)
+    }
+
+    @Test
+    fun consumeNestedPreScroll() {
+        var consumeNestedPreScroll by mutableStateOf(false)
+        val draggable = TestDraggable(shouldConsumeNestedPreScroll = { consumeNestedPreScroll })
+
+        val touchSlop =
+            rule.setContentWithTouchSlop {
+                Box(
+                    Modifier.fillMaxSize()
+                        .nestedDraggable(draggable, orientation)
+                        // Always consume everything so that the only way to start the drag is to
+                        // intercept preScroll events.
+                        .scrollable(rememberScrollableState { it }, orientation)
+                )
+            }
+
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy((touchSlop + 1f).toOffset())
+        }
+
+        assertThat(draggable.onDragStartedCalled).isFalse()
+
+        consumeNestedPreScroll = true
+        rule.onRoot().performTouchInput { moveBy(1f.toOffset()) }
+
+        assertThat(draggable.onDragStartedCalled).isTrue()
+    }
+
+    @Test
+    fun autoStopNestedDrags() {
+        var consumeScrolls by mutableStateOf(true)
+        val draggable =
+            TestDraggable(autoStopNestedDrags = true, onDrag = { if (consumeScrolls) it else 0f })
+
+        val touchSlop =
+            rule.setContentWithTouchSlop {
+                Box(
+                    Modifier.fillMaxSize()
+                        .nestedDraggable(draggable, orientation)
+                        .scrollable(rememberScrollableState { 0f }, orientation)
+                )
+            }
+
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy((touchSlop + 1f).toOffset())
+        }
+
+        assertThat(draggable.onDragStartedCalled).isTrue()
+        assertThat(draggable.onDragStoppedCalled).isFalse()
+
+        rule.onRoot().performTouchInput { moveBy(50f.toOffset()) }
+
+        assertThat(draggable.onDragStoppedCalled).isFalse()
+
+        consumeScrolls = false
+        rule.onRoot().performTouchInput { moveBy(1f.toOffset()) }
+
+        assertThat(draggable.onDragStoppedCalled).isTrue()
+    }
+
     private fun ComposeContentTestRule.setContentWithTouchSlop(
         content: @Composable () -> Unit
     ): Float {
@@ -996,7 +1088,10 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
             { velocity, _ ->
                 velocity
             },
-        private val shouldConsumeNestedScroll: (Float) -> Boolean = { true },
+        private val shouldConsumeNestedPostScroll: (Float) -> Boolean = { true },
+        private val shouldConsumeNestedPreScroll: (Float) -> Boolean = { false },
+        private val isReadyToDrag: () -> Boolean = { true },
+        private val autoStopNestedDrags: Boolean = false,
     ) : NestedDraggable {
         var shouldStartDrag = true
         var onDragStartedCalled = false
@@ -1026,6 +1121,11 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
 
             onDragStarted.invoke(position, sign)
             return object : NestedDraggable.Controller {
+                override val autoStopNestedDrags: Boolean = this@TestDraggable.autoStopNestedDrags
+
+                override val isReadyToDrag: Boolean
+                    get() = isReadyToDrag()
+
                 override fun onDrag(delta: Float): Float {
                     onDragCalled = true
                     onDragDelta += delta
@@ -1042,8 +1142,12 @@ class NestedDraggableTest(override val orientation: Orientation) : OrientationAw
             }
         }
 
-        override fun shouldConsumeNestedScroll(sign: Float): Boolean {
-            return shouldConsumeNestedScroll.invoke(sign)
+        override fun shouldConsumeNestedPostScroll(sign: Float): Boolean {
+            return shouldConsumeNestedPostScroll.invoke(sign)
+        }
+
+        override fun shouldConsumeNestedPreScroll(sign: Float): Boolean {
+            return shouldConsumeNestedPreScroll.invoke(sign)
         }
     }
 }

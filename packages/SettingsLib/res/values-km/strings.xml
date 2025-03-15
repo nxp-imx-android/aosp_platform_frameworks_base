@@ -539,8 +539,7 @@
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"គ្រប់គ្រងដោយការកំណត់ដែលបានរឹតបន្តឹង"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"មិនអាច​ប្រើបានទេ​អំឡុងពេល​ហៅទូរសព្ទ"</string>
     <string name="disabled" msgid="8017887509554714950">"បិទ"</string>
-    <!-- no translation found for enabled (3997122818554810678) -->
-    <skip />
+    <string name="enabled" msgid="3997122818554810678">"បាន​បើក"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"បាន​អនុញ្ញាត"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"មិន​បានអនុញ្ញាត​"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"ដំឡើងកម្មវិធីដែលមិនស្គាល់"</string>
@@ -625,9 +624,11 @@
     <string name="tv_media_transfer_earc_fallback_title" msgid="3098685494578519940">"HDMI eARC"</string>
     <string name="tv_media_transfer_arc_subtitle" msgid="1040017851325069082">"បានភ្ជាប់តាមរយៈ ARC"</string>
     <string name="tv_media_transfer_earc_subtitle" msgid="645191413103303077">"បានភ្ជាប់តាមរយៈ eARC"</string>
-    <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"ឧបករណ៍បំពងសំឡេង​ភ្ជាប់មកជាមួយ"</string>
+    <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"ឧបករណ៍សំឡេងមកជាមួយ"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"សំឡេងទូរទស្សន៍"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"មាន​បញ្ហា​ក្នុងការ​ភ្ជាប់។ បិទ រួច​បើក​ឧបករណ៍​វិញ"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"ឧបករណ៍​សំឡេងប្រើខ្សែ"</string>
     <string name="help_label" msgid="3528360748637781274">"ជំនួយ និងមតិកែលម្អ"</string>
     <string name="storage_category" msgid="2287342585424631813">"ទំហំផ្ទុក"</string>

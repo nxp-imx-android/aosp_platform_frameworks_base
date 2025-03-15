@@ -26,28 +26,37 @@ import android.os.Binder
 import android.os.Handler
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.UsesFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.provider.Settings
 import android.provider.Settings.Global.DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.IWindowManager
+import android.view.InputDevice
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
+import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.ExtendedMockito.never
+import com.android.dx.mockito.inline.extended.StaticMockitoSession
+import com.android.server.display.feature.flags.Flags as DisplayFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.MockToken
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
+import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.transition.Transitions
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.junit.testparameterinjector.TestParameter
 import com.google.testing.junit.testparameterinjector.TestParameterInjector
 import com.google.testing.junit.testparameterinjector.TestParameterValuesProvider
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,6 +69,7 @@ import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.mockito.quality.Strictness
 
 /**
  * Test class for [DesktopDisplayModeController]
@@ -68,6 +78,7 @@ import org.mockito.kotlin.whenever
  */
 @SmallTest
 @RunWith(TestParameterInjector::class)
+@UsesFlags(com.android.server.display.feature.flags.Flags::class)
 class DesktopDisplayModeControllerTest(
     @TestParameter(valuesProvider = FlagsParameterizationProvider::class)
     flags: FlagsParameterization
@@ -79,6 +90,7 @@ class DesktopDisplayModeControllerTest(
     private val desktopWallpaperActivityTokenProvider =
         mock<DesktopWallpaperActivityTokenProvider>()
     private val inputManager = mock<InputManager>()
+    private val displayController = mock<DisplayController>()
     private val mainHandler = mock<Handler>()
 
     private lateinit var controller: DesktopDisplayModeController
@@ -90,6 +102,14 @@ class DesktopDisplayModeControllerTest(
         TestRunningTaskInfoBuilder().setWindowingMode(WINDOWING_MODE_FULLSCREEN).build()
     private val defaultTDA = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
     private val wallpaperToken = MockToken().token()
+    private val defaultDisplay = mock<Display>()
+    private val externalDisplay = mock<Display>()
+    private val mouseDevice = mock<InputDevice>()
+
+    private lateinit var extendedDisplaySettingsRestoreSession:
+        ExtendedDisplaySettingsRestoreSession
+
+    private lateinit var mockitoSession: StaticMockitoSession
 
     init {
         mSetFlagsRule.setFlagsParameterization(flags)
@@ -97,6 +117,13 @@ class DesktopDisplayModeControllerTest(
 
     @Before
     fun setUp() {
+        mockitoSession =
+            mockitoSession()
+                .strictness(Strictness.LENIENT)
+                .mockStatic(DesktopModeStatus::class.java)
+                .startMocking()
+        extendedDisplaySettingsRestoreSession =
+            ExtendedDisplaySettingsRestoreSession(context.contentResolver)
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenReturn(Binder())
         whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
             .thenReturn(defaultTDA)
@@ -109,42 +136,60 @@ class DesktopDisplayModeControllerTest(
                 shellTaskOrganizer,
                 desktopWallpaperActivityTokenProvider,
                 inputManager,
+                displayController,
                 mainHandler,
             )
         runningTasks.add(freeformTask)
         runningTasks.add(fullscreenTask)
         whenever(shellTaskOrganizer.getRunningTasks(anyInt())).thenReturn(ArrayList(runningTasks))
         whenever(desktopWallpaperActivityTokenProvider.getToken()).thenReturn(wallpaperToken)
+        whenever(displayController.getDisplay(DEFAULT_DISPLAY)).thenReturn(defaultDisplay)
+        whenever(displayController.getDisplay(EXTERNAL_DISPLAY_ID)).thenReturn(externalDisplay)
         setTabletModeStatus(SwitchState.UNKNOWN)
+        whenever(
+            DesktopModeStatus.isDesktopModeSupportedOnDisplay(
+                context,
+                defaultDisplay
+            )
+        ).thenReturn(true)
+        whenever(mouseDevice.supportsSource(InputDevice.SOURCE_MOUSE)).thenReturn(true)
+        whenever(inputManager.getInputDevice(EXTERNAL_DEVICE_ID)).thenReturn(mouseDevice)
+        setMouseConnected(false)
+    }
+
+    @After
+    fun tearDown() {
+        extendedDisplaySettingsRestoreSession.restore()
+        mockitoSession.finishMocking()
     }
 
     private fun testDisplayWindowingModeSwitchOnDisplayConnected(expectToSwitch: Boolean) {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
-        ExtendedDisplaySettingsSession(context.contentResolver, 1).use {
-            connectExternalDisplay()
-            if (expectToSwitch) {
-                // Assumes [connectExternalDisplay] properly triggered the switching transition.
-                // Will verify the transition later along with [disconnectExternalDisplay].
-                defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
-            }
-            disconnectExternalDisplay()
+        setExtendedMode(true)
 
-            if (expectToSwitch) {
-                val arg = argumentCaptor<WindowContainerTransaction>()
-                verify(transitions, times(2))
-                    .startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
-                assertThat(arg.firstValue.changes[defaultTDA.token.asBinder()]?.windowingMode)
-                    .isEqualTo(WINDOWING_MODE_FREEFORM)
-                assertThat(arg.firstValue.changes[wallpaperToken.asBinder()]?.windowingMode)
-                    .isEqualTo(WINDOWING_MODE_FULLSCREEN)
-                assertThat(arg.secondValue.changes[defaultTDA.token.asBinder()]?.windowingMode)
-                    .isEqualTo(WINDOWING_MODE_FULLSCREEN)
-                assertThat(arg.secondValue.changes[wallpaperToken.asBinder()]?.windowingMode)
-                    .isEqualTo(WINDOWING_MODE_FULLSCREEN)
-            } else {
-                verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), any(), isNull())
-            }
+        connectExternalDisplay()
+        if (expectToSwitch) {
+            // Assumes [connectExternalDisplay] properly triggered the switching transition.
+            // Will verify the transition later along with [disconnectExternalDisplay].
+            defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FREEFORM
+        }
+        disconnectExternalDisplay()
+
+        if (expectToSwitch) {
+            val arg = argumentCaptor<WindowContainerTransaction>()
+            verify(transitions, times(2))
+                .startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+            assertThat(arg.firstValue.changes[defaultTDA.token.asBinder()]?.windowingMode)
+                .isEqualTo(WINDOWING_MODE_FREEFORM)
+            assertThat(arg.firstValue.changes[wallpaperToken.asBinder()]?.windowingMode)
+                .isEqualTo(WINDOWING_MODE_FULLSCREEN)
+            assertThat(arg.secondValue.changes[defaultTDA.token.asBinder()]?.windowingMode)
+                .isEqualTo(WINDOWING_MODE_FULLSCREEN)
+            assertThat(arg.secondValue.changes[wallpaperToken.asBinder()]?.windowingMode)
+                .isEqualTo(WINDOWING_MODE_FULLSCREEN)
+        } else {
+            verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), any(), isNull())
         }
     }
 
@@ -167,6 +212,7 @@ class DesktopDisplayModeControllerTest(
     fun testTargetWindowingMode_formfactorDisabled(
         @TestParameter param: ExternalDisplayBasedTargetModeTestCase,
         @TestParameter tabletModeStatus: SwitchState,
+        @TestParameter hasAnyMouseDevice: Boolean,
     ) {
         whenever(mockWindowManager.getWindowingMode(anyInt()))
             .thenReturn(param.defaultWindowingMode)
@@ -176,15 +222,17 @@ class DesktopDisplayModeControllerTest(
             disconnectExternalDisplay()
         }
         setTabletModeStatus(tabletModeStatus)
-
-        ExtendedDisplaySettingsSession(
-                context.contentResolver,
-                if (param.extendedDisplayEnabled) 1 else 0,
+        setMouseConnected(hasAnyMouseDevice)
+        setExtendedMode(param.extendedDisplayEnabled)
+        whenever(
+            DesktopModeStatus.isDesktopModeSupportedOnDisplay(
+                context,
+                defaultDisplay
             )
-            .use {
-                assertThat(controller.getTargetWindowingModeForDefaultDisplay())
-                    .isEqualTo(param.expectedWindowingMode)
-            }
+        ).thenReturn(param.isDefaultDisplayDesktopEligible)
+
+        assertThat(controller.getTargetWindowingModeForDefaultDisplay())
+            .isEqualTo(param.expectedWindowingMode)
     }
 
     @Test
@@ -199,15 +247,17 @@ class DesktopDisplayModeControllerTest(
             disconnectExternalDisplay()
         }
         setTabletModeStatus(param.tabletModeStatus)
-
-        ExtendedDisplaySettingsSession(
-                context.contentResolver,
-                if (param.extendedDisplayEnabled) 1 else 0,
+        setExtendedMode(param.extendedDisplayEnabled)
+        whenever(
+            DesktopModeStatus.isDesktopModeSupportedOnDisplay(
+                context,
+                defaultDisplay
             )
-            .use {
-                assertThat(controller.getTargetWindowingModeForDefaultDisplay())
-                    .isEqualTo(param.expectedWindowingMode)
-            }
+        ).thenReturn(param.isDefaultDisplayDesktopEligible)
+        setMouseConnected(param.hasAnyMouseDevice)
+
+        assertThat(controller.getTargetWindowingModeForDefaultDisplay())
+            .isEqualTo(param.expectedWindowingMode)
     }
 
     @Test
@@ -215,18 +265,16 @@ class DesktopDisplayModeControllerTest(
     fun displayWindowingModeSwitch_existingTasksOnConnected() {
         defaultTDA.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenReturn(WINDOWING_MODE_FULLSCREEN)
+        setExtendedMode(true)
 
-        ExtendedDisplaySettingsSession(context.contentResolver, 1).use {
-            connectExternalDisplay()
+        connectExternalDisplay()
 
-            val arg = argumentCaptor<WindowContainerTransaction>()
-            verify(transitions, times(1))
-                .startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
-            assertThat(arg.firstValue.changes[freeformTask.token.asBinder()]?.windowingMode)
-                .isEqualTo(WINDOWING_MODE_UNDEFINED)
-            assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
-                .isEqualTo(WINDOWING_MODE_FULLSCREEN)
-        }
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        assertThat(arg.firstValue.changes[freeformTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_UNDEFINED)
+        assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FULLSCREEN)
     }
 
     @Test
@@ -236,18 +284,16 @@ class DesktopDisplayModeControllerTest(
         whenever(mockWindowManager.getWindowingMode(anyInt())).thenAnswer {
             WINDOWING_MODE_FULLSCREEN
         }
+        setExtendedMode(true)
 
-        ExtendedDisplaySettingsSession(context.contentResolver, 1).use {
-            disconnectExternalDisplay()
+        disconnectExternalDisplay()
 
-            val arg = argumentCaptor<WindowContainerTransaction>()
-            verify(transitions, times(1))
-                .startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
-            assertThat(arg.firstValue.changes[freeformTask.token.asBinder()]?.windowingMode)
-                .isEqualTo(WINDOWING_MODE_FREEFORM)
-            assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
-                .isEqualTo(WINDOWING_MODE_UNDEFINED)
-        }
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(transitions, times(1)).startTransition(eq(TRANSIT_CHANGE), arg.capture(), isNull())
+        assertThat(arg.firstValue.changes[freeformTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_FREEFORM)
+        assertThat(arg.firstValue.changes[fullscreenTask.token.asBinder()]?.windowingMode)
+            .isEqualTo(WINDOWING_MODE_UNDEFINED)
     }
 
     private fun connectExternalDisplay() {
@@ -266,18 +312,35 @@ class DesktopDisplayModeControllerTest(
         whenever(inputManager.isInTabletMode()).thenReturn(status.value)
     }
 
-    private class ExtendedDisplaySettingsSession(
-        private val contentResolver: ContentResolver,
-        private val overrideValue: Int,
-    ) : AutoCloseable {
+    private fun setExtendedMode(enabled: Boolean) {
+        if (DisplayFlags.enableDisplayContentModeManagement()) {
+            whenever(
+                DesktopModeStatus.isDesktopModeSupportedOnDisplay(
+                    context,
+                    externalDisplay
+                )
+            ).thenReturn(enabled)
+        } else {
+            Settings.Global.putInt(
+                context.contentResolver,
+                DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS,
+                if (enabled) 1 else 0,
+            )
+        }
+    }
+
+    private fun setMouseConnected(connected: Boolean) {
+        whenever(inputManager.inputDeviceIds)
+            .thenReturn(if (connected) intArrayOf(EXTERNAL_DEVICE_ID) else intArrayOf())
+    }
+
+    private class ExtendedDisplaySettingsRestoreSession(
+        private val contentResolver: ContentResolver
+    ) {
         private val settingName = DEVELOPMENT_FORCE_DESKTOP_MODE_ON_EXTERNAL_DISPLAYS
         private val initialValue = Settings.Global.getInt(contentResolver, settingName, 0)
 
-        init {
-            Settings.Global.putInt(contentResolver, settingName, overrideValue)
-        }
-
-        override fun close() {
+        fun restore() {
             Settings.Global.putInt(contentResolver, settingName, initialValue)
         }
     }
@@ -287,13 +350,15 @@ class DesktopDisplayModeControllerTest(
             context: TestParameterValuesProvider.Context
         ): List<FlagsParameterization> {
             return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH
+                Flags.FLAG_FORM_FACTOR_BASED_DESKTOP_FIRST_SWITCH,
+                DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
             )
         }
     }
 
     companion object {
         const val EXTERNAL_DISPLAY_ID = 100
+        const val EXTERNAL_DEVICE_ID = 10
 
         enum class SwitchState(val value: Int) {
             UNKNOWN(InputManager.SWITCH_STATE_UNKNOWN),
@@ -305,54 +370,119 @@ class DesktopDisplayModeControllerTest(
             val defaultWindowingMode: Int,
             val hasExternalDisplay: Boolean,
             val extendedDisplayEnabled: Boolean,
+            val isDefaultDisplayDesktopEligible: Boolean,
             val expectedWindowingMode: Int,
         ) {
-            FREEFORM_EXTERNAL_EXTENDED(
+            FREEFORM_EXTERNAL_EXTENDED_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FREEFORM,
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = true,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            FULLSCREEN_EXTERNAL_EXTENDED(
+            FULLSCREEN_EXTERNAL_EXTENDED_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = true,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            FREEFORM_NO_EXTERNAL_EXTENDED(
+            FREEFORM_NO_EXTERNAL_EXTENDED_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FREEFORM,
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = true,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            FULLSCREEN_NO_EXTERNAL_EXTENDED(
+            FULLSCREEN_NO_EXTERNAL_EXTENDED_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = true,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
-            FREEFORM_EXTERNAL_MIRROR(
+            FREEFORM_EXTERNAL_MIRROR_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FREEFORM,
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = true,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            FULLSCREEN_EXTERNAL_MIRROR(
+            FULLSCREEN_EXTERNAL_MIRROR_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = true,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
-            FREEFORM_NO_EXTERNAL_MIRROR(
+            FREEFORM_NO_EXTERNAL_MIRROR_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FREEFORM,
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = true,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            FULLSCREEN_NO_EXTERNAL_MIRROR(
+            FULLSCREEN_NO_EXTERNAL_MIRROR_NO_PROJECTED(
                 defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            FREEFORM_EXTERNAL_EXTENDED_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = false,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FULLSCREEN_EXTERNAL_EXTENDED_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            FREEFORM_NO_EXTERNAL_EXTENDED_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = false,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FULLSCREEN_NO_EXTERNAL_EXTENDED_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                isDefaultDisplayDesktopEligible = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            FREEFORM_EXTERNAL_MIRROR_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = false,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FULLSCREEN_EXTERNAL_MIRROR_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            FREEFORM_NO_EXTERNAL_MIRROR_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FREEFORM,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = false,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            FULLSCREEN_NO_EXTERNAL_MIRROR_PROJECTED(
+                defaultWindowingMode = WINDOWING_MODE_FULLSCREEN,
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                isDefaultDisplayDesktopEligible = false,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
         }
@@ -361,78 +491,392 @@ class DesktopDisplayModeControllerTest(
             val hasExternalDisplay: Boolean,
             val extendedDisplayEnabled: Boolean,
             val tabletModeStatus: SwitchState,
+            val isDefaultDisplayDesktopEligible: Boolean,
+            val hasAnyMouseDevice: Boolean,
             val expectedWindowingMode: Int,
         ) {
-            EXTERNAL_EXTENDED_TABLET(
+            EXTERNAL_EXTENDED_TABLET_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = true,
                 tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            NO_EXTERNAL_EXTENDED_TABLET(
+            NO_EXTERNAL_EXTENDED_TABLET_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = true,
                 tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
-            EXTERNAL_MIRROR_TABLET(
+            EXTERNAL_MIRROR_TABLET_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = false,
                 tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
-            NO_EXTERNAL_MIRROR_TABLET(
+            NO_EXTERNAL_MIRROR_TABLET_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = false,
                 tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
-            EXTERNAL_EXTENDED_CLAMSHELL(
+            EXTERNAL_EXTENDED_CLAMSHELL_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = true,
                 tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            NO_EXTERNAL_EXTENDED_CLAMSHELL(
+            NO_EXTERNAL_EXTENDED_CLAMSHELL_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = true,
                 tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            EXTERNAL_MIRROR_CLAMSHELL(
+            EXTERNAL_MIRROR_CLAMSHELL_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = false,
                 tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            NO_EXTERNAL_MIRROR_CLAMSHELL(
+            NO_EXTERNAL_MIRROR_CLAMSHELL_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = false,
                 tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            EXTERNAL_EXTENDED_UNKNOWN(
+            EXTERNAL_EXTENDED_UNKNOWN_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = true,
                 tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FREEFORM,
             ),
-            NO_EXTERNAL_EXTENDED_UNKNOWN(
+            NO_EXTERNAL_EXTENDED_UNKNOWN_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = true,
                 tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
-            EXTERNAL_MIRROR_UNKNOWN(
+            EXTERNAL_MIRROR_UNKNOWN_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = true,
                 extendedDisplayEnabled = false,
                 tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
-            NO_EXTERNAL_MIRROR_UNKNOWN(
+            NO_EXTERNAL_MIRROR_UNKNOWN_NO_PROJECTED_NO_MOUSE(
                 hasExternalDisplay = false,
                 extendedDisplayEnabled = false,
                 tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_EXTENDED_TABLET_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_EXTENDED_TABLET_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_TABLET_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_TABLET_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_EXTENDED_CLAMSHELL_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_EXTENDED_CLAMSHELL_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_CLAMSHELL_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_CLAMSHELL_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_EXTENDED_UNKNOWN_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_EXTENDED_UNKNOWN_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_UNKNOWN_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_UNKNOWN_PROJECTED_NO_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = false,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_EXTENDED_TABLET_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_EXTENDED_TABLET_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_MIRROR_TABLET_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_MIRROR_TABLET_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_EXTENDED_CLAMSHELL_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_EXTENDED_CLAMSHELL_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_MIRROR_CLAMSHELL_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_MIRROR_CLAMSHELL_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_EXTENDED_UNKNOWN_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_EXTENDED_UNKNOWN_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_MIRROR_UNKNOWN_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            NO_EXTERNAL_MIRROR_UNKNOWN_NO_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = true,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FREEFORM,
+            ),
+            EXTERNAL_EXTENDED_TABLET_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_EXTENDED_TABLET_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_TABLET_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_TABLET_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.ON,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_EXTENDED_CLAMSHELL_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_EXTENDED_CLAMSHELL_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_CLAMSHELL_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_CLAMSHELL_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.OFF,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_EXTENDED_UNKNOWN_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_EXTENDED_UNKNOWN_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = true,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            EXTERNAL_MIRROR_UNKNOWN_PROJECTED_MOUSE(
+                hasExternalDisplay = true,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
+                expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
+            ),
+            NO_EXTERNAL_MIRROR_UNKNOWN_PROJECTED_MOUSE(
+                hasExternalDisplay = false,
+                extendedDisplayEnabled = false,
+                tabletModeStatus = SwitchState.UNKNOWN,
+                isDefaultDisplayDesktopEligible = false,
+                hasAnyMouseDevice = true,
                 expectedWindowingMode = WINDOWING_MODE_FULLSCREEN,
             ),
         }

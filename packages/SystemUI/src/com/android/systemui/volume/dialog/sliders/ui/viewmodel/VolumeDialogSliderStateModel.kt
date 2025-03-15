@@ -17,7 +17,7 @@
 package com.android.systemui.volume.dialog.sliders.ui.viewmodel
 
 import android.content.Context
-import android.graphics.drawable.Drawable
+import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.volume.dialog.shared.model.VolumeDialogStreamModel
 import com.android.systemui.volume.dialog.shared.model.streamLabel
 
@@ -25,14 +25,14 @@ data class VolumeDialogSliderStateModel(
     val value: Float,
     val isDisabled: Boolean,
     val valueRange: ClosedFloatingPointRange<Float>,
-    val icon: Drawable,
+    val icon: Icon.Loaded,
     val label: String,
 )
 
 fun VolumeDialogStreamModel.toStateModel(
     context: Context,
     isDisabled: Boolean,
-    icon: Drawable,
+    icon: Icon.Loaded,
 ): VolumeDialogSliderStateModel {
     return VolumeDialogSliderStateModel(
         value = level.toFloat(),

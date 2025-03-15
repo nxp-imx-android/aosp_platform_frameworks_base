@@ -35,6 +35,12 @@ interface IDesktopMode {
     /** Activates the desk whose ID is `deskId` on whatever display it currently exists on. */
     oneway void activateDesk(int deskId, in RemoteTransition remoteTransition);
 
+    /** Removes the desk with the given `deskId`. */
+    oneway void removeDesk(int deskId);
+
+    /** Removes all the available desks on all displays. */
+    oneway void removeAllDesks();
+
     /** Show apps on the desktop on the given display */
     void showDesktopApps(int displayId, in RemoteTransition remoteTransition);
 
@@ -64,8 +70,11 @@ interface IDesktopMode {
                         in @nullable RemoteTransition remoteTransition,
                         in @nullable IMoveToDesktopCallback callback);
 
-    /** Remove desktop on the given display */
-    oneway void removeDesktop(int displayId);
+    /**
+     * Removes the default desktop on the given display.
+     * @deprecated with multi-desks, we should use `removeDesk()`.
+     */
+    oneway void removeDefaultDeskInDisplay(int displayId);
 
     /** Move a task with given `taskId` to external display */
     void moveToExternalDisplay(int taskId);

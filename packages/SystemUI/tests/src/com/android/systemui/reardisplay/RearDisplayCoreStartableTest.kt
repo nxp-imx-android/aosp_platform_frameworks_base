@@ -22,6 +22,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.view.Display
 import androidx.test.filters.SmallTest
+import com.android.keyguard.keyguardUpdateMonitor
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceStateManager
 import com.android.systemui.display.domain.interactor.RearDisplayStateInteractor
@@ -37,6 +38,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -59,6 +61,7 @@ class RearDisplayCoreStartableTest : SysuiTestCase() {
             fakeRearDisplayStateInteractor,
             kosmos.rearDisplayInnerDialogDelegateFactory,
             kosmos.testScope,
+            kosmos.keyguardUpdateMonitor,
         )
 
     @Before
@@ -93,6 +96,26 @@ class RearDisplayCoreStartableTest : SysuiTestCase() {
 
                 fakeRearDisplayStateInteractor.emitDisabled()
                 verify(mockDialog).dismiss()
+            }
+        }
+
+    @Test
+    @EnableFlags(FLAG_DEVICE_STATE_RDM_V2)
+    fun testDialogResumesAfterKeyguardGone() =
+        kosmos.runTest {
+            impl.use {
+                it.start()
+                fakeRearDisplayStateInteractor.emitRearDisplay()
+
+                verify(mockDialog).show()
+
+                it.keyguardCallback.onKeyguardVisibilityChanged(true)
+                // Do not need to check that the dialog is dismissed, since SystemUIDialog
+                // implementation handles that. We just toggle keyguard here so that the flow
+                // emits.
+
+                it.keyguardCallback.onKeyguardVisibilityChanged(false)
+                verify(mockDialog, times(2)).show()
             }
         }
 

@@ -18,6 +18,7 @@ package com.android.systemui.volume.dialog.sliders.ui.viewmodel
 
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
 import com.android.systemui.volume.domain.interactor.audioVolumeInteractor
 
@@ -25,6 +26,7 @@ val Kosmos.volumeDialogSliderIconProvider by
     Kosmos.Fixture {
         VolumeDialogSliderIconProvider(
             context = applicationContext,
+            uiBackgroundContext = backgroundCoroutineContext,
             audioVolumeInteractor = audioVolumeInteractor,
             zenModeInteractor = zenModeInteractor,
         )

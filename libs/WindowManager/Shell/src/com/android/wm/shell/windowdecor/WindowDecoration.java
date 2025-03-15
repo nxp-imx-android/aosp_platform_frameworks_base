@@ -47,6 +47,8 @@ import android.view.SurfaceControlViewHost;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowlessWindowManager;
+import android.window.DesktopExperienceFlags;
+import android.window.DesktopModeFlags;
 import android.window.SurfaceSyncGroup;
 import android.window.TaskConstants;
 import android.window.WindowContainerToken;
@@ -286,6 +288,14 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         outResult.mCaptionX = (outResult.mWidth - outResult.mCaptionWidth) / 2;
         outResult.mCaptionY = 0;
         outResult.mCaptionTopPadding = params.mCaptionTopPadding;
+        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+            outResult.mCornerRadius = params.mCornerRadiusId == Resources.ID_NULL
+                    ? INVALID_CORNER_RADIUS : loadDimensionPixelSize(resources,
+                    params.mCornerRadiusId);
+            outResult.mShadowRadius = params.mShadowRadiusId == Resources.ID_NULL
+                    ? INVALID_SHADOW_RADIUS : loadDimensionPixelSize(resources,
+                    params.mShadowRadiusId);
+        }
 
         Trace.beginSection("relayout-createViewHostIfNeeded");
         createViewHostIfNeeded(mDecorWindowContext, mDisplay);
@@ -497,9 +507,16 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
                     .setPosition(mTaskSurface, taskPosition.x, taskPosition.y);
         }
 
-        if (params.mShadowRadius != INVALID_SHADOW_RADIUS) {
-            startT.setShadowRadius(mTaskSurface, params.mShadowRadius);
-            finishT.setShadowRadius(mTaskSurface, params.mShadowRadius);
+        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+            if (outResult.mShadowRadius != INVALID_SHADOW_RADIUS) {
+                startT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
+                finishT.setShadowRadius(mTaskSurface, outResult.mShadowRadius);
+            }
+        } else {
+            if (params.mShadowRadius != INVALID_SHADOW_RADIUS) {
+                startT.setShadowRadius(mTaskSurface, params.mShadowRadius);
+                finishT.setShadowRadius(mTaskSurface, params.mShadowRadius);
+            }
         }
 
         if (params.mSetTaskVisibilityPositionAndCrop) {
@@ -517,9 +534,16 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             startT.unsetColor(mTaskSurface);
         }
 
-        if (params.mCornerRadius != INVALID_CORNER_RADIUS) {
-            startT.setCornerRadius(mTaskSurface, params.mCornerRadius);
-            finishT.setCornerRadius(mTaskSurface, params.mCornerRadius);
+        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+            if (outResult.mCornerRadius != INVALID_CORNER_RADIUS) {
+                startT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
+                finishT.setCornerRadius(mTaskSurface, outResult.mCornerRadius);
+            }
+        } else {
+            if (params.mCornerRadius != INVALID_CORNER_RADIUS) {
+                startT.setCornerRadius(mTaskSurface, params.mCornerRadius);
+                finishT.setCornerRadius(mTaskSurface, params.mCornerRadius);
+            }
         }
     }
 
@@ -629,13 +653,31 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
      */
     private void updateCaptionVisibility(View rootView, @NonNull RelayoutParams params) {
         mIsCaptionVisible = params.mIsCaptionVisible;
+        if (!DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
+            setCaptionVisibility(rootView, mIsCaptionVisible);
+        }
     }
 
     void setTaskDragResizer(TaskDragResizer taskDragResizer) {
         mTaskDragResizer = taskDragResizer;
     }
 
+    // TODO(b/346441962): Move these three methods closer to implementing or View-level classes to
+    //  keep implementation details more encapsulated.
+    private void setCaptionVisibility(View rootView, boolean visible) {
+        if (rootView == null) {
+            return;
+        }
+        final int v = visible ? View.VISIBLE : View.GONE;
+        final View captionView = rootView.findViewById(getCaptionViewId());
+        captionView.setVisibility(v);
+    }
+
     int getCaptionHeightId(@WindowingMode int windowingMode) {
+        return Resources.ID_NULL;
+    }
+
+    int getCaptionViewId() {
         return Resources.ID_NULL;
     }
 
@@ -683,6 +725,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
     public void close() {
         Trace.beginSection("WindowDecoration#close");
         mDisplayController.removeDisplayWindowListener(mOnDisplaysChangedListener);
+        if (mTaskDragResizer != null) {
+            mTaskDragResizer.close();
+        }
         final WindowContainerTransaction wct = mWindowContainerTransactionSupplier.get();
         releaseViews(wct);
         mTaskOrganizer.applyTransaction(wct);
@@ -805,8 +850,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         @InsetsSource.Flags int mInsetSourceFlags;
         final Region mDisplayExclusionRegion = Region.obtain();
 
+        @Deprecated
         int mShadowRadius = INVALID_SHADOW_RADIUS;
+        @Deprecated
         int mCornerRadius = INVALID_CORNER_RADIUS;
+
+        int mShadowRadiusId = Resources.ID_NULL;
+        int mCornerRadiusId = Resources.ID_NULL;
 
         int mCaptionTopPadding;
         boolean mIsCaptionVisible;
@@ -830,9 +880,13 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mIsInsetSource = true;
             mInsetSourceFlags = 0;
             mDisplayExclusionRegion.setEmpty();
-
-            mShadowRadius = INVALID_SHADOW_RADIUS;
-            mCornerRadius = INVALID_SHADOW_RADIUS;
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                mShadowRadiusId = Resources.ID_NULL;
+                mCornerRadiusId = Resources.ID_NULL;
+            } else {
+                mShadowRadius = INVALID_SHADOW_RADIUS;
+                mCornerRadius = INVALID_SHADOW_RADIUS;
+            }
 
             mCaptionTopPadding = 0;
             mIsCaptionVisible = false;
@@ -874,6 +928,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         int mWidth;
         int mHeight;
         T mRootView;
+        int mCornerRadius;
+        int mShadowRadius;
 
         void reset() {
             mWidth = 0;
@@ -885,6 +941,10 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mCaptionTopPadding = 0;
             mCustomizableCaptionRegion.setEmpty();
             mRootView = null;
+            if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
+                mCornerRadius = INVALID_CORNER_RADIUS;
+                mShadowRadius = INVALID_SHADOW_RADIUS;
+            }
         }
     }
 

@@ -740,15 +740,13 @@ public class NavigationBarView extends FrameLayout {
 
     /** */
     public void updateDisabledSystemUiStateFlags(SysUiState sysUiState) {
-        int displayId = mContext.getDisplayId();
-
         sysUiState.setFlag(SYSUI_STATE_OVERVIEW_DISABLED,
                         (mDisabledFlags & View.STATUS_BAR_DISABLE_RECENT) != 0)
                 .setFlag(SYSUI_STATE_HOME_DISABLED,
                         (mDisabledFlags & View.STATUS_BAR_DISABLE_HOME) != 0)
                 .setFlag(SYSUI_STATE_SEARCH_DISABLED,
                         (mDisabledFlags & View.STATUS_BAR_DISABLE_SEARCH) != 0)
-                .commitUpdate(displayId);
+                .commitUpdate();
     }
 
     public void setInScreenPinning(boolean active) {

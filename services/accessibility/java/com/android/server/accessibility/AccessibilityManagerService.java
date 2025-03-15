@@ -500,6 +500,12 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             mService = new AccessibilityManagerService(context);
         }
 
+        @VisibleForTesting
+        public Lifecycle(Context context, AccessibilityManagerService service) {
+            super(context);
+            mService = service;
+        }
+
         @Override
         public void onStart() {
             LocalServices.addService(AccessibilityManagerInternal.class,
@@ -510,6 +516,15 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         @Override
         public void onBootPhase(int phase) {
             mService.onBootPhase(phase);
+        }
+
+        @Override
+        public void onUserSwitching(@androidx.annotation.Nullable TargetUser from,
+                @androidx.annotation.NonNull TargetUser to) {
+            super.onUserSwitching(from, to);
+            if (Flags.managerLifecycleUserChange()) {
+                mService.switchUser(to.getUserIdentifier());
+            }
         }
     }
 
@@ -531,7 +546,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             AccessibilitySecurityPolicy securityPolicy,
             SystemActionPerformer systemActionPerformer,
             AccessibilityWindowManager a11yWindowManager,
-            AccessibilityDisplayListener a11yDisplayListener,
+            AccessibilityDisplayListener.DisplayManagerWrapper displayManagerWrapper,
             MagnificationController magnificationController,
             @Nullable AccessibilityInputFilter inputFilter,
             ProxyManager proxyManager,
@@ -550,7 +565,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         mSecurityPolicy = securityPolicy;
         mSystemActionPerformer = systemActionPerformer;
         mA11yWindowManager = a11yWindowManager;
-        mA11yDisplayListener = a11yDisplayListener;
+        mA11yDisplayListener = new AccessibilityDisplayListener(displayManagerWrapper,
+                new MainHandler(Looper.getMainLooper()));
         mMagnificationController = magnificationController;
         mMagnificationProcessor = new MagnificationProcessor(mMagnificationController);
         mCaptioningManagerImpl = new CaptioningManagerImpl(mContext);
@@ -596,7 +612,8 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 this, LocalServices.getService(PackageManagerInternal.class));
         mA11yWindowManager = new AccessibilityWindowManager(mLock, mMainHandler,
                 mWindowManagerService, this, mSecurityPolicy, this, mTraceManager);
-        mA11yDisplayListener = new AccessibilityDisplayListener(mContext, mMainHandler);
+        mA11yDisplayListener = new AccessibilityDisplayListener(
+                new AccessibilityDisplayListener.DisplayManagerWrapper(mContext), mMainHandler);
         mMagnificationController = new MagnificationController(
                 this,
                 mLock,
@@ -1053,7 +1070,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
 
                 String action = intent.getAction();
                 if (Intent.ACTION_USER_SWITCHED.equals(action)) {
-                    switchUser(intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0));
+                    if (!Flags.managerLifecycleUserChange()) {
+                        switchUser(intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0));
+                    }
                 } else if (Intent.ACTION_USER_UNLOCKED.equals(action)) {
                     unlockUser(intent.getIntExtra(Intent.EXTRA_USER_HANDLE, 0));
                 } else if (Intent.ACTION_USER_REMOVED.equals(action)) {
@@ -5457,11 +5476,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      * A Utility class to handle display state.
      */
     public class AccessibilityDisplayListener implements DisplayManager.DisplayListener {
-        private final DisplayManager mDisplayManager;
+        private final DisplayManagerWrapper mDisplayManager;
         private final ArrayList<Display> mDisplaysList = new ArrayList<>();
         private int mSystemUiUid = 0;
 
-        AccessibilityDisplayListener(Context context, Handler handler) {
+        AccessibilityDisplayListener(DisplayManagerWrapper displayManager, Handler handler) {
             // Avoid concerns about one thread adding displays while another thread removes
             // them by ensuring the looper is the main looper and the DisplayListener
             // callbacks are always executed on the one main thread.
@@ -5474,7 +5493,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 Slog.e(LOG_TAG, errorMessage);
             }
 
-            mDisplayManager = (DisplayManager) context.getSystemService(Context.DISPLAY_SERVICE);
+            mDisplayManager = displayManager;
             mDisplayManager.registerDisplayListener(this, handler);
             initializeDisplayList();
 
@@ -5625,6 +5644,34 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                 return false;
             }
             return true;
+        }
+
+        /** Wrapper of DisplayManager for testing. */
+        @VisibleForTesting
+        static class DisplayManagerWrapper {
+            private final DisplayManager mDm;
+
+            DisplayManagerWrapper(Context context) {
+                mDm = context.getSystemService(DisplayManager.class);
+            }
+
+            /**
+             * @see DisplayManager#registerDisplayListener(DisplayManager.DisplayListener, Handler)
+             */
+            public void registerDisplayListener(@NonNull DisplayManager.DisplayListener listener,
+                    @Nullable Handler handler) {
+                mDm.registerDisplayListener(listener, handler);
+            }
+
+            /** @see DisplayManager#getDisplays() */
+            public Display[] getDisplays() {
+                return mDm.getDisplays();
+            }
+
+            /** @see DisplayManager#getDisplay(int) */
+            public Display getDisplay(int displayId) {
+                return mDm.getDisplay(displayId);
+            }
         }
     }
 

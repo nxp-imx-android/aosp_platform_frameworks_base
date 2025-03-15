@@ -73,18 +73,13 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 public class MobileRadioPowerStatsProcessorTest {
-    @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
     private static final double PRECISION = 0.00001;
     private static final int APP_UID = Process.FIRST_APPLICATION_UID + 42;
     private static final int APP_UID2 = Process.FIRST_APPLICATION_UID + 101;
     private static final int MOBILE_RADIO_ENERGY_CONSUMER_ID = 1;
     private static final int VOLTAGE_MV = 3500;
 
-    @Rule(order = 1)
+    @Rule(order = 0)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule();
     @Mock
     private Context mContext;

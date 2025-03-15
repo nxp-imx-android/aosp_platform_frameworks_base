@@ -24,7 +24,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import android.annotation.SuppressLint;
-import android.platform.test.annotations.IgnoreUnderRavenwood;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.SparseArray;
 
@@ -47,7 +47,7 @@ import java.util.Collection;
 
 @SmallTest
 @RunWith(Parameterized.class)
-@IgnoreUnderRavenwood(reason = "Needs kernel support")
+@DisabledOnRavenwood(reason = "Needs kernel support")
 public class KernelSingleUidTimeReaderTest {
     @Rule
     public final RavenwoodRule mRavenwood = new RavenwoodRule();

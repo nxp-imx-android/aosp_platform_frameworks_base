@@ -284,7 +284,7 @@ public class RefreshRatePolicyTest extends WindowTestsBase {
         assertEquals(0, mPolicy.getPreferredMinRefreshRate(overrideWindow), FLOAT_TOLERANCE);
         assertEquals(0, mPolicy.getPreferredMaxRefreshRate(overrideWindow), FLOAT_TOLERANCE);
 
-        overrideWindow.setAnimatingTypes(WindowInsets.Type.statusBars());
+        overrideWindow.setAnimatingTypes(WindowInsets.Type.statusBars(), null /* statsToken */);
         assertEquals(LOW_MODE_ID, mPolicy.getPreferredModeId(overrideWindow));
         assertTrue(mPolicy.updateFrameRateVote(overrideWindow));
         assertEquals(FRAME_RATE_VOTE_NONE, overrideWindow.mFrameRateVote);
@@ -304,7 +304,7 @@ public class RefreshRatePolicyTest extends WindowTestsBase {
         assertEquals(0, mPolicy.getPreferredMinRefreshRate(overrideWindow), FLOAT_TOLERANCE);
         assertEquals(0, mPolicy.getPreferredMaxRefreshRate(overrideWindow), FLOAT_TOLERANCE);
 
-        overrideWindow.setAnimatingTypes(WindowInsets.Type.statusBars());
+        overrideWindow.setAnimatingTypes(WindowInsets.Type.statusBars(), null /* statsToken */);
         assertEquals(0, mPolicy.getPreferredModeId(overrideWindow));
         assertTrue(mPolicy.updateFrameRateVote(overrideWindow));
         assertEquals(FRAME_RATE_VOTE_NONE, overrideWindow.mFrameRateVote);

@@ -106,6 +106,7 @@ public final class NotificationGroupTestHelper {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
         entry.setRow(row);
         when(row.getEntry()).thenReturn(entry);
+        when(row.getEntryLegacy()).thenReturn(entry);
         return entry;
     }
 

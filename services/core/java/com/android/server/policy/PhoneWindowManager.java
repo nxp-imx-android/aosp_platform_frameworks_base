@@ -5966,7 +5966,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             long whenNanos, int policyFlags) {
         if ((policyFlags & FLAG_WAKE) != 0) {
             if (mWindowWakeUpPolicy.wakeUpFromMotion(displayId, whenNanos / 1000000, source,
-                    action == MotionEvent.ACTION_DOWN)) {
+                    action == MotionEvent.ACTION_DOWN, mDeviceGoingToSleep)) {
                 // Woke up. Pass motion events to user.
                 return ACTION_PASS_TO_USER;
             }
@@ -5981,7 +5981,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // wake up in this case.
         if (isTheaterModeEnabled() && (policyFlags & FLAG_WAKE) != 0) {
             if (mWindowWakeUpPolicy.wakeUpFromMotion(displayId, whenNanos / 1000000, source,
-                    action == MotionEvent.ACTION_DOWN)) {
+                    action == MotionEvent.ACTION_DOWN, mDeviceGoingToSleep)) {
                 // Woke up. Pass motion events to user.
                 return ACTION_PASS_TO_USER;
             }

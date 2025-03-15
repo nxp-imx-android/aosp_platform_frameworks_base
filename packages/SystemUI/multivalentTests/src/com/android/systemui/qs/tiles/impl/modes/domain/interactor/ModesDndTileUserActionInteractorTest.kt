@@ -26,9 +26,9 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.kosmos.mainCoroutineContext
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.qs.shared.QSSettingsPackageRepository
-import com.android.systemui.qs.tiles.base.actions.QSTileIntentUserInputHandlerSubject
-import com.android.systemui.qs.tiles.base.actions.qsTileIntentUserInputHandler
-import com.android.systemui.qs.tiles.base.interactor.QSTileInputTestKtx
+import com.android.systemui.qs.tiles.base.domain.actions.QSTileIntentUserInputHandlerSubject
+import com.android.systemui.qs.tiles.base.domain.actions.qsTileIntentUserInputHandler
+import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
 import com.android.systemui.statusbar.policy.data.repository.zenModeRepository
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
@@ -79,7 +79,7 @@ class ModesDndTileUserActionInteractorTest : SysuiTestCase() {
             zenModeRepository.activateMode(MANUAL_DND)
             assertThat(dndMode?.isActive).isTrue()
 
-            underTest.handleInput(QSTileInputTestKtx.click(data = ModesDndTileModel(true)))
+            underTest.handleInput(QSTileInputTestKtx.click(data = ModesDndTileModel(true, null)))
 
             assertThat(dndMode?.isActive).isFalse()
         }
@@ -90,7 +90,7 @@ class ModesDndTileUserActionInteractorTest : SysuiTestCase() {
             val dndMode by collectLastValue(zenModeInteractor.dndMode)
             assertThat(dndMode?.isActive).isFalse()
 
-            underTest.handleInput(QSTileInputTestKtx.click(data = ModesDndTileModel(false)))
+            underTest.handleInput(QSTileInputTestKtx.click(data = ModesDndTileModel(false, null)))
 
             assertThat(dndMode?.isActive).isTrue()
         }
@@ -101,7 +101,7 @@ class ModesDndTileUserActionInteractorTest : SysuiTestCase() {
             zenModeRepository.activateMode(MANUAL_DND)
             runCurrent()
 
-            underTest.handleInput(QSTileInputTestKtx.longClick(ModesDndTileModel(true)))
+            underTest.handleInput(QSTileInputTestKtx.longClick(ModesDndTileModel(true, null)))
 
             QSTileIntentUserInputHandlerSubject.assertThat(inputHandler).handledOneIntentInput {
                 assertThat(it.intent.`package`).isEqualTo(SETTINGS_PACKAGE)
@@ -118,7 +118,7 @@ class ModesDndTileUserActionInteractorTest : SysuiTestCase() {
             zenModeRepository.deactivateMode(MANUAL_DND)
             runCurrent()
 
-            underTest.handleInput(QSTileInputTestKtx.longClick(ModesDndTileModel(false)))
+            underTest.handleInput(QSTileInputTestKtx.longClick(ModesDndTileModel(false, null)))
 
             QSTileIntentUserInputHandlerSubject.assertThat(inputHandler).handledOneIntentInput {
                 assertThat(it.intent.`package`).isEqualTo(SETTINGS_PACKAGE)

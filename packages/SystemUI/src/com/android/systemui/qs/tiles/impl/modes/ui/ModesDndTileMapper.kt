@@ -19,10 +19,10 @@ package com.android.systemui.qs.tiles.impl.modes.ui
 import android.content.res.Resources
 import android.widget.Switch
 import com.android.systemui.common.shared.model.Icon
-import com.android.systemui.qs.tiles.base.interactor.QSTileDataToStateMapper
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfig
+import com.android.systemui.qs.tiles.base.shared.model.QSTileState
+import com.android.systemui.qs.tiles.base.ui.model.QSTileDataToStateMapper
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfig
-import com.android.systemui.qs.tiles.viewmodel.QSTileState
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import javax.inject.Inject
@@ -49,11 +49,9 @@ constructor(@ShadeDisplayAware private val resources: Resources, val theme: Reso
                     QSTileState.ActivationState.INACTIVE
                 }
             label = resources.getString(R.string.quick_settings_dnd_label)
-            secondaryLabel =
-                resources.getString(
-                    if (data.isActivated) R.string.zen_mode_on else R.string.zen_mode_off
-                )
+            secondaryLabel = data.extraStatus
             contentDescription = label
+            stateDescription = data.extraStatus
             supportedActions =
                 setOf(QSTileState.UserAction.CLICK, QSTileState.UserAction.LONG_CLICK)
             expandedAccessibilityClass = Switch::class

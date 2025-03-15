@@ -825,7 +825,7 @@ public abstract class WMShellModule {
                 overviewToDesktopTransitionObserver,
                 desksOrganizer,
                 desksTransitionObserver.get(),
-                desktopPipTransitionObserver.get(),
+                desktopPipTransitionObserver,
                 userProfileContexts,
                 desktopModeCompatPolicy,
                 dragToDisplayTransitionHandler,
@@ -969,8 +969,15 @@ public abstract class WMShellModule {
 
     @WMSingleton
     @Provides
-    static DesktopModeMoveToDisplayTransitionHandler provideMoveToDisplayTransitionHandler() {
-        return new DesktopModeMoveToDisplayTransitionHandler(new SurfaceControl.Transaction());
+    static DesktopModeMoveToDisplayTransitionHandler provideMoveToDisplayTransitionHandler(
+            InteractionJankMonitor interactionJankMonitor,
+            @ShellMainThread Handler shellMainHandler,
+            DisplayController displayController) {
+        return new DesktopModeMoveToDisplayTransitionHandler(
+                new SurfaceControl.Transaction(),
+                interactionJankMonitor,
+                shellMainHandler,
+                displayController);
     }
 
     @WMSingleton
@@ -1241,7 +1248,7 @@ public abstract class WMShellModule {
                                         transitions,
                                         shellTaskOrganizer,
                                         desktopMixedTransitionHandler.get(),
-                                        desktopPipTransitionObserver.get(),
+                                        desktopPipTransitionObserver,
                                         backAnimationController.get(),
                                         desktopWallpaperActivityTokenProvider,
                                         shellInit)));
@@ -1492,6 +1499,7 @@ public abstract class WMShellModule {
             ShellTaskOrganizer shellTaskOrganizer,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             InputManager inputManager,
+            DisplayController displayController,
             @ShellMainThread Handler mainHandler
     ) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
@@ -1506,6 +1514,7 @@ public abstract class WMShellModule {
                         shellTaskOrganizer,
                         desktopWallpaperActivityTokenProvider,
                         inputManager,
+                        displayController,
                         mainHandler));
     }
 

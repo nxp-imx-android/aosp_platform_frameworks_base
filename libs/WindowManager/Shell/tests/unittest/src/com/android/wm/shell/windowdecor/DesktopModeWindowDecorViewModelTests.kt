@@ -51,6 +51,7 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewRootImpl
 import android.view.WindowInsets.Type.statusBars
+import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp
 import androidx.test.filters.SmallTest
@@ -134,7 +135,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         task.setWindowingMode(WINDOWING_MODE_UNDEFINED)
         task.setActivityType(ACTIVITY_TYPE_UNDEFINED)
-        onTaskChanging(task, taskSurface)
+        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
 
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
         verify(decoration).close()
@@ -149,12 +150,12 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val taskSurface = SurfaceControl()
         setUpMockDecorationForTask(task)
 
-        onTaskChanging(task, taskSurface)
+        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
 
         task.setWindowingMode(WINDOWING_MODE_FREEFORM)
         task.setActivityType(ACTIVITY_TYPE_STANDARD)
-        onTaskChanging(task, taskSurface)
+        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
         assertTrue(windowDecorByTaskIdSpy.contains(task.taskId))
     }
 
@@ -755,20 +756,6 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         toSplitScreenListenerCaptor.value.invoke()
 
         verify(mockDesktopTasksController).requestSplit(decor.mTaskInfo, leftOrTop = false)
-    }
-
-    @Test
-    fun testDecor_onClickToSplitScreen_disposesStatusBarInputLayer() {
-        val toSplitScreenListenerCaptor = forClass(Function0::class.java)
-                as ArgumentCaptor<Function0<Unit>>
-        val decor = createOpenTaskDecoration(
-            windowingMode = WINDOWING_MODE_MULTI_WINDOW,
-            onToSplitScreenClickListenerCaptor = toSplitScreenListenerCaptor
-        )
-
-        toSplitScreenListenerCaptor.value.invoke()
-
-        verify(decor).disposeStatusBarInputLayer()
     }
 
     @Test

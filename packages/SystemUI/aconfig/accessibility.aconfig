@@ -155,3 +155,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "hearing_devices_input_routing_ui_improvement"
+    namespace: "accessibility"
+    description: "UI improvement for hearing device input routing feature"
+    bug: "397314200"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

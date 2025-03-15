@@ -962,7 +962,7 @@
     <string name="phoneTypeMms" msgid="1799747455131365989">"MMS"</string>
     <string name="eventTypeCustom" msgid="3257367158986466481">"Özel"</string>
     <string name="eventTypeBirthday" msgid="7770026752793912283">"Doğum günü"</string>
-    <string name="eventTypeAnniversary" msgid="4684702412407916888">"Yıldönümü"</string>
+    <string name="eventTypeAnniversary" msgid="4684702412407916888">"Yıl dönümü"</string>
     <string name="eventTypeOther" msgid="530671238533887997">"Diğer"</string>
     <string name="emailTypeCustom" msgid="1809435350482181786">"Özel"</string>
     <string name="emailTypeHome" msgid="1597116303154775999">"Ev"</string>
@@ -1820,7 +1820,7 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Büyütme"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Telefon mikrofonuna geçilsin mi?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"İşitme cihazı mikrofonuna geçilsin mi?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Daha iyi ses kalitesi için veya işitme cihazınızın pili azaldığında Bu işlem yalnızca görüşme sırasında mikrofonunuzu değiştirir."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Daha iyi ses kalitesi için veya işitme cihazınızın pili azaldığında. Bu işlem yalnızca görüşme sırasında mikrofonunuzu değiştirir."</string>
     <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Eller serbest modunda arama yapmak için işitme cihazı mikrofonunu kullanabilirsiniz. Bu işlem yalnızca görüşme sırasında mikrofonunuzu değiştirir."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Geçiş yap"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Ayarlar"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Sabitlemeyi kaldırmadan önce kilit açma desenini sor"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Sabitlemeyi kaldırmadan önce şifre sor"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Yöneticiniz tarafından yüklendi.\nVerilen izinleri görüntülemek için ayarlara gidin"</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Yöneticiniz tarafından güncellendi.\nVerilen izinleri görüntülemek için ayarlara gidin"</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Yöneticiniz tarafından silindi"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Tamam"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Pil Tasarrufu, Koyu temayı açıp arka plan etkinliğini, bazı görsel efektleri, belirli özellikleri ve bazı ağ bağlantılarını sınırlandırır veya kapatır."</string>
@@ -2274,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Kaydırma"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Duraklatma"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Konum"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Yukarı Kaydır"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Aşağı Kaydır"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Sola Kaydır"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Sağa Kaydır"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Kaydırma Modundan Çık"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Paneli Kaydır"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> KISITLANMIŞ gruba yerleştirildi"</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"bir resim gönderildi"</string>
@@ -2493,8 +2486,7 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"İş 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"Test"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"Paylaşılan"</string>
-    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
-    <skip />
+    <string name="profile_label_supervising" msgid="5649312778545745371">"Gözetim"</string>
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"İş profili"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"Özel alan"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Klon"</string>

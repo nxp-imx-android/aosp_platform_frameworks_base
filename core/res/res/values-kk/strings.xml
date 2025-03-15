@@ -1820,8 +1820,8 @@
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Ұлғайту"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Телефонның микрофонына ауысу керек пе?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Есту аппаратының микрофонына ауысу керек пе?"</string>
-    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Дауыс жақсы шығу үшін немесе есту аппаратының батарея заряды аз болған жағдайда пайдалануға болады. Микрофонға тек қоңырау кезінде ауысады."</string>
-    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Дауыспен басқару арқылы қоңырау шалу үшін есту аппаратының микрофонын пайдалана аласыз. Микрофонға тек қоңырау кезінде ауысады."</string>
+    <string name="hearing_device_switch_phone_mic_notification_text" msgid="1332426273666077412">"Дыбыс дұрыс естілмей тұрғанда немесе есту аппаратының батарея заряды аз болған жағдайда пайдалануға болады. Басқа микрофонға тек қоңырау кезінде ауысады."</string>
+    <string name="hearing_device_switch_hearing_mic_notification_text" msgid="8288368365767284208">"Дауыспен басқару арқылы қоңырау шалу үшін есту аппаратының микрофонын пайдалана аласыз. Басқа микрофонға тек қоңырау кезінде ауысады."</string>
     <string name="hearing_device_notification_switch_button" msgid="3619524619430941300">"Ауысу"</string>
     <string name="hearing_device_notification_settings_button" msgid="6673651052880279178">"Параметрлер"</string>
     <string name="user_switching_message" msgid="1912993630661332336">"<xliff:g id="NAME">%1$s</xliff:g> профиліне ауысу…"</string>
@@ -1965,8 +1965,7 @@
     <string name="lock_to_app_unlock_pattern" msgid="2694204070499712503">"Босату алдында бекітпесін ашу өрнегін сұрау"</string>
     <string name="lock_to_app_unlock_password" msgid="9126722403506560473">"Босату алдында құпия сөзді сұрау"</string>
     <string name="package_installed_device_owner" msgid="8684974629306529138">"Әкімшіңіз орнатты.\nБерілген рұқсаттарды көру үшін параметрлерге өтіңіз."</string>
-    <!-- no translation found for package_updated_device_owner (7770195449213776218) -->
-    <skip />
+    <string name="package_updated_device_owner" msgid="7770195449213776218">"Әкімшіңіз жаңартты.\nБерілген рұқсаттарды көру үшін параметрлерге өтіңіз."</string>
     <string name="package_deleted_device_owner" msgid="2292335928930293023">"Әкімші жойған"</string>
     <string name="confirm_battery_saver" msgid="5247976246208245754">"Жарайды"</string>
     <string name="battery_saver_description_with_learn_more" msgid="5444908404021316250">"Батареяны үнемдеу режимі қараңғы режимді іске қосады және фондық әрекеттерге, кейбір визуалдық әсерлерге, белгілі бір функциялар мен кейбір желі байланыстарына шектеу қояды немесе оларды өшіреді."</string>
@@ -2274,18 +2273,12 @@
     <string name="accessibility_autoclick_scroll" msgid="3499385943728726933">"Айналдыру"</string>
     <string name="accessibility_autoclick_pause" msgid="3272200156172573568">"Кідірту"</string>
     <string name="accessibility_autoclick_position" msgid="2933660969907663545">"Орналастыру"</string>
-    <!-- no translation found for accessibility_autoclick_scroll_up (2044948780797117443) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_down (3733401063292018116) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_left (8564421367992824198) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_right (8932417330753984265) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_exit (3788610039146769696) -->
-    <skip />
-    <!-- no translation found for accessibility_autoclick_scroll_panel_title (7120598166296447036) -->
-    <skip />
+    <string name="accessibility_autoclick_scroll_up" msgid="2044948780797117443">"Жоғары айналдыру"</string>
+    <string name="accessibility_autoclick_scroll_down" msgid="3733401063292018116">"Төменге айналдыру"</string>
+    <string name="accessibility_autoclick_scroll_left" msgid="8564421367992824198">"Солға айналдыру"</string>
+    <string name="accessibility_autoclick_scroll_right" msgid="8932417330753984265">"Оңға айналдыру"</string>
+    <string name="accessibility_autoclick_scroll_exit" msgid="3788610039146769696">"Айналдыру режимінен шығу"</string>
+    <string name="accessibility_autoclick_scroll_panel_title" msgid="7120598166296447036">"Айналдыру панелі"</string>
     <string name="as_app_forced_to_restricted_bucket" msgid="8233871289353898964">"<xliff:g id="PACKAGE_NAME">%1$s</xliff:g> ШЕКТЕЛГЕН себетке салынды."</string>
     <string name="conversation_single_line_name_display" msgid="8958948312915255999">"<xliff:g id="SENDER_NAME">%1$s</xliff:g>:"</string>
     <string name="conversation_single_line_image_placeholder" msgid="6983271082911936900">"сурет жіберілді"</string>
@@ -2493,8 +2486,7 @@
     <string name="profile_label_work_3" msgid="4834572253956798917">"Жұмыс 3"</string>
     <string name="profile_label_test" msgid="9168641926186071947">"Сынақ"</string>
     <string name="profile_label_communal" msgid="8743921499944800427">"Жалпы"</string>
-    <!-- no translation found for profile_label_supervising (5649312778545745371) -->
-    <skip />
+    <string name="profile_label_supervising" msgid="5649312778545745371">"Қадағалау"</string>
     <string name="accessibility_label_managed_profile" msgid="3366526886209832641">"Жұмыс профилі"</string>
     <string name="accessibility_label_private_profile" msgid="1436459319135548969">"Құпия кеңістік"</string>
     <string name="accessibility_label_clone_profile" msgid="7579118375042398784">"Клон"</string>

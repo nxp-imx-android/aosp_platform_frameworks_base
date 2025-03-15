@@ -855,6 +855,20 @@ public class SeekBarViewModelTest : SysuiTestCase() {
 
     @Test
     fun contentDescriptionUpdated() {
+        var elapsedTimeDesc: CharSequence? = null
+        var durationDesc: CharSequence? = null
+        val listener =
+            object : SeekBarViewModel.ContentDescriptionListener {
+                override fun onContentDescriptionChanged(
+                    elapsedTimeDescription: CharSequence,
+                    durationDescription: CharSequence,
+                ) {
+                    elapsedTimeDesc = elapsedTimeDescription
+                    durationDesc = durationDescription
+                }
+            }
+        viewModel.setContentDescriptionListener(listener)
+
         // When there is a duration and position
         val duration = (1.5 * 60 * 60 * 1000).toLong()
         val metadata =
@@ -875,9 +889,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
         viewModel.updateController(mockController)
         fakeExecutor.runNextReady()
 
-        // Then the content description is set
-        val result = viewModel.progress.value!!
-
+        // Then the content description listener gets an update
         val expectedProgress =
             MeasureFormat.getInstance(Locale.getDefault(), MeasureFormat.FormatWidth.WIDE)
                 .formatMeasures(Measure(3, MeasureUnit.SECOND))
@@ -888,7 +900,7 @@ public class SeekBarViewModelTest : SysuiTestCase() {
                     Measure(30, MeasureUnit.MINUTE),
                     Measure(0, MeasureUnit.SECOND),
                 )
-        assertThat(result.durationDescription).isEqualTo(expectedDuration)
-        assertThat(result.elapsedTimeDescription).isEqualTo(expectedProgress)
+        assertThat(elapsedTimeDesc).isEqualTo(expectedProgress)
+        assertThat(durationDesc).isEqualTo(expectedDuration)
     }
 }

@@ -433,8 +433,9 @@ public final class DisplayManager {
     public static final int VIRTUAL_DISPLAY_FLAG_DESTROY_CONTENT_ON_REMOVAL = 1 << 8;
 
     /**
-     * Virtual display flag: Indicates that the display should support system decorations. Virtual
-     * displays without this flag shouldn't show home, navigation bar or wallpaper.
+     * Virtual display flag: Indicates that the display supports and should always show system
+     * decorations. Virtual displays without this flag shouldn't show home, navigation bar or
+     * wallpaper.
      * <p>This flag doesn't work without {@link #VIRTUAL_DISPLAY_FLAG_TRUSTED}</p>
      *
      * @see #createVirtualDisplay

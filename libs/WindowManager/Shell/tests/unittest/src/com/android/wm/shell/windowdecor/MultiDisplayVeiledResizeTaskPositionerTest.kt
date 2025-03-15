@@ -63,6 +63,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.MockitoAnnotations
@@ -210,6 +211,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 eq(taskPositioner),
             )
         verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verifyNoInteractions(mockMultiDisplayDragMoveIndicatorController)
     }
 
     @Test
@@ -248,6 +250,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
         verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
     }
 
@@ -268,6 +271,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(spyDisplayLayout0, never()).localPxToGlobalDp(any(), any())
         verify(spyDisplayLayout0, never()).globalDpToLocalPx(any(), any())
+        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
     }
 
     @Test
@@ -290,6 +294,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
         verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
         verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
     }
 
@@ -346,6 +351,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 },
                 eq(taskPositioner),
             )
+        verifyNoInteractions(mockMultiDisplayDragMoveIndicatorController)
     }
 
     @Test
@@ -556,6 +562,17 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             )
         // Display has rotated; we expect a new stable bounds.
         verify(spyDisplayLayout0, times(2)).getStableBounds(any())
+    }
+
+    @Test
+    fun testClose() = runOnUiThread {
+        verify(mockDisplayController, times(1))
+            .addDisplayWindowListener(eq(taskPositioner))
+
+        taskPositioner.close()
+
+        verify(mockDisplayController, times(1))
+            .removeDisplayWindowListener(eq(taskPositioner))
     }
 
     @Test

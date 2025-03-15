@@ -1495,6 +1495,11 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         int leftBattery = -1;
         int rightBattery = -1;
 
+        Integer keyMissingCount = BluetoothUtils.getKeyMissingCount(mDevice);
+        if (keyMissingCount != null && keyMissingCount > 0) {
+            return mContext.getString(R.string.bluetooth_key_missing_subtext);
+        }
+
         if (isProfileConnectedFail() && isConnected()) {
             return mContext.getString(R.string.profile_connect_timeout_subtext);
         }
@@ -1863,10 +1868,31 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 + " mIsLeAudioProfileConnectedFail=" + mIsLeAudioProfileConnectedFail
                 + " mIsHeadsetProfileConnectedFail=" + mIsHeadsetProfileConnectedFail
                 + " isConnectedSapDevice()=" + isConnectedSapDevice());
-
-        return mIsA2dpProfileConnectedFail || mIsHearingAidProfileConnectedFail
-                || (!isConnectedSapDevice() && mIsHeadsetProfileConnectedFail)
-                || mIsLeAudioProfileConnectedFail;
+        if (mIsA2dpProfileConnectedFail) {
+            A2dpProfile a2dpProfile = mProfileManager.getA2dpProfile();
+            if (a2dpProfile != null && a2dpProfile.isEnabled(mDevice)) {
+                return true;
+            }
+        }
+        if (mIsHearingAidProfileConnectedFail) {
+            HearingAidProfile hearingAidProfile = mProfileManager.getHearingAidProfile();
+            if (hearingAidProfile != null && hearingAidProfile.isEnabled(mDevice)) {
+                return true;
+            }
+        }
+        if (!isConnectedSapDevice() && mIsHeadsetProfileConnectedFail) {
+            HeadsetProfile headsetProfile = mProfileManager.getHeadsetProfile();
+            if (headsetProfile != null && headsetProfile.isEnabled(mDevice)) {
+                return true;
+            }
+        }
+        if (mIsLeAudioProfileConnectedFail) {
+            LeAudioProfile leAudioProfile = mProfileManager.getLeAudioProfile();
+            if (leAudioProfile != null && leAudioProfile.isEnabled(mDevice)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

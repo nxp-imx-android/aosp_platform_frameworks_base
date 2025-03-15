@@ -19,13 +19,11 @@ import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.dumper.ApiDumper
 import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.filters.printAsTextPolicy
-import java.io.BufferedInputStream
-import java.io.BufferedOutputStream
 import java.io.FileOutputStream
 import java.io.PrintWriter
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
+import org.apache.commons.compress.archivers.zip.ZipFile
 
 /**
  * Actual main class.
@@ -33,10 +31,12 @@ import java.util.zip.ZipOutputStream
 class HostStubGen(val options: HostStubGenOptions) {
     fun run() {
         val errors = HostStubGenErrors()
-        val stats = HostStubGenStats()
+        val inJar = ZipFile(options.inJar.get)
 
         // Load all classes.
-        val allClasses = ClassNodes.loadClassStructures(options.inJar.get)
+        val allClasses = ClassNodes.loadClassStructures(inJar, options.inJar.get)
+
+        val stats = HostStubGenStats(allClasses)
 
         // Dump the classes, if specified.
         options.inputJarDumpFile.ifSet {
@@ -59,7 +59,7 @@ class HostStubGen(val options: HostStubGenOptions) {
         val processor = HostStubGenClassProcessor(options, allClasses, errors, stats)
 
         // Transform the jar.
-        convert(
+        inJar.convert(
             options.inJar.get,
             options.outJar.get,
             processor,
@@ -88,7 +88,7 @@ class HostStubGen(val options: HostStubGenOptions) {
     /**
      * Convert a JAR file into "stub" and "impl" JAR files.
      */
-    private fun convert(
+    private fun ZipFile.convert(
         inJar: String,
         outJar: String?,
         processor: HostStubGenClassProcessor,
@@ -100,45 +100,39 @@ class HostStubGen(val options: HostStubGenOptions) {
         log.i("ASM CheckClassAdapter is %s", if (enableChecker) "enabled" else "disabled")
 
         log.iTime("Transforming jar") {
-            var itemIndex = 0
             var numItemsProcessed = 0
             var numItems = -1 // == Unknown
 
             log.withIndent {
-                // Open the input jar file and process each entry.
-                ZipFile(inJar).use { inZip ->
+                val entries = entries.toList()
 
-                    numItems = inZip.size()
-                    val shardStart = numItems * shard / numShards
-                    val shardNextStart = numItems * (shard + 1) / numShards
+                numItems = entries.size
+                val shardStart = numItems * shard / numShards
+                val shardNextStart = numItems * (shard + 1) / numShards
 
-                    maybeWithZipOutputStream(outJar) { outStream ->
-                        val inEntries = inZip.entries()
-                        while (inEntries.hasMoreElements()) {
-                            val entry = inEntries.nextElement()
-                            val inShard = (shardStart <= itemIndex)
-                                    && (itemIndex < shardNextStart)
-                            itemIndex++
-                            if (!inShard) {
-                                continue
-                            }
-                            convertSingleEntry(inZip, entry, outStream, processor)
-                            numItemsProcessed++
+                maybeWithZipOutputStream(outJar) { outStream ->
+                    entries.forEachIndexed { itemIndex, entry ->
+                        val inShard = (shardStart <= itemIndex)
+                                && (itemIndex < shardNextStart)
+                        if (!inShard) {
+                            return@forEachIndexed
                         }
-                        log.i("Converted all entries.")
+                        convertSingleEntry(this, entry, outStream, processor)
+                        numItemsProcessed++
                     }
-                    outJar?.let { log.i("Created: $it") }
+                    log.i("Converted all entries.")
                 }
+                outJar?.let { log.i("Created: $it") }
             }
             log.i("%d / %d item(s) processed.", numItemsProcessed, numItems)
         }
     }
 
-    private fun <T> maybeWithZipOutputStream(filename: String?, block: (ZipOutputStream?) -> T): T {
+    private fun <T> maybeWithZipOutputStream(filename: String?, block: (ZipArchiveOutputStream?) -> T): T {
         if (filename == null) {
             return block(null)
         }
-        return ZipOutputStream(BufferedOutputStream(FileOutputStream(filename))).use(block)
+        return ZipArchiveOutputStream(FileOutputStream(filename).buffered()).use(block)
     }
 
     /**
@@ -146,8 +140,8 @@ class HostStubGen(val options: HostStubGenOptions) {
      */
     private fun convertSingleEntry(
         inZip: ZipFile,
-        entry: ZipEntry,
-        outStream: ZipOutputStream?,
+        entry: ZipArchiveEntry,
+        outStream: ZipArchiveOutputStream?,
         processor: HostStubGenClassProcessor
     ) {
         log.d("Entry: %s", entry.name)
@@ -181,32 +175,12 @@ class HostStubGen(val options: HostStubGenOptions) {
     }
 
     /**
-     * Copy a single ZIP entry to the output.
-     */
-    private fun copyZipEntry(
-        inZip: ZipFile,
-        entry: ZipEntry,
-        out: ZipOutputStream,
-    ) {
-        // TODO: It seems like copying entries this way is _very_ slow,
-        // even with out.setLevel(0). Look for other ways to do it.
-
-        inZip.getInputStream(entry).use { ins ->
-            // Copy unknown entries as is to the impl out. (but not to the stub out.)
-            val outEntry = ZipEntry(entry.name)
-            out.putNextEntry(outEntry)
-            ins.transferTo(out)
-            out.closeEntry()
-        }
-    }
-
-    /**
      * Convert a single class.
      */
     private fun processSingleClass(
         inZip: ZipFile,
-        entry: ZipEntry,
-        outStream: ZipOutputStream?,
+        entry: ZipArchiveEntry,
+        outStream: ZipArchiveOutputStream?,
         processor: HostStubGenClassProcessor
     ) {
         val classInternalName = entry.name.replaceFirst("\\.class$".toRegex(), "")
@@ -227,12 +201,10 @@ class HostStubGen(val options: HostStubGenOptions) {
         if (outStream != null) {
             log.v("Creating class: %s Policy: %s", classInternalName, classPolicy)
             log.withIndent {
-                BufferedInputStream(inZip.getInputStream(entry)).use { bis ->
-                    val newEntry = ZipEntry(newName)
-                    outStream.putNextEntry(newEntry)
-                    val classBytecode = bis.readAllBytes()
-                    outStream.write(processor.processClassBytecode(classBytecode))
-                    outStream.closeEntry()
+                inZip.getInputStream(entry).use { zis ->
+                    var classBytecode = zis.readAllBytes()
+                    classBytecode = processor.processClassBytecode(classBytecode)
+                    outStream.addBytesEntry(newName, classBytecode)
                 }
             }
         }

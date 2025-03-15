@@ -62,6 +62,8 @@ public class PrepareGetRequestSession extends GetRequestSession {
                         Collectors.toSet())).size(); // Dedupe type strings
         mRequestSessionMetric.collectGetFlowInitialMetricInfo(request);
         mPrepareGetCredentialCallback = prepareGetCredentialCallback;
+
+        Slog.i(TAG, "PrepareGetRequestSession constructed.");
     }
 
     @Override

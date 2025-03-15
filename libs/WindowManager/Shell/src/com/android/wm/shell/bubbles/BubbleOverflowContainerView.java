@@ -46,6 +46,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.wm.shell.Flags;
 import com.android.wm.shell.R;
+import com.android.wm.shell.shared.TypefaceUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -234,6 +235,10 @@ public class BubbleOverflowContainerView extends LinearLayout {
         setBackgroundColor(bgColor);
         mEmptyStateTitle.setTextColor(textColor);
         mEmptyStateSubtitle.setTextColor(textColor);
+        TypefaceUtils.setTypeface(mEmptyStateTitle,
+                TypefaceUtils.FontFamily.GSF_BODY_MEDIUM_EMPHASIZED);
+        TypefaceUtils.setTypeface(mEmptyStateSubtitle, TypefaceUtils.FontFamily.GSF_BODY_MEDIUM);
+
     }
 
     public void updateFontSize() {
@@ -322,6 +327,7 @@ class BubbleOverflowAdapter extends RecyclerView.Adapter<BubbleOverflowAdapter.V
 
         TextView viewName = overflowView.findViewById(R.id.bubble_view_name);
         viewName.setTextColor(textColor);
+        TypefaceUtils.setTypeface(viewName, TypefaceUtils.FontFamily.GSF_LABEL_LARGE);
 
         return new ViewHolder(overflowView, mPositioner);
     }

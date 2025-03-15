@@ -49,6 +49,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.MetricsLogger
@@ -57,17 +58,18 @@ import com.android.internal.logging.metricsLogger
 import com.android.internal.logging.uiEventLoggerFake
 import com.android.systemui.Dependency
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.RankingBuilder
 import com.android.systemui.statusbar.notification.AssistantFeedbackController
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
 import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
-import com.android.systemui.statusbar.notification.row.icon.appIconProvider
-import com.android.systemui.statusbar.notification.row.icon.notificationIconStyleProvider
+import com.android.systemui.statusbar.notification.row.icon.mockAppIconProvider
+import com.android.systemui.statusbar.notification.row.icon.mockNotificationIconStyleProvider
+import com.android.systemui.testKosmos
 import com.android.telecom.telecomManager
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.CountDownLatch
@@ -78,6 +80,7 @@ import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
@@ -89,7 +92,7 @@ import org.mockito.kotlin.whenever
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 class NotificationInfoTest : SysuiTestCase() {
-    private val kosmos = Kosmos().also { it.testCase = this }
+    private val kosmos = testKosmos().also { it.testCase = this }
 
     private lateinit var underTest: NotificationInfo
     private lateinit var notificationChannel: NotificationChannel
@@ -99,12 +102,15 @@ class NotificationInfoTest : SysuiTestCase() {
     private lateinit var entry: NotificationEntry
 
     private val mockPackageManager = kosmos.mockPackageManager
+    private val mockAppIconProvider = kosmos.mockAppIconProvider
+    private val mockIconStyleProvider = kosmos.mockNotificationIconStyleProvider
     private val uiEventLogger = kosmos.uiEventLoggerFake
     private val testableLooper by lazy { kosmos.testableLooper }
 
     private val onUserInteractionCallback = mock<OnUserInteractionCallback>()
     private val mockINotificationManager = mock<INotificationManager>()
     private val channelEditorDialogController = mock<ChannelEditorDialogController>()
+    private val packageDemotionInteractor = mock<PackageDemotionInteractor>()
     private val assistantFeedbackController = mock<AssistantFeedbackController>()
 
     @Before
@@ -199,9 +205,30 @@ class NotificationInfoTest : SysuiTestCase() {
     }
 
     @Test
-    fun testBindNotification_SetsPackageIcon() {
+    @DisableFlags(com.android.systemui.Flags.FLAG_NOTIFICATIONS_REDESIGN_GUTS)
+    fun testBindNotification_SetsPackageIcon_flagOff() {
         val iconDrawable = mock<Drawable>()
         whenever(mockPackageManager.getApplicationIcon(any<ApplicationInfo>()))
+            .thenReturn(iconDrawable)
+        bindNotification()
+        val iconView = underTest.findViewById<ImageView>(R.id.pkg_icon)
+        assertThat(iconView.drawable).isEqualTo(iconDrawable)
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_NOTIFICATIONS_REDESIGN_GUTS)
+    fun testBindNotification_SetsPackageIcon_flagOn() {
+        val iconDrawable = mock<Drawable>()
+        whenever(mockIconStyleProvider.shouldShowWorkProfileBadge(anyOrNull(), anyOrNull()))
+            .thenReturn(false)
+        whenever(
+                mockAppIconProvider.getOrFetchAppIcon(
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyBoolean(),
+                    anyBoolean(),
+                )
+            )
             .thenReturn(iconDrawable)
         bindNotification()
         val iconView = underTest.findViewById<ImageView>(R.id.pkg_icon)
@@ -863,14 +890,40 @@ class NotificationInfoTest : SysuiTestCase() {
         assertThat(underTest.findViewById<View>(R.id.feedback).visibility).isEqualTo(GONE)
     }
 
+    @Test
+    @Throws(RemoteException::class)
+    fun testDismissListenerBound() {
+        val latch = CountDownLatch(1)
+        bindNotification(onCloseClick = { _: View? -> latch.countDown() })
+
+        val dismissView = underTest.findViewById<View>(R.id.inline_dismiss)
+        assertThat(dismissView.isVisible).isTrue()
+        dismissView.performClick()
+
+        // Verify that listener was triggered.
+        assertThat(latch.count).isEqualTo(0)
+    }
+
+    @Test
+    @Throws(RemoteException::class)
+    fun testDismissHiddenWhenUndismissable() {
+
+        entry.sbn.notification.flags =
+            entry.sbn.notification.flags or android.app.Notification.FLAG_NO_DISMISS
+        bindNotification(isDismissable = false)
+        val dismissView = underTest.findViewById<View>(R.id.inline_dismiss)
+        assertThat(dismissView.isVisible).isFalse()
+    }
+
     private fun bindNotification(
         pm: PackageManager = this.mockPackageManager,
         iNotificationManager: INotificationManager = this.mockINotificationManager,
-        appIconProvider: AppIconProvider = kosmos.appIconProvider,
-        iconStyleProvider: NotificationIconStyleProvider = kosmos.notificationIconStyleProvider,
+        appIconProvider: AppIconProvider = this.mockAppIconProvider,
+        iconStyleProvider: NotificationIconStyleProvider = this.mockIconStyleProvider,
         onUserInteractionCallback: OnUserInteractionCallback = this.onUserInteractionCallback,
         channelEditorDialogController: ChannelEditorDialogController =
             this.channelEditorDialogController,
+        packageDemotionInteractor: PackageDemotionInteractor = this.packageDemotionInteractor,
         pkg: String = TEST_PACKAGE_NAME,
         notificationChannel: NotificationChannel = this.notificationChannel,
         entry: NotificationEntry = this.entry,
@@ -880,6 +933,7 @@ class NotificationInfoTest : SysuiTestCase() {
         uiEventLogger: UiEventLogger = this.uiEventLogger,
         isDeviceProvisioned: Boolean = true,
         isNonblockable: Boolean = false,
+        isDismissable: Boolean = true,
         wasShownHighPriority: Boolean = true,
         assistantFeedbackController: AssistantFeedbackController = this.assistantFeedbackController,
         metricsLogger: MetricsLogger = kosmos.metricsLogger,
@@ -892,6 +946,7 @@ class NotificationInfoTest : SysuiTestCase() {
             iconStyleProvider,
             onUserInteractionCallback,
             channelEditorDialogController,
+            packageDemotionInteractor,
             pkg,
             notificationChannel,
             entry,
@@ -901,6 +956,7 @@ class NotificationInfoTest : SysuiTestCase() {
             uiEventLogger,
             isDeviceProvisioned,
             isNonblockable,
+            isDismissable,
             wasShownHighPriority,
             assistantFeedbackController,
             metricsLogger,

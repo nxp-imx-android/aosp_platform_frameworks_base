@@ -83,7 +83,7 @@ import org.mockito.kotlin.same
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.verifyZeroInteractions
+import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
 
 /**
@@ -596,7 +596,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
             .logTaskRemoved(
                 eq(DEFAULT_TASK_UPDATE.copy(minimizeReason = MinimizeReason.MINIMIZE_BUTTON))
             )
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
     }
 
     @Test
@@ -668,7 +668,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
             .logTaskInfoChanged(
                 eq(DEFAULT_TASK_UPDATE.copy(taskX = DEFAULT_TASK_X + 100, visibleTaskCount = 1))
             )
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
     }
 
     @Test
@@ -701,7 +701,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                     )
                 )
             )
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
     }
 
     @Test
@@ -729,7 +729,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                     )
                 )
             )
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
     }
 
     @Test
@@ -753,7 +753,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
             .logTaskInfoChanged(
                 eq(DEFAULT_TASK_UPDATE.copy(taskX = DEFAULT_TASK_X + 100, visibleTaskCount = 2))
             )
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
 
         // task 2 resize
         val newTaskInfo2 =
@@ -781,7 +781,7 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                     )
                 )
             )
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
     }
 
     @Test
@@ -892,14 +892,14 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                 eq(taskUpdate.visibleTaskCount.toString()),
             )
         }
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
     }
 
     private fun verifyTaskRemovedAndExitLogging(exitReason: ExitReason, taskUpdate: TaskUpdate) {
         assertFalse(transitionObserver.isSessionActive)
         verify(desktopModeEventLogger, times(1)).logTaskRemoved(eq(taskUpdate))
         verify(desktopModeEventLogger, times(1)).logSessionExit(eq(exitReason))
-        verifyZeroInteractions(desktopModeEventLogger)
+        verifyNoMoreInteractions(desktopModeEventLogger)
     }
 
     private companion object {

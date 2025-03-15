@@ -28,6 +28,7 @@ import android.testing.TestableLooper.RunWithLooper
 import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_CHANGE
 import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.anyBoolean
 import com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn
@@ -109,7 +110,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         onTaskOpening(task, taskSurface)
         assertTrue(windowDecorByTaskIdSpy.contains(task.taskId))
         task.setActivityType(ACTIVITY_TYPE_UNDEFINED)
-        onTaskChanging(task, taskSurface)
+        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
 
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
         verify(decoration).close()
@@ -165,7 +166,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
 
         setLargeScreen(false)
         setUpMockDecorationForTask(task)
-        onTaskChanging(task, taskSurface)
+        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
     }
 

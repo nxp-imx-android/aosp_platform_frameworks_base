@@ -16,12 +16,15 @@
 
 package com.android.systemui.statusbar
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.res.Resources
+import android.os.Build
 import android.os.SystemProperties
 import android.os.Trace
 import android.os.Trace.TRACE_TAG_APP
 import android.util.IndentingPrintWriter
+import android.util.Log
 import android.util.MathUtils
 import android.view.CrossWindowBlurListeners
 import android.view.CrossWindowBlurListeners.CROSS_WINDOW_BLUR_SUPPORTED
@@ -45,7 +48,7 @@ open class BlurUtils @Inject constructor(
     private val crossWindowBlurListeners: CrossWindowBlurListeners,
     dumpManager: DumpManager
 ) : Dumpable {
-    val minBlurRadius = resources.getDimensionPixelSize(R.dimen.min_window_blur_radius).toFloat();
+    val minBlurRadius = resources.getDimensionPixelSize(R.dimen.min_window_blur_radius).toFloat()
     val maxBlurRadius = if (Flags.notificationShadeBlur()) {
         blurConfig.maxBlurRadiusPx
     } else {
@@ -54,6 +57,9 @@ open class BlurUtils @Inject constructor(
 
     private var lastAppliedBlur = 0
     private var earlyWakeupEnabled = false
+
+    /** When this is true, early wakeup flag is not reset on surface flinger when blur drops to 0 */
+    private var persistentEarlyWakeupRequired = false
 
     init {
         dumpManager.registerDumpable(this)
@@ -86,16 +92,13 @@ open class BlurUtils @Inject constructor(
      */
     fun prepareBlur(viewRootImpl: ViewRootImpl?, radius: Int) {
         if (viewRootImpl == null || !viewRootImpl.surfaceControl.isValid ||
-            !supportsBlursOnWindows() || earlyWakeupEnabled
+            !shouldBlur(radius) || earlyWakeupEnabled
         ) {
             return
         }
         if (lastAppliedBlur == 0 && radius != 0) {
-            Trace.asyncTraceForTrackBegin(
-                    TRACE_TAG_APP, TRACK_NAME, "eEarlyWakeup (prepareBlur)", 0)
-            earlyWakeupEnabled = true
             createTransaction().use {
-                it.setEarlyWakeupStart()
+                earlyWakeupStart(it, "eEarlyWakeup (prepareBlur)")
                 it.apply()
             }
         }
@@ -113,22 +116,18 @@ open class BlurUtils @Inject constructor(
             return
         }
         createTransaction().use {
-            if (supportsBlursOnWindows()) {
+            if (shouldBlur(radius)) {
                 it.setBackgroundBlurRadius(viewRootImpl.surfaceControl, radius)
                 if (!earlyWakeupEnabled && lastAppliedBlur == 0 && radius != 0) {
-                    Trace.asyncTraceForTrackBegin(
-                        TRACE_TAG_APP,
-                        TRACK_NAME,
-                        "eEarlyWakeup (applyBlur)",
-                        0
-                    )
-                    it.setEarlyWakeupStart()
-                    earlyWakeupEnabled = true
+                    earlyWakeupStart(it, "eEarlyWakeup (applyBlur)")
                 }
-                if (earlyWakeupEnabled && lastAppliedBlur != 0 && radius == 0) {
-                    it.setEarlyWakeupEnd()
-                    Trace.asyncTraceForTrackEnd(TRACE_TAG_APP, TRACK_NAME, 0)
-                    earlyWakeupEnabled = false
+                if (
+                    earlyWakeupEnabled &&
+                        lastAppliedBlur != 0 &&
+                        radius == 0 &&
+                        !persistentEarlyWakeupRequired
+                ) {
+                    earlyWakeupEnd(it, "applyBlur")
                 }
                 lastAppliedBlur = radius
             }
@@ -137,9 +136,37 @@ open class BlurUtils @Inject constructor(
         }
     }
 
+    private fun v(verboseLog: String) {
+        if (isLoggable) Log.v(TAG, verboseLog)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun earlyWakeupStart(transaction: SurfaceControl.Transaction, traceMethodName: String) {
+        v("earlyWakeupStart from $traceMethodName")
+        Trace.asyncTraceForTrackBegin(TRACE_TAG_APP, TRACK_NAME, traceMethodName, 0)
+        transaction.setEarlyWakeupStart()
+        earlyWakeupEnabled = true
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun earlyWakeupEnd(transaction: SurfaceControl.Transaction, loggingContext: String) {
+        v("earlyWakeupEnd from $loggingContext")
+        transaction.setEarlyWakeupEnd()
+        Trace.asyncTraceForTrackEnd(TRACE_TAG_APP, TRACK_NAME, 0)
+        earlyWakeupEnabled = false
+    }
+
     @VisibleForTesting
     open fun createTransaction(): SurfaceControl.Transaction {
         return SurfaceControl.Transaction()
+    }
+
+    private fun shouldBlur(radius: Int): Boolean {
+        return supportsBlursOnWindows() ||
+                ((Flags.notificationShadeBlur() || Flags.bouncerUiRevamp()) &&
+                        supportsBlursOnWindowsBase() &&
+                        lastAppliedBlur > 0 &&
+                        radius == 0)
     }
 
     /**
@@ -149,8 +176,11 @@ open class BlurUtils @Inject constructor(
      * @return {@code true} when supported.
      */
     open fun supportsBlursOnWindows(): Boolean {
+        return supportsBlursOnWindowsBase() && crossWindowBlurListeners.isCrossWindowBlurEnabled
+    }
+
+    private fun supportsBlursOnWindowsBase(): Boolean {
         return CROSS_WINDOW_BLUR_SUPPORTED && ActivityManager.isHighEndGfx() &&
-                crossWindowBlurListeners.isCrossWindowBlurEnabled() &&
                 !SystemProperties.getBoolean("persist.sysui.disableBlur", false)
     }
 
@@ -166,7 +196,39 @@ open class BlurUtils @Inject constructor(
         }
     }
 
+    /**
+     * Enables/disables the early wakeup flag on surface flinger. Keeps the early wakeup flag on
+     * until it reset by passing false to this method.
+     */
+    fun setPersistentEarlyWakeup(persistentWakeup: Boolean, viewRootImpl: ViewRootImpl?) {
+        persistentEarlyWakeupRequired = persistentWakeup
+        if (viewRootImpl == null || !supportsBlursOnWindows()) return
+        if (persistentEarlyWakeupRequired) {
+            if (earlyWakeupEnabled) return
+            createTransaction().use {
+                earlyWakeupStart(it, "setEarlyWakeup")
+                it.apply()
+            }
+        } else {
+            if (!earlyWakeupEnabled) return
+            if (lastAppliedBlur > 0) {
+                Log.w(
+                    TAG,
+                    "resetEarlyWakeup invoked when lastAppliedBlur $lastAppliedBlur is " +
+                        "non-zero, this means that the early wakeup signal was reset while blur" +
+                        " was still active",
+                )
+            }
+            createTransaction().use {
+                earlyWakeupEnd(it, "resetEarlyWakeup")
+                it.apply()
+            }
+        }
+    }
+
     companion object {
         const val TRACK_NAME = "BlurUtils"
+        private const val TAG = "BlurUtils"
+        private val isLoggable = Log.isLoggable(TAG, Log.VERBOSE) || Build.isDebuggable()
     }
 }

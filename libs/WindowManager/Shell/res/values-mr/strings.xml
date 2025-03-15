@@ -100,8 +100,7 @@
     <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"निराकरण झाले नाही?\nरिव्हर्ट करण्यासाठी कृपया टॅप करा"</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"कॅमेराशी संबंधित कोणत्याही समस्या नाहीत का? डिसमिस करण्‍यासाठी टॅप करा."</string>
     <string name="windowing_app_handle_education_tooltip" msgid="2929643449849791854">"ॲप मेनू इथे आढळू शकतो"</string>
-    <!-- no translation found for windowing_desktop_mode_image_button_education_tooltip (7171915734817051666) -->
-    <skip />
+    <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"एकाहून अधिक ॲप्स एकत्र उघडण्यासाठी डेस्कटॉप विंडोइंग एंटर करा"</string>
     <string name="windowing_desktop_mode_exit_education_tooltip" msgid="5225660258192054132">"ॲप मेनूमधून कधीही फुल स्क्रीनवर परत या"</string>
     <string name="letterbox_education_dialog_title" msgid="7739895354143295358">"पहा आणि आणखी बरेच काही करा"</string>
     <string name="letterbox_education_split_screen_text" msgid="449233070804658627">"स्प्लिट स्क्रीन वापरण्यासाठी दुसरे ॲप ड्रॅग करा"</string>
@@ -122,8 +121,7 @@
     <string name="handle_text" msgid="4419667835599523257">"अ‍ॅपचे हँडल"</string>
     <string name="app_icon_text" msgid="2823268023931811747">"अ‍ॅप आयकन"</string>
     <string name="fullscreen_text" msgid="1162316685217676079">"फुलस्‍क्रीन"</string>
-    <!-- no translation found for desktop_text (9058641752519570266) -->
-    <skip />
+    <string name="desktop_text" msgid="9058641752519570266">"डेस्कटॉप विंडोइंग"</string>
     <string name="split_screen_text" msgid="1396336058129570886">"स्प्लिट स्क्रीन"</string>
     <string name="more_button_text" msgid="3655388105592893530">"आणखी"</string>
     <string name="float_button_text" msgid="9221657008391364581">"फ्लोट"</string>
@@ -136,8 +134,7 @@
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"आस्पेक्ट रेशो बदला"</string>
     <string name="close_text" msgid="4986518933445178928">"बंद करा"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"मेनू बंद करा"</string>
-    <!-- no translation found for desktop_mode_app_header_chip_text (7617377295944971651) -->
-    <skip />
+    <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (डेस्कटॉप विंडोइंग)"</string>
     <string name="desktop_mode_maximize_menu_maximize_text" msgid="3275717276171114411">"स्क्रीन मोठी करा"</string>
     <string name="desktop_mode_maximize_menu_snap_text" msgid="5673738963174074006">"आकार बदला"</string>
     <string name="desktop_mode_non_resizable_snap_text" msgid="3771776422751387878">"अ‍ॅप इथे हलवू शकत नाही"</string>

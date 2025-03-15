@@ -57,11 +57,6 @@ public class BluetoothPowerStatsCollectorTest {
     private static final int ISOLATED_UID = 99123;
 
     @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
-    @Rule(order = 1)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule()
             .setPowerStatsThrottlePeriodMillis(BatteryConsumer.POWER_COMPONENT_BLUETOOTH, 1000);
 

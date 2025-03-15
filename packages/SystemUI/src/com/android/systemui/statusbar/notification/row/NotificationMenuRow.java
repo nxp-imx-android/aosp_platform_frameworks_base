@@ -46,9 +46,9 @@ import com.android.systemui.Flags;
 import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.AlphaOptimizedImageView;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.row.NotificationGuts.GutsContent;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
 
 import java.util.ArrayList;
@@ -261,15 +261,19 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             mSnoozeItem = createSnoozeItem(mContext);
         }
         mFeedbackItem = createFeedbackItem(mContext);
-        NotificationEntry entry = mParent.getEntry();
-        int personNotifType = mPeopleNotificationIdentifier.getPeopleNotificationType(entry);
+        int personNotifType = NotificationBundleUi.isEnabled()
+                ? mParent.getEntryAdapter().getPeopleNotificationType()
+                : mPeopleNotificationIdentifier.getPeopleNotificationType(mParent.getEntryLegacy());
+        StatusBarNotification sbn = NotificationBundleUi.isEnabled()
+                ? mParent.getEntryAdapter().getSbn()
+                : mParent.getEntryLegacy().getSbn();
         if (personNotifType == PeopleNotificationIdentifier.TYPE_PERSON) {
             mInfoItem = createPartialConversationItem(mContext);
         } else if (personNotifType >= PeopleNotificationIdentifier.TYPE_FULL_PERSON) {
             mInfoItem = createConversationItem(mContext);
         } else if (android.app.Flags.uiRichOngoing()
                 && Flags.permissionHelperUiRichOngoing()
-                && entry.getSbn().getNotification().isPromotedOngoing()) {
+                && sbn.getNotification().isPromotedOngoing()) {
             mInfoItem = createPromotedItem(mContext);
         } else {
             mInfoItem = createInfoItem(mContext);
@@ -358,7 +362,9 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             final float dismissThreshold = getDismissThreshold();
             final boolean snappingToDismiss = delta < -dismissThreshold || delta > dismissThreshold;
             if (mSnappingToDismiss != snappingToDismiss) {
-                getMenuView().performHapticFeedback(CLOCK_TICK);
+                if (!Flags.magneticNotificationSwipes()) {
+                    getMenuView().performHapticFeedback(CLOCK_TICK);
+                }
             }
             mSnappingToDismiss = snappingToDismiss;
         }

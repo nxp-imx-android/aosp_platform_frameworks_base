@@ -81,7 +81,7 @@ import java.util.Set;
  * THREADING AND LOCKING:
  * For in-memory transactions this class relies on {@link DiscreteOpsXmlRegistry#mInMemoryLock}.
  * It is assumed that the same lock is used for in-memory transactions in {@link AppOpsService},
- * {@link HistoricalRegistry}, and {@link DiscreteOpsXmlRegistry }.
+ * {@link LegacyHistoricalRegistry}, and {@link DiscreteOpsXmlRegistry }.
  * {@link DiscreteOpsRegistry#recordDiscreteAccess} must only be called while holding this lock.
  * {@link DiscreteOpsXmlRegistry#mOnDiskLock} is used when disk transactions are performed.
  * It is very important to release {@link DiscreteOpsXmlRegistry#mInMemoryLock} as soon as

@@ -234,6 +234,10 @@ sealed interface MutableSceneTransitionLayoutState : SceneTransitionLayoutState 
  *   `from` overlay by `to` overlay.
  * @param stateLinks the [StateLink] connecting this [SceneTransitionLayoutState] to other
  *   [SceneTransitionLayoutState]s.
+ * @param deferTransitionProgress whether we should wait for the first composition to be done before
+ *   changing the progress of a transition. This can help reduce perceivable jank at the start of a
+ *   transition in case the first composition of a content takes a lot of time and we are going to
+ *   miss that first frame.
  */
 fun MutableSceneTransitionLayoutState(
     initialScene: SceneKey,
@@ -246,6 +250,9 @@ fun MutableSceneTransitionLayoutState(
     canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ -> true },
     onTransitionStart: (TransitionState.Transition) -> Unit = {},
     onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+
+    // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
+    deferTransitionProgress: Boolean = false,
 ): MutableSceneTransitionLayoutState {
     return MutableSceneTransitionLayoutStateImpl(
         initialScene,
@@ -258,6 +265,7 @@ fun MutableSceneTransitionLayoutState(
         canReplaceOverlay,
         onTransitionStart,
         onTransitionEnd,
+        deferTransitionProgress,
     )
 }
 
@@ -272,6 +280,9 @@ fun rememberMutableSceneTransitionLayoutState(
     canReplaceOverlay: (from: OverlayKey, to: OverlayKey) -> Boolean = { _, _ -> true },
     onTransitionStart: (TransitionState.Transition) -> Unit = {},
     onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+
+    // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
+    deferTransitionProgress: Boolean = false,
 ): MutableSceneTransitionLayoutState {
     val motionScheme = MaterialTheme.motionScheme
     val layoutState = remember {
@@ -286,6 +297,7 @@ fun rememberMutableSceneTransitionLayoutState(
             canReplaceOverlay = canReplaceOverlay,
             onTransitionStart = onTransitionStart,
             onTransitionEnd = onTransitionEnd,
+            deferTransitionProgress = deferTransitionProgress,
         )
     }
 
@@ -298,6 +310,7 @@ fun rememberMutableSceneTransitionLayoutState(
         layoutState.canReplaceOverlay = canReplaceOverlay
         layoutState.onTransitionStart = onTransitionStart
         layoutState.onTransitionEnd = onTransitionEnd
+        layoutState.deferTransitionProgress = deferTransitionProgress
     }
     return layoutState
 }
@@ -317,6 +330,8 @@ internal class MutableSceneTransitionLayoutStateImpl(
     },
     internal var onTransitionStart: (TransitionState.Transition) -> Unit = {},
     internal var onTransitionEnd: (TransitionState.Transition) -> Unit = {},
+    // TODO(b/400688335): Turn on by default and remove this flag before flexiglass is released.
+    internal var deferTransitionProgress: Boolean = false,
 ) : MutableSceneTransitionLayoutState {
     private val creationThread: Thread = Thread.currentThread()
 

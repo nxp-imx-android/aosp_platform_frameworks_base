@@ -48,7 +48,7 @@ import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystem
  * A desktop mode window decoration used when the window is in full "focus" (i.e. fullscreen/split).
  * It hosts a simple handle bar from which to initiate a drag motion to enter desktop mode.
  */
-internal class AppHandleViewHolder(
+class AppHandleViewHolder(
     rootView: View,
     onCaptionTouchListener: View.OnTouchListener,
     onCaptionButtonClickListener: OnClickListener,
@@ -61,7 +61,8 @@ internal class AppHandleViewHolder(
         val position: Point,
         val width: Int,
         val height: Int,
-        val isCaptionVisible: Boolean
+        val showInputLayer: Boolean,
+        val isCaptionVisible: Boolean,
     ) : Data()
 
     private lateinit var taskInfo: RunningTaskInfo
@@ -97,7 +98,14 @@ internal class AppHandleViewHolder(
     }
 
     override fun bindData(data: HandleData) {
-        bindData(data.taskInfo, data.position, data.width, data.height, data.isCaptionVisible)
+        bindData(
+            data.taskInfo,
+            data.position,
+            data.width,
+            data.height,
+            data.showInputLayer,
+            data.isCaptionVisible
+        )
     }
 
     private fun bindData(
@@ -105,6 +113,7 @@ internal class AppHandleViewHolder(
         position: Point,
         width: Int,
         height: Int,
+        showInputLayer: Boolean,
         isCaptionVisible: Boolean
     ) {
         setVisibility(isCaptionVisible)
@@ -112,8 +121,7 @@ internal class AppHandleViewHolder(
         this.taskInfo = taskInfo
         // If handle is not in status bar region(i.e., bottom stage in vertical split),
         // do not create an input layer
-        if (position.y >= SystemBarUtils.getStatusBarHeight(context)) return
-        if (!isCaptionVisible) {
+        if (position.y >= SystemBarUtils.getStatusBarHeight(context) || !showInputLayer) {
             disposeStatusBarInputLayer()
             return
         }
@@ -239,9 +247,10 @@ internal class AppHandleViewHolder(
 
     private fun setVisibility(visible: Boolean) {
         val v = if (visible) View.VISIBLE else View.GONE
-        if (captionView.visibility == v) return
-        if (!DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
-            captionView.visibility = v
+        if (
+            captionView.visibility == v ||
+                !DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()
+        ) {
             return
         }
         animator.animateVisibilityChange(v)
@@ -274,5 +283,26 @@ internal class AppHandleViewHolder(
 
     override fun close() {
         animator.cancel()
+    }
+
+    /** Factory class for creating [AppHandleViewHolder] objects. */
+    class Factory {
+        /**
+         * Create a [AppHandleViewHolder] object to handle caption view and status bar
+         * input layer logic.
+         */
+        fun create(
+            rootView: View,
+            onCaptionTouchListener: View.OnTouchListener,
+            onCaptionButtonClickListener: OnClickListener,
+            windowManagerWrapper: WindowManagerWrapper,
+            handler: Handler,
+        ): AppHandleViewHolder = AppHandleViewHolder(
+            rootView,
+            onCaptionTouchListener,
+            onCaptionButtonClickListener,
+            windowManagerWrapper,
+            handler,
+        )
     }
 }

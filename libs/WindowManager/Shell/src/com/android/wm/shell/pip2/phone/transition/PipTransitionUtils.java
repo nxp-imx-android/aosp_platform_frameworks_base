@@ -67,6 +67,36 @@ public class PipTransitionUtils {
     }
 
     /**
+     * @return a change representing a config-at-end activity for ancestor.
+     */
+    @Nullable
+    public static TransitionInfo.Change getDeferConfigActivityChange(TransitionInfo info,
+            @NonNull WindowContainerToken ancestor) {
+        final TransitionInfo.Change ancestorChange =
+                PipTransitionUtils.getChangeByToken(info, ancestor);
+        if (ancestorChange == null) return null;
+
+        // Iterate through changes bottom-to-top, going up the parent chain starting with ancestor.
+        TransitionInfo.Change lastPipChildChange = ancestorChange;
+        for (int i = info.getChanges().size() - 1; i >= 0; --i) {
+            TransitionInfo.Change change = info.getChanges().get(i);
+            if (change == ancestorChange) continue;
+
+            if (change.getParent() != null
+                    && change.getParent().equals(lastPipChildChange.getContainer())) {
+                // Found a child of the last cached child along the ancestral chain.
+                lastPipChildChange = change;
+                if (change.getTaskInfo() == null
+                        && change.hasFlags(TransitionInfo.FLAG_CONFIG_AT_END)) {
+                    // If this is a config-at-end activity change, then we found the chain leaf.
+                    return change;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * @return the leash to interact with the container this change represents.
      * @throws NullPointerException if the leash is null.
      */

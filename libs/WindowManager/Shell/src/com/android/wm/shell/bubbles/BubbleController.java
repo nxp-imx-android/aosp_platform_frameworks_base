@@ -1306,7 +1306,11 @@ public class BubbleController implements ConfigurationChangeListener,
                 // TODO b/392893178: Merge the unfold and the task view transition so that we don't
                 //  have to post a delayed runnable to the looper to update the bounds
                 if (mStackView.isExpanded()) {
-                    mStackView.postDelayed(() -> mStackView.updateExpandedView(), 500);
+                    mStackView.postDelayed(() -> {
+                        if (mStackView != null) {
+                            mStackView.updateExpandedView();
+                        }
+                    } , 500);
                 }
             }
             if (newConfig.fontScale != mFontScale) {
@@ -2643,8 +2647,9 @@ public class BubbleController implements ConfigurationChangeListener,
         mBubbleData.setSelectedBubbleAndExpandStack(bubbleToSelect);
     }
 
-    private void moveBubbleToFullscreen(String key) {
-        // TODO b/388858013: convert the bubble to full screen
+    private void moveDraggedBubbleToFullscreen(String key, Point dropLocation) {
+        Bubble b = mBubbleData.getBubbleInStackWithKey(key);
+        mBubbleTransitions.startDraggedBubbleIconToFullscreen(b, dropLocation);
     }
 
     private boolean isDeviceLocked() {
@@ -2935,8 +2940,9 @@ public class BubbleController implements ConfigurationChangeListener,
         }
 
         @Override
-        public void moveBubbleToFullscreen(String key) {
-            mMainExecutor.execute(() -> mController.moveBubbleToFullscreen(key));
+        public void moveDraggedBubbleToFullscreen(String key, Point dropLocation) {
+            mMainExecutor.execute(
+                    () -> mController.moveDraggedBubbleToFullscreen(key, dropLocation));
         }
     }
 

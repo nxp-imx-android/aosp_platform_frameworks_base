@@ -28,7 +28,7 @@ import com.android.systemui.qs.FakeQSFactory
 import com.android.systemui.qs.FakeQSTile
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.qsTileFactory
-import com.android.systemui.qs.tiles.base.interactor.QSTileAvailabilityInteractor
+import com.android.systemui.qs.tiles.base.domain.interactor.QSTileAvailabilityInteractor
 import com.android.systemui.statusbar.connectivity.ConnectivityModule.Companion.AIRPLANE_MODE_TILE_SPEC
 import com.android.systemui.statusbar.connectivity.ConnectivityModule.Companion.HOTSPOT_TILE_SPEC
 import com.android.systemui.statusbar.connectivity.ConnectivityModule.Companion.INTERNET_TILE_SPEC

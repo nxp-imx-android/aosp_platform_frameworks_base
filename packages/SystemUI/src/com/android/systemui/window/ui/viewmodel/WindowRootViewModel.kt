@@ -19,13 +19,16 @@ package com.android.systemui.window.ui.viewmodel
 import android.os.Build
 import android.util.Log
 import com.android.systemui.Flags
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.ui.transitions.GlanceableHubTransition
 import com.android.systemui.keyguard.ui.transitions.PrimaryBouncerTransition
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -41,6 +44,8 @@ constructor(
     primaryBouncerTransitions: Set<@JvmSuppressWildcards PrimaryBouncerTransition>,
     glanceableHubTransitions: Set<@JvmSuppressWildcards GlanceableHubTransition>,
     private val blurInteractor: WindowRootViewBlurInteractor,
+    private val keyguardInteractor: KeyguardInteractor,
+    private val shadeInteractor: ShadeInteractor,
 ) {
 
     private val bouncerBlurRadiusFlows =
@@ -57,7 +62,9 @@ constructor(
         listOf(
                 *bouncerBlurRadiusFlows.toTypedArray(),
                 *glanceableHubBlurRadiusFlows.toTypedArray(),
-                blurInteractor.blurRadius.map { it.toFloat() }.logIfPossible("ShadeBlur"),
+                blurInteractor.blurRadiusRequestedByShade
+                    .map { it.toFloat() }
+                    .logIfPossible("ShadeBlur"),
             )
             .merge()
 
@@ -69,6 +76,24 @@ constructor(
                 flowOf(0f)
             }
         }
+
+    val isPersistentEarlyWakeupRequired =
+        blurInteractor.isBlurCurrentlySupported
+            .flatMapLatest { blurSupported ->
+                if (blurSupported) {
+                    combine(
+                        keyguardInteractor.isKeyguardShowing,
+                        shadeInteractor.isUserInteracting,
+                        shadeInteractor.isAnyExpanded,
+                    ) { keyguardShowing, userDraggingShade, anyExpanded ->
+                        keyguardShowing || userDraggingShade || anyExpanded
+                    }
+                } else {
+                    flowOf(false)
+                }
+            }
+            .distinctUntilChanged()
+            .logIfPossible("isPersistentEarlyWakeupRequired")
 
     val isBlurOpaque =
         blurInteractor.isBlurCurrentlySupported.flatMapLatest { blurSupported ->

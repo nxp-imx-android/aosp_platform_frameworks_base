@@ -37,9 +37,12 @@ import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.isExitDesktop
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.TransitionUtil
+import com.android.wm.shell.shared.TransitionUtil.isClosingMode
+import com.android.wm.shell.shared.TransitionUtil.isOpeningMode
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
+import java.util.Optional
 
 /**
  * A [Transitions.TransitionObserver] that observes shell transitions and updates the
@@ -52,7 +55,7 @@ class DesktopTasksTransitionObserver(
     private val transitions: Transitions,
     private val shellTaskOrganizer: ShellTaskOrganizer,
     private val desktopMixedTransitionHandler: DesktopMixedTransitionHandler,
-    private val desktopPipTransitionObserver: DesktopPipTransitionObserver,
+    private val desktopPipTransitionObserver: Optional<DesktopPipTransitionObserver>,
     private val backAnimationController: BackAnimationController,
     private val desktopWallpaperActivityTokenProvider: DesktopWallpaperActivityTokenProvider,
     shellInit: ShellInit,
@@ -94,7 +97,7 @@ class DesktopTasksTransitionObserver(
             removeTaskIfNeeded(info)
         }
         removeWallpaperOnLastTaskClosingIfNeeded(transition, info)
-        desktopPipTransitionObserver.onTransitionReady(transition, info)
+        desktopPipTransitionObserver.ifPresent { it.onTransitionReady(transition, info) }
     }
 
     private fun removeTaskIfNeeded(info: TransitionInfo) {
@@ -303,18 +306,29 @@ class DesktopTasksTransitionObserver(
     }
 
     private fun updateTopTransparentFullscreenTaskId(info: TransitionInfo) {
-        info.changes.forEach { change ->
-            change.taskInfo?.let { task ->
-                val desktopRepository = desktopUserRepositories.getProfile(task.userId)
-                val displayId = task.displayId
-                // Clear `topTransparentFullscreenTask` information from repository if task
-                // is closed or sent to back.
-                if (
-                    TransitionUtil.isClosingMode(change.mode) &&
-                        task.taskId ==
-                            desktopRepository.getTopTransparentFullscreenTaskId(displayId)
-                ) {
-                    desktopRepository.clearTopTransparentFullscreenTaskId(displayId)
+        run forEachLoop@{
+            info.changes.forEach { change ->
+                change.taskInfo?.let { task ->
+                    val desktopRepository = desktopUserRepositories.getProfile(task.userId)
+                    val displayId = task.displayId
+                    val transparentTaskId =
+                        desktopRepository.getTopTransparentFullscreenTaskId(displayId)
+                    if (transparentTaskId == null) return@forEachLoop
+                    val changeMode = change.mode
+                    val taskId = task.taskId
+                    val isTopTransparentFullscreenTaskClosing =
+                        taskId == transparentTaskId && isClosingMode(changeMode)
+                    val isNonTopTransparentFullscreenTaskOpening =
+                        taskId != transparentTaskId && isOpeningMode(changeMode)
+                    // Clear `topTransparentFullscreenTask` information from repository if task
+                    // is closed, sent to back or if a different task is opened, brought to front.
+                    if (
+                        isTopTransparentFullscreenTaskClosing ||
+                            isNonTopTransparentFullscreenTaskOpening
+                    ) {
+                        desktopRepository.clearTopTransparentFullscreenTaskId(displayId)
+                        return@forEachLoop
+                    }
                 }
             }
         }

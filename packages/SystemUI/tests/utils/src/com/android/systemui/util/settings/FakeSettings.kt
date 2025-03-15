@@ -289,6 +289,37 @@ class FakeSettings : SecureSettings, SystemSettings, UserSettingsProxy {
         return putString(name, value)
     }
 
+    override fun getInt(name: String): Int {
+        return getIntForUser(name, userId)
+    }
+
+    override fun getInt(name: String, default: Int): Int {
+        return getIntForUser(name, default, userId)
+    }
+
+    override fun getIntForUser(name: String, userHandle: Int): Int {
+        return getIntForUser(name, 0, userHandle)
+    }
+
+    override fun getIntForUser(name: String, default: Int, userHandle: Int): Int {
+        return values[SettingsKey(userHandle, getUriFor(name).toString())]?.toInt() ?: default
+    }
+
+    override fun putIntForUser(name: String, value: Int, userHandle: Int): Boolean {
+        val key = SettingsKey(userHandle, getUriFor(name).toString())
+        values[key] = value.toString()
+        val uri = getUriFor(name)
+        contentObservers[key]?.onEach { it.dispatchChange(false, listOf(uri), 0, userHandle) }
+        contentObserversAllUsers[uri.toString()]?.onEach {
+            it.dispatchChange(false, listOf(uri), 0, userHandle)
+        }
+        return true
+    }
+
+    override fun putInt(name: String, value: Int): Boolean {
+        return putIntForUser(name, value, userId)
+    }
+
     /** Runs current jobs on dispatcher after calling the method. */
     private fun <T> advanceDispatcher(f: () -> T): T {
         val result = f()

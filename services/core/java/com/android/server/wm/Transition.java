@@ -1249,7 +1249,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 // Skip dispatching the change for PiP task to avoid its activity drawing for the
                 // intermediate state which will cause flickering. The final PiP bounds in new
                 // rotation will be applied by PipTransition.
-                ar.mDisplayContent.mPinnedTaskController.setEnterPipTransaction(null);
+                ar.mDisplayContent.mPinnedTaskController.setEnterPipWithRotatedTransientLaunch();
             }
             return inPip;
         }
@@ -3191,7 +3191,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             // Fixed rotation only applies to opening or changing activity.
             return;
         }
-        if (task.inMultiWindowMode() && taskTopRunning.inMultiWindowMode()) {
+        if (!ActivityTaskManagerService.isPip2ExperimentEnabled()
+                && task.inMultiWindowMode() && taskTopRunning.inMultiWindowMode()) {
             // Display won't be rotated for multi window Task, so the fixed rotation won't be
             // applied. This can happen when the windowing mode is changed before the previous
             // fixed rotation is applied. Check both task and activity because the activity keeps
@@ -3400,7 +3401,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      * Applies the new configuration for the changed displays. Returns the activities that should
      * check whether to deliver the new configuration to clients.
      */
-    @Nullable
     void applyDisplayChangeIfNeeded(@NonNull ArraySet<WindowContainer<?>> activitiesMayChange) {
         for (int i = mParticipants.size() - 1; i >= 0; --i) {
             final WindowContainer<?> wc = mParticipants.valueAt(i);

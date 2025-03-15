@@ -32,7 +32,6 @@ import static android.Manifest.permission.QUERY_AUDIO_STATE;
 import static android.Manifest.permission.WRITE_SETTINGS;
 import static android.app.BroadcastOptions.DELIVERY_GROUP_POLICY_MOST_RECENT;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
-import static android.content.Intent.ACTION_PACKAGE_REMOVED;
 import static android.content.Intent.EXTRA_ARCHIVAL;
 import static android.content.Intent.EXTRA_REPLACING;
 import static android.media.AudioDeviceInfo.TYPE_BLUETOOTH_A2DP;
@@ -529,7 +528,7 @@ public class AudioService extends IAudioService.Stub
      */
     private InputDeviceVolumeHelper mInputDeviceVolumeHelper;
 
-    /*package*/ int getVssVolumeForDevice(int stream, int device) {
+    /*package*/ int getVolumeForDeviceIgnoreMute(int stream, int device) {
         final VolumeStreamState streamState = mStreamStates.get(stream);
         return streamState != null ? streamState.getIndex(device) : -1;
     }
@@ -930,7 +929,8 @@ public class AudioService extends IAudioService.Stub
     private final Object mAbsoluteVolumeDeviceInfoMapLock = new Object();
     // Devices where the framework sends a full scale audio signal, and controls the volume of
     // the external audio system separately.
-    // For possible volume behaviors, see {@link AudioManager.AbsoluteDeviceVolumeBehavior}.
+    // For possible volume behaviors, see
+    // {@link AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior}.
     @GuardedBy("mAbsoluteVolumeDeviceInfoMapLock")
     Map<Integer, AbsoluteVolumeDeviceInfo> mAbsoluteVolumeDeviceInfoMap = new ArrayMap<>();
 
@@ -943,7 +943,7 @@ public class AudioService extends IAudioService.Stub
         private final List<VolumeInfo> mVolumeInfos;
         private final IAudioDeviceVolumeDispatcher mCallback;
         private final boolean mHandlesVolumeAdjustment;
-        private @AudioManager.AbsoluteDeviceVolumeBehavior int mDeviceVolumeBehavior;
+        private @AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior int mDeviceVolumeBehavior;
 
         private AbsoluteVolumeDeviceInfo(
                 AudioService parent,
@@ -951,7 +951,7 @@ public class AudioService extends IAudioService.Stub
                 List<VolumeInfo> volumeInfos,
                 IAudioDeviceVolumeDispatcher callback,
                 boolean handlesVolumeAdjustment,
-                @AudioManager.AbsoluteDeviceVolumeBehavior int behavior) {
+                @AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior int behavior) {
             this.mParent = parent;
             this.mDevice = device;
             this.mVolumeInfos = volumeInfos;
@@ -3336,11 +3336,25 @@ public class AudioService extends IAudioService.Stub
     }
 
     private int rescaleIndex(int index, int srcStream, int dstStream) {
-        return rescaleIndex(index,
-                getVssForStreamOrDefault(srcStream).getMinIndex(),
-                getVssForStreamOrDefault(srcStream).getMaxIndex(),
-                getVssForStreamOrDefault(dstStream).getMinIndex(),
-                getVssForStreamOrDefault(dstStream).getMaxIndex());
+        final VolumeStreamState srcVss = getVssForStreamOrDefault(srcStream);
+        final VolumeStreamState dstVss = getVssForStreamOrDefault(dstStream);
+        int newIndex = rescaleIndex(index, srcVss.getMinIndex(), srcVss.getMaxIndex(),
+                dstVss.getMinIndex(), dstVss.getMaxIndex());
+        // only apply solution for DTMF stream to make sure that it is not muted when
+        // re-aliasing to voice call stream. With ringMyCar flag enabled this will be
+        // automatically solved since we are sending the mute state to APM
+        // TODO(b/402542630): revisit stream aliasing logic with different min index
+        //  values / mute states
+        if (!ringMyCar() && dstStream == AudioSystem.STREAM_DTMF
+                && srcStream == AudioSystem.STREAM_VOICE_CALL
+                && srcVss.getMinIndex() > dstVss.getMinIndex()) {
+            newIndex += srcVss.getMinIndex() - dstVss.getMinIndex();
+            if (newIndex > dstVss.getMaxIndex()) {
+                newIndex = dstVss.getMaxIndex();
+            }
+        }
+
+        return newIndex;
     }
 
     private int rescaleIndex(int index, int srcMin, int srcMax, int dstMin, int dstMax) {
@@ -5100,7 +5114,7 @@ public class AudioService extends IAudioService.Stub
         }
 
         final int device = absVolumeDevices.toArray(new Integer[0])[0].intValue();
-        final int index = getStreamVolume(streamType, device);
+        final int index = (getVolumeForDeviceIgnoreMute(streamType, device) + 5) / 10;
 
         if (DEBUG_VOL) {
             Slog.i(TAG, "onUpdateContextualVolumes streamType: " + streamType
@@ -8160,7 +8174,7 @@ public class AudioService extends IAudioService.Stub
             IAudioDeviceVolumeDispatcher cb, String packageName,
             AudioDeviceAttributes device, List<VolumeInfo> volumes,
             boolean handlesVolumeAdjustment,
-            @AudioManager.AbsoluteDeviceVolumeBehavior int deviceVolumeBehavior) {
+            @AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior int deviceVolumeBehavior) {
         // verify permissions
         if (mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_ROUTING)
                 != PackageManager.PERMISSION_GRANTED
@@ -8227,12 +8241,13 @@ public class AudioService extends IAudioService.Stub
     @android.annotation.EnforcePermission(anyOf = {
             MODIFY_AUDIO_ROUTING, MODIFY_AUDIO_SETTINGS_PRIVILEGED })
     public void setDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device,
-            @AudioManager.DeviceVolumeBehavior int deviceVolumeBehavior, @Nullable String pkgName) {
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior,
+            @Nullable String pkgName) {
         // verify permissions
         super.setDeviceVolumeBehavior_enforcePermission();
         // verify arguments
         Objects.requireNonNull(device);
-        AudioManager.enforceValidVolumeBehavior(deviceVolumeBehavior);
+        AudioDeviceVolumeManager.enforceValidVolumeBehavior(deviceVolumeBehavior);
 
         device = retrieveBluetoothAddress(device);
 
@@ -8255,7 +8270,8 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void setDeviceVolumeBehaviorInternal(@NonNull AudioDeviceAttributes device,
-            @AudioManager.DeviceVolumeBehavior int deviceVolumeBehavior, @NonNull String caller) {
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior,
+            @NonNull String caller) {
         int audioSystemDeviceOut = device.getInternalType();
         boolean volumeBehaviorChanged = false;
         // update device masks based on volume behavior
@@ -8310,7 +8326,7 @@ public class AudioService extends IAudioService.Stub
     @android.annotation.EnforcePermission(anyOf = {
             MODIFY_AUDIO_ROUTING, QUERY_AUDIO_STATE,  MODIFY_AUDIO_SETTINGS_PRIVILEGED
     })
-    public @AudioManager.DeviceVolumeBehavior
+    public @AudioDeviceVolumeManager.DeviceVolumeBehavior
     int getDeviceVolumeBehavior(@NonNull AudioDeviceAttributes device) {
         // verify permissions
         super.getDeviceVolumeBehavior_enforcePermission();
@@ -8322,7 +8338,7 @@ public class AudioService extends IAudioService.Stub
         return getDeviceVolumeBehaviorInt(device);
     }
 
-    private @AudioManager.DeviceVolumeBehavior
+    private @AudioDeviceVolumeManager.DeviceVolumeBehavior
             int getDeviceVolumeBehaviorInt(@NonNull AudioDeviceAttributes device) {
         // Get the internal type set by the AudioDeviceAttributes constructor which is always more
         // exact (avoids double conversions) than a conversion from SDK type via
@@ -12929,11 +12945,12 @@ public class AudioService extends IAudioService.Stub
                 );
         audioPolicy.registerOnStartTask(() -> {
             provider.onServiceStart(audioPolicy.getPermissionController());
+            sLifecycleLogger.enqueue(new EventLogger.StringEvent(
+                    "Controller start task complete").printLog(ALOGI, TAG));
         });
 
         IntentFilter packageUpdateFilter = new IntentFilter();
         packageUpdateFilter.addAction(ACTION_PACKAGE_ADDED);
-        packageUpdateFilter.addAction(ACTION_PACKAGE_REMOVED);
         packageUpdateFilter.addDataScheme("package");
 
         context.registerReceiverForAllUsers(new BroadcastReceiver() {
@@ -12947,9 +12964,6 @@ public class AudioService extends IAudioService.Stub
                 if (ACTION_PACKAGE_ADDED.equals(action)) {
                     audioserverExecutor.execute(() ->
                             provider.onModifyPackageState(uid, pkgName, false /* isRemoved */));
-                } else if (ACTION_PACKAGE_REMOVED.equals(action)) {
-                    audioserverExecutor.execute(() ->
-                            provider.onModifyPackageState(uid, pkgName, true /* isRemoved */));
                 }
             }
         }, packageUpdateFilter, null, null); // main thread is fine, since dispatch on executor
@@ -15109,6 +15123,61 @@ public class AudioService extends IAudioService.Stub
 
     /**
      * @hide
+     * Returns the current audio output device delay value of key in milliseconds.
+     *
+     * In aidl implementation, the param of getParameters is "key" and reply delay of all supported
+     * devices which be composited as "key=device,address,delay|device,address,delay|...".
+     * e.g.
+     * param: additional_output_device_delay=
+     * reply: additional_output_device_delay=2,,0|4,,0|8,,0|128,,0|256,,0|512,,0|1024,,0|8192,,0|
+     * 16384,,0|262144,,0|262145,,0|524288,,0|67108864,,0|134217728,,0|536870912,,0|536870913,,0|
+     * 536870914,,0
+     *
+     * In hidl implementation, the param of getParameters is "key=device,address" and reply a
+     * specific device delay which be composited as "key=device,address,delay".
+     * e.g.
+     * param: additional_output_device_delay=2,
+     * reply: additional_output_device_delay=2,,0
+     *
+     * @param key
+     * @param deviceType
+     * @param address
+     * @return the delay value of key. This is a non-negative number.
+     *     {@code 0} is returned if unsupported.
+     */
+    private long getDelayByKeyDevice(@NonNull String key, @NonNull AudioDeviceAttributes device) {
+        long delayMillis = 0;
+
+        try {
+            if (AudioHalVersionInfo.AUDIO_HAL_TYPE_AIDL == getHalVersion().getHalType()) {
+                final String reply = AudioSystem.getParameters(key);
+                final String keyDeviceAddressPrefix =
+                    Integer.toUnsignedString(device.getInternalType()) + "," + device.getAddress() +
+                    ",";
+                int start = reply.indexOf(keyDeviceAddressPrefix);
+                int end = -1;
+                if (start != -1) {
+                    start += keyDeviceAddressPrefix.length();
+                    end = reply.indexOf("|", start);
+                    delayMillis = Long.parseLong(
+                            end == -1 ? reply.substring(start) : reply.substring(start, end));
+                }
+            } else {
+                final String reply = AudioSystem.getParameters(
+                    key + "=" + device.getInternalType() + "," + device.getAddress());
+                if (reply.contains(key)) {
+                    delayMillis = Long.parseLong(reply.substring(key.length() + 1));
+                }
+            }
+        } catch (NullPointerException e) {
+            Log.w(TAG, "NullPointerException when getting delay for device " + device, e);
+        }
+
+        return delayMillis;
+    }
+
+    /**
+     * @hide
      * Returns the current additional audio output device delay in milliseconds.
      *
      * @param deviceType
@@ -15124,17 +15193,8 @@ public class AudioService extends IAudioService.Stub
         device = retrieveBluetoothAddress(device);
 
         final String key = "additional_output_device_delay";
-        final String reply = AudioSystem.getParameters(
-                key + "=" + device.getInternalType() + "," + device.getAddress());
-        long delayMillis = 0;
-        if (reply.contains(key)) {
-            try {
-                delayMillis = Long.parseLong(reply.substring(key.length() + 1));
-            } catch (NullPointerException e) {
-                delayMillis = 0;
-            }
-        }
-        return delayMillis;
+
+        return getDelayByKeyDevice(key, device);
     }
 
     /**
@@ -15156,17 +15216,8 @@ public class AudioService extends IAudioService.Stub
         device = retrieveBluetoothAddress(device);
 
         final String key = "max_additional_output_device_delay";
-        final String reply = AudioSystem.getParameters(
-                key + "=" + device.getInternalType() + "," + device.getAddress());
-        long delayMillis = 0;
-        if (reply.contains(key)) {
-            try {
-                delayMillis = Long.parseLong(reply.substring(key.length() + 1));
-            } catch (NullPointerException e) {
-                delayMillis = 0;
-            }
-        }
-        return delayMillis;
+
+        return getDelayByKeyDevice(key, device);
     }
 
     @android.annotation.EnforcePermission(MODIFY_AUDIO_ROUTING)
@@ -15306,7 +15357,8 @@ public class AudioService extends IAudioService.Stub
 
     /**
      * Returns whether the input device uses absolute volume behavior, including its variants.
-     * For included volume behaviors, see {@link AudioManager.AbsoluteDeviceVolumeBehavior}.
+     * For included volume behaviors, see
+     * {@link AudioDeviceVolumeManager.AbsoluteDeviceVolumeBehavior}.
      * <p>This is distinct from Bluetooth A2DP absolute volume behavior
      * ({@link #isA2dpAbsoluteVolumeDevice}).
      */
@@ -15333,7 +15385,7 @@ public class AudioService extends IAudioService.Stub
     }
 
     private void persistDeviceVolumeBehavior(int deviceType,
-            @AudioManager.DeviceVolumeBehavior int deviceVolumeBehavior) {
+            @AudioDeviceVolumeManager.DeviceVolumeBehavior int deviceVolumeBehavior) {
         if (DEBUG_VOL) {
             Log.d(TAG, "Persisting Volume Behavior for DeviceType: " + deviceType);
         }
@@ -15348,7 +15400,7 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
-    @AudioManager.DeviceVolumeBehaviorState
+    @AudioDeviceVolumeManager.DeviceVolumeBehaviorState
     private int retrieveStoredDeviceVolumeBehavior(int deviceType) {
         return mSettings.getSystemIntForUser(mContentResolver,
                 getSettingsNameForDeviceVolumeBehavior(deviceType),

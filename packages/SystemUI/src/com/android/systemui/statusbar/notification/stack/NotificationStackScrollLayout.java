@@ -64,6 +64,7 @@ import android.util.AttributeSet;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.MathUtils;
+import android.util.Pair;
 import android.view.DisplayCutout;
 import android.view.InputDevice;
 import android.view.LayoutInflater;
@@ -140,6 +141,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScr
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.policy.ScrollAdapter;
 import com.android.systemui.statusbar.policy.SplitShadeStateController;
+import com.android.systemui.statusbar.ui.SystemBarUtilsProxy;
 import com.android.systemui.util.Assert;
 import com.android.systemui.util.ColorUtilKt;
 import com.android.systemui.util.DumpUtilsKt;
@@ -1037,10 +1039,10 @@ public class NotificationStackScrollLayout
                 }
                 int bucket = NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().getSectionBucket()
-                        : row.getEntry().getBucket();
+                        : row.getEntryLegacy().getBucket();
                 boolean isAmbient = NotificationBundleUi.isEnabled()
                         ? row.getEntryAdapter().isAmbient()
-                        : row.getEntry().isAmbient();
+                        : row.getEntryLegacy().isAmbient();
                 currentIndex++;
                 boolean beforeSpeedBump;
                 if (mHighPriorityBeforeSpeedBump) {
@@ -1845,7 +1847,7 @@ public class NotificationStackScrollLayout
         } else {
             if (row.isChildInGroup()) {
                 final NotificationEntry groupSummary =
-                        mGroupMembershipManager.getGroupSummary(row.getEntry());
+                        mGroupMembershipManager.getGroupSummary(row.getEntryLegacy());
                 if (groupSummary != null) {
                     row = groupSummary.getRow();
                 }
@@ -1998,16 +2000,16 @@ public class NotificationStackScrollLayout
             if ((bottom - top >= mMinInteractionHeight || !requireMinHeight)
                     && touchY >= top && touchY <= bottom && touchX >= left && touchX <= right) {
                 if (slidingChild instanceof ExpandableNotificationRow row) {
-                    NotificationEntry entry = row.getEntry();
                     boolean isEntrySummaryForTopHun;
                     if (NotificationBundleUi.isEnabled()) {
                         isEntrySummaryForTopHun = Objects.equals(
                                 ((ExpandableNotificationRow) slidingChild).getNotificationParent(),
                                 mTopHeadsUpRow);
                     } else {
+                        NotificationEntry entry = row.getEntryLegacy();
                         isEntrySummaryForTopHun = mTopHeadsUpRow != null &&
-                                mGroupMembershipManager.getGroupSummary(mTopHeadsUpRow.getEntry())
-                                == entry;
+                                mGroupMembershipManager.getGroupSummary(
+                                        mTopHeadsUpRow.getEntryLegacy()) == entry;
                     }
                     if (!mIsExpanded && row.isHeadsUp() && row.isPinned()
                             && mTopHeadsUpRow != row
@@ -3007,7 +3009,7 @@ public class NotificationStackScrollLayout
             ExpandableNotificationRow childRow = (ExpandableNotificationRow) child;
             return NotificationBundleUi.isEnabled()
                     ? mGroupMembershipManager.isChildInGroup(childRow.getEntryAdapter())
-                    : mGroupMembershipManager.isChildInGroup(childRow.getEntry());
+                    : mGroupMembershipManager.isChildInGroup(childRow.getEntryLegacy());
         }
         return false;
     }
@@ -3852,8 +3854,6 @@ public class NotificationStackScrollLayout
                         // existing overScroll, we have to scroll the view
                         customOverScrollBy((int) scrollAmount, getOwnScrollY(),
                                 range, getHeight() / 2);
-                        // If we're scrolling, leavebehinds should be dismissed
-                        mController.checkSnoozeLeavebehind();
                     }
                 }
                 break;
@@ -6002,7 +6002,6 @@ public class NotificationStackScrollLayout
      *                 LockscreenShadeTransitionController resets fraction to 0
      *                 where it remains until the next lockscreen-to-shade transition.
      */
-    @Override
     public void setFractionToShade(float fraction) {
         mAmbientState.setFractionToShade(fraction);
         updateContentHeight();  // Recompute stack height with different section gap.
@@ -6474,7 +6473,7 @@ public class NotificationStackScrollLayout
             @SelectedRows int selection) {
         int bucket = NotificationBundleUi.isEnabled()
                 ? row.getEntryAdapter().getSectionBucket()
-                : row.getEntry().getBucket();
+                : row.getEntryLegacy().getBucket();
         switch (selection) {
             case ROWS_ALL:
                 return true;

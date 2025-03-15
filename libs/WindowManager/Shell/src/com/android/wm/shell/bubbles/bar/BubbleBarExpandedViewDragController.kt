@@ -203,7 +203,11 @@ class BubbleBarExpandedViewDragController(
             draggedObject: MagnetizedObject<*>,
         ) {
             dragListener.onReleased(inDismiss = true)
-            pinController.onDragEnd()
+            if (dropTargetManager != null) {
+                dropTargetManager.onDragEnded()
+            } else {
+                pinController.onDragEnd()
+            }
             dismissView.hide()
         }
     }

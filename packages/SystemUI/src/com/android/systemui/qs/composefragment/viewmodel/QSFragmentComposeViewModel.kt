@@ -312,6 +312,11 @@ constructor(
             source = containerViewModel.editModeViewModel.isEditing,
         )
 
+    /** True if we are not in an expansion (from Gone to QQS/QS) animation. */
+    val isNotTransitioning by derivedStateOf {
+        viewTranslationY == 0f && viewAlpha == 1f && constrainedSquishinessFraction == 1f
+    }
+
     private val inFirstPage: Boolean
         get() = inFirstPageViewModel.inFirstPage
 

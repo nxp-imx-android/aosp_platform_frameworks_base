@@ -59,6 +59,15 @@ object WindowRootViewBinder {
             ) { viewModel ->
                 try {
                     Log.d(TAG, "Launching coroutines that update window root view state")
+                    launchTraced("early-wakeup") {
+                        viewModel.isPersistentEarlyWakeupRequired.collect { wakeupRequired ->
+                            blurUtils.setPersistentEarlyWakeup(
+                                wakeupRequired,
+                                view.rootView?.viewRootImpl,
+                            )
+                        }
+                    }
+
                     launchTraced("WindowBlur") {
                         var wasUpdateScheduledForThisFrame = false
                         var lastScheduledBlurRadius = 0

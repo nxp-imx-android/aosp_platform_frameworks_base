@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 
 @MediumTest
@@ -490,9 +491,24 @@ public class AnimatorSetCallsTest {
 
     @Test
     public void testCancelOnPendingEndListener() throws Throwable {
+        testPendingEndListener(AnimatorSet::cancel);
+    }
+
+    @Test
+    public void testEndOnPendingEndListener() throws Throwable {
+        testPendingEndListener(animatorSet -> {
+            // This verifies that isRunning() and isStarted() are true at last frame.
+            // Then the end() should invoke the end callback immediately.
+            if (animatorSet.isRunning() && animatorSet.isStarted()) {
+                animatorSet.end();
+            }
+        });
+    }
+
+    private void testPendingEndListener(Consumer<AnimatorSet> finishOnLastFrame) throws Throwable {
         final CountDownLatch endLatch = new CountDownLatch(1);
         final Handler handler = new Handler(Looper.getMainLooper());
-        final boolean[] endCalledRightAfterCancel = new boolean[2];
+        final boolean[] endCalledImmediately = new boolean[2];
         final AnimatorSet set = new AnimatorSet();
         final ValueAnimatorTests.MyListener asListener = new ValueAnimatorTests.MyListener();
         final ValueAnimatorTests.MyListener vaListener = new ValueAnimatorTests.MyListener();
@@ -502,9 +518,9 @@ public class AnimatorSetCallsTest {
         va.addUpdateListener(animation -> {
             if (animation.getAnimatedFraction() == 1f) {
                 handler.post(() -> {
-                    set.cancel();
-                    endCalledRightAfterCancel[0] = vaListener.endCalled;
-                    endCalledRightAfterCancel[1] = asListener.endCalled;
+                    finishOnLastFrame.accept(set);
+                    endCalledImmediately[0] = vaListener.endCalled;
+                    endCalledImmediately[1] = asListener.endCalled;
                     endLatch.countDown();
                 });
             }
@@ -517,8 +533,8 @@ public class AnimatorSetCallsTest {
         try {
             handler.post(set::start);
             assertTrue(endLatch.await(1, TimeUnit.SECONDS));
-            assertTrue(endCalledRightAfterCancel[0]);
-            assertTrue(endCalledRightAfterCancel[1]);
+            assertTrue(endCalledImmediately[0]);
+            assertTrue(endCalledImmediately[1]);
         } finally {
             ValueAnimator.setPostNotifyEndListenerEnabled(false);
         }

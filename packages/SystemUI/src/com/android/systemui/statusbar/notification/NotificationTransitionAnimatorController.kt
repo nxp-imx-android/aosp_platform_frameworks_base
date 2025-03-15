@@ -74,7 +74,6 @@ class NotificationTransitionAnimatorController(
         const val ANIMATION_DURATION_TOP_ROUNDING = 100L
     }
 
-    private val notificationEntry = notification.entry
     private val notificationKey = notification.key
 
     override val isLaunching: Boolean = true
@@ -160,7 +159,7 @@ class NotificationTransitionAnimatorController(
     private val headsUpNotificationRow: ExpandableNotificationRow?
         get() {
             val pipelineParent = if (NotificationBundleUi.isEnabled)
-                notification.entryAdapter?.parent else notificationEntry.parent
+                notification.entryAdapter?.parent else notification.entryLegacy.parent
             val summaryEntry = (pipelineParent as? GroupEntry)?.summary
             return when {
                 headsUpManager.isHeadsUpEntry(notificationKey) -> notification

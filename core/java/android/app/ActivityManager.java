@@ -1188,7 +1188,7 @@ public class ActivityManager {
 
     /** @hide Should this process state be considered jank perceptible? */
     public static final boolean isProcStateJankPerceptible(int procState) {
-        if (Flags.jankPerceptibleNarrow()) {
+        if (Flags.jankPerceptibleNarrow() && !Flags.jankPerceptibleNarrowHoldback()) {
             return procState == PROCESS_STATE_PERSISTENT_UI
                 || procState == PROCESS_STATE_TOP
                 || procState == PROCESS_STATE_IMPORTANT_FOREGROUND
@@ -3099,7 +3099,8 @@ public class ActivityManager {
     /**
      * Flag for {@link #moveTaskToFront(int, int)}: also move the "home"
      * activity along with the task, so it is positioned immediately behind
-     * the task.
+     * the task. This flag is ignored if the task's windowing mode is
+     * {@link WindowConfiguration#WINDOWING_MODE_MULTI_WINDOW}.
      */
     public static final int MOVE_TASK_WITH_HOME = 0x00000001;
 

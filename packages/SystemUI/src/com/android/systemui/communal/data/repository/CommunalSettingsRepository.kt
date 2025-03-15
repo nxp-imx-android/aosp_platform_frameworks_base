@@ -32,6 +32,7 @@ import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.CommunalSettingsRepositoryModule.Companion.DEFAULT_BACKGROUND_TYPE
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.communal.shared.model.WhenToDream
+import com.android.systemui.communal.shared.model.WhenToStartHub
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -63,6 +64,12 @@ interface CommunalSettingsRepository {
      * to trigger dreams.
      */
     fun getWhenToDreamState(user: UserInfo): Flow<WhenToDream>
+
+    /**
+     * Returns a[WhenToStartHub] for the specified user, indicating what state the device should be
+     * in to automatically display the hub.
+     */
+    fun getWhenToStartHubState(user: UserInfo): Flow<WhenToStartHub>
 
     /** Returns whether glanceable hub is enabled by the current user. */
     fun getSettingEnabledByUser(user: UserInfo): Flow<Boolean>
@@ -122,6 +129,10 @@ constructor(
 
     private val dreamsActivatedOnPosturedByDefault by lazy {
         resources.getBoolean(com.android.internal.R.bool.config_dreamsActivatedOnPosturedByDefault)
+    }
+
+    private val whenToStartHubByDefault by lazy {
+        resources.getInteger(com.android.internal.R.integer.config_whenToStartHubModeDefault)
     }
 
     private val _suppressionReasons =
@@ -191,6 +202,31 @@ constructor(
                     WhenToDream.WHILE_POSTURED
                 } else {
                     WhenToDream.NEVER
+                }
+            }
+            .flowOn(bgDispatcher)
+
+    override fun getWhenToStartHubState(user: UserInfo): Flow<WhenToStartHub> =
+        secureSettings
+            .observerFlow(
+                userId = user.id,
+                names = arrayOf(Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB),
+            )
+            .emitOnStart()
+            .map {
+                when (
+                    secureSettings.getIntForUser(
+                        Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
+                        whenToStartHubByDefault,
+                        user.id,
+                    )
+                ) {
+                    Settings.Secure.GLANCEABLE_HUB_START_NEVER -> WhenToStartHub.NEVER
+                    Settings.Secure.GLANCEABLE_HUB_START_CHARGING -> WhenToStartHub.WHILE_CHARGING
+                    Settings.Secure.GLANCEABLE_HUB_START_CHARGING_UPRIGHT ->
+                        WhenToStartHub.WHILE_CHARGING_AND_POSTURED
+                    Settings.Secure.GLANCEABLE_HUB_START_DOCKED -> WhenToStartHub.WHILE_DOCKED
+                    else -> WhenToStartHub.NEVER
                 }
             }
             .flowOn(bgDispatcher)

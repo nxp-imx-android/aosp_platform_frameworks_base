@@ -61,31 +61,31 @@ interface MobileIconInteractor {
      * consider this connection to be serving data, and thus want to show a network type icon, when
      * data is connected. Other data connection states would typically cause us not to show the icon
      */
-    val isDataConnected: StateFlow<Boolean>
+    val isDataConnected: Flow<Boolean>
 
     /** True if we consider this connection to be in service, i.e. can make calls */
-    val isInService: StateFlow<Boolean>
+    val isInService: Flow<Boolean>
 
     /** True if this connection is emergency only */
-    val isEmergencyOnly: StateFlow<Boolean>
+    val isEmergencyOnly: Flow<Boolean>
 
     /** Observable for the data enabled state of this connection */
-    val isDataEnabled: StateFlow<Boolean>
+    val isDataEnabled: Flow<Boolean>
 
     /** True if the RAT icon should always be displayed and false otherwise. */
-    val alwaysShowDataRatIcon: StateFlow<Boolean>
+    val alwaysShowDataRatIcon: Flow<Boolean>
 
     /** Canonical representation of the current mobile signal strength as a triangle. */
-    val signalLevelIcon: StateFlow<SignalIconModel>
+    val signalLevelIcon: Flow<SignalIconModel>
 
     /** Observable for RAT type (network type) indicator */
-    val networkTypeIconGroup: StateFlow<NetworkTypeIconModel>
+    val networkTypeIconGroup: Flow<NetworkTypeIconModel>
 
     /** Whether or not to show the slice attribution */
-    val showSliceAttribution: StateFlow<Boolean>
+    val showSliceAttribution: Flow<Boolean>
 
     /** True if this connection is satellite-based */
-    val isNonTerrestrial: StateFlow<Boolean>
+    val isNonTerrestrial: Flow<Boolean>
 
     /**
      * Provider name for this network connection. The name can be one of 3 values:
@@ -95,7 +95,7 @@ interface MobileIconInteractor {
      *    override in [connectionInfo.operatorAlphaShort], a value that is derived from
      *    [ServiceState]
      */
-    val networkName: StateFlow<NetworkNameModel>
+    val networkName: Flow<NetworkNameModel>
 
     /**
      * Provider name for this network connection. The name can be one of 3 values:
@@ -108,26 +108,26 @@ interface MobileIconInteractor {
      * TODO(b/296600321): De-duplicate this field with [networkName] after determining the data
      *   provided is identical
      */
-    val carrierName: StateFlow<String>
+    val carrierName: Flow<String>
 
     /** True if there is only one active subscription. */
-    val isSingleCarrier: StateFlow<Boolean>
+    val isSingleCarrier: Flow<Boolean>
 
     /**
      * True if this connection is considered roaming. The roaming bit can come from [ServiceState],
      * or directly from the telephony manager's CDMA ERI number value. Note that we don't consider a
      * connection to be roaming while carrier network change is active
      */
-    val isRoaming: StateFlow<Boolean>
+    val isRoaming: Flow<Boolean>
 
     /** See [MobileIconsInteractor.isForceHidden]. */
     val isForceHidden: Flow<Boolean>
 
     /** See [MobileConnectionRepository.isAllowedDuringAirplaneMode]. */
-    val isAllowedDuringAirplaneMode: StateFlow<Boolean>
+    val isAllowedDuringAirplaneMode: Flow<Boolean>
 
     /** True when in carrier network change mode */
-    val carrierNetworkChangeActive: StateFlow<Boolean>
+    val carrierNetworkChangeActive: Flow<Boolean>
 }
 
 /** Interactor for a single mobile connection. This connection _should_ have one subscription ID */

@@ -38,6 +38,10 @@ data class ActiveNotificationModel(
     val groupKey: String?,
     /** When this notification was posted. */
     val whenTime: Long,
+    /** True if this is a foreground service notification. */
+    val isForegroundService: Boolean,
+    /** True if this notification is for an ongoing event. */
+    val isOngoingEvent: Boolean,
     /** Is this entry in the ambient / minimized section (lowest priority)? */
     val isAmbient: Boolean,
     /**

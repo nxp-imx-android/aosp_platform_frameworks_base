@@ -734,6 +734,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
         NotificationEntry entry = mock(NotificationEntry.class);
         when(row.getEntry()).thenReturn(entry);
+        when(row.getEntryLegacy()).thenReturn(entry);
         when(entry.isAmbient()).thenReturn(false);
         EntryAdapter entryAdapter = mock(EntryAdapter.class);
         when(entryAdapter.isAmbient()).thenReturn(false);
@@ -753,6 +754,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
         NotificationEntry entry = mock(NotificationEntry.class);
         when(row.getEntry()).thenReturn(entry);
+        when(row.getEntryLegacy()).thenReturn(entry);
         when(entry.isAmbient()).thenReturn(true);
         EntryAdapter entryAdapter = mock(EntryAdapter.class);
         when(entryAdapter.isAmbient()).thenReturn(true);
@@ -772,6 +774,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
         NotificationEntry entry = mock(NotificationEntry.class);
         when(row.getEntry()).thenReturn(entry);
+        when(row.getEntryLegacy()).thenReturn(entry);
         when(entry.isAmbient()).thenReturn(false);
         EntryAdapter entryAdapter = mock(EntryAdapter.class);
         when(entryAdapter.isAmbient()).thenReturn(false);
@@ -1384,6 +1387,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         NotificationEntry entry = mock(NotificationEntry.class);
         when(entry.isSeenInShade()).thenReturn(true);
         ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        when(row.getEntryLegacy()).thenReturn(entry);
         when(row.getEntry()).thenReturn(entry);
 
         // WHEN we generate an add event
@@ -1440,6 +1444,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         NotificationEntry entry = mock(NotificationEntry.class);
         when(row.canViewBeCleared()).thenReturn(true);
         when(row.getEntry()).thenReturn(entry);
+        when(row.getEntryLegacy()).thenReturn(entry);
         when(entry.isClearable()).thenReturn(true);
         EntryAdapter entryAdapter = mock(EntryAdapter.class);
         when(entryAdapter.isClearable()).thenReturn(true);

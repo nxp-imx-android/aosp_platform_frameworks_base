@@ -53,6 +53,7 @@
 #include <src/image/SkImage_Base.h>
 #include <thread/CommonPool.h>
 #ifdef __ANDROID__
+#include <gui/SurfaceControl.h>
 #include <ui/GraphicBufferAllocator.h>
 #endif
 #include <utils/Color.h>
@@ -217,9 +218,11 @@ static void android_view_ThreadedRenderer_setSurface(JNIEnv* env, jobject clazz,
 
 static void android_view_ThreadedRenderer_setSurfaceControl(JNIEnv* env, jobject clazz,
         jlong proxyPtr, jlong surfaceControlPtr) {
+#ifdef __ANDROID__
     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
-    ASurfaceControl* surfaceControl = reinterpret_cast<ASurfaceControl*>(surfaceControlPtr);
-    proxy->setSurfaceControl(surfaceControl);
+    SurfaceControl* surfaceControl = reinterpret_cast<SurfaceControl*>(surfaceControlPtr);
+    proxy->setSurfaceControl(sp<SurfaceControl>::fromExisting(surfaceControl));
+#endif
 }
 
 static jboolean android_view_ThreadedRenderer_pause(JNIEnv* env, jobject clazz,
@@ -684,7 +687,7 @@ static void android_view_ThreadedRenderer_setFrameCompleteCallback(JNIEnv* env,
 
 class CopyRequestAdapter : public CopyRequest {
 public:
-    CopyRequestAdapter(JavaVM* vm, jobject jCopyRequest, Rect srcRect)
+    CopyRequestAdapter(JavaVM* vm, jobject jCopyRequest, ::android::uirenderer::Rect srcRect)
             : CopyRequest(srcRect), mRefHolder(vm, jCopyRequest) {}
 
     virtual SkBitmap getDestinationBitmap(int srcWidth, int srcHeight) override {
@@ -710,8 +713,9 @@ static void android_view_ThreadedRenderer_copySurfaceInto(JNIEnv* env, jobject c
                                                           jobject jCopyRequest) {
     JavaVM* vm = nullptr;
     LOG_ALWAYS_FATAL_IF(env->GetJavaVM(&vm) != JNI_OK, "Unable to get Java VM");
-    auto copyRequest = std::make_shared<CopyRequestAdapter>(vm, env->NewGlobalRef(jCopyRequest),
-                                                            Rect(left, top, right, bottom));
+    auto copyRequest = std::make_shared<CopyRequestAdapter>(
+            vm, env->NewGlobalRef(jCopyRequest),
+            ::android::uirenderer::Rect(left, top, right, bottom));
     ANativeWindow* window = fromSurface(env, jsurface);
     RenderProxy::copySurfaceInto(window, std::move(copyRequest));
     ANativeWindow_release(window);

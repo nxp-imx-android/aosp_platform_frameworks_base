@@ -20,7 +20,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.UserManager
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.shared.condition.Condition
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -35,7 +35,7 @@ class DirectBootCondition
 constructor(
     broadcastDispatcher: BroadcastDispatcher,
     private val userManager: UserManager,
-    @Application private val coroutineScope: CoroutineScope,
+    @Background private val coroutineScope: CoroutineScope,
 ) : Condition(coroutineScope) {
     private var job: Job? = null
     private val directBootFlow =
@@ -45,7 +45,7 @@ constructor(
             .cancellable()
             .distinctUntilChanged()
 
-    override fun start() {
+    override suspend fun start() {
         job = coroutineScope.launch { directBootFlow.collect { updateCondition(it) } }
         updateCondition(!userManager.isUserUnlocked)
     }

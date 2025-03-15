@@ -147,15 +147,23 @@ public class BubbleBarLayerView extends FrameLayout
                                 Log.w(TAG, "dropped invalid bubble: " + mExpandedBubble);
                                 return;
                             }
+
+                            final boolean isBubbleLeft = zone instanceof DragZone.Bubble.Left;
+                            final boolean isBubbleRight = zone instanceof DragZone.Bubble.Right;
+                            if (!isBubbleLeft && !isBubbleRight) {
+                                // If we didn't finish the "change" animation make sure to animate
+                                // it back to the right spot
+                                locationChangeListener.onChange(mInitialLocation);
+                            }
                             if (zone instanceof DragZone.FullScreen) {
                                 ((Bubble) mExpandedBubble).getTaskView().moveToFullscreen();
                                 // Make sure location change listener is updated with the initial
                                 // location -- even if we "switched sides" during the drag, since
                                 // we've ended up in fullscreen, the location shouldn't change.
                                 locationChangeListener.onRelease(mInitialLocation);
-                            } else if (zone instanceof DragZone.Bubble.Left) {
+                            } else if (isBubbleLeft) {
                                 locationChangeListener.onRelease(BubbleBarLocation.LEFT);
-                            } else if (zone instanceof DragZone.Bubble.Right) {
+                            } else if (isBubbleRight) {
                                 locationChangeListener.onRelease(BubbleBarLocation.RIGHT);
                             }
                         }
@@ -189,7 +197,7 @@ public class BubbleBarLayerView extends FrameLayout
                         @NonNull
                         @Override
                         public SplitScreenMode getSplitScreenMode() {
-                            return SplitScreenMode.NONE;
+                            return SplitScreenMode.UNSUPPORTED;
                         }
                     },
                     new DragZoneFactory.DesktopWindowModeChecker() {

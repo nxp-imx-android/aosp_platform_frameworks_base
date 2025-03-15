@@ -23,6 +23,7 @@ import android.content.Context;
 import android.graphics.PixelFormat;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
@@ -41,12 +42,16 @@ public class AutoclickScrollPanel {
     public static final int DIRECTION_DOWN = 1;
     public static final int DIRECTION_LEFT = 2;
     public static final int DIRECTION_RIGHT = 3;
+    public static final int DIRECTION_EXIT = 4;
+    public static final int DIRECTION_NONE = 5;
 
     @IntDef({
             DIRECTION_UP,
             DIRECTION_DOWN,
             DIRECTION_LEFT,
-            DIRECTION_RIGHT
+            DIRECTION_RIGHT,
+            DIRECTION_EXIT,
+            DIRECTION_NONE,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ScrollDirection {}
@@ -70,16 +75,12 @@ public class AutoclickScrollPanel {
      */
     public interface ScrollPanelControllerInterface {
         /**
-         * Called when a scroll direction is hovered.
+         * Called when a button hover state changes.
          *
-         * @param direction The direction to scroll: one of {@link ScrollDirection} values.
+         * @param direction The direction associated with the button.
+         * @param hovered Whether the button is being hovered or not.
          */
-        void handleScroll(@ScrollDirection int direction);
-
-        /**
-         * Called when the exit button is hovered.
-         */
-        void exitScrollMode();
+        void onHoverButtonChange(@ScrollDirection int direction, boolean hovered);
     }
 
     public AutoclickScrollPanel(Context context, WindowManager windowManager,
@@ -104,19 +105,12 @@ public class AutoclickScrollPanel {
      * Sets up hover listeners for scroll panel buttons.
      */
     private void initializeButtonState() {
-        // Set up hover listeners for direction buttons.
-        setupHoverListenerForDirectionButton(mUpButton, DIRECTION_UP);
-        setupHoverListenerForDirectionButton(mLeftButton, DIRECTION_LEFT);
-        setupHoverListenerForDirectionButton(mRightButton, DIRECTION_RIGHT);
-        setupHoverListenerForDirectionButton(mDownButton, DIRECTION_DOWN);
-
-        // Set up hover listener for exit button.
-        mExitButton.setOnHoverListener((v, event) -> {
-            if (mScrollPanelController != null) {
-                mScrollPanelController.exitScrollMode();
-            }
-            return true;
-        });
+        // Set up hover listeners for all buttons.
+        setupHoverListenerForButton(mUpButton, DIRECTION_UP);
+        setupHoverListenerForButton(mLeftButton, DIRECTION_LEFT);
+        setupHoverListenerForButton(mRightButton, DIRECTION_RIGHT);
+        setupHoverListenerForButton(mDownButton, DIRECTION_DOWN);
+        setupHoverListenerForButton(mExitButton, DIRECTION_EXIT);
     }
 
     /**
@@ -142,14 +136,37 @@ public class AutoclickScrollPanel {
     }
 
     /**
-     * Sets up a hover listener for a direction button.
+     * Sets up a hover listener for a button.
      */
-    private void setupHoverListenerForDirectionButton(ImageButton button,
-            @ScrollDirection int direction) {
+    private void setupHoverListenerForButton(ImageButton button, @ScrollDirection int direction) {
         button.setOnHoverListener((v, event) -> {
-            if (mScrollPanelController != null) {
-                mScrollPanelController.handleScroll(direction);
+            if (mScrollPanelController == null) {
+                return true;
             }
+
+            boolean hovered;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_HOVER_ENTER:
+                    hovered = true;
+                    break;
+                case MotionEvent.ACTION_HOVER_MOVE:
+                    // For direction buttons, continuously trigger scroll on hover move.
+                    if (direction != DIRECTION_EXIT) {
+                        hovered = true;
+                    } else {
+                        // Ignore hover move events for exit button.
+                        return true;
+                    }
+                    break;
+                case MotionEvent.ACTION_HOVER_EXIT:
+                    hovered = false;
+                    break;
+                default:
+                    return true;
+            }
+
+            // Notify the controller about the hover change.
+            mScrollPanelController.onHoverButtonChange(direction, hovered);
             return true;
         });
     }

@@ -927,7 +927,7 @@ public class StackScrollAlgorithm {
                             childState.headsUpIsVisible, row.showingPulsing(),
                             ambientState.isOnKeyguard(), NotificationBundleUi.isEnabled()
                                     ? row.getEntryAdapter().canPeek()
-                                    : row.getEntry().isStickyAndNotDemoted())) {
+                                    : row.getEntryLegacy().isStickyAndNotDemoted())) {
                         // the height of this child before clamping it to the top
                         float unmodifiedChildHeight = childState.height;
                         clampHunToTop(
@@ -984,7 +984,7 @@ public class StackScrollAlgorithm {
                             childState.headsUpIsVisible, row.showingPulsing(),
                             ambientState.isOnKeyguard(), NotificationBundleUi.isEnabled()
                                     ? row.getEntryAdapter().canPeek()
-                                    : row.getEntry().isStickyAndNotDemoted())) {
+                                    : row.getEntryLegacy().isStickyAndNotDemoted())) {
                         // Ensure that the heads up is always visible even when scrolled off.
                         // NSSL y starts at top of screen in non-split-shade, but below the qs
                         // offset

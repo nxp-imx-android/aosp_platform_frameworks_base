@@ -778,16 +778,24 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
 
     protected boolean swipedFarEnough() {
         float translation = getTranslation(mTouchedView);
-        return Math.abs(translation) > SWIPED_FAR_ENOUGH_SIZE_FRACTION * getSize(
-                mTouchedView);
+        return Math.abs(translation) > SWIPED_FAR_ENOUGH_SIZE_FRACTION * getSize(mTouchedView);
     }
 
     public boolean isDismissGesture(MotionEvent ev) {
         float translation = getTranslation(mTouchedView);
         return ev.getActionMasked() == MotionEvent.ACTION_UP
                 && !mFalsingManager.isUnlockingDisabled()
-                && !isFalseGesture() && (swipedFastEnough() || swipedFarEnough())
+                && !isFalseGesture() && isSwipeDismissible()
                 && mCallback.canChildBeDismissedInDirection(mTouchedView, translation > 0);
+    }
+
+    /** Can the swipe gesture on the touched view be considered as a dismiss intention */
+    public boolean isSwipeDismissible() {
+        if (magneticNotificationSwipes()) {
+            return mCallback.isMagneticViewDetached(mTouchedView) || swipedFastEnough();
+        } else {
+            return swipedFastEnough() || swipedFarEnough();
+        }
     }
 
     /** Returns true if the gesture should be rejected. */
@@ -894,8 +902,8 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                 if (NotificationBundleUi.isEnabled()) {
                     return enr.getEntryAdapter().canDragAndDrop();
                 } else {
-                    boolean canBubble = enr.getEntry().canBubble();
-                    Notification notif = enr.getEntry().getSbn().getNotification();
+                    boolean canBubble = enr.getEntryLegacy().canBubble();
+                    Notification notif = enr.getEntryLegacy().getSbn().getNotification();
                     PendingIntent dragIntent = notif.contentIntent != null ? notif.contentIntent
                             : notif.fullScreenIntent;
                     if (dragIntent != null && dragIntent.isActivity() && !canBubble) {
@@ -968,6 +976,13 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
          * @param velocity The velocity when the interaction ended.
          */
         void onMagneticInteractionEnd(View view, float velocity);
+
+        /**
+         * Determine if a view managed by magnetic interactions is magnetically detached
+         * @param view The magnetic view
+         * @return if the view is detached according to its magnetic state.
+         */
+        boolean isMagneticViewDetached(View view);
 
         /**
          * Called when the child is long pressed and available to start drag and drop.

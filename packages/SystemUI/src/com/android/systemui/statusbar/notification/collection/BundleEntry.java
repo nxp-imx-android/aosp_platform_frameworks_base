@@ -69,10 +69,13 @@ public class BundleEntry extends PipelineEntry {
         return mUnmodifiableChildren;
     }
 
+    void clearChildren() {
+        mChildren.clear();
+    }
+
     /**
      * @return Null because bundles do not have an associated NotificationEntry.
      */
-
     @Nullable
     @Override
     public NotificationEntry getRepresentativeEntry() {

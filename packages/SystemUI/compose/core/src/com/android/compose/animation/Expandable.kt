@@ -21,7 +21,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroupOverlay
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -62,6 +61,7 @@ import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.layer.GraphicsLayer
 import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
@@ -82,6 +82,7 @@ import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.android.compose.modifiers.animatedBackground
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.FullScreenComposeViewInOverlay
 import com.android.systemui.animation.ComposableControllerFactory
@@ -126,6 +127,8 @@ import kotlin.math.min
  *
  * @sample com.android.systemui.compose.gallery.ActivityLaunchScreen
  * @sample com.android.systemui.compose.gallery.DialogLaunchScreen
+ * @param defaultMinSize true if a default minimum size should be enforced even if this Expandable
+ *   isn't currently clickable and false otherwise.
  */
 @Composable
 fun Expandable(
@@ -139,6 +142,7 @@ fun Expandable(
     // TODO(b/285250939): Default this to true then remove once the Compose QS expandables have
     // proven that the new implementation is robust.
     useModifierBasedImplementation: Boolean = false,
+    defaultMinSize: Boolean = true,
     transitionControllerFactory: ComposableControllerFactory? = null,
     content: @Composable (Expandable) -> Unit,
 ) {
@@ -154,6 +158,7 @@ fun Expandable(
         onClick,
         interactionSource,
         useModifierBasedImplementation,
+        defaultMinSize,
         content,
     )
 }
@@ -181,6 +186,8 @@ fun Expandable(
  *
  * @sample com.android.systemui.compose.gallery.ActivityLaunchScreen
  * @sample com.android.systemui.compose.gallery.DialogLaunchScreen
+ * @param defaultMinSize true if a default minimum size should be enforced even if this Expandable
+ *   isn't currently clickable and false otherwise.
  */
 @Composable
 fun Expandable(
@@ -191,6 +198,7 @@ fun Expandable(
     // TODO(b/285250939): Default this to true then remove once the Compose QS expandables have
     // proven that the new implementation is robust.
     useModifierBasedImplementation: Boolean = false,
+    defaultMinSize: Boolean = true,
     content: @Composable (Expandable) -> Unit,
 ) {
     val controller = controller as ExpandableControllerImpl
@@ -208,7 +216,12 @@ fun Expandable(
 
     if (useModifierBasedImplementation) {
         Box(modifier.expandable(controller, onClick, interactionSource)) {
-            WrappedContent(controller.expandable, controller.contentColor, content)
+            WrappedContent(
+                controller.expandable,
+                controller.contentColor,
+                defaultMinSize = defaultMinSize,
+                content,
+            )
         }
         return
     }
@@ -220,7 +233,7 @@ fun Expandable(
     val wrappedContent =
         remember(content) {
             movableContentOf { expandable: Expandable ->
-                WrappedContent(expandable, contentColor, content)
+                WrappedContent(expandable, contentColor, defaultMinSize = defaultMinSize, content)
             }
         }
 
@@ -291,7 +304,7 @@ fun Expandable(
                     .updateExpandableSize()
                     .then(minInteractiveSizeModifier)
                     .then(clickModifier(controller, onClick, interactionSource))
-                    .background(color, shape)
+                    .animatedBackground(color, shape = shape)
                     .border(controller)
                     .onGloballyPositioned { controller.boundsInComposeViewRoot = it.boundsInRoot() }
             ) {
@@ -305,21 +318,32 @@ fun Expandable(
 private fun WrappedContent(
     expandable: Expandable,
     contentColor: Color,
+    defaultMinSize: Boolean,
     content: @Composable (Expandable) -> Unit,
 ) {
-    CompositionLocalProvider(LocalContentColor provides contentColor) {
-        // We make sure that the content itself (wrapped by the background) is at least 40.dp, which
-        // is the same as the M3 buttons. This applies even if onClick is null, to make it easier to
-        // write expandables that are sometimes clickable and sometimes not. There shouldn't be any
-        // Expandable smaller than 40dp because if the expandable is not clickable directly, then
-        // something in its content should be (and with a size >= 40dp).
-        val minSize = 40.dp
-        Box(
-            Modifier.defaultMinSize(minWidth = minSize, minHeight = minSize),
-            contentAlignment = Alignment.Center,
-        ) {
-            content(expandable)
+    val minSizeContent =
+        @Composable {
+            if (defaultMinSize) {
+                // We make sure that the content itself (wrapped by the background) is at
+                // least 40.dp, which is the same as the M3 buttons. This applies even if
+                // onClick is null, to make it easier to write expandables that are
+                // sometimes clickable and sometimes not.
+                val minSize = 40.dp
+                Box(
+                    modifier = Modifier.defaultMinSize(minWidth = minSize, minHeight = minSize),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    content(expandable)
+                }
+            } else {
+                content(expandable)
+            }
         }
+
+    if (contentColor.isSpecified) {
+        CompositionLocalProvider(LocalContentColor provides contentColor, content = minSizeContent)
+    } else {
+        minSizeContent()
     }
 }
 
@@ -345,7 +369,7 @@ private fun Modifier.expandable(
         .thenIf(drawContent) {
             Modifier.border(controller)
                 .then(clickModifier(controller, onClick, interactionSource))
-                .background(controller.color, controller.shape)
+                .animatedBackground(controller.color, shape = controller.shape)
         }
         .onPlaced { controller.boundsInComposeViewRoot = it.boundsInRoot() }
         .drawWithContent {
@@ -422,7 +446,7 @@ private class DrawExpandableInOverlayNode(
             // Background.
             this@draw.drawBackground(
                 state,
-                controller.color,
+                controller.color(),
                 controller.borderStroke,
                 size = Size(state.width.toFloat(), state.height.toFloat()),
             )
@@ -469,7 +493,7 @@ private fun clickModifier(
 /** Draw [content] in [overlay] while respecting its screen position given by [animatorState]. */
 @Composable
 private fun AnimatedContentInOverlay(
-    color: Color,
+    color: () -> Color,
     sizeInOriginalLayout: Size,
     overlay: ViewGroupOverlay,
     controller: ExpandableControllerImpl,
@@ -523,7 +547,7 @@ private fun AnimatedContentInOverlay(
                                     return@drawWithContent
                                 }
 
-                                drawBackground(animatorState, color, controller.borderStroke)
+                                drawBackground(animatorState, color(), controller.borderStroke)
                                 drawContent()
                             },
                             // We center the content in the expanding container.

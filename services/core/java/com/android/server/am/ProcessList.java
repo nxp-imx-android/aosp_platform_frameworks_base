@@ -793,6 +793,7 @@ public final class ProcessList {
     final ProcessMap<ProcessRecord> mDyingProcesses = new ProcessMap<>();
 
     // Self locked with the inner lock within the RemoteCallbackList
+    @GuardedBy("mProcessObservers")
     private final RemoteCallbackList<IProcessObserver> mProcessObservers =
             new RemoteCallbackList<>();
 
@@ -4980,11 +4981,15 @@ public final class ProcessList {
     }
 
     void registerProcessObserver(IProcessObserver observer) {
-        mProcessObservers.register(observer);
+        synchronized  (mProcessObservers) {
+            mProcessObservers.register(observer);
+        }
     }
 
     void unregisterProcessObserver(IProcessObserver observer) {
-        mProcessObservers.unregister(observer);
+        synchronized (mProcessObservers) {
+            mProcessObservers.unregister(observer);
+        }
     }
 
     void dispatchProcessesChanged() {
@@ -5002,38 +5007,41 @@ public final class ProcessList {
             }
         }
 
-        int i = mProcessObservers.beginBroadcast();
-        while (i > 0) {
-            i--;
-            final IProcessObserver observer = mProcessObservers.getBroadcastItem(i);
-            if (observer != null) {
-                try {
-                    for (int j = 0; j < numOfChanges; j++) {
-                        ProcessChangeItem item = mActiveProcessChanges[j];
-                        if ((item.changes & ProcessChangeItem.CHANGE_ACTIVITIES) != 0) {
-                            if (DEBUG_PROCESS_OBSERVERS) {
-                                Slog.i(TAG_PROCESS_OBSERVERS,
-                                        "ACTIVITIES CHANGED pid=" + item.pid + " uid="
-                                        + item.uid + ": " + item.foregroundActivities);
+        synchronized (mProcessObservers) {
+            int i = mProcessObservers.beginBroadcast();
+            while (i > 0) {
+                i--;
+                final IProcessObserver observer = mProcessObservers.getBroadcastItem(i);
+                if (observer != null) {
+                    try {
+                        for (int j = 0; j < numOfChanges; j++) {
+                            ProcessChangeItem item = mActiveProcessChanges[j];
+                            if ((item.changes & ProcessChangeItem.CHANGE_ACTIVITIES) != 0) {
+                                if (DEBUG_PROCESS_OBSERVERS) {
+                                    Slog.i(TAG_PROCESS_OBSERVERS,
+                                            "ACTIVITIES CHANGED pid=" + item.pid + " uid="
+                                            + item.uid + ": " + item.foregroundActivities);
+                                }
+                                observer.onForegroundActivitiesChanged(item.pid, item.uid,
+                                        item.foregroundActivities);
                             }
-                            observer.onForegroundActivitiesChanged(item.pid, item.uid,
-                                    item.foregroundActivities);
-                        }
-                        if ((item.changes & ProcessChangeItem.CHANGE_FOREGROUND_SERVICES) != 0) {
-                            if (DEBUG_PROCESS_OBSERVERS) {
-                                Slog.i(TAG_PROCESS_OBSERVERS,
-                                        "FOREGROUND SERVICES CHANGED pid=" + item.pid + " uid="
-                                        + item.uid + ": " + item.foregroundServiceTypes);
+                            if ((item.changes & ProcessChangeItem.CHANGE_FOREGROUND_SERVICES)
+                                    != 0) {
+                                if (DEBUG_PROCESS_OBSERVERS) {
+                                    Slog.i(TAG_PROCESS_OBSERVERS,
+                                            "FOREGROUND SERVICES CHANGED pid=" + item.pid + " uid="
+                                            + item.uid + ": " + item.foregroundServiceTypes);
+                                }
+                                observer.onForegroundServicesChanged(item.pid, item.uid,
+                                        item.foregroundServiceTypes);
                             }
-                            observer.onForegroundServicesChanged(item.pid, item.uid,
-                                    item.foregroundServiceTypes);
                         }
+                    } catch (RemoteException e) {
                     }
-                } catch (RemoteException e) {
                 }
             }
+            mProcessObservers.finishBroadcast();
         }
-        mProcessObservers.finishBroadcast();
 
         synchronized (mProcessChangeLock) {
             for (int j = 0; j < numOfChanges; j++) {
@@ -5122,22 +5130,42 @@ public final class ProcessList {
     }
 
     void dispatchProcessStarted(ProcessRecord app, int pid) {
-        // TODO(b/323959187) Add the implementation.
+        if (!android.app.Flags.enableProcessObserverBroadcastOnProcessStarted()) {
+            Slog.i(TAG, "ProcessObserver broadcast disabled");
+            return;
+        }
+        synchronized (mProcessObservers) {
+            int i = mProcessObservers.beginBroadcast();
+            while (i > 0) {
+                i--;
+                final IProcessObserver observer = mProcessObservers.getBroadcastItem(i);
+                if (observer != null) {
+                    try {
+                        observer.onProcessStarted(pid, app.uid, app.info.uid,
+                                app.info.packageName, app.processName);
+                    } catch (RemoteException e) {
+                    }
+                }
+            }
+            mProcessObservers.finishBroadcast();
+        }
     }
 
     void dispatchProcessDied(int pid, int uid) {
-        int i = mProcessObservers.beginBroadcast();
-        while (i > 0) {
-            i--;
-            final IProcessObserver observer = mProcessObservers.getBroadcastItem(i);
-            if (observer != null) {
-                try {
-                    observer.onProcessDied(pid, uid);
-                } catch (RemoteException e) {
+        synchronized (mProcessObservers) {
+            int i = mProcessObservers.beginBroadcast();
+            while (i > 0) {
+                i--;
+                final IProcessObserver observer = mProcessObservers.getBroadcastItem(i);
+                if (observer != null) {
+                    try {
+                        observer.onProcessDied(pid, uid);
+                    } catch (RemoteException e) {
+                    }
                 }
             }
+            mProcessObservers.finishBroadcast();
         }
-        mProcessObservers.finishBroadcast();
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})

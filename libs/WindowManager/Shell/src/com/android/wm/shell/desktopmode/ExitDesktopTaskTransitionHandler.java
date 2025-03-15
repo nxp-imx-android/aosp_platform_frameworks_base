@@ -46,6 +46,7 @@ import androidx.annotation.Nullable;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.Cuj;
 import com.android.internal.jank.InteractionJankMonitor;
+import com.android.internal.util.LatencyTracker;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.transition.Transitions;
@@ -68,6 +69,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
     private final Context mContext;
     private final Transitions mTransitions;
     private final InteractionJankMonitor mInteractionJankMonitor;
+    private final LatencyTracker mLatencyTracker;
     @ShellMainThread
     private final Handler mHandler;
     private final List<IBinder> mPendingTransitionTokens = new ArrayList<>();
@@ -95,6 +97,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
         mTransactionSupplier = supplier;
         mContext = context;
         mInteractionJankMonitor = interactionJankMonitor;
+        mLatencyTracker = LatencyTracker.getInstance(mContext);
         mHandler = handler;
     }
 
@@ -109,6 +112,7 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
     public IBinder startTransition(@NonNull DesktopModeTransitionSource transitionSource,
             @NonNull WindowContainerTransaction wct, Point position,
             Function0<Unit> onAnimationEndCallback) {
+        mLatencyTracker.onActionStart(LatencyTracker.ACTION_DESKTOP_MODE_EXIT_MODE);
         mPosition = position;
         mOnAnimationFinishedCallback = onAnimationEndCallback;
         final IBinder token = mTransitions.startTransition(getExitTransitionType(transitionSource),
@@ -140,6 +144,11 @@ public class ExitDesktopTaskTransitionHandler implements Transitions.TransitionH
         }
 
         mPendingTransitionTokens.remove(transition);
+
+
+        if (transitionHandled) {
+            mLatencyTracker.onActionEnd(LatencyTracker.ACTION_DESKTOP_MODE_EXIT_MODE);
+        }
 
         return transitionHandled;
     }

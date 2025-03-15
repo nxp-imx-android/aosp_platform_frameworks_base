@@ -70,3 +70,10 @@ flag {
     description: "Feature flag to move logging of WakelockStateChanged atoms from BatteryStatsImpl to Notifier."
     bug: "352602149"
 }
+
+flag {
+    name: "disable_frozen_process_wakelocks"
+    namespace: "power"
+    description: "Feature flag to disable/enable wakelocks of a process when it is frozen/unfrozen"
+    bug: "291115867"
+}

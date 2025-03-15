@@ -569,7 +569,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
             NavigationModeController navigationModeController,
             StatusBarStateController statusBarStateController,
             StatusBarKeyguardViewManager statusBarKeyguardViewManager,
-            SysUiState sysUiFlagsContainer,
+            @DisplayId SysUiState sysUiFlagsContainer,
             UserTracker userTracker,
             CommandQueue commandQueue,
             Optional<Pip> pipOptional,
@@ -1694,7 +1694,7 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
                         (mNavbarFlags & NAVBAR_BACK_DISMISS_IME) != 0)
                 .setFlag(SYSUI_STATE_ALLOW_GESTURE_IGNORING_BAR_VISIBILITY,
                         allowSystemGestureIgnoringBarVisibility())
-                .commitUpdate(mDisplayId);
+                .commitUpdate();
     }
 
     private void updateAssistantEntrypoints(boolean assistantAvailable,

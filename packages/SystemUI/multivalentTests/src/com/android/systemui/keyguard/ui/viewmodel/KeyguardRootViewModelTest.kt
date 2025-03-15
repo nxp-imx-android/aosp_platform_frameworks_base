@@ -458,6 +458,56 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
 
     @Test
     @DisableSceneContainer
+    fun alpha_shadeExpansionIgnoredWhenTransitioningAwayFromLockscreen() =
+        testScope.runTest {
+            val alpha by collectLastValue(underTest.alpha(viewState))
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.AOD,
+                to = KeyguardState.LOCKSCREEN,
+                testScope,
+            )
+
+            shadeTestUtil.setQsExpansion(0f)
+            assertThat(alpha).isEqualTo(1f)
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        from = KeyguardState.LOCKSCREEN,
+                        to = KeyguardState.PRIMARY_BOUNCER,
+                        transitionState = TransitionState.STARTED,
+                        value = 0f,
+                    ),
+                    TransitionStep(
+                        from = KeyguardState.LOCKSCREEN,
+                        to = KeyguardState.PRIMARY_BOUNCER,
+                        transitionState = TransitionState.RUNNING,
+                        value = 0.8f,
+                    ),
+                ),
+                testScope,
+            )
+            val priorAlpha = alpha
+            shadeTestUtil.setQsExpansion(0.5f)
+            assertThat(alpha).isEqualTo(priorAlpha)
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        from = KeyguardState.LOCKSCREEN,
+                        to = KeyguardState.PRIMARY_BOUNCER,
+                        transitionState = TransitionState.FINISHED,
+                        value = 1f,
+                    )
+                ),
+                testScope,
+            )
+            assertThat(alpha).isEqualTo(0f)
+        }
+
+    @Test
+    @DisableSceneContainer
     fun alphaFromShadeExpansion_doesNotEmitWhenTransitionRunning() =
         testScope.runTest {
             keyguardTransitionRepository.sendTransitionSteps(

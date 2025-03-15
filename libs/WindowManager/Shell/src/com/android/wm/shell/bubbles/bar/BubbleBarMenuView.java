@@ -33,6 +33,7 @@ import androidx.core.widget.ImageViewCompat;
 
 import com.android.wm.shell.R;
 import com.android.wm.shell.bubbles.Bubble;
+import com.android.wm.shell.shared.TypefaceUtils;
 
 import java.util.ArrayList;
 
@@ -75,6 +76,7 @@ public class BubbleBarMenuView extends LinearLayout {
         mActionsSectionView = findViewById(R.id.bubble_bar_manage_menu_actions_section);
         mBubbleIconView = findViewById(R.id.bubble_bar_manage_menu_bubble_icon);
         mBubbleTitleView = findViewById(R.id.bubble_bar_manage_menu_bubble_title);
+        TypefaceUtils.setTypeface(mBubbleTitleView, TypefaceUtils.FontFamily.GSF_TITLE_MEDIUM);
         mBubbleDismissIconView = findViewById(R.id.bubble_bar_manage_menu_dismiss_icon);
         updateThemeColors();
 

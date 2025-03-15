@@ -673,7 +673,8 @@ public class KeyguardService extends Service {
             if (SceneContainerFlag.isEnabled()) {
                 mDeviceEntryInteractorLazy.get().lockNow("doKeyguardTimeout");
             } else if (KeyguardWmStateRefactor.isEnabled()) {
-                mKeyguardServiceShowLockscreenInteractor.onKeyguardServiceDoKeyguardTimeout();
+                mKeyguardServiceShowLockscreenInteractor
+                        .onKeyguardServiceDoKeyguardTimeout(options);
             }
 
             mKeyguardViewMediator.doKeyguardTimeout(options);

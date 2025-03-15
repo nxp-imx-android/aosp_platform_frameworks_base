@@ -16,10 +16,14 @@
 
 package android.security.advancedprotection;
 
+import static android.os.UserManager.DISALLOW_CELLULAR_2G;
+import static android.os.UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY;
 import static android.security.advancedprotection.AdvancedProtectionManager.ACTION_SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG;
 import static android.security.advancedprotection.AdvancedProtectionManager.EXTRA_SUPPORT_DIALOG_FEATURE;
 import static android.security.advancedprotection.AdvancedProtectionManager.EXTRA_SUPPORT_DIALOG_TYPE;
 import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_CELLULAR_2G;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES;
+import static android.security.advancedprotection.AdvancedProtectionManager.FEATURE_ID_ENABLE_MTE;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_DISABLED_SETTING;
 import static android.security.advancedprotection.AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_UNKNOWN;
@@ -37,6 +41,9 @@ import org.junit.runners.JUnit4;
 public class AdvancedProtectionManagerTest {
     private static final int FEATURE_ID_INVALID = -1;
     private static final int SUPPORT_DIALOG_TYPE_INVALID = -1;
+    //TODO(b/378931989): Switch to android.app.admin.DevicePolicyIdentifiers.MEMORY_TAGGING_POLICY
+    //when the appropriate flag is launched.
+    private static final String MEMORY_TAGGING_POLICY = "memoryTagging";
 
     @Test
     public void testCreateSupportIntent_validFeature_validTypeUnknown_createsIntent() {
@@ -93,5 +100,45 @@ public class AdvancedProtectionManagerTest {
         assertThrows(IllegalArgumentException.class, () ->
                 AdvancedProtectionManager.createSupportIntent(FEATURE_ID_INVALID,
                         SUPPORT_DIALOG_TYPE_INVALID));
+    }
+
+    @Test
+    public void testCreateSupportIntentForPolicy_2g_typeUnknown_createsIntentForDisabledSetting() {
+        Intent intent = AdvancedProtectionManager
+                .createSupportIntentForPolicyIdentifierOrRestriction(
+                        DISALLOW_CELLULAR_2G, SUPPORT_DIALOG_TYPE_UNKNOWN);
+
+        assertEquals(ACTION_SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG, intent.getAction());
+        assertEquals(FEATURE_ID_DISALLOW_CELLULAR_2G, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_FEATURE, FEATURE_ID_INVALID));
+        assertEquals(SUPPORT_DIALOG_TYPE_DISABLED_SETTING, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_TYPE, SUPPORT_DIALOG_TYPE_INVALID));
+    }
+
+    @Test
+    public void testCreateSupportIntentForPolicy_mte_typeUnknown_createsIntentForDisabledSetting() {
+        Intent intent = AdvancedProtectionManager
+                .createSupportIntentForPolicyIdentifierOrRestriction(
+                        MEMORY_TAGGING_POLICY, SUPPORT_DIALOG_TYPE_UNKNOWN);
+
+        assertEquals(ACTION_SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG, intent.getAction());
+        assertEquals(FEATURE_ID_ENABLE_MTE, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_FEATURE, FEATURE_ID_INVALID));
+        assertEquals(SUPPORT_DIALOG_TYPE_DISABLED_SETTING, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_TYPE, SUPPORT_DIALOG_TYPE_INVALID));
+    }
+
+    @Test
+    public void
+            testCreateSupportIntentForPolicy_unknownSources_typeUnknown_createsIntentForUnknown() {
+        Intent intent = AdvancedProtectionManager
+                .createSupportIntentForPolicyIdentifierOrRestriction(
+                        DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY, SUPPORT_DIALOG_TYPE_UNKNOWN);
+
+        assertEquals(ACTION_SHOW_ADVANCED_PROTECTION_SUPPORT_DIALOG, intent.getAction());
+        assertEquals(FEATURE_ID_DISALLOW_INSTALL_UNKNOWN_SOURCES, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_FEATURE, FEATURE_ID_INVALID));
+        assertEquals(SUPPORT_DIALOG_TYPE_UNKNOWN, intent.getIntExtra(
+                EXTRA_SUPPORT_DIALOG_TYPE, SUPPORT_DIALOG_TYPE_INVALID));
     }
 }

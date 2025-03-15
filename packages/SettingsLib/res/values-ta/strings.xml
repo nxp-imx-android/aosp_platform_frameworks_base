@@ -539,8 +539,7 @@
     <string name="disabled_by_app_ops_text" msgid="8373595926549098012">"வரையறுக்கப்பட்ட அமைப்பால் கட்டுப்படுத்தப்படுகிறது"</string>
     <string name="disabled_in_phone_call_text" msgid="6568931334337318320">"அழைப்புகளின்போது பயன்படுத்த முடியாது"</string>
     <string name="disabled" msgid="8017887509554714950">"முடக்கப்பட்டது"</string>
-    <!-- no translation found for enabled (3997122818554810678) -->
-    <skip />
+    <string name="enabled" msgid="3997122818554810678">"இயக்கப்பட்டது"</string>
     <string name="external_source_trusted" msgid="1146522036773132905">"அனுமதிக்கப்பட்டது"</string>
     <string name="external_source_untrusted" msgid="5037891688911672227">"அனுமதிக்கப்படவில்லை"</string>
     <string name="install_other_apps" msgid="3232595082023199454">"தெரியாத ஆப்ஸ்களை நிறுவுதல்"</string>
@@ -628,6 +627,8 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"உள்ளமைந்த ஸ்பீக்கர்"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"டிவி ஆடியோ"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"இணைப்பதில் சிக்கல். சாதனத்தை ஆஃப் செய்து மீண்டும் ஆன் செய்யவும்"</string>
+    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
+    <skip />
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"வயருடன்கூடிய ஆடியோ சாதனம்"</string>
     <string name="help_label" msgid="3528360748637781274">"உதவியும் கருத்தும்"</string>
     <string name="storage_category" msgid="2287342585424631813">"சேமிப்பகம்"</string>

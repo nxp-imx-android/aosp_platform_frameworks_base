@@ -25,6 +25,10 @@ import androidx.test.filters.SmallTest
 import androidx.test.runner.AndroidJUnit4
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
+import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -33,7 +37,11 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 class ActionIntentCreatorTest : SysuiTestCase() {
-    val creator = ActionIntentCreator()
+    private val scheduler = TestCoroutineScheduler()
+    private val mainDispatcher = UnconfinedTestDispatcher(scheduler)
+    private val testScope = TestScope(mainDispatcher)
+
+    val creator = ActionIntentCreator(testScope.backgroundScope)
 
     @Test
     fun test_getTextEditorIntent() {
@@ -65,7 +73,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun test_getImageEditIntent() {
+    fun test_getImageEditIntent() = runTest {
         context.getOrCreateTestableResources().addOverride(R.string.config_screenshotEditor, "")
         val fakeUri = Uri.parse("content://foo")
         var intent = creator.getImageEditIntent(fakeUri, context)

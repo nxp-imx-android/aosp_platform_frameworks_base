@@ -121,7 +121,7 @@ class NotificationEntryAdapter(
         return false
     }
 
-    override fun isBubbleCapable(): Boolean {
+    override fun isBubble(): Boolean {
         return entry.isBubble
     }
 
@@ -137,8 +137,20 @@ class NotificationEntryAdapter(
         return entry.ranking.isAmbient
     }
 
+    override fun getPeopleNotificationType(): Int {
+        return peopleNotificationIdentifier.getPeopleNotificationType(entry)
+    }
+
+    override fun isPromotedOngoing(): Boolean {
+        return entry.isPromotedOngoing
+    }
+
     override fun isFullScreenCapable(): Boolean {
         return entry.sbn.notification.fullScreenIntent != null
+    }
+
+    override fun onDragSuccess() {
+        notificationActivityStarter.onDragSuccess(entry)
     }
 
     override fun onNotificationBubbleIconClicked() {
@@ -147,5 +159,13 @@ class NotificationEntryAdapter(
 
     override fun onNotificationActionClicked() {
         notificationActionClickManager.onNotificationActionClicked(entry)
+    }
+
+    override fun getDismissState(): NotificationEntry.DismissState {
+        return entry.dismissState
+    }
+
+    override fun onEntryClicked(row: ExpandableNotificationRow) {
+        notificationActivityStarter.onNotificationClicked(entry, row)
     }
 }

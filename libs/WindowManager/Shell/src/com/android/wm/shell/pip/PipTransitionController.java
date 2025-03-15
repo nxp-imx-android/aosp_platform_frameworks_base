@@ -40,7 +40,6 @@ import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.TransitionInfo;
 import android.window.TransitionRequestInfo;
-import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import androidx.annotation.NonNull;
@@ -340,23 +339,6 @@ public abstract class PipTransitionController implements Transitions.TransitionH
             @WindowManager.TransitionType int transitType) {
         return false;
     }
-
-    /**
-     * @return a change representing a config-at-end activity for a given parent.
-     */
-    @Nullable
-    public TransitionInfo.Change getDeferConfigActivityChange(TransitionInfo info,
-            @android.annotation.NonNull WindowContainerToken parent) {
-        for (TransitionInfo.Change change : info.getChanges()) {
-            if (change.getTaskInfo() == null
-                    && change.hasFlags(TransitionInfo.FLAG_CONFIG_AT_END)
-                    && change.getParent() != null && change.getParent().equals(parent)) {
-                return change;
-            }
-        }
-        return null;
-    }
-
 
     /** Whether a particular package is same as current pip package. */
     public boolean isPackageActiveInPip(@Nullable String packageName) {

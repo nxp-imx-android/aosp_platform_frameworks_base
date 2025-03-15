@@ -77,9 +77,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.keyboard.shortcut.ui.model.IconSource
-import com.android.app.tracing.coroutines.launchTraced as launch
 
 /**
  * A selectable surface with no default focus/hover indications.
@@ -235,18 +235,19 @@ fun ShortcutHelperButton(
         color = color.getDimmedColorIfDisabled(enabled),
         border = border,
         modifier = modifier.semantics { role = Role.Button },
-        interactionsConfig = InteractionsConfig(
-            hoverOverlayColor = MaterialTheme.colorScheme.onSurface,
-            hoverOverlayAlpha = 0.11f,
-            pressedOverlayColor = MaterialTheme.colorScheme.onSurface,
-            pressedOverlayAlpha = 0.15f,
-            focusOutlineColor = MaterialTheme.colorScheme.secondary,
-            focusOutlineStrokeWidth = 3.dp,
-            focusOutlinePadding = 2.dp,
-            surfaceCornerRadius = 28.dp,
-            focusOutlineCornerRadius = 33.dp,
-        ),
-        enabled = enabled
+        interactionsConfig =
+            InteractionsConfig(
+                hoverOverlayColor = MaterialTheme.colorScheme.onSurface,
+                hoverOverlayAlpha = 0.11f,
+                pressedOverlayColor = MaterialTheme.colorScheme.onSurface,
+                pressedOverlayAlpha = 0.15f,
+                focusOutlineColor = MaterialTheme.colorScheme.secondary,
+                focusOutlineStrokeWidth = 3.dp,
+                focusOutlinePadding = 2.dp,
+                surfaceCornerRadius = 28.dp,
+                focusOutlineCornerRadius = 33.dp,
+            ),
+        enabled = enabled,
     ) {
         Row(
             modifier =
@@ -267,7 +268,7 @@ private fun ShortcutHelperButtonContent(
     iconSource: IconSource,
     contentColor: Color,
     text: String?,
-    contentDescription: String?
+    contentDescription: String?,
 ) {
     if (iconSource.imageVector != null) {
         Icon(
@@ -278,8 +279,7 @@ private fun ShortcutHelperButtonContent(
         )
     }
 
-    if (iconSource.imageVector != null && text != null)
-        Spacer(modifier = Modifier.width(8.dp))
+    if (iconSource.imageVector != null && text != null) Spacer(modifier = Modifier.width(8.dp))
 
     if (text != null) {
         Text(
@@ -363,7 +363,7 @@ private class ShortcutHelperInteractionsNode(
                     is HoverInteraction.Exit -> hoverInteractions.remove(interaction.enter)
                     is PressInteraction.Press -> pressInteractions.add(interaction)
                     is PressInteraction.Release -> pressInteractions.remove(interaction.press)
-                    is PressInteraction.Cancel -> pressInteractions.add(interaction.press)
+                    is PressInteraction.Cancel -> pressInteractions.remove(interaction.press)
                 }
                 isHovered.value = hoverInteractions.isNotEmpty()
                 isPressed.value = pressInteractions.isNotEmpty()

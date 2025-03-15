@@ -419,16 +419,17 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"I-click para magpares ng bagong device"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Hindi ma-update ang preset"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Preset"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Napili"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Paligid"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kaliwa"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"Kanan"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"Paligid"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"Kaliwang bahagi ng paligid"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"Kanang bahagi ng paligid"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"I-expand sa kaliwa at kanang magkahiwalay na mga kontrol"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"I-collapse sa pinag-isang kontrol"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"I-mute ang paligid"</string>
@@ -585,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Kapag nagshe-share ka ng app, makikita ng <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> ang kahit anong ipinapakita o pine-play sa app na iyon. Kaya mag-ingat sa mga bagay-bagay tulad ng mga password, detalye ng pagbabayad, mensahe, larawan, at audio at video."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Ibahagi ang screen"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"Na-disable ng <xliff:g id="APP_NAME">%1$s</xliff:g> ang opsyong ito"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Pumili ng app na ishe-share"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"I-cast ang iyong screen?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Mag-cast ng isang app"</string>
@@ -797,7 +800,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Naka-on - Batay sa mukha"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Tapos na"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Ilapat"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"I-off ang mga notification"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Naka-silent"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Default"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Awtomatiko"</string>
@@ -908,8 +912,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Gumamit ng split screen nang nasa kanan ang app"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Gumamit ng split screen nang nasa kaliwa ang app"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Gamitin ang full screen"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Gamitin ang desktop windowing"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Lumipat sa app sa kanan o ibaba habang ginagamit ang split screen"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Lumipat sa app sa kaliwa o itaas habang ginagamit ang split screen"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Habang nasa split screen: magpalit-palit ng app"</string>
@@ -983,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"I-drag dito upang alisin"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Kailangan mo ng kahit <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> (na) tile"</string>
     <string name="qs_edit" msgid="5583565172803472437">"I-edit"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Oras"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Ipakita ang oras, minuto at segundo"</item>
@@ -1206,7 +1211,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"itago ang kontrol sa media na ito para sa <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"Hindi maitatago ang kasalukuyang session ng media."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Itago"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Ituloy"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Mga Setting"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"Nagpe-play ang <xliff:g id="SONG_NAME">%1$s</xliff:g> ni/ng <xliff:g id="ARTIST_NAME">%2$s</xliff:g> mula sa <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> sa <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

@@ -56,6 +56,8 @@ value class VPointF(val data: ULong) {
 
     fun toPointF() = PointF(x, y)
 
+    fun toLong(): Long = data.toLong()
+
     fun lengthSq(): Float = x * x + y * y
 
     fun length(): Float = sqrt(lengthSq())
@@ -110,6 +112,8 @@ value class VPointF(val data: ULong) {
     companion object {
         val ZERO = VPointF(0, 0)
 
+        fun fromLong(data: Long) = VPointF(data.toULong())
+
         fun max(lhs: VPointF, rhs: VPointF) = VPointF(max(lhs.x, rhs.x), max(lhs.y, rhs.y))
 
         fun min(lhs: VPointF, rhs: VPointF) = VPointF(min(lhs.x, rhs.x), min(lhs.y, rhs.y))
@@ -147,6 +151,8 @@ value class VPoint(val data: ULong) {
     constructor(x: Int, y: Int) : this(pack(x, y))
 
     fun toPoint() = Point(x, y)
+
+    fun toLong(): Long = data.toLong()
 
     fun abs() = VPoint(abs(x), abs(y))
 
@@ -190,6 +196,8 @@ value class VPoint(val data: ULong) {
 
     companion object {
         val ZERO = VPoint(0, 0)
+
+        fun fromLong(data: Long) = VPoint(data.toULong())
 
         fun max(lhs: VPoint, rhs: VPoint) = VPoint(max(lhs.x, rhs.x), max(lhs.y, rhs.y))
 

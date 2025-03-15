@@ -69,4 +69,25 @@ public class MenuViewAppearanceTest extends SysuiTestCase {
 
         assertThat(end_y).isEqualTo(end_y);
     }
+
+    @Test
+    public void avoidVerticalDisplayCutout_doesNotExceedTopBounds() {
+        final int y = DRAGGABLE_BOUNDS.top - 100;
+
+        final float end_y = MenuViewAppearance.avoidVerticalDisplayCutout(
+                y, MENU_HEIGHT, DRAGGABLE_BOUNDS, new Rect(0, 5, 0, 6));
+
+        assertThat(end_y).isGreaterThan(DRAGGABLE_BOUNDS.top);
+    }
+
+
+    @Test
+    public void avoidVerticalDisplayCutout_doesNotExceedBottomBounds() {
+        final int y = DRAGGABLE_BOUNDS.bottom + 100;
+
+        final float end_y = MenuViewAppearance.avoidVerticalDisplayCutout(
+                y, MENU_HEIGHT, DRAGGABLE_BOUNDS, new Rect(0, 5, 0, 6));
+
+        assertThat(end_y).isLessThan(DRAGGABLE_BOUNDS.bottom);
+    }
 }

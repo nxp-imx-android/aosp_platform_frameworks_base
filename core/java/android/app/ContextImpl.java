@@ -2473,11 +2473,9 @@ class ContextImpl extends Context {
     @Override
     public int getPermissionRequestState(String permission) {
         Objects.requireNonNull(permission, "Permission name can't be null");
-        int deviceId = PermissionManager.resolveDeviceIdForPermissionCheck(this, getDeviceId(),
-                permission);
         PermissionManager permissionManager = getSystemService(PermissionManager.class);
         return permissionManager.getPermissionRequestState(getOpPackageName(), permission,
-                deviceId);
+                getDeviceId());
     }
 
     @Override

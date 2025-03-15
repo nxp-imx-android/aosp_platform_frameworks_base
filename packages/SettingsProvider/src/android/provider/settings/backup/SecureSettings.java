@@ -221,6 +221,8 @@ public class SecureSettings {
         Settings.Secure.EMERGENCY_GESTURE_ENABLED,
         Settings.Secure.EMERGENCY_GESTURE_SOUND_ENABLED,
         Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED,
+        Settings.Secure.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED,
+        Settings.Secure.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED,
         Settings.Secure.ASSIST_HANDLES_LEARNING_TIME_ELAPSED_MILLIS,
         Settings.Secure.ASSIST_HANDLES_LEARNING_EVENT_COUNT,
         Settings.Secure.ACCESSIBILITY_BUTTON_MODE,
@@ -298,5 +300,9 @@ public class SecureSettings {
         Settings.Secure.DUAL_SHADE,
         Settings.Secure.BROWSER_CONTENT_FILTERS_ENABLED,
         Settings.Secure.SEARCH_CONTENT_FILTERS_ENABLED,
+        Settings.Secure.SPELL_CHECKER_ENABLED,
+        Settings.Secure.SELECTED_SPELL_CHECKER,
+        // SELECTED_SPELL_CHECKER_SUBTYPE needs to be restored after SELECTED_SPELL_CHECKER
+        Settings.Secure.SELECTED_SPELL_CHECKER_SUBTYPE,
     };
 }

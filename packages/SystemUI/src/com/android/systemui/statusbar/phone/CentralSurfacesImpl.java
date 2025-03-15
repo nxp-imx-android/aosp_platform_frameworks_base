@@ -31,11 +31,11 @@ import static androidx.lifecycle.Lifecycle.State.RESUMED;
 
 import static com.android.systemui.Dependency.TIME_TICK_HANDLER_NAME;
 import static com.android.systemui.Flags.keyboardShortcutHelperRewrite;
-import static com.android.systemui.Flags.lightRevealMigration;
 import static com.android.systemui.Flags.relockWithPowerButtonImmediately;
 import static com.android.systemui.Flags.statusBarSignalPolicyRefactor;
 import static com.android.systemui.charging.WirelessChargingAnimation.UNKNOWN_BATTERY_LEVEL;
 import static com.android.systemui.flags.Flags.SHORTCUT_LIST_SEARCH_LAYOUT;
+import static com.android.systemui.shared.Flags.ambientAod;
 import static com.android.systemui.statusbar.StatusBarState.SHADE;
 
 import android.annotation.Nullable;
@@ -980,7 +980,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
             @Override
             public void onKeyguardGoingAwayChanged() {
-                if (lightRevealMigration()) {
+                if (ambientAod()) {
                     // This code path is not used if the KeyguardTransitionRepository is managing
                     // the lightreveal scrim.
                     return;
@@ -2446,7 +2446,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             return;
         }
 
-        if (lightRevealMigration()) {
+        if (ambientAod()) {
             return;
         }
 
@@ -3103,7 +3103,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
 
                 @Override
                 public void onDozeAmountChanged(float linear, float eased) {
-                    if (!lightRevealMigration()
+                    if (!ambientAod()
                             && !(mLightRevealScrim.getRevealEffect() instanceof CircleReveal)) {
                         // If wakeAndUnlocking, this is handled in AuthRippleInteractor
                         if (!mBiometricUnlockController.isWakeAndUnlock()) {

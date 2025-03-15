@@ -595,10 +595,24 @@ flag {
 }
 
 flag {
+    name: "nested_tasks_with_independent_bounds"
+    namespace: "lse_desktop_experience"
+    description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
+    bug: "402825303"
+}
+
+flag {
     name: "enable_multiple_desktops_backend"
     namespace: "lse_desktop_experience"
     description: "Enable multiple desktop sessions for desktop windowing (backend)."
     bug: "362720497"
+}
+
+flag {
+    name: "keyboard_shortcuts_to_switch_desks"
+    namespace: "lse_desktop_experience"
+    description: "Enable switching the active desk with keyboard shortcuts"
+    bug: "389957556"
 }
 
 flag {
@@ -926,6 +940,16 @@ flag {
 }
 
 flag {
+    name: "skip_decor_view_relayout_when_closing_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to skip DecorView relayout when the corresponding window is closing."
+    bug: "394502142"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_size_compat_mode_improvements_for_connected_displays"
     namespace: "lse_desktop_experience"
     description: "Enable some improvements in size compat mode for connected displays."
@@ -944,4 +968,21 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enable restart menu UI, which is shown when an app moves between displays."
     bug: "397804287"
+}
+
+flag {
+    name: "enable_dynamic_radius_computation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to compute the corner/shadow radius of desktop windows dynamically with the current window context."
+    bug: "399630464"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "show_home_behind_desktop"
+    namespace: "lse_desktop_experience"
+    description: "Enables the home to be shown behind the desktop."
+    bug: "375644149"
 }

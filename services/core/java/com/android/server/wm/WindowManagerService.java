@@ -198,6 +198,8 @@ import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.configstore.V1_0.OptionalBool;
 import android.hardware.configstore.V1_1.ISurfaceFlingerConfigs;
+import android.hardware.devicestate.DeviceState;
+import android.hardware.devicestate.DeviceStateManager;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerInternal;
 import android.hardware.input.InputSettings;
@@ -1032,6 +1034,21 @@ public class WindowManagerService extends IWindowManager.Stub
     PowerManager mPowerManager;
     PowerManagerInternal mPowerManagerInternal;
 
+    private DeviceStateManager mDeviceStateManager;
+    private DeviceStateCallback mDeviceStateCallback;
+    private class DeviceStateCallback implements DeviceStateManager.DeviceStateCallback {
+        private DeviceState mCurrentDeviceState;
+        @Override
+        public void onDeviceStateChanged(@NonNull DeviceState state) {
+            mCurrentDeviceState = state;
+        }
+
+        boolean isInRearDisplayOuterDefaultState() {
+            return mCurrentDeviceState != null && mCurrentDeviceState
+                    .hasProperties(DeviceState.PROPERTY_FEATURE_REAR_DISPLAY_OUTER_DEFAULT);
+        }
+    }
+
     private float mWindowAnimationScaleSetting = 1.0f;
     private float mTransitionAnimationScaleSetting = 1.0f;
     private float mAnimatorDurationScaleSetting = 1.0f;
@@ -1316,6 +1333,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
         mPowerManager = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
+
+        mDeviceStateManager = context.getSystemService(DeviceStateManager.class);
+        mDeviceStateCallback = new DeviceStateCallback();
+        mDeviceStateManager.registerCallback(new HandlerExecutor(mH), mDeviceStateCallback);
 
         if (mPowerManagerInternal != null) {
             mPowerManagerInternal.registerLowPowerModeObserver(
@@ -2132,7 +2153,6 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         final DisplayContent dc = win.getDisplayContent();
-        dc.getDisplayRotation().markForSeamlessRotation(win, false /* seamlesslyRotated */);
 
         win.resetAppOpsState();
 
@@ -4734,7 +4754,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     @EnforcePermission(android.Manifest.permission.MANAGE_APP_TOKENS)
     @Override
-    public void updateDisplayWindowAnimatingTypes(int displayId, @InsetsType int animatingTypes) {
+    public void updateDisplayWindowAnimatingTypes(int displayId, @InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         updateDisplayWindowAnimatingTypes_enforcePermission();
         if (android.view.inputmethod.Flags.reportAnimatingInsetsTypes()) {
             final long origId = Binder.clearCallingIdentity();
@@ -4742,9 +4763,13 @@ public class WindowManagerService extends IWindowManager.Stub
                 synchronized (mGlobalLock) {
                     final DisplayContent dc = mRoot.getDisplayContent(displayId);
                     if (dc == null || dc.mRemoteInsetsControlTarget == null) {
+                        ImeTracker.forLogging().onFailed(statsToken,
+                                ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
                         return;
                     }
-                    dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes);
+                    ImeTracker.forLogging().onProgress(statsToken,
+                            ImeTracker.PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES);
+                    dc.mRemoteInsetsControlTarget.setAnimatingTypes(animatingTypes, statsToken);
                 }
             } finally {
                 Binder.restoreCallingIdentity(origId);
@@ -7594,6 +7619,26 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
+    public boolean isEligibleForDesktopMode(int displayId) {
+        if (!checkCallingPermission(INTERNAL_SYSTEM_WINDOW, "isEligibleForDesktopMode()")) {
+            throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
+        }
+
+        synchronized (mGlobalLock) {
+            final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
+            if (displayContent == null) {
+                ProtoLog.e(WM_ERROR, "Attempted to check isEligibleForDesktopMode() "
+                        + "for a display that does not exist: %d", displayId);
+                return false;
+            }
+            if (!displayContent.isSystemDecorationsSupported()) {
+                return false;
+            }
+            return displayContent.isDefaultDisplay || displayContent.allowContentModeSwitch();
+        }
+    }
+
+    @Override
     public void setShouldShowSystemDecors(int displayId, boolean shouldShow) {
         if (!checkCallingPermission(INTERNAL_SYSTEM_WINDOW, "setShouldShowSystemDecors()")) {
             throw new SecurityException("Requires INTERNAL_SYSTEM_WINDOW permission");
@@ -8950,6 +8995,17 @@ public class WindowManagerService extends IWindowManager.Stub
             }
         }
 
+        if (mDeviceStateCallback.isInRearDisplayOuterDefaultState()) {
+            final Display[] rearDisplays = mDisplayManager
+                    .getDisplays(DisplayManager.DISPLAY_CATEGORY_REAR);
+            if (rearDisplays.length > 0 && rearDisplays[0].getDisplayId() == t.getDisplayId()) {
+                // Do not change display focus to the inner display if we're in this mode. Note that
+                // in this mode, the inner display is configured as a rear display.
+                Slog.w(TAG, "Ignoring focus change because device is in RDM.");
+                return;
+            }
+        }
+
         clearPointerDownOutsideFocusRunnable();
 
         final InputTarget focusedInputTarget = mFocusedInputTarget;
@@ -9322,10 +9378,12 @@ public class WindowManagerService extends IWindowManager.Stub
 
     /**
      * Updates the flags on an existing surface's input channel. This assumes the surface provided
-     * is the one associated with the provided input-channel. If this isn't the case, behavior
-     * is undefined.
+     * is the one associated with the provided input-channel. If this isn't the case, behavior is
+     * undefined.
      */
-    void updateInputChannel(IBinder channelToken, int displayId, SurfaceControl surface,
+    void updateInputChannel(IBinder channelToken,
+            @Nullable InputTransferToken hostInputTransferToken, int displayId,
+            SurfaceControl surface,
             int flags, int privateFlags, int inputFeatures, Region region) {
         final InputApplicationHandle applicationHandle;
         final String name;
@@ -9339,6 +9397,11 @@ public class WindowManagerService extends IWindowManager.Stub
             name = win.toString();
             applicationHandle = win.getApplicationHandle();
             win.setIsFocusable((flags & FLAG_NOT_FOCUSABLE) == 0);
+            if (Flags.updateHostInputTransferToken()) {
+                WindowState hostWindowState = hostInputTransferToken != null
+                        ? mInputToWindowMap.get(hostInputTransferToken.getToken()) : null;
+                win.updateHost(hostWindowState);
+            }
         }
 
         updateInputChannel(channelToken, win.mOwnerUid, win.mOwnerPid, displayId, surface, name,

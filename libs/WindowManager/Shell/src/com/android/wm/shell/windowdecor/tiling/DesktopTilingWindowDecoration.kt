@@ -137,6 +137,7 @@ class DesktopTilingWindowDecoration(
         // Observe drag resizing to break tiling if a task is drag resized.
         desktopModeWindowDecoration.addDragResizeListener(this)
         val callback = { initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp) }
+        updateDesktopRepository(taskInfo.taskId, snapPosition = position)
         if (isTiled) {
             val wct = WindowContainerTransaction().setBounds(taskInfo.token, destinationBounds)
             toggleResizeDesktopTaskTransitionHandler.startTransition(wct, currentBounds, callback)
@@ -152,9 +153,19 @@ class DesktopTilingWindowDecoration(
                     endBounds = destinationBounds,
                     callback,
                 )
+            } else {
+                callback.invoke()
             }
         }
         return isTiled
+    }
+
+    private fun updateDesktopRepository(taskId: Int, snapPosition: SnapPosition) {
+        when (snapPosition) {
+            SnapPosition.LEFT -> desktopUserRepositories.current.addLeftTiledTask(displayId, taskId)
+            SnapPosition.RIGHT ->
+                desktopUserRepositories.current.addRightTiledTask(displayId, taskId)
+        }
     }
 
     // If a task is already tiled on the same position, release this task, otherwise if the same
@@ -578,6 +589,7 @@ class DesktopTilingWindowDecoration(
     ) {
         val taskRepository = desktopUserRepositories.current
         if (taskId == leftTaskResizingHelper?.taskInfo?.taskId) {
+            desktopUserRepositories.current.removeLeftTiledTask(displayId)
             removeTask(leftTaskResizingHelper, taskVanished, shouldDelayUpdate)
             leftTaskResizingHelper = null
             val taskId = rightTaskResizingHelper?.taskInfo?.taskId
@@ -591,6 +603,7 @@ class DesktopTilingWindowDecoration(
         }
 
         if (taskId == rightTaskResizingHelper?.taskInfo?.taskId) {
+            desktopUserRepositories.current.removeRightTiledTask(displayId)
             removeTask(rightTaskResizingHelper, taskVanished, shouldDelayUpdate)
             rightTaskResizingHelper = null
             val taskId = leftTaskResizingHelper?.taskInfo?.taskId

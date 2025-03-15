@@ -44,6 +44,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 @RunWith(AndroidJUnit4.class)
 @MediumTest
@@ -923,9 +924,25 @@ public class ValueAnimatorTests {
 
     @Test
     public void testCancelOnPendingEndListener() throws Throwable {
+        testPendingEndListener(ValueAnimator::cancel);
+    }
+
+    @Test
+    public void testEndOnPendingEndListener() throws Throwable {
+        testPendingEndListener(animator -> {
+            // This verifies that isRunning() and isStarted() are true at last frame.
+            // Then the end() should invoke the end callback immediately.
+            if (animator.isRunning() && animator.isStarted()) {
+                animator.end();
+            }
+        });
+    }
+
+    private void testPendingEndListener(Consumer<ValueAnimator> finishOnLastFrame)
+            throws Throwable {
+        final boolean[] endCalledImmediately = new boolean[1];
         final CountDownLatch endLatch = new CountDownLatch(1);
         final Handler handler = new Handler(Looper.getMainLooper());
-        final boolean[] endCalledRightAfterCancel = new boolean[1];
         final MyListener listener = new MyListener();
         final ValueAnimator va = new ValueAnimator();
         va.setFloatValues(0f, 1f);
@@ -933,8 +950,8 @@ public class ValueAnimatorTests {
         va.addUpdateListener(animation -> {
             if (animation.getAnimatedFraction() == 1f) {
                 handler.post(() -> {
-                    va.cancel();
-                    endCalledRightAfterCancel[0] = listener.endCalled;
+                    finishOnLastFrame.accept(va);
+                    endCalledImmediately[0] = listener.endCalled;
                     endLatch.countDown();
                 });
             }
@@ -945,7 +962,7 @@ public class ValueAnimatorTests {
         try {
             handler.post(va::start);
             assertThat(endLatch.await(1, TimeUnit.SECONDS)).isTrue();
-            assertThat(endCalledRightAfterCancel[0]).isTrue();
+            assertThat(endCalledImmediately[0]).isTrue();
         } finally {
             ValueAnimator.setPostNotifyEndListenerEnabled(false);
         }

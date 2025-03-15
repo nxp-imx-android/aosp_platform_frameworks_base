@@ -53,7 +53,6 @@
             android:id="@+id/group_message_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/notification_text_margin_top"
             android:spacing="2dp" />
     </com.android.internal.widget.RemeasuringLinearLayout>
     <FrameLayout

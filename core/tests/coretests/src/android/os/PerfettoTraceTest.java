@@ -23,7 +23,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo.LatencyComponentType.COMPONENT_INPUT_EVENT_LATENCY_BEGIN_RWH;
 import static perfetto.protos.ChromeLatencyInfoOuterClass.ChromeLatencyInfo.LatencyComponentType.COMPONENT_INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL;
 
-import android.platform.test.annotations.IgnoreUnderRavenwood;
+import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -68,7 +68,7 @@ import java.util.concurrent.TimeUnit;
  * while tracing on the emulator and then run traceview to view the trace.
  */
 @RunWith(AndroidJUnit4.class)
-@IgnoreUnderRavenwood(blockedBy = PerfettoTrace.class)
+@DisabledOnRavenwood(blockedBy = PerfettoTrace.class)
 public class PerfettoTraceTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule =

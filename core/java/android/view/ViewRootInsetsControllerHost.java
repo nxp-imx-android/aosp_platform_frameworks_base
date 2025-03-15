@@ -171,9 +171,15 @@ public class ViewRootInsetsControllerHost implements InsetsController.Host {
     }
 
     @Override
-    public void updateAnimatingTypes(@WindowInsets.Type.InsetsType int animatingTypes) {
+    public void updateAnimatingTypes(@WindowInsets.Type.InsetsType int animatingTypes,
+            @Nullable ImeTracker.Token statsToken) {
         if (mViewRoot != null) {
-            mViewRoot.updateAnimatingTypes(animatingTypes);
+            ImeTracker.forLogging().onProgress(statsToken,
+                    ImeTracker.PHASE_CLIENT_UPDATE_ANIMATING_TYPES);
+            mViewRoot.updateAnimatingTypes(animatingTypes, statsToken);
+        } else {
+            ImeTracker.forLogging().onFailed(statsToken,
+                    ImeTracker.PHASE_CLIENT_UPDATE_ANIMATING_TYPES);
         }
     }
 

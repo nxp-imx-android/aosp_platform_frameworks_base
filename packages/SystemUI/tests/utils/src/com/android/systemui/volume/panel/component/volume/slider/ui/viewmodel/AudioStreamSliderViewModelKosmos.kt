@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.internal.logging.uiEventLogger
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.backgroundCoroutineContext
 import com.android.systemui.statusbar.policy.domain.interactor.zenModeInteractor
 import com.android.systemui.volume.domain.interactor.audioSharingInteractor
 import com.android.systemui.volume.domain.interactor.audioVolumeInteractor
@@ -37,6 +38,7 @@ val Kosmos.audioStreamSliderViewModelFactory by
                 return AudioStreamSliderViewModel(
                     audioStream,
                     coroutineScope,
+                    backgroundCoroutineContext,
                     applicationContext,
                     audioVolumeInteractor,
                     zenModeInteractor,

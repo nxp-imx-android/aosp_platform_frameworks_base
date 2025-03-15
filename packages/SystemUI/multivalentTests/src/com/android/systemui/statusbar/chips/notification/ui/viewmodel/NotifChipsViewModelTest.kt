@@ -573,6 +573,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).startTimeMs)
                 .isEqualTo(whenElapsed)
+            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).isEventInFuture)
+                .isFalse()
         }
 
     @Test
@@ -608,6 +610,8 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).startTimeMs)
                 .isEqualTo(whenElapsed)
+            assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).isEventInFuture)
+                .isTrue()
         }
 
     @Test
@@ -838,6 +842,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             expectedContentDescriptionSubstrings: List<String> = emptyList(),
         ) {
             val active = latest as OngoingActivityChipModel.Active
+            assertThat(active.isImportantForPrivacy).isFalse()
             if (StatusBarConnectedDisplays.isEnabled) {
                 assertThat(active.icon)
                     .isInstanceOf(

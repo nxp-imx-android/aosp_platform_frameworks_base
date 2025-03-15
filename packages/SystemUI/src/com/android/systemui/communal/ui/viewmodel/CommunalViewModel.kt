@@ -229,7 +229,7 @@ constructor(
             MutableStateFlow(false)
         }
 
-    val blurRadiusPx: Float = blurConfig.maxBlurRadiusPx / 2.0f
+    val blurRadiusPx: Float = blurConfig.maxBlurRadiusPx
 
     init {
         // Initialize our media host for the UMO. This only needs to happen once and must be done
@@ -247,7 +247,7 @@ constructor(
                 showsOnlyActiveMedia = false
             }
             falsingProtectionNeeded = false
-            disablePagination = true
+            disableScrolling = true
             init(MediaHierarchyManager.LOCATION_COMMUNAL_HUB)
         }
     }

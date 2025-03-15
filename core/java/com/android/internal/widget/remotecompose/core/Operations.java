@@ -30,6 +30,7 @@ import com.android.internal.widget.remotecompose.core.operations.DataListFloat;
 import com.android.internal.widget.remotecompose.core.operations.DataListIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapIds;
 import com.android.internal.widget.remotecompose.core.operations.DataMapLookup;
+import com.android.internal.widget.remotecompose.core.operations.DebugMessage;
 import com.android.internal.widget.remotecompose.core.operations.DrawArc;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmap;
 import com.android.internal.widget.remotecompose.core.operations.DrawBitmapFontText;
@@ -111,6 +112,7 @@ import com.android.internal.widget.remotecompose.core.operations.layout.managers
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BackgroundModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.BorderModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ClipRectModifierOperation;
+import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.CollapsiblePriorityModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.ComponentVisibilityOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.DrawContentOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.modifiers.GraphicsLayerModifierOperation;
@@ -230,6 +232,7 @@ public class Operations {
     public static final int PATH_COMBINE = 175;
     public static final int HAPTIC_FEEDBACK = 177;
     public static final int CONDITIONAL_OPERATIONS = 178;
+    public static final int DEBUG_MESSAGE = 179;
 
     ///////////////////////////////////////// ======================
 
@@ -257,6 +260,7 @@ public class Operations {
     public static final int MODIFIER_HEIGHT = 67;
     public static final int MODIFIER_WIDTH_IN = 231;
     public static final int MODIFIER_HEIGHT_IN = 232;
+    public static final int MODIFIER_COLLAPSIBLE_PRIORITY = 235;
     public static final int MODIFIER_BACKGROUND = 55;
     public static final int MODIFIER_BORDER = 107;
     public static final int MODIFIER_PADDING = 58;
@@ -368,6 +372,7 @@ public class Operations {
         map.put(MODIFIER_HEIGHT, HeightModifierOperation::read);
         map.put(MODIFIER_WIDTH_IN, WidthInModifierOperation::read);
         map.put(MODIFIER_HEIGHT_IN, HeightInModifierOperation::read);
+        map.put(MODIFIER_COLLAPSIBLE_PRIORITY, CollapsiblePriorityModifierOperation::read);
         map.put(MODIFIER_PADDING, PaddingModifierOperation::read);
         map.put(MODIFIER_BACKGROUND, BackgroundModifierOperation::read);
         map.put(MODIFIER_BORDER, BorderModifierOperation::read);
@@ -440,6 +445,7 @@ public class Operations {
         map.put(PATH_COMBINE, PathCombine::read);
         map.put(HAPTIC_FEEDBACK, HapticFeedback::read);
         map.put(CONDITIONAL_OPERATIONS, ConditionalOperations::read);
+        map.put(DEBUG_MESSAGE, DebugMessage::read);
 
         //        map.put(ACCESSIBILITY_CUSTOM_ACTION, CoreSemantics::read);
     }

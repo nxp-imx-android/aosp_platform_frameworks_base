@@ -341,18 +341,9 @@ public class HdmiCecLocalDeviceTvTest {
         HdmiCecMessage reportArcInitiated = HdmiCecMessageBuilder.buildReportArcInitiated(
                 ADDR_TV,
                 ADDR_AUDIO_SYSTEM);
-        // <Report ARC Initiated> should only be sent after SAD querying is done
-        assertThat(mNativeWrapper.getResultMessages()).doesNotContain(reportArcInitiated);
-
-        // Finish querying SADs
-        for (int i = 0; i <= RETRY_COUNTER_MAX; ++i) {
-            assertThat(mNativeWrapper.getResultMessages()).contains(SAD_QUERY);
-            mNativeWrapper.clearResultMessages();
-            mTestLooper.moveTimeForward(HdmiConfig.TIMEOUT_MS);
-            mTestLooper.dispatchAll();
-        }
-
         assertThat(mNativeWrapper.getResultMessages()).contains(reportArcInitiated);
+        // But we need to check SADs started to be queried at this time
+        assertThat(mNativeWrapper.getResultMessages()).contains(SAD_QUERY);
         mNativeWrapper.clearResultMessages();
     }
 
@@ -752,17 +743,6 @@ public class HdmiCecLocalDeviceTvTest {
         HdmiCecMessage reportArcInitiated = HdmiCecMessageBuilder.buildReportArcInitiated(
                 ADDR_TV,
                 ADDR_AUDIO_SYSTEM);
-        // <Report ARC Initiated> should only be sent after SAD querying is done
-        assertThat(mNativeWrapper.getResultMessages()).doesNotContain(reportArcInitiated);
-
-        // Finish querying SADs
-        for (int i = 0; i <= RETRY_COUNTER_MAX; ++i) {
-            assertThat(mNativeWrapper.getResultMessages()).contains(SAD_QUERY);
-            mNativeWrapper.clearResultMessages();
-            mTestLooper.moveTimeForward(HdmiConfig.TIMEOUT_MS);
-            mTestLooper.dispatchAll();
-        }
-
         assertThat(mNativeWrapper.getResultMessages()).contains(reportArcInitiated);
     }
 
@@ -1067,16 +1047,6 @@ public class HdmiCecLocalDeviceTvTest {
         HdmiCecMessage reportArcInitiated = HdmiCecMessageBuilder.buildReportArcInitiated(
             ADDR_TV,
             ADDR_AUDIO_SYSTEM);
-        // <Report ARC Initiated> should only be sent after SAD querying is done
-        assertThat(mNativeWrapper.getResultMessages()).doesNotContain(reportArcInitiated);
-        // Finish querying SADs
-        for (int i = 0; i <= RETRY_COUNTER_MAX; ++i) {
-            assertThat(mNativeWrapper.getResultMessages()).contains(SAD_QUERY);
-            mNativeWrapper.clearResultMessages();
-            mTestLooper.moveTimeForward(HdmiConfig.TIMEOUT_MS);
-            mTestLooper.dispatchAll();
-        }
-
         assertThat(mNativeWrapper.getResultMessages()).contains(reportArcInitiated);
         mNativeWrapper.clearResultMessages();
 
@@ -1268,16 +1238,6 @@ public class HdmiCecLocalDeviceTvTest {
 
         mNativeWrapper.onCecMessage(initiateArc);
         mTestLooper.dispatchAll();
-
-        // Finish querying SADs
-        for (int i = 0; i <= RETRY_COUNTER_MAX; ++i) {
-            assertThat(mNativeWrapper.getResultMessages()).contains(SAD_QUERY);
-            mNativeWrapper.clearResultMessages();
-            mTestLooper.moveTimeForward(HdmiConfig.TIMEOUT_MS);
-            mTestLooper.dispatchAll();
-        }
-
-        // ARC should be established after RequestSadAction is finished
         assertThat(mNativeWrapper.getResultMessages()).contains(reportArcInitiated);
 
         mHdmiControlService.onStandby(HdmiControlService.STANDBY_SCREEN_OFF);
@@ -1421,17 +1381,6 @@ public class HdmiCecLocalDeviceTvTest {
         HdmiCecMessage reportArcInitiated = HdmiCecMessageBuilder.buildReportArcInitiated(
                 ADDR_TV,
                 ADDR_AUDIO_SYSTEM);
-        // <Report ARC Initiated> should only be sent after SAD querying is done
-        assertThat(mNativeWrapper.getResultMessages()).doesNotContain(reportArcInitiated);
-
-        // Finish querying SADs
-        for (int i = 0; i <= RETRY_COUNTER_MAX; ++i) {
-            assertThat(mNativeWrapper.getResultMessages()).contains(SAD_QUERY);
-            mNativeWrapper.clearResultMessages();
-            mTestLooper.moveTimeForward(HdmiConfig.TIMEOUT_MS);
-            mTestLooper.dispatchAll();
-        }
-
         assertThat(mNativeWrapper.getResultMessages()).contains(reportArcInitiated);
     }
 

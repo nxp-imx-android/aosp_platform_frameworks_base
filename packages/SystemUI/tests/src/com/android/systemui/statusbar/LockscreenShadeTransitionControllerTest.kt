@@ -35,6 +35,7 @@ import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.mock
+import com.android.systemui.util.mockito.nullable
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -60,10 +61,6 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when` as whenever
 import org.mockito.junit.MockitoJUnit
-
-private fun <T> anyObject(): T {
-    return Mockito.anyObject<T>()
-}
 
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
@@ -265,7 +262,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
             verify(statusbarStateController, never()).setState(anyInt())
             verify(statusbarStateController).setLeaveOpenOnKeyguardHide(true)
             verify(centralSurfaces)
-                .showBouncerWithDimissAndCancelIfKeyguard(anyObject(), anyObject())
+                .showBouncerWithDimissAndCancelIfKeyguard(nullable(), nullable())
         }
 
     @Test

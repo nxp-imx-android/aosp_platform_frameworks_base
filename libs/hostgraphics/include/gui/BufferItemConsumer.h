@@ -48,6 +48,10 @@ public:
         return mConsumer->acquireBuffer(item, presentWhen, 0);
     }
 
+    status_t attachBuffer(BufferItem*, const sp<GraphicBuffer>&) {
+        return INVALID_OPERATION;
+    }
+
     status_t releaseBuffer(const BufferItem& item,
                            const sp<Fence>& releaseFence = Fence::NO_FENCE) {
         return OK;

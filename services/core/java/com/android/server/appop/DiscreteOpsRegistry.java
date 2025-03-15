@@ -82,9 +82,8 @@ import java.util.Set;
  * INITIALIZATION: We can initialize persistence only after the system is ready
  * as we need to check the optional configuration override from the settings
  * database which is not initialized at the time the app ops service is created. This class
- * relies on {@link HistoricalRegistry} for controlling that no calls are allowed until then. All
- * outside calls are going through {@link HistoricalRegistry}.
- *
+ * relies on {@link LegacyHistoricalRegistry} for controlling that no calls are allowed until then.
+ * All outside calls are going through {@link LegacyHistoricalRegistry}.
  */
 abstract class DiscreteOpsRegistry {
     private static final String TAG = DiscreteOpsRegistry.class.getSimpleName();

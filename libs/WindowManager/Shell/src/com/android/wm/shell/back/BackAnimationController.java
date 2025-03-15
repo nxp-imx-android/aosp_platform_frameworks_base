@@ -332,7 +332,11 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
 
         @Override
         public void onThresholdCrossed() {
-            BackAnimationController.this.onThresholdCrossed();
+            if (predictiveBackDelayWmTransition()) {
+                mShellExecutor.execute(BackAnimationController.this::onThresholdCrossed);
+            } else {
+                BackAnimationController.this.onThresholdCrossed();
+            }
         }
 
         @Override

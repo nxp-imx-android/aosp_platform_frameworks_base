@@ -39,6 +39,7 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
     private final RemoteComposeDocumentAccessibility mRemoteDocA11y;
 
     private final SemanticNodeApplier<AccessibilityNodeInfo> mApplier;
+    private final View mHost;
 
     public PlatformRemoteComposeTouchHelper(
             View host,
@@ -47,6 +48,7 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
         super(host);
         this.mRemoteDocA11y = remoteDocA11y;
         this.mApplier = applier;
+        this.mHost = host;
     }
 
     public static PlatformRemoteComposeTouchHelper forRemoteComposePlayer(
@@ -150,6 +152,7 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
             boolean performed = mRemoteDocA11y.performAction(component, action, arguments);
 
             if (performed) {
+                mHost.invalidate();
                 invalidateRoot();
             }
 

@@ -5583,11 +5583,26 @@ final class ActivityRecord extends WindowToken {
         // called for updating snapshot states.
         if (!fromTransition) {
             mWmService.mSnapshotController.notifyAppVisibilityChanged(this, visible);
+            if (visible) {
+                // In case the activity becomes visible without transition, the client still expects
+                // to receive Activity#onEnterAnimationComplete.
+                mEnteringAnimation = true;
+                mWmService.mActivityManagerAppTransitionNotifier.onAppTransitionFinishedLocked(
+                        token);
+            }
         }
     }
 
     void commitVisibility(boolean visible, boolean performLayout) {
         commitVisibility(visible, performLayout, false /* fromTransition */);
+    }
+
+    /**
+     * Sets whether safe region bounds are needed for the Activity. This is called from
+     * {@link ActivityStarter} after the source record is created.
+     */
+    void setNeedsSafeRegionBounds(boolean needsSafeRegionBounds) {
+        mAppCompatController.getSafeRegionPolicy().setNeedsSafeRegionBounds(needsSafeRegionBounds);
     }
 
     /** Updates draw state and shows drawn windows. */
@@ -7753,9 +7768,11 @@ final class ActivityRecord extends WindowToken {
         final AppCompatAspectRatioPolicy aspectRatioPolicy =
                 mAppCompatController.getAspectRatioPolicy();
         aspectRatioPolicy.reset();
+        final AppCompatSafeRegionPolicy safeRegionPolicy =
+                mAppCompatController.getSafeRegionPolicy();
         mAppCompatController.getLetterboxPolicy().resetFixedOrientationLetterboxEligibility();
         mResolveConfigHint.resolveTmpOverrides(mDisplayContent, newParentConfiguration,
-                isFixedRotationTransforming());
+                isFixedRotationTransforming(), safeRegionPolicy.getLatestSafeRegionBounds());
 
         // Can't use resolvedConfig.windowConfiguration.getWindowingMode() because it can be
         // different from windowing mode of the task (PiP) during transition from fullscreen to PiP
@@ -7800,6 +7817,13 @@ final class ActivityRecord extends WindowToken {
                 computeConfigByResolveHint(resolvedConfig, newParentConfiguration);
             }
         }
+
+        // If activity can be letterboxed due to a safe region only, use the safe region bounds
+        // as the resolved bounds. We ignore cases where the letterboxing can happen due to other
+        // app compat conditions and a safe region since the safe region app compat is sandboxed
+        // earlier in TaskFragment.ConfigOverrideHint.resolveTmpOverrides.
+        mAppCompatController.getSafeRegionPolicy().resolveSafeRegionBoundsConfigurationIfNeeded(
+                resolvedConfig, newParentConfiguration);
 
         if (isFixedOrientationLetterboxAllowed
                 || scmPolicy.hasAppCompatDisplayInsetsWithoutInheritance()
@@ -7980,7 +8004,7 @@ final class ActivityRecord extends WindowToken {
                 mAppCompatController.getSizeCompatModePolicy();
         final Rect screenResolvedBounds = scmPolicy.replaceResolvedBoundsIfNeeded(resolvedBounds);
         final Rect parentAppBounds = mResolveConfigHint.mParentAppBoundsOverride;
-        final Rect parentBounds = newParentConfiguration.windowConfiguration.getBounds();
+        final Rect parentBounds = mResolveConfigHint.mParentBoundsOverride;
         final float screenResolvedBoundsWidth = screenResolvedBounds.width();
         final float parentAppBoundsWidth = parentAppBounds.width();
         final boolean isImmersiveMode = isImmersiveMode(parentBounds);
@@ -8167,7 +8191,7 @@ final class ActivityRecord extends WindowToken {
      * in this method.
      */
     private void resolveFixedOrientationConfiguration(@NonNull Configuration newParentConfig) {
-        final Rect parentBounds = newParentConfig.windowConfiguration.getBounds();
+        final Rect parentBounds = mResolveConfigHint.mParentBoundsOverride;
         final Rect stableBounds = new Rect();
         final Rect outNonDecorBounds = mTmpBounds;
         // If orientation is respected when insets are applied, then stableBounds will be empty.

@@ -37,7 +37,6 @@ import android.net.NetworkStats;
 import android.os.BatteryConsumer;
 import android.os.Handler;
 import android.os.OutcomeReceiver;
-import android.platform.test.ravenwood.RavenwoodRule;
 import android.telephony.ModemActivityInfo;
 import android.telephony.TelephonyManager;
 
@@ -59,15 +58,10 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 public class PhoneCallPowerStatsProcessorTest {
-    @Rule(order = 0)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProvideMainThread(true)
-            .build();
-
     private static final double PRECISION = 0.00001;
     private static final int VOLTAGE_MV = 3500;
 
-    @Rule(order = 1)
+    @Rule(order = 0)
     public final BatteryUsageStatsRule mStatsRule = new BatteryUsageStatsRule();
     @Mock
     private Context mContext;

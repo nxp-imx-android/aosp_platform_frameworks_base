@@ -18,12 +18,14 @@ package com.android.systemui.qs.tiles.impl.modes.domain.interactor
 
 import android.content.Context
 import android.os.UserHandle
+import android.text.TextUtils
 import com.android.app.tracing.coroutines.flow.flowName
 import com.android.settingslib.notification.modes.ZenMode
+import com.android.settingslib.notification.modes.ZenModeDescriptions
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.modes.shared.ModesUi
-import com.android.systemui.qs.tiles.base.interactor.DataUpdateTrigger
-import com.android.systemui.qs.tiles.base.interactor.QSTileDataInteractor
+import com.android.systemui.qs.tiles.base.domain.interactor.QSTileDataInteractor
+import com.android.systemui.qs.tiles.base.domain.model.DataUpdateTrigger
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.policy.domain.interactor.ZenModeInteractor
@@ -43,6 +45,8 @@ constructor(
     val zenModeInteractor: ZenModeInteractor,
     @Background val bgDispatcher: CoroutineDispatcher,
 ) : QSTileDataInteractor<ModesDndTileModel> {
+
+    private val zenModeDescriptions = ZenModeDescriptions(context)
 
     override fun tileData(
         user: UserHandle,
@@ -65,7 +69,10 @@ constructor(
     fun getCurrentTileModel() = buildTileData(zenModeInteractor.getDndMode())
 
     private fun buildTileData(dndMode: ZenMode): ModesDndTileModel {
-        return ModesDndTileModel(isActivated = dndMode.isActive)
+        return ModesDndTileModel(
+            isActivated = dndMode.isActive,
+            extraStatus = TextUtils.nullIfEmpty(zenModeDescriptions.getTriggerDescription(dndMode)),
+        )
     }
 
     override fun availability(user: UserHandle): Flow<Boolean> =

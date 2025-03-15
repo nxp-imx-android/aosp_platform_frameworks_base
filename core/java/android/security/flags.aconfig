@@ -83,13 +83,6 @@ flag {
 }
 
 flag {
-    name: "report_primary_auth_attempts"
-    namespace: "biometrics"
-    description: "Report primary auth attempts from LockSettingsService"
-    bug: "285053096"
-}
-
-flag {
     name: "dump_attestation_verifications"
     namespace: "hardware_backed_security"
     description: "Add a dump capability for attestation_verification service"
@@ -104,10 +97,13 @@ flag {
 }
 
 flag {
-    name: "clear_strong_auth_on_add_primary_credential"
+    name: "clear_strong_auth_on_adding_primary_credential"
     namespace: "biometrics"
-    description: "Clear StrongAuth on add credential"
+    description: "Clear StrongAuth on adding credential"
     bug: "320817991"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

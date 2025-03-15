@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -67,18 +68,25 @@ public class ContextHubEndpointTest {
     private static final int SESSION_ID_RANGE = ContextHubEndpointManager.SERVICE_SESSION_RANGE;
     private static final int MIN_SESSION_ID = 0;
     private static final int MAX_SESSION_ID = MIN_SESSION_ID + SESSION_ID_RANGE - 1;
+    private static final int SESSION_ID_FOR_OPEN_REQUEST = MAX_SESSION_ID + 1;
+    private static final int INVALID_SESSION_ID_FOR_OPEN_REQUEST = MIN_SESSION_ID + 1;
 
     private static final String ENDPOINT_NAME = "Example test endpoint";
     private static final int ENDPOINT_ID = 1;
     private static final String ENDPOINT_PACKAGE_NAME = "com.android.server.location.contexthub";
 
     private static final String TARGET_ENDPOINT_NAME = "Example target endpoint";
+    private static final String ENDPOINT_SERVICE_DESCRIPTOR = "serviceDescriptor";
     private static final int TARGET_ENDPOINT_ID = 1;
 
     private static final int SAMPLE_MESSAGE_TYPE = 1234;
     private static final HubMessage SAMPLE_MESSAGE =
             new HubMessage.Builder(SAMPLE_MESSAGE_TYPE, new byte[] {1, 2, 3, 4, 5})
                     .setResponseRequired(true)
+                    .build();
+    private static final HubMessage SAMPLE_UNRELIABLE_MESSAGE =
+            new HubMessage.Builder(SAMPLE_MESSAGE_TYPE, new byte[] {1, 2, 3, 4, 5})
+                    .setResponseRequired(false)
                     .build();
 
     private ContextHubClientManager mClientManager;
@@ -221,6 +229,105 @@ public class ContextHubEndpointTest {
     }
 
     @Test
+    public void testEndpointSessionOpenRequest() throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        mHubInfoRegistry.onEndpointStarted(new HubEndpointInfo[] {targetInfo});
+        mEndpointManager.onEndpointSessionOpenRequest(
+                SESSION_ID_FOR_OPEN_REQUEST,
+                endpoint.getAssignedHubEndpointInfo().getIdentifier(),
+                targetInfo.getIdentifier(),
+                ENDPOINT_SERVICE_DESCRIPTOR);
+
+        verify(mMockCallback)
+                .onSessionOpenRequest(
+                        SESSION_ID_FOR_OPEN_REQUEST, targetInfo, ENDPOINT_SERVICE_DESCRIPTOR);
+
+        // Accept
+        endpoint.openSessionRequestComplete(SESSION_ID_FOR_OPEN_REQUEST);
+        verify(mMockEndpointCommunications)
+                .endpointSessionOpenComplete(SESSION_ID_FOR_OPEN_REQUEST);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testEndpointSessionOpenRequestWithInvalidSessionId() throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        mHubInfoRegistry.onEndpointStarted(new HubEndpointInfo[] {targetInfo});
+        mEndpointManager.onEndpointSessionOpenRequest(
+                INVALID_SESSION_ID_FOR_OPEN_REQUEST,
+                endpoint.getAssignedHubEndpointInfo().getIdentifier(),
+                targetInfo.getIdentifier(),
+                ENDPOINT_SERVICE_DESCRIPTOR);
+        verify(mMockEndpointCommunications)
+                .closeEndpointSession(
+                        INVALID_SESSION_ID_FOR_OPEN_REQUEST,
+                        Reason.OPEN_ENDPOINT_SESSION_REQUEST_REJECTED);
+        verify(mMockCallback, never())
+                .onSessionOpenRequest(
+                        INVALID_SESSION_ID_FOR_OPEN_REQUEST,
+                        targetInfo,
+                        ENDPOINT_SERVICE_DESCRIPTOR);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testEndpointSessionOpenRequest_duplicatedSessionId_noopWhenSessionIsActive()
+            throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        mHubInfoRegistry.onEndpointStarted(new HubEndpointInfo[] {targetInfo});
+        mEndpointManager.onEndpointSessionOpenRequest(
+                SESSION_ID_FOR_OPEN_REQUEST,
+                endpoint.getAssignedHubEndpointInfo().getIdentifier(),
+                targetInfo.getIdentifier(),
+                ENDPOINT_SERVICE_DESCRIPTOR);
+        endpoint.openSessionRequestComplete(SESSION_ID_FOR_OPEN_REQUEST);
+        // Now session with id SESSION_ID_FOR_OPEN_REQUEST is active
+
+        // Duplicated session open request
+        mEndpointManager.onEndpointSessionOpenRequest(
+                SESSION_ID_FOR_OPEN_REQUEST,
+                endpoint.getAssignedHubEndpointInfo().getIdentifier(),
+                targetInfo.getIdentifier(),
+                ENDPOINT_SERVICE_DESCRIPTOR);
+
+        // Client API is only invoked once
+        verify(mMockCallback, times(1))
+                .onSessionOpenRequest(
+                        SESSION_ID_FOR_OPEN_REQUEST, targetInfo, ENDPOINT_SERVICE_DESCRIPTOR);
+        // HAL still receives two open complete notifications
+        verify(mMockEndpointCommunications, times(2))
+                .endpointSessionOpenComplete(SESSION_ID_FOR_OPEN_REQUEST);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
     public void testMessageTransaction() throws RemoteException {
         IContextHubEndpoint endpoint = registerExampleEndpoint();
         testMessageTransactionInternal(endpoint, /* deliverMessageStatus= */ true);
@@ -256,6 +363,24 @@ public class ContextHubEndpointTest {
         assertThat(statusCaptor.getValue().messageSequenceNumber)
                 .isEqualTo(SAMPLE_MESSAGE.getMessageSequenceNumber());
         assertThat(statusCaptor.getValue().errorCode).isEqualTo(ErrorCode.TRANSIENT_ERROR);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testUnreliableMessage() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        int sessionId = openTestSession(endpoint);
+
+        mEndpointManager.onMessageReceived(sessionId, SAMPLE_UNRELIABLE_MESSAGE);
+        ArgumentCaptor<HubMessage> messageCaptor = ArgumentCaptor.forClass(HubMessage.class);
+        verify(mMockCallback).onMessageReceived(eq(sessionId), messageCaptor.capture());
+        assertThat(messageCaptor.getValue()).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE);
+
+        // Confirm we can send another message
+        mEndpointManager.onMessageReceived(sessionId, SAMPLE_UNRELIABLE_MESSAGE);
+        verify(mMockCallback, times(2)).onMessageReceived(eq(sessionId), messageCaptor.capture());
+        assertThat(messageCaptor.getValue()).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE);
 
         unregisterExampleEndpoint(endpoint);
     }

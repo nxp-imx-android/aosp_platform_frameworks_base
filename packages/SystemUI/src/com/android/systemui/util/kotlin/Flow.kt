@@ -19,8 +19,11 @@ package com.android.systemui.util.kotlin
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.time.SystemClockImpl
+import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.max
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -364,3 +367,58 @@ inline fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, R> combine(
  */
 @Suppress("NOTHING_TO_INLINE")
 inline fun Flow<Unit>.emitOnStart(): Flow<Unit> = onStart { emit(Unit) }
+
+/**
+ * Transforms a Flow<T> into a Flow<List<T>> by implementing a sliding window algorithm.
+ *
+ * This function creates a sliding window over the input Flow<T>. The window has a specified
+ * [windowDuration] and slides continuously as time progresses. The emitted List<T> contains all
+ * items from the input flow that fall within the current window.
+ *
+ * The window slides forward by the smallest possible increment to include or exclude *one* event
+ * based on the time the event was emitted (determined by the System.currentTimeMillis()). This
+ * means that consecutive emitted lists will have overlapping elements if the elements fall within
+ * the [windowDuration]
+ *
+ * @param windowDuration The duration of the sliding window.
+ * @return A Flow that emits Lists of elements within the current sliding window.
+ */
+fun <T> Flow<T>.slidingWindow(
+    windowDuration: Duration,
+    clock: SystemClock = SystemClockImpl(),
+): Flow<List<T>> = channelFlow {
+    require(windowDuration.isPositive()) { "Window duration must be positive" }
+    val buffer = LinkedList<Pair<Duration, T>>()
+
+    coroutineScope {
+        var windowAdvancementJob: Job? = null
+
+        collect { value ->
+            windowAdvancementJob?.cancel()
+            val now = clock.currentTimeMillis().milliseconds
+            buffer.addLast(now to value)
+
+            while (buffer.isNotEmpty() && buffer.first.first + windowDuration <= now) {
+                buffer.removeFirst()
+            }
+            send(buffer.map { it.second })
+
+            // Keep the window advancing through time even if the source flow isn't emitting
+            // anymore. We stop advancing the window as soon as there are no items left in the
+            // buffer.
+            windowAdvancementJob = launch {
+                while (buffer.isNotEmpty()) {
+                    val startOfWindow = clock.currentTimeMillis().milliseconds - windowDuration
+                    // Invariant: At this point, everything in the buffer is guaranteed to be in
+                    // the window, as we removed expired items above.
+                    val timeUntilNextOldest =
+                        (buffer.first.first - startOfWindow).coerceAtLeast(0.milliseconds)
+                    delay(timeUntilNextOldest)
+                    // Remove the oldest item, as it has now fallen out of the window.
+                    buffer.removeFirst()
+                    send(buffer.map { it.second })
+                }
+            }
+        }
+    }
+}

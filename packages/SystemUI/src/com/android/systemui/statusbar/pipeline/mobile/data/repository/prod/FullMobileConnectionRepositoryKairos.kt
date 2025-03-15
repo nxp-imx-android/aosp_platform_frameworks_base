@@ -22,6 +22,7 @@ import com.android.systemui.KairosBuilder
 import com.android.systemui.kairos.BuildSpec
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.State
+import com.android.systemui.kairos.combine
 import com.android.systemui.kairos.flatMap
 import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
@@ -55,9 +56,15 @@ constructor(
     @Assisted private val isCarrierMerged: State<Boolean>,
 ) : MobileConnectionRepositoryKairos, KairosBuilder by kairosBuilder() {
 
+    private var dumpCache: DumpCache? = null
+
     init {
         onActivated {
             logDiffsForTable(isCarrierMerged, tableLogBuffer, columnName = "isCarrierMerged")
+            combine(isCarrierMerged, activeRepo) { isCarrierMerged, activeRepo ->
+                    DumpCache(isCarrierMerged, activeRepo)
+                }
+                .observe { dumpCache = it }
         }
     }
 
@@ -198,13 +205,6 @@ constructor(
 
     override val isInEcmMode: State<Boolean> = activeRepo.flatMap { it.isInEcmMode }
 
-    private var dumpCache: DumpCache? = null
-
-    private data class DumpCache(
-        val isCarrierMerged: Boolean,
-        val activeRepo: MobileConnectionRepositoryKairos,
-    )
-
     fun dump(pw: PrintWriter) {
         val cache = dumpCache ?: return
         val ipw = IndentingPrintWriter(pw, "  ")
@@ -226,6 +226,11 @@ constructor(
 
         ipw.decreaseIndent()
     }
+
+    private data class DumpCache(
+        val isCarrierMerged: Boolean,
+        val activeRepo: MobileConnectionRepositoryKairos,
+    )
 
     @AssistedFactory
     interface Factory {

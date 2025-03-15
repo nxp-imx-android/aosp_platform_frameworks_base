@@ -40,7 +40,8 @@ class StatusBannerPreference @JvmOverloads constructor(
         GENERIC,
         LOW,
         MEDIUM,
-        HIGH
+        HIGH,
+        OFF
     }
     var iconLevel: BannerStatus = BannerStatus.GENERIC
         set(value) {
@@ -87,6 +88,7 @@ class StatusBannerPreference @JvmOverloads constructor(
         1 -> BannerStatus.LOW
         2 -> BannerStatus.MEDIUM
         3 -> BannerStatus.HIGH
+        4 -> BannerStatus.OFF
         else -> BannerStatus.GENERIC
     }
 
@@ -104,7 +106,10 @@ class StatusBannerPreference @JvmOverloads constructor(
         }
 
         (holder.findViewById(R.id.status_banner_button) as? MaterialButton)?.apply {
-            setBackgroundColor(getBackgroundColor(buttonLevel))
+            setBackgroundColor(
+                if (buttonLevel == BannerStatus.OFF) getBackgroundColor(BannerStatus.GENERIC)
+                else getBackgroundColor(buttonLevel)
+            )
             text = buttonText
             setOnClickListener(listener)
             visibility = if (listener != null) View.VISIBLE else View.GONE
@@ -143,6 +148,11 @@ class StatusBannerPreference @JvmOverloads constructor(
                 R.color.settingslib_expressive_color_status_level_high
             )
 
+            BannerStatus.OFF -> ContextCompat.getColor(
+                context,
+                R.color.settingslib_expressive_color_status_level_off
+            )
+
             else -> ContextCompat.getColor(
                 context,
                 com.android.settingslib.widget.theme.R.color.settingslib_materialColorPrimary
@@ -167,6 +177,11 @@ class StatusBannerPreference @JvmOverloads constructor(
                 R.drawable.settingslib_expressive_icon_status_level_high
             )
 
+            BannerStatus.OFF -> ContextCompat.getDrawable(
+                context,
+                R.drawable.settingslib_expressive_icon_status_level_off
+            )
+
             else -> null
         }
     }
@@ -188,6 +203,7 @@ class StatusBannerPreference @JvmOverloads constructor(
                 R.drawable.settingslib_expressive_background_level_high
             )
 
+            // GENERIC and OFF are using the same background drawable.
             else -> ContextCompat.getDrawable(
                 context,
                 R.drawable.settingslib_expressive_background_generic

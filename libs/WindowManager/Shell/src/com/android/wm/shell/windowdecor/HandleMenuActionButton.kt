@@ -23,9 +23,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.core.content.withStyledAttributes
-import androidx.core.view.isGone
 import com.android.wm.shell.R
 
 /**
@@ -54,6 +52,7 @@ class HandleMenuActionButton @JvmOverloads constructor(
 
         context.withStyledAttributes(attrs, R.styleable.HandleMenuActionButton) {
             textView.text = getString(R.styleable.HandleMenuActionButton_android_text)
+            rootElement.contentDescription = getString(R.styleable.HandleMenuActionButton_android_text)
             textView.setTextColor(getColor(R.styleable.HandleMenuActionButton_android_textColor, 0))
             iconView.setImageResource(getResourceId(
                 R.styleable.HandleMenuActionButton_android_src, 0))

@@ -23,6 +23,8 @@ import android.annotation.NonNull;
 
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
+import com.android.internal.widget.remotecompose.core.PaintContext;
+import com.android.internal.widget.remotecompose.core.PaintOperation;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
@@ -30,6 +32,7 @@ import com.android.internal.widget.remotecompose.core.documentation.Documentatio
 import com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation;
 import com.android.internal.widget.remotecompose.core.operations.utilities.AnimatedFloatExpression;
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +41,7 @@ import java.util.List;
  * This creates a particle system. which consist of id, particleCount, array of id's and equations
  * for constructing the particles
  */
-public class ParticlesCreate extends Operation implements VariableSupport {
+public class ParticlesCreate extends PaintOperation implements VariableSupport {
     private static final int OP_CODE = Operations.PARTICLE_DEFINE;
     private static final String CLASS_NAME = "ParticlesCreate";
     private final int mId;
@@ -214,6 +217,13 @@ public class ParticlesCreate extends Operation implements VariableSupport {
         return indent + toString();
     }
 
+    @Override
+    public void paint(@NonNull PaintContext context) {
+        for (int i = 0; i < mParticles.length; i++) {
+            initializeParticle(i);
+        }
+    }
+
     void initializeParticle(int pNo) {
         for (int j = 0; j < mParticles[pNo].length; j++) {
             for (int k = 0; k < mIndexeVars.length; k++) {
@@ -223,13 +233,6 @@ public class ParticlesCreate extends Operation implements VariableSupport {
                 mOutEquations[jIndex][kIndex] = pNo;
             }
             mParticles[pNo][j] = mExp.eval(mOutEquations[j], mOutEquations[j].length);
-        }
-    }
-
-    @Override
-    public void apply(@NonNull RemoteContext context) {
-        for (int i = 0; i < mParticles.length; i++) {
-            initializeParticle(i);
         }
     }
 
@@ -244,4 +247,7 @@ public class ParticlesCreate extends Operation implements VariableSupport {
     public float[][] getEquations() {
         return mOutEquations;
     }
+
+    @Override
+    public void serialize(MapSerializer serializer) {}
 }

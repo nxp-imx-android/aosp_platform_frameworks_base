@@ -421,7 +421,12 @@ public class QuickAccessWalletClientImpl implements QuickAccessWalletClient, Ser
         Intent intent = new Intent(SERVICE_INTERFACE);
         intent.setComponent(serviceInfo.getComponentName());
         int flags = Context.BIND_AUTO_CREATE | Context.BIND_WAIVE_PRIORITY;
-        mLifecycleExecutor.execute(() -> mContext.bindService(intent, this, flags));
+        if (mServiceInfo == null) {
+            mLifecycleExecutor.execute(() -> mContext.bindService(intent, this, flags));
+        } else {
+            mLifecycleExecutor.execute(() -> mContext.bindServiceAsUser(intent, this, flags,
+                    UserHandle.of(mServiceInfo.getUserId())));
+        }
         resetServiceConnectionTimeout();
     }
 

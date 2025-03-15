@@ -16,32 +16,54 @@
 package com.android.hoststubgen.filters
 
 /**
+ * How each entry should be handled on the dashboard.
+ */
+enum class StatsLabel(val statValue: Int, val label: String) {
+    /** Entry shouldn't show up in the dashboard. */
+    Ignored(-1, ""),
+
+    /** Entry should be shown as "not supported" */
+    NotSupported(0, "NotSupported"),
+
+    /**
+     * Entry should be shown as "supported", but are too "boring" to show on the dashboard,
+     * e.g. annotation classes.
+     */
+    SupportedButBoring(1, "Boring"),
+
+    /** Entry should be shown as "supported" */
+    Supported(2, "Supported"),
+}
+
+/**
  * Captures a [FilterPolicy] with a human-readable reason.
  */
 data class FilterPolicyWithReason (
-        val policy: FilterPolicy,
-        val reason: String = "",
+    val policy: FilterPolicy,
+    val reason: String = "",
+    private val statsLabelOverride: StatsLabel? = null
 ) {
     /**
      * Return a new [FilterPolicy] with an updated reason, while keeping the original reason
      * as an "inner-reason".
      */
-    fun wrapReason(reason: String): FilterPolicyWithReason {
-        return FilterPolicyWithReason(policy, "$reason [inner-reason: ${this.reason}]")
+    fun wrapReason(reason: String, statsLabelOverride: StatsLabel? = null): FilterPolicyWithReason {
+        return FilterPolicyWithReason(
+            policy,
+            "$reason [inner-reason: ${this.reason}]",
+            statsLabelOverride = statsLabelOverride,
+        )
     }
 
     override fun toString(): String {
-        return "[$policy - reason: $reason]"
+        return "[$policy/$statsLabel - reason: $reason]"
     }
 
-    /** Returns whether this policy should be ignored for stats. */
-    val isIgnoredForStats: Boolean
-        get() {
-            return reason.contains("anonymous-inner-class")
-                    || reason.contains("is-annotation")
-                    || reason.contains("is-enum")
-                    || reason.contains("is-synthetic-method")
-                    || reason.contains("special-class")
-                    || reason.contains("substitute-to")
+    val statsLabel: StatsLabel get() {
+        statsLabelOverride?.let { return it }
+        if (policy.isSupported) {
+            return StatsLabel.Supported
         }
+        return StatsLabel.NotSupported
+    }
 }

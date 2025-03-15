@@ -23,9 +23,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
@@ -101,6 +105,37 @@ class NestedScrollControllerTest {
         // Outer scrolling is enabled again when removing the controller from composition.
         composeNestedScroll = false
         rule.waitForIdle()
+        assertThat(state.isOuterScrollAllowed).isTrue()
+    }
+
+    @Test
+    fun supportsPreScrolls() {
+        val state = NestedScrollControlState()
+        rule.setContent {
+            Box(
+                Modifier.fillMaxSize()
+                    .nestedScrollController(state)
+                    .nestedScroll(
+                        remember {
+                            object : NestedScrollConnection {
+                                override fun onPreScroll(
+                                    available: Offset,
+                                    source: NestedScrollSource,
+                                ): Offset = available
+                            }
+                        }
+                    )
+                    .scrollable(rememberScrollableState { 0f }, Orientation.Vertical)
+            )
+        }
+
+        rule.onRoot().performTouchInput {
+            down(topLeft)
+            moveBy(Offset(0f, bottom))
+        }
+        assertThat(state.isOuterScrollAllowed).isFalse()
+
+        rule.onRoot().performTouchInput { up() }
         assertThat(state.isOuterScrollAllowed).isTrue()
     }
 }

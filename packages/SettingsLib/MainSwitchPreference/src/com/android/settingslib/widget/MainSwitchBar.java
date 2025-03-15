@@ -113,8 +113,6 @@ public class MainSwitchBar extends LinearLayout implements OnCheckedChangeListen
             mSwitch.setOnCheckedChangeListener(this);
         }
 
-        setChecked(mSwitch.isChecked());
-
         if (attrs != null) {
             final TypedArray a = context.obtainStyledAttributes(attrs,
                     androidx.preference.R.styleable.Preference, 0 /*defStyleAttr*/,
@@ -130,8 +128,6 @@ public class MainSwitchBar extends LinearLayout implements OnCheckedChangeListen
             }
             a.recycle();
         }
-
-        setBackground(mSwitch.isChecked());
     }
 
     @Override

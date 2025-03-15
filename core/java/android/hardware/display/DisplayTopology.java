@@ -600,8 +600,7 @@ public final class DisplayTopology implements Parcelable {
 
     private void addDisplay(int displayId, float width, float height, boolean shouldLog) {
         if (findDisplay(displayId, mRoot) != null) {
-            throw new IllegalArgumentException(
-                    "DisplayTopology: attempting to add a display that already exists");
+            return;
         }
         if (mRoot == null) {
             mRoot = new TreeNode(displayId, width, height, POSITION_LEFT, /* offset= */ 0);

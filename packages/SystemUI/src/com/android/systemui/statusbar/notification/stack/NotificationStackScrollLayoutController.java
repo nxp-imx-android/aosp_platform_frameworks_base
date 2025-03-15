@@ -486,15 +486,22 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 @Override
+                public boolean isMagneticViewDetached(View view) {
+                    if (view instanceof ExpandableNotificationRow row) {
+                        return mMagneticNotificationRowManager.isMagneticRowSwipeDetached(row);
+                    } else {
+                        return false;
+                    }
+                }
+
+                @Override
                 public float getTotalTranslationLength(View animView) {
                     return mView.getTotalTranslationLength(animView);
                 }
 
                 @Override
                 public void onDensityScaleChange(float density) {
-                    mMagneticNotificationRowManager.setSwipeThresholdPx(
-                            density * MagneticNotificationRowManager.MAGNETIC_DETACH_THRESHOLD_DP
-                    );
+                    mMagneticNotificationRowManager.onDensityChange(density);
                 }
 
                 @Override
@@ -648,11 +655,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 public void onChildSnappedBack(View animView, float targetLeft) {
                     mView.onSwipeEnd();
                     if (animView instanceof ExpandableNotificationRow row) {
-                        if (row.isPinned() && !canChildBeDismissed(row)
-                                && NotificationBundleUi.isEnabled()
+                        boolean cannotFullScreen = NotificationBundleUi.isEnabled()
                                 ? !row.getEntryAdapter().isFullScreenCapable()
-                                : (row.getEntry().getSbn().getNotification().fullScreenIntent
-                                        == null)) {
+                                : (row.getEntryLegacy().getSbn().getNotification().fullScreenIntent
+                                        == null);
+                        if (row.isPinned() && !canChildBeDismissed(row) && cannotFullScreen) {
                             mHeadsUpManager.removeNotification(
                                     row.getKey(),
                                     /* removeImmediately= */ true,
@@ -1735,7 +1742,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      *                 they remain until the next lockscreen-to-shade transition.
      */
     public void setTransitionToFullShadeAmount(float fraction) {
-        SceneContainerFlag.assertInLegacyMode();
         mView.setFractionToShade(fraction);
     }
 

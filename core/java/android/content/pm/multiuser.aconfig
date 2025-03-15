@@ -636,3 +636,20 @@ flag {
     description: "Enables support for new supervising user type"
     bug: "389712089"
 }
+
+flag {
+    name: "use_unified_resources"
+    namespace: "multiuser"
+    description: "Use same resources"
+    bug: "392972139"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+     name: "profiles_for_all"
+     namespace: "multiuser"
+     description: "Allows any regular user to have profiles"
+     bug: "374832167"
+}

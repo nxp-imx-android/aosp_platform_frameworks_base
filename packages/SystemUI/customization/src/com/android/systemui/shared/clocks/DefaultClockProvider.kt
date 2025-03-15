@@ -20,6 +20,8 @@ import android.os.Vibrator
 import android.view.LayoutInflater
 import com.android.systemui.customization.R
 import com.android.systemui.log.core.MessageBuffer
+import com.android.systemui.plugins.clocks.AxisPresetConfig
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
 import com.android.systemui.plugins.clocks.ClockLogger
@@ -28,7 +30,7 @@ import com.android.systemui.plugins.clocks.ClockMetadata
 import com.android.systemui.plugins.clocks.ClockPickerConfig
 import com.android.systemui.plugins.clocks.ClockProvider
 import com.android.systemui.plugins.clocks.ClockSettings
-import com.android.systemui.shared.clocks.FlexClockController.Companion.AXIS_PRESETS
+import com.android.systemui.shared.clocks.FlexClockController.Companion.buildPresetGroup
 import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
 
 private val TAG = DefaultClockProvider::class.simpleName
@@ -80,7 +82,7 @@ class DefaultClockProvider(
         return if (isClockReactiveVariantsEnabled) {
             val buffers = messageBuffers ?: ClockMessageBuffers(ClockLogger.DEFAULT_MESSAGE_BUFFER)
             val fontAxes = getDefaultAxes(settings).merge(settings.axes)
-            val clockSettings = settings.copy(axes = fontAxes.map { it.toSetting() })
+            val clockSettings = settings.copy(axes = ClockAxisStyle(fontAxes))
             val typefaceCache =
                 TypefaceCache(buffers.infraMessageBuffer, NUM_CLOCK_FONT_ANIMATION_STEPS) {
                     FLEX_TYPEFACE
@@ -106,17 +108,35 @@ class DefaultClockProvider(
             throw IllegalArgumentException("${settings.clockId} is unsupported by $TAG")
         }
 
-        return ClockPickerConfig(
-            settings.clockId ?: DEFAULT_CLOCK_ID,
-            resources.getString(R.string.clock_default_name),
-            resources.getString(R.string.clock_default_description),
-            resources.getDrawable(R.drawable.clock_default_thumbnail, null),
-            isReactiveToTone = true,
-            axes =
-                if (!isClockReactiveVariantsEnabled) emptyList()
-                else getDefaultAxes(settings).merge(settings.axes),
-            axisPresets = if (!isClockReactiveVariantsEnabled) emptyList() else AXIS_PRESETS,
-        )
+        if (!isClockReactiveVariantsEnabled) {
+            return ClockPickerConfig(
+                settings.clockId ?: DEFAULT_CLOCK_ID,
+                resources.getString(R.string.clock_default_name),
+                resources.getString(R.string.clock_default_description),
+                resources.getDrawable(R.drawable.clock_default_thumbnail, null),
+                isReactiveToTone = true,
+                axes = emptyList(),
+                presetConfig = null,
+            )
+        } else {
+            val fontAxes = getDefaultAxes(settings).merge(settings.axes)
+            return ClockPickerConfig(
+                settings.clockId ?: DEFAULT_CLOCK_ID,
+                resources.getString(R.string.clock_default_name),
+                resources.getString(R.string.clock_default_description),
+                resources.getDrawable(R.drawable.clock_default_thumbnail, null),
+                isReactiveToTone = true,
+                axes = fontAxes,
+                presetConfig =
+                    AxisPresetConfig(
+                            listOf(
+                                buildPresetGroup(resources, isRound = true),
+                                buildPresetGroup(resources, isRound = false),
+                            )
+                        )
+                        .let { cfg -> cfg.copy(current = cfg.findStyle(ClockAxisStyle(fontAxes))) },
+            )
+        }
     }
 
     companion object {

@@ -252,10 +252,8 @@
     <string name="accessibility_bluetooth_name" msgid="7300973230214067678">"<xliff:g id="BLUETOOTH">%s</xliff:g> થી કનેક્ટ થયાં."</string>
     <string name="accessibility_cast_name" msgid="7344437925388773685">"<xliff:g id="CAST">%s</xliff:g> થી કનેક્ટ કરેલ."</string>
     <string name="accessibility_expand_group" msgid="521237935987978624">"ગ્રૂપને મોટું કરો."</string>
-    <!-- no translation found for accessibility_add_device_to_group (5446422960697860806) -->
-    <skip />
-    <!-- no translation found for accessibility_remove_device_from_group (3114694270949142228) -->
-    <skip />
+    <string name="accessibility_add_device_to_group" msgid="5446422960697860806">"ડિવાઇસને ગ્રૂપમાં ઉમેરો."</string>
+    <string name="accessibility_remove_device_from_group" msgid="3114694270949142228">"ડિવાઇસને ગ્રૂપમાંથી કાઢી નાખો."</string>
     <string name="accessibility_open_application" msgid="1749126077501259712">"ઍપ્લિકેશન ખોલો."</string>
     <string name="accessibility_not_connected" msgid="4061305616351042142">"કનેક્ટ થયેલું નથી."</string>
     <string name="data_connection_roaming" msgid="375650836665414797">"રોમિંગ"</string>
@@ -333,8 +331,7 @@
     <string name="quick_settings_bluetooth_secondary_label_input" msgid="3887552721233148132">"ઇનપુટ"</string>
     <string name="quick_settings_bluetooth_secondary_label_hearing_aids" msgid="5553051568867097111">"સાંભળવામાં મદદ આપતા યંત્રો"</string>
     <string name="quick_settings_bluetooth_secondary_label_transient" msgid="3882884317600669650">"ચાલુ કરી રહ્યાં છીએ…"</string>
-    <!-- no translation found for quick_settings_brightness_unable_adjust_msg (4124028416057617517) -->
-    <skip />
+    <string name="quick_settings_brightness_unable_adjust_msg" msgid="4124028416057617517">"બ્રાઇટનેસ ગોઠવી શકાતી નથી કારણ કે તે લોકપ્રિય ઍપ દ્વારા નિયંત્રિત કરવામાં આવી રહી છે"</string>
     <string name="quick_settings_rotation_unlocked_label" msgid="2359922767950346112">"ઑટો રોટેટ"</string>
     <string name="accessibility_quick_settings_rotation" msgid="4800050198392260738">"ઑટો રોટેટ સ્ક્રીન"</string>
     <string name="quick_settings_location_label" msgid="2621868789013389163">"લોકેશન"</string>
@@ -422,24 +419,24 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"નવા ડિવાઇસ સાથે જોડાણ કરવા માટે ક્લિક કરો"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"પ્રીસેટ અપડેટ કરી શક્યા નથી"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"પ્રીસેટ"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"પસંદ કરી છે"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"આસપાસના અવાજો"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ડાબે"</string>
     <string name="hearing_devices_ambient_control_right" msgid="6192137602448918383">"જમણે"</string>
-    <!-- no translation found for hearing_devices_ambient_control_description (3663947879732939509) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_left_description (4440988622896213511) -->
-    <skip />
-    <!-- no translation found for hearing_devices_ambient_control_right_description (2230461103493378003) -->
-    <skip />
+    <string name="hearing_devices_ambient_control_description" msgid="3663947879732939509">"આસપાસના અવાજો"</string>
+    <string name="hearing_devices_ambient_control_left_description" msgid="4440988622896213511">"ડાબી તરફથી આવતા અવાજો"</string>
+    <string name="hearing_devices_ambient_control_right_description" msgid="2230461103493378003">"જમણી તરફથી આવતા અવાજો"</string>
     <string name="hearing_devices_ambient_expand_controls" msgid="2131816068187709200">"ડાબે અને જમણે અલગ કરેલા નિયંત્રણો સુધી વિસ્તૃત કરો"</string>
     <string name="hearing_devices_ambient_collapse_controls" msgid="2261097656446201581">"એકીકૃત નિયંત્રણ સુધી નાનું કરો"</string>
     <string name="hearing_devices_ambient_mute" msgid="1836882837647429416">"આસપાસના અવાજો મ્યૂટ કરો"</string>
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"આસપાસના અવાજો અનમ્યૂટ કરો"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"ટૂલ"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"લાઇવ કૅપ્શન"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"સેટિંગ"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"નોંધ"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"ડિવાઇસના માઇક્રોફોનને અનબ્લૉક કરીએ?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"ડિવાઇસના કૅમેરાને અનબ્લૉક કરીએ?"</string>
@@ -589,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"જ્યારે તમે કોઈ ઍપને શેર કરી રહ્યાં હો, ત્યારે તે ઍપ પર બતાવવામાં કે ચલાવવામાં આવતી હોય તેવી બધી વસ્તુ <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>ને દેખાય છે. તેથી પાસવર્ડ, ચુકવણીની વિગતો, મેસેજ, ફોટા અને ડિવાઇસ પર વાગી રહેલા ઑડિયો તથા વીડિયો જેવી બાબતોને લઈને સાવચેત રહો."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"સ્ક્રીન શેર કરો"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> દ્વારા આ વિકલ્પ બંધ કરવામાં આવ્યો છે"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"શેર કરવા માટે ઍપ પસંદ કરો"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"તમારી સ્ક્રીનને કાસ્ટ કરીએ?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"એક ઍપને કાસ્ટ કરો"</string>
@@ -801,7 +800,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ચાલુ છે - ચહેરા આધારિત રોટેશન"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"નોટિફિકેશન બંધ કરો"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"સાઇલન્ટ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ડિફૉલ્ટ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ઑટોમૅટિક રીતે"</string>
@@ -912,8 +912,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"હાલની ઍપને જમણી બાજુએ રાખીને વિભાજિત સ્ક્રીનનો ઉપયોગ કરો"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"હાલની ઍપને ડાબી બાજુએ રાખીને વિભાજિત સ્ક્રીનનો ઉપયોગ કરો"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"પૂર્ણ સ્ક્રીનનો ઉપયોગ કરો"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"ડેસ્કટૉપ વિન્ડોઇંગનો ઉપયોગ કરો"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"વિભાજિત સ્ક્રીનનો ઉપયોગ કરતી વખતે જમણી બાજુ કે નીચેની ઍપ પર સ્વિચ કરો"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"વિભાજિત સ્ક્રીનનો ઉપયોગ કરતી વખતે ડાબી બાજુની કે ઉપરની ઍપ પર સ્વિચ કરો"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"વિભાજિત સ્ક્રીન દરમિયાન: એક ઍપને બીજી ઍપમાં બદલો"</string>
@@ -987,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"દૂર કરવા માટે અહીં ખેંચો"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"તમને ઓછામાં ઓછી <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ટાઇલની જરૂર છે"</string>
     <string name="qs_edit" msgid="5583565172803472437">"ફેરફાર કરો"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"સમય"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"કલાક, મિનિટ અને સેકન્ડ બતાવો"</item>
@@ -1009,8 +1010,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"જગ્યા પર <xliff:g id="POSITION">%1$d</xliff:g> ઉમેરો"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"સ્થિતિ અમાન્ય છે."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"જગ્યા <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"ટાઇલ પહેલેથી ઉમેરેલી છે"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"ટાઇલ ઉમેરી"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"ટાઇલ કાઢી નાખી"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"ઝડપી સેટિંગ એડિટર."</string>
@@ -1211,7 +1211,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"શું <xliff:g id="APP_NAME">%1$s</xliff:g> માટે મીડિયાના નિયંત્રણો છુપાવીએ?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"હાલનું મીડિયા સત્ર છુપાવી શકાતું નથી."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"છુપાવો"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"ફરી શરૂ કરો"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"સેટિંગ"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="APP_LABEL">%3$s</xliff:g> પર <xliff:g id="ARTIST_NAME">%2$s</xliff:g>નું <xliff:g id="SONG_NAME">%1$s</xliff:g> ગીત ચાલી રહ્યું છે"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="TOTAL_TIME">%2$s</xliff:g>માંથી <xliff:g id="ELAPSED_TIME">%1$s</xliff:g>"</string>
@@ -1350,7 +1349,7 @@
     <string name="qs_tile_request_dialog_add" msgid="4888460910694986304">"ટાઇલ ઉમેરો"</string>
     <string name="qs_tile_request_dialog_not_add" msgid="4168716573114067296">"ટાઇલ ઉમેરશો નહીં"</string>
     <string name="qs_user_switch_dialog_title" msgid="3045189293587781366">"વપરાશકર્તા પસંદ કરો"</string>
-    <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ઍપ સક્રિય છે}one{# ઍપ સક્રિય છે}other{# ઍપ સક્રિય છે}}"</string>
+    <string name="fgs_manager_footer_label" msgid="8276763570622288231">"{count,plural, =1{# ઍપ ઍક્ટિવ છે}one{# ઍપ ઍક્ટિવ છે}other{# ઍપ ઍક્ટિવ છે}}"</string>
     <string name="fgs_dot_content_description" msgid="2865071539464777240">"નવી માહિતી"</string>
     <string name="fgs_manager_dialog_title" msgid="5879184257257718677">"સક્રિય ઍપ"</string>
     <string name="fgs_manager_dialog_message" msgid="2670045017200730076">"જ્યારે તમે આ ઍપનો ઉપયોગ ન કરતા હો, ત્યારે પણ તે સક્રિય અને ચાલતી હોય છે. આનાથી તેની કાર્યક્ષમતામાં સુધારો થાય છે, પરંતુ બૅટરીની આવરદાને અસર પણ થઈ શકે છે."</string>

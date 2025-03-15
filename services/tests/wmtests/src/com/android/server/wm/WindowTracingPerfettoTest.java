@@ -22,7 +22,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.times;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.verifyZeroInteractions;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verifyNoMoreInteractions;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -128,7 +128,7 @@ public class WindowTracingPerfettoTest {
     @Test
     public void trace_ignoresLogStateCalls_ifTracingIsDisabled() {
         sWindowTracing.logState("where");
-        verifyZeroInteractions(sWmMock);
+        verifyNoMoreInteractions(sWmMock);
     }
 
     @Test

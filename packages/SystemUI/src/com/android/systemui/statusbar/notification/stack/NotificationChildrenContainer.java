@@ -444,7 +444,7 @@ public class NotificationChildrenContainer extends ViewGroup
         mIsConversation = isConversation;
         StatusBarNotification notification = NotificationBundleUi.isEnabled()
                 ? mContainingNotification.getEntryAdapter().getSbn()
-                : mContainingNotification.getEntry().getSbn();
+                : mContainingNotification.getEntryLegacy().getSbn();
         if (notification == null) {
             return;
         }
@@ -615,7 +615,7 @@ public class NotificationChildrenContainer extends ViewGroup
         RemoteViews header;
         StatusBarNotification notification = NotificationBundleUi.isEnabled()
                 ? mContainingNotification.getEntryAdapter().getSbn()
-                : mContainingNotification.getEntry().getSbn();
+                : mContainingNotification.getEntryLegacy().getSbn();
         if (notification == null) {
             return;
         }

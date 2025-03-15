@@ -31,6 +31,8 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Debug;
+import android.util.Log;
 import android.view.SurfaceControl;
 import android.window.DesktopExperienceFlags;
 import android.window.DisplayAreaInfo;
@@ -340,7 +342,8 @@ public class PipController implements ConfigurationChangeListener,
             mPipDisplayLayoutState.rotateTo(toRotation);
         }
 
-        if (!mPipTransitionState.isInPip()) {
+        if (!mPipTransitionState.isInPip()
+                && mPipTransitionState.getState() != PipTransitionState.ENTERING_PIP) {
             // Skip the PiP-relevant updates if we aren't in a valid PiP state.
             if (mPipTransitionState.isInFixedRotation()) {
                 ProtoLog.e(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
@@ -368,7 +371,13 @@ public class PipController implements ConfigurationChangeListener,
             mPipBoundsAlgorithm.applySnapFraction(toBounds, snapFraction);
             mPipBoundsState.setBounds(toBounds);
         }
-        t.setBounds(mPipTransitionState.getPipTaskToken(), mPipBoundsState.getBounds());
+        if (mPipTransitionState.getPipTaskToken() == null) {
+            Log.wtf(TAG, "PipController.onDisplayChange no PiP task token"
+                    + " state=" + mPipTransitionState.getState()
+                    + " callers=\n" + Debug.getCallers(4, "    "));
+        } else {
+            t.setBounds(mPipTransitionState.getPipTaskToken(), mPipBoundsState.getBounds());
+        }
         // Update the size spec in PipBoundsState afterwards.
         mPipBoundsState.updateMinMaxSize(mPipBoundsState.getAspectRatio());
     }

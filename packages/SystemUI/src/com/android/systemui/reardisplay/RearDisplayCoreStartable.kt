@@ -20,6 +20,8 @@ import android.content.Context
 import android.hardware.devicestate.DeviceStateManager
 import android.hardware.devicestate.feature.flags.Flags
 import androidx.annotation.VisibleForTesting
+import com.android.keyguard.KeyguardUpdateMonitor
+import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -28,8 +30,11 @@ import com.android.systemui.statusbar.phone.SystemUIDialog
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 /**
  * Provides a {@link com.android.systemui.statusbar.phone.SystemUIDialog} to be shown on the inner
@@ -46,6 +51,7 @@ internal constructor(
     private val rearDisplayStateInteractor: RearDisplayStateInteractor,
     private val rearDisplayInnerDialogDelegateFactory: RearDisplayInnerDialogDelegate.Factory,
     @Application private val scope: CoroutineScope,
+    private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
 ) : CoreStartable, AutoCloseable {
 
     companion object {
@@ -53,6 +59,16 @@ internal constructor(
     }
 
     @VisibleForTesting var stateChangeListener: Job? = null
+    private val keyguardVisible = MutableStateFlow(false)
+    private val keyguardVisibleFlow = keyguardVisible.asStateFlow()
+
+    @VisibleForTesting
+    val keyguardCallback =
+        object : KeyguardUpdateMonitorCallback() {
+            override fun onKeyguardVisibilityChanged(visible: Boolean) {
+                keyguardVisible.value = visible
+            }
+        }
 
     override fun close() {
         stateChangeListener?.cancel()
@@ -62,28 +78,39 @@ internal constructor(
         if (Flags.deviceStateRdmV2()) {
             var dialog: SystemUIDialog? = null
 
-            stateChangeListener =
-                rearDisplayStateInteractor.state
-                    .map {
-                        when (it) {
-                            is RearDisplayStateInteractor.State.Enabled -> {
-                                val rearDisplayContext =
-                                    context.createDisplayContext(it.innerDisplay)
-                                val delegate =
-                                    rearDisplayInnerDialogDelegateFactory.create(
-                                        rearDisplayContext,
-                                        deviceStateManager::cancelStateRequest,
-                                    )
-                                dialog = delegate.createDialog().apply { show() }
-                            }
+            keyguardUpdateMonitor.registerCallback(keyguardCallback)
 
-                            is RearDisplayStateInteractor.State.Disabled -> {
-                                dialog?.dismiss()
-                                dialog = null
+            stateChangeListener =
+                scope.launch {
+                    combine(rearDisplayStateInteractor.state, keyguardVisibleFlow) {
+                            rearDisplayState,
+                            keyguardVisible ->
+                            Pair(rearDisplayState, keyguardVisible)
+                        }
+                        .collectLatest { (rearDisplayState, keyguardVisible) ->
+                            when (rearDisplayState) {
+                                is RearDisplayStateInteractor.State.Enabled -> {
+                                    if (!keyguardVisible) {
+                                        val rearDisplayContext =
+                                            context.createDisplayContext(
+                                                rearDisplayState.innerDisplay
+                                            )
+                                        val delegate =
+                                            rearDisplayInnerDialogDelegateFactory.create(
+                                                rearDisplayContext,
+                                                deviceStateManager::cancelStateRequest,
+                                            )
+                                        dialog = delegate.createDialog().apply { show() }
+                                    }
+                                }
+
+                                is RearDisplayStateInteractor.State.Disabled -> {
+                                    dialog?.dismiss()
+                                    dialog = null
+                                }
                             }
                         }
-                    }
-                    .launchIn(scope)
+                }
         }
     }
 }

@@ -38,6 +38,7 @@ import com.android.internal.R;
 import com.android.internal.widget.CachingIconView;
 import com.android.internal.widget.ConversationLayout;
 import com.android.internal.widget.ImageFloatingTextView;
+import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.NotificationContentView;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
@@ -61,10 +62,19 @@ public class NotificationGroupingUtil {
     private static final VisibilityApplicator VISIBILITY_APPLICATOR = new VisibilityApplicator();
     private static final VisibilityApplicator APP_NAME_APPLICATOR = new AppNameApplicator();
     private static final ResultApplicator LEFT_ICON_APPLICATOR = new LeftIconApplicator();
-    private static final DataExtractor ICON_EXTRACTOR = new DataExtractor() {
+
+    @VisibleForTesting
+    static final DataExtractor ICON_EXTRACTOR = new DataExtractor() {
         @Override
         public Object extractData(ExpandableNotificationRow row) {
-            return row.getEntry().getSbn().getNotification();
+            if (NotificationBundleUi.isEnabled()) {
+                if (row.getEntryAdapter().getSbn() != null) {
+                    return row.getEntryAdapter().getSbn().getNotification();
+                }
+                return null;
+            } else {
+                return row.getEntry().getSbn().getNotification();
+            }
         }
     };
 
@@ -253,7 +263,7 @@ public class NotificationGroupingUtil {
         if (NotificationBundleUi.isEnabled()) {
             sbn = row.getEntryAdapter() != null ? row.getEntryAdapter().getSbn() : null;
         } else {
-            sbn = row.getEntry().getSbn();
+            sbn = row.getEntryLegacy().getSbn();
         }
         return (sbn != null && sbn.getNotification().showsTime());
     }
@@ -357,7 +367,8 @@ public class NotificationGroupingUtil {
         boolean isEmpty(View view);
     }
 
-    private interface DataExtractor {
+    @VisibleForTesting
+    interface DataExtractor {
         Object extractData(ExpandableNotificationRow row);
     }
 
@@ -395,13 +406,17 @@ public class NotificationGroupingUtil {
         }
     }
 
-    private abstract static class IconComparator implements ViewComparator {
+    @VisibleForTesting
+    static class IconComparator implements ViewComparator {
         @Override
         public boolean compare(View parent, View child, Object parentData, Object childData) {
             return false;
         }
 
         protected boolean hasSameIcon(Object parentData, Object childData) {
+            if (parentData == null || childData == null) {
+                return false;
+            }
             Icon parentIcon = ((Notification) parentData).getSmallIcon();
             Icon childIcon = ((Notification) childData).getSmallIcon();
             return parentIcon.sameAs(childIcon);
@@ -411,6 +426,10 @@ public class NotificationGroupingUtil {
          * @return whether two ImageViews have the same colorFilterSet or none at all
          */
         protected boolean hasSameColor(Object parentData, Object childData) {
+            if ((parentData == null && childData != null)
+                    || (parentData != null && childData == null)) {
+                return false;
+            }
             int parentColor = ((Notification) parentData).color;
             int childColor = ((Notification) childData).color;
             return parentColor == childColor;

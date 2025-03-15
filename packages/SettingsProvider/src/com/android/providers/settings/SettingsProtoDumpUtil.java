@@ -2111,6 +2111,12 @@ class SettingsProtoDumpUtil {
         dumpSetting(s, p,
                 Settings.Secure.ADAPTIVE_CONNECTIVITY_ENABLED,
                 SecureSettingsProto.ADAPTIVE_CONNECTIVITY_ENABLED);
+        dumpSetting(s, p,
+                Settings.Secure.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED,
+                SecureSettingsProto.ADAPTIVE_CONNECTIVITY_WIFI_ENABLED);
+        dumpSetting(s, p,
+                Settings.Secure.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED,
+                SecureSettingsProto.ADAPTIVE_CONNECTIVITY_MOBILE_NETWORK_ENABLED);
 
         final long controlsToken = p.start(SecureSettingsProto.CONTROLS);
         dumpSetting(s, p,
@@ -3150,6 +3156,12 @@ class SettingsProtoDumpUtil {
                 Settings.System.MASTER_BALANCE,
                 SystemSettingsProto.Volume.MASTER_BALANCE);
         p.end(volumeToken);
+
+        final long systemDisplayToken = p.start(SystemSettingsProto.DISPLAY);
+        dumpSetting(s, p,
+                Settings.System.CV_ENABLED,
+                SystemSettingsProto.Display.CV_ENABLED);
+        p.end(systemDisplayToken);
 
         dumpSetting(s, p,
                 Settings.System.WHEN_TO_MAKE_WIFI_CALLS,

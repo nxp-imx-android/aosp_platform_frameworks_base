@@ -130,6 +130,8 @@ public class AssistManager {
             AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS;
     public static final int INVOCATION_TYPE_NAV_HANDLE_LONG_PRESS =
             AssistUtils.INVOCATION_TYPE_NAV_HANDLE_LONG_PRESS;
+    public static final int INVOCATION_TYPE_LAUNCHER_SYSTEM_SHORTCUT =
+            AssistUtils.INVOCATION_TYPE_LAUNCHER_SYSTEM_SHORTCUT;
 
     public static final int DISMISS_REASON_INVOCATION_CANCELLED = 1;
     public static final int DISMISS_REASON_TAP = 2;

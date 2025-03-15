@@ -32,8 +32,6 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.WindowingMode
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
@@ -45,6 +43,7 @@ import android.os.IBinder
 import android.os.SystemProperties
 import android.os.UserHandle
 import android.util.Slog
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.DragEvent
 import android.view.MotionEvent
@@ -215,7 +214,7 @@ class DesktopTasksController(
     private val overviewToDesktopTransitionObserver: OverviewToDesktopTransitionObserver,
     private val desksOrganizer: DesksOrganizer,
     private val desksTransitionObserver: DesksTransitionObserver,
-    private val desktopPipTransitionObserver: DesktopPipTransitionObserver,
+    private val desktopPipTransitionObserver: Optional<DesktopPipTransitionObserver>,
     private val userProfileContexts: UserProfileContexts,
     private val desktopModeCompatPolicy: DesktopModeCompatPolicy,
     private val dragToDisplayTransitionHandler: DragToDisplayTransitionHandler,
@@ -288,8 +287,8 @@ class DesktopTasksController(
                 DeskRecreationFactory { deskUserId, destinationDisplayId, deskId ->
                     if (deskUserId != userId) {
                         // TODO: b/400984250 - add multi-user support for multi-desk restoration.
-                        logW("Tried to recreated desk of another user.")
-                        deskId
+                        logW("Tried to re-create desk of another user.")
+                        null
                     } else {
                         desksOrganizer.createDesk(destinationDisplayId)
                     }
@@ -307,6 +306,8 @@ class DesktopTasksController(
             this,
         )
         shellController.addUserChangeListener(this)
+        // Update the current user id again because it might be updated between init and onInit().
+        updateCurrentUser(ActivityManager.getCurrentUser())
         transitions.addHandler(this)
         dragToDesktopTransitionHandler.dragToDesktopStateListener = dragToDesktopStateListener
         recentsTransitionHandler.addTransitionStateListener(
@@ -466,6 +467,10 @@ class DesktopTasksController(
 
     /** Creates a new desk in the given display. */
     fun createDesk(displayId: Int) {
+        if (displayId == Display.INVALID_DISPLAY) {
+            logW("createDesk attempt with invalid displayId", displayId)
+            return
+        }
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             desksOrganizer.createDesk(displayId) { deskId ->
                 taskRepository.addDesk(displayId = displayId, deskId = deskId)
@@ -654,6 +659,7 @@ class DesktopTasksController(
         taskInfo: RunningTaskInfo,
         dragToDesktopValueAnimator: MoveToDesktopAnimator,
         taskSurface: SurfaceControl,
+        dragInterruptedCallback: Runnable,
     ) {
         logV("startDragToDesktop taskId=%d", taskInfo.taskId)
         val jankConfigBuilder =
@@ -669,6 +675,7 @@ class DesktopTasksController(
             taskInfo,
             dragToDesktopValueAnimator,
             visualIndicator,
+            dragInterruptedCallback,
         )
     }
 
@@ -811,6 +818,7 @@ class DesktopTasksController(
             }
         val isMinimizingToPip =
             DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue &&
+                desktopPipTransitionObserver.isPresent &&
                 (taskInfo.pictureInPictureParams?.isAutoEnterEnabled ?: false)
 
         // If task is going to PiP, start a PiP transition instead of a minimize transition
@@ -827,7 +835,7 @@ class DesktopTasksController(
             val requestRes = transitions.dispatchRequest(Binder(), requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
 
-            desktopPipTransitionObserver.addPendingPipTransition(
+            desktopPipTransitionObserver.get().addPendingPipTransition(
                 DesktopPipTransitionObserver.PendingPipTransition(
                     token = freeformTaskTransitionStarter.startPipTransition(wct),
                     taskId = taskInfo.taskId,
@@ -880,6 +888,9 @@ class DesktopTasksController(
             exitResult.asExit()?.runOnTransitionStart?.invoke(transition)
             desktopExitRunnable?.invoke(transition)
         }
+        taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
+            doesAnyTaskRequireTaskbarRounding(displayId, taskId)
+        )
     }
 
     /** Move a task with given `taskId` to fullscreen */
@@ -1262,8 +1273,7 @@ class DesktopTasksController(
             wct.reparent(task.token, displayAreaInfo.token, /* onTop= */ true)
         }
 
-        // TODO: b/391485148 - pass in the moving-to-desk |task| here to apply task-limit policy.
-        val activationRunnable = addDeskActivationChanges(destinationDeskId, wct)
+        val activationRunnable = addDeskActivationChanges(destinationDeskId, wct, task)
 
         if (Flags.enableDisplayFocusInShellTransitions()) {
             // Bring the destination display to top with includingParents=true, so that the
@@ -1326,6 +1336,9 @@ class DesktopTasksController(
 
         val stageCoordinatorRootTaskToken =
             splitScreenController.multiDisplayProvider.getDisplayRootForDisplayId(DEFAULT_DISPLAY)
+        if (stageCoordinatorRootTaskToken == null) {
+            return
+        }
         wct.reparent(stageCoordinatorRootTaskToken, displayAreaInfo.token, true /* onTop */)
 
         val deactivationRunnable =
@@ -2981,6 +2994,11 @@ class DesktopTasksController(
         removeDesk(displayId = displayId, deskId = deskId)
     }
 
+    /** Removes all the available desks on all displays. */
+    fun removeAllDesks() {
+        taskRepository.getAllDeskIds().forEach { deskId -> removeDesk(deskId) }
+    }
+
     private fun removeDesk(displayId: Int, deskId: Int) {
         if (!DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION.isTrue()) return
         logV("removeDesk deskId=%d from displayId=%d", deskId, displayId)
@@ -3531,9 +3549,15 @@ class DesktopTasksController(
     // TODO(b/366397912): Support full multi-user mode in Windowing.
     override fun onUserChanged(newUserId: Int, userContext: Context) {
         logV("onUserChanged previousUserId=%d, newUserId=%d", userId, newUserId)
+        updateCurrentUser(newUserId)
+    }
+
+    private fun updateCurrentUser(newUserId: Int) {
         userId = newUserId
         taskRepository = userRepositories.getProfile(userId)
-        snapEventHandler.onUserChange()
+        if (this::snapEventHandler.isInitialized) {
+            snapEventHandler.onUserChange()
+        }
     }
 
     /** Called when a task's info changes. */
@@ -3747,6 +3771,18 @@ class DesktopTasksController(
             }
         }
 
+        override fun removeDesk(deskId: Int) {
+            executeRemoteCallWithTaskPermission(controller, "removeDesk") { c ->
+                c.removeDesk(deskId)
+            }
+        }
+
+        override fun removeAllDesks() {
+            executeRemoteCallWithTaskPermission(controller, "removeAllDesks") { c ->
+                c.removeAllDesks()
+            }
+        }
+
         override fun activateDesk(deskId: Int, remoteTransition: RemoteTransition?) {
             executeRemoteCallWithTaskPermission(controller, "activateDesk") { c ->
                 c.activateDesk(deskId, remoteTransition)
@@ -3810,8 +3846,8 @@ class DesktopTasksController(
             }
         }
 
-        override fun removeDesktop(displayId: Int) {
-            executeRemoteCallWithTaskPermission(controller, "removeDesktop") { c ->
+        override fun removeDefaultDeskInDisplay(displayId: Int) {
+            executeRemoteCallWithTaskPermission(controller, "removeDefaultDeskInDisplay") { c ->
                 c.removeDefaultDeskInDisplay(displayId)
             }
         }

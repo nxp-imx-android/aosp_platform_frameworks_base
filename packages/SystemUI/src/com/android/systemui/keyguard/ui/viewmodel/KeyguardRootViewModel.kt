@@ -31,10 +31,8 @@ import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInterac
 import com.android.systemui.keyguard.domain.interactor.PulseExpansionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
-import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.GONE
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
-import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
 import com.android.systemui.keyguard.shared.model.KeyguardState.OFF
 import com.android.systemui.keyguard.shared.model.KeyguardState.PRIMARY_BOUNCER
 import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
@@ -165,43 +163,27 @@ constructor(
             .onStart { emit(false) }
             .distinctUntilChanged()
 
-    private val isOnLockscreen: Flow<Boolean> =
+    private val isOnOrGoingToLockscreen: Flow<Boolean> =
         combine(
-                keyguardTransitionInteractor.isFinishedIn(LOCKSCREEN).onStart { emit(false) },
-                anyOf(
-                    keyguardTransitionInteractor.isInTransition(Edge.create(to = LOCKSCREEN)),
-                    keyguardTransitionInteractor.isInTransition(Edge.create(from = LOCKSCREEN)),
-                ),
-            ) { onLockscreen, transitioningToOrFromLockscreen ->
-                onLockscreen || transitioningToOrFromLockscreen
+                keyguardTransitionInteractor.transitionValue(LOCKSCREEN).map { it == 1f },
+                keyguardTransitionInteractor.isInTransition(Edge.create(to = LOCKSCREEN)),
+            ) { onLockscreen, transitioningToLockscreen ->
+                onLockscreen || transitioningToLockscreen
             }
             .distinctUntilChanged()
 
     private val alphaOnShadeExpansion: Flow<Float> =
         combineTransform(
-                anyOf(
-                    keyguardTransitionInteractor.isInTransition(
-                        edge = Edge.create(from = LOCKSCREEN, to = Scenes.Gone),
-                        edgeWithoutSceneContainer = Edge.create(from = LOCKSCREEN, to = GONE),
-                    ),
-                    keyguardTransitionInteractor.isInTransition(
-                        edge = Edge.create(from = Overlays.Bouncer, to = LOCKSCREEN),
-                        edgeWithoutSceneContainer =
-                            Edge.create(from = PRIMARY_BOUNCER, to = LOCKSCREEN),
-                    ),
-                    keyguardTransitionInteractor.isInTransition(
-                        Edge.create(from = LOCKSCREEN, to = DREAMING)
-                    ),
-                    keyguardTransitionInteractor.isInTransition(
-                        Edge.create(from = LOCKSCREEN, to = OCCLUDED)
-                    ),
+                keyguardTransitionInteractor.isInTransition(
+                    edge = Edge.create(from = Overlays.Bouncer, to = LOCKSCREEN),
+                    edgeWithoutSceneContainer = Edge.create(from = PRIMARY_BOUNCER, to = LOCKSCREEN),
                 ),
-                isOnLockscreen,
+                isOnOrGoingToLockscreen,
                 shadeInteractor.qsExpansion,
                 shadeInteractor.shadeExpansion,
-            ) { disabledTransitionRunning, isOnLockscreen, qsExpansion, shadeExpansion ->
+            ) { disabledTransitionRunning, isOnOrGoingToLockscreen, qsExpansion, shadeExpansion ->
                 // Fade out quickly as the shade expands
-                if (isOnLockscreen && !disabledTransitionRunning) {
+                if (isOnOrGoingToLockscreen && !disabledTransitionRunning) {
                     val alpha =
                         1f -
                             MathUtils.constrainedMap(

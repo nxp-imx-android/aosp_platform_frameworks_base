@@ -29,7 +29,7 @@ import com.android.compose.animation.scene.transformation.CustomPropertyTransfor
 import com.android.compose.animation.scene.transformation.PropertyTransformation
 import com.android.compose.animation.scene.transformation.PropertyTransformationScope
 import com.android.mechanics.MotionValue
-import com.android.mechanics.behavior.EdgeContainerExpansionSpec
+import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import kotlinx.coroutines.CoroutineScope
 
 interface ContainerRevealHaptics {
@@ -53,7 +53,7 @@ interface ContainerRevealHaptics {
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun TransitionBuilder.verticalContainerReveal(
     container: ElementKey,
-    motionSpec: EdgeContainerExpansionSpec,
+    motionSpec: VerticalExpandContainerSpec,
     haptics: ContainerRevealHaptics,
 ) {
     // Make the swipe distance be exactly the target height of the container.

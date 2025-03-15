@@ -419,6 +419,10 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"Fes clic per vincular un dispositiu nou"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"No s\'ha pogut actualitzar el valor predefinit"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Valors predefinits"</string>
+    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
+    <skip />
+    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
+    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Seleccionat"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Entorn"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Esquerra"</string>
@@ -432,8 +436,7 @@
     <string name="hearing_devices_ambient_unmute" msgid="2187938085943876814">"Deixa de silenciar l\'entorn"</string>
     <string name="hearing_devices_tools_label" msgid="1929081464316074476">"Eines"</string>
     <string name="quick_settings_hearing_devices_live_caption_title" msgid="1054814050932225451">"Subtítols instantanis"</string>
-    <!-- no translation found for hearing_devices_settings_button (999474385481812222) -->
-    <skip />
+    <string name="hearing_devices_settings_button" msgid="999474385481812222">"Configuració"</string>
     <string name="quick_settings_notes_label" msgid="1028004078001002623">"Nota"</string>
     <string name="sensor_privacy_start_use_mic_dialog_title" msgid="563796653825944944">"Vols desbloquejar el micròfon del dispositiu?"</string>
     <string name="sensor_privacy_start_use_camera_dialog_title" msgid="8807639852654305227">"Vols desbloquejar la càmera del dispositiu?"</string>
@@ -583,6 +586,8 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Quan comparteixes una aplicació, <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> pot veure qualsevol cosa que s\'hi mostra o que s\'hi reprodueix. Per aquest motiu, ves amb compte amb les contrasenyes, les dades de pagament, els missatges, les fotos i l\'àudio i el vídeo."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Comparteix la pantalla"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ha desactivat aquesta opció"</string>
+    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
+    <skip />
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Tria una aplicació per compartir"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"Vols emetre la pantalla?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Emet una aplicació"</string>
@@ -795,7 +800,8 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Activat: basat en cares"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Fet"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplica"</string>
-    <string name="inline_turn_off_notifications" msgid="8543989584403106071">"Desactiva les notificacions"</string>
+    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
+    <skip />
     <string name="notification_silence_title" msgid="8608090968400832335">"Silenci"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Predeterminat"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Automàtic"</string>
@@ -906,8 +912,7 @@
     <string name="system_multitasking_rhs" msgid="8779289852395243004">"Utilitzar la pantalla dividida amb l\'aplicació a la dreta"</string>
     <string name="system_multitasking_lhs" msgid="7348595296208696452">"Utilitzar la pantalla dividida amb l\'aplicació a l\'esquerra"</string>
     <string name="system_multitasking_full_screen" msgid="4221409316059910349">"Utilitza la pantalla completa"</string>
-    <!-- no translation found for system_multitasking_desktop_view (8871367687089347180) -->
-    <skip />
+    <string name="system_multitasking_desktop_view" msgid="8871367687089347180">"Utilitza l\'enfinestrament d\'escriptori"</string>
     <string name="system_multitasking_splitscreen_focus_rhs" msgid="3838578650313318508">"Canvia a l\'aplicació de la dreta o de sota amb la pantalla dividida"</string>
     <string name="system_multitasking_splitscreen_focus_lhs" msgid="3164261844398662518">"Canvia a l\'aplicació de l\'esquerra o de dalt amb la pantalla dividida"</string>
     <string name="system_multitasking_replace" msgid="7410071959803642125">"Durant el mode de pantalla dividida: substitueix una app per una altra"</string>
@@ -981,6 +986,8 @@
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Arrossega aquí per suprimir"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Necessites com a mínim <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> mosaics"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edita"</string>
+    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
+    <skip />
     <string name="tuner_time" msgid="2450785840990529997">"Hora"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Mostra les hores, els minuts i els segons"</item>
@@ -1003,8 +1010,7 @@
     <string name="accessibility_qs_edit_tile_add_to_position" msgid="9029163095148274690">"Afegeix a la posició <xliff:g id="POSITION">%1$d</xliff:g>"</string>
     <string name="accessibilit_qs_edit_tile_add_move_invalid_position" msgid="2858467994472624487">"La posició no és vàlida."</string>
     <string name="accessibility_qs_edit_position" msgid="4509277359815711830">"Posició <xliff:g id="POSITION">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_qs_edit_tile_already_added (5900071201690226752) -->
-    <skip />
+    <string name="accessibility_qs_edit_tile_already_added" msgid="5900071201690226752">"La targeta ja s\'ha afegit"</string>
     <string name="accessibility_qs_edit_tile_added" msgid="9067146040380836334">"El mosaic s\'ha afegit"</string>
     <string name="accessibility_qs_edit_tile_removed" msgid="1175925632436612036">"El mosaic s\'ha suprimit"</string>
     <string name="accessibility_desc_quick_settings_edit" msgid="741658939453595297">"Editor de configuració ràpida."</string>
@@ -1205,7 +1211,6 @@
     <string name="controls_media_close_session" msgid="4780485355795635052">"Amagar aquest control multimèdia per a <xliff:g id="APP_NAME">%1$s</xliff:g>?"</string>
     <string name="controls_media_active_session" msgid="3146882316024153337">"La sessió multimèdia actual no es pot amagar."</string>
     <string name="controls_media_dismiss_button" msgid="4485675693008031646">"Amaga"</string>
-    <string name="controls_media_resume" msgid="1933520684481586053">"Reprèn"</string>
     <string name="controls_media_settings_button" msgid="5815790345117172504">"Configuració"</string>
     <string name="controls_media_playing_item_description" msgid="4531853311504359098">"<xliff:g id="SONG_NAME">%1$s</xliff:g> (<xliff:g id="ARTIST_NAME">%2$s</xliff:g>) s\'està reproduint des de l\'aplicació <xliff:g id="APP_LABEL">%3$s</xliff:g>"</string>
     <string name="controls_media_seekbar_description" msgid="4389621713616214611">"<xliff:g id="ELAPSED_TIME">%1$s</xliff:g> de <xliff:g id="TOTAL_TIME">%2$s</xliff:g>"</string>

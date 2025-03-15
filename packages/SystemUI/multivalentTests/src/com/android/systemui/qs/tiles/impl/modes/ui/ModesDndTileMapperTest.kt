@@ -23,10 +23,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigTestBuilder
+import com.android.systemui.qs.tiles.base.shared.model.QSTileState
+import com.android.systemui.qs.tiles.base.shared.model.QSTileUIConfig
 import com.android.systemui.qs.tiles.impl.modes.domain.model.ModesDndTileModel
-import com.android.systemui.qs.tiles.viewmodel.QSTileConfigTestBuilder
-import com.android.systemui.qs.tiles.viewmodel.QSTileState
-import com.android.systemui.qs.tiles.viewmodel.QSTileUIConfig
 import com.android.systemui.res.R
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
@@ -58,23 +58,36 @@ class ModesDndTileMapperTest : SysuiTestCase() {
 
     @Test
     fun map_inactiveState() {
-        val model = ModesDndTileModel(isActivated = false)
+        val model = ModesDndTileModel(isActivated = false, extraStatus = null)
 
         val state = underTest.map(config, model)
 
         assertThat(state.activationState).isEqualTo(QSTileState.ActivationState.INACTIVE)
         assertThat((state.icon as Icon.Loaded).res).isEqualTo(R.drawable.qs_dnd_icon_off)
-        assertThat(state.secondaryLabel).isEqualTo("Off")
+        assertThat(state.secondaryLabel).isNull() // Will use default label for activationState
     }
 
     @Test
     fun map_activeState() {
-        val model = ModesDndTileModel(isActivated = true)
+        val model = ModesDndTileModel(isActivated = true, extraStatus = null)
 
         val state = underTest.map(config, model)
 
         assertThat(state.activationState).isEqualTo(QSTileState.ActivationState.ACTIVE)
         assertThat((state.icon as Icon.Loaded).res).isEqualTo(R.drawable.qs_dnd_icon_on)
-        assertThat(state.secondaryLabel).isEqualTo("On")
+        assertThat(state.secondaryLabel).isNull() // Will use default label for activationState
+    }
+
+    @Test
+    fun map_activeStateWithExtraStatus() {
+        val model = ModesDndTileModel(isActivated = true, extraStatus = "Until 14:00")
+
+        val state = underTest.map(config, model)
+
+        assertThat(state.activationState).isEqualTo(QSTileState.ActivationState.ACTIVE)
+        assertThat((state.icon as Icon.Loaded).res).isEqualTo(R.drawable.qs_dnd_icon_on)
+        assertThat(state.secondaryLabel).isEqualTo("Until 14:00")
+        assertThat(state.contentDescription).isEqualTo("Do Not Disturb")
+        assertThat(state.stateDescription).isEqualTo("Until 14:00")
     }
 }

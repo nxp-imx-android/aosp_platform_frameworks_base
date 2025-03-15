@@ -236,7 +236,12 @@ final class NavigationBarController {
                             systemInsets.bottom, Gravity.BOTTOM));
                     mLastInsets = systemInsets;
                 } else {
-                    decorView.addView(mNavigationBarFrame);
+                    // If systemInsets are null, the DecorView is not attached to the window yet.
+                    // Use the final captionBar height as the initial one, otherwise it resolves to
+                    // match parent, and can lead to full size IME insets.
+                    final int height = getImeCaptionBarHeight(true /* imeDrawsImeNavBar */);
+                    decorView.addView(mNavigationBarFrame, new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT, height, Gravity.BOTTOM));
                 }
                 final NavigationBarView navigationBarView = mNavigationBarFrame.findViewByPredicate(
                         NavigationBarView.class::isInstance);
@@ -461,7 +466,7 @@ final class NavigationBarController {
             final Insets systemInsets = getSystemInsets();
             if (systemInsets != null) {
                 if (!Objects.equals(systemInsets, mLastInsets)) {
-                    mNavigationBarFrame.setLayoutParams(new NavigationBarFrame.LayoutParams(
+                    mNavigationBarFrame.setLayoutParams(new FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             systemInsets.bottom, Gravity.BOTTOM));
                     mLastInsets = systemInsets;

@@ -96,7 +96,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.app.AppOpsManager;
@@ -6372,7 +6372,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
         NotificationChannel same = new NotificationChannel("id", "Bah", IMPORTANCE_DEFAULT);
         mHelper.createNotificationChannel(PKG_P, 0, same, true, false, 0, false);
 
-        verifyZeroInteractions(mHandler);
+        verifyNoMoreInteractions(mHandler);
     }
 
     @Test
@@ -6398,7 +6398,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
 
         mHelper.updateNotificationChannel(PKG_P, 0, same, false, 0, false);
 
-        verifyZeroInteractions(mHandler);
+        verifyNoMoreInteractions(mHandler);
     }
 
     @Test
@@ -6412,7 +6412,7 @@ public class PreferencesHelperTest extends UiServiceTestCase {
     public void setShowBadge_same_doesNotRequestSort() {
         mHelper.setShowBadge(PKG_P, 0, true); // true == DEFAULT_SHOW_BADGE
 
-        verifyZeroInteractions(mHandler);
+        verifyNoMoreInteractions(mHandler);
     }
 
     @Test

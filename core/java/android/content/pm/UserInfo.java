@@ -494,10 +494,14 @@ public class UserInfo implements Parcelable {
     // TODO(b/142482943): Make this logic more specific and customizable. (canHaveProfile(userType))
     /* @hide */
     public boolean canHaveProfile() {
-        if (isProfile() || isGuest() || isRestricted()) {
+        if (!isFull() || isProfile() || isGuest() || isRestricted() || isDemo()) {
             return false;
         }
-        return isMain();
+        // NOTE: profiles used to be restricted just to the system user (and later to the main
+        // user), but from the framework point of view there is no need for such restriction, hence
+        // it's lifted
+        // TODO(b/374832167): check value of config_supportProfilesOnNonMainUser
+        return isMain() || android.multiuser.Flags.profilesForAll();
     }
 
     // TODO(b/142482943): Get rid of this (after removing it from all tests) if feasible.

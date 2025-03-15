@@ -5394,13 +5394,13 @@
          corresponding permission such as {@link #HEAD_TRACKING} or
          {@link #FACE_TRACKING} for the data being accessed.
 
-         <p>Protection level: normal|appop
+         <p>Protection level: signature|privileged
 
          @SystemApi
          @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
          @hide -->
     <permission android:name="android.permission.XR_TRACKING_IN_BACKGROUND"
-                android:protectionLevel="normal|appop"
+                android:protectionLevel="signature|privileged"
                 android:description="@string/permdesc_xr_tracking_in_background"
                 android:label="@string/permlab_xr_tracking_in_background"
                 android:featureFlag="android.xr.xr_manifest_entries" />

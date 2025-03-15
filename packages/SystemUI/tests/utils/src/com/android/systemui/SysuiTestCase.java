@@ -15,6 +15,7 @@
  */
 package com.android.systemui;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -28,7 +29,6 @@ import android.os.MessageQueue;
 import android.os.ParcelFileDescriptor;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.flag.junit.SetFlagsRule;
-import android.platform.test.ravenwood.RavenwoodClassRule;
 import android.platform.test.ravenwood.RavenwoodRule;
 import android.test.mock.MockContext;
 import android.testing.DexmakerShareClassLoaderRule;
@@ -50,11 +50,13 @@ import com.android.systemui.log.LogWtfHandlerRule;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.mockito.Mockito;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -92,23 +94,6 @@ public abstract class SysuiTestCase {
     @Rule(order = Integer.MIN_VALUE)
     public AndroidXAnimatorIsolationRule mAndroidXAnimatorIsolationRule =
             new AndroidXAnimatorIsolationRule();
-
-    /**
-     * Rule that respects class-level annotations such as {@code @DisabledOnRavenwood} when tests
-     * are running on Ravenwood; on all other test environments this rule is a no-op passthrough.
-     */
-    @ClassRule(order = Integer.MIN_VALUE + 1)
-    public static final RavenwoodClassRule sRavenwood = new RavenwoodClassRule();
-
-    /**
-     * Rule that defines and prepares the Ravenwood environment when tests are running on
-     * Ravenwood; on all other test environments this rule is a no-op passthrough.
-     */
-    @Rule(order = Integer.MIN_VALUE + 1)
-    public final RavenwoodRule mRavenwood = new RavenwoodRule.Builder()
-            .setProcessApp()
-            .setProvideMainThread(true)
-            .build();
 
     @ClassRule
     public static final SetFlagsRule.ClassRule mSetFlagsClassRule =
@@ -208,6 +193,7 @@ public abstract class SysuiTestCase {
 
     @Before
     public void SysuiSetup() throws Exception {
+        assertTempFilesAreCreatable();
         ProtoLog.REQUIRE_PROTOLOGTOOL = false;
         mSysuiDependency = new SysuiTestDependency(mContext, shouldFailOnLeakedReceiver());
         mDependency = mSysuiDependency.install();
@@ -226,6 +212,28 @@ public abstract class SysuiTestCase {
                         "Tests should use SysuiTestCase#getContext or SysuiTestCase#mContext");
             });
             InstrumentationRegistry.registerInstance(inst, InstrumentationRegistry.getArguments());
+        }
+    }
+
+    private static Boolean sCanCreateTempFiles = null;
+
+    private static void assertTempFilesAreCreatable() {
+        // TODO(b/391948934): hopefully remove this hack
+        if (sCanCreateTempFiles == null) {
+            try {
+                File tempFile = File.createTempFile("confirm_temp_file_createable", "txt");
+                sCanCreateTempFiles = true;
+                assertTrue(tempFile.delete());
+            } catch (IOException e) {
+                sCanCreateTempFiles = false;
+                throw new RuntimeException(e);
+            }
+        }
+        if (!sCanCreateTempFiles) {
+            Assert.fail(
+                    "Cannot create temp files, so mockito will probably fail (b/391948934).  Temp"
+                            + " folder should be: "
+                            + System.getProperty("java.io.tmpdir"));
         }
     }
 
