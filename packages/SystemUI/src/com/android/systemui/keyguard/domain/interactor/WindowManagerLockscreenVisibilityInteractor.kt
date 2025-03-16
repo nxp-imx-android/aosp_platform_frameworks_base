@@ -196,39 +196,50 @@ constructor(
                 .distinctUntilChanged()
         }
 
-    private val lockscreenVisibilityWithScenes =
-        combine(
-                sceneInteractor.get().transitionState.flatMapLatestConflated {
-                    when (it) {
-                        is Idle -> {
-                            when (it.currentScene) {
-                                in keyguardContent -> flowOf(true)
-                                in nonKeyguardContent -> flowOf(false)
-                                in keyguardAgnosticContent -> isDeviceNotEnteredDirectly
-                                else ->
-                                    throw IllegalStateException("Unknown scene: ${it.currentScene}")
+    private val lockscreenVisibilityWithScenes: Flow<Boolean> =
+        // The scene container visibility into account as that will be forced to false when the
+        // device isn't yet provisioned (e.g. still in the setup wizard).
+        sceneInteractor.get().isVisible.flatMapLatestConflated { isVisible ->
+            if (isVisible) {
+                combine(
+                        sceneInteractor.get().transitionState.flatMapLatestConflated {
+                            when (it) {
+                                is Idle ->
+                                    when (it.currentScene) {
+                                        in keyguardContent -> flowOf(true)
+                                        in nonKeyguardContent -> flowOf(false)
+                                        in keyguardAgnosticContent -> isDeviceNotEnteredDirectly
+                                        else ->
+                                            throw IllegalStateException(
+                                                "Unknown scene: ${it.currentScene}"
+                                            )
+                                    }
+                                is Transition ->
+                                    when {
+                                        it.isTransitioningSets(from = keyguardContent) ->
+                                            flowOf(true)
+                                        it.isTransitioningSets(from = nonKeyguardContent) ->
+                                            flowOf(false)
+                                        it.isTransitioningSets(from = keyguardAgnosticContent) ->
+                                            isDeviceNotEnteredDirectly
+                                        else ->
+                                            throw IllegalStateException(
+                                                "Unknown content: ${it.fromContent}"
+                                            )
+                                    }
                             }
-                        }
-                        is Transition -> {
-                            when {
-                                it.isTransitioningSets(from = keyguardContent) -> flowOf(true)
-                                it.isTransitioningSets(from = nonKeyguardContent) -> flowOf(false)
-                                it.isTransitioningSets(from = keyguardAgnosticContent) ->
-                                    isDeviceNotEnteredDirectly
-                                else ->
-                                    throw IllegalStateException(
-                                        "Unknown content: ${it.fromContent}"
-                                    )
-                            }
-                        }
+                        },
+                        wakeToGoneInteractor.canWakeDirectlyToGone,
+                        ::Pair,
+                    )
+                    .map { (lockscreenVisibilityByTransitionState, canWakeDirectlyToGone) ->
+                        lockscreenVisibilityByTransitionState && !canWakeDirectlyToGone
                     }
-                },
-                wakeToGoneInteractor.canWakeDirectlyToGone,
-                ::Pair,
-            )
-            .map { (lockscreenVisibilityByTransitionState, canWakeDirectlyToGone) ->
-                lockscreenVisibilityByTransitionState && !canWakeDirectlyToGone
+            } else {
+                // Lockscreen is never visible when the scene container is invisible.
+                flowOf(false)
             }
+        }
 
     private val lockscreenVisibilityLegacy =
         combine(
