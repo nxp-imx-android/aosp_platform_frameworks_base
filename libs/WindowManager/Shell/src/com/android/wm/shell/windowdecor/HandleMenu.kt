@@ -500,6 +500,12 @@ class HandleMenu(
             t = iconButtondrawableBaseInset,
             b = iconButtondrawableBaseInset, l = 0, r = iconButtondrawableShiftInset
         )
+        private val iconButtonDrawableInsetStart
+            get() =
+                if (context.isRtl) iconButtonDrawableInsetsRight else iconButtonDrawableInsetsLeft
+        private val iconButtonDrawableInsetEnd
+            get() =
+                if (context.isRtl) iconButtonDrawableInsetsLeft else iconButtonDrawableInsetsRight
 
         // App Info Pill.
         private val appInfoPill = rootView.requireViewById<View>(R.id.app_info_pill)
@@ -760,16 +766,11 @@ class HandleMenu(
             desktopBtn.isEnabled = !taskInfo.isFreeform
             desktopBtn.imageTintList = style.windowingButtonColor
 
-            val startInsets = if (context.isRtl) iconButtonDrawableInsetsRight
-            else iconButtonDrawableInsetsLeft
-            val endInsets = if (context.isRtl) iconButtonDrawableInsetsLeft
-            else iconButtonDrawableInsetsRight
-
             fullscreenBtn.apply {
                 background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
-                    drawableInsets = startInsets
+                    drawableInsets = iconButtonDrawableInsetStart
                 )
             }
 
@@ -793,7 +794,7 @@ class HandleMenu(
                 background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
-                    drawableInsets = endInsets
+                    drawableInsets = iconButtonDrawableInsetEnd
                 )
             }
         }
@@ -843,6 +844,10 @@ class HandleMenu(
             openByDefaultBtn.apply {
                 isGone = isBrowserApp
                 imageTintList = ColorStateList.valueOf(style.textColor)
+                background = createBackgroundDrawable(
+                    color = style.textColor,
+                    cornerRadius = iconButtonRippleRadius,
+                    drawableInsets = iconButtonDrawableInsetEnd)
             }
         }
 
