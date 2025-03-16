@@ -46,7 +46,6 @@ import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.session.shared.shadeSessionStorage
 import com.android.systemui.scene.shared.logger.sceneLogger
-import com.android.systemui.settings.displayTracker
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
@@ -65,7 +64,6 @@ val Kosmos.sceneContainerStartable by Fixture {
         bouncerInteractor = bouncerInteractor,
         keyguardInteractor = keyguardInteractor,
         sysUiState = sysUiState,
-        displayId = displayTracker.defaultDisplayId,
         sceneLogger = sceneLogger,
         falsingCollector = falsingCollector,
         falsingManager = falsingManager,

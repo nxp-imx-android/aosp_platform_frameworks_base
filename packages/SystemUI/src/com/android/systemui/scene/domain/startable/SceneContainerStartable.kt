@@ -33,10 +33,8 @@ import com.android.systemui.bouncer.domain.interactor.SimBouncerInteractor
 import com.android.systemui.bouncer.shared.logging.BouncerUiEvent
 import com.android.systemui.classifier.FalsingCollector
 import com.android.systemui.classifier.FalsingCollectorActual
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
-import com.android.systemui.dagger.qualifiers.DisplayId
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryHapticsInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
@@ -82,6 +80,7 @@ import com.android.systemui.util.kotlin.pairwise
 import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.printSection
 import com.android.systemui.util.println
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
 import dagger.Lazy
@@ -123,7 +122,6 @@ constructor(
     private val bouncerInteractor: BouncerInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     private val sysUiState: SysUiState,
-    @DisplayId private val displayId: Int,
     private val sceneLogger: SceneLogger,
     @FalsingCollectorActual private val falsingCollector: FalsingCollector,
     private val falsingManager: FalsingManager,
@@ -732,21 +730,26 @@ constructor(
                     sceneInteractor.transitionState
                         .mapNotNull { it as? ObservableTransitionState.Idle }
                         .distinctUntilChanged(),
+                    sceneInteractor.isVisible,
                     occlusionInteractor.invisibleDueToOcclusion,
-                ) { idleState, invisibleDueToOcclusion ->
+                ) { idleState, isVisible, invisibleDueToOcclusion ->
                     SceneContainerPlugin.SceneContainerPluginState(
                         scene = idleState.currentScene,
                         overlays = idleState.currentOverlays,
+                        isVisible = isVisible,
                         invisibleDueToOcclusion = invisibleDueToOcclusion,
                     )
                 }
-                .collect { sceneContainerPluginState ->
+                .map { sceneContainerPluginState ->
+                    SceneContainerPlugin.EvaluatorByFlag.map { (flag, evaluator) ->
+                            flag to evaluator(sceneContainerPluginState)
+                        }
+                        .toMap()
+                }
+                .distinctUntilChanged()
+                .collect { flags ->
                     sysUiState.updateFlags(
-                        displayId,
-                        *SceneContainerPlugin.EvaluatorByFlag.map { (flag, evaluator) ->
-                                flag to evaluator.invoke(sceneContainerPluginState)
-                            }
-                            .toTypedArray(),
+                        *(flags.entries.map { (key, value) -> key to value }).toTypedArray()
                     )
                 }
         }
