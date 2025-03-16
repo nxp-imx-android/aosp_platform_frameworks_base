@@ -37,7 +37,6 @@ import android.view.WindowInsets.Type.systemBars
 import android.view.WindowManager
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Space
 import android.window.DesktopModeFlags
 import android.window.SurfaceSyncGroup
@@ -549,9 +548,8 @@ class HandleMenu(
         private val openInAppOrBrowserPill = rootView.requireViewById<View>(
             R.id.open_in_app_or_browser_pill
         )
-        private val openInAppOrBrowserBtn = openInAppOrBrowserPill.requireViewById<View>(
-            R.id.open_in_app_or_browser_button
-        )
+        private val openInAppOrBrowserBtn = openInAppOrBrowserPill
+            .requireViewById<HandleMenuActionButton>(R.id.open_in_app_or_browser_button)
         private val openByDefaultBtn = openInAppOrBrowserPill.requireViewById<ImageButton>(
             R.id.open_by_default_button
         )
@@ -808,20 +806,15 @@ class HandleMenu(
                 newWindowBtn to shouldShowNewWindowButton,
                 manageWindowBtn to shouldShowManageWindowsButton,
                 changeAspectRatioBtn to shouldShowChangeAspectRatioButton,
-            ).forEach {
-                val button = it.first
-                val shouldShow = it.second
-
-                val buttonRoot = button.requireViewById<LinearLayout>(R.id.action_button)
-                val label = buttonRoot.requireViewById<MarqueedTextView>(R.id.label)
-                val image = buttonRoot.requireViewById<ImageView>(R.id.image)
-
-                button.isGone = !shouldShow
-                label.apply {
-                    setTextColor(style.textColor)
-                    startMarquee()
+            ).forEach { (button, shouldShow) ->
+                button.apply {
+                    isGone = !shouldShow
+                    textView.apply {
+                        setTextColor(style.textColor)
+                        startMarquee()
+                    }
+                    iconView.imageTintList = ColorStateList.valueOf(style.textColor)
                 }
-                image.imageTintList = ColorStateList.valueOf(style.textColor)
             }
         }
 
@@ -837,20 +830,20 @@ class HandleMenu(
                 getString(R.string.open_in_browser_text)
             }
 
-            val buttonRoot = openInAppOrBrowserBtn.requireViewById<LinearLayout>(R.id.action_button)
-            val label = openInAppOrBrowserBtn.requireViewById<MarqueedTextView>(R.id.label)
-            val image = openInAppOrBrowserBtn.requireViewById<ImageView>(R.id.image)
-            openInAppOrBrowserBtn.contentDescription = btnText
-            buttonRoot.contentDescription = btnText
-            label.apply {
-                text = btnText
-                setTextColor(style.textColor)
-                startMarquee()
+            openInAppOrBrowserBtn.apply {
+                contentDescription = btnText
+                textView.apply {
+                    text = btnText
+                    setTextColor(style.textColor)
+                    startMarquee()
+                }
+                iconView.imageTintList = ColorStateList.valueOf(style.textColor)
             }
-            image.imageTintList = ColorStateList.valueOf(style.textColor)
 
-            openByDefaultBtn.isGone = isBrowserApp
-            openByDefaultBtn.imageTintList = ColorStateList.valueOf(style.textColor)
+            openByDefaultBtn.apply {
+                isGone = isBrowserApp
+                imageTintList = ColorStateList.valueOf(style.textColor)
+            }
         }
 
         private fun getString(@StringRes resId: Int): String = context.resources.getString(resId)
