@@ -267,12 +267,20 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         // action down: does NOT collapse the shade
         val actionDownMenuKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keycode)
         assertThat(underTest.dispatchKeyEvent(actionDownMenuKeyEvent)).isFalse()
-        verify(statusBarKeyguardViewManager, never()).showPrimaryBouncer(any())
+        verify(statusBarKeyguardViewManager, never())
+            .showPrimaryBouncer(
+                any(),
+                eq("KeyguardKeyEventInteractor#collapseShadeLockedOrShowPrimaryBouncer"),
+            )
 
         // action up: collapses the shade
         val actionUpMenuKeyEvent = KeyEvent(KeyEvent.ACTION_UP, keycode)
         assertThat(underTest.dispatchKeyEvent(actionUpMenuKeyEvent)).isTrue()
-        verify(statusBarKeyguardViewManager).showPrimaryBouncer(eq(true))
+        verify(statusBarKeyguardViewManager)
+            .showPrimaryBouncer(
+                eq(true),
+                eq("KeyguardKeyEventInteractor#collapseShadeLockedOrShowPrimaryBouncer"),
+            )
     }
 
     private fun verifyActionsDoNothing(keycode: Int) {
@@ -280,12 +288,20 @@ class KeyguardKeyEventInteractorTest : SysuiTestCase() {
         val actionDownMenuKeyEvent = KeyEvent(KeyEvent.ACTION_DOWN, keycode)
         assertThat(underTest.dispatchKeyEvent(actionDownMenuKeyEvent)).isFalse()
         verify(shadeController, never()).animateCollapseShadeForced()
-        verify(statusBarKeyguardViewManager, never()).showPrimaryBouncer(any())
+        verify(statusBarKeyguardViewManager, never())
+            .showPrimaryBouncer(
+                any(),
+                eq("KeyguardKeyEventInteractor#collapseShadeLockedOrShowPrimaryBouncer"),
+            )
 
         // action up: doesNothing
         val actionUpMenuKeyEvent = KeyEvent(KeyEvent.ACTION_UP, keycode)
         assertThat(underTest.dispatchKeyEvent(actionUpMenuKeyEvent)).isFalse()
         verify(shadeController, never()).animateCollapseShadeForced()
-        verify(statusBarKeyguardViewManager, never()).showPrimaryBouncer(any())
+        verify(statusBarKeyguardViewManager, never())
+            .showPrimaryBouncer(
+                any(),
+                eq("KeyguardKeyEventInteractor#collapseShadeLockedOrShowPrimaryBouncer"),
+            )
     }
 }

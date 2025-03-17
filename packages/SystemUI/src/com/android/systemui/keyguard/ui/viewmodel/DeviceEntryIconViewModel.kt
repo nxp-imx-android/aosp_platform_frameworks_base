@@ -257,7 +257,9 @@ constructor(
         if (SceneContainerFlag.isEnabled) {
             deviceEntryInteractor.attemptDeviceEntry()
         } else {
-            keyguardViewController.get().showPrimaryBouncer(/* scrim */ true)
+            keyguardViewController
+                .get()
+                .showPrimaryBouncer(/* scrim */ true, "DeviceEntryIconViewModel#onUserInteraction")
         }
         deviceEntrySourceInteractor.attemptEnterDeviceFromDeviceEntryIcon()
     }

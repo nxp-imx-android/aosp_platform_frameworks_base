@@ -527,7 +527,8 @@ public class BiometricUnlockController extends KeyguardUpdateMonitorCallback imp
                 break;
             case MODE_SHOW_BOUNCER:
                 Trace.beginSection("MODE_SHOW_BOUNCER");
-                mKeyguardViewController.showPrimaryBouncer(true);
+                mKeyguardViewController.showPrimaryBouncer(true,
+                        "BiometricUnlockController#MODE_SHOW_BOUNCER");
                 Trace.endSection();
                 break;
             case MODE_WAKE_AND_UNLOCK_FROM_DREAM:
