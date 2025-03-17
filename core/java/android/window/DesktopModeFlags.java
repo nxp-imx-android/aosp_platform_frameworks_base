@@ -119,7 +119,7 @@ public enum DesktopModeFlags {
     ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
             Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),
     ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX(
-            Flags::enableShellInitialBoundsRegressionBugFix, false),
+            Flags::enableShellInitialBoundsRegressionBugFix, true),
     ENABLE_START_LAUNCH_TRANSITION_FROM_TASKBAR_BUGFIX(
             Flags::enableStartLaunchTransitionFromTaskbarBugfix, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),
