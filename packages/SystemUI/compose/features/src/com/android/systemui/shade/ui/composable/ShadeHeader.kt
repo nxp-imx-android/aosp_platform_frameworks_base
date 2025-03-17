@@ -293,6 +293,25 @@ fun ContentScope.OverlayShadeHeader(
     viewModel: ShadeHeaderViewModel,
     modifier: Modifier = Modifier,
 ) {
+    OverlayShadeHeaderPartialStateless(
+        viewModel,
+        viewModel.showClock,
+        modifier,
+    )
+}
+
+/**
+ * Ideally, we should have a stateless function for overlay shade header, which facilitates testing.
+ * However, it is cumbersome to implement such a stateless function, especially when some of the
+ * overlay shade header's children accept a view model as the param. Therefore, this function only
+ * break up the clock visibility. It is where "PartialStateless" comes from.
+ */
+@Composable
+fun ContentScope.OverlayShadeHeaderPartialStateless(
+    viewModel: ShadeHeaderViewModel,
+    showClock: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val horizontalPadding =
         max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
 
@@ -308,7 +327,7 @@ fun ContentScope.OverlayShadeHeader(
                 modifier = Modifier.padding(horizontal = horizontalPadding),
             ) {
                 val chipHighlight = viewModel.notificationsChipHighlight
-                if (viewModel.showClock) {
+                if (showClock) {
                     Clock(
                         onClick = viewModel::onClockClicked,
                         modifier = Modifier.padding(horizontal = 4.dp),
