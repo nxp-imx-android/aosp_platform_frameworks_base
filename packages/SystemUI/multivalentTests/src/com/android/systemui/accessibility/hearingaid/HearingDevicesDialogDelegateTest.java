@@ -176,6 +176,8 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
                 .thenReturn(SETTINGS_PACKAGE_NAME);
         when(mDevice.getBondState()).thenReturn(BOND_BONDED);
         when(mDevice.isConnected()).thenReturn(true);
+        when(mDevice.getAddress()).thenReturn(DEVICE_ADDRESS);
+        when(mDevice.getAnonymizedAddress()).thenReturn(DEVICE_ADDRESS);
         when(mCachedDevice.getDevice()).thenReturn(mDevice);
         when(mCachedDevice.getAddress()).thenReturn(DEVICE_ADDRESS);
         when(mCachedDevice.getName()).thenReturn(DEVICE_NAME);
