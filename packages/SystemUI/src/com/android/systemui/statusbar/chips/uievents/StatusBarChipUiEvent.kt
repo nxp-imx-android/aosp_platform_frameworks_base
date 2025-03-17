@@ -33,9 +33,13 @@ enum class StatusBarChipUiEvent(private val _id: Int) : UiEventLogger.UiEventEnu
 
     // Other chip events, which don't need the chip type embedded in the event because an instanceId
     // should also be provided with the new event and all subsequent events
-    @UiEvent(doc = "A status bar chip was removed") STATUS_BAR_CHIP_REMOVED(2216);
-
-    // TODO(b/386821418): Also log a UiEvent each time a chip is tapped.
+    @UiEvent(doc = "A status bar chip was removed") STATUS_BAR_CHIP_REMOVED(2216),
+    @UiEvent(doc = "A status bar chip was tapped to show more information")
+    STATUS_BAR_CHIP_TAP_TO_SHOW(2217),
+    @UiEvent(
+        doc = "A status bar chip was re-tapped to hide the information that was previously shown"
+    )
+    STATUS_BAR_CHIP_TAP_TO_HIDE(2218);
 
     override fun getId() = _id
 }

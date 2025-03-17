@@ -28,6 +28,7 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
+import com.android.systemui.statusbar.chips.uievents.statusBarChipsUiEventLogger
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
@@ -144,6 +145,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
                 launchFullScreenIntentProvider,
                 flags,
                 statusBarNotificationChipsInteractor,
+                kosmos.statusBarChipsUiEventLogger,
                 headerController,
                 executor,
             )
@@ -164,15 +166,15 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             verify(notifPipeline).addOnBeforeFinalizeFilterListener(capture())
         }
         onHeadsUpChangedListener = withArgCaptor { verify(headsUpManager).addListener(capture()) }
-        actionPressListener = if (NotificationBundleUi.isEnabled) {
-            withArgCaptor {
-                verify(kosmos.mockNotificationActionClickManager).addActionClickListener(capture())
+        actionPressListener =
+            if (NotificationBundleUi.isEnabled) {
+                withArgCaptor {
+                    verify(kosmos.mockNotificationActionClickManager)
+                        .addActionClickListener(capture())
+                }
+            } else {
+                withArgCaptor { verify(remoteInputManager).addActionPressListener(capture()) }
             }
-        } else {
-            withArgCaptor {
-                verify(remoteInputManager).addActionPressListener(capture())
-            }
-        }
         given(headsUpManager.allEntries).willAnswer { huns.stream() }
         given(headsUpManager.isHeadsUpEntry(anyString())).willAnswer { invocation ->
             val key = invocation.getArgument<String>(0)

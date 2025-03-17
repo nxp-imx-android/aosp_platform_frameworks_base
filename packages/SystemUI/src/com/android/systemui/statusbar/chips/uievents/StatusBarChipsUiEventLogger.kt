@@ -43,6 +43,19 @@ class StatusBarChipsUiEventLogger @Inject constructor(private val logger: UiEven
         return instanceIdSequence.newInstanceId()
     }
 
+    /** Logs that the chip with the given ID was tapped to show additional information. */
+    fun logChipTapToShow(instanceId: InstanceId?) {
+        logger.log(StatusBarChipUiEvent.STATUS_BAR_CHIP_TAP_TO_SHOW, instanceId)
+    }
+
+    /**
+     * Logs that the chip with the given ID was tapped to hide the additional information that was
+     * previously shown.
+     */
+    fun logChipTapToHide(instanceId: InstanceId?) {
+        logger.log(StatusBarChipUiEvent.STATUS_BAR_CHIP_TAP_TO_HIDE, instanceId)
+    }
+
     /** Starts UiEvent logging for the chips. */
     suspend fun hydrateUiEventLogging(chipsFlow: Flow<ChipsVisibilityModel>) {
         coroutineScope {

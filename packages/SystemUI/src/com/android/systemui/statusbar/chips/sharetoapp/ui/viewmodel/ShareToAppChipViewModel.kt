@@ -72,7 +72,7 @@ constructor(
     private val endMediaProjectionDialogHelper: EndMediaProjectionDialogHelper,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     @StatusBarChipsLog private val logger: LogBuffer,
-    uiEventLogger: StatusBarChipsUiEventLogger,
+    private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel, CoreStartable {
     // There can only be 1 active cast-to-other-device chip at a time, so we can re-use the ID.
     private val instanceId = uiEventLogger.createNewInstanceId()
@@ -241,8 +241,10 @@ constructor(
                     createShareScreenToAppDialogDelegate(state),
                     dialogTransitionAnimator,
                     DIALOG_CUJ,
-                    logger,
-                    TAG,
+                    instanceId = instanceId,
+                    uiEventLogger = uiEventLogger,
+                    logger = logger,
+                    tag = TAG,
                 ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -251,8 +253,10 @@ constructor(
                             createShareScreenToAppDialogDelegate(state),
                             dialogTransitionAnimator,
                             DIALOG_CUJ,
-                            logger,
-                            TAG,
+                            instanceId = instanceId,
+                            uiEventLogger = uiEventLogger,
+                            logger = logger,
+                            tag = TAG,
                         )
                 ),
             instanceId = instanceId,
@@ -278,8 +282,10 @@ constructor(
                     createGenericShareToAppDialogDelegate(),
                     dialogTransitionAnimator,
                     DIALOG_CUJ_AUDIO_ONLY,
-                    logger,
-                    TAG,
+                    instanceId = instanceId,
+                    uiEventLogger = uiEventLogger,
+                    logger = logger,
+                    tag = TAG,
                 ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -287,8 +293,10 @@ constructor(
                         createGenericShareToAppDialogDelegate(),
                         dialogTransitionAnimator,
                         DIALOG_CUJ_AUDIO_ONLY,
-                        logger,
-                        TAG,
+                        instanceId = instanceId,
+                        uiEventLogger = uiEventLogger,
+                        logger = logger,
+                        tag = TAG,
                     )
                 ),
             instanceId = instanceId,

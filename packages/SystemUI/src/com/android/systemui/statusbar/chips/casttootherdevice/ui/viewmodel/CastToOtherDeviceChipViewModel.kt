@@ -70,7 +70,7 @@ constructor(
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     private val endMediaProjectionDialogHelper: EndMediaProjectionDialogHelper,
     @StatusBarChipsLog private val logger: LogBuffer,
-    uiEventLogger: StatusBarChipsUiEventLogger,
+    private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel {
     // There can only be 1 active cast-to-other-device chip at a time, so we can re-use the ID.
     private val instanceId = uiEventLogger.createNewInstanceId()
@@ -217,8 +217,10 @@ constructor(
                     createCastScreenToOtherDeviceDialogDelegate(state),
                     dialogTransitionAnimator,
                     DIALOG_CUJ,
-                    logger,
-                    TAG,
+                    instanceId = instanceId,
+                    uiEventLogger = uiEventLogger,
+                    logger = logger,
+                    tag = TAG,
                 ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -227,8 +229,10 @@ constructor(
                             createCastScreenToOtherDeviceDialogDelegate(state),
                             dialogTransitionAnimator,
                             DIALOG_CUJ,
-                            logger,
-                            TAG,
+                            instanceId = instanceId,
+                            uiEventLogger = uiEventLogger,
+                            logger = logger,
+                            tag = TAG,
                         )
                 ),
             instanceId = instanceId,
@@ -253,8 +257,10 @@ constructor(
                     createGenericCastToOtherDeviceDialogDelegate(deviceName),
                     dialogTransitionAnimator,
                     DIALOG_CUJ_AUDIO_ONLY,
-                    logger,
-                    TAG,
+                    instanceId = instanceId,
+                    uiEventLogger = uiEventLogger,
+                    logger = logger,
+                    tag = TAG,
                 ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -262,8 +268,10 @@ constructor(
                         createGenericCastToOtherDeviceDialogDelegate(deviceName),
                         dialogTransitionAnimator,
                         DIALOG_CUJ_AUDIO_ONLY,
-                        logger,
-                        TAG,
+                        instanceId = instanceId,
+                        uiEventLogger = uiEventLogger,
+                        logger = logger,
+                        tag = TAG,
                     )
                 ),
             instanceId = instanceId,

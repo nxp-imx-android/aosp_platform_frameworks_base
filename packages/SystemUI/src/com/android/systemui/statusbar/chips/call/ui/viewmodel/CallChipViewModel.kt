@@ -21,6 +21,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.view.View
 import com.android.internal.jank.Cuj
+import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.ComposableControllerFactory
 import com.android.systemui.animation.DelegateTransitionAnimatorController
@@ -41,6 +42,7 @@ import com.android.systemui.statusbar.chips.ui.model.ColorsModel
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
+import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
@@ -68,6 +70,7 @@ constructor(
     systemClock: SystemClock,
     private val activityStarter: ActivityStarter,
     @StatusBarChipsLog private val logger: LogBuffer,
+    private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel {
     /** The transition cookie used to register and unregister launch and return animations. */
     private val cookie =
@@ -199,6 +202,8 @@ constructor(
             }
 
         val colors = ColorsModel.AccentThemed
+        val intent = state.intent
+        val instanceId = state.notificationInstanceId
 
         // This block mimics OngoingCallController#updateChip.
         if (state.startTimeMs <= 0L) {
@@ -208,11 +213,11 @@ constructor(
                 key = key,
                 icon = icon,
                 colors = colors,
-                onClickListenerLegacy = getOnClickListener(state.intent),
-                clickBehavior = getClickBehavior(state.intent),
+                onClickListenerLegacy = getOnClickListener(intent, instanceId),
+                clickBehavior = getClickBehavior(intent, instanceId),
                 isHidden = isHidden,
                 transitionManager = getTransitionManager(state, transitionState),
-                instanceId = state.notificationInstanceId,
+                instanceId = instanceId,
             )
         } else {
             val startTimeInElapsedRealtime =
@@ -222,20 +227,26 @@ constructor(
                 icon = icon,
                 colors = colors,
                 startTimeMs = startTimeInElapsedRealtime,
-                onClickListenerLegacy = getOnClickListener(state.intent),
-                clickBehavior = getClickBehavior(state.intent),
+                onClickListenerLegacy = getOnClickListener(intent, instanceId),
+                clickBehavior = getClickBehavior(intent, instanceId),
                 isHidden = isHidden,
                 transitionManager = getTransitionManager(state, transitionState),
-                instanceId = state.notificationInstanceId,
+                instanceId = instanceId,
             )
         }
     }
 
-    private fun getOnClickListener(intent: PendingIntent?): View.OnClickListener? {
+    private fun getOnClickListener(
+        intent: PendingIntent?,
+        instanceId: InstanceId?,
+    ): View.OnClickListener? {
         if (intent == null) return null
         return View.OnClickListener { view ->
             StatusBarChipsModernization.assertInLegacyMode()
+
             logger.log(TAG, LogLevel.INFO, {}, { "Chip clicked" })
+            uiEventLogger.logChipTapToShow(instanceId)
+
             val backgroundView =
                 view.requireViewById<ChipBackgroundContainer>(R.id.ongoing_activity_chip_background)
             // This mimics OngoingCallController#updateChipClickListener.
@@ -249,13 +260,20 @@ constructor(
         }
     }
 
-    private fun getClickBehavior(intent: PendingIntent?): OngoingActivityChipModel.ClickBehavior =
+    private fun getClickBehavior(
+        intent: PendingIntent?,
+        instanceId: InstanceId?,
+    ): OngoingActivityChipModel.ClickBehavior =
         if (intent == null) {
             OngoingActivityChipModel.ClickBehavior.None
         } else {
             OngoingActivityChipModel.ClickBehavior.ExpandAction(
                 onClick = { expandable ->
                     StatusBarChipsModernization.unsafeAssertInNewMode()
+
+                    logger.log(TAG, LogLevel.INFO, {}, { "Chip clicked" })
+                    uiEventLogger.logChipTapToShow(instanceId)
+
                     val animationController =
                         if (
                             !StatusBarChipsReturnAnimations.isEnabled ||

@@ -66,7 +66,7 @@ constructor(
     private val endMediaProjectionDialogHelper: EndMediaProjectionDialogHelper,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     @StatusBarChipsLog private val logger: LogBuffer,
-    uiEventLogger: StatusBarChipsUiEventLogger,
+    private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel {
     private val instanceId = uiEventLogger.createNewInstanceId()
 
@@ -105,8 +105,10 @@ constructor(
                                     createDelegate(state.recordedTask),
                                     dialogTransitionAnimator,
                                     DIALOG_CUJ,
-                                    logger,
-                                    TAG,
+                                    instanceId = instanceId,
+                                    uiEventLogger = uiEventLogger,
+                                    logger = logger,
+                                    tag = TAG,
                                 ),
                             clickBehavior =
                                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -114,8 +116,10 @@ constructor(
                                         dialogDelegate = createDelegate(state.recordedTask),
                                         dialogTransitionAnimator = dialogTransitionAnimator,
                                         DIALOG_CUJ,
-                                        logger,
-                                        TAG,
+                                        instanceId = instanceId,
+                                        uiEventLogger = uiEventLogger,
+                                        logger = logger,
+                                        tag = TAG,
                                     )
                                 ),
                             instanceId = instanceId,
