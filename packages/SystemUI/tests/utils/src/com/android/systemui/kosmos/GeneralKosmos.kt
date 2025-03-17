@@ -25,7 +25,6 @@ import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.coroutines.collectValues
 import com.android.systemui.kosmos.Kosmos.Fixture
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.Duration
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,7 +32,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import org.mockito.kotlin.verify
 
@@ -73,8 +71,6 @@ fun Kosmos.runTest(testBody: suspend Kosmos.() -> Unit) = let { kosmos ->
 }
 
 fun Kosmos.runCurrent() = testScope.runCurrent()
-
-fun Kosmos.advanceTimeBy(duration: Duration) = testScope.advanceTimeBy(duration)
 
 fun <T> Kosmos.collectLastValue(flow: Flow<T>) = testScope.collectLastValue(flow)
 

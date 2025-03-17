@@ -16,18 +16,18 @@
 
 package com.android.systemui.communal.posturing.data.repository
 
-import com.android.systemui.communal.posturing.data.model.PositionState
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import com.android.systemui.communal.posturing.shared.model.PosturedState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class FakePosturingRepository : PosturingRepository {
-    private val _postured = MutableSharedFlow<PositionState>()
+    private val _postured = MutableStateFlow<PosturedState>(PosturedState.Unknown)
 
-    override val positionState: Flow<PositionState> = _postured.asSharedFlow()
+    override val posturedState: StateFlow<PosturedState> = _postured.asStateFlow()
 
-    suspend fun emitPositionState(state: PositionState) {
-        _postured.emit(state)
+    fun setPosturedState(state: PosturedState) {
+        _postured.value = state
     }
 }
 
