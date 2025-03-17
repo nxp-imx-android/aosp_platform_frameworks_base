@@ -49,6 +49,7 @@ import static com.android.server.policy.PhoneWindowManager.POWER_VOLUME_UP_BEHAV
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.after;
@@ -353,7 +354,7 @@ class TestPhoneWindowManager {
         doReturn(mAppOpsManager).when(mContext).getSystemService(eq(AppOpsManager.class));
         doReturn(mDisplayManager).when(mContext).getSystemService(eq(DisplayManager.class));
         doReturn(mInputManager).when(mContext).getSystemService(eq(InputManager.class));
-        doNothing().when(mInputManager).registerKeyGestureEventHandler(any());
+        doNothing().when(mInputManager).registerKeyGestureEventHandler(anyList(), any());
         doNothing().when(mInputManager).unregisterKeyGestureEventHandler(any());
         doReturn(mPackageManager).when(mContext).getPackageManager();
         doReturn(mSensorPrivacyManager).when(mContext).getSystemService(
@@ -476,8 +477,8 @@ class TestPhoneWindowManager {
         mPhoneWindowManager.interceptUnhandledKey(event, mInputToken);
     }
 
-    boolean sendKeyGestureEvent(KeyGestureEvent event) {
-        return mPhoneWindowManager.handleKeyGestureEvent(event, mInputToken);
+    void sendKeyGestureEvent(KeyGestureEvent event) {
+        mPhoneWindowManager.handleKeyGestureEvent(event, mInputToken);
     }
 
     /**

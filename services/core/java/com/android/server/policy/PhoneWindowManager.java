@@ -115,7 +115,6 @@ import static com.android.server.wm.WindowManagerPolicyProto.SCREEN_ON_FULLY;
 import static com.android.server.wm.WindowManagerPolicyProto.WINDOW_MANAGER_DRAW_COMPLETE;
 
 import android.accessibilityservice.AccessibilityService;
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -268,6 +267,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -4240,19 +4240,51 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (!useKeyGestureEventHandler()) {
             return;
         }
-        mInputManager.registerKeyGestureEventHandler((event, focusedToken) -> {
-            boolean handled = PhoneWindowManager.this.handleKeyGestureEvent(event,
-                    focusedToken);
-            if (handled && !event.isCancelled() && Arrays.stream(event.getKeycodes()).anyMatch(
-                    (keycode) -> keycode == KeyEvent.KEYCODE_POWER)) {
-                mPowerKeyHandled = true;
-            }
-            return handled;
-        });
+        List<Integer> supportedGestures = new ArrayList<>(List.of(
+                KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH,
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_BACK,
+                KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION,
+                KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE,
+                KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER,
+                KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP,
+                KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
+                KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER,
+                KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
+                KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
+                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
+                KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD,
+                KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD,
+                KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT
+        ));
+        if (enableTalkbackAndMagnifierKeyGestures()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK);
+        }
+        if (enableVoiceAccessKeyGestures()) {
+            supportedGestures.add(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
+        }
+        mInputManager.registerKeyGestureEventHandler(supportedGestures,
+                PhoneWindowManager.this::handleKeyGestureEvent);
     }
 
     @VisibleForTesting
-    boolean handleKeyGestureEvent(KeyGestureEvent event, IBinder focusedToken) {
+    void handleKeyGestureEvent(KeyGestureEvent event, IBinder focusedToken) {
         boolean start = event.getAction() == KeyGestureEvent.ACTION_GESTURE_START;
         boolean complete = event.getAction() == KeyGestureEvent.ACTION_GESTURE_COMPLETE
                 && !event.isCancelled();
@@ -4262,12 +4294,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         int modifierState = event.getModifierState();
         boolean keyguardOn = keyguardOn();
         boolean canLaunchApp = isUserSetupComplete() && !keyguardOn;
+        if (!event.isCancelled() && Arrays.stream(event.getKeycodes()).anyMatch(
+                (keycode) -> keycode == KeyEvent.KEYCODE_POWER)) {
+            mPowerKeyHandled = true;
+        }
         switch (gestureType) {
             case KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS:
                 if (complete) {
                     showRecentApps(false);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_APP_SWITCH:
                 if (!keyguardOn) {
                     if (start) {
@@ -4276,7 +4312,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         toggleRecentApps();
                     }
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_ASSISTANT:
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_VOICE_ASSISTANT:
                 if (complete && canLaunchApp) {
@@ -4284,33 +4320,33 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             deviceId, SystemClock.uptimeMillis(),
                             AssistUtils.INVOCATION_TYPE_UNKNOWN);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_HOME:
                 if (complete) {
                     // Post to main thread to avoid blocking input pipeline.
                     mHandler.post(() -> handleShortPressOnHome(displayId));
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS:
                 if (complete && canLaunchApp) {
                     showSystemSettings();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN:
                 if (complete) {
                     lockNow(null /* options */);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL:
                 if (complete) {
                     toggleNotificationPanel();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT:
                 if (complete) {
                     interceptScreenshotChord(SCREENSHOT_KEY_OTHER, 0 /*pressDelay*/);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TRIGGER_BUG_REPORT:
                 if (complete && mEnableBugReportKeyboardShortcut) {
                     try {
@@ -4321,12 +4357,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         Slog.d(TAG, "Error taking bugreport", e);
                     }
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_BACK:
                 if (complete) {
                     injectBackGesture(SystemClock.uptimeMillis());
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_MULTI_WINDOW_NAVIGATION:
                 if (complete) {
                     StatusBarManagerInternal statusbar = getStatusBarManagerInternal();
@@ -4335,7 +4371,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                                 getTargetDisplayIdForKeyGestureEvent(event));
                     }
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_DESKTOP_MODE:
                 if (complete) {
                     StatusBarManagerInternal statusbar = getStatusBarManagerInternal();
@@ -4344,24 +4380,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                                 getTargetDisplayIdForKeyGestureEvent(event));
                     }
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_LEFT:
                 if (complete) {
                     moveFocusedTaskToStageSplit(getTargetDisplayIdForKeyGestureEvent(event),
                             true /* leftOrTop */);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_SPLIT_SCREEN_NAVIGATION_RIGHT:
                 if (complete) {
                     moveFocusedTaskToStageSplit(getTargetDisplayIdForKeyGestureEvent(event),
                             false /* leftOrTop */);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER:
                 if (complete) {
                     toggleKeyboardShortcutsMenu(deviceId);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP:
             case KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN:
                 if (complete) {
@@ -4369,32 +4405,32 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             gestureType == KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_UP ? 1 : -1;
                     changeDisplayBrightnessValue(displayId, direction);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER:
                 if (start) {
                     showRecentApps(true);
                 } else {
                     hideRecentApps(true, false);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS:
             case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS:
                 if (complete && isKeyEventForCurrentUser(event.getDisplayId(),
                         event.getKeycodes()[0], "launchAllAppsViaA11y")) {
                     launchAllAppsAction();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH:
                 if (complete && canLaunchApp) {
                     launchTargetSearchActivity();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH:
                 if (complete) {
                     int direction = (modifierState & KeyEvent.META_SHIFT_MASK) != 0 ? -1 : 1;
                     sendSwitchKeyboardLayout(displayId, focusedToken, direction);
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD:
                 if (start) {
                     // Screenshot chord is pressed: Wait for long press delay before taking
@@ -4404,14 +4440,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 } else {
                     cancelPendingScreenshotChordAction();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD:
                 if (start) {
                     interceptRingerToggleChord();
                 } else {
                     cancelPendingRingerToggleChordAction();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS:
                 if (start) {
                     performHapticFeedback(
@@ -4421,40 +4457,34 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 } else {
                     cancelGlobalActionsAction();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT:
                 if (start) {
                     interceptBugreportGestureTv();
                 } else {
                     cancelBugreportGestureTv();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT:
                 if (complete && mAccessibilityShortcutController.isAccessibilityShortcutAvailable(
                         isKeyguardLocked())) {
                     mHandler.sendMessage(mHandler.obtainMessage(MSG_ACCESSIBILITY_SHORTCUT));
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_CLOSE_ALL_DIALOGS:
                 if (complete) {
                     mContext.closeSystemDialogs();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_TALKBACK:
-                if (enableTalkbackAndMagnifierKeyGestures()) {
-                    if (complete) {
-                        mTalkbackShortcutController.toggleTalkback(mCurrentUserId,
-                                TalkbackShortcutController.ShortcutSource.KEYBOARD);
-                    }
-                    return true;
+                if (complete) {
+                    mTalkbackShortcutController.toggleTalkback(mCurrentUserId,
+                            TalkbackShortcutController.ShortcutSource.KEYBOARD);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS:
-                if (enableVoiceAccessKeyGestures()) {
-                    if (complete) {
-                        mVoiceAccessShortcutController.toggleVoiceAccess(mCurrentUserId);
-                    }
-                    return true;
+                if (complete) {
+                    mVoiceAccessShortcutController.toggleVoiceAccess(mCurrentUserId);
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION:
@@ -4463,7 +4493,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         && mModifierShortcutManager.launchApplication(data)) {
                     dismissKeyboardShortcutsMenu();
                 }
-                return true;
+                break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB:
                 NotificationManager nm = getNotificationService();
                 if (nm != null) {
@@ -4472,9 +4502,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                                     : Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS, null,
                             "Key gesture DND", true);
                 }
-                return true;
+                break;
+            default:
+                Log.w(TAG, "Received a key gesture " + event
+                        + " that was not registered by this handler");
+                break;
         }
-        return false;
     }
 
     private void changeDisplayBrightnessValue(int displayId, int direction) {
