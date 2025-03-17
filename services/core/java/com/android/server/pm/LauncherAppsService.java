@@ -379,9 +379,10 @@ public class LauncherAppsService extends SystemService {
         public List<UserHandle> getUserProfiles() {
             int[] userIds;
             if (!canAccessHiddenProfile(getCallingUid(), getCallingPid())) {
-                userIds = mUm.getProfileIdsExcludingHidden(getCallingUserId(), /* enabled= */ true);
+                userIds = mUserManagerInternal.getProfileIdsExcludingHidden(getCallingUserId(),
+                        /* enabled= */ true);
             } else {
-                userIds = mUm.getEnabledProfileIds(getCallingUserId());
+                userIds = mUserManagerInternal.getProfileIds(getCallingUserId(), true);
             }
             final List<UserHandle> result = new ArrayList<>(userIds.length);
             for (int userId : userIds) {
@@ -398,9 +399,10 @@ public class LauncherAppsService extends SystemService {
 
             int[] userIds;
             if (!canAccessHiddenProfile(callingUid, Binder.getCallingPid())) {
-                userIds = mUm.getProfileIdsExcludingHidden(getCallingUserId(), /* enabled= */ true);
+                userIds = mUserManagerInternal.getProfileIdsExcludingHidden(getCallingUserId(),
+                        /* enabled= */ true);
             } else {
-                userIds = mUm.getEnabledProfileIds(getCallingUserId());
+                userIds = mUserManagerInternal.getProfileIds(getCallingUserId(), true);
             }
 
             final long token = Binder.clearCallingIdentity();
@@ -503,16 +505,11 @@ public class LauncherAppsService extends SystemService {
                 return true;
             }
 
-            long ident = injectClearCallingIdentity();
-            try {
-                final UserInfo callingUserInfo = mUm.getUserInfo(callingUserId);
-                if (callingUserInfo != null && callingUserInfo.isProfile()) {
-                    Slog.w(TAG, message + " for another profile "
-                            + targetUserId + " from " + callingUserId + " not allowed");
-                    return false;
-                }
-            } finally {
-                injectRestoreCallingIdentity(ident);
+            final UserInfo callingUserInfo = mUserManagerInternal.getUserInfo(callingUserId);
+            if (callingUserInfo != null && callingUserInfo.isProfile()) {
+                Slog.w(TAG, message + " for another profile "
+                        + targetUserId + " from " + callingUserId + " not allowed");
+                return false;
             }
 
             if (isHiddenProfile(UserHandle.of(targetUserId))
@@ -529,9 +526,9 @@ public class LauncherAppsService extends SystemService {
                 return false;
             }
 
-            long identity = injectClearCallingIdentity();
             try {
-                UserProperties properties = mUm.getUserProperties(targetUser);
+                UserProperties properties = mUserManagerInternal
+                        .getUserProperties(targetUser.getIdentifier());
                 if (properties == null) {
                     return false;
                 }
@@ -540,8 +537,6 @@ public class LauncherAppsService extends SystemService {
                         == UserProperties.PROFILE_API_VISIBILITY_HIDDEN;
             } catch (IllegalArgumentException e) {
                 return false;
-            } finally {
-                injectRestoreCallingIdentity(identity);
             }
         }
 
@@ -686,7 +681,7 @@ public class LauncherAppsService extends SystemService {
             final int callingUid = injectBinderCallingUid();
             final long ident = injectClearCallingIdentity();
             try {
-                if (mUm.getUserInfo(user.getIdentifier()).isManagedProfile()) {
+                if (mUserManagerInternal.getUserInfo(user.getIdentifier()).isManagedProfile()) {
                     // Managed profile should not show hidden apps
                     return launcherActivities;
                 }
@@ -1713,7 +1708,7 @@ public class LauncherAppsService extends SystemService {
             }
             final long identity = Binder.clearCallingIdentity();
             try {
-                String userType = mUm.getUserInfo(user.getIdentifier()).userType;
+                String userType = mUserManagerInternal.getUserInfo(user.getIdentifier()).userType;
                 Set<String> preInstalledPackages = mUm.getPreInstallableSystemPackages(userType);
                 if (preInstalledPackages == null) {
                     return new ArrayList<>();
