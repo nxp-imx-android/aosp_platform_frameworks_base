@@ -22,8 +22,11 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -118,6 +121,7 @@ import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMap
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffectFactory
@@ -157,7 +161,6 @@ import com.android.systemui.qs.panels.ui.model.AvailableTileGridCell
 import com.android.systemui.qs.panels.ui.model.GridCell
 import com.android.systemui.qs.panels.ui.model.SpacerGridCell
 import com.android.systemui.qs.panels.ui.model.TileGridCell
-import com.android.systemui.qs.panels.ui.viewmodel.BounceableTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.groupAndSort
@@ -220,7 +223,6 @@ private fun EditModeTopBar(onStopEditing: () -> Unit, onReset: (() -> Unit)?) {
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DefaultEditTileGrid(
     listState: EditTileListState,
@@ -526,11 +528,7 @@ private fun CurrentTilesGrid(
     var gridContentOffset by remember { mutableStateOf(Offset(0f, 0f)) }
     val coroutineScope = rememberCoroutineScope()
 
-    val cells =
-        remember(listState.tiles) {
-            listState.tiles.fastMap { Pair(it, BounceableTileViewModel()) }
-        }
-
+    val cells = listState.tiles
     val primaryColor = MaterialTheme.colorScheme.primary
     TileLazyGrid(
         state = gridState,
@@ -561,11 +559,11 @@ private fun CurrentTilesGrid(
                 .testTag(CURRENT_TILES_GRID_TEST_TAG),
     ) {
         EditTiles(
-            cells,
-            listState,
-            selectionState,
-            coroutineScope,
-            largeTilesSpan,
+            cells = cells,
+            dragAndDropState = listState,
+            selectionState = selectionState,
+            coroutineScope = coroutineScope,
+            largeTilesSpan = largeTilesSpan,
             onRemoveTile = onRemoveTile,
         ) { resizingOperation ->
             when (resizingOperation) {
@@ -662,7 +660,7 @@ private fun GridCell.key(index: Int): Any {
 /**
  * Adds a list of [GridCell] to the lazy grid
  *
- * @param cells the pairs of [GridCell] to [BounceableTileViewModel]
+ * @param cells the list of [GridCell]
  * @param dragAndDropState the [DragAndDropState] for this grid
  * @param selectionState the [MutableSelectionState] for this grid
  * @param coroutineScope the [CoroutineScope] to be used for the tiles
@@ -671,7 +669,7 @@ private fun GridCell.key(index: Int): Any {
  * @param onResize the callback when a tile has a new [ResizeOperation]
  */
 fun LazyGridScope.EditTiles(
-    cells: List<Pair<GridCell, BounceableTileViewModel>>,
+    cells: List<GridCell>,
     dragAndDropState: DragAndDropState,
     selectionState: MutableSelectionState,
     coroutineScope: CoroutineScope,
@@ -681,11 +679,11 @@ fun LazyGridScope.EditTiles(
 ) {
     items(
         count = cells.size,
-        key = { cells[it].first.key(it) },
-        span = { cells[it].first.span },
+        key = { cells[it].key(it) },
+        span = { cells[it].span },
         contentType = { TileType },
     ) { index ->
-        when (val cell = cells[index].first) {
+        when (val cell = cells[index]) {
             is TileGridCell ->
                 if (dragAndDropState.isMoving(cell.tile.tileSpec)) {
                     // If the tile is being moved, replace it with a visible spacer
@@ -708,7 +706,15 @@ fun LazyGridScope.EditTiles(
                         onRemoveTile = onRemoveTile,
                         coroutineScope = coroutineScope,
                         largeTilesSpan = largeTilesSpan,
-                        modifier = Modifier.animateItem(),
+                        modifier =
+                            Modifier.animateItem(
+                                placementSpec =
+                                    spring(
+                                        stiffness = Spring.StiffnessMediumLow,
+                                        dampingRatio = Spring.DampingRatioLowBouncy,
+                                        visibilityThreshold = IntOffset.VisibilityThreshold,
+                                    )
+                            ),
                     )
                 }
             is SpacerGridCell ->
@@ -851,7 +857,6 @@ private fun TileGridCell(
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun AvailableTileGridCell(
     cell: AvailableTileGridCell,
