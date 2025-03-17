@@ -39,6 +39,7 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.util.kotlin.DisposableHandles
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
 
@@ -56,6 +57,7 @@ object DeviceEntryIconViewBinder {
     @JvmStatic
     fun bind(
         applicationScope: CoroutineScope,
+        mainImmediateDispatcher: CoroutineDispatcher,
         view: DeviceEntryIconView,
         viewModel: DeviceEntryIconViewModel,
         fgViewModel: DeviceEntryForegroundViewModel,
@@ -91,6 +93,32 @@ object DeviceEntryIconViewBinder {
                         view.clearFocus()
                         view.clearAccessibilityFocus()
                         viewModel.onUserInteraction()
+                    }
+                }
+            }
+
+        disposables +=
+            view.repeatWhenAttached(mainImmediateDispatcher) {
+                repeatOnLifecycle(Lifecycle.State.CREATED) {
+                    launch("$TAG#viewModel.useBackgroundProtection") {
+                        viewModel.useBackgroundProtection.collect { useBackgroundProtection ->
+                            if (useBackgroundProtection) {
+                                bgView.visibility = View.VISIBLE
+                            } else {
+                                bgView.visibility = View.GONE
+                            }
+                        }
+                    }
+                    launch("$TAG#viewModel.burnInOffsets") {
+                        viewModel.burnInOffsets.collect { burnInOffsets ->
+                            view.translationX = burnInOffsets.x.toFloat()
+                            view.translationY = burnInOffsets.y.toFloat()
+                            view.aodFpDrawable.progress = burnInOffsets.progress
+                        }
+                    }
+
+                    launch("$TAG#viewModel.deviceEntryViewAlpha") {
+                        viewModel.deviceEntryViewAlpha.collect { alpha -> view.alpha = alpha }
                     }
                 }
             }
@@ -152,26 +180,6 @@ object DeviceEntryIconViewBinder {
                             }
                         }
                     }
-                    launch("$TAG#viewModel.useBackgroundProtection") {
-                        viewModel.useBackgroundProtection.collect { useBackgroundProtection ->
-                            if (useBackgroundProtection) {
-                                bgView.visibility = View.VISIBLE
-                            } else {
-                                bgView.visibility = View.GONE
-                            }
-                        }
-                    }
-                    launch("$TAG#viewModel.burnInOffsets") {
-                        viewModel.burnInOffsets.collect { burnInOffsets ->
-                            view.translationX = burnInOffsets.x.toFloat()
-                            view.translationY = burnInOffsets.y.toFloat()
-                            view.aodFpDrawable.progress = burnInOffsets.progress
-                        }
-                    }
-
-                    launch("$TAG#viewModel.deviceEntryViewAlpha") {
-                        viewModel.deviceEntryViewAlpha.collect { alpha -> view.alpha = alpha }
-                    }
                 }
             }
 
@@ -212,7 +220,7 @@ object DeviceEntryIconViewBinder {
             }
 
         disposables +=
-            bgView.repeatWhenAttached {
+            bgView.repeatWhenAttached(mainImmediateDispatcher) {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
                     launch("$TAG#bgViewModel.alpha") {
                         bgViewModel.alpha.collect { alpha -> bgView.alpha = alpha }

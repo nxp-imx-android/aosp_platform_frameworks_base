@@ -28,6 +28,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import com.android.systemui.biometrics.AuthController
 import com.android.systemui.customization.R as customR
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlags
 import com.android.systemui.flags.Flags
 import com.android.systemui.keyguard.shared.model.KeyguardSection
@@ -48,6 +49,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.VibratorHelper
 import dagger.Lazy
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
 
@@ -56,6 +58,7 @@ class DefaultDeviceEntrySection
 @Inject
 constructor(
     @Application private val applicationScope: CoroutineScope,
+    @Main private val mainDispatcher: CoroutineDispatcher,
     private val authController: AuthController,
     private val windowManager: WindowManager,
     @ShadeDisplayAware private val context: Context,
@@ -91,6 +94,7 @@ constructor(
             disposableHandle =
                 DeviceEntryIconViewBinder.bind(
                     applicationScope,
+                    mainDispatcher,
                     it,
                     deviceEntryIconViewModel.get(),
                     deviceEntryForegroundViewModel.get(),
