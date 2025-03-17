@@ -112,6 +112,12 @@ public class CompatUIController implements OnDisplaysChangedListener,
             new SparseArray<>(0);
 
     /**
+     * {@link SparseArray} that maps task ids to {@link CompatUIInfo}.
+     */
+    private final SparseArray<CompatUIInfo> mTaskIdToCompatUIInfoMap =
+            new SparseArray<>(0);
+
+    /**
      * {@link Set} of task ids for which we need to display a restart confirmation dialog
      */
     private Set<Integer> mSetOfTaskIdsShowingRestartDialog = new HashSet<>();
@@ -261,7 +267,11 @@ public class CompatUIController implements OnDisplaysChangedListener,
 
     private void handleDisplayCompatShowRestartDialog(
             CompatUIRequests.DisplayCompatShowRestartDialog request) {
-        onRestartButtonClicked(new Pair<>(request.getTaskInfo(), request.getTaskListener()));
+        final CompatUIInfo compatUIInfo = mTaskIdToCompatUIInfoMap.get(request.getTaskId());
+        if (compatUIInfo == null) {
+            return;
+        }
+        onRestartButtonClicked(new Pair<>(compatUIInfo.getTaskInfo(), compatUIInfo.getListener()));
     }
 
     /**
@@ -273,6 +283,11 @@ public class CompatUIController implements OnDisplaysChangedListener,
     public void onCompatInfoChanged(@NonNull CompatUIInfo compatUIInfo) {
         final TaskInfo taskInfo = compatUIInfo.getTaskInfo();
         final ShellTaskOrganizer.TaskListener taskListener = compatUIInfo.getListener();
+        if (taskListener == null) {
+            mTaskIdToCompatUIInfoMap.delete(taskInfo.taskId);
+        } else {
+            mTaskIdToCompatUIInfoMap.put(taskInfo.taskId, compatUIInfo);
+        }
         final boolean isInDisplayCompatMode =
                 taskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove();
         if (taskInfo != null && !taskInfo.appCompatTaskInfo.isTopActivityInSizeCompat()
