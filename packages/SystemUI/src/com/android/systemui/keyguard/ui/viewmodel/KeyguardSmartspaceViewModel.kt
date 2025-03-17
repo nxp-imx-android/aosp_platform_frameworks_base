@@ -17,6 +17,8 @@
 package com.android.systemui.keyguard.ui.viewmodel
 
 import android.content.Context
+import android.content.res.Configuration
+import android.util.Log
 import com.android.systemui.customization.R as customR
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -94,6 +96,43 @@ constructor(
     val isShadeLayoutWide: StateFlow<Boolean> = shadeModeInteractor.isShadeLayoutWide
 
     companion object {
+        private const val TAG = "KeyguardSmartspaceVM"
+
+        fun dateWeatherBelowSmallClock(
+            configuration: Configuration,
+            customDateWeather: Boolean = false,
+        ): Boolean {
+            return if (
+                com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout() &&
+                    !customDateWeather
+            ) {
+                // font size to display size
+                // These values come from changing the font size and display size on a non-foldable.
+                // Visually looked at which configs cause the date/weather to push off of the screen
+                val breakingPairs =
+                    listOf(
+                        0.85f to 320, // tiny font size but large display size
+                        1f to 346,
+                        1.15f to 346,
+                        1.5f to 376,
+                        1.8f to 411, // large font size but tiny display size
+                    )
+                val screenWidthDp = configuration.screenWidthDp
+                val fontScale = configuration.fontScale
+                var fallBelow = false
+                for ((font, width) in breakingPairs) {
+                    if (fontScale >= font && screenWidthDp <= width) {
+                        fallBelow = true
+                        break
+                    }
+                }
+                Log.d(TAG, "Width: $screenWidthDp, Font: $fontScale, BelowClock: $fallBelow")
+                return fallBelow
+            } else {
+                true
+            }
+        }
+
         fun getDateWeatherStartMargin(context: Context): Int {
             return context.resources.getDimensionPixelSize(R.dimen.below_clock_padding_start) +
                 context.resources.getDimensionPixelSize(customR.dimen.status_view_margin_horizontal)

@@ -128,13 +128,7 @@ object KeyguardBlueprintViewBinder {
         cs: ConstraintSet,
         constraintLayout: ConstraintLayout,
     ) {
-        val ids =
-            listOf(
-                sharedR.id.date_smartspace_view,
-                sharedR.id.date_smartspace_view_large,
-                sharedR.id.weather_smartspace_view,
-                sharedR.id.weather_smartspace_view_large,
-            )
+        val ids = listOf(sharedR.id.date_smartspace_view, sharedR.id.date_smartspace_view_large)
 
         for (i in ids) {
             constraintLayout.getViewById(i)?.visibility = cs.getVisibility(i)
