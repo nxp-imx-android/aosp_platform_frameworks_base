@@ -24,6 +24,8 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.LogLevel
 import com.android.systemui.shade.data.repository.ShadeDisplaysRepository
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
@@ -42,6 +44,7 @@ constructor(
     private val shadeDisplaysRepository: Lazy<ShadeDisplaysRepository>,
     @ShadeDisplayAware private val configurationRepository: ConfigurationRepository,
     @Application private val scope: CoroutineScope,
+    @ShadeDisplayLog private val logBuffer: LogBuffer,
 ) : CoreStartable {
     override fun start() {
         scope.launchTraced("ShadeStateTraceLogger") {
@@ -71,6 +74,18 @@ constructor(
                         TRACK_GROUP_NAME,
                         "configurationChange#smallestScreenWidthDp",
                         it.smallestScreenWidthDp,
+                    )
+                    logBuffer.log(
+                        "ShadeStateTraceLogger",
+                        LogLevel.DEBUG,
+                        {
+                            int1 = it.smallestScreenWidthDp
+                            int2 = it.densityDpi
+                        },
+                        {
+                            "New configuration change from Shade window. " +
+                                "smallestScreenWidthDp: $int1, densityDpi: $int2"
+                        },
                     )
                 }
             }

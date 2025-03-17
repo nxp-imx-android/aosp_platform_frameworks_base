@@ -23,6 +23,7 @@ import android.view.WindowManager
 import android.view.WindowManager.LayoutParams
 import android.view.WindowManager.LayoutParams.TYPE_NOTIFICATION_SHADE
 import android.window.WindowContext
+import com.android.app.tracing.TrackGroupUtils.trackGroup
 import com.android.systemui.CoreStartable
 import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.common.ui.ConfigurationStateImpl
@@ -34,6 +35,8 @@ import com.android.systemui.common.ui.view.ChoreographerUtils
 import com.android.systemui.common.ui.view.ChoreographerUtilsImpl
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.LogBufferFactory
 import com.android.systemui.res.R
 import com.android.systemui.scene.ui.view.WindowRootView
 import com.android.systemui.shade.data.repository.MutableShadeDisplaysRepository
@@ -263,6 +266,20 @@ object ShadeDisplayAwareModule {
     @Provides
     @ShadeOnDefaultDisplayWhenLocked
     fun provideShadeOnDefaultDisplayWhenLocked(): Boolean = true
+
+    /** Provides a [LogBuffer] for use by classes related to shade movement */
+    @Provides
+    @SysUISingleton
+    @ShadeDisplayLog
+    fun provideShadeDisplayLogLogBuffer(factory: LogBufferFactory): LogBuffer {
+        val logBufferName = "ShadeDisplayLog"
+        return factory.create(
+            logBufferName,
+            maxSize = 400,
+            alwaysLogToLogcat = true,
+            systraceTrackName = trackGroup("shade", logBufferName),
+        )
+    }
 }
 
 /** Module that should be included only if the shade window [WindowRootView] is available. */
@@ -295,3 +312,6 @@ object ShadeDisplayAwareWithShadeWindowModule {
  * how well this solution behaves from the performance point of view.
  */
 @Qualifier @Retention(AnnotationRetention.RUNTIME) annotation class ShadeOnDefaultDisplayWhenLocked
+
+/** A [com.android.systemui.log.LogBuffer] for changes to the shade display. */
+@Qualifier @Retention(AnnotationRetention.RUNTIME) annotation class ShadeDisplayLog
