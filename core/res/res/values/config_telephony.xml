@@ -261,7 +261,9 @@
          to identify providers that should be ignored if the carrier config
          carrier_supported_satellite_services_per_provider_bundle does not support them.
          -->
-    <string-array name="config_satellite_providers" translatable="false"></string-array>
+    <string-array name="config_satellite_providers" translatable="false">
+        <item>"310830"</item>
+    </string-array>
     <java-symbol type="array" name="config_satellite_providers" />
 
     <!-- The identifier of the satellite's SIM profile. The identifier is composed of MCC and MNC
