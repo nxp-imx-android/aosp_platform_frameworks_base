@@ -19,6 +19,8 @@ package com.android.systemui.qs.composefragment
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Canvas
+import android.graphics.Path
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
@@ -125,7 +127,6 @@ import com.android.systemui.qs.composefragment.SceneKeys.debugName
 import com.android.systemui.qs.composefragment.SceneKeys.toIdleSceneKey
 import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.composefragment.ui.NotificationScrimClipParams
-import com.android.systemui.qs.composefragment.ui.notificationScrimClip
 import com.android.systemui.qs.composefragment.ui.quickQuickSettingsToQuickSettings
 import com.android.systemui.qs.composefragment.ui.toEditMode
 import com.android.systemui.qs.composefragment.viewmodel.QSFragmentComposeViewModel
@@ -241,7 +242,7 @@ constructor(
             FrameLayoutTouchPassthrough(
                 context,
                 { notificationScrimClippingParams.isEnabled },
-                { notificationScrimClippingParams.params.top },
+                snapshotFlow { notificationScrimClippingParams.params },
                 // Only allow scrolling when we are fully expanded. That way, we don't intercept
                 // swipes in lockscreen (when somehow QS is receiving touches).
                 { (scrollState.canScrollForward && viewModel.isQsFullyExpanded) || isCustomizing },
@@ -276,11 +277,6 @@ constructor(
                                     }
                                 }
                                 .graphicsLayer { alpha = viewModel.viewAlpha }
-                                .thenIf(notificationScrimClippingParams.isEnabled) {
-                                    Modifier.notificationScrimClip {
-                                        notificationScrimClippingParams.params
-                                    }
-                                }
                                 .thenIf(!Flags.notificationShadeBlur()) {
                                     Modifier.offset {
                                         IntOffset(
@@ -1061,17 +1057,75 @@ private const val EDIT_MODE_TIME_MILLIS = 500
 private class FrameLayoutTouchPassthrough(
     context: Context,
     private val clippingEnabledProvider: () -> Boolean,
-    private val clippingTopProvider: () -> Int,
+    private val clippingParams: Flow<NotificationScrimClipParams>,
     private val canScrollForwardQs: () -> Boolean,
     private val emitMotionEventForFalsing: () -> Unit,
 ) : FrameLayout(context) {
+
+    init {
+        repeatWhenAttached {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                clippingParams.collect { currentClipParams = it }
+            }
+        }
+    }
+
+    private val currentClippingPath = Path()
+    private var lastWidth = -1
+        set(value) {
+            if (field != value) {
+                field = value
+                updateClippingPath()
+            }
+        }
+
+    private var currentClipParams = NotificationScrimClipParams()
+        set(value) {
+            if (field != value) {
+                field = value
+                updateClippingPath()
+            }
+        }
+
+    private fun updateClippingPath() {
+        currentClippingPath.rewind()
+        if (clippingEnabledProvider()) {
+            val right = width + currentClipParams.rightInset
+            val left = -currentClipParams.leftInset
+            val top = currentClipParams.top
+            val bottom = currentClipParams.bottom
+            currentClippingPath.addRoundRect(
+                left.toFloat(),
+                top.toFloat(),
+                right.toFloat(),
+                bottom.toFloat(),
+                currentClipParams.radius.toFloat(),
+                currentClipParams.radius.toFloat(),
+                Path.Direction.CW,
+            )
+        }
+        invalidate()
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        lastWidth = right - left
+    }
+
+    override fun dispatchDraw(canvas: Canvas) {
+        if (!currentClippingPath.isEmpty) {
+            canvas.clipOutPath(currentClippingPath)
+        }
+        super.dispatchDraw(canvas)
+    }
+
     override fun isTransformedTouchPointInView(
         x: Float,
         y: Float,
         child: View?,
         outLocalPoint: PointF?,
     ): Boolean {
-        return if (clippingEnabledProvider() && y + translationY > clippingTopProvider()) {
+        return if (clippingEnabledProvider() && y + translationY > currentClipParams.top) {
             false
         } else {
             super.isTransformedTouchPointInView(x, y, child, outLocalPoint)
