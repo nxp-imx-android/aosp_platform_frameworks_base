@@ -16,7 +16,11 @@
 
 package android.app.supervision;
 
+import android.annotation.FlaggedApi;
+import android.annotation.Nullable;
+import android.annotation.SystemApi;
 import android.app.Service;
+import android.app.supervision.flags.Flags;
 import android.content.Intent;
 import android.os.IBinder;
 
@@ -26,31 +30,43 @@ import android.os.IBinder;
  *
  * @hide
  */
+@SystemApi
+@FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
 public class SupervisionAppService extends Service {
-    private final ISupervisionAppService mBinder = new ISupervisionAppService.Stub() {
-        @Override
-        public void onEnabled() {
-            SupervisionAppService.this.onEnabled();
-        }
+    private final ISupervisionAppService mBinder =
+            new ISupervisionAppService.Stub() {
+                @Override
+                public void onEnabled() {
+                    SupervisionAppService.this.onEnabled();
+                }
 
-        @Override
-        public void onDisabled() {
-            SupervisionAppService.this.onDisabled();
-        }
-    };
+                @Override
+                public void onDisabled() {
+                    SupervisionAppService.this.onDisabled();
+                }
+            };
 
+    @Nullable
     @Override
-    public final IBinder onBind(Intent intent) {
+    public final IBinder onBind(@Nullable Intent intent) {
         return mBinder.asBinder();
     }
 
     /**
      * Called when supervision is enabled.
+     *
+     * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     public void onEnabled() {}
 
     /**
      * Called when supervision is disabled.
+     *
+     * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
     public void onDisabled() {}
 }
