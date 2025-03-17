@@ -2124,6 +2124,9 @@
     <!-- [CHAR LIMIT=30] Text shown in button used to prevent app from showing Live Updates, for this notification and all future ones -->
     <string name="notification_inline_disable_promotion">Don\'t show as pinned</string>
 
+    <!-- [CHAR LIMIT=30] Text shown in button used to prevent app from showing Live Updates, for this notification and all future ones -->
+    <string name="notification_inline_disable_promotion_button">Block Live Updates from this app</string>
+
     <!-- Text accompanying the "Show live updates" switch explaining the purpose of the setting -->
     <string name="live_notifications_title">Showing Live Updates</string>
 
@@ -4210,9 +4213,9 @@
     </string>
 
 
-    <!-- Content of the Reset Tiles dialog in QS Edit mode. [CHAR LIMIT=NONE] -->
+    <!-- Content of interstitial shown after user revokes app permission to post Live Updates. [CHAR LIMIT=NONE] -->
     <string name="demote_explain_text">
-         <xliff:g id="application" example= "Superfast Food Delivery">%1$s</xliff:g> will no longer show Live Updates here. You can change this any time in Settings.
+         <xliff:g id="application" example= "Superfast Food Delivery">%1$s</xliff:g> will no longer show Live Updates. You can change this any time in Settings.
     </string>
 
     <!-- Template that joins disabled message with the label for the voice over. [CHAR LIMIT=NONE] -->

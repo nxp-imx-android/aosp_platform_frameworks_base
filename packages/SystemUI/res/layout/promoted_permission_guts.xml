@@ -54,7 +54,7 @@
             android:textColor="@androidprv:color/materialColorOnSurface"
             android:minWidth="@dimen/min_clickable_item_size"
             android:minHeight="@dimen/min_clickable_item_size"
-            style="@style/TextAppearance.NotificationInfo.Button" />
+            style="@style/TextAppearance.NotificationMenuButtonText" />
 
         <TextView
             android:id="@+id/undo"

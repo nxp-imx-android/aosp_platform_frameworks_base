@@ -300,6 +300,9 @@
     <!-- Side padding on the side of notifications -->
     <dimen name="notification_side_paddings">16dp</dimen>
 
+    <!-- Width of inline notification menu item buttons -->
+    <dimen name="notification_menu_item_width">112dp</dimen>
+
     <!-- Starting translateY offset of the HUN appear and disappear animations. Indicates
     the amount by the view is positioned above the screen before the animation starts. -->
     <dimen name="heads_up_appear_y_above_screen">32dp</dimen>
@@ -370,10 +373,12 @@
     <dimen name="min_notification_layout_height">48dp</dimen>
 
     <!-- Size of the space to place a notification menu item -->
-    <dimen name="notification_menu_icon_size">64dp</dimen>
+    <dimen name="notification_menu_icon_size">120dp</dimen>
 
     <!-- The space around a notification menu item  -->
     <dimen name="notification_menu_icon_padding">20dp</dimen>
+    <!-- The space around a notification menu button  -->
+    <dimen name="notification_menu_button_padding">8dp</dimen>
 
     <!-- scroll view the size of 3 channel rows -->
     <dimen name="notification_blocker_channel_list_height">192dp</dimen>
