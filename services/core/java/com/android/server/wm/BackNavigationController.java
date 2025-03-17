@@ -85,6 +85,7 @@ class BackNavigationController {
     private boolean mShowWallpaper;
     private Runnable mPendingAnimation;
     private final NavigationMonitor mNavigationMonitor = new NavigationMonitor();
+    private RemoteCallback mGestureRequest;
 
     private AnimationHandler mAnimationHandler;
 
@@ -111,6 +112,35 @@ class BackNavigationController {
 
     void onEmbeddedWindowGestureTransferred(@NonNull WindowState host) {
         mNavigationMonitor.onEmbeddedWindowGestureTransferred(host);
+    }
+
+    void registerBackGestureDelegate(@NonNull RemoteCallback requestObserver) {
+        if (!sPredictBackEnable) {
+            return;
+        }
+        synchronized (mWindowManagerService.mGlobalLock) {
+            mGestureRequest = requestObserver;
+            try {
+                requestObserver.getInterface().asBinder().linkToDeath(() -> {
+                    synchronized (mWindowManagerService.mGlobalLock) {
+                        mGestureRequest = null;
+                    }
+                }, 0 /* flags */);
+            } catch (RemoteException r) {
+                Slog.e(TAG, "Failed to link to death");
+                mGestureRequest = null;
+            }
+        }
+    }
+
+    boolean requestBackGesture() {
+        synchronized (mWindowManagerService.mGlobalLock) {
+            if (mGestureRequest == null) {
+                return false;
+            }
+            mGestureRequest.sendResult(null);
+            return true;
+        }
     }
 
     /**

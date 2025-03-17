@@ -286,6 +286,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 this::createExternalInterface, this);
         mShellCommandHandler.addDumpCallback(this::dump, this);
         mShellController.addConfigurationChangeListener(this);
+        registerBackGestureDelegate();
     }
 
     public BackAnimation getBackAnimationImpl() {
@@ -1138,6 +1139,32 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                     }
                 };
         mBackAnimationAdapter = new BackAnimationAdapter(runner);
+    }
+
+    private void registerBackGestureDelegate() {
+        if (!Flags.delegateBackGestureToShell()) {
+            return;
+        }
+        final RemoteCallback requestBackMonitor = new RemoteCallback(
+                new RemoteCallback.OnResultListener() {
+                    @Override
+                    public void onResult(@Nullable Bundle result) {
+                            mShellExecutor.execute(() -> {
+                                if (mBackGestureStarted) {
+                                    Log.w(TAG, "Back gesture is running, ignore request");
+                                    return;
+                                }
+                                onMotionEvent(0, 0, KeyEvent.ACTION_DOWN, EDGE_NONE);
+                                setTriggerBack(true);
+                                onMotionEvent(0, 0, KeyEvent.ACTION_UP, EDGE_NONE);
+                            });
+                    }
+                });
+        try {
+            mActivityTaskManager.registerBackGestureDelegate(requestBackMonitor);
+        } catch (RemoteException remoteException) {
+            Log.w(TAG, "Failed register back gesture request ", remoteException);
+        }
     }
 
     /**

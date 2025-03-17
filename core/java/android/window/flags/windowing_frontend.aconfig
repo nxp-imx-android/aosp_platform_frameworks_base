@@ -525,3 +525,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "delegate_back_gesture_to_shell"
+    namespace: "windowing_frontend"
+    description: "Delegate back gesture event to back animation controller."
+    bug: "394599430"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
