@@ -3107,8 +3107,17 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                         mInternalProgress = 0.5f;
                         computeProgressLocked(true);
                     }
+                    final File libDir = new File(stageDir, NativeLibraryHelper.LIB_DIR_NAME);
+                    if (!mayInheritNativeLibs()) {
+                        // Start from a clean slate
+                        NativeLibraryHelper.removeNativeBinariesFromDirLI(libDir, true);
+                    }
+                    // Skip native libraries processing for archival installation.
+                    if (isArchivedInstallation()) {
+                        return;
+                    }
                     extractNativeLibraries(
-                            mPackageLite, stageDir, params.abiOverride, mayInheritNativeLibs());
+                            mPackageLite, libDir, params.abiOverride);
                 }
             }
         }
@@ -4505,21 +4514,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         Slog.d(TAG, "Copied " + fromFiles.size() + " files into " + toDir);
     }
 
-    private void extractNativeLibraries(PackageLite packageLite, File packageDir,
-            String abiOverride, boolean inherit)
+    private void extractNativeLibraries(PackageLite packageLite, File libDir,
+            String abiOverride)
             throws PackageManagerException {
         Objects.requireNonNull(packageLite);
-        final File libDir = new File(packageDir, NativeLibraryHelper.LIB_DIR_NAME);
-        if (!inherit) {
-            // Start from a clean slate
-            NativeLibraryHelper.removeNativeBinariesFromDirLI(libDir, true);
-        }
-
-        // Skip native libraries processing for archival installation.
-        if (isArchivedInstallation()) {
-            return;
-        }
-
         NativeLibraryHelper.Handle handle = null;
         try {
             handle = NativeLibraryHelper.Handle.create(packageLite);
