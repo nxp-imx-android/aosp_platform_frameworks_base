@@ -45,6 +45,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressLint("VisibleForTests")
@@ -66,16 +68,27 @@ public class AdvancedProtectionServiceTest {
         mPermissionEnforcer.grant(Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE);
 
         mStore = new AdvancedProtectionService.AdvancedProtectionStore(mContext) {
+            private Map<String, Integer> mStoredValues = new HashMap<>();
             private boolean mEnabled = false;
 
             @Override
-            boolean retrieve() {
+            boolean retrieveAdvancedProtectionModeEnabled() {
                 return mEnabled;
             }
 
             @Override
-            void store(boolean enabled) {
+            void storeAdvancedProtectionModeEnabled(boolean enabled) {
                 this.mEnabled = enabled;
+            }
+
+            @Override
+            void storeInt(String key, int value) {
+                mStoredValues.put(key, value);
+            }
+
+            @Override
+            int retrieveInt(String key, int defaultValue) {
+                return mStoredValues.getOrDefault(key, defaultValue);
             }
         };
 
@@ -313,6 +326,18 @@ public class AdvancedProtectionServiceTest {
     public void testGetProtection_withoutPermission() {
         mPermissionEnforcer.revoke(Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE);
         assertThrows(SecurityException.class, () -> mService.isAdvancedProtectionEnabled());
+    }
+
+    @Test
+    public void testUsbDataProtection_withoutPermission() {
+        mPermissionEnforcer.revoke(Manifest.permission.QUERY_ADVANCED_PROTECTION_MODE);
+        assertThrows(SecurityException.class, () -> mService.isUsbDataProtectionEnabled());
+    }
+
+    @Test
+    public void testSetUsbDataProtection_withoutPermission() {
+        mPermissionEnforcer.revoke(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE);
+        assertThrows(SecurityException.class, () -> mService.setUsbDataProtectionEnabled(true));
     }
 
     @Test
