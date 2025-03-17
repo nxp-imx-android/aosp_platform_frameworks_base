@@ -64,7 +64,7 @@ constructor(
 
     val shortcutsAlpha: Flow<Float> =
         transitionAnimation.sharedFlow(
-            duration = FromLockscreenTransitionInteractor.TO_PRIMARY_BOUNCER_DURATION,
+            duration = 200.milliseconds,
             onStep = alphaForAnimationStep,
             // Rapid swipes to bouncer, and may end up skipping intermediate values that would've
             // caused a complete fade out of lockscreen elements. Ensure it goes to 0f.
