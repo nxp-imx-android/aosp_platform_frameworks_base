@@ -254,15 +254,12 @@ constructor(
             }
             .dumpWhileCollecting("deviceEntryFromBiometricSource")
 
-    private val attemptEnterDeviceFromDeviceEntryIcon: MutableSharedFlow<Unit> = MutableSharedFlow()
-    val deviceEntryFromDeviceEntryIcon: Flow<Unit> =
-        attemptEnterDeviceFromDeviceEntryIcon
-            .sample(keyguardInteractor.isKeyguardDismissible)
-            .filter { it } // only send events if the keyguard is dismissible
-            .map {} // map to Unit
+    private val _attemptEnterDeviceFromDeviceEntryIcon: MutableSharedFlow<Unit> =
+        MutableSharedFlow()
+    val attemptEnterDeviceFromDeviceEntryIcon = _attemptEnterDeviceFromDeviceEntryIcon
 
     suspend fun attemptEnterDeviceFromDeviceEntryIcon() {
-        attemptEnterDeviceFromDeviceEntryIcon.emit(Unit)
+        _attemptEnterDeviceFromDeviceEntryIcon.emit(Unit)
     }
 
     private fun biometricModeIntToObject(@WakeAndUnlockMode value: Int): BiometricUnlockMode {

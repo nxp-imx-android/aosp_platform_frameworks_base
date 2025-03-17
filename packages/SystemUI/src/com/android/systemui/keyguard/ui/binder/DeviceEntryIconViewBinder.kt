@@ -29,6 +29,7 @@ import androidx.core.view.isInvisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.common.ui.view.TouchHandlingView
 import com.android.systemui.keyguard.ui.view.DeviceEntryIconView
 import com.android.systemui.keyguard.ui.viewmodel.DeviceEntryBackgroundViewModel
@@ -39,6 +40,8 @@ import com.android.systemui.plugins.FalsingManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.VibratorHelper
 import com.android.systemui.util.kotlin.DisposableHandles
+import com.google.android.msdl.data.model.MSDLToken
+import com.google.android.msdl.domain.MSDLPlayer
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DisposableHandle
@@ -64,6 +67,7 @@ object DeviceEntryIconViewBinder {
         bgViewModel: DeviceEntryBackgroundViewModel,
         falsingManager: FalsingManager,
         vibratorHelper: VibratorHelper,
+        msdlPlayer: MSDLPlayer,
         overrideColor: Color? = null,
     ): DisposableHandle {
         val disposables = DisposableHandles()
@@ -88,7 +92,9 @@ object DeviceEntryIconViewBinder {
                         )
                         return
                     }
-                    vibratorHelper.performHapticFeedback(view, HapticFeedbackConstants.CONFIRM)
+                    if (!Flags.msdlFeedback()) {
+                        vibratorHelper.performHapticFeedback(view, HapticFeedbackConstants.CONFIRM)
+                    }
                     applicationScope.launch {
                         view.clearFocus()
                         view.clearAccessibilityFocus()
@@ -165,10 +171,23 @@ object DeviceEntryIconViewBinder {
                             view.accessibilityHintType = hint
                             if (hint != DeviceEntryIconView.AccessibilityHintType.NONE) {
                                 view.setOnClickListener {
-                                    vibratorHelper.performHapticFeedback(
-                                        view,
-                                        HapticFeedbackConstants.CONFIRM,
-                                    )
+                                    if (Flags.msdlFeedback()) {
+                                        val token =
+                                            if (
+                                                hint ==
+                                                    DeviceEntryIconView.AccessibilityHintType.ENTER
+                                            ) {
+                                                MSDLToken.UNLOCK
+                                            } else {
+                                                MSDLToken.LONG_PRESS
+                                            }
+                                        msdlPlayer.playToken(token)
+                                    } else {
+                                        vibratorHelper.performHapticFeedback(
+                                            view,
+                                            HapticFeedbackConstants.CONFIRM,
+                                        )
+                                    }
                                     applicationScope.launch {
                                         view.clearFocus()
                                         view.clearAccessibilityFocus()
@@ -177,6 +196,16 @@ object DeviceEntryIconViewBinder {
                                 }
                             } else {
                                 view.setOnClickListener(null)
+                            }
+                        }
+                    }
+
+                    if (Flags.msdlFeedback()) {
+                        launch("$TAG#viewModel.isPrimaryBouncerShowing") {
+                            viewModel.deviceDidNotEnterFromDeviceEntryIcon.collect {
+                                // If we did not enter from the icon, we did not play device entry
+                                // haptics. Therefore, we play the token for long-press instead.
+                                msdlPlayer.playToken(MSDLToken.LONG_PRESS)
                             }
                         }
                     }
