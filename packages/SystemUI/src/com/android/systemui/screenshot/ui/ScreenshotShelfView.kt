@@ -197,6 +197,13 @@ class ScreenshotShelfView(context: Context, attrs: AttributeSet? = null) :
         }
     }
 
+    fun setSavingAnnouncement(string: String) {
+        val announceRegion = findViewById<View>(R.id.screenshot_saving_live_region)
+        // clear the description to make sure we announce for successive screenshots
+        announceRegion.contentDescription = ""
+        announceRegion.contentDescription = string
+    }
+
     // Max function for two or more params.
     private fun max(first: Int, second: Int, vararg items: Int): Int {
         var largest = if (first > second) first else second
