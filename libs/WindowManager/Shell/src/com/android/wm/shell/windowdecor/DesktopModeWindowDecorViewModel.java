@@ -127,6 +127,7 @@ import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction;
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeUtilsKt;
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController;
 import com.android.wm.shell.desktopmode.education.AppToWebEducationController;
+import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.recents.RecentsTransitionHandler;
 import com.android.wm.shell.recents.RecentsTransitionStateListener;
@@ -212,6 +213,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final AppHandleAndHeaderVisibilityHelper mAppHandleAndHeaderVisibilityHelper;
     private final AppHeaderViewHolder.Factory mAppHeaderViewHolderFactory;
     private final AppHandleViewHolder.Factory mAppHandleViewHolderFactory;
+    private final DesksOrganizer mDesksOrganizer;
     private boolean mTransitionDragActive;
 
     private SparseArray<EventReceiver> mEventReceiversByDisplay = new SparseArray<>();
@@ -310,7 +312,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
-            CompatUIHandler compatUI) {
+            CompatUIHandler compatUI,
+            DesksOrganizer desksOrganizer) {
         this(
                 context,
                 shellExecutor,
@@ -358,7 +361,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 desktopModeCompatPolicy,
                 desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController,
-                compatUI);
+                compatUI,
+                desksOrganizer);
     }
 
     @VisibleForTesting
@@ -409,7 +413,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
-            CompatUIHandler compatUI) {
+            CompatUIHandler compatUI,
+            DesksOrganizer desksOrganizer) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -487,6 +492,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopTasksController.setSnapEventHandler(this);
         mMultiDisplayDragMoveIndicatorController = multiDisplayDragMoveIndicatorController;
         mLatencyTracker = LatencyTracker.getInstance(mContext);
+        mDesksOrganizer = desksOrganizer;
         shellInit.addInitCallback(this::onInit, this);
     }
 
@@ -525,6 +531,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     });
         }
         mFocusTransitionObserver.setLocalFocusTransitionListener(this, mMainExecutor);
+        mDesksOrganizer.setOnDesktopTaskInfoChangedListener((taskInfo) -> {
+            onTaskInfoChanged(taskInfo);
+            return Unit.INSTANCE;
+        });
     }
 
     @Override

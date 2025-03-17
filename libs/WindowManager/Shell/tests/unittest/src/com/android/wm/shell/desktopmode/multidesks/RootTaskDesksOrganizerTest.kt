@@ -15,6 +15,7 @@
  */
 package com.android.wm.shell.desktopmode.multidesks
 
+import android.app.ActivityManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.testing.AndroidTestingRunner
@@ -48,7 +49,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
+import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.kotlin.any
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -67,6 +70,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
     private val mockShellCommandHandler = mock<ShellCommandHandler>()
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
     private val launchAdjacentController = LaunchAdjacentController(mock())
+    private val taskInfoChangedListener = mock<(ActivityManager.RunningTaskInfo) -> Unit>()
 
     private lateinit var organizer: RootTaskDesksOrganizer
 
@@ -79,6 +83,7 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 mockShellTaskOrganizer,
                 launchAdjacentController,
             )
+        organizer.setOnDesktopTaskInfoChangedListener(taskInfoChangedListener)
     }
 
     @Test fun testCreateDesk_createsDeskAndMinimizationRoots() = runTest { createDesk() }
@@ -652,6 +657,34 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
         assertThat(launchAdjacentController.launchAdjacentEnabled).isFalse()
     }
 
+    @Test
+    fun onTaskInfoChanged_taskNotRoot_invokesListener() = runTest {
+        createDesk()
+        val task = createFreeformTask().apply { taskId = TEST_CHILD_TASK_ID }
+
+        organizer.onTaskInfoChanged(task)
+
+        verify(taskInfoChangedListener).invoke(task)
+    }
+
+    @Test
+    fun onTaskInfoChanged_isDeskRoot_doesNotInvokeListener() = runTest {
+        val deskRoot = createDesk().deskRoot
+
+        organizer.onTaskInfoChanged(deskRoot.taskInfo)
+
+        verify(taskInfoChangedListener, never()).invoke(any())
+    }
+
+    @Test
+    fun onTaskInfoChanged_isMinimizationRoot_doesNotInvokeListener() = runTest {
+        val minimizationRoot = createDesk().minimizationRoot
+
+        organizer.onTaskInfoChanged(minimizationRoot.taskInfo)
+
+        verify(taskInfoChangedListener, never()).invoke(any())
+    }
+
     private data class DeskRoots(
         val deskRoot: DeskRoot,
         val minimizationRoot: DeskMinimizationRoot,
@@ -712,4 +745,8 @@ class RootTaskDesksOrganizerTest : ShellTestCase() {
                 hop.newParent == desk.deskRoot.token.asBinder() &&
                 hop.toTop
         }
+
+    companion object {
+        private const val TEST_CHILD_TASK_ID = 100
+    }
 }

@@ -1047,7 +1047,8 @@ public abstract class WMShellModule {
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
             MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
-            Optional<CompatUIHandler> compatUI
+            Optional<CompatUIHandler> compatUI,
+            DesksOrganizer desksOrganizer
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -1065,7 +1066,8 @@ public abstract class WMShellModule {
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
-                multiDisplayDragMoveIndicatorController, compatUI.orElse(null)));
+                multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
+                desksOrganizer));
     }
 
     @WMSingleton
