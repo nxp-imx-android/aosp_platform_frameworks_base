@@ -48,7 +48,7 @@ void ABitmap_releaseRef(ABitmap* bitmap) {
     SkSafeUnref(TypeCast::toBitmap(bitmap));
 }
 
-static AndroidBitmapFormat getFormat(const SkImageInfo& info) {
+static uint32_t getFormat(const SkImageInfo& info) {
     switch (info.colorType()) {
         case kN32_SkColorType:
             return ANDROID_BITMAP_FORMAT_RGBA_8888;
@@ -62,12 +62,14 @@ static AndroidBitmapFormat getFormat(const SkImageInfo& info) {
             return ANDROID_BITMAP_FORMAT_RGBA_F16;
         case kRGBA_1010102_SkColorType:
             return ANDROID_BITMAP_FORMAT_RGBA_1010102;
+        case kBGRA_8888_SkColorType:
+            return ANDROID_BITMAP_FORMAT_BGRA_8888;
         default:
             return ANDROID_BITMAP_FORMAT_NONE;
     }
 }
 
-static SkColorType getColorType(AndroidBitmapFormat format) {
+static SkColorType getColorType(uint32_t format) {
     switch (format) {
         case ANDROID_BITMAP_FORMAT_RGBA_8888:
             return kN32_SkColorType;
@@ -81,6 +83,8 @@ static SkColorType getColorType(AndroidBitmapFormat format) {
             return kRGBA_F16_SkColorType;
         case ANDROID_BITMAP_FORMAT_RGBA_1010102:
             return kRGBA_1010102_SkColorType;
+        case ANDROID_BITMAP_FORMAT_BGRA_8888:
+            return kBGRA_8888_SkColorType;
         default:
             return kUnknown_SkColorType;
     }
@@ -108,7 +112,7 @@ static uint32_t getInfoFlags(const SkImageInfo& info, bool isHardware) {
     return flags;
 }
 
-ABitmap* ABitmap_copy(ABitmap* srcBitmapHandle, AndroidBitmapFormat dstFormat) {
+ABitmap* ABitmap_copy(ABitmap* srcBitmapHandle, uint32_t dstFormat) {
     SkColorType dstColorType = getColorType(dstFormat);
     if (srcBitmapHandle && dstColorType != kUnknown_SkColorType) {
         SkBitmap srcBitmap;

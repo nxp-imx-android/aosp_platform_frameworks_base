@@ -21,6 +21,7 @@
 #include <android/native_window.h>
 #include <ui/ColorSpace.h>
 #include <utils/Log.h>
+#include <vndk/hardware_buffer.h>
 
 #include <algorithm>
 #include <cmath>
@@ -63,6 +64,10 @@ static inline SkImageInfo createImageInfo(int32_t width, int32_t height, int32_t
             colorType = kAlpha_8_SkColorType;
             alphaType = kPremul_SkAlphaType;
             break;
+        case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:
+            colorType = kBGRA_8888_SkColorType;
+            alphaType = kPremul_SkAlphaType;
+            break;
         default:
             ALOGV("Unsupported format: %d, return unknown by default", format);
             break;
@@ -100,6 +105,8 @@ uint32_t ColorTypeToBufferFormat(SkColorType colorType) {
             return kRGBA4444;
         case kAlpha_8_SkColorType:
               return AHARDWAREBUFFER_FORMAT_R8_UNORM;
+        case kBGRA_8888_SkColorType:
+            return AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM;
         default:
             ALOGV("Unsupported colorType: %d, return RGBA_8888 by default", (int)colorType);
             return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
@@ -122,6 +129,8 @@ SkColorType BufferFormatToColorType(uint32_t format) {
             return kRGBA_F16_SkColorType;
         case AHARDWAREBUFFER_FORMAT_R8_UNORM:
             return kAlpha_8_SkColorType;
+        case AHARDWAREBUFFER_FORMAT_B8G8R8A8_UNORM:
+            return kBGRA_8888_SkColorType;
         default:
             ALOGV("Unsupported format: %d, return unknown by default", format);
             return kUnknown_SkColorType;
