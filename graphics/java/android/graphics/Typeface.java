@@ -80,6 +80,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 /**
  * The Typeface class specifies the typeface and intrinsic style of a font.
@@ -1550,14 +1551,21 @@ public class Typeface {
             setDefault(defaults.get(0));
 
             ArrayList<Typeface> oldGenerics = new ArrayList<>();
-            oldGenerics.add(sSystemFontMap.get("sans-serif"));
-            sSystemFontMap.put("sans-serif", genericFamilies.get(0));
+            BiConsumer<Typeface, String> swapTypeface = (typeface, key) -> {
+                oldGenerics.add(sSystemFontMap.get(key));
+                sSystemFontMap.put(key, typeface);
+            };
 
-            oldGenerics.add(sSystemFontMap.get("serif"));
-            sSystemFontMap.put("serif", genericFamilies.get(1));
+            Typeface sansSerif = genericFamilies.get(0);
+            swapTypeface.accept(sansSerif, "sans-serif");
+            swapTypeface.accept(Typeface.create(sansSerif, 100, false), "sans-serif-thin");
+            swapTypeface.accept(Typeface.create(sansSerif, 300, false), "sans-serif-light");
+            swapTypeface.accept(Typeface.create(sansSerif, 500, false), "sans-serif-medium");
+            swapTypeface.accept(Typeface.create(sansSerif, 700, false), "sans-serif-bold");
+            swapTypeface.accept(Typeface.create(sansSerif, 900, false), "sans-serif-black");
 
-            oldGenerics.add(sSystemFontMap.get("monospace"));
-            sSystemFontMap.put("monospace", genericFamilies.get(2));
+            swapTypeface.accept(genericFamilies.get(1), "serif");
+            swapTypeface.accept(genericFamilies.get(2), "monospace");
 
             return new Pair<>(oldDefaults, oldGenerics);
         }
