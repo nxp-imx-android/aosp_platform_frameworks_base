@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package android.view.translation;
+package android.view;
 
 import android.annotation.NonNull;
-import android.view.ListenerWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,26 +31,39 @@ import java.util.function.Consumer;
  */
 public class ListenerGroup<T> {
     private final List<ListenerWrapper<T>> mListeners = new ArrayList<>();
+    @NonNull
+    private T mLastValue;
+
+    /**
+     * Constructs a {@link ListenerGroup} that will replay the last reported value whenever a new
+     * listener is registered.
+     * @param value the initial value
+     */
+    public ListenerGroup(@NonNull T value) {
+        mLastValue = value;
+    }
 
     /**
      * Relays the value to all the registered {@link java.util.function.Consumer}
      */
     public void accept(@NonNull T value) {
-        Objects.requireNonNull(value);
+        mLastValue = Objects.requireNonNull(value);
         for (int i = 0; i < mListeners.size(); i++) {
             mListeners.get(i).accept(value);
         }
     }
 
     /**
-     * Adds a {@link Consumer} to the group. If the {@link Consumer} is already present then this
-     * is a no op.
+     * Adds a {@link Consumer} to the group and replays the last reported value. If the
+     * {@link Consumer} is already present then this is a no op.
      */
     public void addListener(@NonNull Executor executor, @NonNull Consumer<T> consumer) {
         if (isConsumerPresent(consumer)) {
             return;
         }
-        mListeners.add(new ListenerWrapper<>(executor, consumer));
+        final ListenerWrapper<T> listenerWrapper = new ListenerWrapper<>(executor, consumer);
+        mListeners.add(listenerWrapper);
+        listenerWrapper.accept(mLastValue);
     }
 
     /**
