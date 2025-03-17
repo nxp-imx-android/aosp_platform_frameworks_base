@@ -1856,10 +1856,11 @@ flag {
 }
 
 flag {
-  name: "shade_header_fonts"
+  name: "shade_header_font_update"
   namespace: "systemui"
   description: "Updates the fonts of the shade header"
-  bug: "393609724"
+  bug: "393609960"
+  is_fixed_read_only: true
 }
 
 flag {
