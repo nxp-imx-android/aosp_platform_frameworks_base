@@ -29,6 +29,7 @@ import android.view.RoundedCorner
 import android.view.View
 import android.view.ViewConfiguration
 import android.widget.FrameLayout
+import androidx.compose.ui.graphics.toArgb
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.config.sysui.SystemUiDeviceConfigFlags
 import com.android.wm.shell.R
@@ -36,6 +37,7 @@ import com.android.wm.shell.common.split.DividerHandleView
 import com.android.wm.shell.common.split.DividerRoundedCorner
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.windowdecor.DragDetector
+import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 
 /** Divider for tiling split screen, currently mostly a copy of [DividerView]. */
 class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.MotionEventHandler {
@@ -56,6 +58,9 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
     @VisibleForTesting var handleY: IntRange = 0..0
     private var canResize = false
     private var resized = false
+    private var isDarkMode = false
+    private var decorThemeUtil = DecorThemeUtil(context)
+
     /**
      * Tracks divider bar visible bounds in screen-based coordination. Used to calculate with
      * insets.
@@ -90,10 +95,12 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
     ) {
         callback = dividerMoveCallback
         this.dividerBounds.set(dividerBounds)
+        this.isDarkMode = isDarkMode
+        paint.color = decorThemeUtil.getColorScheme(isDarkMode).outlineVariant.toArgb()
         handle.setIsLeftRightSplit(true)
         handle.setup(/* isSplitScreen= */ false, isDarkMode)
         corners.setIsLeftRightSplit(true)
-        corners.setup(/* isSplitScreen= */ false, isDarkMode)
+        corners.setup(/* isSplitScreen= */ false, paint.color)
         handleRegionHeight = handleRegionSize.height
         handleRegionWidth = handleRegionSize.width
         cornersRadius =
@@ -108,15 +115,20 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
     }
 
     fun onUiModeChange(isDarkMode: Boolean) {
+        this.isDarkMode = isDarkMode
         handle.onUiModeChange(isDarkMode)
-        corners.onUiModeChange(isDarkMode)
-        paint.color =
-            if (isDarkMode) {
-                resources.getColor(R.color.tiling_divider_background_dark, null /* theme */)
-            } else {
-                resources.getColor(R.color.tiling_divider_background_light, null /* theme */)
-            }
+        paint.color = decorThemeUtil.getColorScheme(isDarkMode).outlineVariant.toArgb()
+        corners.onUiModeChange(paint.color)
         invalidate()
+    }
+
+    fun onTaskInfoChange() {
+        decorThemeUtil = DecorThemeUtil(context)
+        if (paint.color != decorThemeUtil.getColorScheme(isDarkMode).outlineVariant.toArgb()) {
+            paint.color = decorThemeUtil.getColorScheme(isDarkMode).outlineVariant.toArgb()
+            corners.onCornerColorChange(paint.color)
+            invalidate()
+        }
     }
 
     override fun onFinishInflate() {
@@ -128,15 +140,10 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
             resources.getDimensionPixelSize(R.dimen.docked_stack_divider_lift_elevation)
         setOnTouchListener(this)
         setWillNotDraw(false)
-        paint.color =
-            if (
-                context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
-                    Configuration.UI_MODE_NIGHT_YES
-            ) {
-                resources.getColor(R.color.tiling_divider_background_dark, /* theme= */null)
-            } else {
-                resources.getColor(R.color.tiling_divider_background_light, /* theme= */ null)
-            }
+        val isDarkMode =
+            context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+                Configuration.UI_MODE_NIGHT_YES
+        paint.color = decorThemeUtil.getColorScheme(isDarkMode).outlineVariant.toArgb()
         paint.isAntiAlias = true
         paint.style = Paint.Style.FILL
     }

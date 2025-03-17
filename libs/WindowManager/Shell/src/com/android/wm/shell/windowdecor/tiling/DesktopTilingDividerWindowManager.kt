@@ -198,6 +198,11 @@ class DesktopTilingDividerWindowManager(
         tilingDividerView?.onUiModeChange(isDarkMode)
     }
 
+    /** Notifies the divider view of task info change and possible color change. */
+    fun onTaskInfoChange() {
+        tilingDividerView?.onTaskInfoChange()
+    }
+
     /** Hides the divider bar. */
     fun hideDividerBar() {
         if (!dividerShown) {

@@ -375,6 +375,7 @@ class DesktopTilingWindowDecoration(
 
     fun onTaskInfoChange(taskInfo: RunningTaskInfo) {
         val isCurrentTaskInDarkMode = isTaskInDarkMode(taskInfo)
+        desktopTilingDividerWindowManager?.onTaskInfoChange()
         if (isCurrentTaskInDarkMode == isDarkMode || !isTilingManagerInitialised) return
         isDarkMode = isCurrentTaskInDarkMode
         desktopTilingDividerWindowManager?.onUiModeChange(isDarkMode)
