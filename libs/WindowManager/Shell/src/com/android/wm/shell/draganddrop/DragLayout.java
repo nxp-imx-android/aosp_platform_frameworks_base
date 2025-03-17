@@ -663,6 +663,9 @@ public class DragLayout extends LinearLayout
                     mSession = null;
             }
         });
+        // notify bubbles of drag cancel
+        mCurrentBubbleBarTarget = null;
+        mBubbleBarDragListener.onItemDraggedOutsideBubbleBarDropZone();
         // Reset the state if we previously force-ignore the bottom margin
         mDropZoneView1.setForceIgnoreBottomMargin(false);
         mDropZoneView2.setForceIgnoreBottomMargin(false);
