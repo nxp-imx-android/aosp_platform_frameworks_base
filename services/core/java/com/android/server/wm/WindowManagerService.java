@@ -2331,7 +2331,11 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
-    public void onRectangleOnScreenRequested(IBinder token, Rect rectangle) {
+    /**
+     * Called when a rectangle of a view is requested to be visible on the screen.
+     */
+    public void onRectangleOnScreenRequested(IBinder token, Rect rectangle,
+            @View.RectangleOnScreenRequestSource int source) {
         final AccessibilityController.AccessibilityControllerInternalImpl a11yControllerInternal =
                 AccessibilityController.getAccessibilityControllerInternal(this);
         synchronized (mGlobalLock) {
@@ -2339,7 +2343,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 WindowState window = mWindowMap.get(token);
                 if (window != null) {
                     a11yControllerInternal.onRectangleOnScreenRequested(
-                            window.getDisplayId(), rectangle);
+                            window.getDisplayId(), rectangle, source);
                 }
             }
         }
