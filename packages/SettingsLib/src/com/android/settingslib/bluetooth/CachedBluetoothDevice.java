@@ -313,8 +313,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                         mLocalNapRoleConnected = true;
                     }
                 }
-                if (Flags.enableSetPreferredTransportForLeAudioDevice()
-                        && profile instanceof HidProfile) {
+                if (profile instanceof HidProfile) {
                     updatePreferredTransport();
                 }
             } else if (profile instanceof MapProfile
@@ -329,8 +328,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 mLocalNapRoleConnected = false;
             }
 
-            if (Flags.enableSetPreferredTransportForLeAudioDevice()
-                    && profile instanceof LeAudioProfile) {
+            if (profile instanceof LeAudioProfile) {
                 updatePreferredTransport();
             }
 
