@@ -50,7 +50,7 @@ class DisplaySwitchLatencyLogger {
                 onScreenTurningOnToOnDrawnMs,
                 onDrawnToOnScreenTurnedOnMs,
                 trackingResult,
-                screenWakelockstatus
+                screenWakelockStatus,
             )
         }
     }
