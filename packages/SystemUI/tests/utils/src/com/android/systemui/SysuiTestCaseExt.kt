@@ -18,8 +18,21 @@ package com.android.systemui
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
+import com.android.systemui.kosmos.useStandardTestDispatcher
 
 fun SysuiTestCase.testKosmos(): Kosmos = Kosmos().apply { testCase = this@testKosmos }
+
+/**
+ * This should not be called directly. Instead, you can use:
+ * - testKosmos() to use the default dispatcher (which will soon be unconfined, see go/thetiger)
+ * - testKosmos().useStandardTestDispatcher() to explicitly choose the standard dispatcher
+ * - testKosmos().useUnconfinedTestDispatcher() to explicitly choose the unconfined dispatcher
+ *
+ * For details, see go/thetiger
+ */
+@Deprecated("Do not call this directly.  Use testKosmos() with dispatcher functions if needed.")
+fun SysuiTestCase.testKosmosLegacy(): Kosmos =
+    Kosmos().useStandardTestDispatcher().apply { testCase = this@testKosmosLegacy }
 
 /** Run [f] on the main thread and return its result once completed. */
 fun <T : Any> SysuiTestCase.runOnMainThreadAndWaitForIdleSync(f: () -> T): T {
