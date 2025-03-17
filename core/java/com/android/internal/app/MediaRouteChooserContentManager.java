@@ -67,6 +67,7 @@ public class MediaRouteChooserContentManager {
 
         mRouter = context.getSystemService(MediaRouter.class);
         mCallback = new MediaRouterCallback();
+        mAdapter = new RouteAdapter(mContext);
     }
 
     /**
@@ -75,7 +76,6 @@ public class MediaRouteChooserContentManager {
      */
     public void bindViews(View containerView) {
         View emptyView = containerView.findViewById(android.R.id.empty);
-        mAdapter = new RouteAdapter(mContext);
         ListView listView = containerView.findViewById(R.id.media_route_list);
         listView.setAdapter(mAdapter);
         listView.setOnItemClickListener(mAdapter);
