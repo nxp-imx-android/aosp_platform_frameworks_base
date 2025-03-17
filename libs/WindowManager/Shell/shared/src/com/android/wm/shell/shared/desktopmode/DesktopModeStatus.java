@@ -278,6 +278,9 @@ public class DesktopModeStatus {
         if (!canEnterDesktopMode(context)) {
             return false;
         }
+        if (!enforceDeviceRestrictions()) {
+            return true;
+        }
         if (display.getType() == Display.TYPE_INTERNAL) {
             return canInternalDisplayHostDesktops(context);
         }
