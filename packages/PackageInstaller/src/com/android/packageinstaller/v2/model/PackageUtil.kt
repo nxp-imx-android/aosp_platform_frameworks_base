@@ -41,6 +41,8 @@ import android.util.Log
 import com.android.packageinstaller.v2.model.PackageUtil.getAppSnippet
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 
@@ -48,6 +50,7 @@ object PackageUtil {
     private val LOG_TAG = InstallRepository::class.java.simpleName
     private const val DOWNLOADS_AUTHORITY = "downloads"
     private const val SPLIT_BASE_APK_SUFFIX = "base.apk"
+    private const val SPLIT_APK_SUFFIX = ".apk"
     const val localLogv = false
 
     const val ARGS_ABORT_REASON: String = "abort_reason"
@@ -440,9 +443,20 @@ object PackageUtil {
         var filePath = sourceFile.absolutePath
         if (filePath.endsWith(SPLIT_BASE_APK_SUFFIX)) {
             val dir = sourceFile.parentFile
-            if ((dir?.listFiles()?.size ?: 0) > 1) {
-                // split apks, use file directory to get archive info
-                filePath = dir.path
+            try {
+                Files.list(dir.toPath()).use { list ->
+                    val count: Long = list
+                        .filter { name: Path -> name.endsWith(SPLIT_APK_SUFFIX) }
+                        .limit(2)
+                        .count()
+                    if (count > 1) {
+                        // split apks, use file directory to get archive info
+                        filePath = dir.path
+                    }
+                }
+            } catch (ignored: Exception) {
+                // No access to the parent directory, proceed to read app snippet
+                // from the base apk only
             }
         }
         return try {
