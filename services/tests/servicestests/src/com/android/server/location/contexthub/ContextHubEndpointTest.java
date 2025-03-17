@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
@@ -62,6 +63,7 @@ import org.mockito.junit.MockitoRule;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 @RunWith(AndroidJUnit4.class)
 @Presubmit
@@ -97,6 +99,7 @@ public class ContextHubEndpointTest {
     private HubInfoRegistry mHubInfoRegistry;
     private ContextHubTransactionManager mTransactionManager;
     private Context mContext;
+    @Mock private ScheduledExecutorService mMockTimeoutExecutorService;
     @Mock private IEndpointCommunication mMockEndpointCommunications;
     @Mock private IContextHubWrapper mMockContextHubWrapper;
     @Mock private IContextHubEndpointCallback mMockCallback;
@@ -120,7 +123,11 @@ public class ContextHubEndpointTest {
                         mMockContextHubWrapper, mClientManager, new NanoAppStateManager());
         mEndpointManager =
                 new ContextHubEndpointManager(
-                        mContext, mMockContextHubWrapper, mHubInfoRegistry, mTransactionManager);
+                        mContext,
+                        mMockContextHubWrapper,
+                        mHubInfoRegistry,
+                        mTransactionManager,
+                        mMockTimeoutExecutorService);
         mEndpointManager.init();
     }
 
@@ -248,14 +255,20 @@ public class ContextHubEndpointTest {
                 endpoint.getAssignedHubEndpointInfo().getIdentifier(),
                 targetInfo.getIdentifier(),
                 ENDPOINT_SERVICE_DESCRIPTOR);
-
         verify(mMockCallback)
                 .onSessionOpenRequest(
                         SESSION_ID_FOR_OPEN_REQUEST, targetInfo, ENDPOINT_SERVICE_DESCRIPTOR);
 
         // Accept
         endpoint.openSessionRequestComplete(SESSION_ID_FOR_OPEN_REQUEST);
-        verify(mMockEndpointCommunications)
+
+        // Even when timeout happens, there should be no effect on this session
+        ArgumentCaptor<Runnable> runnableArgumentCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mMockTimeoutExecutorService)
+                .schedule(runnableArgumentCaptor.capture(), anyLong(), any());
+        runnableArgumentCaptor.getValue().run();
+
+        verify(mMockEndpointCommunications, times(1))
                 .endpointSessionOpenComplete(SESSION_ID_FOR_OPEN_REQUEST);
 
         unregisterExampleEndpoint(endpoint);
@@ -325,6 +338,87 @@ public class ContextHubEndpointTest {
                         SESSION_ID_FOR_OPEN_REQUEST, targetInfo, ENDPOINT_SERVICE_DESCRIPTOR);
         // HAL still receives two open complete notifications
         verify(mMockEndpointCommunications, times(2))
+                .endpointSessionOpenComplete(SESSION_ID_FOR_OPEN_REQUEST);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testEndpointSessionOpenRequest_rejectAfterTimeout() throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        mHubInfoRegistry.onEndpointStarted(new HubEndpointInfo[] {targetInfo});
+        mEndpointManager.onEndpointSessionOpenRequest(
+                SESSION_ID_FOR_OPEN_REQUEST,
+                endpoint.getAssignedHubEndpointInfo().getIdentifier(),
+                targetInfo.getIdentifier(),
+                ENDPOINT_SERVICE_DESCRIPTOR);
+
+        // Immediately timeout
+        ArgumentCaptor<Runnable> runnableArgumentCaptor = ArgumentCaptor.forClass(Runnable.class);
+        verify(mMockTimeoutExecutorService)
+                .schedule(runnableArgumentCaptor.capture(), anyLong(), any());
+        runnableArgumentCaptor.getValue().run();
+
+        // Client's callback shouldn't matter after timeout
+        try {
+            endpoint.openSessionRequestComplete(SESSION_ID_FOR_OPEN_REQUEST);
+        } catch (IllegalArgumentException ignore) {
+            // This will throw because the session is no longer valid
+        }
+
+        // HAL will receive closeEndpointSession with Timeout as reason
+        verify(mMockEndpointCommunications, times(1))
+                .closeEndpointSession(SESSION_ID_FOR_OPEN_REQUEST, Reason.TIMEOUT);
+        // HAL will not receives open complete notifications
+        verify(mMockEndpointCommunications, never())
+                .endpointSessionOpenComplete(SESSION_ID_FOR_OPEN_REQUEST);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testEndpointSessionOpenRequest_duplicatedSessionId_noopWithinTimeout()
+            throws RemoteException {
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+
+        HubEndpointInfo targetInfo =
+                new HubEndpointInfo(
+                        TARGET_ENDPOINT_NAME,
+                        TARGET_ENDPOINT_ID,
+                        ENDPOINT_PACKAGE_NAME,
+                        Collections.emptyList());
+        mHubInfoRegistry.onEndpointStarted(new HubEndpointInfo[] {targetInfo});
+        mEndpointManager.onEndpointSessionOpenRequest(
+                SESSION_ID_FOR_OPEN_REQUEST,
+                endpoint.getAssignedHubEndpointInfo().getIdentifier(),
+                targetInfo.getIdentifier(),
+                ENDPOINT_SERVICE_DESCRIPTOR);
+
+        // Duplicated session open request
+        mEndpointManager.onEndpointSessionOpenRequest(
+                SESSION_ID_FOR_OPEN_REQUEST,
+                endpoint.getAssignedHubEndpointInfo().getIdentifier(),
+                targetInfo.getIdentifier(),
+                ENDPOINT_SERVICE_DESCRIPTOR);
+
+        // Finally, endpoint approved the session open request
+        endpoint.openSessionRequestComplete(SESSION_ID_FOR_OPEN_REQUEST);
+
+        // Client API is only invoked once
+        verify(mMockCallback, times(1))
+                .onSessionOpenRequest(
+                        SESSION_ID_FOR_OPEN_REQUEST, targetInfo, ENDPOINT_SERVICE_DESCRIPTOR);
+        // HAL still receives two open complete notifications
+        verify(mMockEndpointCommunications, times(1))
                 .endpointSessionOpenComplete(SESSION_ID_FOR_OPEN_REQUEST);
 
         unregisterExampleEndpoint(endpoint);
