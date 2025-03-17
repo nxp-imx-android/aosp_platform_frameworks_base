@@ -59,7 +59,6 @@ import static android.window.TransitionInfo.FLAG_STARTING_WINDOW_TRANSFER_RECIPI
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
 import static com.android.internal.jank.Cuj.CUJ_DEFAULT_TASK_TO_TASK_ANIMATION;
-import static com.android.internal.policy.TransitionAnimation.DEFAULT_APP_TRANSITION_DURATION;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_CHANGE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_CLOSE;
 import static com.android.internal.policy.TransitionAnimation.WALLPAPER_TRANSITION_INTRA_CLOSE;
@@ -116,6 +115,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransactionPool;
 import com.android.wm.shell.shared.TransitionUtil;
+import com.android.wm.shell.shared.animation.Interpolators;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
@@ -125,6 +125,7 @@ import java.util.function.Consumer;
 /** The default handler that handles anything not already handled. */
 public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     private static final int MAX_ANIMATION_DURATION = 3000;
+    private static final int SIZE_CHANGE_ANIMATION_DURATION = 400;
 
     private final TransactionPool mTransactionPool;
     private final DisplayController mDisplayController;
@@ -779,15 +780,16 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     private void startBoundsChangeAnimation(@NonNull SurfaceControl.Transaction startT,
             @NonNull ArrayList<Animator> animations, @NonNull TransitionInfo.Change change,
             @NonNull Runnable finishCb, @NonNull ShellExecutor mainExecutor) {
-        final SizeChangeAnimation sca =
-                new SizeChangeAnimation(change.getStartAbsBounds(), change.getEndAbsBounds());
+        final SizeChangeAnimation sca = new SizeChangeAnimation(change.getStartAbsBounds(),
+                change.getEndAbsBounds(), /* initialScale= */ 1f, /* scaleFactor= */ 1f);
         sca.initialize(change.getLeash(), change.getSnapshot(), startT);
         final ValueAnimator va = sca.buildAnimator(change.getLeash(), change.getSnapshot(),
                 (animator) -> mainExecutor.execute(() -> {
                     animations.remove(animator);
                     finishCb.run();
                 }));
-        va.setDuration(DEFAULT_APP_TRANSITION_DURATION);
+        va.setDuration(SIZE_CHANGE_ANIMATION_DURATION);
+        va.setInterpolator(Interpolators.EMPHASIZED);
         animations.add(va);
     }
 
