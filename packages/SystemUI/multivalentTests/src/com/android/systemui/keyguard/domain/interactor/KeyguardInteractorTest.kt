@@ -264,6 +264,29 @@ class KeyguardInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    fun dismissAlpha_doesNotEmitWhenNotDismissible() =
+        testScope.runTest {
+            val dismissAlpha by collectValues(underTest.dismissAlpha)
+            assertThat(dismissAlpha[0]).isEqualTo(1f)
+            assertThat(dismissAlpha.size).isEqualTo(1)
+
+            keyguardTransitionRepository.sendTransitionSteps(from = AOD, to = LOCKSCREEN, testScope)
+
+            // User begins to swipe up when not dimissible, which would show bouncer
+            repository.setStatusBarState(StatusBarState.KEYGUARD)
+            repository.setKeyguardDismissible(false)
+            shadeRepository.setLegacyShadeExpansion(0.98f)
+
+            assertThat(dismissAlpha[0]).isEqualTo(1f)
+            assertThat(dismissAlpha.size).isEqualTo(1)
+
+            // Shade reset should not affect dismiss alpha when not dismissible
+            shadeRepository.setLegacyShadeExpansion(0f)
+            assertThat(dismissAlpha[0]).isEqualTo(1f)
+            assertThat(dismissAlpha.size).isEqualTo(1)
+        }
+
+    @Test
     fun dismissAlpha_onGlanceableHub_doesNotEmitWhenShadeResets() =
         testScope.runTest {
             val dismissAlpha by collectValues(underTest.dismissAlpha)
