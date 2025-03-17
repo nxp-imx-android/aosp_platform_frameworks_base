@@ -18,13 +18,20 @@ package com.android.server.media.quality;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.hardware.tv.mediaquality.ColorRange;
+import android.hardware.tv.mediaquality.ColorSpace;
+import android.hardware.tv.mediaquality.ColorTemperature;
 import android.hardware.tv.mediaquality.DolbyAudioProcessing;
 import android.hardware.tv.mediaquality.DtsVirtualX;
+import android.hardware.tv.mediaquality.Gamma;
 import android.hardware.tv.mediaquality.ParameterDefaultValue;
 import android.hardware.tv.mediaquality.ParameterName;
 import android.hardware.tv.mediaquality.ParameterRange;
 import android.hardware.tv.mediaquality.PictureParameter;
+import android.hardware.tv.mediaquality.PictureQualityEventType;
+import android.hardware.tv.mediaquality.QualityLevel;
 import android.hardware.tv.mediaquality.SoundParameter;
+import android.media.quality.MediaQualityContract;
 import android.media.quality.MediaQualityContract.BaseParameters;
 import android.media.quality.MediaQualityContract.PictureQuality;
 import android.media.quality.MediaQualityContract.SoundQuality;
@@ -371,7 +378,7 @@ public final class MediaQualityUtils {
         }
         List<PictureParameter> pictureParams = new ArrayList<>();
         if (params.containsKey(PictureQuality.PARAMETER_BRIGHTNESS)) {
-            pictureParams.add(PictureParameter.brightness(params.getLong(
+            pictureParams.add(PictureParameter.brightness((float) params.getDouble(
                     PictureQuality.PARAMETER_BRIGHTNESS)));
             params.remove(PictureQuality.PARAMETER_BRIGHTNESS);
         }
@@ -441,28 +448,46 @@ public final class MediaQualityUtils {
             params.remove(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_NOISE_REDUCTION)) {
-            pictureParams.add(PictureParameter.noiseReduction(
-                    (byte) params.getInt(PictureQuality.PARAMETER_NOISE_REDUCTION)));
+            String noiseReductionString = params.getString(
+                    PictureQuality.PARAMETER_NOISE_REDUCTION);
+            if (noiseReductionString != null) {
+                byte noiseReductionByte = mapQualityLevel(noiseReductionString);
+                pictureParams.add(PictureParameter.noiseReduction(noiseReductionByte));
+            }
             params.remove(PictureQuality.PARAMETER_NOISE_REDUCTION);
         }
         if (params.containsKey(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION)) {
-            pictureParams.add(PictureParameter.mpegNoiseReduction(
-                    (byte) params.getInt(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION)));
+            String mpegNoiseReductionString = params.getString(
+                    PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION);
+            if (mpegNoiseReductionString != null) {
+                byte mpegNoiseReductionByte = mapQualityLevel(mpegNoiseReductionString);
+                pictureParams.add(PictureParameter.mpegNoiseReduction(mpegNoiseReductionByte));
+            }
             params.remove(PictureQuality.PARAMETER_MPEG_NOISE_REDUCTION);
         }
         if (params.containsKey(PictureQuality.PARAMETER_FLESH_TONE)) {
-            pictureParams.add(PictureParameter.fleshTone(
-                    (byte) params.getInt(PictureQuality.PARAMETER_FLESH_TONE)));
+            String fleshToneString = params.getString(PictureQuality.PARAMETER_FLESH_TONE);
+            if (fleshToneString != null) {
+                byte fleshToneByte = mapQualityLevel(fleshToneString);
+                pictureParams.add(PictureParameter.fleshTone(fleshToneByte));
+            }
             params.remove(PictureQuality.PARAMETER_FLESH_TONE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_DECONTOUR)) {
-            pictureParams.add(PictureParameter.deContour(
-                    (byte) params.getInt(PictureQuality.PARAMETER_DECONTOUR)));
+            String decontourString = params.getString(PictureQuality.PARAMETER_DECONTOUR);
+            if (decontourString != null) {
+                byte decontourByte = mapQualityLevel(decontourString);
+                pictureParams.add(PictureParameter.deContour(decontourByte));
+            }
             params.remove(PictureQuality.PARAMETER_DECONTOUR);
         }
         if (params.containsKey(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL)) {
-            pictureParams.add(PictureParameter.dynamicLumaControl(
-                    (byte) params.getInt(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL)));
+            String dynamicLunaControlString = params.getString(
+                    PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL);
+            if (dynamicLunaControlString != null) {
+                byte dynamicLunaControlByte = mapQualityLevel(dynamicLunaControlString);
+                pictureParams.add(PictureParameter.dynamicLumaControl(dynamicLunaControlByte));
+            }
             params.remove(PictureQuality.PARAMETER_DYNAMIC_LUMA_CONTROL);
         }
         if (params.containsKey(PictureQuality.PARAMETER_FILM_MODE)) {
@@ -481,9 +506,48 @@ public final class MediaQualityUtils {
             params.remove(PictureQuality.PARAMETER_COLOR_TUNE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE)) {
-            pictureParams.add(PictureParameter.colorTemperature(
-                    (byte) params.getInt(
-                            PictureQuality.PARAMETER_COLOR_TEMPERATURE)));
+            String colorTemperatureString = params.getString(
+                    PictureQuality.PARAMETER_COLOR_TEMPERATURE);
+            if (colorTemperatureString != null) {
+                byte colorTemperatureByte;
+                switch (colorTemperatureString) {
+                    case MediaQualityContract.COLOR_TEMP_USER:
+                        colorTemperatureByte = ColorTemperature.USER;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_COOL:
+                        colorTemperatureByte = ColorTemperature.COOL;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_STANDARD:
+                        colorTemperatureByte = ColorTemperature.STANDARD;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_WARM:
+                        colorTemperatureByte = ColorTemperature.WARM;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_USER_HDR10PLUS:
+                        colorTemperatureByte = ColorTemperature.USER_HDR10PLUS;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_COOL_HDR10PLUS:
+                        colorTemperatureByte = ColorTemperature.COOL_HDR10PLUS;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_STANDARD_HDR10PLUS:
+                        colorTemperatureByte = ColorTemperature.STANDARD_HDR10PLUS;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_WARM_HDR10PLUS:
+                        colorTemperatureByte = ColorTemperature.WARM_HDR10PLUS;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_FMMSDR:
+                        colorTemperatureByte = ColorTemperature.FMMSDR;
+                        break;
+                    case MediaQualityContract.COLOR_TEMP_FMMHDR:
+                        colorTemperatureByte = ColorTemperature.FMMHDR;
+                        break;
+                    default:
+                        colorTemperatureByte = ColorTemperature.STANDARD;
+                        Log.e("PictureParams", "Invalid color_temp string: "
+                                + colorTemperatureString);
+                }
+                pictureParams.add(PictureParameter.colorTemperature(colorTemperatureByte));
+            }
             params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_GLOBAL_DIMMING)) {
@@ -517,8 +581,26 @@ public final class MediaQualityUtils {
             params.remove(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LEVEL_RANGE)) {
-            pictureParams.add(PictureParameter.levelRange(
-                    (byte) params.getInt(PictureQuality.PARAMETER_LEVEL_RANGE)));
+            String levelRangeString = params.getString(PictureQuality.PARAMETER_LEVEL_RANGE);
+            if (levelRangeString != null) {
+                byte levelRangeByte;
+                switch (levelRangeString) {
+                    case "AUTO":
+                        levelRangeByte = ColorRange.AUTO;
+                        break;
+                    case "LIMITED":
+                        levelRangeByte = ColorRange.LIMITED;
+                        break;
+                    case "FULL":
+                        levelRangeByte = ColorRange.FULL;
+                        break;
+                    default:
+                        levelRangeByte = ColorRange.AUTO;
+                        Log.e("PictureParams", "Invalid color_range string: "
+                                + levelRangeString);
+                }
+                pictureParams.add(PictureParameter.levelRange(levelRangeByte));
+            }
             params.remove(PictureQuality.PARAMETER_LEVEL_RANGE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_GAMUT_MAPPING)) {
@@ -547,13 +629,61 @@ public final class MediaQualityUtils {
             params.remove(PictureQuality.PARAMETER_CVRR);
         }
         if (params.containsKey(PictureQuality.PARAMETER_HDMI_RGB_RANGE)) {
-            pictureParams.add(PictureParameter.hdmiRgbRange(
-                    (byte) params.getInt(PictureQuality.PARAMETER_HDMI_RGB_RANGE)));
+            String hdmiRgbRangeString = params.getString(PictureQuality.PARAMETER_HDMI_RGB_RANGE);
+            if (hdmiRgbRangeString != null) {
+                byte hdmiRgbRangeByte;
+                switch (hdmiRgbRangeString) {
+                    case "AUTO":
+                        hdmiRgbRangeByte = ColorRange.AUTO;
+                        break;
+                    case "LIMITED":
+                        hdmiRgbRangeByte = ColorRange.LIMITED;
+                        break;
+                    case "FULL":
+                        hdmiRgbRangeByte = ColorRange.FULL;
+                        break;
+                    default:
+                        hdmiRgbRangeByte = ColorRange.AUTO;
+                        Log.e("PictureParams", "Invalid hdmi_rgb_range string: "
+                                + hdmiRgbRangeByte);
+                }
+                pictureParams.add(PictureParameter.hdmiRgbRange(hdmiRgbRangeByte));
+            }
             params.remove(PictureQuality.PARAMETER_HDMI_RGB_RANGE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_SPACE)) {
-            pictureParams.add(PictureParameter.colorSpace(
-                    (byte) params.getInt(PictureQuality.PARAMETER_COLOR_SPACE)));
+            String colorSpaceString = params.getString(PictureQuality.PARAMETER_COLOR_SPACE);
+            if (colorSpaceString != null) {
+                byte colorSpaceByte;
+                switch (colorSpaceString) {
+                    case "AUTO":
+                        colorSpaceByte = ColorSpace.AUTO;
+                        break;
+                    case "S_RGB_BT_709":
+                        colorSpaceByte = ColorSpace.S_RGB_BT_709;
+                        break;
+                    case "DCI":
+                        colorSpaceByte = ColorSpace.DCI;
+                        break;
+                    case "ADOBE_RGB":
+                        colorSpaceByte = ColorSpace.ADOBE_RGB;
+                        break;
+                    case "BT2020":
+                        colorSpaceByte = ColorSpace.BT2020;
+                        break;
+                    case "ON":
+                        colorSpaceByte = ColorSpace.ON;
+                        break;
+                    case "OFF":
+                        colorSpaceByte = ColorSpace.OFF;
+                        break;
+                    default:
+                        colorSpaceByte = ColorSpace.OFF;
+                        Log.e("PictureParams", "Invalid color_space string: "
+                                + colorSpaceString);
+                }
+                pictureParams.add(PictureParameter.colorSpace(colorSpaceByte));
+            }
             params.remove(PictureQuality.PARAMETER_COLOR_SPACE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_NITS)) {
@@ -567,8 +697,25 @@ public final class MediaQualityUtils {
             params.remove(PictureQuality.PARAMETER_PANEL_INIT_MAX_LUMINCE_VALID);
         }
         if (params.containsKey(PictureQuality.PARAMETER_GAMMA)) {
-            pictureParams.add(PictureParameter.gamma(
-                    (byte) params.getInt(PictureQuality.PARAMETER_GAMMA)));
+            String gammaString = params.getString(PictureQuality.PARAMETER_GAMMA);
+            if (gammaString != null) {
+                byte gammaByte;
+                switch (gammaString) {
+                    case "DARK":
+                        gammaByte = Gamma.DARK;
+                        break;
+                    case "MIDDLE":
+                        gammaByte = Gamma.MIDDLE;
+                        break;
+                    case "BRIGHT":
+                        gammaByte = Gamma.BRIGHT;
+                        break;
+                    default:
+                        gammaByte = Gamma.DARK;
+                        Log.e("PictureParams", "Invalid gamma string: " + gammaString);
+                }
+                pictureParams.add(PictureParameter.gamma(gammaByte));
+            }
             params.remove(PictureQuality.PARAMETER_GAMMA);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_OFFSET)) {
@@ -602,13 +749,19 @@ public final class MediaQualityUtils {
             params.remove(PictureQuality.PARAMETER_ELEVEN_POINT_BLUE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LOW_BLUE_LIGHT)) {
-            pictureParams.add(PictureParameter.lowBlueLight(
-                    (byte) params.getInt(PictureQuality.PARAMETER_LOW_BLUE_LIGHT)));
+            String lowBlueLightString = params.getString(PictureQuality.PARAMETER_LOW_BLUE_LIGHT);
+            if (lowBlueLightString != null) {
+                byte lowBlueLightByte = mapQualityLevel(lowBlueLightString);
+                pictureParams.add(PictureParameter.lowBlueLight(lowBlueLightByte));
+            }
             params.remove(PictureQuality.PARAMETER_LOW_BLUE_LIGHT);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LD_MODE)) {
-            pictureParams.add(PictureParameter.LdMode(
-                    (byte) params.getInt(PictureQuality.PARAMETER_LD_MODE)));
+            String ldModeString = params.getString(PictureQuality.PARAMETER_LD_MODE);
+            if (ldModeString != null) {
+                byte ldModeByte = mapQualityLevel(ldModeString);
+                pictureParams.add(PictureParameter.LdMode(ldModeByte));
+            }
             params.remove(PictureQuality.PARAMETER_LD_MODE);
         }
         if (params.containsKey(PictureQuality.PARAMETER_OSD_RED_GAIN)) {
@@ -767,8 +920,44 @@ public final class MediaQualityUtils {
             params.remove(PictureQuality.PARAMETER_COLOR_TUNER_LUMINANCE_FLESH);
         }
         if (params.containsKey(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE)) {
-            pictureParams.add(PictureParameter.pictureQualityEventType(
-                    (byte) params.getInt(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE)));
+            String pictureQualityEventTypeString = params.getString(
+                    PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE);
+            if (pictureQualityEventTypeString != null) {
+                byte pictureQualityEventTypeByte;
+                switch (pictureQualityEventTypeString) {
+                    case "NONE":
+                        pictureQualityEventTypeByte = PictureQualityEventType.NONE;
+                        break;
+                    case "BBD_RESULT":
+                        pictureQualityEventTypeByte = PictureQualityEventType.BBD_RESULT;
+                        break;
+                    case "VIDEO_DELAY_CHANGE":
+                        pictureQualityEventTypeByte = PictureQualityEventType.VIDEO_DELAY_CHANGE;
+                        break;
+                    case "CAPTUREPOINT_INFO_CHANGE":
+                        pictureQualityEventTypeByte =
+                                PictureQualityEventType.CAPTUREPOINT_INFO_CHANGE;
+                        break;
+                    case "VIDEOPATH_CHANGE":
+                        pictureQualityEventTypeByte = PictureQualityEventType.VIDEOPATH_CHANGE;
+                        break;
+                    case "EXTRA_FRAME_CHANGE":
+                        pictureQualityEventTypeByte = PictureQualityEventType.EXTRA_FRAME_CHANGE;
+                        break;
+                    case "DOLBY_IQ_CHANGE":
+                        pictureQualityEventTypeByte = PictureQualityEventType.DOLBY_IQ_CHANGE;
+                        break;
+                    case "DOLBY_APO_CHANGE":
+                        pictureQualityEventTypeByte = PictureQualityEventType.DOLBY_APO_CHANGE;
+                        break;
+                    default:
+                        pictureQualityEventTypeByte = PictureQualityEventType.NONE;
+                        Log.e("PictureParams", "Invalid event type string: "
+                                + pictureQualityEventTypeString);
+                }
+                pictureParams.add(
+                        PictureParameter.pictureQualityEventType(pictureQualityEventTypeByte));
+            }
             params.remove(PictureQuality.PARAMETER_PICTURE_QUALITY_EVENT_TYPE);
         }
         return pictureParams.toArray(new PictureParameter[0]);
@@ -1655,6 +1844,19 @@ public final class MediaQualityUtils {
     private static String getSettingsString(Cursor cursor) {
         int colIndex = cursor.getColumnIndex(SETTINGS);
         return colIndex != -1 ? cursor.getString(colIndex) : null;
+    }
+
+    private static byte mapQualityLevel(String qualityLevel) {
+        return switch (qualityLevel) {
+            case MediaQualityContract.LEVEL_OFF -> QualityLevel.OFF;
+            case MediaQualityContract.LEVEL_LOW -> QualityLevel.LOW;
+            case MediaQualityContract.LEVEL_MEDIUM -> QualityLevel.MEDIUM;
+            case MediaQualityContract.LEVEL_HIGH -> QualityLevel.HIGH;
+            default -> {
+                Log.e("PictureParams", "Invalid noise_reduction string: " + qualityLevel);
+                yield QualityLevel.OFF;
+            }
+        };
     }
 
     private MediaQualityUtils() {
