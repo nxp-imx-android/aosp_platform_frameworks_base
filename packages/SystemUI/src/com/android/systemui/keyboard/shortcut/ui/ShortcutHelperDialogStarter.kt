@@ -85,8 +85,11 @@ constructor(
                     shortcutsUiState = shortcutsUiState,
                     onKeyboardSettingsClicked = { onKeyboardSettingsClicked(dialog) },
                     onSearchQueryChanged = { shortcutHelperViewModel.onSearchQueryChanged(it) },
-                    onCustomizationRequested = {
+                    onShortcutCustomizationRequested = {
                         shortcutCustomizationDialogStarter.onShortcutCustomizationRequested(it)
+                    },
+                    onCustomizationModeToggled = { isCustomizing ->
+                        shortcutHelperViewModel.toggleCustomizationMode(isCustomizing)
                     },
                 )
                 dialog.setOnDismissListener { shortcutHelperViewModel.onViewClosed() }

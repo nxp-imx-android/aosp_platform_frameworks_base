@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.pm.PackageManager.NameNotFoundException
 import android.util.Log
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Accessibility
 import androidx.compose.material.icons.filled.AccessibilityNew
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Apps
@@ -32,6 +31,7 @@ import com.android.compose.ui.graphics.painter.DrawablePainter
 import com.android.systemui.Flags.keyboardShortcutHelperShortcutCustomizer
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCategoriesInteractor
+import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCustomizationModeInteractor
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperStateInteractor
 import com.android.systemui.keyboard.shortcut.shared.model.Shortcut
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategory
@@ -65,6 +65,7 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val stateInteractor: ShortcutHelperStateInteractor,
     categoriesInteractor: ShortcutHelperCategoriesInteractor,
+    private val customizationModeInteractor: ShortcutHelperCustomizationModeInteractor,
 ) {
 
     private val searchQuery = MutableStateFlow("")
@@ -77,7 +78,11 @@ constructor(
             .flowOn(backgroundDispatcher)
 
     val shortcutsUiState =
-        combine(searchQuery, categoriesInteractor.shortcutCategories) { query, categories ->
+        combine(
+                searchQuery,
+                categoriesInteractor.shortcutCategories,
+                customizationModeInteractor.customizationMode,
+            ) { query, categories, isCustomizationModeEnabled ->
                 if (categories.isEmpty()) {
                     ShortcutsUiState.Inactive
                 } else {
@@ -94,6 +99,7 @@ constructor(
                         isShortcutCustomizerFlagEnabled =
                             keyboardShortcutHelperShortcutCustomizer(),
                         shouldShowResetButton = shouldShowResetButton(shortcutCategoriesUi),
+                        isCustomizationModeEnabled = isCustomizationModeEnabled,
                     )
                 }
             }
@@ -243,6 +249,7 @@ constructor(
     fun onViewClosed() {
         stateInteractor.onViewClosed()
         resetSearchQuery()
+        resetCustomizationMode()
     }
 
     fun onViewOpened() {
@@ -253,7 +260,15 @@ constructor(
         searchQuery.value = query
     }
 
+    fun toggleCustomizationMode(isCustomizing: Boolean) {
+        customizationModeInteractor.toggleCustomizationMode(isCustomizing)
+    }
+
     private fun resetSearchQuery() {
         searchQuery.value = ""
+    }
+
+    private fun resetCustomizationMode() {
+        customizationModeInteractor.toggleCustomizationMode(false)
     }
 }

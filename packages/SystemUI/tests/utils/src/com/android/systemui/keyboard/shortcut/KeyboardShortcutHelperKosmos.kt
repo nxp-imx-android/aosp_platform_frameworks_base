@@ -29,6 +29,7 @@ import com.android.systemui.keyboard.shortcut.data.repository.DefaultShortcutCat
 import com.android.systemui.keyboard.shortcut.data.repository.InputGestureDataAdapter
 import com.android.systemui.keyboard.shortcut.data.repository.InputGestureMaps
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutCategoriesUtils
+import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperCustomizationModeRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperInputDeviceRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperStateRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperTestHelper
@@ -41,6 +42,7 @@ import com.android.systemui.keyboard.shortcut.data.source.MultitaskingShortcutsS
 import com.android.systemui.keyboard.shortcut.data.source.SystemShortcutsSource
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutCustomizationInteractor
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCategoriesInteractor
+import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCustomizationModeInteractor
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperStateInteractor
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperExclusions
 import com.android.systemui.keyboard.shortcut.ui.ShortcutCustomizationDialogStarter
@@ -196,6 +198,14 @@ val Kosmos.shortcutHelperCategoriesInteractor by
         }
     }
 
+val Kosmos.shortcutHelperCustomizationModeRepository by
+    Kosmos.Fixture { ShortcutHelperCustomizationModeRepository(shortcutHelperStateRepository) }
+
+val Kosmos.shortcutHelperCustomizationModeInteractor by
+    Kosmos.Fixture {
+        ShortcutHelperCustomizationModeInteractor(shortcutHelperCustomizationModeRepository)
+    }
+
 val Kosmos.shortcutHelperViewModel by
     Kosmos.Fixture {
         ShortcutHelperViewModel(
@@ -206,6 +216,7 @@ val Kosmos.shortcutHelperViewModel by
             testDispatcher,
             shortcutHelperStateInteractor,
             shortcutHelperCategoriesInteractor,
+            shortcutHelperCustomizationModeInteractor,
         )
     }
 
