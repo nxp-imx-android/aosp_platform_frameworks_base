@@ -2535,7 +2535,6 @@ final class InstallPackageHelper {
         Trace.traceBegin(TRACE_TAG_PACKAGE_MANAGER, "updateSettingsInternal");
 
         final String pkgName = pkg.getPackageName();
-        final int[] installedForUsers = installRequest.getOriginUsers();
         final int installReason = installRequest.getInstallReason();
         final String installerPackageName = installRequest.getInstallerPackageName();
 
@@ -2554,13 +2553,13 @@ final class InstallPackageHelper {
             // so we enable the package.
             final PackageSetting ps = mPm.mSettings.getPackageLPr(pkgName);
             if (ps != null) {
+                final int[] installedForUsers = ps.queryUsersInstalledOrHasData(allUsers);
                 if (ps.isSystem()) {
                     if (DEBUG_INSTALL) {
                         Slog.d(TAG, "Implicitly enabling system package on upgrade: " + pkgName);
                     }
                     // Enable system package for requested users
-                    if (installedForUsers != null
-                            && !installRequest.isApplicationEnabledSettingPersistent()) {
+                    if (!installRequest.isApplicationEnabledSettingPersistent()) {
                         for (int origUserId : installedForUsers) {
                             if (userId == UserHandle.USER_ALL || userId == origUserId) {
                                 ps.setEnabled(COMPONENT_ENABLED_STATE_DEFAULT,
@@ -2569,23 +2568,19 @@ final class InstallPackageHelper {
                         }
                     }
                     // Also convey the prior install/uninstall state
-                    if (allUsers != null && installedForUsers != null) {
-                        for (int currentUserId : allUsers) {
-                            final boolean installed = ArrayUtils.contains(
-                                    installedForUsers, currentUserId);
-                            if (DEBUG_INSTALL) {
-                                Slog.d(TAG, "    user " + currentUserId + " => " + installed);
-                            }
-                            ps.setInstalled(installed, currentUserId);
+                    for (int currentUserId : allUsers) {
+                        final boolean installed = ArrayUtils.contains(
+                                installedForUsers, currentUserId);
+                        if (DEBUG_INSTALL) {
+                            Slog.d(TAG, "    user " + currentUserId + " => " + installed);
                         }
-                        // these install state changes will be persisted in the
-                        // upcoming call to mSettings.writeLPr().
+                        ps.setInstalled(installed, currentUserId);
                     }
+                    // these install state changes will be persisted in the
+                    // upcoming call to mSettings.writeLPr().
 
-                    if (allUsers != null) {
-                        for (int currentUserId : allUsers) {
-                            ps.resetOverrideComponentLabelIcon(currentUserId);
-                        }
+                    for (int currentUserId : allUsers) {
+                        ps.resetOverrideComponentLabelIcon(currentUserId);
                     }
                 }
 
@@ -2619,17 +2614,23 @@ final class InstallPackageHelper {
                     }
                     // Clear any existing archive state.
                     mPm.mInstallerService.mPackageArchiver.clearArchiveState(ps, userId);
-                } else if (allUsers != null) {
+                } else {
                     // The caller explicitly specified INSTALL_ALL_USERS flag.
                     // Thus, updating the settings to install the app for all users.
+                    final boolean isPackageExisted = installRequest.getOriginUsers() != null;
                     for (int currentUserId : allUsers) {
                         // If the app is already installed for the currentUser,
                         // keep it as installed as we might be updating the app at this place.
                         // If not currently installed, check if the currentUser is restricted by
                         // DISALLOW_INSTALL_APPS or DISALLOW_DEBUGGING_FEATURES device policy.
                         // Install / update the app if the user isn't restricted. Skip otherwise.
-                        final boolean installedForCurrentUser = ArrayUtils.contains(
-                                installedForUsers, currentUserId);
+
+                        // The result of ps.queryUsersInstalledOrHasData() will contains users
+                        // that is restricted by device policy if the package is first time
+                        // installed. In the case, the originUsers will be null since there is
+                        // no package setting when scanning package.
+                        final boolean installedForCurrentUser = isPackageExisted
+                                && ArrayUtils.contains(installedForUsers, currentUserId);
                         final boolean restrictedByPolicy =
                                 mPm.isUserRestricted(currentUserId,
                                         UserManager.DISALLOW_INSTALL_APPS)
