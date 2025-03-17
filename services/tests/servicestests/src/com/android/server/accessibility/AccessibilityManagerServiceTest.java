@@ -60,6 +60,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -2115,8 +2116,9 @@ public class AccessibilityManagerServiceTest {
     @Test
     public void switchUser_callsUserInitializationCompleteCallback() throws RemoteException {
         mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
-
         int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
+
         mA11yms.switchUser(newUserId);
         mTestableLooper.processAllMessages();
 
@@ -2130,6 +2132,7 @@ public class AccessibilityManagerServiceTest {
         AccessibilityManagerService.Lifecycle lifecycle =
                 new AccessibilityManagerService.Lifecycle(mTestableContext, mA11yms);
         int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
 
         lifecycle.onUserSwitching(
                 new SystemService.TargetUser(new UserInfo(0, "USER", 0)),
@@ -2140,12 +2143,28 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
+    public void switchUser_sameParent_noChange() throws RemoteException {
+        mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
+        int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(
+                mA11yms.getCurrentUserIdLocked());
+
+        mA11yms.switchUser(newUserId);
+        mTestableLooper.processAllMessages();
+
+        verify(mUserInitializationCompleteCallback, never())
+                .onUserInitializationComplete(newUserId);
+    }
+
+    @Test
     @DisableFlags(Flags.FLAG_MANAGER_LIFECYCLE_USER_CHANGE)
     public void intent_user_switched_switchesUser() throws RemoteException {
         mA11yms.mUserInitializationCompleteCallbacks.add(mUserInitializationCompleteCallback);
         int newUserId = mA11yms.getCurrentUserIdLocked() + 1;
         final Intent intent = new Intent(Intent.ACTION_USER_SWITCHED);
         intent.putExtra(Intent.EXTRA_USER_HANDLE, newUserId);
+        when(mMockSecurityPolicy.resolveProfileParentLocked(anyInt())).thenReturn(newUserId);
 
         sendBroadcastToAccessibilityManagerService(intent, mA11yms.getCurrentUserIdLocked());
         mTestableLooper.processAllMessages();
