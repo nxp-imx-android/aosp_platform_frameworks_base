@@ -385,3 +385,13 @@ flag {
   description: "Shows summarized notifications in the UI"
   bug: "390217880"
 }
+
+flag {
+  name: "nm_collapsed_lines"
+  namespace: "systemui"
+  description: "Shows 2 lines for collapsed notifications by default"
+  bug: "390217880"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

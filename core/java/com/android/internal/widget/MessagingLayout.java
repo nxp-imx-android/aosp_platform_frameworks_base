@@ -157,6 +157,10 @@ public class MessagingLayout extends FrameLayout
     @RemotableViewMethod(asyncImpl = "setIsCollapsedAsync")
     public void setIsCollapsed(boolean isCollapsed) {
         mIsCollapsed = isCollapsed;
+        if (mIsCollapsed) {
+            mMessagingLinearLayout.setMaxDisplayedLines(
+                    android.app.Flags.nmCollapsedLines() ? 2 : 1);
+        }
     }
 
     /**
@@ -549,7 +553,9 @@ public class MessagingLayout extends FrameLayout
             if (sender != mUser && mNameReplacement != null) {
                 nameOverride = mNameReplacement;
             }
-            newGroup.setSingleLine(mIsCollapsed && TextUtils.isEmpty(mSummarizedContent));
+            newGroup.setSingleLine(mIsCollapsed
+                    ? !android.app.Flags.nmCollapsedLines() && TextUtils.isEmpty(mSummarizedContent)
+                    : false);
             newGroup.setShowingAvatar(!mIsCollapsed);
             newGroup.setIsCollapsed(mIsCollapsed);
             newGroup.setSender(sender, nameOverride);
