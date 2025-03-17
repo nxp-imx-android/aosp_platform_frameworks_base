@@ -18,10 +18,7 @@ package com.android.server.wm;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_ALL;
-import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_APP_TRANSITION;
-import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_SCREEN_ROTATION;
 import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
-import static com.android.server.wm.WindowContainer.AnimationFlags.TRANSITION;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_WINDOW_TRACE;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
@@ -56,9 +53,6 @@ public class WindowAnimator {
 
     /** Is any window animating? */
     private boolean mLastRootAnimating;
-
-    /** True if we are running any animations that require expensive composition. */
-    private boolean mRunningExpensiveAnimations;
 
     final Choreographer.FrameCallback mAnimationFrameCallback;
 
@@ -138,8 +132,6 @@ public class WindowAnimator {
         scheduleAnimation();
 
         final RootWindowContainer root = mService.mRoot;
-        final boolean useShellTransition = root.mTransitionController.isShellTransitionsEnabled();
-        final int animationFlags = useShellTransition ? CHILDREN : (TRANSITION | CHILDREN);
         boolean rootAnimating = false;
         mCurrentTime = frameTimeNs / TimeUtils.NANOS_PER_MS;
         if (DEBUG_WINDOW_TRACE) {
@@ -164,17 +156,13 @@ public class WindowAnimator {
 
             for (int i = 0; i < numDisplays; i++) {
                 final DisplayContent dc = root.getChildAt(i);
-
-                if (!useShellTransition) {
-                    dc.checkAppWindowsReadyToShow();
-                }
                 if (accessibilityController.hasCallbacks()) {
                     accessibilityController
                             .recomputeMagnifiedRegionAndDrawMagnifiedRegionBorderIfNeeded(
                                     dc.mDisplayId);
                 }
 
-                if (dc.isAnimating(animationFlags, ANIMATION_TYPE_ALL)) {
+                if (dc.isAnimating(CHILDREN, ANIMATION_TYPE_ALL)) {
                     rootAnimating = true;
                     if (!dc.mLastContainsRunningSurfaceAnimator) {
                         dc.mLastContainsRunningSurfaceAnimator = true;
@@ -211,11 +199,6 @@ public class WindowAnimator {
         }
         mLastRootAnimating = rootAnimating;
 
-        // APP_TRANSITION, SCREEN_ROTATION, TYPE_RECENTS are handled by shell transition.
-        if (!useShellTransition) {
-            updateRunningExpensiveAnimationsLegacy();
-        }
-
         final ArrayList<Runnable> afterPrepareSurfacesRunnables = mAfterPrepareSurfacesRunnables;
         if (!afterPrepareSurfacesRunnables.isEmpty()) {
             mAfterPrepareSurfacesRunnables = new ArrayList<>();
@@ -242,21 +225,6 @@ public class WindowAnimator {
             Slog.i(TAG, "!!! animate: exit"
                     + " hasPendingLayoutChanges=" + hasPendingLayoutChanges);
         }
-    }
-
-    private void updateRunningExpensiveAnimationsLegacy() {
-        final boolean runningExpensiveAnimations =
-                mService.mRoot.isAnimating(TRANSITION | CHILDREN /* flags */,
-                        ANIMATION_TYPE_APP_TRANSITION
-                                | ANIMATION_TYPE_SCREEN_ROTATION /* typesToCheck */);
-        if (runningExpensiveAnimations && !mRunningExpensiveAnimations) {
-            mService.mSnapshotController.setPause(true);
-            mTransaction.setEarlyWakeupStart();
-        } else if (!runningExpensiveAnimations && mRunningExpensiveAnimations) {
-            mService.mSnapshotController.setPause(false);
-            mTransaction.setEarlyWakeupEnd();
-        }
-        mRunningExpensiveAnimations = runningExpensiveAnimations;
     }
 
     public void dumpLocked(PrintWriter pw, String prefix, boolean dumpAll) {

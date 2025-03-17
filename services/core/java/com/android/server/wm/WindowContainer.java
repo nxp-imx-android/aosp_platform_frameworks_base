@@ -1476,14 +1476,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return stillDeferringRemoval;
     }
 
-    /** Checks if all windows in an app are all drawn and shows them if needed. */
-    void checkAppWindowsReadyToShow() {
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            final WindowContainer wc = mChildren.get(i);
-            wc.checkAppWindowsReadyToShow();
-        }
-    }
-
     /**
      * Called when this container or one of its descendants changed its requested orientation, and
      * wants this container to handle it or pass it to its parent.
