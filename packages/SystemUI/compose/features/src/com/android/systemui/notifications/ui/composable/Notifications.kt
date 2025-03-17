@@ -574,11 +574,11 @@ fun ContentScope.NotificationScrollingStack(
         ) {
             Column(
                 modifier =
-                    Modifier.thenIf(supportNestedScrolling) {
+                    Modifier.disableSwipesWhenScrolling(NestedScrollableBound.BottomRight)
+                        .thenIf(supportNestedScrolling) {
                             Modifier.nestedScroll(scrimNestedScrollConnection)
                         }
                         .stackVerticalOverscroll(coroutineScope) { scrollState.canScrollForward }
-                        .disableSwipesWhenScrolling(NestedScrollableBound.BottomRight)
                         .verticalScroll(scrollState)
                         .padding(top = stackTopPadding, bottom = stackBottomPadding)
                         .fillMaxWidth()
