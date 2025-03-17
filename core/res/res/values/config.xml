@@ -2849,6 +2849,8 @@
     <!-- The default for the setting that controls when to auto-start hub mode.
           0 means "never" -->
     <integer name="config_whenToStartHubModeDefault">0</integer>
+    <!-- Whether to restrict auto-showing glanceable hub to wireless charging. -->
+    <bool name="config_onlyShowGlanceableHubWhenWirelessChargingDefault">false</bool>
 
     <!-- The duration in milliseconds of the dream opening animation.  -->
     <integer name="config_dreamOpenAnimationDuration">250</integer>

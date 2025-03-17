@@ -10676,6 +10676,14 @@ public final class Settings {
                 "when_to_start_glanceable_hub";
 
         /**
+         * Whether glanceable hub should only start when charging wirelessly.
+         *
+         * @hide
+         */
+        public static final String GLANCEABLE_HUB_RESTRICT_TO_WIRELESS_CHARGING =
+                "glanceable_hub_restrict_to_writeless_charging";
+
+        /**
          * Whether home controls are enabled to be shown over the screensaver by the user.
          *
          * @hide
@@ -10683,6 +10691,13 @@ public final class Settings {
         public static final String SCREENSAVER_HOME_CONTROLS_ENABLED =
                 "screensaver_home_controls_enabled";
 
+        /**
+         * Whether screensaver should only start when charging wirelessly.
+         *
+         * @hide
+         */
+        public static final String SCREENSAVER_RESTRICT_TO_WIRELESS_CHARGING =
+                "screensaver_restrict_to_writeless_charging";
 
         /**
          * Default, indicates that the user has not yet started the dock setup flow.
