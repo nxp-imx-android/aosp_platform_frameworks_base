@@ -257,6 +257,9 @@ public abstract class SysuiTestCase {
     }
 
     public FakeBroadcastDispatcher getFakeBroadcastDispatcher() {
+        if (mSysuiDependency == null) {
+            return null;
+        }
         return mSysuiDependency.getFakeBroadcastDispatcher();
     }
 
