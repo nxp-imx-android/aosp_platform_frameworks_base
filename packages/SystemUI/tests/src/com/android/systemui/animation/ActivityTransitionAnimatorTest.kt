@@ -350,6 +350,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             val controller = createController()
             val runner = underTest.createEphemeralRunner(controller)
             runner.onAnimationCancelled()
+            waitForIdleSync()
             runner.onAnimationStart(
                 TRANSIT_NONE,
                 emptyArray(),
@@ -357,12 +358,13 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
                 emptyArray(),
                 iCallback,
             )
-
             waitForIdleSync()
+
             verify(controller).onTransitionAnimationCancelled()
             verify(controller, never()).onTransitionAnimationStart(anyBoolean())
             verify(listener).onTransitionAnimationCancelled()
             verify(listener, never()).onTransitionAnimationStart()
+            verify(iCallback).onAnimationFinished()
             assertNull(runner.delegate)
         }
     }
