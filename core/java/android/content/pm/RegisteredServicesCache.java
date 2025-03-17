@@ -104,14 +104,6 @@ public abstract class RegisteredServicesCache<V> {
 
     private final Handler mBackgroundHandler;
 
-    private final Runnable mClearServiceInfoCachesRunnable = new Runnable() {
-        public void run() {
-            synchronized (mUserIdToServiceInfoCaches) {
-                mUserIdToServiceInfoCaches.clear();
-            }
-        }
-    };
-
     private static class UserServices<V> {
         @GuardedBy("mServicesLock")
         final Map<V, Integer> persistentServices = Maps.newHashMap();
@@ -565,9 +557,11 @@ public abstract class RegisteredServicesCache<V> {
 
         if (Flags.optimizeParsingInRegisteredServicesCache()) {
             synchronized (mUserIdToServiceInfoCaches) {
-                if (mUserIdToServiceInfoCaches.numMaps() > 0) {
-                    mBackgroundHandler.removeCallbacks(mClearServiceInfoCachesRunnable);
-                    mBackgroundHandler.postDelayed(mClearServiceInfoCachesRunnable,
+                if (mUserIdToServiceInfoCaches.numElementsForKey(userId) > 0) {
+                    final Integer token = Integer.valueOf(userId);
+                    mBackgroundHandler.removeCallbacksAndEqualMessages(token);
+                    mBackgroundHandler.postDelayed(
+                            new ClearServiceInfoCachesTimeoutRunnable(userId), token,
                             SERVICE_INFO_CACHES_TIMEOUT_MILLIS);
                 }
             }
@@ -951,6 +945,21 @@ public abstract class RegisteredServicesCache<V> {
 
         public Handler getBackgroundHandler() {
             return BackgroundThread.getHandler();
+        }
+    }
+
+    class ClearServiceInfoCachesTimeoutRunnable implements Runnable {
+        final int mUserId;
+
+        ClearServiceInfoCachesTimeoutRunnable(int userId) {
+            this.mUserId = userId;
+        }
+
+        @Override
+        public void run() {
+            synchronized (mUserIdToServiceInfoCaches) {
+                mUserIdToServiceInfoCaches.delete(mUserId);
+            }
         }
     }
 }
