@@ -1845,9 +1845,12 @@ public class WindowManagerService extends IWindowManager.Stub
             // Only a presentation window needs a transition because its visibility affets the
             // lifecycle of apps below (b/390481865).
             if (enablePresentationForConnectedDisplays() && win.isPresentation()) {
-                Transition transition = null;
+                final boolean wasTransitionOnDisplay =
+                        win.mTransitionController.isCollectingTransitionOnDisplay(displayContent);
+                Transition newlyCreatedTransition = null;
                 if (!win.mTransitionController.isCollecting()) {
-                    transition = win.mTransitionController.createAndStartCollecting(TRANSIT_OPEN);
+                    newlyCreatedTransition =
+                            win.mTransitionController.createAndStartCollecting(TRANSIT_OPEN);
                 }
                 win.mTransitionController.collect(win.mToken);
                 res |= addWindowInner(win, displayPolicy, activity, displayContent, outInsetsState,
@@ -1856,9 +1859,14 @@ public class WindowManagerService extends IWindowManager.Stub
                 // A presentation hides all activities behind on the same display.
                 win.mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
-                win.mTransitionController.getCollectingTransition().setReady(win.mToken, true);
-                if (transition != null) {
-                    win.mTransitionController.requestStartTransition(transition, null,
+                if (!wasTransitionOnDisplay && win.mTransitionController
+                        .isCollectingTransitionOnDisplay(displayContent)) {
+                    // Set the display ready only when the display gets added to the collecting
+                    // transition in this operation.
+                    win.mTransitionController.setReady(win.mToken);
+                }
+                if (newlyCreatedTransition != null) {
+                    win.mTransitionController.requestStartTransition(newlyCreatedTransition, null,
                             null /* remoteTransition */, null /* displayChange */);
                 }
             } else {

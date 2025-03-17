@@ -512,9 +512,14 @@ class TransitionController {
         return false;
     }
 
+    /** Returns {@code true} if the display contains a collecting transition. */
+    boolean isCollectingTransitionOnDisplay(@NonNull DisplayContent dc) {
+        return mCollectingTransition != null && mCollectingTransition.isOnDisplay(dc);
+    }
+
     /** Returns {@code true} if the display contains a running or pending transition. */
     boolean isTransitionOnDisplay(@NonNull DisplayContent dc) {
-        if (mCollectingTransition != null && mCollectingTransition.isOnDisplay(dc)) {
+        if (isCollectingTransitionOnDisplay(dc)) {
             return true;
         }
         for (int i = mWaitingTransitions.size() - 1; i >= 0; --i) {
