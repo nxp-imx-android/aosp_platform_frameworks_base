@@ -448,6 +448,6 @@ public class DesktopModeStatus {
         pw.println(maxTaskLimitHandle == null ? "null" : maxTaskLimitHandle.getInt(/* def= */ -1));
 
         pw.print(innerPrefix); pw.print("showAppHandle config override=");
-        pw.print(overridesShowAppHandle(context));
+        pw.println(overridesShowAppHandle(context));
     }
 }
