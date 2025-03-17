@@ -184,13 +184,17 @@
         <item name="android:textColor">@androidprv:color/materialColorOnSurfaceVariant</item>
     </style>
 
-    <!-- This is hard coded to be sans-serif-condensed to match the icons -->
-
     <style name="TextAppearance.QS.Status">
-        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+        <item name="android:fontFamily" android:featureFlag="!com.android.systemui.shade_header_font_update">@*android:string/config_headlineFontFamily</item>
+        <item name="android:fontFamily" android:featureFlag="com.android.systemui.shade_header_font_update">variable-body-medium-emphasized</item>
         <item name="android:textColor">@color/shade_header_text_color</item>
         <item name="android:textSize">14sp</item>
         <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="TextAppearance.QS.Status.Clock">
+        <item name="android:fontFamily" android:featureFlag="!com.android.systemui.shade_header_font_update">@*android:string/config_headlineFontFamily</item>
+        <item name="android:fontFamily" android:featureFlag="com.android.systemui.shade_header_font_update">variable-display-small-emphasized</item>
     </style>
 
     <style name="TextAppearance.QS.Status.Build">

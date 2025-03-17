@@ -85,7 +85,7 @@ frame when animating QS <-> QQS transition
         android:paddingEnd="@dimen/status_bar_left_clock_end_padding"
         android:singleLine="true"
         android:textDirection="locale"
-        android:textAppearance="@style/TextAppearance.QS.Status"
+        android:textAppearance="@style/TextAppearance.QS.Status.Clock"
         android:fontFeatureSettings="tnum"
         android:transformPivotX="0dp"
         android:transformPivotY="24dp"
