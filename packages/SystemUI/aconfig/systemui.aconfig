@@ -2186,3 +2186,11 @@ flag {
     description: "Use AAD proximity sensor if flag is enabled and sensor is present"
     bug: "402534470"
 }
+
+flag {
+    name: "enable_underlay"
+    namespace: "ailabs"
+    description: "Enable the underlay additional layer"
+    bug: "403422950"
+}
+
