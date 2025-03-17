@@ -19,7 +19,9 @@ package com.android.server.location.contexthub;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
@@ -29,6 +31,7 @@ import static org.mockito.Mockito.when;
 import android.content.Context;
 import android.hardware.contexthub.EndpointInfo;
 import android.hardware.contexthub.ErrorCode;
+import android.hardware.contexthub.HubEndpoint;
 import android.hardware.contexthub.HubEndpointInfo;
 import android.hardware.contexthub.HubEndpointInfo.HubEndpointIdentifier;
 import android.hardware.contexthub.HubMessage;
@@ -381,6 +384,49 @@ public class ContextHubEndpointTest {
         mEndpointManager.onMessageReceived(sessionId, SAMPLE_UNRELIABLE_MESSAGE);
         verify(mMockCallback, times(2)).onMessageReceived(eq(sessionId), messageCaptor.capture());
         assertThat(messageCaptor.getValue()).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testUnreliableMessageFailureClosesSession() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        int sessionId = openTestSession(endpoint);
+
+        doThrow(new RemoteException("Intended exception in test"))
+                .when(mMockCallback)
+                .onMessageReceived(anyInt(), any(HubMessage.class));
+        mEndpointManager.onMessageReceived(sessionId, SAMPLE_UNRELIABLE_MESSAGE);
+        ArgumentCaptor<HubMessage> messageCaptor = ArgumentCaptor.forClass(HubMessage.class);
+        verify(mMockCallback).onMessageReceived(eq(sessionId), messageCaptor.capture());
+        assertThat(messageCaptor.getValue()).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE);
+
+        verify(mMockEndpointCommunications).closeEndpointSession(sessionId, Reason.UNSPECIFIED);
+        verify(mMockCallback).onSessionClosed(sessionId, HubEndpoint.REASON_FAILURE);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
+
+        unregisterExampleEndpoint(endpoint);
+    }
+
+    @Test
+    public void testSendUnreliableMessageFailureClosesSession() throws RemoteException {
+        IContextHubEndpoint endpoint = registerExampleEndpoint();
+        int sessionId = openTestSession(endpoint);
+
+        doThrow(new RemoteException("Intended exception in test"))
+                .when(mMockEndpointCommunications)
+                .sendMessageToEndpoint(anyInt(), any(Message.class));
+        endpoint.sendMessage(sessionId, SAMPLE_UNRELIABLE_MESSAGE, /* callback= */ null);
+        ArgumentCaptor<Message> messageCaptor = ArgumentCaptor.forClass(Message.class);
+        verify(mMockEndpointCommunications)
+                .sendMessageToEndpoint(eq(sessionId), messageCaptor.capture());
+        Message message = messageCaptor.getValue();
+        assertThat(message.type).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE.getMessageType());
+        assertThat(message.content).isEqualTo(SAMPLE_UNRELIABLE_MESSAGE.getMessageBody());
+
+        verify(mMockEndpointCommunications).closeEndpointSession(sessionId, Reason.UNSPECIFIED);
+        verify(mMockCallback).onSessionClosed(sessionId, HubEndpoint.REASON_FAILURE);
+        assertThat(mEndpointManager.getNumAvailableSessions()).isEqualTo(SESSION_ID_RANGE);
 
         unregisterExampleEndpoint(endpoint);
     }
