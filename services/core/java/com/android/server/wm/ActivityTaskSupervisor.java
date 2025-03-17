@@ -77,6 +77,7 @@ import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLAS
 import static com.android.server.wm.ActivityTaskManagerService.ANIMATE;
 import static com.android.server.wm.ActivityTaskManagerService.H.FIRST_SUPERVISOR_TASK_MSG;
 import static com.android.server.wm.ActivityTaskManagerService.RELAUNCH_REASON_NONE;
+import static com.android.server.wm.ActivityTaskManagerService.isPip2ExperimentEnabled;
 import static com.android.server.wm.ClientLifecycleManager.shouldDispatchLaunchActivityItemIndependently;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_ALLOWLISTED;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_LAUNCHABLE;
@@ -1684,9 +1685,13 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
          */
         rootTask.cancelAnimation();
         rootTask.setForceHidden(FLAG_FORCE_HIDDEN_FOR_PINNED_TASK, true /* set */);
-        rootTask.ensureActivitiesVisible(null /* starting */);
-        activityIdleInternal(null /* idleActivity */, false /* fromTimeout */,
-                true /* processPausingActivities */, null /* configuration */);
+        if (!isPip2ExperimentEnabled()) {
+            // In PiP2, as the transition finishes the lifecycle updates will be sent to the app
+            // along with the configuration changes as a part of the transition lifecycle.
+            rootTask.ensureActivitiesVisible(null /* starting */);
+            activityIdleInternal(null /* idleActivity */, false /* fromTimeout */,
+                    true /* processPausingActivities */, null /* configuration */);
+        }
 
         if (rootTask.getParent() == null) {
             // The activities in the task may already be finishing. Then the task could be removed
