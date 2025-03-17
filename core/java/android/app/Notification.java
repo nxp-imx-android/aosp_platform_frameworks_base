@@ -1983,7 +1983,7 @@ public class Notification implements Parcelable
          * treatment.
          * @hide
          */
-        public static final String EXTRA_IS_MAGIC = "android.extra.IS_MAGIC";
+        public static final String EXTRA_IS_ANIMATED = "android.extra.IS_ANIMATED";
 
         private final Bundle mExtras;
         @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)

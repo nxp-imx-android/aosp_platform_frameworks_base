@@ -22,15 +22,15 @@ import android.util.AttributeSet
 import android.widget.Button
 
 /**
- * Custom Button for Magic Action Button, which includes the custom background and foreground.
+ * Custom Button for Animated Action Button, which includes the custom background and foreground.
  */
 @SuppressLint("AppCompatCustomView")
-class MagicActionButton @JvmOverloads constructor(
+class AnimatedActionButton @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
 ) : Button(context, attrs, defStyleAttr) {
     init {
-        background = MagicActionBackgroundDrawable(context)
+        background = AnimatedActionBackgroundDrawable(context)
     }
 }
