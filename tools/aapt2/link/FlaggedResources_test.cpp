@@ -226,9 +226,11 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagInXmlGetsFlagged) {
       }
     }
   }
+
   ASSERT_TRUE(found) << "No entry for layout1 at v36 with FLAG_USES_FEATURE_FLAGS bit set";
-  // There should only be 1 entry that has the FLAG_USES_FEATURE_FLAGS bit of flags set to 1
-  ASSERT_EQ(fields_flagged, 1);
+  // There should only be 2 entry that has the FLAG_USES_FEATURE_FLAGS bit of flags set to 1, the
+  // three versions of the layout file that has flags
+  ASSERT_EQ(fields_flagged, 3);
 }
 
 }  // namespace aapt
