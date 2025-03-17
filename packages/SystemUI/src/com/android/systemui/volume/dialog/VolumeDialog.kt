@@ -59,6 +59,7 @@ constructor(
                 }
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         }
+        setCancelable(false)
         setCanceledOnTouchOutside(true)
     }
 
