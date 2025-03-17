@@ -22,7 +22,6 @@ import android.os.PowerManager
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
-import android.view.Display
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -1213,15 +1212,15 @@ class SceneContainerStartableTest : SysuiTestCase() {
                     fakeSceneDataSource.pause()
                     sceneInteractor.changeScene(sceneKey, "reason")
                     runCurrent()
-                    verify(sysUiState, times(index)).commitUpdate(Display.DEFAULT_DISPLAY)
+                    verify(sysUiState, times(index)).commitUpdate()
 
                     fakeSceneDataSource.unpause(expectedScene = sceneKey)
                     runCurrent()
-                    verify(sysUiState, times(index)).commitUpdate(Display.DEFAULT_DISPLAY)
+                    verify(sysUiState, times(index)).commitUpdate()
 
                     transitionStateFlow.value = ObservableTransitionState.Idle(sceneKey)
                     runCurrent()
-                    verify(sysUiState, times(index + 1)).commitUpdate(Display.DEFAULT_DISPLAY)
+                    verify(sysUiState, times(index + 1)).commitUpdate()
                 }
         }
 
