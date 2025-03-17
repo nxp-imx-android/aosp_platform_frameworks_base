@@ -144,6 +144,12 @@ public final class MessageQueue {
             return;
         }
 
+        // Holdback study.
+        if (Flags.messageQueueForceLegacy()) {
+            sIsProcessAllowedToUseConcurrent = false;
+            return;
+        }
+
         if (Flags.forceConcurrentMessageQueue()) {
             // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
             // This is a hack to allow Robolectric tests to use the legacy implementation.
