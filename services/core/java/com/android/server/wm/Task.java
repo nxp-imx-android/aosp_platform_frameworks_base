@@ -3633,43 +3633,39 @@ class Task extends TaskFragment {
         int layer = 0;
         boolean decorSurfacePlaced = false;
 
-        // We use two passes as a way to promote children which
-        // need Z-boosting to the end of the list.
         for (int j = 0; j < mChildren.size(); ++j) {
             final WindowContainer wc = mChildren.get(j);
             wc.assignChildLayers(t);
-            if (!wc.needsZBoost()) {
-                // Place the decor surface under any untrusted content.
-                if (mDecorSurfaceContainer != null
-                        && !mDecorSurfaceContainer.mIsBoosted
-                        && !decorSurfacePlaced
-                        && shouldPlaceDecorSurfaceBelowContainer(wc)) {
-                    mDecorSurfaceContainer.assignLayer(t, layer++);
-                    decorSurfacePlaced = true;
-                }
-                wc.assignLayer(t, layer++);
+            // Place the decor surface under any untrusted content.
+            if (mDecorSurfaceContainer != null
+                    && !mDecorSurfaceContainer.mIsBoosted
+                    && !decorSurfacePlaced
+                    && shouldPlaceDecorSurfaceBelowContainer(wc)) {
+                mDecorSurfaceContainer.assignLayer(t, layer++);
+                decorSurfacePlaced = true;
+            }
+            wc.assignLayer(t, layer++);
 
-                // Boost the adjacent TaskFragment for dimmer if needed.
-                final TaskFragment taskFragment = wc.asTaskFragment();
-                if (taskFragment != null && taskFragment.isEmbedded()
-                        && taskFragment.hasAdjacentTaskFragment()) {
-                    final int[] nextLayer = { layer };
-                    taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
-                        if (adjacentTf.shouldBoostDimmer()) {
-                            adjacentTf.assignLayer(t, nextLayer[0]++);
-                        }
-                    });
-                    layer = nextLayer[0];
-                }
+            // Boost the adjacent TaskFragment for dimmer if needed.
+            final TaskFragment taskFragment = wc.asTaskFragment();
+            if (taskFragment != null && taskFragment.isEmbedded()
+                    && taskFragment.hasAdjacentTaskFragment()) {
+                final int[] nextLayer = { layer };
+                taskFragment.forOtherAdjacentTaskFragments(adjacentTf -> {
+                    if (adjacentTf.shouldBoostDimmer()) {
+                        adjacentTf.assignLayer(t, nextLayer[0]++);
+                    }
+                });
+                layer = nextLayer[0];
+            }
 
-                // Place the decor surface just above the owner TaskFragment.
-                if (mDecorSurfaceContainer != null
-                        && !mDecorSurfaceContainer.mIsBoosted
-                        && !decorSurfacePlaced
-                        && wc == mDecorSurfaceContainer.mOwnerTaskFragment) {
-                    mDecorSurfaceContainer.assignLayer(t, layer++);
-                    decorSurfacePlaced = true;
-                }
+            // Place the decor surface just above the owner TaskFragment.
+            if (mDecorSurfaceContainer != null
+                    && !mDecorSurfaceContainer.mIsBoosted
+                    && !decorSurfacePlaced
+                    && wc == mDecorSurfaceContainer.mOwnerTaskFragment) {
+                mDecorSurfaceContainer.assignLayer(t, layer++);
+                decorSurfacePlaced = true;
             }
         }
 
@@ -3679,12 +3675,6 @@ class Task extends TaskFragment {
             mDecorSurfaceContainer.assignLayer(t, layer++);
         }
 
-        for (int j = 0; j < mChildren.size(); ++j) {
-            final WindowContainer wc = mChildren.get(j);
-            if (wc.needsZBoost()) {
-                wc.assignLayer(t, layer++);
-            }
-        }
         if (mOverlayHost != null) {
             mOverlayHost.setLayer(t, layer++);
         }

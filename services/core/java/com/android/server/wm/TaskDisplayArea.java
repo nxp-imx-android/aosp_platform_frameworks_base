@@ -48,7 +48,6 @@ import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.UserHandle;
-import android.util.IntArray;
 import android.util.Slog;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
@@ -102,9 +101,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     private final ArrayList<WindowContainer> mTmpAlwaysOnTopChildren = new ArrayList<>();
     private final ArrayList<WindowContainer> mTmpNormalChildren = new ArrayList<>();
     private final ArrayList<WindowContainer> mTmpHomeChildren = new ArrayList<>();
-    private final IntArray mTmpNeedsZBoostIndexes = new IntArray();
-
-    private ArrayList<Task> mTmpTasks = new ArrayList<>();
 
     private ActivityTaskManagerService mAtmService;
 
@@ -740,38 +736,12 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      */
     private int adjustRootTaskLayer(SurfaceControl.Transaction t,
             ArrayList<WindowContainer> children, int startLayer) {
-        mTmpNeedsZBoostIndexes.clear();
         final int childCount = children.size();
-        boolean hasAdjacentTask = false;
         for (int i = 0; i < childCount; i++) {
             final WindowContainer child = children.get(i);
-            final TaskDisplayArea childTda = child.asTaskDisplayArea();
-            final boolean childNeedsZBoost = childTda != null
-                    ? childTda.childrenNeedZBoost()
-                    : child.needsZBoost();
-
-            if (childNeedsZBoost) {
-                mTmpNeedsZBoostIndexes.add(i);
-                continue;
-            }
-
-            child.assignLayer(t, startLayer++);
-        }
-
-        final int zBoostSize = mTmpNeedsZBoostIndexes.size();
-        for (int i = 0; i < zBoostSize; i++) {
-            final WindowContainer child = children.get(mTmpNeedsZBoostIndexes.get(i));
             child.assignLayer(t, startLayer++);
         }
         return startLayer;
-    }
-
-    private boolean childrenNeedZBoost() {
-        final boolean[] needsZBoost = new boolean[1];
-        forAllRootTasks(task -> {
-            needsZBoost[0] |= task.needsZBoost();
-        });
-        return needsZBoost[0];
     }
 
     void setBackgroundColor(@ColorInt int colorInt) {

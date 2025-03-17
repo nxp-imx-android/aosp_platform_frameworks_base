@@ -4995,18 +4995,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return true;
     }
 
-    @Override
-    boolean needsZBoost() {
-        final InsetsControlTarget target = getDisplayContent().getImeTarget(IME_TARGET_LAYERING);
-        if (mIsImWindow && target != null) {
-            final ActivityRecord activity = target.getWindow().mActivityRecord;
-            if (activity != null) {
-                return activity.needsZBoost();
-            }
-        }
-        return false;
-    }
-
     private boolean isStartingWindowAssociatedToTask() {
         return mStartingData != null && mStartingData.mAssociatedTask != null;
     }
