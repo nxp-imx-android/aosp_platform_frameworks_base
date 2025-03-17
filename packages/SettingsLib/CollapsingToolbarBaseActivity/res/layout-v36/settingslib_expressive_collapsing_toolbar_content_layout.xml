@@ -72,4 +72,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
+    <com.google.android.material.floatingtoolbar.FloatingToolbarLayout
+        android:id="@+id/floating_toolbar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:theme="@style/Theme.Material3.DynamicColors.DayNight"
+        style="@style/Widget.SettingsLib.Material3Expressive.FloatingToolbar"
+        app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
+        android:layout_margin="@dimen/settingslib_expressive_space_small1"
+        android:visibility="gone">
+
+        <com.android.settingslib.collapsingtoolbar.widget.ScrollableToolbarItemLayout
+            android:id="@+id/floating_toolbar_items"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.floatingtoolbar.FloatingToolbarLayout>
 </merge>

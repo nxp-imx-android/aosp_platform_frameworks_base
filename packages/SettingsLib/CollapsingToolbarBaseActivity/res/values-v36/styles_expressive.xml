@@ -41,4 +41,13 @@
     <style name="SettingsLibCollapsingToolbarTitle.Expanded" parent="@style/TextAppearance.SettingsLib.DisplaySmall.Emphasized">
         <item name="android:textSize">36dp</item>
     </style>
+
+    <style name="Widget.SettingsLib.Material3Expressive.FloatingToolbar" parent="Base.Widget.Material3.FloatingToolbar">
+        <item name="backgroundTint">@color/settingslib_materialColorSurfaceContainerHighest</item>
+        <item name="android:paddingStart">@dimen/settingslib_expressive_space_extrasmall6</item>
+        <item name="android:paddingEnd">@dimen/settingslib_expressive_space_extrasmall6</item>
+        <item name="android:paddingTop">@dimen/settingslib_expressive_space_extrasmall6</item>
+        <item name="android:paddingBottom">@dimen/settingslib_expressive_space_extrasmall6</item>
+        <item name="android:layout_gravity">bottom|center</item>
+    </style>
 </resources>
