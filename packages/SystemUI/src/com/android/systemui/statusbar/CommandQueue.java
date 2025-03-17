@@ -64,6 +64,7 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.annotations.KeepForWeakReference;
 import com.android.internal.os.SomeArgs;
+import com.android.internal.statusbar.DisableStates;
 import com.android.internal.statusbar.IAddTileResultCallback;
 import com.android.internal.statusbar.IStatusBar;
 import com.android.internal.statusbar.IUndoMediaTransferCallback;
@@ -85,6 +86,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * This class takes the functions from IStatusBar that come in on
@@ -184,6 +186,8 @@ public class CommandQueue extends IStatusBar.Stub implements
     private static final int MSG_TOGGLE_QUICK_SETTINGS_PANEL = 82 << MSG_SHIFT;
     private static final int MSG_WALLET_ACTION_LAUNCH_GESTURE = 83 << MSG_SHIFT;
     private static final int MSG_DISPLAY_REMOVE_SYSTEM_DECORATIONS = 85 << MSG_SHIFT;
+    private static final int MSG_DISABLE_ALL  = 86 << MSG_SHIFT;
+
     public static final int FLAG_EXCLUDE_NONE = 0;
     public static final int FLAG_EXCLUDE_SEARCH_PANEL = 1 << 0;
     public static final int FLAG_EXCLUDE_RECENTS_PANEL = 1 << 1;
@@ -654,7 +658,8 @@ public class CommandQueue extends IStatusBar.Stub implements
 
     /**
      * Called to notify that disable flags are updated.
-     * @see Callbacks#disable(int, int, int, boolean).
+     * @see Callbacks#disable(int, int, int, boolean)
+     * @see Callbacks#disableForAllDisplays(DisableStates)
      */
     public void disable(int displayId, @DisableFlags int state1, @Disable2Flags int state2,
             boolean animate) {
@@ -680,6 +685,27 @@ public class CommandQueue extends IStatusBar.Stub implements
     @Override
     public void disable(int displayId, @DisableFlags int state1, @Disable2Flags int state2) {
         disable(displayId, state1, state2, true);
+    }
+
+    @Override
+    public void disableForAllDisplays(DisableStates disableStates) throws RemoteException {
+        synchronized (mLock) {
+            for (Map.Entry<Integer, Pair<Integer, Integer>> displaysWithStates :
+                    disableStates.displaysWithStates.entrySet()) {
+                int displayId = displaysWithStates.getKey();
+                Pair<Integer, Integer> states = displaysWithStates.getValue();
+                setDisabled(displayId, states.first, states.second);
+            }
+            mHandler.removeMessages(MSG_DISABLE_ALL);
+            Message msg = mHandler.obtainMessage(MSG_DISABLE_ALL, disableStates);
+            if (Looper.myLooper() == mHandler.getLooper()) {
+                // If its the right looper execute immediately so hides can be handled quickly.
+                mHandler.handleMessage(msg);
+                msg.recycle();
+            } else {
+                msg.sendToTarget();
+            }
+        }
     }
 
     /**
@@ -1550,6 +1576,21 @@ public class CommandQueue extends IStatusBar.Stub implements
                     for (int i = 0; i < mCallbacks.size(); i++) {
                         mCallbacks.get(i).disable(args.argi1, args.argi2, args.argi3,
                                 args.argi4 != 0 /* animate */);
+                    }
+                    break;
+                case MSG_DISABLE_ALL:
+                    DisableStates disableStates = (DisableStates) msg.obj;
+                    boolean animate = disableStates.animate;
+                    Map<Integer, Pair<Integer, Integer>> displaysWithDisableStates =
+                            disableStates.displaysWithStates;
+                    for (Map.Entry<Integer, Pair<Integer, Integer>> displayWithDisableStates :
+                            displaysWithDisableStates.entrySet()) {
+                        int displayId = displayWithDisableStates.getKey();
+                        Pair<Integer, Integer> states = displayWithDisableStates.getValue();
+                        for (int i = 0; i < mCallbacks.size(); i++) {
+                            mCallbacks.get(i).disable(displayId, states.first, states.second,
+                                    animate);
+                        }
                     }
                     break;
                 case MSG_EXPAND_NOTIFICATIONS:

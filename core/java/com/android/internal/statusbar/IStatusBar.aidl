@@ -32,6 +32,7 @@ import android.os.UserHandle;
 import android.view.KeyEvent;
 import android.service.notification.StatusBarNotification;
 
+import com.android.internal.statusbar.DisableStates;
 import com.android.internal.statusbar.IAddTileResultCallback;
 import com.android.internal.statusbar.IUndoMediaTransferCallback;
 import com.android.internal.statusbar.LetterboxDetails;
@@ -44,6 +45,7 @@ oneway interface IStatusBar
     void setIcon(String slot, in StatusBarIcon icon);
     void removeIcon(String slot);
     void disable(int displayId, int state1, int state2);
+    void disableForAllDisplays(in DisableStates disableStates);
     void animateExpandNotificationsPanel();
     void animateExpandSettingsPanel(String subPanel);
     void animateCollapsePanels();
