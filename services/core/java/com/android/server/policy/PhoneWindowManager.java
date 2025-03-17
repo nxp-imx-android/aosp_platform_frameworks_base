@@ -2312,6 +2312,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return ActivityManager.getService();
         }
 
+        LockPatternUtils getLockPatternUtils() {
+            return new LockPatternUtils(mContext);
+        }
+
         ButtonOverridePermissionChecker getButtonOverridePermissionChecker() {
             return new ButtonOverridePermissionChecker();
         }
@@ -2360,7 +2364,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mAccessibilityShortcutController = injector.getAccessibilityShortcutController(
                 mContext, new Handler(), mCurrentUserId);
         mGlobalActionsFactory = injector.getGlobalActionsFactory();
-        mLockPatternUtils = new LockPatternUtils(mContext);
+        mLockPatternUtils = injector.getLockPatternUtils();
         mLogger = new MetricsLogger();
 
         Resources res = mContext.getResources();
