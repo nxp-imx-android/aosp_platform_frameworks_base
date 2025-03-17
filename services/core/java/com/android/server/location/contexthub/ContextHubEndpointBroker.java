@@ -182,8 +182,11 @@ public class ContextHubEndpointBroker extends IContextHubEndpoint.Stub
                 long expiryMillis = RELIABLE_MESSAGE_DUPLICATE_DETECTION_TIMEOUT.toMillis();
                 if (nowMillis >= nextEntry.getValue() + expiryMillis) {
                     iterator.remove();
+                } else {
+                    // Safe to break since LinkedHashMap is insertion-ordered, so the next entry
+                    // will have a later timestamp and will not be expired.
+                    break;
                 }
-                break;
             }
 
             return mRxMessageHistoryMap.containsKey(message.getMessageSequenceNumber());
