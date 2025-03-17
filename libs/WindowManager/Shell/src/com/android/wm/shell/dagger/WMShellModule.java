@@ -1213,7 +1213,8 @@ public abstract class WMShellModule {
             ShellTaskOrganizer shellTaskOrganizer,
             TaskStackListenerImpl taskStackListener,
             ToggleResizeDesktopTaskTransitionHandler toggleResizeDesktopTaskTransitionHandler,
-            @DynamicOverride DesktopUserRepositories desktopUserRepositories) {
+            @DynamicOverride DesktopUserRepositories desktopUserRepositories,
+            DisplayController displayController) {
         if (DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.of(
                     new DesktopActivityOrientationChangeHandler(
@@ -1222,7 +1223,8 @@ public abstract class WMShellModule {
                             shellTaskOrganizer,
                             taskStackListener,
                             toggleResizeDesktopTaskTransitionHandler,
-                            desktopUserRepositories));
+                            desktopUserRepositories,
+                            displayController));
         }
         return Optional.empty();
     }
