@@ -100,8 +100,6 @@ import androidx.test.filters.MediumTest;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 
-import libcore.junit.util.compat.CoreCompatChangeRule;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -414,78 +412,95 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
-    @CoreCompatChangeRule.EnableCompatChanges({ActivityInfo.FORCE_RESIZE_APP})
-    public void testIsResizeable_nonResizeable_forceResize_overridesEnabled_Resizeable() {
+    public void testIsResizeable_nonResizeable_forceResize_overridesEnabled_resizeable() {
         final Task task = new TaskBuilder(mSupervisor)
                 .setCreateActivity(true)
-                .setComponent(
-                        ComponentName.createRelative(mContext, SizeCompatTests.class.getName()))
                 .build();
         task.setResizeMode(RESIZE_MODE_UNRESIZEABLE);
+        final ActivityRecord activity = task.getRootActivity();
+        final AppCompatResizeOverrides resizeOverrides =
+                activity.mAppCompatController.getResizeOverrides();
+        spyOn(activity);
+        spyOn(resizeOverrides);
+        doReturn(true).when(resizeOverrides).shouldOverrideForceResizeApp();
+        task.intent = null;
+        task.setIntent(activity);
         // Override should take effect and task should be resizeable.
         assertTrue(task.getTaskInfo().isResizeable);
     }
 
     @Test
-    @CoreCompatChangeRule.EnableCompatChanges({ActivityInfo.FORCE_RESIZE_APP})
-    public void testIsResizeable_nonResizeable_forceResize_overridesDisabled_nonResizeable() {
-        final Task task = new TaskBuilder(mSupervisor)
-                .setCreateActivity(true)
-                .setComponent(
-                        ComponentName.createRelative(mContext, SizeCompatTests.class.getName()))
-                .build();
-        task.setResizeMode(RESIZE_MODE_UNRESIZEABLE);
-
-        // Disallow resize overrides.
-        task.mAllowForceResizeOverride = false;
-
-        // Override should not take effect and task should be un-resizeable.
-        assertFalse(task.getTaskInfo().isResizeable);
-    }
-
-    @Test
-    @CoreCompatChangeRule.EnableCompatChanges({ActivityInfo.FORCE_NON_RESIZE_APP})
     public void testIsResizeable_resizeable_forceNonResize_overridesEnabled_nonResizeable() {
         final Task task = new TaskBuilder(mSupervisor)
                 .setCreateActivity(true)
-                .setComponent(
-                        ComponentName.createRelative(mContext, SizeCompatTests.class.getName()))
                 .build();
         task.setResizeMode(RESIZE_MODE_RESIZEABLE);
+        final ActivityRecord activity = task.getRootActivity();
+        final AppCompatResizeOverrides resizeOverrides =
+                activity.mAppCompatController.getResizeOverrides();
+        spyOn(activity);
+        spyOn(resizeOverrides);
+        doReturn(true).when(resizeOverrides).shouldOverrideForceNonResizeApp();
+        task.intent = null;
+        task.setIntent(activity);
 
         // Override should take effect and task should be un-resizeable.
         assertFalse(task.getTaskInfo().isResizeable);
     }
 
     @Test
-    @CoreCompatChangeRule.EnableCompatChanges({ActivityInfo.FORCE_NON_RESIZE_APP})
-    public void testIsResizeable_resizeable_forceNonResize_overridesDisabled_Resizeable() {
+    public void testIsResizeable_resizeableTask_fullscreenOverride_resizeable() {
         final Task task = new TaskBuilder(mSupervisor)
                 .setCreateActivity(true)
-                .setComponent(
-                        ComponentName.createRelative(mContext, SizeCompatTests.class.getName()))
                 .build();
-        task.setResizeMode(RESIZE_MODE_RESIZEABLE);
+        task.setResizeMode(RESIZE_MODE_UNRESIZEABLE);
+        final ActivityRecord activity = task.getRootActivity();
+        final AppCompatAspectRatioOverrides aspectRatioOverrides =
+                activity.mAppCompatController.getAspectRatioOverrides();
+        spyOn(aspectRatioOverrides);
+        doReturn(true).when(aspectRatioOverrides).hasFullscreenOverride();
+        task.intent = null;
+        task.setIntent(activity);
 
-        // Disallow resize overrides.
-        task.mAllowForceResizeOverride = false;
-
-        // Override should not take effect and task should be resizeable.
+        // Override should take effect and task should be resizeable.
         assertTrue(task.getTaskInfo().isResizeable);
     }
 
     @Test
-    @CoreCompatChangeRule.EnableCompatChanges({ActivityInfo.FORCE_NON_RESIZE_APP})
-    public void testIsResizeable_systemWideForceResize_compatForceNonResize__Resizeable() {
+    public void testIsResizeable_resizeableTask_universalResizeable_resizeable() {
         final Task task = new TaskBuilder(mSupervisor)
                 .setCreateActivity(true)
-                .setComponent(
-                        ComponentName.createRelative(mContext, SizeCompatTests.class.getName()))
+                .build();
+        task.setResizeMode(RESIZE_MODE_UNRESIZEABLE);
+        final ActivityRecord activity = task.getRootActivity();
+        spyOn(activity);
+        doReturn(true).when(activity).isUniversalResizeable();
+        task.intent = null;
+        task.setIntent(activity);
+
+        // Override should take effect and task should be resizeable.
+        assertTrue(task.getTaskInfo().isResizeable);
+    }
+
+    @Test
+    public void testIsResizeable_systemWideForceResize_compatForceNonResize_resizeable() {
+        final Task task = new TaskBuilder(mSupervisor)
+                .setCreateActivity(true)
+                .setComponent(ComponentName.createRelative(mContext, TaskTests.class.getName()))
                 .build();
         task.setResizeMode(RESIZE_MODE_RESIZEABLE);
 
         // Set system-wide force resizeable override.
         task.mAtmService.mForceResizableActivities = true;
+
+        final ActivityRecord activity = task.getRootActivity();
+        final AppCompatResizeOverrides resizeOverrides =
+                activity.mAppCompatController.getResizeOverrides();
+        spyOn(activity);
+        spyOn(resizeOverrides);
+        doReturn(true).when(resizeOverrides).shouldOverrideForceNonResizeApp();
+        task.intent = null;
+        task.setIntent(activity);
 
         // System wide override should tak priority over app compat override so the task should
         // remain resizeable.
