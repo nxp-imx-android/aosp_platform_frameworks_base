@@ -57,15 +57,7 @@ constructor(
                         allOf(batteryInteractor.isDevicePluggedIn, dockManager.retrieveIsDocked())
                     }
                     WhenToStartHub.WHILE_CHARGING_AND_POSTURED -> {
-                        // Only listen to posturing if applicable to avoid running the posturing
-                        // CHRE nanoapp when not needed.
-                        batteryInteractor.isDevicePluggedIn.flatMapLatestConflated { isCharging ->
-                            if (isCharging) {
-                                posturingInteractor.postured
-                            } else {
-                                flowOf(false)
-                            }
-                        }
+                        allOf(batteryInteractor.isDevicePluggedIn, posturingInteractor.postured)
                     }
                     WhenToStartHub.NEVER -> flowOf(false)
                 }

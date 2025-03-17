@@ -21,11 +21,8 @@ import android.app.DreamManager
 import android.service.dreams.Flags.allowDreamWhenPostured
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.CoreStartable
-import com.android.systemui.common.domain.interactor.BatteryInteractor
-import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.posturing.domain.interactor.PosturingInteractor
 import com.android.systemui.communal.posturing.shared.model.PosturedState
-import com.android.systemui.communal.shared.model.WhenToDream
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.dagger.CommunalTableLog
@@ -33,14 +30,10 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.statusbar.commandline.Command
 import com.android.systemui.statusbar.commandline.CommandRegistry
-import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
-import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 
 @SysUISingleton
@@ -49,28 +42,11 @@ class DevicePosturingListener
 constructor(
     private val commandRegistry: CommandRegistry,
     private val dreamManager: DreamManager,
-    private val posturingInteractor: PosturingInteractor,
-    communalSettingsInteractor: CommunalSettingsInteractor,
-    batteryInteractor: BatteryInteractor,
+    private val interactor: PosturingInteractor,
     @Background private val bgScope: CoroutineScope,
     @CommunalTableLog private val tableLogBuffer: TableLogBuffer,
 ) : CoreStartable {
     private val command = DevicePosturingCommand()
-
-    // Only subscribe to posturing if applicable to avoid running the posturing CHRE nanoapp
-    // if posturing signal is not needed.
-    private val postured =
-        allOf(
-                batteryInteractor.isDevicePluggedIn,
-                communalSettingsInteractor.whenToDream.map { it == WhenToDream.WHILE_POSTURED },
-            )
-            .flatMapLatestConflated { shouldListen ->
-                if (shouldListen) {
-                    posturingInteractor.postured
-                } else {
-                    flowOf(false)
-                }
-            }
 
     @SuppressLint("MissingPermission")
     override fun start() {
@@ -78,7 +54,7 @@ constructor(
             return
         }
 
-        postured
+        interactor.postured
             .distinctUntilChanged()
             .logDiffsForTable(
                 tableLogBuffer = tableLogBuffer,
@@ -102,7 +78,7 @@ constructor(
 
             val state =
                 when (arg.lowercase()) {
-                    "true" -> PosturedState.Postured
+                    "true" -> PosturedState.Postured(confidence = 1f)
                     "false" -> PosturedState.NotPostured
                     "clear" -> PosturedState.Unknown
                     else -> {
@@ -111,7 +87,7 @@ constructor(
                         null
                     }
                 }
-            state?.let { posturingInteractor.setValueForDebug(it) }
+            state?.let { interactor.setValueForDebug(it) }
         }
 
         override fun help(pw: PrintWriter) {
