@@ -27,7 +27,6 @@ import android.content.IntentFilter
 import android.database.ContentObserver
 import android.os.Handler
 import android.provider.Settings
-import com.android.settingslib.flags.Flags
 import com.android.settingslib.notification.modes.ZenMode
 import com.android.settingslib.notification.modes.ZenModesBackend
 import java.time.Duration
@@ -35,6 +34,7 @@ import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
@@ -72,7 +72,7 @@ class ZenModeRepositoryImpl(
     private val notificationManager: NotificationManager,
     private val backend: ZenModesBackend,
     private val contentResolver: ContentResolver,
-    val scope: CoroutineScope,
+    val applicationScope: CoroutineScope,
     val backgroundCoroutineContext: CoroutineContext,
     // This is nullable just to simplify testing, since SettingsLib doesn't have a good way
     // to create a fake handler.
@@ -104,7 +104,7 @@ class ZenModeRepositoryImpl(
                 awaitClose { context.unregisterReceiver(receiver) }
             }
             .flowOn(backgroundCoroutineContext)
-            .shareIn(started = SharingStarted.WhileSubscribed(), scope = scope)
+            .shareIn(started = SharingStarted.WhileSubscribed(), scope = applicationScope)
     }
 
     override val consolidatedNotificationPolicy: StateFlow<NotificationManager.Policy?> by lazy {
@@ -129,14 +129,11 @@ class ZenModeRepositoryImpl(
             .map { mapper(it) }
             .onStart { emit(mapper(null)) }
             .flowOn(backgroundCoroutineContext)
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+            .stateIn(applicationScope, SharingStarted.WhileSubscribed(), null)
 
     private val zenConfigChanged by lazy {
         if (android.app.Flags.modesUi()) {
             callbackFlow {
-                    // emit an initial value
-                    trySend(Unit)
-
                     val observer =
                         object : ContentObserver(backgroundHandler) {
                             override fun onChange(selfChange: Boolean) {
@@ -163,16 +160,18 @@ class ZenModeRepositoryImpl(
         }
     }
 
-    override val modes: Flow<List<ZenMode>> by lazy {
-        if (android.app.Flags.modesUi()) {
+    override val modes: StateFlow<List<ZenMode>> =
+        if (android.app.Flags.modesUi())
             zenConfigChanged
                 .map { backend.modes }
                 .distinctUntilChanged()
                 .flowOn(backgroundCoroutineContext)
-        } else {
-            flowOf(emptyList())
-        }
-    }
+                .stateIn(
+                    scope = applicationScope,
+                    started = SharingStarted.Eagerly,
+                    initialValue = backend.modes,
+                )
+        else MutableStateFlow<List<ZenMode>>(emptyList())
 
     /**
      * Gets the current list of [ZenMode] instances according to the backend.
