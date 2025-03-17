@@ -14,6 +14,7 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <utils/Trace.h>
 
 #include <memory>
 
@@ -39,6 +40,13 @@
 #include "android/binder_parcel.h"
 #endif
 #include "android_nio_utils.h"
+#include "perfetto/public/abi/track_event_abi.h"
+#include "perfetto/public/producer.h"
+#include "perfetto/public/protos/trace/track_event/track_event.pzc.h"
+#include "perfetto/public/te_category_macros.h"
+#include "perfetto/public/te_macros.h"
+#include "perfetto/public/track_event.h"
+#include "tracing_perfetto.h"
 
 #define DEBUG_PARCEL 0
 
@@ -174,6 +182,70 @@ private:
 };
 
 namespace bitmap {
+
+#define PROTO_FIELDS(size, width, height, density, config, is_mutable, pixel_storage_type,         \
+                     bitmap_id)                                                                    \
+    PERFETTO_TE_PROTO_FIELDS(PERFETTO_TE_PROTO_FIELD_NESTED(                                       \
+            /* perfetto_protos_TrackEvent_android_bitmap_field_number */ 2005,                     \
+            PERFETTO_TE_PROTO_FIELD_VARINT(1, size), PERFETTO_TE_PROTO_FIELD_VARINT(2, width),     \
+            PERFETTO_TE_PROTO_FIELD_VARINT(3, height), PERFETTO_TE_PROTO_FIELD_VARINT(4, density), \
+            PERFETTO_TE_PROTO_FIELD_VARINT(5, config),                                             \
+            PERFETTO_TE_PROTO_FIELD_VARINT(6, is_mutable ? 1 : 0),                                 \
+            PERFETTO_TE_PROTO_FIELD_VARINT(7, pixel_storage_type),                                 \
+            PERFETTO_TE_PROTO_FIELD_VARINT(8, bitmap_id)))
+
+static void traceSliceBeginWithGlobalFlow(const char* name, uint64_t bitmap_id, int64_t size,
+                                          int32_t width, int32_t height, int32_t density,
+                                          int32_t config, bool is_mutable,
+                                          int32_t pixel_storage_type, uint64_t parcel_id) {
+    struct PerfettoTeCategory* perfettoTeCategory =
+            tracing_perfetto::getPerfettoCategory(ATRACE_TAG_GRAPHICS);
+
+    if (perfettoTeCategory) {
+        PERFETTO_TE(*perfettoTeCategory, PERFETTO_TE_SLICE_BEGIN(name),
+                    PROTO_FIELDS(size, width, height, density, config, is_mutable,
+                                 pixel_storage_type, bitmap_id),
+                    PERFETTO_TE_FLOW(PerfettoTeGlobalFlow(parcel_id)));
+    }
+}
+
+static void traceSliceBeginWithGlobalTerminatingFlow(const char* name, uint64_t bitmap_id,
+                                                     int64_t size, int32_t width, int32_t height,
+                                                     int32_t density, int32_t config,
+                                                     bool is_mutable, int32_t pixel_storage_type,
+                                                     uint64_t parcel_id) {
+    struct PerfettoTeCategory* perfettoTeCategory =
+            tracing_perfetto::getPerfettoCategory(ATRACE_TAG_GRAPHICS);
+
+    if (perfettoTeCategory) {
+        PERFETTO_TE(*perfettoTeCategory, PERFETTO_TE_SLICE_BEGIN(name),
+                    PROTO_FIELDS(size, width, height, density, config, is_mutable,
+                                 pixel_storage_type, bitmap_id),
+                    PERFETTO_TE_TERMINATING_FLOW(PerfettoTeGlobalFlow(parcel_id)));
+    }
+}
+
+static void traceSliceBegin(const char* name, uint64_t bitmap_id, int64_t size, int32_t width,
+                            int32_t height, int32_t density, int32_t config, bool is_mutable,
+                            int32_t pixel_storage_type) {
+    struct PerfettoTeCategory* perfettoTeCategory =
+            tracing_perfetto::getPerfettoCategory(ATRACE_TAG_GRAPHICS);
+
+    if (perfettoTeCategory) {
+        PERFETTO_TE(*perfettoTeCategory, PERFETTO_TE_SLICE_BEGIN(name),
+                    PROTO_FIELDS(size, width, height, density, config, is_mutable,
+                                 pixel_storage_type, bitmap_id));
+    }
+}
+
+static void traceSliceEnd(void) {
+    struct PerfettoTeCategory* perfettoTeCategory =
+            tracing_perfetto::getPerfettoCategory(ATRACE_TAG_GRAPHICS);
+
+    if (perfettoTeCategory) {
+        PERFETTO_TE(*perfettoTeCategory, PERFETTO_TE_SLICE_END());
+    }
+}
 
 // Assert that bitmap's SkAlphaType is consistent with isPremultiplied.
 static void assert_premultiplied(const SkImageInfo& info, bool isPremultiplied) {
@@ -394,6 +466,9 @@ static jobject Bitmap_copy(JNIEnv* env, jobject, jlong srcHandle, jint dstConfig
     const bool hasGainmap = original.hasGainmap();
     SkBitmap src;
     bitmapHolder->getSkBitmap(&src);
+    traceSliceBegin("bitmap_copy", original.getId(), src.computeByteSize(), src.width(),
+                    src.height(), 0, -1, getPremulBitmapCreateFlags(isMutable),
+                    (int32_t)original.pixelStorageType());
 
     if (dstConfigHandle == GraphicsJNI::hardwareLegacyBitmapConfig()) {
         sk_sp<Bitmap> bitmap(Bitmap::allocateHardwareBitmap(src));
@@ -406,6 +481,7 @@ static jobject Bitmap_copy(JNIEnv* env, jobject, jlong srcHandle, jint dstConfig
                 bitmap->setGainmap(std::move(gm));
             }
         }
+        traceSliceEnd();
         return createBitmap(env, bitmap.release(), getPremulBitmapCreateFlags(isMutable));
     }
 
@@ -429,6 +505,7 @@ static jobject Bitmap_copy(JNIEnv* env, jobject, jlong srcHandle, jint dstConfig
         gainmap->bitmap = sk_sp<Bitmap>(destAllocator.getStorageObjAndReset());
         bitmap->setGainmap(std::move(gainmap));
     }
+    traceSliceEnd();
     return createBitmap(env, bitmap, getPremulBitmapCreateFlags(isMutable));
 }
 
@@ -446,10 +523,16 @@ static Bitmap* Bitmap_copyAshmemImpl(JNIEnv* env, SkBitmap& src, SkColorType& ds
 
 static jobject Bitmap_copyAshmem(JNIEnv* env, jobject, jlong srcHandle) {
     SkBitmap src;
-    reinterpret_cast<BitmapWrapper*>(srcHandle)->getSkBitmap(&src);
+    BitmapWrapper* wrapper = reinterpret_cast<BitmapWrapper*>(srcHandle);
+    wrapper->getSkBitmap(&src);
+    Bitmap& original = wrapper->bitmap();
+
     SkColorType dstCT = src.colorType();
+    traceSliceBegin("Bitmap_copyAshmemConfig", original.getId(), src.computeByteSize(), src.width(),
+                    src.height(), 0, -1, !src.isImmutable(), (int32_t)original.pixelStorageType());
     auto bitmap = Bitmap_copyAshmemImpl(env, src, dstCT);
     jobject ret = createBitmap(env, bitmap, getPremulBitmapCreateFlags(false));
+    traceSliceEnd();
     return ret;
 }
 
@@ -799,6 +882,15 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
     const int32_t rowBytes = p.readInt32();
     const int32_t density = p.readInt32();
     const int64_t sourceId = p.readInt64();
+    const int64_t parcel_id = p.readInt64();
+
+    if (sourceId != UNDEFINED_BITMAP_ID) {
+        traceSliceBeginWithGlobalTerminatingFlow("Bitmap_createFromParcel", sourceId, rowBytes,
+                                                 width, height, density, -1, false, -1, parcel_id);
+    } else {
+        traceSliceBegin("Bitmap_createFromParcel", sourceId, rowBytes, width, height, density, -1,
+                        false, -1);
+    }
 
     if (kN32_SkColorType != colorType &&
             kRGBA_F16_SkColorType != colorType &&
@@ -871,6 +963,7 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
     }
 
     nativeBitmap->setSourceId(sourceId);
+    traceSliceEnd();
     return createBitmap(env, nativeBitmap.release(), getPremulBitmapCreateFlags(isMutable), nullptr,
                         nullptr, density);
 #else
@@ -897,6 +990,14 @@ static bool shouldParcelAsMutable(SkBitmap& bitmap, AParcel* parcel) {
     return !shouldUseAshmem(parcel, bitmap.computeByteSize());
 }
 #endif
+
+uint64_t getParcelId() {
+    static std::atomic<uint64_t> parcelCounter{0};
+    uint32_t pid = getpid();
+    uint32_t count = parcelCounter.fetch_add(1);
+
+    return (uint64_t)pid << 32 | count;
+}
 
 static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, jint density,
                                      jobject parcel) {
@@ -929,10 +1030,21 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     p.writeInt32(density);
     p.writeInt64(id);
 
+    uint64_t parcel_id = getParcelId();
+    if (id != UNDEFINED_BITMAP_ID) {
+        traceSliceBeginWithGlobalFlow("Bitmap_writeToParcel", id, bitmap.computeByteSize(),
+                                      bitmap.width(), bitmap.height(), density, -1,
+                                      !bitmap.isImmutable(), -1, parcel_id);
+    } else {
+        traceSliceBegin("Bitmap_writeToParcel", id, bitmap.computeByteSize(), bitmap.width(),
+                        bitmap.height(), density, -1, !bitmap.isImmutable(), -1);
+    }
+
     // Transfer the underlying ashmem region if we have one and it's immutable.
     binder_status_t status;
     int fd = bitmapWrapper->bitmap().getAshmemFd();
     if (fd >= 0 && p.allowFds() && bitmap.isImmutable()) {
+        p.writeInt64(parcel_id);
 #if DEBUG_PARCEL
         ALOGD("Bitmap.writeToParcel: transferring immutable bitmap's ashmem fd as "
               "immutable blob (fds %s)",
@@ -944,6 +1056,7 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
             doThrowRE(env, "Could not write bitmap blob file descriptor.");
             return JNI_FALSE;
         }
+        traceSliceEnd();
         return JNI_TRUE;
     }
 
@@ -952,11 +1065,13 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     ALOGD("Bitmap.writeToParcel: copying bitmap into new blob (fds %s)",
           p.allowFds() ? "allowed" : "forbidden");
 #endif
+    p.writeInt64(0Ull);
     status = writeBlob(p.get(), id, bitmap, !asMutable);
     if (status) {
         doThrowRE(env, "Could not copy bitmap to parcel blob.");
         return JNI_FALSE;
     }
+    traceSliceEnd();
     return JNI_TRUE;
 #else
     doThrowRE(env, "Cannot use parcels outside of Linux");
