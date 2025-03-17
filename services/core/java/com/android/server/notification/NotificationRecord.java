@@ -999,7 +999,7 @@ public final class NotificationRecord {
         return null;
     }
 
-    public String getSummarization() {
+    public @Nullable String getSummarization() {
         if ((android.app.Flags.nmSummarizationUi() || android.app.Flags.nmSummarization())) {
             return mSummarization;
         }

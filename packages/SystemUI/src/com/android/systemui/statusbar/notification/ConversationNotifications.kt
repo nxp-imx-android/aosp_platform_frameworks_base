@@ -71,46 +71,49 @@ constructor(
                 Notification.MessagingStyle.CONVERSATION_TYPE_IMPORTANT
             else if (entry.ranking.isConversation)
                 Notification.MessagingStyle.CONVERSATION_TYPE_NORMAL
-            else
-                Notification.MessagingStyle.CONVERSATION_TYPE_LEGACY
+            else Notification.MessagingStyle.CONVERSATION_TYPE_LEGACY
         entry.ranking.conversationShortcutInfo?.let { shortcutInfo ->
             logger.logAsyncTaskProgress(entry.logKey, "getting shortcut icon")
             messagingStyle.shortcutIcon = launcherApps.getShortcutIcon(shortcutInfo)
             shortcutInfo.label?.let { label -> messagingStyle.conversationTitle = label }
         }
-        if (NmSummarizationUiFlag.isEnabled && !TextUtils.isEmpty(entry.ranking.summarization)) {
-            val icon = context.getDrawable(R.drawable.ic_notification_summarization)?.mutate()
-            val imageSpan =
-                icon?.let {
-                    it.setBounds(
-                        /* left= */ 0,
-                        /* top= */ 0,
-                        icon.getIntrinsicWidth(),
-                        icon.getIntrinsicHeight(),
-                    )
-                    ImageSpan(it, ImageSpan.ALIGN_CENTER)
-                }
-            val decoratedSummary =
-                SpannableString("x " + entry.ranking.summarization).apply {
-                    setSpan(
-                        /* what = */ imageSpan,
-                        /* start = */ 0,
-                        /* end = */ 1,
-                        /* flags = */ Spanned.SPAN_INCLUSIVE_EXCLUSIVE,
-                    )
-                    entry.ranking.summarization?.let {
-                        setSpan(
-                            /* what = */ StyleSpan(Typeface.ITALIC),
-                            /* start = */ 2,
-                            /* end = */ it.length + 2,
-                            /* flags = */ Spanned.SPAN_EXCLUSIVE_INCLUSIVE,
+        if (NmSummarizationUiFlag.isEnabled) {
+            if (!TextUtils.isEmpty(entry.ranking.summarization)) {
+                val icon = context.getDrawable(R.drawable.ic_notification_summarization)?.mutate()
+                val imageSpan =
+                    icon?.let {
+                        it.setBounds(
+                            /* left= */ 0,
+                            /* top= */ 0,
+                            icon.getIntrinsicWidth(),
+                            icon.getIntrinsicHeight(),
                         )
+                        ImageSpan(it, ImageSpan.ALIGN_CENTER)
                     }
-                }
-            entry.sbn.notification.extras.putCharSequence(
-                EXTRA_SUMMARIZED_CONTENT,
-                decoratedSummary,
-            )
+                val decoratedSummary =
+                    SpannableString("x " + entry.ranking.summarization).apply {
+                        setSpan(
+                            /* what = */ imageSpan,
+                            /* start = */ 0,
+                            /* end = */ 1,
+                            /* flags = */ Spanned.SPAN_INCLUSIVE_EXCLUSIVE,
+                        )
+                        entry.ranking.summarization?.let {
+                            setSpan(
+                                /* what = */ StyleSpan(Typeface.ITALIC),
+                                /* start = */ 2,
+                                /* end = */ it.length + 2,
+                                /* flags = */ Spanned.SPAN_EXCLUSIVE_INCLUSIVE,
+                            )
+                        }
+                    }
+                entry.sbn.notification.extras.putCharSequence(
+                    EXTRA_SUMMARIZED_CONTENT,
+                    decoratedSummary,
+                )
+            } else {
+                entry.sbn.notification.extras.putCharSequence(EXTRA_SUMMARIZED_CONTENT, null)
+            }
         }
 
         messagingStyle.unreadMessageCount =

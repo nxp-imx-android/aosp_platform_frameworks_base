@@ -24,6 +24,7 @@ import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.NOT_
 import static android.app.ActivityManagerInternal.ServiceNotificationPolicy.SHOW_IMMEDIATELY;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.Flags.FLAG_KEYGUARD_PRIVATE_NOTIFICATIONS;
+import static android.app.Flags.FLAG_NM_SUMMARIZATION;
 import static android.app.Flags.FLAG_SORT_SECTION_BY_TIME;
 import static android.app.Notification.EXTRA_ALLOW_DURING_SETUP;
 import static android.app.Notification.EXTRA_PICTURE;
@@ -105,6 +106,7 @@ import static android.os.UserManager.USER_TYPE_PROFILE_PRIVATE;
 import static android.provider.Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS;
 import static android.service.notification.Adjustment.KEY_CONTEXTUAL_ACTIONS;
 import static android.service.notification.Adjustment.KEY_IMPORTANCE;
+import static android.service.notification.Adjustment.KEY_SUMMARIZATION;
 import static android.service.notification.Adjustment.KEY_TEXT_REPLIES;
 import static android.service.notification.Adjustment.KEY_TYPE;
 import static android.service.notification.Adjustment.KEY_USER_SENTIMENT;
@@ -18308,9 +18310,11 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // Post some notifications and classify in different bundles
         final int numNotifications = NotificationChannel.SYSTEM_RESERVED_IDS.size();
         final int numNewsNotifications = 1;
+        List<String> postedNotificationKeys = new ArrayList();
         for (int i = 0; i < numNotifications; i++) {
             NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, i, mUserId);
             mService.addNotification(r);
+            postedNotificationKeys.add(r.getKey());
             Bundle signals = new Bundle();
             final int adjustmentType = i + 1;
             signals.putInt(Adjustment.KEY_TYPE, adjustmentType);
@@ -18330,7 +18334,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         waitForIdle();
 
         //Check that all notifications classified as TYPE_NEWS have been unbundled
-        for (NotificationRecord record : mService.mNotificationList) {
+        for (String key : postedNotificationKeys) {
+            NotificationRecord record= mService.mNotificationsByKey.get(key);
             // Check that the original channel was restored
             // for notifications classified as TYPE_NEWS
             if (record.getBundleType() == TYPE_NEWS) {
@@ -18355,7 +18360,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         // Check that the bundle channel was restored
         verify(mRankingHandler, times(numNewsNotifications)).requestSort();
-        for (NotificationRecord record : mService.mNotificationList) {
+        for (String key : postedNotificationKeys) {
+            NotificationRecord record= mService.mNotificationsByKey.get(key);
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
     }
@@ -18422,6 +18428,36 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         for (NotificationRecord record : mService.mNotificationList) {
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
+    }
+
+    @Test
+    @EnableFlags({FLAG_NM_SUMMARIZATION})
+    public void testDisableBundleAdjustmentByPkg_unsummarizesNotifications() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        mService.addNotification(r);
+        Bundle signals = new Bundle();
+        signals.putCharSequence(Adjustment.KEY_SUMMARIZATION, "hello");
+        Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
+                "", r.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r.applyAdjustments();
+        Mockito.clearInvocations(mRankingHandler);
+
+        // Disable summarization for package
+        mBinderService.setAdjustmentSupportedForPackage(KEY_SUMMARIZATION, mPkg, false);
+        verify(mRankingHandler).requestSort();
+        mService.handleRankingSort();
+
+        assertThat(mService.mNotificationsByKey.get(r.getKey()).getSummarization()).isNull();
     }
 
     @Test
@@ -18624,6 +18660,36 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
             record.applyAdjustments();
             assertThat(record.getChannel().getId()).isIn(NotificationChannel.SYSTEM_RESERVED_IDS);
         }
+    }
+
+    @Test
+    @EnableFlags({FLAG_NM_SUMMARIZATION})
+    public void testDisableBundleAdjustment_unsummarizesNotifications() throws Exception {
+        NotificationManagerService.WorkerHandler handler = mock(
+                NotificationManagerService.WorkerHandler.class);
+        mService.setHandler(handler);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isAdjustmentKeyTypeAllowed(anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyString(), anyString())).thenReturn(true);
+
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel, 0, mUserId);
+        mService.addNotification(r);
+        Bundle signals = new Bundle();
+        signals.putCharSequence(Adjustment.KEY_SUMMARIZATION, "hello");
+        Adjustment adjustment = new Adjustment(r.getSbn().getPackageName(), r.getKey(), signals,
+                "", r.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r.applyAdjustments();
+        Mockito.clearInvocations(mRankingHandler);
+
+        // Disable summarization for package
+        mBinderService.disallowAssistantAdjustment(KEY_SUMMARIZATION);
+        verify(mRankingHandler).requestSort();
+        mService.handleRankingSort();
+
+        assertThat(mService.mNotificationsByKey.get(r.getKey()).getSummarization()).isNull();
     }
 
     @Test
