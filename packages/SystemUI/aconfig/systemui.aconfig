@@ -533,6 +533,14 @@ flag {
 }
 
 flag {
+    name: "icon_refresh_2025"
+    namespace: "systemui"
+    description: "Build time flag for 2025 icon refresh"
+    bug: "391605373"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "promote_notifications_automatically"
     namespace: "systemui"
     description: "Flag to automatically turn certain notifications into promoted notifications so "
