@@ -50,7 +50,6 @@ import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
-import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -120,11 +119,11 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
         whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY)).thenReturn(tda)
 
         doAnswer {
-                keyGestureEventHandler = (it.arguments[0] as KeyGestureEventHandler)
+                keyGestureEventHandler = (it.arguments[1] as KeyGestureEventHandler)
                 null
             }
             .whenever(inputManager)
-            .registerKeyGestureEventHandler(any())
+            .registerKeyGestureEventHandler(any(), any())
         shellInit.init()
 
         desktopModeKeyGestureHandler =
@@ -176,10 +175,9 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 .setKeycodes(intArrayOf(KeyEvent.KEYCODE_D))
                 .setModifierState(KeyEvent.META_META_ON or KeyEvent.META_CTRL_ON)
                 .build()
-        val result = keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        assertThat(result).isTrue()
         verify(desktopTasksController).moveToNextDisplay(task.taskId)
     }
 
@@ -197,10 +195,9 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 .setKeycodes(intArrayOf(KeyEvent.KEYCODE_LEFT_BRACKET))
                 .setModifierState(KeyEvent.META_META_ON)
                 .build()
-        val result = keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        assertThat(result).isTrue()
         verify(desktopModeWindowDecorViewModel)
             .onSnapResize(
                 task.taskId,
@@ -224,10 +221,9 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 .setKeycodes(intArrayOf(KeyEvent.KEYCODE_RIGHT_BRACKET))
                 .setModifierState(KeyEvent.META_META_ON)
                 .build()
-        val result = keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        assertThat(result).isTrue()
         verify(desktopModeWindowDecorViewModel)
             .onSnapResize(
                 task.taskId,
@@ -251,10 +247,9 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 .setKeycodes(intArrayOf(KeyEvent.KEYCODE_EQUALS))
                 .setModifierState(KeyEvent.META_META_ON)
                 .build()
-        val result = keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        assertThat(result).isTrue()
         verify(desktopTasksController)
             .toggleDesktopTaskSize(
                 task,
@@ -280,10 +275,9 @@ class DesktopModeKeyGestureHandlerTest : ShellTestCase() {
                 .setKeycodes(intArrayOf(KeyEvent.KEYCODE_MINUS))
                 .setModifierState(KeyEvent.META_META_ON)
                 .build()
-        val result = keyGestureEventHandler.handleKeyGestureEvent(event, null)
+        keyGestureEventHandler.handleKeyGestureEvent(event, null)
         testExecutor.flushAll()
 
-        assertThat(result).isTrue()
         verify(desktopTasksController).minimizeTask(task, MinimizeReason.KEY_GESTURE)
     }
 

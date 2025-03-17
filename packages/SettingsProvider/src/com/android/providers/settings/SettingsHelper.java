@@ -54,6 +54,7 @@ import com.android.settingslib.devicestate.DeviceStateRotationLockSettingsManage
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -650,6 +651,10 @@ public class SettingsHelper {
      *   e.g. current locale "en-US,zh-CN" and backup locale "ja-JP,zh-Hans-CN,en-US" are merged to
      *   "en-US,zh-CN,ja-JP".
      *
+     * - Same language codes and scripts are dropped.
+     *   e.g. current locale "en-US, zh-Hans-TW" and backup locale "en-UK, en-GB, zh-Hans-HK" are
+     *   merged to "en-US, zh-Hans-TW".
+     *
      * - Unsupported locales are dropped.
      *   e.g. current locale "en-US" and backup locale "ja-JP,zh-CN" but the supported locales
      *   are "en-US,zh-CN", the merged locale list is "en-US,zh-CN".
@@ -683,13 +688,23 @@ public class SettingsHelper {
             filtered.add(locale);
         }
 
+        final HashSet<String> existingLanguageAndScript = new HashSet<>();
         for (int i = 0; i < restore.size(); i++) {
             final Locale restoredLocaleWithExtension = copyExtensionToTargetLocale(restoredLocale,
                     getFilteredLocale(restore.get(i), allLocales));
+
             if (restoredLocaleWithExtension != null) {
-                filtered.add(restoredLocaleWithExtension);
+                String language = restoredLocaleWithExtension.getLanguage();
+                String script = restoredLocaleWithExtension.getScript();
+
+                String restoredLanguageAndScript =
+                        script == null ? language : language + "-" + script;
+                if (existingLanguageAndScript.add(restoredLanguageAndScript)) {
+                    filtered.add(restoredLocaleWithExtension);
+                }
             }
         }
+
         if (filtered.size() == current.size()) {
             return current;  // Nothing added to current locale list.
         }

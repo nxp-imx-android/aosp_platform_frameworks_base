@@ -238,33 +238,33 @@ class ShortcutKeyTestBase {
         sendKeyCombination(new int[]{keyCode}, durationMillis, false, DEFAULT_DISPLAY);
     }
 
-    boolean sendKeyGestureEventStart(int gestureType) {
-        return mPhoneWindowManager.sendKeyGestureEvent(
+    void sendKeyGestureEventStart(int gestureType) {
+        mPhoneWindowManager.sendKeyGestureEvent(
                 new KeyGestureEvent.Builder().setKeyGestureType(gestureType).setAction(
                         KeyGestureEvent.ACTION_GESTURE_START).build());
     }
 
-    boolean sendKeyGestureEventComplete(int gestureType) {
-        return mPhoneWindowManager.sendKeyGestureEvent(
+    void sendKeyGestureEventComplete(int gestureType) {
+        mPhoneWindowManager.sendKeyGestureEvent(
                 new KeyGestureEvent.Builder().setKeyGestureType(gestureType).setAction(
                         KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
     }
 
-    boolean sendKeyGestureEventCancel(int gestureType) {
-        return mPhoneWindowManager.sendKeyGestureEvent(
+    void sendKeyGestureEventCancel(int gestureType) {
+        mPhoneWindowManager.sendKeyGestureEvent(
                 new KeyGestureEvent.Builder().setKeyGestureType(gestureType).setAction(
                         KeyGestureEvent.ACTION_GESTURE_COMPLETE).setFlags(
                         KeyGestureEvent.FLAG_CANCELLED).build());
     }
 
-    boolean sendKeyGestureEventComplete(int gestureType, int modifierState) {
-        return mPhoneWindowManager.sendKeyGestureEvent(
+    void sendKeyGestureEventComplete(int gestureType, int modifierState) {
+        mPhoneWindowManager.sendKeyGestureEvent(
                 new KeyGestureEvent.Builder().setModifierState(modifierState).setKeyGestureType(
                         gestureType).setAction(KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
     }
 
-    boolean sendKeyGestureEventComplete(int keycode, int modifierState, int gestureType) {
-        return mPhoneWindowManager.sendKeyGestureEvent(
+    void sendKeyGestureEventComplete(int keycode, int modifierState, int gestureType) {
+        mPhoneWindowManager.sendKeyGestureEvent(
                 new KeyGestureEvent.Builder().setKeycodes(new int[]{keycode}).setModifierState(
                         modifierState).setKeyGestureType(gestureType).setAction(
                         KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());

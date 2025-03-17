@@ -28,6 +28,7 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceViewHolder
 import com.android.settingslib.widget.preference.statusbanner.R
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.progressindicator.CircularProgressIndicator
 
 class StatusBannerPreference @JvmOverloads constructor(
     context: Context,
@@ -41,7 +42,9 @@ class StatusBannerPreference @JvmOverloads constructor(
         LOW,
         MEDIUM,
         HIGH,
-        OFF
+        OFF,
+        LOADING_DETERMINATE, // The loading progress is set by the caller.
+        LOADING_INDETERMINATE // No loading progress. Just loading animation
     }
     var iconLevel: BannerStatus = BannerStatus.GENERIC
         set(value) {
@@ -59,6 +62,8 @@ class StatusBannerPreference @JvmOverloads constructor(
             notifyChanged()
         }
     private var listener: View.OnClickListener? = null
+
+    private var circularProgressIndicator: CircularProgressIndicator? = null
 
     init {
         layoutResource = R.layout.settingslib_expressive_preference_statusbanner
@@ -89,6 +94,8 @@ class StatusBannerPreference @JvmOverloads constructor(
         2 -> BannerStatus.MEDIUM
         3 -> BannerStatus.HIGH
         4 -> BannerStatus.OFF
+        5 -> BannerStatus.LOADING_DETERMINATE
+        6 -> BannerStatus.LOADING_INDETERMINATE
         else -> BannerStatus.GENERIC
     }
 
@@ -102,7 +109,38 @@ class StatusBannerPreference @JvmOverloads constructor(
         }
 
         holder.findViewById(android.R.id.icon_frame)?.apply {
-            visibility = if (icon != null) View.VISIBLE else View.GONE
+            visibility =
+                if (
+                    icon != null || iconLevel == BannerStatus.LOADING_DETERMINATE ||
+                    iconLevel == BannerStatus.LOADING_INDETERMINATE
+                )
+                    View.VISIBLE
+                else View.GONE
+        }
+
+        holder.findViewById(android.R.id.icon)?.apply {
+            visibility =
+                if (iconLevel == BannerStatus.LOADING_DETERMINATE ||
+                    iconLevel == BannerStatus.LOADING_INDETERMINATE)
+                    View.GONE
+                else View.VISIBLE
+        }
+
+        circularProgressIndicator = holder.findViewById(R.id.progress_indicator)
+                as? CircularProgressIndicator
+
+        (circularProgressIndicator)?.apply {
+            visibility =
+                if (iconLevel == BannerStatus.LOADING_DETERMINATE)
+                    View.VISIBLE
+                else View.GONE
+        }
+
+        holder.findViewById(R.id.loading_indicator)?.apply {
+            visibility =
+                if (iconLevel == BannerStatus.LOADING_INDETERMINATE)
+                    View.VISIBLE
+                else View.GONE
         }
 
         (holder.findViewById(R.id.status_banner_button) as? MaterialButton)?.apply {
@@ -114,6 +152,10 @@ class StatusBannerPreference @JvmOverloads constructor(
             setOnClickListener(listener)
             visibility = if (listener != null) View.VISIBLE else View.GONE
         }
+    }
+
+    fun getProgressIndicator(): CircularProgressIndicator? {
+        return circularProgressIndicator
     }
 
     /**
@@ -203,7 +245,7 @@ class StatusBannerPreference @JvmOverloads constructor(
                 R.drawable.settingslib_expressive_background_level_high
             )
 
-            // GENERIC and OFF are using the same background drawable.
+            // Using the same background drawable for other levels.
             else -> ContextCompat.getDrawable(
                 context,
                 R.drawable.settingslib_expressive_background_generic

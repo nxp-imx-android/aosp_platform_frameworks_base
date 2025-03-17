@@ -273,7 +273,7 @@ interface IInputManager {
     @PermissionManuallyEnforced
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "
             + "android.Manifest.permission.MANAGE_KEY_GESTURES)")
-    void registerKeyGestureHandler(IKeyGestureHandler handler);
+    void registerKeyGestureHandler(in int[] keyGesturesToHandle, IKeyGestureHandler handler);
 
     @PermissionManuallyEnforced
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(value = "

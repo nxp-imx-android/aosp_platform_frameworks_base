@@ -77,6 +77,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
     private lateinit var resources: TestableResources
     private lateinit var trustRepository: FakeTrustRepository
     private lateinit var testScope: TestScope
+    private val TEST_REASON = "reason"
 
     @Before
     fun setUp() {
@@ -118,7 +119,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
             mainHandler.setMode(FakeHandler.Mode.QUEUEING)
 
             // WHEN bouncer show is requested
-            underTest.show(true)
+            underTest.show(true, TEST_REASON)
 
             // WHEN all queued messages are dispatched
             mainHandler.dispatchQueuedMessages()
@@ -134,7 +135,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
 
     @Test
     fun testShow_isScrimmed() {
-        underTest.show(true)
+        underTest.show(true, TEST_REASON)
         verify(repository).setKeyguardAuthenticatedBiometrics(null)
         verify(repository).setPrimaryStartingToHide(false)
         verify(repository).setPrimaryScrimmed(true)
@@ -162,7 +163,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
     @Test
     fun testShowReturnsFalseWhenDelegateIsNotSet() {
         whenever(bouncerView.delegate).thenReturn(null)
-        assertThat(underTest.show(true)).isEqualTo(false)
+        assertThat(underTest.show(true, TEST_REASON)).isEqualTo(false)
     }
 
     @Test
@@ -171,7 +172,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
         whenever(keyguardSecurityModel.getSecurityMode(anyInt()))
             .thenReturn(KeyguardSecurityModel.SecurityMode.SimPuk)
 
-        underTest.show(true)
+        underTest.show(true, TEST_REASON)
         verify(repository).setPrimaryShow(false)
         verify(repository).setPrimaryShow(true)
     }
@@ -352,7 +353,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
         whenever(faceAuthInteractor.canFaceAuthRun()).thenReturn(true)
 
         // WHEN bouncer show is requested
-        underTest.show(true)
+        underTest.show(true, TEST_REASON)
 
         // THEN primary show & primary showing soon aren't updated immediately
         verify(repository, never()).setPrimaryShow(true)
@@ -375,7 +376,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
         whenever(faceAuthInteractor.canFaceAuthRun()).thenReturn(false)
 
         // WHEN bouncer show is requested
-        underTest.show(true)
+        underTest.show(true, TEST_REASON)
 
         // THEN primary show & primary showing soon are updated immediately
         verify(repository).setPrimaryShow(true)
@@ -394,7 +395,7 @@ class PrimaryBouncerInteractorTest : SysuiTestCase() {
             runCurrent()
 
             // WHEN bouncer show is requested
-            underTest.show(true)
+            underTest.show(true, TEST_REASON)
 
             // THEN primary show & primary showing soon were scheduled to update
             verify(repository, never()).setPrimaryShow(true)

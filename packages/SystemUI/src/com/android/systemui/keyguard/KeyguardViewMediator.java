@@ -3765,13 +3765,7 @@ public class KeyguardViewMediator implements CoreStartable,
                         Log.d(TAG, "Status bar manager is disabled for visible background users");
                     }
                 } else {
-                    try {
-                        mStatusBarService.disableForUser(flags, mStatusBarDisableToken,
-                                mContext.getPackageName(),
-                                mSelectedUserInteractor.getSelectedUserId());
-                    } catch (RemoteException e) {
-                        Log.d(TAG, "Failed to force clear flags", e);
-                    }
+                    statusBarServiceDisableForUser(flags, "Failed to force clear flags");
                 }
             }
 
@@ -3807,15 +3801,26 @@ public class KeyguardViewMediator implements CoreStartable,
 
                 // Handled in StatusBarDisableFlagsInteractor.
                 if (!KeyguardWmStateRefactor.isEnabled()) {
-                    try {
-                        mStatusBarService.disableForUser(flags, mStatusBarDisableToken,
-                                mContext.getPackageName(),
-                                mSelectedUserInteractor.getSelectedUserId());
-                    } catch (RemoteException e) {
-                        Log.d(TAG, "Failed to set disable flags: " + flags, e);
-                    }
+                    statusBarServiceDisableForUser(flags, "Failed to set disable flags: ");
                 }
             }
+        }
+    }
+
+    private void statusBarServiceDisableForUser(int flags, String loggingContext) {
+        Runnable runnable = () -> {
+            try {
+                mStatusBarService.disableForUser(flags, mStatusBarDisableToken,
+                        mContext.getPackageName(),
+                        mSelectedUserInteractor.getSelectedUserId());
+            } catch (RemoteException e) {
+                Log.d(TAG, loggingContext + " " + flags, e);
+            }
+        };
+        if (com.android.systemui.Flags.bouncerUiRevamp()) {
+            mUiBgExecutor.execute(runnable);
+        } else {
+            runnable.run();
         }
     }
 
@@ -4099,12 +4104,23 @@ public class KeyguardViewMediator implements CoreStartable,
                 || aodShowing != mAodShowing || forceCallbacks;
         mShowing = showing;
         mAodShowing = aodShowing;
-        if (notifyDefaultDisplayCallbacks) {
-            notifyDefaultDisplayCallbacks(showing);
+
+        if (KeyguardWmReorderAtmsCalls.isEnabled()) {
+            if (updateActivityLockScreenState) {
+                updateActivityLockScreenState(showing, aodShowing, reason);
+            }
+            if (notifyDefaultDisplayCallbacks) {
+                notifyDefaultDisplayCallbacks(showing);
+            }
+        } else {
+            if (notifyDefaultDisplayCallbacks) {
+                notifyDefaultDisplayCallbacks(showing);
+            }
+            if (updateActivityLockScreenState) {
+                updateActivityLockScreenState(showing, aodShowing, reason);
+            }
         }
-        if (updateActivityLockScreenState) {
-            updateActivityLockScreenState(showing, aodShowing, reason);
-        }
+
     }
 
     private void notifyDefaultDisplayCallbacks(boolean showing) {

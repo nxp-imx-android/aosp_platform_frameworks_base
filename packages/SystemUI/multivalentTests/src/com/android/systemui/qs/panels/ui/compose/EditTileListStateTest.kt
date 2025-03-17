@@ -23,6 +23,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.qs.panels.shared.model.SizedTile
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
+import com.android.systemui.qs.panels.ui.compose.selection.PlacementEvent
 import com.android.systemui.qs.panels.ui.model.GridCell
 import com.android.systemui.qs.panels.ui.model.TileGridCell
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
@@ -106,6 +107,76 @@ class EditTileListStateTest : SysuiTestCase() {
         underTest.movedOutOfBounds()
 
         assertThat(underTest.tiles.toStrings()).doesNotContain(TestEditTiles[0].tile.tileSpec.spec)
+    }
+
+    @Test
+    fun targetIndexForPlacementToTileSpec_returnsCorrectIndex() {
+        val placementEvent =
+            PlacementEvent.PlaceToTileSpec(
+                movingSpec = TestEditTiles[0].tile.tileSpec,
+                targetSpec = TestEditTiles[3].tile.tileSpec,
+            )
+        val index = underTest.targetIndexForPlacement(placementEvent)
+
+        assertThat(index).isEqualTo(3)
+    }
+
+    @Test
+    fun targetIndexForPlacementToIndex_indexOutOfBounds_returnsCorrectIndex() {
+        val placementEventTooLow =
+            PlacementEvent.PlaceToIndex(
+                movingSpec = TestEditTiles[0].tile.tileSpec,
+                targetIndex = -1,
+            )
+        val index1 = underTest.targetIndexForPlacement(placementEventTooLow)
+
+        assertThat(index1).isEqualTo(0)
+
+        val placementEventTooHigh =
+            PlacementEvent.PlaceToIndex(
+                movingSpec = TestEditTiles[0].tile.tileSpec,
+                targetIndex = 10,
+            )
+        val index2 = underTest.targetIndexForPlacement(placementEventTooHigh)
+        assertThat(index2).isEqualTo(TestEditTiles.size)
+    }
+
+    @Test
+    fun targetIndexForPlacementToIndex_movingBack_returnsCorrectIndex() {
+        /**
+         * With the grid: [ a ] [ b ] [ c ] [ Large D ] [ e ] [ f ]
+         *
+         * Moving 'e' to the spacer at index 3 will result in the tilespec order: a, b, c, e, d, f
+         *
+         * 'e' is now at index 3
+         */
+        val placementEvent =
+            PlacementEvent.PlaceToIndex(
+                movingSpec = TestEditTiles[4].tile.tileSpec,
+                targetIndex = 3,
+            )
+        val index = underTest.targetIndexForPlacement(placementEvent)
+
+        assertThat(index).isEqualTo(3)
+    }
+
+    @Test
+    fun targetIndexForPlacementToIndex_movingForward_returnsCorrectIndex() {
+        /**
+         * With the grid: [ a ] [ b ] [ c ] [ Large D ] [ e ] [ f ]
+         *
+         * Moving '1' to the spacer at index 3 will result in the tilespec order: b, c, a, d, e, f
+         *
+         * 'a' is now at index 2
+         */
+        val placementEvent =
+            PlacementEvent.PlaceToIndex(
+                movingSpec = TestEditTiles[0].tile.tileSpec,
+                targetIndex = 3,
+            )
+        val index = underTest.targetIndexForPlacement(placementEvent)
+
+        assertThat(index).isEqualTo(2)
     }
 
     private fun List<GridCell>.toStrings(): List<String> {

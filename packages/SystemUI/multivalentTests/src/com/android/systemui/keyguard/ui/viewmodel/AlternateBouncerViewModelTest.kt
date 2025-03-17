@@ -35,6 +35,7 @@ import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.statusbar.phone.statusBarKeyguardViewManager
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.any
+import com.android.systemui.util.mockito.eq
 import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
@@ -56,7 +57,8 @@ class AlternateBouncerViewModelTest : SysuiTestCase() {
     fun onTapped() =
         testScope.runTest {
             underTest.onTapped()
-            verify(statusBarKeyguardViewManager).showPrimaryBouncer(any())
+            verify(statusBarKeyguardViewManager)
+                .showPrimaryBouncer(any(), eq("AlternateBouncerViewModel#onTapped"))
         }
 
     @Test
@@ -154,7 +156,7 @@ class AlternateBouncerViewModelTest : SysuiTestCase() {
 
     private fun stepToAlternateBouncer(
         value: Float,
-        state: TransitionState = TransitionState.RUNNING
+        state: TransitionState = TransitionState.RUNNING,
     ): TransitionStep {
         return step(
             from = KeyguardState.LOCKSCREEN,
@@ -166,7 +168,7 @@ class AlternateBouncerViewModelTest : SysuiTestCase() {
 
     private fun stepFromAlternateBouncer(
         value: Float,
-        state: TransitionState = TransitionState.RUNNING
+        state: TransitionState = TransitionState.RUNNING,
     ): TransitionStep {
         return step(
             from = KeyguardState.ALTERNATE_BOUNCER,
@@ -180,14 +182,14 @@ class AlternateBouncerViewModelTest : SysuiTestCase() {
         from: KeyguardState,
         to: KeyguardState,
         value: Float,
-        transitionState: TransitionState
+        transitionState: TransitionState,
     ): TransitionStep {
         return TransitionStep(
             from = from,
             to = to,
             value = value,
             transitionState = transitionState,
-            ownerName = "AlternateBouncerViewModelTest"
+            ownerName = "AlternateBouncerViewModelTest",
         )
     }
 }

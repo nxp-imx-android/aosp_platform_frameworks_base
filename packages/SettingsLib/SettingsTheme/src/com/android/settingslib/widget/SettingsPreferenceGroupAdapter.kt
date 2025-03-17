@@ -71,18 +71,27 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
     override fun onPreferenceHierarchyChange(preference: Preference) {
         super.onPreferenceHierarchyChange(preference)
 
-        // Post after super class has posted their sync runnable to update preferences.
-        mHandler.removeCallbacks(syncRunnable)
-        mHandler.post(syncRunnable)
+        if (SettingsThemeHelper.isExpressiveTheme(preference.context)) {
+            // Post after super class has posted their sync runnable to update preferences.
+            mHandler.removeCallbacks(syncRunnable)
+            mHandler.post(syncRunnable)
+        }
     }
 
     @SuppressLint("RestrictedApi")
     override fun onBindViewHolder(holder: PreferenceViewHolder, position: Int) {
         super.onBindViewHolder(holder, position)
-        updateBackground(holder, position)
+
+        if (SettingsThemeHelper.isExpressiveTheme(holder.itemView.context)) {
+            updateBackground(holder, position)
+        }
     }
 
     private fun updatePreferencesList() {
+        if (!SettingsThemeHelper.isExpressiveTheme(mPreferenceGroup.context)) {
+            return
+        }
+
         val oldList = ArrayList(mRoundCornerMappingList)
         mRoundCornerMappingList = ArrayList()
         mappingPreferenceGroup(mRoundCornerMappingList, mPreferenceGroup)

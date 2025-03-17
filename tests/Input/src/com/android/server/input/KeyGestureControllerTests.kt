@@ -63,6 +63,7 @@ import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -107,7 +108,10 @@ class KeyGestureControllerTests {
         const val SETTINGS_KEY_BEHAVIOR_SETTINGS_ACTIVITY = 0
         const val SETTINGS_KEY_BEHAVIOR_NOTIFICATION_PANEL = 1
         const val SETTINGS_KEY_BEHAVIOR_NOTHING = 2
+        const val SYSTEM_PID = 0
         const val TEST_PID = 10
+        const val RANDOM_PID1 = 11
+        const val RANDOM_PID2 = 12
     }
 
     @JvmField
@@ -170,6 +174,7 @@ class KeyGestureControllerTests {
                     return atomicFile
                 }
             })
+        startNewInputGlobalTestSession()
     }
 
     @After
@@ -199,15 +204,20 @@ class KeyGestureControllerTests {
         val correctIm = context.getSystemService(InputManager::class.java)!!
         val virtualDevice = correctIm.getInputDevice(KeyCharacterMap.VIRTUAL_KEYBOARD)!!
         val kcm = virtualDevice.keyCharacterMap!!
-        inputManagerGlobalSession = InputManagerGlobal.createTestSession(iInputManager)
-        val inputManager = InputManager(context)
-        Mockito.`when`(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE)))
-            .thenReturn(inputManager)
-
         val keyboardDevice = InputDevice.Builder().setId(DEVICE_ID).build()
         Mockito.`when`(iInputManager.inputDeviceIds).thenReturn(intArrayOf(DEVICE_ID))
         Mockito.`when`(iInputManager.getInputDevice(DEVICE_ID)).thenReturn(keyboardDevice)
         ExtendedMockito.`when`(KeyCharacterMap.load(Mockito.anyInt())).thenReturn(kcm)
+    }
+
+    private fun startNewInputGlobalTestSession() {
+        if (this::inputManagerGlobalSession.isInitialized) {
+            inputManagerGlobalSession.close()
+        }
+        inputManagerGlobalSession = InputManagerGlobal.createTestSession(iInputManager)
+        val inputManager = InputManager(context)
+        Mockito.`when`(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE)))
+            .thenReturn(inputManager)
     }
 
     private fun setupKeyGestureController() {
@@ -225,13 +235,14 @@ class KeyGestureControllerTests {
                         return accessibilityShortcutController
                     }
                 })
-        Mockito.`when`(iInputManager.registerKeyGestureHandler(Mockito.any()))
+        Mockito.`when`(iInputManager.registerKeyGestureHandler(Mockito.any(), Mockito.any()))
             .thenAnswer {
                 val args = it.arguments
                 if (args[0] != null) {
                     keyGestureController.registerKeyGestureHandler(
-                        args[0] as IKeyGestureHandler,
-                        TEST_PID
+                        args[0] as IntArray,
+                        args[1] as IKeyGestureHandler,
+                        SYSTEM_PID
                     )
                 }
         }
@@ -282,59 +293,6 @@ class KeyGestureControllerTests {
             "Listener should not get callback after being unregistered",
             0,
             events.size
-        )
-    }
-
-    @Test
-    fun testKeyGestureEvent_multipleGestureHandlers() {
-        setupKeyGestureController()
-
-        // Set up two callbacks.
-        var callbackCount1 = 0
-        var callbackCount2 = 0
-        var selfCallback = 0
-        val externalHandler1 = KeyGestureHandler { _, _ ->
-            callbackCount1++
-            true
-        }
-        val externalHandler2 = KeyGestureHandler { _, _ ->
-            callbackCount2++
-            true
-        }
-        val selfHandler = KeyGestureHandler { _, _ ->
-            selfCallback++
-            false
-        }
-
-        // Register key gesture handler: External process (last in priority)
-        keyGestureController.registerKeyGestureHandler(externalHandler1, currentPid + 1)
-
-        // Register key gesture handler: External process (second in priority)
-        keyGestureController.registerKeyGestureHandler(externalHandler2, currentPid - 1)
-
-        // Register key gesture handler: Self process (first in priority)
-        keyGestureController.registerKeyGestureHandler(selfHandler, currentPid)
-
-        keyGestureController.handleKeyGesture(/* deviceId = */ 0, intArrayOf(KeyEvent.KEYCODE_HOME),
-            /* modifierState = */ 0, KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
-            KeyGestureEvent.ACTION_GESTURE_COMPLETE, /* displayId */ 0,
-            /* focusedToken = */ null, /* flags = */ 0, /* appLaunchData = */null
-        )
-
-        assertEquals(
-            "Self handler should get callbacks first",
-            1,
-            selfCallback
-        )
-        assertEquals(
-            "Higher priority handler should get callbacks first",
-            1,
-            callbackCount2
-        )
-        assertEquals(
-            "Lower priority handler should not get callbacks if already handled",
-            0,
-            callbackCount1
         )
     }
 
@@ -789,10 +747,6 @@ class KeyGestureControllerTests {
     )
     fun testCustomKeyGesturesNotAllowedForSystemGestures(test: TestData) {
         setupKeyGestureController()
-        // Need to re-init so that bookmarks are correctly blocklisted
-        Mockito.`when`(iInputManager.getAppLaunchBookmarks())
-            .thenReturn(keyGestureController.appLaunchBookmarks)
-        keyGestureController.systemRunning()
 
         val builder = InputGestureData.Builder()
             .setKeyGestureType(test.expectedKeyGestureType)
@@ -1163,9 +1117,6 @@ class KeyGestureControllerTests {
             KeyEvent.KEYCODE_FULLSCREEN
         )
 
-        val handler = KeyGestureHandler { _, _ -> false }
-        keyGestureController.registerKeyGestureHandler(handler, 0)
-
         for (key in testKeys) {
             sendKeys(intArrayOf(key), assertNotSentToApps = true)
         }
@@ -1179,6 +1130,7 @@ class KeyGestureControllerTests {
         testKeyGestureNotProduced(
             "SEARCH -> Default Search",
             intArrayOf(KeyEvent.KEYCODE_SEARCH),
+            intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH)
         )
     }
 
@@ -1207,6 +1159,10 @@ class KeyGestureControllerTests {
         testKeyGestureNotProduced(
             "SETTINGS -> Do Nothing",
             intArrayOf(KeyEvent.KEYCODE_SETTINGS),
+            intArrayOf(
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
+            )
         )
     }
 
@@ -1283,28 +1239,6 @@ class KeyGestureControllerTests {
                 intArrayOf(KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_STEM_PRIMARY),
                 KeyGestureEvent.KEY_GESTURE_TYPE_SCREENSHOT_CHORD,
                 intArrayOf(KeyEvent.KEYCODE_POWER, KeyEvent.KEYCODE_STEM_PRIMARY),
-                0,
-                intArrayOf(
-                    KeyGestureEvent.ACTION_GESTURE_START,
-                    KeyGestureEvent.ACTION_GESTURE_COMPLETE
-                )
-            ),
-            TestData(
-                "VOLUME_DOWN + VOLUME_UP -> Accessibility Chord",
-                intArrayOf(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP),
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD,
-                intArrayOf(KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP),
-                0,
-                intArrayOf(
-                    KeyGestureEvent.ACTION_GESTURE_START,
-                    KeyGestureEvent.ACTION_GESTURE_COMPLETE
-                )
-            ),
-            TestData(
-                "BACK + DPAD_DOWN -> Accessibility Chord(for TV)",
-                intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT_CHORD,
-                intArrayOf(KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_DPAD_DOWN),
                 0,
                 intArrayOf(
                     KeyGestureEvent.ACTION_GESTURE_START,
@@ -1428,9 +1362,11 @@ class KeyGestureControllerTests {
         testLooper.dispatchAll()
 
         // Reinitialize the gesture controller simulating a login/logout for the user.
+        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
+
         val savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
@@ -1469,6 +1405,7 @@ class KeyGestureControllerTests {
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
         tempFile.delete()
+        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -1541,9 +1478,12 @@ class KeyGestureControllerTests {
         val handledEvents = mutableListOf<KeyGestureEvent>()
         val handler = KeyGestureHandler { event, _ ->
             handledEvents.add(KeyGestureEvent(event))
-            true
         }
-        keyGestureController.registerKeyGestureHandler(handler, 0)
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(test.expectedKeyGestureType),
+            handler,
+            TEST_PID
+        )
         handledEvents.clear()
 
         keyGestureController.handleTouchpadGesture(test.touchpadGestureType)
@@ -1570,7 +1510,7 @@ class KeyGestureControllerTests {
             event.appLaunchData
         )
 
-        keyGestureController.unregisterKeyGestureHandler(handler, 0)
+        keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
     }
 
     @Test
@@ -1591,9 +1531,11 @@ class KeyGestureControllerTests {
         testLooper.dispatchAll()
 
         // Reinitialize the gesture controller simulating a login/logout for the user.
+        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
+
         val savedInputGestures = keyGestureController.getCustomInputGestures(userId, null)
         assertEquals(
             "Test: $test doesn't produce correct number of saved input gestures",
@@ -1627,6 +1569,7 @@ class KeyGestureControllerTests {
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
         tempFile.delete()
+        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -1699,13 +1642,97 @@ class KeyGestureControllerTests {
         Mockito.verify(accessibilityShortcutController, never()).performAccessibilityShortcut()
     }
 
+    @Test
+    fun testUnableToRegisterFromSamePidTwice() {
+        setupKeyGestureController()
+
+        val handler1 = KeyGestureHandler { _, _ -> }
+        val handler2 = KeyGestureHandler { _, _ -> }
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_HOME),
+            handler1,
+            RANDOM_PID1
+        )
+
+        assertThrows(IllegalStateException::class.java) {
+            keyGestureController.registerKeyGestureHandler(
+                intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_BACK),
+                handler2,
+                RANDOM_PID1
+            )
+        }
+    }
+
+    @Test
+    fun testUnableToRegisterSameGestureTwice() {
+        setupKeyGestureController()
+
+        val handler1 = KeyGestureHandler { _, _ -> }
+        val handler2 = KeyGestureHandler { _, _ -> }
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_HOME),
+            handler1,
+            RANDOM_PID1
+        )
+
+        assertThrows(IllegalArgumentException::class.java) {
+            keyGestureController.registerKeyGestureHandler(
+                intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_HOME),
+                handler2,
+                RANDOM_PID2
+            )
+        }
+    }
+
+    @Test
+    fun testUnableToRegisterEmptyListOfGestures() {
+        setupKeyGestureController()
+
+        val handler = KeyGestureHandler { _, _ -> }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            keyGestureController.registerKeyGestureHandler(
+                intArrayOf(),
+                handler,
+                RANDOM_PID1
+            )
+        }
+    }
+
+    @Test
+    fun testGestureHandlerNotCalledOnceUnregistered() {
+        setupKeyGestureController()
+
+        var callbackCount = 0
+        val handler1 = KeyGestureHandler { _, _ -> callbackCount++ }
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS),
+            handler1,
+            TEST_PID
+        )
+        sendKeys(intArrayOf(KeyEvent.KEYCODE_RECENT_APPS))
+        assertEquals(1, callbackCount)
+
+        keyGestureController.unregisterKeyGestureHandler(
+            handler1,
+            TEST_PID
+        )
+
+        // Callback should not be sent after unregister
+        sendKeys(intArrayOf(KeyEvent.KEYCODE_RECENT_APPS))
+        assertEquals(1, callbackCount)
+    }
+
     private fun testKeyGestureInternal(test: TestData) {
         val handledEvents = mutableListOf<KeyGestureEvent>()
         val handler = KeyGestureHandler { event, _ ->
             handledEvents.add(KeyGestureEvent(event))
-            true
         }
-        keyGestureController.registerKeyGestureHandler(handler, 0)
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(test.expectedKeyGestureType),
+            handler,
+            TEST_PID
+        )
         handledEvents.clear()
 
         sendKeys(test.keys)
@@ -1744,16 +1771,19 @@ class KeyGestureControllerTests {
             )
         }
 
-        keyGestureController.unregisterKeyGestureHandler(handler, 0)
+        keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
     }
 
-    private fun testKeyGestureNotProduced(testName: String, testKeys: IntArray) {
+    private fun testKeyGestureNotProduced(
+        testName: String,
+        testKeys: IntArray,
+        possibleGestures: IntArray
+    ) {
         var handledEvents = mutableListOf<KeyGestureEvent>()
         val handler = KeyGestureHandler { event, _ ->
             handledEvents.add(KeyGestureEvent(event))
-            true
         }
-        keyGestureController.registerKeyGestureHandler(handler, 0)
+        keyGestureController.registerKeyGestureHandler(possibleGestures, handler, TEST_PID)
         handledEvents.clear()
 
         sendKeys(testKeys)
@@ -1823,10 +1853,10 @@ class KeyGestureControllerTests {
     }
 
     inner class KeyGestureHandler(
-        private var handler: (event: AidlKeyGestureEvent, token: IBinder?) -> Boolean
+        private var handler: (event: AidlKeyGestureEvent, token: IBinder?) -> Unit
     ) : IKeyGestureHandler.Stub() {
-        override fun handleKeyGesture(event: AidlKeyGestureEvent, token: IBinder?): Boolean {
-            return handler(event, token)
+        override fun handleKeyGesture(event: AidlKeyGestureEvent, token: IBinder?) {
+            handler(event, token)
         }
     }
 }

@@ -35,7 +35,6 @@ import androidx.compose.ui.draganddrop.mimeTypes
 import androidx.compose.ui.draganddrop.toAndroidDragEvent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.center
 import androidx.compose.ui.unit.toRect
 import com.android.systemui.qs.panels.shared.model.SizedTile
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
@@ -44,6 +43,7 @@ import com.android.systemui.qs.pipeline.shared.TileSpec
 /** Holds the [TileSpec] of the tile being moved and receives drag and drop events. */
 interface DragAndDropState {
     val draggedCell: SizedTile<EditTileViewModel>?
+    val isDraggedCellRemovable: Boolean
     val draggedPosition: Offset
     val dragInProgress: Boolean
     val dragType: DragType?
@@ -76,7 +76,7 @@ enum class DragType {
 @Composable
 fun Modifier.dragAndDropRemoveZone(
     dragAndDropState: DragAndDropState,
-    onDrop: (TileSpec) -> Unit,
+    onDrop: (TileSpec, removalEnabled: Boolean) -> Unit,
 ): Modifier {
     val target =
         remember(dragAndDropState) {
@@ -87,13 +87,15 @@ fun Modifier.dragAndDropRemoveZone(
 
                 override fun onDrop(event: DragAndDropEvent): Boolean {
                     return dragAndDropState.draggedCell?.let {
-                        onDrop(it.tile.tileSpec)
+                        onDrop(it.tile.tileSpec, dragAndDropState.isDraggedCellRemovable)
                         dragAndDropState.onDrop()
                         true
                     } ?: false
                 }
 
                 override fun onEntered(event: DragAndDropEvent) {
+                    if (!dragAndDropState.isDraggedCellRemovable) return
+
                     dragAndDropState.movedOutOfBounds()
                 }
             }
@@ -168,10 +170,10 @@ private fun DragAndDropEvent.toOffset(): Offset {
 }
 
 private fun insertAfter(item: LazyGridItemInfo, offset: Offset): Boolean {
-    // We want to insert the tile after the target if we're aiming at the right side of a large tile
+    // We want to insert the tile after the target if we're aiming at the end of a large tile
     // TODO(ostonge): Verify this behavior in RTL
-    val itemCenter = item.offset + item.size.center
-    return item.span != 1 && offset.x > itemCenter.x
+    val itemCenter = item.offset.x + item.size.width * .75
+    return item.span != 1 && offset.x > itemCenter
 }
 
 @OptIn(ExperimentalFoundationApi::class)

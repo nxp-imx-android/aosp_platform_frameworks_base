@@ -44,7 +44,7 @@ public enum DesktopModeFlags {
     // All desktop mode related flags to be overridden by developer option toggle will be added here
     // go/keep-sorted start
     DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX(
-            Flags::disableDesktopLaunchParamsOutsideDesktopBugFix, false),
+            Flags::disableDesktopLaunchParamsOutsideDesktopBugFix, true),
     DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE(Flags::disableNonResizableAppSnapResizing, true),
     ENABLE_ACCESSIBLE_CUSTOM_HEADERS(Flags::enableAccessibleCustomHeaders, true),
     ENABLE_APP_HEADER_WITH_TASK_DENSITY(Flags::enableAppHeaderWithTaskDensity, true),
@@ -115,11 +115,12 @@ public enum DesktopModeFlags {
     ENABLE_OPAQUE_BACKGROUND_FOR_TRANSPARENT_WINDOWS(
             Flags::enableOpaqueBackgroundForTransparentWindows, true),
     ENABLE_QUICKSWITCH_DESKTOP_SPLIT_BUGFIX(Flags::enableQuickswitchDesktopSplitBugfix, true),
+    ENABLE_REQUEST_FULLSCREEN_BUGFIX(Flags::enableRequestFullscreenBugfix, false),
     ENABLE_RESIZING_METRICS(Flags::enableResizingMetrics, true),
     ENABLE_RESTORE_TO_PREVIOUS_SIZE_FROM_DESKTOP_IMMERSIVE(
             Flags::enableRestoreToPreviousSizeFromDesktopImmersive, true),
     ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX(
-            Flags::enableShellInitialBoundsRegressionBugFix, false),
+            Flags::enableShellInitialBoundsRegressionBugFix, true),
     ENABLE_START_LAUNCH_TRANSITION_FROM_TASKBAR_BUGFIX(
             Flags::enableStartLaunchTransitionFromTaskbarBugfix, true),
     ENABLE_TASKBAR_OVERFLOW(Flags::enableTaskbarOverflow, false),

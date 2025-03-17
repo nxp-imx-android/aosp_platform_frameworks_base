@@ -1459,21 +1459,6 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     /**
-     * Verify that finish bottom activity from a task won't boost it to top.
-     */
-    @Test
-    public void testFinishBottomActivityIfPossible_noZBoost() {
-        final ActivityRecord bottomActivity = createActivityWithTask();
-        final ActivityRecord topActivity = new ActivityBuilder(mAtm)
-                .setTask(bottomActivity.getTask()).build();
-        topActivity.setVisibleRequested(true);
-        // simulating bottomActivity as a trampoline activity.
-        bottomActivity.setState(RESUMED, "test");
-        bottomActivity.finishIfPossible("test", false);
-        assertFalse(bottomActivity.mNeedsZBoost);
-    }
-
-    /**
      * Verify that complete finish request for visible activity must be delayed before the next one
      * becomes visible.
      */

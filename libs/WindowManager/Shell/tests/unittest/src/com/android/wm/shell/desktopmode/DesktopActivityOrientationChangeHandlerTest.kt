@@ -37,6 +37,8 @@ import com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE
 import com.android.window.flags.Flags.FLAG_RESPECT_ORIENTATION_CHANGE_FOR_UNRESIZEABLE
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.TaskStackListenerImpl
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
@@ -96,12 +98,15 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
     @Mock lateinit var repositoryInitializer: DesktopRepositoryInitializer
     @Mock lateinit var userManager: UserManager
     @Mock lateinit var shellController: ShellController
+    @Mock lateinit var displayController: DisplayController
+    @Mock lateinit var displayLayout: DisplayLayout
 
     private lateinit var mockitoSession: StaticMockitoSession
     private lateinit var handler: DesktopActivityOrientationChangeHandler
     private lateinit var shellInit: ShellInit
     private lateinit var userRepositories: DesktopUserRepositories
     private lateinit var testScope: CoroutineScope
+
     // Mock running tasks are registered here so we can get the list from mock shell task organizer.
     private val runningTasks = mutableListOf<RunningTaskInfo>()
 
@@ -131,6 +136,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         whenever(transitions.startTransition(anyInt(), any(), isNull())).thenAnswer { Binder() }
         whenever(runBlocking { persistentRepository.readDesktop(any(), any()) })
             .thenReturn(Desktop.getDefaultInstance())
+        whenever(displayController.getDisplayLayout(anyInt())).thenReturn(displayLayout)
 
         handler =
             DesktopActivityOrientationChangeHandler(
@@ -140,6 +146,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 taskStackListener,
                 resizeTransitionHandler,
                 userRepositories,
+                displayController,
             )
 
         shellInit.init()
@@ -171,6 +178,7 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 taskStackListener,
                 resizeTransitionHandler,
                 userRepositories,
+                displayController,
             )
 
         verify(shellInit, never())
@@ -251,6 +259,11 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
         val oldBounds = task.configuration.windowConfiguration.bounds
         val newTask =
             setUpFreeformTask(isResizeable = false, orientation = SCREEN_ORIENTATION_LANDSCAPE)
+        whenever(displayLayout.height()).thenReturn(800)
+        whenever(displayLayout.width()).thenReturn(2000)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(Rect(0, 0, 2000, 800))
+        }
 
         handler.handleActivityOrientationChange(task, newTask)
 
@@ -279,6 +292,11 @@ class DesktopActivityOrientationChangeHandlerTest : ShellTestCase() {
                 bounds = oldBounds,
             )
         val newTask = setUpFreeformTask(isResizeable = false, bounds = oldBounds)
+        whenever(displayLayout.height()).thenReturn(2000)
+        whenever(displayLayout.width()).thenReturn(800)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(Rect(0, 0, 800, 2000))
+        }
 
         handler.handleActivityOrientationChange(task, newTask)
 

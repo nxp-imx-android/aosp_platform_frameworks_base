@@ -19,7 +19,6 @@ import android.app.StatusBarManager
 import android.graphics.Point
 import android.util.Log
 import android.util.MathUtils
-import com.android.app.animation.Interpolators
 import com.android.systemui.bouncer.data.repository.KeyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
@@ -371,9 +370,11 @@ constructor(
                         currentKeyguardState == LOCKSCREEN &&
                         legacyShadeExpansion != 1f
                 ) {
-                    emit(MathUtils.constrainedMap(0f, 1f, 0.95f, 1f, legacyShadeExpansion))
+                    emit(MathUtils.constrainedMap(0f, 1f, 0.82f, 1f, legacyShadeExpansion))
                 } else if (
-                    (legacyShadeExpansion == 0f || legacyShadeExpansion == 1f) && !onGlanceableHub
+                    !onGlanceableHub &&
+                        isKeyguardDismissible &&
+                        (legacyShadeExpansion == 0f || legacyShadeExpansion == 1f)
                 ) {
                     // Resets alpha state
                     emit(1f)
@@ -401,15 +402,7 @@ constructor(
                         // 0f and 1f need to be ignored in the legacy shade expansion. These can
                         // flip arbitrarily as the legacy shade is reset, and would cause the
                         // translation value to jump around unexpectedly.
-                        emit(
-                            MathUtils.lerp(
-                                translationDistance,
-                                0,
-                                Interpolators.FAST_OUT_LINEAR_IN.getInterpolation(
-                                    legacyShadeExpansion
-                                ),
-                            )
-                        )
+                        emit(MathUtils.lerp(translationDistance, 0, legacyShadeExpansion))
                     }
                 }
             }

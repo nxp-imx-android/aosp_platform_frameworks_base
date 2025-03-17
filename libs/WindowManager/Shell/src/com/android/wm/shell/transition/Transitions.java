@@ -602,6 +602,11 @@ public class Transitions implements RemoteCallable<Transitions>,
                 // Just in case there is a race with another animation (eg. recents finish()).
                 // Changes are visible->visible so it's a problem if it isn't visible.
                 t.show(leash);
+                // If there is a transient launch followed by a launch of one of the pausing tasks,
+                // we may end up with TRANSIT_TO_BACK followed by a CHANGE (w/ flag MOVE_TO_TOP),
+                // but since we are hiding the leash in the finish transaction above, we should also
+                // update the finish transaction here to reflect the change in visibility
+                finishT.show(leash);
             }
         }
     }

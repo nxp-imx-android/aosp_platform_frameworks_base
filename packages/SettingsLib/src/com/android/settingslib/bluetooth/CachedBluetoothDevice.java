@@ -75,6 +75,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -154,8 +155,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     private boolean mIsLeAudioProfileConnectedFail = false;
     private boolean mUnpairing;
     @Nullable
-    private final InputDevice mInputDevice;
-    private final boolean mIsDeviceStylus;
+    private InputDevice mInputDevice;
+    private boolean mIsDeviceStylus;
 
     // Group second device for Hearing Aid
     private CachedBluetoothDevice mSubDevice;
@@ -313,8 +314,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                         mLocalNapRoleConnected = true;
                     }
                 }
-                if (Flags.enableSetPreferredTransportForLeAudioDevice()
-                        && profile instanceof HidProfile) {
+                if (profile instanceof HidProfile) {
                     updatePreferredTransport();
                 }
             } else if (profile instanceof MapProfile
@@ -329,8 +329,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 mLocalNapRoleConnected = false;
             }
 
-            if (Flags.enableSetPreferredTransportForLeAudioDevice()
-                    && profile instanceof LeAudioProfile) {
+            if (profile instanceof LeAudioProfile) {
                 updatePreferredTransport();
             }
 
@@ -762,11 +761,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      * {@link BluetoothDevice#BATTERY_LEVEL_UNKNOWN}
      */
     public int getMinBatteryLevelWithMemberDevices() {
-        return Stream.concat(Stream.of(this), mMemberDevices.stream())
-                .mapToInt(cachedDevice -> cachedDevice.getBatteryLevel())
-                .filter(batteryLevel -> batteryLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
-                .min()
-                .orElse(BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+        return getMinBatteryLevels(Stream.concat(Stream.of(this), mMemberDevices.stream())
+                .mapToInt(CachedBluetoothDevice::getBatteryLevel));
     }
 
     /**
@@ -787,6 +783,13 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         return batteryLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN
                 ? com.android.settingslib.Utils.formatPercentage(batteryLevel)
                 : null;
+    }
+
+    private int getMinBatteryLevels(IntStream batteryLevels) {
+        return batteryLevels
+                .filter(battery -> battery > BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
+                .min()
+                .orElse(BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
     }
 
     void refresh() {
@@ -1358,7 +1361,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             // Gets summary for the buds which are in the audio sharing.
             int groupId = BluetoothUtils.getGroupId(this);
             int primaryGroupId = BluetoothUtils.getPrimaryGroupIdForBroadcast(
-                    mContext.getContentResolver());
+                    mContext.getContentResolver(), mBluetoothManager);
             if ((primaryGroupId != BluetoothCsipSetCoordinator.GROUP_ID_INVALID)
                     ? (groupId == primaryGroupId) : isActiveDevice(BluetoothProfile.LE_AUDIO)) {
                 // The buds are primary buds
@@ -1674,10 +1677,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 return null;
             } else {
                 int overallBattery =
-                        Arrays.stream(new int[]{leftBattery, rightBattery, caseBattery})
-                                .filter(battery -> battery > BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
-                                .min()
-                                .orElse(BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+                        getMinBatteryLevels(
+                                Arrays.stream(new int[]{leftBattery, rightBattery, caseBattery}));
                 Log.d(TAG, "Acquired battery info from metadata for untethered device "
                         + mDevice.getAnonymizedAddress()
                         + " left earbud battery: " + leftBattery
@@ -1711,10 +1712,75 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
     @Nullable
     private BatteryLevelsInfo getBatteryFromBluetoothService() {
-        // TODO(b/397847825): Implement the logic to get battery from Bluetooth service.
-        return null;
+        BatteryLevelsInfo batteryLevelsInfo;
+        if (isConnectedHearingAidDevice()) {
+            // If the device is hearing aid device, sides can be distinguished by HearingAidInfo.
+            batteryLevelsInfo = getBatteryOfHearingAidDeviceComponents();
+            if (batteryLevelsInfo != null) {
+                return batteryLevelsInfo;
+            }
+        }
+        if (isConnectedLeAudioDevice()) {
+            // If the device is LE Audio device, sides can be distinguished by LeAudioProfile.
+            batteryLevelsInfo = getBatteryOfLeAudioDeviceComponents();
+            if (batteryLevelsInfo != null) {
+                return batteryLevelsInfo;
+            }
+        }
+        int overallBattery = getMinBatteryLevelWithMemberDevices();
+        return overallBattery > BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+                ? new BatteryLevelsInfo(
+                        BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                        BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                        BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                        overallBattery)
+                : null;
     }
 
+    @Nullable
+    private BatteryLevelsInfo getBatteryOfHearingAidDeviceComponents() {
+        if (getDeviceSide() == HearingAidInfo.DeviceSide.SIDE_LEFT_AND_RIGHT) {
+            return new BatteryLevelsInfo(
+                    BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                    BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                    BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                    mDevice.getBatteryLevel());
+        }
+
+        int leftBattery = getHearingAidSideBattery(HearingAidInfo.DeviceSide.SIDE_LEFT);
+        int rightBattery = getHearingAidSideBattery(HearingAidInfo.DeviceSide.SIDE_RIGHT);
+        int overallBattery = getMinBatteryLevels(
+                Arrays.stream(new int[]{leftBattery, rightBattery}));
+
+        Log.d(TAG, "Acquired battery info from Bluetooth service for hearing aid device "
+                + mDevice.getAnonymizedAddress()
+                + " left battery: " + leftBattery
+                + " right battery: " + rightBattery
+                + " overall battery: " + overallBattery);
+        return overallBattery > BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+                ? new BatteryLevelsInfo(
+                        leftBattery,
+                        rightBattery,
+                        BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                        overallBattery)
+                : null;
+    }
+
+    private int getHearingAidSideBattery(int side) {
+        Optional<CachedBluetoothDevice> connectedHearingAidSide = getConnectedHearingAidSide(side);
+        return connectedHearingAidSide.isPresent()
+                ? connectedHearingAidSide
+                    .map(CachedBluetoothDevice::getBatteryLevel)
+                    .filter(batteryLevel -> batteryLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
+                    .orElse(BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
+                : BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+    }
+
+    @Nullable
+    private BatteryLevelsInfo getBatteryOfLeAudioDeviceComponents() {
+        // TODO(b/397847825): Implement the logic to get battery of LE audio device components.
+        return null;
+    }
     private CharSequence getTvBatterySummary(int mainBattery, int leftBattery, int rightBattery,
             int lowBatteryColorRes) {
         // Since there doesn't seem to be a way to use format strings to add the
@@ -1833,10 +1899,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
         // Retrieve hearing aids (ASHA, HAP) individual side battery level
         if (leftBattery == BluetoothDevice.BATTERY_LEVEL_UNKNOWN) {
-            leftBattery = getConnectedHearingAidSide(HearingAidInfo.DeviceSide.SIDE_LEFT)
-                    .map(CachedBluetoothDevice::getBatteryLevel)
-                    .filter(batteryLevel -> batteryLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
-                    .orElse(BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+            leftBattery = getHearingAidSideBattery(HearingAidInfo.DeviceSide.SIDE_LEFT);
         }
 
         return leftBattery;
@@ -1852,10 +1915,7 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
         // Retrieve hearing aids (ASHA, HAP) individual side battery level
         if (rightBattery == BluetoothDevice.BATTERY_LEVEL_UNKNOWN) {
-            rightBattery = getConnectedHearingAidSide(HearingAidInfo.DeviceSide.SIDE_RIGHT)
-                    .map(CachedBluetoothDevice::getBatteryLevel)
-                    .filter(batteryLevel -> batteryLevel > BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
-                    .orElse(BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+            rightBattery = getHearingAidSideBattery(HearingAidInfo.DeviceSide.SIDE_RIGHT);
         }
 
         return rightBattery;
@@ -2261,6 +2321,16 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     @VisibleForTesting
     void setLocalBluetoothManager(LocalBluetoothManager bluetoothManager) {
         mBluetoothManager = bluetoothManager;
+    }
+
+    @VisibleForTesting
+    void setIsDeviceStylus(Boolean isDeviceStylus) {
+        mIsDeviceStylus = isDeviceStylus;
+    }
+
+    @VisibleForTesting
+    void setInputDevice(@Nullable InputDevice inputDevice) {
+        mInputDevice = inputDevice;
     }
 
     private boolean isAndroidAuto() {

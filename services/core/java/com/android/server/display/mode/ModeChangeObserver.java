@@ -25,6 +25,8 @@ import android.view.Display;
 import android.view.DisplayAddress;
 import android.view.DisplayEventReceiver;
 
+import androidx.annotation.VisibleForTesting;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,8 +37,10 @@ final class ModeChangeObserver {
     private final DisplayModeDirector.Injector mInjector;
 
     @SuppressWarnings("unused")
-    private DisplayEventReceiver mModeChangeListener;
-    private DisplayManager.DisplayListener mDisplayListener;
+    @VisibleForTesting
+    DisplayEventReceiver mModeChangeListener;
+    @VisibleForTesting
+    DisplayManager.DisplayListener mDisplayListener;
     private final LongSparseArray<Set<Integer>> mRejectedModesMap =
             new LongSparseArray<>();
     private final LongSparseArray<Integer> mPhysicalIdToLogicalIdMap = new LongSparseArray<>();

@@ -135,7 +135,10 @@ object KeyguardRootViewBinder {
                         } else if (
                             event.action == MotionEvent.ACTION_UP && !event.isTouchscreenSource()
                         ) {
-                            statusBarKeyguardViewManager?.showBouncer(true)
+                            statusBarKeyguardViewManager?.showBouncer(
+                                true,
+                                "KeyguardRootViewBinder: click on lockscreen",
+                            )
                             consumed = true
                         }
                     }

@@ -156,7 +156,8 @@ public class StatusBarRemoteInputCallback implements Callback, Callbacks,
         if (!row.isPinned()) {
             mStatusBarStateController.setLeaveOpenOnKeyguardHide(true);
         }
-        mStatusBarKeyguardViewManager.showBouncer(true /* scrimmed */);
+        mStatusBarKeyguardViewManager.showBouncer(true /* scrimmed */,
+                "StatusBarRemoteInputCallback#onLockedRemoteInput");
         mPendingRemoteInputView = clicked;
     }
 

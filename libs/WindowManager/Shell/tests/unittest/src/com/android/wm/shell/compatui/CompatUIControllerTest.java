@@ -680,7 +680,8 @@ public class CompatUIControllerTest extends ShellTestCase {
 
         // Create transparent task
         final TaskInfo taskInfo1 = createTaskInfo(DISPLAY_ID, newTaskId, /* hasSizeCompat= */ true,
-                /* isVisible */ true, /* isFocused */ true, /* isTopActivityTransparent */ true);
+                /* isVisible */ true, /* isFocused */ true, /* isTopActivityTransparent */ true,
+                /* isRestartMenuEnabledForDisplayMove */ true);
 
         // Simulate new task being shown
         mController.updateActiveTaskInfo(taskInfo1);
@@ -742,32 +743,38 @@ public class CompatUIControllerTest extends ShellTestCase {
     @Test
     @RequiresFlagsDisabled(Flags.FLAG_APP_COMPAT_UI_FRAMEWORK)
     public void testSendCompatUIRequest_createRestartDialog() {
-        TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ false);
-        doReturn(true).when(mMockRestartDialogLayout)
-                .needsToBeRecreated(any(TaskInfo.class),
-                        any(ShellTaskOrganizer.TaskListener.class));
+        final TaskInfo taskInfo = createTaskInfo(DISPLAY_ID, TASK_ID, /* hasSizeCompat= */ true,
+                /* isVisible */ true, /* isFocused */ true, /* isTopActivityTransparent */ false,
+                /* isRestartMenuEnabledForDisplayMove */ true);
         doReturn(true).when(mCompatUIConfiguration).isRestartDialogEnabled();
         doReturn(true).when(mCompatUIConfiguration).shouldShowRestartDialogAgain(eq(taskInfo));
 
-        mController.sendCompatUIRequest(new CompatUIRequests.DisplayCompatShowRestartDialog(
-                taskInfo, mMockTaskListener));
+        mController.onCompatInfoChanged(new CompatUIInfo(taskInfo, mMockTaskListener));
         verify(mController).createRestartDialogWindowManager(any(), eq(taskInfo),
                 eq(mMockTaskListener));
+        verify(mMockRestartDialogLayout).setRequestRestartDialog(false);
+
+        mController.sendCompatUIRequest(
+                new CompatUIRequests.DisplayCompatShowRestartDialog(taskInfo.taskId));
+        verify(mMockRestartDialogLayout).setRequestRestartDialog(true);
     }
 
     private static TaskInfo createTaskInfo(int displayId, int taskId, boolean hasSizeCompat) {
         return createTaskInfo(displayId, taskId, hasSizeCompat, /* isVisible */ false,
-                /* isFocused */ false, /* isTopActivityTransparent */ false);
+                /* isFocused */ false, /* isTopActivityTransparent */ false,
+                /* isRestartMenuEnabledForDisplayMove */ false);
     }
 
     private static TaskInfo createTaskInfo(int displayId, int taskId, boolean hasSizeCompat,
             boolean isVisible, boolean isFocused) {
         return createTaskInfo(displayId, taskId, hasSizeCompat,
-                isVisible, isFocused, /* isTopActivityTransparent */ false);
+                isVisible, isFocused, /* isTopActivityTransparent */ false,
+                /* isRestartMenuEnabledForDisplayMove */ false);
     }
 
     private static TaskInfo createTaskInfo(int displayId, int taskId, boolean hasSizeCompat,
-            boolean isVisible, boolean isFocused, boolean isTopActivityTransparent) {
+            boolean isVisible, boolean isFocused, boolean isTopActivityTransparent,
+            boolean isRestartMenuEnabledForDisplayMove) {
         RunningTaskInfo taskInfo = new RunningTaskInfo();
         taskInfo.taskId = taskId;
         taskInfo.displayId = displayId;
@@ -777,6 +784,8 @@ public class CompatUIControllerTest extends ShellTestCase {
         taskInfo.isTopActivityTransparent = isTopActivityTransparent;
         taskInfo.appCompatTaskInfo.setLetterboxEducationEnabled(true);
         taskInfo.appCompatTaskInfo.setTopActivityLetterboxed(true);
+        taskInfo.appCompatTaskInfo.setRestartMenuEnabledForDisplayMove(
+                isRestartMenuEnabledForDisplayMove);
         return taskInfo;
     }
 }

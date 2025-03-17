@@ -507,8 +507,8 @@ public class KeyguardSecurityContainerTest extends SysuiTestCase {
                     0 /* flags */);
             users.add(new UserRecord(info, null, false /* isGuest */, false /* isCurrent */,
                     false /* isAddUser */, false /* isRestricted */, true /* isSwitchToEnabled */,
-                    false /* isAddSupervisedUser */, null /* enforcedAdmin */,
-                    false /* isManageUsers */));
+                    false /* isAddSupervisedUser */, false /* isSignOut */,
+                    null /* enforcedAdmin */, false /* isManageUsers */));
         }
         return users;
     }

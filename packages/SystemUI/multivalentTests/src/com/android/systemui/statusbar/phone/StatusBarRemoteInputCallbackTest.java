@@ -124,7 +124,8 @@ public class StatusBarRemoteInputCallbackTest extends SysuiTestCase {
         mRemoteInputCallback.onLockedRemoteInput(
                 mock(ExpandableNotificationRow.class), mock(View.class));
 
-        verify(mStatusBarKeyguardViewManager).showBouncer(true);
+        verify(mStatusBarKeyguardViewManager).showBouncer(true,
+                "StatusBarRemoteInputCallback#onLockedRemoteInput");
     }
     @Test
     @DisableFlags(ExpandHeadsUpOnInlineReply.FLAG_NAME)

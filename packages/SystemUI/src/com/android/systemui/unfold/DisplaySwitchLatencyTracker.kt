@@ -36,11 +36,11 @@ import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessModel
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.shared.system.SysUiStatsLog
-import com.android.systemui.unfold.DisplaySwitchLatencyTracker.DisplaySwitchLatencyEvent
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.CORRUPTED
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.SUCCESS
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.TIMED_OUT
 import com.android.systemui.unfold.dagger.UnfoldSingleThreadBg
+import com.android.systemui.unfold.data.repository.ScreenTimeoutPolicyRepository
 import com.android.systemui.unfold.data.repository.UnfoldTransitionStatus.TransitionStarted
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
 import com.android.systemui.util.Compile
@@ -80,6 +80,7 @@ constructor(
     private val context: Context,
     private val deviceStateRepository: DeviceStateRepository,
     private val powerInteractor: PowerInteractor,
+    private val screenTimeoutPolicyRepository: ScreenTimeoutPolicyRepository,
     private val unfoldTransitionInteractor: UnfoldTransitionInteractor,
     private val animationStatusRepository: AnimationStatusRepository,
     private val keyguardInteractor: KeyguardInteractor,
@@ -287,7 +288,18 @@ constructor(
         log { "fromFoldableDeviceState=$fromFoldableDeviceState" }
         instantForTrack(TAG) { "fromFoldableDeviceState=$fromFoldableDeviceState" }
 
-        return copy(fromFoldableDeviceState = fromFoldableDeviceState)
+        val screenTimeoutActive = screenTimeoutPolicyRepository.screenTimeoutActive.value
+        val screenWakelockStatus =
+            if (screenTimeoutActive) {
+                NO_SCREEN_WAKELOCKS
+            } else {
+                HAS_SCREEN_WAKELOCKS
+            }
+
+        return copy(
+            fromFoldableDeviceState = fromFoldableDeviceState,
+            screenWakelockStatus = screenWakelockStatus
+        )
     }
 
     private fun DisplaySwitchLatencyEvent.withAfterFields(
@@ -344,7 +356,7 @@ constructor(
         val onDrawnToOnScreenTurnedOnMs: Int = VALUE_UNKNOWN,
         val trackingResult: Int =
             SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TRACKING_RESULT__UNKNOWN_RESULT,
-        val screenWakelockstatus: Int =
+        val screenWakelockStatus: Int =
             SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__SCREEN_WAKELOCK_STATUS__SCREEN_WAKELOCK_STATUS_UNKNOWN,
     )
 
@@ -372,5 +384,10 @@ constructor(
             SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__FROM_FOLDABLE_DEVICE_STATE__STATE_OPENED
         private const val FOLDABLE_DEVICE_STATE_FLIPPED =
             SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__FROM_FOLDABLE_DEVICE_STATE__STATE_FLIPPED
+
+        private const val HAS_SCREEN_WAKELOCKS =
+            SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__SCREEN_WAKELOCK_STATUS__SCREEN_WAKELOCK_STATUS_HAS_SCREEN_WAKELOCKS
+        private const val NO_SCREEN_WAKELOCKS =
+            SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__SCREEN_WAKELOCK_STATUS__SCREEN_WAKELOCK_STATUS_NO_WAKELOCKS
     }
 }

@@ -68,6 +68,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Unit tests for {@link android.content.pm.RegisteredServicesCache}
@@ -84,8 +85,8 @@ public class RegisteredServicesCacheUnitTest {
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
-    private final ResolveInfo mResolveInfo1 = new ResolveInfo();
-    private final ResolveInfo mResolveInfo2 = new ResolveInfo();
+    private final TestResolveInfo mResolveInfo1 = new TestResolveInfo();
+    private final TestResolveInfo mResolveInfo2 = new TestResolveInfo();
     private final TestServiceType mTestServiceType1 = new TestServiceType("t1", "value1");
     private final TestServiceType mTestServiceType2 = new TestServiceType("t2", "value2");
     @Mock
@@ -195,13 +196,13 @@ public class RegisteredServicesCacheUnitTest {
 
         reset(testServicesCache);
 
-        testServicesCache.clearServicesForQuerying();
         int u1uid = UserHandle.getUid(U1, UID1);
         assertThat(u1uid).isNotEqualTo(UID1);
 
         final RegisteredServicesCache.ServiceInfo<TestServiceType> serviceInfo2 = newServiceInfo(
                 mTestServiceType1, u1uid, mResolveInfo1.serviceInfo.getComponentName(),
                 1000L /* lastUpdateTime */);
+        mResolveInfo1.setResolveInfoId(U1);
         testServicesCache.addServiceForQuerying(U1, mResolveInfo1, serviceInfo2);
 
         testServicesCache.getAllServices(U1);
@@ -286,7 +287,7 @@ public class RegisteredServicesCacheUnitTest {
     }
 
     @Test
-    public void testClearServiceInfoCachesAfterTimeout() throws Exception {
+    public void testClearServiceInfoCachesForSingleUserAfterTimeout() throws Exception {
         PackageInfo packageInfo1 = createPackageInfo(1000L /* lastUpdateTime */);
         when(mMockPackageManager.getPackageInfoAsUser(eq(mResolveInfo1.serviceInfo.packageName),
                 anyInt(), eq(U0))).thenReturn(packageInfo1);
@@ -316,6 +317,58 @@ public class RegisteredServicesCacheUnitTest {
         verify(testServicesCache, times(1)).parseServiceInfo(eq(mResolveInfo1), eq(1000L));
     }
 
+    @Test
+    public void testClearServiceInfoCachesForMultiUserAfterTimeout() throws Exception {
+        PackageInfo packageInfo1 = createPackageInfo(1000L /* lastUpdateTime */);
+        when(mMockPackageManager.getPackageInfoAsUser(eq(mResolveInfo1.serviceInfo.packageName),
+                anyInt(), eq(U0))).thenReturn(packageInfo1);
+        PackageInfo packageInfo2 = createPackageInfo(2000L /* lastUpdateTime */);
+        when(mMockPackageManager.getPackageInfoAsUser(eq(mResolveInfo2.serviceInfo.packageName),
+                anyInt(), eq(U1))).thenReturn(packageInfo2);
+
+        TestRegisteredServicesCache testServicesCache = spy(
+                new TestRegisteredServicesCache(mMockInjector, null /* serializerAndParser */));
+        final RegisteredServicesCache.ServiceInfo<TestServiceType> serviceInfo1 = newServiceInfo(
+                mTestServiceType1, UID1, mResolveInfo1.serviceInfo.getComponentName(),
+                1000L /* lastUpdateTime */);
+        testServicesCache.addServiceForQuerying(U0, mResolveInfo1, serviceInfo1);
+
+        int u1uid = UserHandle.getUid(U1, UID1);
+        final RegisteredServicesCache.ServiceInfo<TestServiceType> serviceInfo2 = newServiceInfo(
+                mTestServiceType2, u1uid, mResolveInfo2.serviceInfo.getComponentName(),
+                2000L /* lastUpdateTime */);
+        testServicesCache.addServiceForQuerying(U1, mResolveInfo2, serviceInfo2);
+
+        // Don't invoke run on the Runnable for U0 user, and it will not clear the service info of
+        // U0 user. Invoke run on the Runnable for U1 user, and it will just clear the service info
+        // of U1 user.
+        doAnswer(invocation -> {
+            Message message = invocation.getArgument(0);
+            if (!message.obj.equals(Integer.valueOf(U0))) {
+                message.getCallback().run();
+            }
+            return true;
+        }).when(mMockBackgroundHandler).sendMessageAtTime(any(Message.class), anyLong());
+
+        // It will generate the service info of U0 user into cache.
+        testServicesCache.getAllServices(U0);
+        verify(testServicesCache, times(1)).parseServiceInfo(eq(mResolveInfo1), eq(1000L));
+        // It will generate the service info of U1 user into cache.
+        testServicesCache.getAllServices(U1);
+        verify(testServicesCache, times(1)).parseServiceInfo(eq(mResolveInfo2), eq(2000L));
+        verify(mMockBackgroundHandler, times(2)).sendMessageAtTime(any(Message.class), anyLong());
+
+        reset(testServicesCache);
+
+        testServicesCache.invalidateCache(U0);
+        testServicesCache.getAllServices(U0);
+        verify(testServicesCache, never()).parseServiceInfo(eq(mResolveInfo1), eq(1000L));
+
+        testServicesCache.invalidateCache(U1);
+        testServicesCache.getAllServices(U1);
+        verify(testServicesCache, times(1)).parseServiceInfo(eq(mResolveInfo2), eq(2000L));
+    }
+
     private static RegisteredServicesCache.ServiceInfo<TestServiceType> newServiceInfo(
             TestServiceType type, int uid, ComponentName componentName, long lastUpdateTime) {
         final ComponentInfo info = new ComponentInfo();
@@ -324,7 +377,7 @@ public class RegisteredServicesCacheUnitTest {
         return new RegisteredServicesCache.ServiceInfo<>(type, info, componentName, lastUpdateTime);
     }
 
-    private void addServiceInfoIntoResolveInfo(ResolveInfo resolveInfo, String packageName,
+    private void addServiceInfoIntoResolveInfo(TestResolveInfo resolveInfo, String packageName,
             String serviceName) {
         final ServiceInfo serviceInfo = new ServiceInfo();
         serviceInfo.packageName = packageName;
@@ -345,7 +398,7 @@ public class RegisteredServicesCacheUnitTest {
         static final String SERVICE_INTERFACE = "RegisteredServicesCacheUnitTest";
         static final String SERVICE_META_DATA = "RegisteredServicesCacheUnitTest";
         static final String ATTRIBUTES_NAME = "test";
-        private SparseArray<Map<ResolveInfo, ServiceInfo<TestServiceType>>> mServices =
+        private SparseArray<Map<TestResolveInfo, ServiceInfo<TestServiceType>>> mServices =
                 new SparseArray<>();
 
         public TestRegisteredServicesCache(Injector<TestServiceType> injector,
@@ -362,14 +415,14 @@ public class RegisteredServicesCacheUnitTest {
 
         @Override
         protected List<ResolveInfo> queryIntentServices(int userId) {
-            Map<ResolveInfo, ServiceInfo<TestServiceType>> map = mServices.get(userId,
-                    new HashMap<ResolveInfo, ServiceInfo<TestServiceType>>());
+            Map<TestResolveInfo, ServiceInfo<TestServiceType>> map = mServices.get(userId,
+                    new HashMap<TestResolveInfo, ServiceInfo<TestServiceType>>());
             return new ArrayList<>(map.keySet());
         }
 
-        void addServiceForQuerying(int userId, ResolveInfo resolveInfo,
+        void addServiceForQuerying(int userId, TestResolveInfo resolveInfo,
                 ServiceInfo<TestServiceType> serviceInfo) {
-            Map<ResolveInfo, ServiceInfo<TestServiceType>> map = mServices.get(userId);
+            Map<TestResolveInfo, ServiceInfo<TestServiceType>> map = mServices.get(userId);
             if (map == null) {
                 map = new HashMap<>();
                 mServices.put(userId, map);
@@ -377,16 +430,12 @@ public class RegisteredServicesCacheUnitTest {
             map.put(resolveInfo, serviceInfo);
         }
 
-        void clearServicesForQuerying() {
-            mServices.clear();
-        }
-
         @Override
         protected ServiceInfo<TestServiceType> parseServiceInfo(ResolveInfo resolveInfo,
                 long lastUpdateTime) throws XmlPullParserException, IOException {
             int size = mServices.size();
             for (int i = 0; i < size; i++) {
-                Map<ResolveInfo, ServiceInfo<TestServiceType>> map = mServices.valueAt(i);
+                Map<TestResolveInfo, ServiceInfo<TestServiceType>> map = mServices.valueAt(i);
                 ServiceInfo<TestServiceType> serviceInfo = map.get(resolveInfo);
                 if (serviceInfo != null) {
                     return serviceInfo;
@@ -398,6 +447,22 @@ public class RegisteredServicesCacheUnitTest {
         @Override
         public void onUserRemoved(int userId) {
             super.onUserRemoved(userId);
+        }
+    }
+
+    /**
+     * Create different hash code with the same {@link android.content.pm.ResolveInfo} for testing.
+     */
+    public static class TestResolveInfo extends ResolveInfo {
+        int mResolveInfoId = 0;
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mResolveInfoId, serviceInfo);
+        }
+
+        public void setResolveInfoId(int resolveInfoId) {
+            mResolveInfoId = resolveInfoId;
         }
     }
 }

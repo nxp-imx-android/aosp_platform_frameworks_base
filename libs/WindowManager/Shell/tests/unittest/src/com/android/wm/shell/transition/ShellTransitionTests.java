@@ -37,6 +37,7 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.TransitionInfo.FLAG_DISPLAY_HAS_ALERT_WINDOWS;
 import static android.window.TransitionInfo.FLAG_IS_DISPLAY;
+import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static android.window.TransitionInfo.FLAG_SYNC;
 import static android.window.TransitionInfo.FLAG_TRANSLUCENT;
 
@@ -1740,6 +1741,53 @@ public class ShellTransitionTests extends ShellTestCase {
                 transitionAnimation, false);
         verify(transitionAnimation).loadDefaultAnimationAttr(
                 eq(R.styleable.WindowAnimation_activityCloseEnterAnimation), anyBoolean());
+    }
+
+    @Test
+    public void testTransientHideWithMoveToTop() {
+        Transitions transitions = createTestTransitions();
+        transitions.replaceDefaultHandlerForTest(mDefaultHandler);
+        final TransitionAnimation transitionAnimation = new TransitionAnimation(mContext, false,
+                Transitions.TAG);
+        spyOn(transitionAnimation);
+
+        // Prepare for a TO_BACK transition
+        final RunningTaskInfo taskInfo = createTaskInfo(1);
+        final IBinder closeTransition = new Binder();
+        final SurfaceControl.Transaction closeTransitionFinishT =
+                mock(SurfaceControl.Transaction.class);
+
+        // Start a TO_BACK transition
+        transitions.requestStartTransition(closeTransition,
+                new TransitionRequestInfo(TRANSIT_TO_BACK, null /* trigger */, null /* remote */));
+        TransitionInfo closeInfo = new TransitionInfoBuilder(TRANSIT_TO_BACK)
+                .addChange(TRANSIT_TO_BACK, taskInfo)
+                .build();
+        transitions.onTransitionReady(closeTransition, closeInfo, new StubTransaction(),
+                closeTransitionFinishT);
+
+        // Verify that the transition hides the task surface in the finish transaction
+        verify(closeTransitionFinishT).hide(any());
+
+        // Prepare for a CHANGE transition
+        final IBinder changeTransition = new Binder();
+        final SurfaceControl.Transaction changeTransitionFinishT =
+                mock(SurfaceControl.Transaction.class);
+
+        // Start a CHANGE transition w/ MOVE_TO_FRONT that is merged into the TO_BACK
+        mDefaultHandler.setShouldMerge(changeTransition);
+        transitions.requestStartTransition(changeTransition,
+                new TransitionRequestInfo(TRANSIT_OPEN, null /* trigger */, null /* remote */));
+        TransitionInfo changeInfo = new TransitionInfoBuilder(TRANSIT_OPEN)
+                .addChange(TRANSIT_CHANGE, FLAG_MOVED_TO_TOP, taskInfo)
+                .build();
+        transitions.onTransitionReady(changeTransition, changeInfo, new StubTransaction(),
+                changeTransitionFinishT);
+
+        // Verify that the transition shows the task surface in the finish transaction so that the
+        // when the original transition finishes, the finish transaction does not clobber the
+        // visibility of the merged transition
+        verify(changeTransitionFinishT).show(any());
     }
 
     class TestTransitionHandler implements Transitions.TransitionHandler {

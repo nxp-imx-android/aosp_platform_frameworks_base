@@ -279,9 +279,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      */
     int mTransitFlags;
 
-    /** Whether this container should be boosted at the top of all its siblings. */
-    @VisibleForTesting boolean mNeedsZBoost;
-
     /** Layer used to constrain the animation to a container's stack bounds. */
     SurfaceControl mAnimationBoundsLayer;
 
@@ -1474,14 +1471,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
 
         return stillDeferringRemoval;
-    }
-
-    /** Checks if all windows in an app are all drawn and shows them if needed. */
-    void checkAppWindowsReadyToShow() {
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            final WindowContainer wc = mChildren.get(i);
-            wc.checkAppWindowsReadyToShow();
-        }
     }
 
     /**
@@ -2744,15 +2733,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         for (int j = 0; j < mChildren.size(); ++j) {
             final WindowContainer wc = mChildren.get(j);
             wc.assignChildLayers(t);
-            if (!wc.needsZBoost()) {
-                wc.assignLayer(t, layer++);
-            }
-        }
-        for (int j = 0; j < mChildren.size(); ++j) {
-            final WindowContainer wc = mChildren.get(j);
-            if (wc.needsZBoost()) {
-                wc.assignLayer(t, layer++);
-            }
+            wc.assignLayer(t, layer++);
         }
         if (mOverlayHost != null) {
             mOverlayHost.setLayer(t, layer++);
@@ -2762,16 +2743,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     void assignChildLayers() {
         assignChildLayers(getSyncTransaction());
         scheduleAnimation();
-    }
-
-    boolean needsZBoost() {
-        if (mNeedsZBoost) return true;
-        for (int i = 0; i < mChildren.size(); i++) {
-            if (mChildren.get(i).needsZBoost()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -3114,7 +3085,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     public void onAnimationLeashLost(Transaction t) {
         mLastLayer = -1;
         mAnimationLeash = null;
-        mNeedsZBoost = false;
         reassignLayer(t);
         updateSurfacePosition(t);
     }
@@ -3140,7 +3110,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     protected void onAnimationFinished(@AnimationType int type, AnimationAdapter anim) {
         doAnimationFinished(type, anim);
         mWmService.onAnimationFinished();
-        mNeedsZBoost = false;
     }
 
     /**

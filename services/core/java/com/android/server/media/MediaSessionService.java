@@ -192,9 +192,15 @@ public class MediaSessionService extends SystemService implements Monitor {
     private final Map<Integer, Set<MediaSessionRecordImpl>> mUserEngagedSessionsForFgs =
             new HashMap<>();
 
-    /* Maps uid with all media notifications associated to it */
+    /**
+     * Maps UIDs to their associated media notifications: UID -> (Notification ID ->
+     * {@link android.service.notification.StatusBarNotification}).
+     * Each UID maps to a collection of notifications, identified by their
+     * {@link android.service.notification.StatusBarNotification#getId()}.
+     */
     @GuardedBy("mLock")
-    private final Map<Integer, Set<StatusBarNotification>> mMediaNotifications = new HashMap<>();
+    private final Map<Integer, Map<String, StatusBarNotification>> mMediaNotifications =
+            new HashMap<>();
 
     // The FullUserRecord of the current users. (i.e. The foreground user that isn't a profile)
     // It's always not null after the MediaSessionService is started.
@@ -737,7 +743,8 @@ public class MediaSessionService extends SystemService implements Monitor {
         }
         synchronized (mLock) {
             int uid = mediaSessionRecord.getUid();
-            for (StatusBarNotification sbn : mMediaNotifications.getOrDefault(uid, Set.of())) {
+            for (StatusBarNotification sbn : mMediaNotifications.getOrDefault(uid,
+                    Map.of()).values()) {
                 if (mediaSessionRecord.isLinkedToNotification(sbn.getNotification())) {
                     setFgsActiveLocked(mediaSessionRecord, sbn);
                     return;
@@ -771,7 +778,7 @@ public class MediaSessionService extends SystemService implements Monitor {
             int uid, MediaSessionRecordImpl record) {
         synchronized (mLock) {
             for (StatusBarNotification sbn :
-                    mMediaNotifications.getOrDefault(uid, Set.of())) {
+                    mMediaNotifications.getOrDefault(uid, Map.of()).values()) {
                 if (record.isLinkedToNotification(sbn.getNotification())) {
                     return sbn;
                 }
@@ -794,7 +801,8 @@ public class MediaSessionService extends SystemService implements Monitor {
             for (MediaSessionRecordImpl record :
                     mUserEngagedSessionsForFgs.getOrDefault(uid, Set.of())) {
                 for (StatusBarNotification sbn :
-                        mMediaNotifications.getOrDefault(uid, Set.of())) {
+                        mMediaNotifications.getOrDefault(uid, Map.of()).values()) {
+                    //
                     if (record.isLinkedToNotification(sbn.getNotification())) {
                         // A user engaged session linked with a media notification is found.
                         // We shouldn't call stop FGS in this case.
@@ -3262,8 +3270,12 @@ public class MediaSessionService extends SystemService implements Monitor {
                 return;
             }
             synchronized (mLock) {
-                mMediaNotifications.putIfAbsent(uid, new HashSet<>());
-                mMediaNotifications.get(uid).add(sbn);
+                Map<String, StatusBarNotification> notifications = mMediaNotifications.get(uid);
+                if (notifications == null) {
+                    notifications = new HashMap<>();
+                    mMediaNotifications.put(uid, notifications);
+                }
+                notifications.put(sbn.getKey(), sbn);
                 MediaSessionRecordImpl userEngagedRecord =
                         getUserEngagedMediaSessionRecordForNotification(uid, postedNotification);
                 if (userEngagedRecord != null) {
@@ -3287,10 +3299,10 @@ public class MediaSessionService extends SystemService implements Monitor {
                 return;
             }
             synchronized (mLock) {
-                Set<StatusBarNotification> uidMediaNotifications = mMediaNotifications.get(uid);
-                if (uidMediaNotifications != null) {
-                    uidMediaNotifications.remove(sbn);
-                    if (uidMediaNotifications.isEmpty()) {
+                Map<String, StatusBarNotification> notifications = mMediaNotifications.get(uid);
+                if (notifications != null) {
+                    notifications.remove(sbn.getKey());
+                    if (notifications.isEmpty()) {
                         mMediaNotifications.remove(uid);
                     }
                 }

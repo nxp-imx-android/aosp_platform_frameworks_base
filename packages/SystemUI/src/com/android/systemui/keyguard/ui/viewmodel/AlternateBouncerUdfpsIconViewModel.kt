@@ -106,7 +106,10 @@ constructor(
         }
 
     fun onTapped() {
-        statusBarKeyguardViewManager.showPrimaryBouncer(/* scrimmed */ true)
+        statusBarKeyguardViewManager.showPrimaryBouncer(
+            /* scrimmed */ true,
+            "AlternateBouncerUdfpsIconViewModel#onTapped",
+        )
     }
 
     val bgColor: Flow<Int> = deviceEntryBackgroundViewModel.color
