@@ -2039,8 +2039,8 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         } else if (Flags.refactorInsetsController()) {
             if ((typesToReport & ime()) != 0 && mImeSourceConsumer != null) {
                 InsetsSourceControl control = mImeSourceConsumer.getControl();
-                if (control != null && control.getLeash() == null) {
-                    // If the IME was requested twice, and we didn't receive the controls
+                if (control == null || control.getLeash() == null) {
+                    // If the IME was requested to show twice, and we didn't receive the controls
                     // yet, this request will not continue. It should be cancelled here, as
                     // it would time out otherwise.
                     ImeTracker.forLogging().onCancelled(statsToken,
