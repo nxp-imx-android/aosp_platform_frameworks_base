@@ -996,3 +996,13 @@ flag {
     description: "Enables the home to be shown behind the desktop."
     bug: "375644149"
 }
+
+flag {
+    name: "enable_desktop_ime_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to handle IME interactions in desktop windowing."
+    bug: "388570293"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
