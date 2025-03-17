@@ -508,7 +508,11 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                     }
                     mShouldStartOnNextMoveEvent = false;
                 } else {
-                    mShouldStartOnNextMoveEvent = true;
+                    if (predictiveBackDelayWmTransition()) {
+                        onGestureStarted(touchX, touchY, swipeEdge);
+                    } else {
+                        mShouldStartOnNextMoveEvent = true;
+                    }
                 }
             }
         } else if (keyAction == MotionEvent.ACTION_MOVE) {
