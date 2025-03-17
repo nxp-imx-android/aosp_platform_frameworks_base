@@ -471,6 +471,51 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
+    fun onTouch_withMouseOnEndSideIcons_flagOn_propagatedToShadeDisplayPolicy() {
+        val view = createViewMock()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            controller = createAndInitController(view)
+        }
+        val event = getActionUpEventFromSource(InputDevice.SOURCE_MOUSE)
+
+        val statusContainer = view.requireViewById<View>(R.id.system_icons)
+        statusContainer.dispatchTouchEvent(event)
+
+        verify(statusBarTouchShadeDisplayPolicy).onStatusBarTouched(eq(event), any())
+    }
+
+    @Test
+    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
+    fun onTouch_withMouseOnStartSideIcons_flagOn_propagatedToShadeDisplayPolicy() {
+        val view = createViewMock()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            controller = createAndInitController(view)
+        }
+        val event = getActionUpEventFromSource(InputDevice.SOURCE_MOUSE)
+
+        val statusContainer = view.requireViewById<View>(R.id.status_bar_start_side_content)
+        statusContainer.dispatchTouchEvent(event)
+
+        verify(statusBarTouchShadeDisplayPolicy).onStatusBarTouched(eq(event), any())
+    }
+
+    @Test
+    @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
+    fun onTouch_withMouseOnSystemIcons_flagOff_notPropagatedToShadeDisplayPolicy() {
+        val view = createViewMock()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            controller = createAndInitController(view)
+        }
+        val event = getActionUpEventFromSource(InputDevice.SOURCE_MOUSE)
+
+        val statusContainer = view.requireViewById<View>(R.id.system_icons)
+        statusContainer.dispatchTouchEvent(event)
+
+        verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarTouched(eq(event), any())
+    }
+
+    @Test
     fun shadeIsExpandedOnStatusIconMouseClick() {
         val view = createViewMock()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
