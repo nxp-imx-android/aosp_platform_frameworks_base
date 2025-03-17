@@ -20,7 +20,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.view.MotionEvent
+import android.view.View
+import android.widget.Button
 import android.widget.SeekBar
+import android.widget.TextView
 import com.android.systemui.haptics.slider.HapticSlider
 import com.android.systemui.haptics.slider.HapticSliderPlugin
 import com.android.systemui.haptics.slider.HapticSliderViewBinder
@@ -45,6 +48,7 @@ class RearDisplayInnerDialogDelegate
 internal constructor(
     private val systemUIDialogFactory: SystemUIDialog.Factory,
     @Assisted private val rearDisplayContext: Context,
+    @Assisted private val touchExplorationEnabled: Boolean,
     private val vibratorHelper: VibratorHelper,
     private val msdlPlayer: MSDLPlayer,
     private val systemClock: SystemClock,
@@ -82,6 +86,7 @@ internal constructor(
         fun create(
             rearDisplayContext: Context,
             onCanceledRunnable: Runnable,
+            touchExplorationEnabled: Boolean,
         ): RearDisplayInnerDialogDelegate
     }
 
@@ -95,11 +100,32 @@ internal constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(dialog: SystemUIDialog, savedInstanceState: Bundle?) {
+
         dialog.apply {
             setContentView(R.layout.activity_rear_display_enabled)
             setCanceledOnTouchOutside(false)
 
+            requireViewById<Button>(R.id.cancel_button).let { it ->
+                if (!touchExplorationEnabled) {
+                    return@let
+                }
+
+                it.visibility = View.VISIBLE
+                it.setOnClickListener { onCanceledRunnable.run() }
+            }
+
+            requireViewById<TextView>(R.id.seekbar_instructions).let { it ->
+                if (touchExplorationEnabled) {
+                    it.visibility = View.GONE
+                }
+            }
+
             requireViewById<SeekBar>(R.id.seekbar).let { it ->
+                if (touchExplorationEnabled) {
+                    it.visibility = View.GONE
+                    return@let
+                }
+
                 // Create and bind the HapticSliderPlugin
                 val hapticSliderPlugin =
                     HapticSliderPlugin(
