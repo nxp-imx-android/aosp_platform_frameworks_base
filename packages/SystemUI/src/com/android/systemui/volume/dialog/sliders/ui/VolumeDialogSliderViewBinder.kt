@@ -92,6 +92,8 @@ private fun VolumeDialogSlider(
         SliderDefaults.colors(
             activeTickColor = MaterialTheme.colorScheme.surfaceContainerHighest,
             inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            disabledActiveTickColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
         )
     val collectedSliderStateModel by viewModel.state.collectAsStateWithLifecycle(null)
     val sliderStateModel = collectedSliderStateModel ?: return
