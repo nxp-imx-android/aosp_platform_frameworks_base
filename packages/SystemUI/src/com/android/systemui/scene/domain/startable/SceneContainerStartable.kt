@@ -195,7 +195,8 @@ constructor(
                     return
                 }
 
-                printSection("Scene state") {
+                printSection("Framework state") {
+                    println("isVisible", sceneInteractor.isVisible.value)
                     println("currentScene", sceneInteractor.currentScene.value.debugName)
                     println(
                         "currentOverlays",
