@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker.utils
 
 import android.app.Instrumentation
+import android.app.UiAutomation
 import android.content.Context
 import android.graphics.Point
 import android.os.SystemClock
@@ -349,13 +350,40 @@ object SplitScreenUtils {
         )
     }
 
-    fun doubleTapDividerToSwitch(device: UiDevice) {
+    fun doubleTapDividerToSwitch(device: UiDevice, uiAutomation: UiAutomation) {
         val dividerBar = device.wait(Until.findObject(dividerBarSelector), TIMEOUT_MS)
-        val interval =
-            (ViewConfiguration.getDoubleTapTimeout() + ViewConfiguration.getDoubleTapMinTime()) / 2
-        dividerBar.click()
-        SystemClock.sleep(interval.toLong())
-        dividerBar.click()
+        val x = dividerBar.visibleCenter.x.toFloat()
+        val y = dividerBar.visibleCenter.y.toFloat()
+
+        // To send a double-tap action, we set a DOWN event, then UP, then DOWN, then, UP.
+        val startTime = SystemClock.uptimeMillis()
+        val timeOfFirstUp = startTime + ViewConfiguration.getTapTimeout()
+        // Between the two taps, we wait an arbitrary amount of time between the min and max times
+        // for a double-tap.
+        val timeOfSecondDown = timeOfFirstUp + ViewConfiguration.getDoubleTapMinTime() +
+                ((ViewConfiguration.getDoubleTapTimeout() -
+                        ViewConfiguration.getDoubleTapMinTime()) / 4)
+        val timeOfSecondUp = timeOfSecondDown + ViewConfiguration.getTapTimeout()
+
+        val downEvent = MotionEvent.obtain(startTime, startTime, MotionEvent.ACTION_DOWN, x, y,
+            0 /* metaState */)
+        downEvent.setSource(InputDevice.SOURCE_TOUCHSCREEN)
+        uiAutomation.injectInputEvent(downEvent, true)
+
+        val upEvent = MotionEvent.obtain(startTime, timeOfFirstUp, MotionEvent.ACTION_UP, x, y,
+            0 /* metaState */)
+        upEvent.setSource(InputDevice.SOURCE_TOUCHSCREEN)
+        uiAutomation.injectInputEvent(upEvent, true)
+
+        val downEvent2 = MotionEvent.obtain(timeOfSecondDown, timeOfSecondDown,
+            MotionEvent.ACTION_DOWN, x, y, 0 /* metaState */)
+        downEvent2.setSource(InputDevice.SOURCE_TOUCHSCREEN)
+        uiAutomation.injectInputEvent(downEvent2, true)
+
+        val upEvent2 = MotionEvent.obtain(timeOfSecondDown, timeOfSecondUp, MotionEvent.ACTION_UP,
+            x, y, 0 /* metaState */)
+        upEvent2.setSource(InputDevice.SOURCE_TOUCHSCREEN)
+        uiAutomation.injectInputEvent(upEvent2, true)
     }
 
     fun copyContentInSplit(
