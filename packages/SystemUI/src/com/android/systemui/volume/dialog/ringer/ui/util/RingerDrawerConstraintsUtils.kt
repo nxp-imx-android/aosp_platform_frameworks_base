@@ -111,7 +111,7 @@ private fun ConstraintSet.adjustOpenConstraintsForDrawer(
                             view.id,
                             ConstraintSet.START,
                             motionLayout.context.resources.getDimensionPixelSize(
-                                R.dimen.volume_dialog_ringer_drawer_margin
+                                R.dimen.volume_dialog_background_margin
                             ),
                         )
                     }
@@ -121,7 +121,7 @@ private fun ConstraintSet.adjustOpenConstraintsForDrawer(
                             view.id,
                             ConstraintSet.END,
                             motionLayout.context.resources.getDimensionPixelSize(
-                                R.dimen.volume_dialog_components_spacing
+                                R.dimen.volume_dialog_ringer_drawer_buttons_spacing
                             ),
                         )
                     } else {
@@ -140,7 +140,7 @@ private fun ConstraintSet.adjustOpenConstraintsForDrawer(
                             view.id,
                             ConstraintSet.BOTTOM,
                             motionLayout.context.resources.getDimensionPixelSize(
-                                R.dimen.volume_dialog_components_spacing
+                                R.dimen.volume_dialog_ringer_drawer_buttons_spacing
                             ),
                         )
                     } else {
@@ -158,10 +158,10 @@ private fun ConstraintSet.adjustOpenConstraintsForDrawer(
                             R.dimen.volume_dialog_ringer_drawer_button_size
                         ) * (motionLayout.childCount - 1)) +
                             (motionLayout.context.resources.getDimensionPixelSize(
-                                R.dimen.volume_dialog_ringer_drawer_margin
+                                R.dimen.volume_dialog_background_margin
                             ) * 2) +
                             (motionLayout.context.resources.getDimensionPixelSize(
-                                R.dimen.volume_dialog_components_spacing
+                                R.dimen.volume_dialog_ringer_drawer_buttons_spacing
                             ) * (motionLayout.childCount - 2))
 
                     ORIENTATION_PORTRAIT ->
