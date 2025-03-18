@@ -18,6 +18,7 @@ package com.android.wm.shell.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -230,5 +231,25 @@ public class DisplayControllerTests extends ShellTestCase {
                 mController.getDisplayLayout(DISPLAY_ID_0).globalBoundsDp());
         assertEquals(DISPLAY_ABS_BOUNDS_1,
                 mController.getDisplayLayout(DISPLAY_ID_1).globalBoundsDp());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG)
+    public void onDisplayConfigurationChanged_reInitDisplayLayout()
+            throws RemoteException {
+        ExtendedMockito.doReturn(true)
+                .when(() -> DesktopModeStatus.canEnterDesktopMode(any()));
+        mController.onInit();
+        mController.addDisplayWindowListener(mListener);
+
+        mCapturedTopologyListener.accept(mMockTopology);
+
+        DisplayLayout displayLayoutBefore = mController.getDisplayLayout(DISPLAY_ID_0);
+        mDisplayContainerListener.onDisplayConfigurationChanged(DISPLAY_ID_0, new Configuration());
+        DisplayLayout displayLayoutAfter = mController.getDisplayLayout(DISPLAY_ID_0);
+
+        assertNotSame(displayLayoutBefore, displayLayoutAfter);
+        assertEquals(DISPLAY_ABS_BOUNDS_0,
+                mController.getDisplayLayout(DISPLAY_ID_0).globalBoundsDp());
     }
 }
