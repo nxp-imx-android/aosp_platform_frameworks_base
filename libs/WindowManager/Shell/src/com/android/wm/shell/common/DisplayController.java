@@ -287,7 +287,13 @@ public class DisplayController {
                     ? mContext
                     : mContext.createDisplayContext(display);
             final Context context = perDisplayContext.createConfigurationContext(newConfig);
-            dr.setDisplayLayout(context, new DisplayLayout(context, display));
+            final DisplayLayout displayLayout = new DisplayLayout(context, display);
+            if (mDisplayTopology != null) {
+                displayLayout.setGlobalBoundsDp(
+                        mDisplayTopology.getAbsoluteBounds().get(
+                                displayId, displayLayout.globalBoundsDp()));
+            }
+            dr.setDisplayLayout(context, displayLayout);
             for (int i = 0; i < mDisplayChangedListeners.size(); ++i) {
                 mDisplayChangedListeners.get(i).onDisplayConfigurationChanged(
                         displayId, newConfig);
