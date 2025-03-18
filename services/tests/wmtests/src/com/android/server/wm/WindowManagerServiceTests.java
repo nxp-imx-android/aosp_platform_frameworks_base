@@ -1486,6 +1486,46 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_FIX_HIDE_OVERLAY_API)
+    public void testUpdateOverlayWindows_multipleWindowsFromSameUid_idempotent() {
+        // Deny INTERNAL_SYSTEM_WINDOW permission for WindowSession so that the saw isn't allowed to
+        // show despite hideNonSystemOverlayWindows.
+        doReturn(PackageManager.PERMISSION_DENIED).when(mWm.mContext).checkPermission(
+                eq(android.Manifest.permission.INTERNAL_SYSTEM_WINDOW), anyInt(), anyInt());
+
+        WindowState saw =
+                newWindowBuilder("saw", TYPE_APPLICATION_OVERLAY).setOwnerId(10123).build();
+        saw.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
+        saw.mWinAnimator.mSurfaceControl = mock(SurfaceControl.class);
+        assertThat(saw.mSession.mCanAddInternalSystemWindow).isFalse();
+
+        WindowState app1 = newWindowBuilder("app1", TYPE_APPLICATION).setOwnerId(10456).build();
+        spyOn(app1);
+        doReturn(true).when(app1).hideNonSystemOverlayWindowsWhenVisible();
+
+        WindowState app2 = newWindowBuilder("app2", TYPE_APPLICATION).setOwnerId(10456).build();
+        spyOn(app2);
+        doReturn(true).when(app2).hideNonSystemOverlayWindowsWhenVisible();
+
+        makeWindowVisible(saw, app1, app2);
+        assertThat(saw.isVisibleByPolicy()).isTrue();
+
+        // Two hideNonSystemOverlayWindows windows: SAW is hidden.
+        mWm.updateNonSystemOverlayWindowsVisibilityIfNeeded(app1, true);
+        mWm.updateNonSystemOverlayWindowsVisibilityIfNeeded(app2, true);
+        assertThat(saw.isVisibleByPolicy()).isFalse();
+
+        // Marking the same window hidden twice: SAW is still hidden.
+        mWm.updateNonSystemOverlayWindowsVisibilityIfNeeded(app1, false);
+        mWm.updateNonSystemOverlayWindowsVisibilityIfNeeded(app1, false);
+        assertThat(saw.isVisibleByPolicy()).isFalse();
+
+        // Marking the remaining window hidden: SAW can be shown again.
+        mWm.updateNonSystemOverlayWindowsVisibilityIfNeeded(app2, false);
+        assertThat(saw.isVisibleByPolicy()).isTrue();
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_REPARENT_WINDOW_TOKEN_API)
     public void reparentWindowContextToDisplayArea_newDisplay_reparented() {
         final WindowToken windowToken = createTestClientWindowToken(TYPE_NOTIFICATION_SHADE,

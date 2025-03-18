@@ -8835,48 +8835,45 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     void updateNonSystemOverlayWindowsVisibilityIfNeeded(WindowState win, boolean surfaceShown) {
-        if (!win.hideNonSystemOverlayWindowsWhenVisible()
-                && !mHidingNonSystemOverlayWindows.contains(win)) {
+        final boolean effective = (surfaceShown && win.hideNonSystemOverlayWindowsWhenVisible());
+        if (effective == mHidingNonSystemOverlayWindows.contains(win)) {
             return;
         }
-        final boolean systemAlertWindowsHidden = !mHidingNonSystemOverlayWindows.isEmpty();
-        final int numUIDsRequestHidingPreUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
-        if (surfaceShown && win.hideNonSystemOverlayWindowsWhenVisible()) {
-            if (!mHidingNonSystemOverlayWindows.contains(win)) {
-                mHidingNonSystemOverlayWindows.add(win);
-                int uid = win.getOwningUid();
-                int count = mHidingNonSystemOverlayWindowsCountPerUid.getOrDefault(uid, 0);
-                mHidingNonSystemOverlayWindowsCountPerUid.put(uid, count + 1);
-            }
+
+        if (effective) {
+            mHidingNonSystemOverlayWindows.add(win);
         } else {
             mHidingNonSystemOverlayWindows.remove(win);
-            int uid = win.getOwningUid();
-            int count = mHidingNonSystemOverlayWindowsCountPerUid.getOrDefault(uid, 0);
-            if (count <= 1) {
-                mHidingNonSystemOverlayWindowsCountPerUid.remove(win.getOwningUid());
-            } else {
-                mHidingNonSystemOverlayWindowsCountPerUid.put(uid, count - 1);
-            }
         }
-        final boolean hideSystemAlertWindows = !mHidingNonSystemOverlayWindows.isEmpty();
-        final int numUIDSRequestHidingPostUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
+
+        final boolean changed;
         if (Flags.fixHideOverlayApi()) {
-            if (numUIDSRequestHidingPostUpdate == numUIDsRequestHidingPreUpdate) {
-                return;
+            final int uid = win.getOwningUid();
+            final int numUIDsPreUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
+            final int newCount = mHidingNonSystemOverlayWindowsCountPerUid.getOrDefault(uid, 0)
+                    + (effective ? +1 : -1);
+            if (newCount <= 0) {
+                mHidingNonSystemOverlayWindowsCountPerUid.remove(uid);
+            } else {
+                mHidingNonSystemOverlayWindowsCountPerUid.put(uid, newCount);
             }
-            // The visibility of SAWs needs to be refreshed only when the number of uids that
-            // request hiding SAWs changes 0->1, 1->0, 1->2 or 2->1.
-            if (numUIDSRequestHidingPostUpdate != 1 && numUIDsRequestHidingPreUpdate != 1) {
-                return;
-            }
+            final int numUIDsPostUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
+            // The visibility of SAWs needs to be refreshed when the number of uids that
+            // request hiding SAWs changes between "0", "1", or "2+".
+            changed = (numUIDsPostUpdate != numUIDsPreUpdate)
+                    && (numUIDsPostUpdate <= 1 || numUIDsPreUpdate <= 1);
         } else {
-            if (systemAlertWindowsHidden == hideSystemAlertWindows) {
-                return;
-            }
+            // The visibility of SAWs needs to be refreshed when the number of windows that
+            // request hiding SAWs changes between "0" or "1+".
+            changed = (effective && mHidingNonSystemOverlayWindows.size() == 1)
+                    || (!effective && mHidingNonSystemOverlayWindows.isEmpty());
         }
-        mRoot.forAllWindows((w) -> {
-            w.setForceHideNonSystemOverlayWindowIfNeeded(shouldHideNonSystemOverlayWindow(w));
-        }, false /* traverseTopToBottom */);
+
+        if (changed) {
+            mRoot.forAllWindows((w) -> {
+                w.setForceHideNonSystemOverlayWindowIfNeeded(shouldHideNonSystemOverlayWindow(w));
+            }, false /* traverseTopToBottom */);
+        }
     }
 
     /** Called from Accessibility Controller to apply magnification spec */
