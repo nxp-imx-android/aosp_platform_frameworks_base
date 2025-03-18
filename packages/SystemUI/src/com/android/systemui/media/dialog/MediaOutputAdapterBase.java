@@ -237,8 +237,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                                 clickListener = v -> onItemClick(v, device);
                             }
                         } else {
-                            deviceStatusIcon = getDeviceStatusIcon(device,
-                                    device.hasOngoingSession());
+                            deviceStatusIcon = getDeviceStatusIcon(device);
                             clickListener = getClickListenerBasedOnSelectionBehavior(device);
                         }
                         deviceDisabled = clickListener == null;
@@ -302,12 +301,8 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
         }
 
         @Nullable
-        private Drawable getDeviceStatusIcon(MediaDevice device, boolean hasOngoingSession) {
-            if (hasOngoingSession) {
-                return mContext.getDrawable(R.drawable.ic_sound_bars_anim);
-            } else {
-                return Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext);
-            }
+        private Drawable getDeviceStatusIcon(MediaDevice device) {
+            return Api34Impl.getDeviceStatusIconBasedOnSelectionBehavior(device, mContext);
         }
 
         protected void onExpandGroupButtonClicked() {
