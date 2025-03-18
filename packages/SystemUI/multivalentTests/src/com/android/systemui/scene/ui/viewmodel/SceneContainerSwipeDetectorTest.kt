@@ -32,6 +32,8 @@ import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.Resolved.LeftE
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.Resolved.LeftHalf
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.Resolved.RightEdge
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.Resolved.RightHalf
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.Resolved.TopEdgeLeftHalf
+import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.Resolved.TopEdgeRightHalf
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.StartEdge
 import com.android.systemui.scene.ui.viewmodel.SceneContainerArea.StartHalf
 import com.google.common.truth.Truth.assertThat
@@ -55,9 +57,9 @@ class SceneContainerSwipeDetectorTest : SysuiTestCase() {
     }
 
     @Test
-    fun source_swipeVerticallyOnTopLeft_detectsLeftHalf() {
+    fun source_swipeVerticallyOnTopLeft_detectsTopEdgeLeftHalf() {
         val detectedEdge = swipeVerticallyFrom(x = 1, y = edgeSize - 1)
-        assertThat(detectedEdge).isEqualTo(LeftHalf)
+        assertThat(detectedEdge).isEqualTo(TopEdgeLeftHalf)
     }
 
     @Test
@@ -69,7 +71,7 @@ class SceneContainerSwipeDetectorTest : SysuiTestCase() {
     @Test
     fun source_swipeVerticallyOnTopRight_detectsRightHalf() {
         val detectedEdge = swipeVerticallyFrom(x = screenWidth - 1, y = edgeSize - 1)
-        assertThat(detectedEdge).isEqualTo(RightHalf)
+        assertThat(detectedEdge).isEqualTo(TopEdgeRightHalf)
     }
 
     @Test
@@ -79,14 +81,26 @@ class SceneContainerSwipeDetectorTest : SysuiTestCase() {
     }
 
     @Test
-    fun source_swipeVerticallyToLeftOfSplit_detectsLeftHalf() {
+    fun source_swipeVerticallyOnTopEdge_ToLeftOfSplit_detectsTopEdgeLeftHalf() {
         val detectedEdge = swipeVerticallyFrom(x = (screenWidth / 2) - 1, y = edgeSize - 1)
+        assertThat(detectedEdge).isEqualTo(TopEdgeLeftHalf)
+    }
+
+    @Test
+    fun source_swipeVerticallyBelowTopEdge_ToLeftOfSplit_detectsLeftHalf() {
+        val detectedEdge = swipeVerticallyFrom(x = (screenWidth / 2) - 1, y = edgeSize + 1)
         assertThat(detectedEdge).isEqualTo(LeftHalf)
     }
 
     @Test
-    fun source_swipeVerticallyToRightOfSplit_detectsRightHalf() {
+    fun source_swipeVerticallyOnTopEdge_toRightOfSplit_detectsTopEdgeRightHalf() {
         val detectedEdge = swipeVerticallyFrom(x = (screenWidth / 2) + 1, y = edgeSize - 1)
+        assertThat(detectedEdge).isEqualTo(TopEdgeRightHalf)
+    }
+
+    @Test
+    fun source_swipeVerticallyBelowTopEdge_toRightOfSplit_detectsRightHalf() {
+        val detectedEdge = swipeVerticallyFrom(x = (screenWidth / 2) + 1, y = edgeSize + 1)
         assertThat(detectedEdge).isEqualTo(RightHalf)
     }
 

@@ -76,7 +76,7 @@ class NotificationsShadeOverlayActionsViewModelTest : SysuiTestCase() {
             underTest.activateIn(this)
 
             val action =
-                (actions?.get(Swipe.Down(fromSource = SceneContainerArea.EndHalf))
+                (actions?.get(Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf))
                     as? ReplaceByOverlay)
             assertThat(action?.overlay).isEqualTo(Overlays.QuickSettingsShade)
         }
