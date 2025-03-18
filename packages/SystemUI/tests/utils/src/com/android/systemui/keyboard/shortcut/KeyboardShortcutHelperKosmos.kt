@@ -25,11 +25,13 @@ import android.view.windowManager
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.keyboard.shortcut.data.repository.AppLaunchDataRepository
+import com.android.systemui.keyboard.shortcut.data.repository.AppsShortcutCategoryRepository
 import com.android.systemui.keyboard.shortcut.data.repository.CustomInputGesturesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.CustomShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.DefaultShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.InputGestureDataAdapter
 import com.android.systemui.keyboard.shortcut.data.repository.InputGestureMaps
+import com.android.systemui.keyboard.shortcut.data.repository.ShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutCategoriesUtils
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperCustomizationModeRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperInputDeviceRepository
@@ -192,14 +194,18 @@ val Kosmos.shortcutHelperStateInteractor by
         )
     }
 
+var Kosmos.appsShortcutCategoryRepository: ShortcutCategoriesRepository by
+    Kosmos.Fixture { AppsShortcutCategoryRepository(userVisibleAppsRepository, applicationContext) }
+
 val Kosmos.shortcutHelperCategoriesInteractor by
     Kosmos.Fixture {
         ShortcutHelperCategoriesInteractor(
             context = applicationContext,
             defaultShortcutCategoriesRepository,
-        ) {
-            customShortcutCategoriesRepository
-        }
+            customCategoriesRepositoryLazy = { customShortcutCategoriesRepository },
+            appsShortcutCategoryRepositoryLazy = { appsShortcutCategoryRepository },
+            customizationModeInteractor = shortcutHelperCustomizationModeInteractor,
+        )
     }
 
 val Kosmos.shortcutHelperCustomizationModeRepository by
