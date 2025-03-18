@@ -20,7 +20,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.PowerManager
-import android.os.SystemClock
 import android.util.ArraySet
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -54,6 +53,7 @@ import com.android.systemui.communal.ui.compose.CommunalContainer
 import com.android.systemui.communal.ui.compose.CommunalContent
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.util.CommunalColors
+import com.android.systemui.communal.util.UserTouchActivityNotifier
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -101,6 +101,7 @@ constructor(
     private val notificationStackScrollLayoutController: NotificationStackScrollLayoutController,
     private val keyguardMediaController: KeyguardMediaController,
     private val lockscreenSmartspaceController: LockscreenSmartspaceController,
+    private val userTouchActivityNotifier: UserTouchActivityNotifier,
     @CommunalTouchLog logBuffer: LogBuffer,
     private val userActivityNotifier: UserActivityNotifier,
 ) : LifecycleOwner {
@@ -646,8 +647,8 @@ constructor(
             // result in broken states.
             return true
         }
+        var handled = hubShowing
         try {
-            var handled = false
             if (!touchTakenByKeyguardGesture) {
                 communalContainerWrapper?.dispatchTouchEvent(ev) {
                     if (it) {
@@ -655,18 +656,10 @@ constructor(
                     }
                 }
             }
-            return handled || hubShowing
+            return handled
         } finally {
-            if (Flags.bouncerUiRevamp()) {
-                userActivityNotifier.notifyUserActivity(
-                    event = PowerManager.USER_ACTIVITY_EVENT_TOUCH
-                )
-            } else {
-                powerManager.userActivity(
-                    SystemClock.uptimeMillis(),
-                    PowerManager.USER_ACTIVITY_EVENT_TOUCH,
-                    0,
-                )
+            if (handled) {
+                userTouchActivityNotifier.notifyActivity(ev)
             }
         }
     }
