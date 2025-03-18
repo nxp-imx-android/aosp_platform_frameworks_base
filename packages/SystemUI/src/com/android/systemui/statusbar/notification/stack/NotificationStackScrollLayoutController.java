@@ -97,6 +97,7 @@ import com.android.systemui.statusbar.notification.ColorUpdateLogger;
 import com.android.systemui.statusbar.notification.DynamicPrivacyController;
 import com.android.systemui.statusbar.notification.LaunchAnimationParameters;
 import com.android.systemui.statusbar.notification.NotificationWakeUpCoordinator;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.EntryWithDismissStats;
 import com.android.systemui.statusbar.notification.collection.NotifCollection;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
@@ -1654,6 +1655,13 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 mVisibilityProvider.obtain(entry, true));
     }
 
+    private DismissedByUserStats getDismissedByUserStats(String entryKey) {
+        return new DismissedByUserStats(
+                DISMISSAL_SHADE,
+                DISMISS_SENTIMENT_NEUTRAL,
+                mVisibilityProvider.obtain(entryKey, true));
+    }
+
     private View getGutsView() {
         NotificationGuts guts = mNotificationGutsManager.getExposedGuts();
         NotificationMenuRowPlugin menuRow = mSwipeHelper.getCurrentMenuRow();
@@ -1705,9 +1713,19 @@ public class NotificationStackScrollLayoutController implements Dumpable {
             final List<EntryWithDismissStats>
                     entriesWithRowsDismissedFromShade = new ArrayList<>();
             for (ExpandableNotificationRow row : viewsToRemove) {
-                final NotificationEntry entry = row.getEntry();
-                entriesWithRowsDismissedFromShade.add(
-                        new EntryWithDismissStats(entry, getDismissedByUserStats(entry)));
+                if (NotificationBundleUi.isEnabled()) {
+                    EntryAdapter entryAdapter = row.getEntryAdapter();
+                    entriesWithRowsDismissedFromShade.add(
+                            new EntryWithDismissStats(null,
+                                    getDismissedByUserStats(entryAdapter.getKey()),
+                                    entryAdapter.getKey(),
+                                    entryAdapter.getBackingHashCode()));
+                } else {
+                    final NotificationEntry entry = row.getEntryLegacy();
+                    entriesWithRowsDismissedFromShade.add(
+                            new EntryWithDismissStats(entry, getDismissedByUserStats(entry),
+                                    entry.getKey(), entry.hashCode()));
+                }
             }
             mNotifCollection.dismissNotifications(entriesWithRowsDismissedFromShade);
         }
