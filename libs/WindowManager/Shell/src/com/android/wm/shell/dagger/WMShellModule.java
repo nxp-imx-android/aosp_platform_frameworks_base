@@ -90,6 +90,7 @@ import com.android.wm.shell.desktopmode.DefaultDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
 import com.android.wm.shell.desktopmode.DesktopDisplayModeController;
+import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
@@ -1524,6 +1525,18 @@ public abstract class WMShellModule {
                         inputManager,
                         displayController,
                         mainHandler));
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<DesktopImeHandler> provideDesktopImeHandler(
+            DisplayImeController displayImeController,
+            Context context,
+            ShellInit shellInit) {
+        if (!DesktopModeStatus.canEnterDesktopMode(context)) {
+            return Optional.empty();
+        }
+        return Optional.of(new DesktopImeHandler(displayImeController, shellInit));
     }
 
     //
