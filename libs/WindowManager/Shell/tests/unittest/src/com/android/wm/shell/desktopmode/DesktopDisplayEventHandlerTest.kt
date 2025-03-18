@@ -51,6 +51,7 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.mockito.quality.Strictness
 
@@ -213,12 +214,15 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun testUserChanged_createsDeskWhenNeeded() =
         testScope.runTest {
+            val userId = 11
             whenever(DesktopModeStatus.canEnterDesktopMode(context)).thenReturn(true)
             val userChangeListenerCaptor = argumentCaptor<UserChangeListener>()
             verify(mockShellController).addUserChangeListener(userChangeListenerCaptor.capture())
-            whenever(mockDesktopRepository.getNumberOfDesks(displayId = 2)).thenReturn(0)
-            whenever(mockDesktopRepository.getNumberOfDesks(displayId = 3)).thenReturn(0)
-            whenever(mockDesktopRepository.getNumberOfDesks(displayId = 4)).thenReturn(1)
+            val mockRepository = mock<DesktopRepository>()
+            whenever(mockDesktopUserRepositories.getProfile(userId)).thenReturn(mockRepository)
+            whenever(mockRepository.getNumberOfDesks(displayId = 2)).thenReturn(0)
+            whenever(mockRepository.getNumberOfDesks(displayId = 3)).thenReturn(0)
+            whenever(mockRepository.getNumberOfDesks(displayId = 4)).thenReturn(1)
             whenever(mockRootTaskDisplayAreaOrganizer.displayIds).thenReturn(intArrayOf(2, 3, 4))
             desktopRepositoryInitializer.initialize(mockDesktopUserRepositories)
             handler.onDisplayAdded(displayId = 2)
@@ -227,7 +231,7 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
             runCurrent()
 
             clearInvocations(mockDesktopTasksController)
-            userChangeListenerCaptor.lastValue.onUserChanged(1, context)
+            userChangeListenerCaptor.lastValue.onUserChanged(userId, context)
             runCurrent()
 
             verify(mockDesktopTasksController).createDesk(displayId = 2)
