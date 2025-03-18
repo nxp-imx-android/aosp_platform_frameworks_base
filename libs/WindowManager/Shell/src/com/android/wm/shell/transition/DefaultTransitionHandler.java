@@ -133,6 +133,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
     private final DisplayController mDisplayController;
     private final Context mContext;
     private final Handler mMainHandler;
+    private final Handler mAnimHandler;
     private final ShellExecutor mMainExecutor;
     private final ShellExecutor mAnimExecutor;
     private final TransitionAnimation mTransitionAnimation;
@@ -171,6 +172,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
             @NonNull TransactionPool transactionPool,
             @NonNull ShellExecutor mainExecutor, @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
+            @NonNull Handler animHandler,
             @NonNull RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             @NonNull InteractionJankMonitor interactionJankMonitor) {
         mDisplayController = displayController;
@@ -179,6 +181,7 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         mMainHandler = mainHandler;
         mMainExecutor = mainExecutor;
         mAnimExecutor = animExecutor;
+        mAnimHandler = animHandler;
         mTransitionAnimation = new TransitionAnimation(context, false /* debug */, Transitions.TAG);
         mCurrentUserId = UserHandle.myUserId();
         mDevicePolicyManager = mContext.getSystemService(DevicePolicyManager.class);
@@ -349,10 +352,6 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         mAnimations.put(transition, animations);
 
         final boolean isTaskTransition = isTaskTransition(info);
-        if (isTaskTransition) {
-            mInteractionJankMonitor.begin(info.getRoot(0).getLeash(), mContext,
-                    mMainHandler, CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
-        }
 
         final Runnable onAnimFinish = () -> {
             if (!animations.isEmpty()) return;
@@ -642,6 +641,10 @@ public class DefaultTransitionHandler implements Transitions.TransitionHandler {
         // now start animations. they are started on another thread, so we have to post them
         // *after* applying the startTransaction
         mAnimExecutor.execute(() -> {
+            if (isTaskTransition) {
+                mInteractionJankMonitor.begin(info.getRoot(0).getLeash(), mContext,
+                        mAnimHandler, CUJ_DEFAULT_TASK_TO_TASK_ANIMATION);
+            }
             for (int i = 0; i < animations.size(); ++i) {
                 animations.get(i).start();
             }
