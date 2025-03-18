@@ -84,7 +84,7 @@ interface MobileIconsInteractor {
     val icons: StateFlow<List<MobileIconInteractor>>
 
     /** Whether the mobile icons can be stacked vertically. */
-    val isStackable: StateFlow<Boolean>
+    val isStackable: Flow<Boolean>
 
     /**
      * Observable for the subscriptionId of the current mobile data connection. Null if we don't
@@ -323,7 +323,6 @@ constructor(
             } else {
                 flowOf(false)
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     /**
      * Copied from the old pipeline. We maintain a 2s period of time where we will keep the
