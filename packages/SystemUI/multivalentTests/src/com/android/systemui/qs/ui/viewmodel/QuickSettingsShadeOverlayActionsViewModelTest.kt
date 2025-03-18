@@ -89,7 +89,7 @@ class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
             underTest.activateIn(this)
 
             val action =
-                (actions?.get(Swipe.Down(fromSource = SceneContainerArea.StartHalf))
+                (actions?.get(Swipe.Down(fromSource = SceneContainerArea.TopEdgeStartHalf))
                     as? ReplaceByOverlay)
             assertThat(action?.overlay).isEqualTo(Overlays.NotificationsShade)
         }

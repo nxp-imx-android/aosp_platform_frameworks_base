@@ -37,7 +37,7 @@ class NotificationsShadeOverlayActionsViewModel @AssistedInject constructor() :
             mapOf(
                 Swipe.Up to HideOverlay(Overlays.NotificationsShade),
                 Back to HideOverlay(Overlays.NotificationsShade),
-                Swipe.Down(fromSource = SceneContainerArea.EndHalf) to
+                Swipe.Down(fromSource = SceneContainerArea.TopEdgeEndHalf) to
                     ReplaceByOverlay(Overlays.QuickSettingsShade),
             )
         )
