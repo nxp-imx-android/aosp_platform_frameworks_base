@@ -21,7 +21,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
 import static android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK;
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE_PER_TASK;
 import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_TASK;
@@ -242,20 +241,18 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             @NonNull Task launchingTask) {
         if (existingTaskActivity == null || launchingActivity == null) return false;
         return (existingTaskActivity.packageName == launchingActivity.packageName)
-                && isLaunchingNewTask(launchingActivity.launchMode,
-                    launchingTask.getBaseIntent().getFlags())
+                && isLaunchingNewSingleTask(launchingActivity.launchMode)
                 && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags());
     }
 
     /**
-     * Returns true if the launch mode or intent will result in a new task being created for the
+     * Returns true if the launch mode will result in a single new task being created for the
      * activity.
      */
-    private boolean isLaunchingNewTask(int launchMode, int intentFlags) {
+    private boolean isLaunchingNewSingleTask(int launchMode) {
         return launchMode == LAUNCH_SINGLE_TASK
                 || launchMode == LAUNCH_SINGLE_INSTANCE
-                || launchMode == LAUNCH_SINGLE_INSTANCE_PER_TASK
-                || (intentFlags & FLAG_ACTIVITY_NEW_TASK) != 0;
+                || launchMode == LAUNCH_SINGLE_INSTANCE_PER_TASK;
     }
 
     /**
