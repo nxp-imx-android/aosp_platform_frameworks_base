@@ -587,6 +587,31 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     }
 
     @Test
+    fun tilingDivider_shouldBeShown_whenTiledTasksBecomeVisible() {
+        val task1 = createVisibleTask()
+        val task2 = createVisibleTask()
+        val additionalTaskHelper: DesktopTilingWindowDecoration.AppResizingHelper = mock()
+        whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
+        whenever(tiledTaskHelper.desktopModeWindowDecoration).thenReturn(desktopWindowDecoration)
+        whenever(additionalTaskHelper.taskInfo).thenReturn(task2)
+        whenever(additionalTaskHelper.desktopModeWindowDecoration)
+            .thenReturn(desktopWindowDecoration)
+
+        tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
+        tilingDecoration.rightTaskResizingHelper = additionalTaskHelper
+        tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
+        val changeInfo = createTransitFrontTransition(task1, task2)
+        tilingDecoration.onTransitionReady(
+            transition = mock(),
+            info = changeInfo,
+            startTransaction = mock(),
+            finishTransaction = mock(),
+        )
+
+        verify(desktopTilingDividerWindowManager, times(1)).showDividerBar()
+    }
+
+    @Test
     fun taskNotTiled_shouldNotBeRemoved_whenNotTiled() {
         val task1 = createVisibleTask()
         val task2 = createVisibleTask()
@@ -757,6 +782,30 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                     mode = TRANSIT_PIP
                     parent = null
                     taskInfo = task
+                    flags = flags
+                }
+            )
+        }
+
+    private fun createTransitFrontTransition(
+        task1: RunningTaskInfo?,
+        task2: RunningTaskInfo?,
+        type: Int = TRANSIT_TO_FRONT,
+    ) =
+        TransitionInfo(type, /* flags= */ 0).apply {
+            addChange(
+                Change(mock(), mock()).apply {
+                    mode = TRANSIT_TO_FRONT
+                    parent = null
+                    taskInfo = task1
+                    flags = flags
+                }
+            )
+            addChange(
+                Change(mock(), mock()).apply {
+                    mode = TRANSIT_TO_FRONT
+                    parent = null
+                    taskInfo = task2
                     flags = flags
                 }
             )
