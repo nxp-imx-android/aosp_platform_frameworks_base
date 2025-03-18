@@ -49,6 +49,13 @@ import com.android.internal.R.color.materialColorSurfaceContainerHigh
 import com.android.internal.R.color.materialColorSurfaceContainerLow
 import com.android.internal.R.color.materialColorSurfaceDim
 import com.android.wm.shell.R
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_ACTION_MAXIMIZE_RESTORE
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_ACTION_RESIZE_LEFT
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_ACTION_RESIZE_RIGHT
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_CLOSE_BUTTON
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_WINDOW_MINIMIZE_BUTTON
 import com.android.wm.shell.windowdecor.MaximizeButtonView
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
@@ -75,6 +82,7 @@ class AppHeaderViewHolder(
         mOnRightSnapClickListener: () -> Unit,
         mOnMaximizeOrRestoreClickListener: () -> Unit,
         onMaximizeHoverAnimationFinishedListener: () -> Unit,
+        private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
 ) : WindowDecorationViewHolder<AppHeaderViewHolder.HeaderData>(rootView) {
 
     data class HeaderData(
@@ -151,6 +159,8 @@ class AppHeaderViewHolder(
     private lateinit var a11yTextMaximize: String
     private lateinit var a11yTextRestore: String
 
+    private lateinit var currentTaskInfo: RunningTaskInfo
+
     init {
         captionView.setOnTouchListener(onCaptionTouchListener)
         captionHandle.setOnTouchListener(onCaptionTouchListener)
@@ -197,9 +207,18 @@ class AppHeaderViewHolder(
                 args: Bundle?
             ): Boolean {
                 when (action) {
-                    R.id.action_snap_left -> mOnLeftSnapClickListener.invoke()
-                    R.id.action_snap_right -> mOnRightSnapClickListener.invoke()
-                    R.id.action_maximize_restore -> mOnMaximizeOrRestoreClickListener.invoke()
+                    R.id.action_snap_left -> {
+                        desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_LEFT)
+                        mOnLeftSnapClickListener.invoke()
+                    }
+                    R.id.action_snap_right -> {
+                        desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_RIGHT)
+                        mOnRightSnapClickListener.invoke()
+                    }
+                    R.id.action_maximize_restore -> {
+                        desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_MAXIMIZE_RESTORE)
+                        mOnMaximizeOrRestoreClickListener.invoke()
+                    }
                 }
 
                 return super.performAccessibilityAction(host, action, args)
@@ -224,10 +243,56 @@ class AppHeaderViewHolder(
                 args: Bundle?
             ): Boolean {
                 when (action) {
-                    AccessibilityAction.ACTION_CLICK.id -> host.performClick()
-                    R.id.action_snap_left -> mOnLeftSnapClickListener.invoke()
-                    R.id.action_snap_right -> mOnRightSnapClickListener.invoke()
-                    R.id.action_maximize_restore -> mOnMaximizeOrRestoreClickListener.invoke()
+                    AccessibilityAction.ACTION_CLICK.id -> {
+                        desktopModeUiEventLogger.log(
+                            currentTaskInfo, A11Y_APP_WINDOW_MAXIMIZE_RESTORE_BUTTON
+                        )
+                        host.performClick()
+                    }
+                    R.id.action_snap_left -> {
+                        desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_LEFT)
+                        mOnLeftSnapClickListener.invoke()
+                    }
+                    R.id.action_snap_right -> {
+                        desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_RESIZE_RIGHT)
+                        mOnRightSnapClickListener.invoke()
+                    }
+                    R.id.action_maximize_restore -> {
+                        desktopModeUiEventLogger.log(currentTaskInfo, A11Y_ACTION_MAXIMIZE_RESTORE)
+                        mOnMaximizeOrRestoreClickListener.invoke()
+                    }
+                }
+
+                return super.performAccessibilityAction(host, action, args)
+            }
+        }
+
+        closeWindowButton.accessibilityDelegate = object : View.AccessibilityDelegate() {
+            override fun performAccessibilityAction(
+                host: View,
+                action: Int,
+                args: Bundle?
+            ): Boolean {
+                when (action) {
+                    AccessibilityAction.ACTION_CLICK.id -> desktopModeUiEventLogger.log(
+                        currentTaskInfo, A11Y_APP_WINDOW_CLOSE_BUTTON
+                    )
+                }
+
+                return super.performAccessibilityAction(host, action, args)
+            }
+        }
+
+        minimizeWindowButton.accessibilityDelegate = object : View.AccessibilityDelegate() {
+            override fun performAccessibilityAction(
+                host: View,
+                action: Int,
+                args: Bundle?
+            ): Boolean {
+                when (action) {
+                    AccessibilityAction.ACTION_CLICK.id -> desktopModeUiEventLogger.log(
+                        currentTaskInfo, A11Y_APP_WINDOW_MINIMIZE_BUTTON
+                    )
                 }
 
                 return super.performAccessibilityAction(host, action, args)
@@ -310,7 +375,8 @@ class AppHeaderViewHolder(
         enableMaximizeLongClick: Boolean,
         isCaptionVisible: Boolean,
     ) {
-        if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue()) {
+        currentTaskInfo = taskInfo
+        if (DesktopModeFlags.ENABLE_THEMED_APP_HEADERS.isTrue) {
             bindDataWithThemedHeaders(
                 taskInfo,
                 isTaskMaximized,
@@ -361,7 +427,7 @@ class AppHeaderViewHolder(
             minimizeWindowButton.background = getDrawable(1)
         }
         maximizeButtonView.setAnimationTints(isDarkMode())
-        minimizeWindowButton.isGone = !DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue()
+        minimizeWindowButton.isGone = !DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue
     }
 
     private fun bindDataWithThemedHeaders(
@@ -417,7 +483,7 @@ class AppHeaderViewHolder(
                 drawableInsets = minimizeDrawableInsets
             )
         }
-        minimizeWindowButton.isGone = !DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue()
+        minimizeWindowButton.isGone = !DesktopModeFlags.ENABLE_MINIMIZE_BUTTON.isTrue
         // Maximize button.
         maximizeButtonView.apply {
             setAnimationTints(
@@ -761,6 +827,7 @@ class AppHeaderViewHolder(
             mOnRightSnapClickListener: () -> Unit,
             mOnMaximizeOrRestoreClickListener: () -> Unit,
             onMaximizeHoverAnimationFinishedListener: () -> Unit,
+            desktopModeUiEventLogger: DesktopModeUiEventLogger
         ): AppHeaderViewHolder = AppHeaderViewHolder(
             rootView,
             onCaptionTouchListener,
@@ -771,6 +838,7 @@ class AppHeaderViewHolder(
             mOnRightSnapClickListener,
             mOnMaximizeOrRestoreClickListener,
             onMaximizeHoverAnimationFinishedListener,
+            desktopModeUiEventLogger,
         )
     }
 }
