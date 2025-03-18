@@ -4190,7 +4190,13 @@ public class AudioService extends IAudioService.Stub
                     Log.d(TAG, "adjustStreamVolume postSetHearingAidVolumeIndex index="
                             + newIndex + " stream=" + streamType);
                 }
-                mDeviceBroker.postSetHearingAidVolumeIndex(newIndex, streamType);
+                int haIndex;
+                final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
+                synchronized (mVolumeStateLock) {
+                    haIndex = (int) (vss.getMinIndex() + (newIndex - vss.getMinIndex())
+                            / vss.getIndexStepFactor());
+                }
+                mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
             }
         }
 
@@ -5149,7 +5155,13 @@ public class AudioService extends IAudioService.Stub
             mDeviceBroker.postSetLeAudioVolumeIndex(index * 10,
                     getVssForStreamOrDefault(streamType).getMaxIndex(), streamType);
         } else if (device == AudioSystem.DEVICE_OUT_HEARING_AID) {
-            mDeviceBroker.postSetHearingAidVolumeIndex(index * 10, streamType);
+            int haIndex = index * 10;
+            final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
+            synchronized (mVolumeStateLock) {
+                haIndex = (int) (vss.getMinIndex()
+                        + (haIndex - vss.getMinIndex()) / vss.getIndexStepFactor());
+            }
+            mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
         } else if (AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(device)) {
             mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(index);
         } else {
@@ -5280,7 +5292,13 @@ public class AudioService extends IAudioService.Stub
                 && streamType == getBluetoothContextualVolumeStream()) {
             Log.i(TAG, "setStreamVolume postSetHearingAidVolumeIndex index=" + index
                     + " stream=" + streamType);
-            mDeviceBroker.postSetHearingAidVolumeIndex(index, streamType);
+            int haIndex;
+            final VolumeStreamState vss = getVssForStreamOrDefault(streamType);
+            synchronized (mVolumeStateLock) {
+                haIndex = (int) (vss.getMinIndex()
+                        + (index - vss.getMinIndex()) / vss.getIndexStepFactor());
+            }
+            mDeviceBroker.postSetHearingAidVolumeIndex(haIndex, streamType);
         }
 
         synchronized (mHdmiClientLock) {
