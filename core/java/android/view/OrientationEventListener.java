@@ -26,8 +26,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
-
-import com.android.window.flags.Flags;
+import android.window.DesktopModeFlags;
 
 /**
  * Helper class for receiving notifications from the SensorManager when
@@ -77,9 +76,10 @@ public abstract class OrientationEventListener {
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (mSensor != null) {
             // Create listener only if sensors do exist.
-            mSensorEventListener = Flags.enableCameraCompatForDesktopWindowing()
-                    ? new CompatSensorEventListenerImpl(new SensorEventListenerImpl())
-                    : new SensorEventListenerImpl();
+            mSensorEventListener =
+                    DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
+                            ? new CompatSensorEventListenerImpl(new SensorEventListenerImpl())
+                            : new SensorEventListenerImpl();
         }
     }
     
