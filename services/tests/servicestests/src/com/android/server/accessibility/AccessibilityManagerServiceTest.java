@@ -87,6 +87,9 @@ import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Icon;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.input.IInputManager;
+import android.hardware.input.InputManager;
+import android.hardware.input.InputManagerGlobal;
 import android.hardware.input.KeyGestureEvent;
 import android.net.Uri;
 import android.os.Build;
@@ -237,6 +240,9 @@ public class AccessibilityManagerServiceTest {
     @Mock
     private HearingDevicePhoneCallNotificationController
             mMockHearingDevicePhoneCallNotificationController;
+    @Mock
+    private IInputManager mMockInputManagerService;
+    private InputManagerGlobal.TestSession mInputManagerTestSession;
     @Spy private IUserInitializationCompleteCallback mUserInitializationCompleteCallback;
     @Captor private ArgumentCaptor<Intent> mIntentArgumentCaptor;
     private IAccessibilityManager mA11yManagerServiceOnDevice;
@@ -269,6 +275,10 @@ public class AccessibilityManagerServiceTest {
         LocalServices.addService(StatusBarManagerInternal.class, mStatusBarManagerInternal);
         mInputFilter = mock(FakeInputFilter.class);
         mTestableContext.addMockSystemService(DevicePolicyManager.class, mDevicePolicyManager);
+
+        mInputManagerTestSession = InputManagerGlobal.createTestSession(mMockInputManagerService);
+        InputManager mockInputManager = new InputManager(mTestableContext);
+        mTestableContext.addMockSystemService(InputManager.class, mockInputManager);
 
         when(mMockPackageManagerInternal.getSystemUiServiceComponent()).thenReturn(
                 new ComponentName("com.android.systemui", "com.android.systemui.SystemUIService"));
@@ -334,6 +344,9 @@ public class AccessibilityManagerServiceTest {
         FieldSetter.setField(
                 am, AccessibilityManager.class.getDeclaredField("mService"),
                 mA11yManagerServiceOnDevice);
+        if (mInputManagerTestSession != null) {
+            mInputManagerTestSession.close();
+        }
     }
 
     private void setupAccessibilityServiceConnection(int serviceInfoFlag) {
