@@ -28,6 +28,7 @@ import com.android.server.display.brightness.clamper.LightSensorController.Light
 import com.android.server.display.config.SensorData
 import com.android.server.display.config.createSensorData
 import com.android.server.display.utils.AmbientFilter
+import com.android.server.testutils.TestHandler
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.any
@@ -52,6 +53,7 @@ class LightSensorControllerTest {
     private val mockHandler: Handler = mock()
     private val mockAmbientFilter: AmbientFilter = mock()
 
+    private val testHandler = TestHandler(null)
     private val testInjector = TestInjector()
     private val dummySensorData = createSensorData()
 
@@ -60,12 +62,13 @@ class LightSensorControllerTest {
     @Before
     fun setUp() {
         controller = LightSensorController(mockSensorManager, mockResources,
-            mockLightSensorListener, mockHandler, testInjector)
+            mockLightSensorListener, mockHandler, testHandler, testInjector)
     }
 
     @Test
     fun doesNotRegisterLightSensorIfNotConfigured() {
         controller.restart()
+        testHandler.flush()
 
         verifyNoMoreInteractions(mockSensorManager, mockAmbientFilter, mockLightSensorListener)
     }
@@ -74,6 +77,7 @@ class LightSensorControllerTest {
     fun doesNotRegisterLightSensorIfMissing() {
         controller.configure(dummySensorData, DISPLAY_ID)
         controller.restart()
+        testHandler.flush()
 
         verifyNoMoreInteractions(mockSensorManager, mockAmbientFilter, mockLightSensorListener)
     }
@@ -84,6 +88,7 @@ class LightSensorControllerTest {
                 .createSensor(Sensor.TYPE_LIGHT, Sensor.STRING_TYPE_LIGHT)
         controller.configure(dummySensorData, DISPLAY_ID)
         controller.restart()
+        testHandler.flush()
 
         verify(mockSensorManager).registerListener(any(),
             eq(testInjector.lightSensor), eq(LIGHT_SENSOR_RATE * 1000), eq(mockHandler))
@@ -97,7 +102,9 @@ class LightSensorControllerTest {
         controller.configure(dummySensorData, DISPLAY_ID)
 
         controller.restart()
+        testHandler.flush()
         controller.restart()
+        testHandler.flush()
 
         verify(mockSensorManager).registerListener(any(),
             eq(testInjector.lightSensor), eq(LIGHT_SENSOR_RATE * 1000), eq(mockHandler))
@@ -111,23 +118,28 @@ class LightSensorControllerTest {
         testInjector.lightSensor = lightSensor1
         controller.configure(dummySensorData, DISPLAY_ID)
         controller.restart()
+        testHandler.flush()
 
         val lightSensor2 = TestUtils
                 .createSensor(Sensor.TYPE_LIGHT, Sensor.STRING_TYPE_LIGHT)
         testInjector.lightSensor = lightSensor2
         controller.configure(dummySensorData, DISPLAY_ID)
         controller.restart()
+        testHandler.flush()
 
         inOrder(mockSensorManager, mockAmbientFilter, mockLightSensorListener) {
+            // first restart
             verify(mockSensorManager).registerListener(any(),
                 eq(lightSensor1), eq(LIGHT_SENSOR_RATE * 1000), eq(mockHandler))
+            // second restart
+            verify(mockAmbientFilter).clear()
+            verify(mockLightSensorListener).onAmbientLuxChange(LightSensorController.INVALID_LUX)
+            // delayed resubscribe
             verify(mockSensorManager).registerListener(any(),
                 eq(lightSensor2), eq(LIGHT_SENSOR_RATE * 1000), eq(mockHandler))
             verify(mockSensorManager).unregisterListener(any<SensorEventListener>(),
                 eq(lightSensor1))
-            verify(mockAmbientFilter).clear()
-            verify(mockLightSensorListener).onAmbientLuxChange(LightSensorController.INVALID_LUX)
-        }
+            }
         verifyNoMoreInteractions(mockSensorManager, mockAmbientFilter, mockLightSensorListener)
     }
 
@@ -142,6 +154,7 @@ class LightSensorControllerTest {
                 .createSensor(Sensor.TYPE_LIGHT, Sensor.STRING_TYPE_LIGHT)
         controller.configure(dummySensorData, DISPLAY_ID)
         controller.restart()
+        testHandler.flush()
         verify(mockSensorManager).registerListener(listenerCaptor.capture(),
             eq(testInjector.lightSensor), eq(LIGHT_SENSOR_RATE * 1000), eq(mockHandler))
 
