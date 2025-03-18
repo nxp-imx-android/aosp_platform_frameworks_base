@@ -596,8 +596,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 displayToken, displayDeviceInfo);
 
         mDisplayBrightnessController =
-                new DisplayBrightnessController(context, null,
-                        mDisplayId, mLogicalDisplay.getDisplayInfoLocked().brightnessDefault,
+                new DisplayBrightnessController(context, mDisplayId,
+                        mLogicalDisplay.getDisplayInfoLocked().brightnessDefault,
                         brightnessSetting, () -> postBrightnessChangeRunnable(),
                         new HandlerExecutor(mHandler), flags, mDisplayDeviceConfig);
 
@@ -1600,8 +1600,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             // so that the slider accurately represents the full possible range,
             // even if they range changes what it means in absolute terms.
             mDisplayBrightnessController.updateScreenBrightnessSetting(
-                    MathUtils.constrain(unthrottledBrightnessState,
-                            clampedState.getMinBrightness(), clampedState.getMaxBrightness()),
+                    unthrottledBrightnessState,
+                    Math.max(mBrightnessRangeController.getCurrentBrightnessMin(),
+                            clampedState.getMinBrightness()),
                     Math.min(mBrightnessRangeController.getCurrentBrightnessMax(),
                             clampedState.getMaxBrightness()));
         }
@@ -2495,9 +2496,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     }
 
     private void handleSettingsChange() {
-        mDisplayBrightnessController
-                .setPendingScreenBrightness(mDisplayBrightnessController
-                        .getScreenBrightnessSetting());
+        mDisplayBrightnessController.handleSettingsChange();
         mAutomaticBrightnessStrategy.updatePendingAutoBrightnessAdjustments();
         sendUpdatePowerState();
     }
@@ -2517,7 +2516,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     }
 
     public float getScreenBrightnessSetting() {
-        return mDisplayBrightnessController.getScreenBrightnessSetting();
+        return mDisplayBrightnessController.getScreenBrightnessSettingConstrained();
+    }
+
+    public float getCurrentScreenBrightness() {
+        return mDisplayBrightnessController.getCurrentBrightness();
     }
 
     public float getDozeBrightnessForOffload() {
@@ -2529,19 +2532,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     }
 
     public void setBrightness(float brightness) {
-        // After HBMController and NBMController migration to Clampers framework
-        // currentBrightnessMax should be taken from clampers controller
-        // TODO(b/263362199)
-        mDisplayBrightnessController.setBrightness(clampScreenBrightness(brightness),
-                mBrightnessRangeController.getCurrentBrightnessMax());
+        mDisplayBrightnessController.setBrightness(brightness);
     }
 
     public void setBrightness(float brightness, int userSerial) {
-        // After HBMController and NBMController migration to Clampers framework
-        // currentBrightnessMax should be taken from clampers controller
-        // TODO(b/263362199)
-        mDisplayBrightnessController.setBrightness(clampScreenBrightness(brightness), userSerial,
-                mBrightnessRangeController.getCurrentBrightnessMax());
+        mDisplayBrightnessController.setBrightness(brightness, userSerial);
     }
 
     public int getDisplayId() {
