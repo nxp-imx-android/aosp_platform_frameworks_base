@@ -879,10 +879,10 @@ base::expected<FindEntryResult, NullOrIOError> AssetManager2::FindEntry(
       // if we don't have a result yet
     if (!final_result ||
         // or this config is better before the locale than the existing result
-        result->config.isBetterThanBeforeLocale(final_result->config, desired_config) ||
+        result->config.isBetterThanBeforeLocale(final_result->config, *desired_config) ||
         // or the existing config isn't better before locale and this one specifies a locale
         // whereas the existing one doesn't
-        (!final_result->config.isBetterThanBeforeLocale(result->config, desired_config)
+        (!final_result->config.isBetterThanBeforeLocale(result->config, *desired_config)
             && has_locale && !final_has_locale)) {
       final_result = result.value();
       final_overlaid = overlaid;
