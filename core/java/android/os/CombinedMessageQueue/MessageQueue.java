@@ -34,8 +34,6 @@ import android.util.Printer;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
-import com.android.internal.ravenwood.RavenwoodEnvironment;
-
 import dalvik.annotation.optimization.NeverCompile;
 
 import java.io.FileDescriptor;
@@ -1121,7 +1119,6 @@ public final class MessageQueue {
 
             msg.markInUse();
             msg.arg1 = token;
-            incAndTraceMessageCount(msg, when);
 
             if (!enqueueMessageUnchecked(msg, when)) {
                 Log.wtf(TAG_C, "Unexpected error while adding sync barrier!");
@@ -1137,7 +1134,6 @@ public final class MessageQueue {
             msg.markInUse();
             msg.when = when;
             msg.arg1 = token;
-            incAndTraceMessageCount(msg, when);
 
             if (Flags.messageQueueTailTracking() && mLast != null && mLast.when <= when) {
                 /* Message goes to tail of list */
