@@ -31,6 +31,7 @@ import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.ui.AnimatableEvent
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
+import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +49,7 @@ constructor(
     notificationSettingsInteractor: NotificationSettingsInteractor,
     seenNotificationsInteractor: SeenNotificationsInteractor,
     shadeInteractor: ShadeInteractor,
+    windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
 ) {
     /** A message to show instead of the footer buttons. */
     val message: FooterMessageViewModel =
@@ -118,6 +120,8 @@ constructor(
             }
         }
     }
+
+    val isBlurSupported = windowRootViewBlurInteractor.isBlurCurrentlySupported
 
     private val manageOrHistoryButtonText: Flow<Int> =
         notificationSettingsInteractor.isNotificationHistoryEnabled.map { shouldLaunchHistory ->
