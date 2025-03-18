@@ -16,7 +16,7 @@
 
 package com.android.systemui.communal.posturing.data.repository
 
-import com.android.systemui.communal.posturing.shared.model.PosturedState
+import com.android.systemui.communal.posturing.data.model.PositionState
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -25,5 +25,5 @@ import kotlinx.coroutines.flow.Flow
  */
 interface PosturingRepository {
     /** Whether the device is currently stationary and upright. */
-    val posturedState: Flow<PosturedState>
+    val positionState: Flow<PositionState>
 }

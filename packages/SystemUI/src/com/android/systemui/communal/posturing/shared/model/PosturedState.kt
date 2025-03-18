@@ -18,7 +18,7 @@ package com.android.systemui.communal.posturing.shared.model
 
 sealed interface PosturedState {
     /** Represents postured state */
-    data class Postured(val confidence: Float) : PosturedState
+    data object Postured : PosturedState
 
     /** Represents unknown/uninitialized state */
     data object Unknown : PosturedState
