@@ -2912,38 +2912,48 @@ public final class Call {
         if (bundle.size() != newBundle.size()) {
             return false;
         }
-
-        for(String key : bundle.keySet()) {
-            if (key != null) {
-                if (!newBundle.containsKey(key)) {
-                    return false;
-                }
-                // In case new call extra contains non-framework class objects, return false to
-                // force update the call extra
-                try {
-                    final Object value = bundle.get(key);
-                    final Object newValue = newBundle.get(key);
-                    if (value instanceof Bundle && newValue instanceof Bundle) {
-                        if (!areBundlesEqual((Bundle) value, (Bundle) newValue)) {
-                            return false;
-                        }
-                    }
-                    if (value instanceof byte[] && newValue instanceof byte[]) {
-                        if (!Arrays.equals((byte[]) value, (byte[]) newValue)) {
-                            return false;
-                        }
-                    } else if (!Objects.equals(value, newValue)) {
+        try {
+            for (String key : bundle.keySet()) {
+                if (key != null) {
+                    if (!newBundle.containsKey(key)) {
                         return false;
                     }
-                } catch (BadParcelableException e) {
-                    return false;
-                } catch (ClassCastException e) {
-                    Log.e(LOG_TAG, e, "areBundlesEqual: failure comparing bundle key %s", key);
-                    // until we know what is causing this, we should rethrow -- this is still not
-                    // expected.
-                    throw e;
+                    // In case new call extra contains non-framework class objects, return false to
+                    // force update the call extra
+                    try {
+                        final Object value = bundle.get(key);
+                        final Object newValue = newBundle.get(key);
+                        if (value instanceof Bundle && newValue instanceof Bundle) {
+                            if (!areBundlesEqual((Bundle) value, (Bundle) newValue)) {
+                                return false;
+                            }
+                        }
+                        if (value instanceof byte[] && newValue instanceof byte[]) {
+                            if (!Arrays.equals((byte[]) value, (byte[]) newValue)) {
+                                return false;
+                            }
+                        } else if (!Objects.equals(value, newValue)) {
+                            return false;
+                        }
+                    } catch (BadParcelableException e) {
+                        return false;
+                    }
                 }
             }
+        } catch (ClassCastException | ArrayIndexOutOfBoundsException e) {
+            // Unfortunately this may get raised when accessing the bundle's keyset, so we cannot
+            // determine WHY a class cast exception is happening.  We had tried in the past to do
+            // this down in the for loop so we could figure out which key is causing an issue.
+            // Bundles are not thread safe, so the most likely issue here is that the InCallService
+            // implementation is accessing the Bundle WHILE an incoming Telecom update comes in to
+            // potentially replace the Bundle.  We call "areBundlesEqual" to see if the newly
+            // unparceled Call.Details is the same as what is already in the current Call instance.
+            // If those two operations overleave, I can see the potential for concurrent
+            // modification and edit of the Bundle.  So we'll just catch here and assume the Bundles
+            // are not the same.  This means a Call.CallBack may fire the onCallDetails changed
+            // callback when the Bundle didn't actually change.
+            Log.e(LOG_TAG, e, "areBundlesEqual: failed!");
+            return false;
         }
         return true;
     }
