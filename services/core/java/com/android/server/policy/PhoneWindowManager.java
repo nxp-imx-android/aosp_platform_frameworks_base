@@ -4158,7 +4158,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_BRIGHTNESS_DOWN,
                 KeyGestureEvent.KEY_GESTURE_TYPE_RECENT_APPS_SWITCHER,
                 KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS,
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_SEARCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_LANGUAGE_SWITCH,
                 KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_SHORTCUT,
@@ -4311,7 +4310,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS:
-            case KeyGestureEvent.KEY_GESTURE_TYPE_ACCESSIBILITY_ALL_APPS:
                 if (complete && isKeyEventForCurrentUser(event.getDisplayId(),
                         event.getKeycodes()[0], "launchAllAppsViaA11y")) {
                     launchAllAppsAction();
