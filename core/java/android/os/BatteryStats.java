@@ -6948,8 +6948,9 @@ public abstract class BatteryStats {
         // This constant MUST be incremented whenever the history dump format changes.
         private static final int FORMAT_VERSION = 2;
 
-        private final SimpleDateFormat mHistoryItemTimestampFormat =
-                new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
+        private final boolean mPerformanceBaseline;
+        private final HistoryLogTimeFormatter mHistoryLogTimeFormatter;
+        private final SimpleDateFormat mHistoryItemTimestampFormat;
         private final SimpleDateFormat mCurrentTimeEventTimeFormat =
                 new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss", Locale.US);
 
@@ -6960,6 +6961,7 @@ public abstract class BatteryStats {
 
         private final int mFormatVersion;
 
+        private final StringBuilder mStringBuilder = new StringBuilder();
         int oldState = 0;
         int oldState2 = 0;
         int oldLevel = -1;
@@ -6974,18 +6976,30 @@ public abstract class BatteryStats {
         long lastTime = -1;
 
         public HistoryPrinter() {
-            this(TimeZone.getDefault());
+            this(0);
         }
 
-        public HistoryPrinter(TimeZone timeZone) {
+        public HistoryPrinter(int flags) {
+            this(TimeZone.getDefault(), flags);
+        }
+
+        public HistoryPrinter(TimeZone timeZone, int flags) {
             this(com.android.server.power.optimization.Flags
                     .extendedBatteryHistoryContinuousCollectionEnabled()
-                    ? FORMAT_VERSION : FORMAT_LEGACY, timeZone);
+                    ? FORMAT_VERSION : FORMAT_LEGACY, timeZone, flags);
         }
 
-        private HistoryPrinter(int formatVersion, TimeZone timeZone) {
+        private HistoryPrinter(int formatVersion, TimeZone timeZone, int flags) {
             mFormatVersion = formatVersion;
-            mHistoryItemTimestampFormat.getCalendar().setTimeZone(timeZone);
+            mPerformanceBaseline = (flags & DUMP_DEBUG_PERF_BASELINE) != 0;
+            if (mPerformanceBaseline) {
+                mHistoryItemTimestampFormat = new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
+                mHistoryItemTimestampFormat.getCalendar().setTimeZone(timeZone);
+                mHistoryLogTimeFormatter = null;
+            } else {
+                mHistoryItemTimestampFormat = null;
+                mHistoryLogTimeFormatter = new HistoryLogTimeFormatter(timeZone);
+            }
             mCurrentTimeEventTimeFormat.getCalendar().setTimeZone(timeZone);
         }
 
@@ -7019,7 +7033,8 @@ public abstract class BatteryStats {
         @SuppressWarnings("JavaUtilDate")
         private String printNextItem(HistoryItem rec, long baseTime, boolean checkin,
                 boolean verbose) {
-            StringBuilder item = new StringBuilder();
+            StringBuilder item = mStringBuilder;
+            item.setLength(0);
             if (!checkin) {
                 item.append("  ");
                 if (mFormatVersion == FORMAT_LEGACY) {
@@ -7029,8 +7044,13 @@ public abstract class BatteryStats {
                     item.append(rec.numReadInts);
                     item.append(") ");
                 } else {
-                    mDate.setTime(rec.currentTime);
-                    item.append(mHistoryItemTimestampFormat.format(mDate)).append(' ');
+                    if (mPerformanceBaseline) {
+                        mDate.setTime(rec.currentTime);
+                        item.append(mHistoryItemTimestampFormat.format(mDate)).append(' ');
+                    } else {
+                        mHistoryLogTimeFormatter.append(item, rec.currentTime);
+                        item.append(' ');
+                    }
                 }
             } else {
                 item.append(BATTERY_STATS_CHECKIN_VERSION); item.append(',');
@@ -7399,6 +7419,64 @@ public abstract class BatteryStats {
             sb.append(":");
             sb.append(stime);
         }
+
+        /**
+         * In essence, this is a wrapper over SimpleDateFormat that takes advantage
+         * of the fact that events in battery history are closely spaced, which allows it
+         * to reuse the results of the most expensive formatting work.
+         */
+        private static class HistoryLogTimeFormatter {
+            private static final long HOUR_MILLIS = 3600000L;
+            private static final long MINUTE_MILLIS = 60000L;
+            private final SimpleDateFormat mDateFormat =
+                    new SimpleDateFormat("MM-dd HH:", Locale.US);
+            private final Date mDate = new Date();
+
+            private final long mTimeZoneOffset;
+            private long mCachedHour;
+            private String mCachedHourFormatted;
+
+            private HistoryLogTimeFormatter(TimeZone timeZone) {
+                mTimeZoneOffset = timeZone.getRawOffset();
+                mDateFormat.getCalendar().setTimeZone(timeZone);
+            }
+
+            /* Appends timestampMs formatted as  "MM-dd HH:mm:ss.SSS" */
+            void append(StringBuilder sb, long timestampMs) {
+                long localTime = timestampMs + mTimeZoneOffset;
+                long hour = localTime / HOUR_MILLIS;
+                if (hour != mCachedHour) {
+                    mDate.setTime(timestampMs);
+                    mCachedHourFormatted = mDateFormat.format(mDate);
+                    mCachedHour = hour;
+                }
+                sb.append(mCachedHourFormatted);
+
+                long remainder = localTime % HOUR_MILLIS;
+
+                long minutes = remainder / MINUTE_MILLIS;
+                if (minutes < 10) {
+                    sb.append('0');
+                }
+                sb.append(minutes).append(':');
+
+                remainder = remainder % MINUTE_MILLIS;
+                long seconds = remainder / 1000;
+                if (seconds < 10) {
+                    sb.append('0');
+                }
+                sb.append(seconds).append('.');
+
+                long millis = remainder % 1000;
+                if (millis < 100) {
+                    sb.append('0');
+                    if (millis < 10) {
+                        sb.append('0');
+                    }
+                }
+                sb.append(millis);
+            }
+        }
     }
 
     private void printSizeValue(PrintWriter pw, long size) {
@@ -7584,9 +7662,10 @@ public abstract class BatteryStats {
     public static final int DUMP_INCLUDE_HISTORY = 1<<4;
     public static final int DUMP_VERBOSE = 1<<5;
     public static final int DUMP_DEVICE_WIFI_ONLY = 1<<6;
+    public static final int DUMP_DEBUG_PERF_BASELINE = 1 << 7;
 
     private void dumpHistory(PrintWriter pw, int flags, long histStart, boolean checkin) {
-        final HistoryPrinter hprinter = new HistoryPrinter();
+        final HistoryPrinter hprinter = new HistoryPrinter(flags);
         synchronized (this) {
             if (!checkin) {
                 final long historyTotalSize = getHistoryTotalSize();
@@ -8522,7 +8601,7 @@ public abstract class BatteryStats {
             }
 
         // History data (HISTORY_DATA)
-        final HistoryPrinter hprinter = new HistoryPrinter();
+        final HistoryPrinter hprinter = new HistoryPrinter(flags);
         long lastTime = -1;
         long baseTime = -1;
         boolean printed = false;
