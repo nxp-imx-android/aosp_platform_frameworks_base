@@ -44,7 +44,7 @@ namespace uirenderer {
 namespace renderthread {
 
 // Not all of these are strictly required, but are all enabled if present.
-static std::array<std::string_view, 23> sEnableExtensions{
+static std::array<std::string_view, 25> sEnableExtensions{
         VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
         VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
         VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
@@ -68,6 +68,8 @@ static std::array<std::string_view, 23> sEnableExtensions{
         VK_EXT_GLOBAL_PRIORITY_QUERY_EXTENSION_NAME,
         VK_KHR_GLOBAL_PRIORITY_EXTENSION_NAME,
         VK_EXT_DEVICE_FAULT_EXTENSION_NAME,
+        VK_EXT_FRAME_BOUNDARY_EXTENSION_NAME,
+        VK_ANDROID_FRAME_BOUNDARY_EXTENSION_NAME,
 };
 
 static bool shouldEnableExtension(const std::string_view& extension) {
@@ -746,7 +748,14 @@ VulkanManager::VkDrawResult VulkanManager::finishFrame(SkSurface* surface) {
     ALOGE_IF(!context, "Surface is not backed by gpu");
     GrSemaphoresSubmitted submitted = context->flush(
             surface, SkSurfaces::BackendSurfaceAccess::kPresent, flushInfo);
-    context->submit();
+
+    static uint64_t currentFrameID = 0;
+    GrSubmitInfo submitInfo;
+    if (!mFrameBoundaryANDROID) {
+        submitInfo.fMarkBoundary = GrMarkFrameBoundary::kYes;
+        submitInfo.fFrameID = currentFrameID++;
+    }
+    context->submit(submitInfo);
     VkDrawResult drawResult{
             .submissionTime = systemTime(),
     };
