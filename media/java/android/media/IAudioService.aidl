@@ -447,10 +447,8 @@ interface IAudioService {
 
     boolean isAudioServerRunning();
 
-    @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
     void registerAudioVolumeCallback(IAudioVolumeChangeDispatcher avc);
 
-    @EnforcePermission("MODIFY_AUDIO_SETTINGS_PRIVILEGED")
     oneway void unregisterAudioVolumeCallback(IAudioVolumeChangeDispatcher avc);
 
     int setUidDeviceAffinity(in IAudioPolicyCallback pcb, in int uid, in int[] deviceTypes,
