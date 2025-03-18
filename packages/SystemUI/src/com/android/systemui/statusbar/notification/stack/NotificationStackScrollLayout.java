@@ -2915,9 +2915,14 @@ public class NotificationStackScrollLayout
             return;
         }
         child.setOnHeightChangedListener(null);
-        if (child instanceof ExpandableNotificationRow) {
-            NotificationEntry entry = ((ExpandableNotificationRow) child).getEntry();
-            entry.removeOnSensitivityChangedListener(mOnChildSensitivityChangedListener);
+        if (child instanceof ExpandableNotificationRow row) {
+            if (NotificationBundleUi.isEnabled()) {
+                row.getEntryAdapter().removeOnSensitivityChangedListener(
+                        mOnChildSensitivityChangedListener);
+            } else {
+                NotificationEntry entry = ((ExpandableNotificationRow) child).getEntryLegacy();
+                entry.removeOnSensitivityChangedListener(mOnChildSensitivityChangedListener);
+            }
         }
         if (!SceneContainerFlag.isEnabled()) {
             updateScrollStateForRemovedChild(child);
@@ -3211,8 +3216,13 @@ public class NotificationStackScrollLayout
         updateHideSensitiveForChild(child);
         child.setOnHeightChangedListener(mOnChildHeightChangedListener);
         if (child instanceof ExpandableNotificationRow row) {
-            NotificationEntry entry = ((ExpandableNotificationRow) child).getEntry();
-            entry.addOnSensitivityChangedListener(mOnChildSensitivityChangedListener);
+            if (NotificationBundleUi.isEnabled()) {
+                row.getEntryAdapter().addOnSensitivityChangedListener(
+                        mOnChildSensitivityChangedListener);
+            } else {
+                NotificationEntry entry = ((ExpandableNotificationRow) child).getEntryLegacy();
+                entry.addOnSensitivityChangedListener(mOnChildSensitivityChangedListener);
+            }
             if (SceneContainerFlag.isEnabled()) {
                 row.setOnKeyguard(mIsOnLockscreen);
             }
@@ -3538,9 +3548,16 @@ public class NotificationStackScrollLayout
         for (ExpandableView child : mChildrenChangingPositions) {
             Integer duration = null;
             if (child instanceof ExpandableNotificationRow row) {
-                if (row.getEntry().isMarkedForUserTriggeredMovement()) {
-                    duration = StackStateAnimator.ANIMATION_DURATION_PRIORITY_CHANGE;
-                    row.getEntry().markForUserTriggeredMovement(false);
+                if (NotificationBundleUi.isEnabled()) {
+                    if (row.getEntryAdapter().isMarkedForUserTriggeredMovement()) {
+                        duration = StackStateAnimator.ANIMATION_DURATION_PRIORITY_CHANGE;
+                        row.getEntryAdapter().markForUserTriggeredMovement(false);
+                    }
+                } else {
+                    if (row.getEntryLegacy().isMarkedForUserTriggeredMovement()) {
+                        duration = StackStateAnimator.ANIMATION_DURATION_PRIORITY_CHANGE;
+                        row.getEntryLegacy().markForUserTriggeredMovement(false);
+                    }
                 }
             }
             AnimationEvent animEvent = duration == null
@@ -5100,16 +5117,23 @@ public class NotificationStackScrollLayout
             ExpandableNotificationRow row, boolean isHeadsUp, boolean hasStatusBarChip) {
         boolean addAnimation =
                 mAnimationsEnabled && (isHeadsUp || mHeadsUpGoingAwayAnimationsAllowed);
+        boolean hasBackingData = NotificationBundleUi.isEnabled()
+                ? row.getEntryAdapter() != null
+                : row.getEntryLegacy() != null;
+        boolean isSeenInShade = hasBackingData
+                ? (NotificationBundleUi.isEnabled()
+                    ? row.getEntryAdapter().isSeenInShade()
+                    : row.getEntryLegacy().isSeenInShade())
+                : false;
         if (NotificationThrottleHun.isEnabled()) {
-            final boolean closedAndSeenInShade = !mIsExpanded && row.getEntry() != null
-                    && row.getEntry().isSeenInShade();
+            final boolean closedAndSeenInShade = !mIsExpanded && isSeenInShade;
             addAnimation = addAnimation && !closedAndSeenInShade;
         }
         if (SPEW) {
             Log.v(TAG, "generateHeadsUpAnimation:"
                     + " addAnimation=" + addAnimation
-                    + (row.getEntry() == null ? " entry NULL "
-                            : " isSeenInShade=" + row.getEntry().isSeenInShade()
+                    + (!hasBackingData ? " entry NULL "
+                            : " isSeenInShade=" + isSeenInShade
                                     + " row=" + row.getKey())
                     + " mIsExpanded=" + mIsExpanded
                     + " isHeadsUp=" + isHeadsUp

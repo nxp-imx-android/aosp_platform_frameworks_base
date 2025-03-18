@@ -426,7 +426,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                         ? row.getEntryAdapter().getSbn()
                         : row.getEntryLegacy().getSbn();
                 if (sbn != null) {
-                    mMetricsLogger.write(row.getEntry().getSbn().getLogMaker()
+                    mMetricsLogger.write(sbn.getLogMaker()
                             .setCategory(MetricsEvent.ACTION_TOUCH_GEAR)
                             .setType(MetricsEvent.TYPE_ACTION)
                     );
@@ -451,10 +451,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                         ? notificationRow.getEntryAdapter().getSbn()
                         : notificationRow.getEntryLegacy().getSbn();
                 if (sbn != null) {
-                    mMetricsLogger.write(notificationRow.getEntry().getSbn().getLogMaker()
+                    mMetricsLogger.write(sbn.getLogMaker()
                             .setCategory(MetricsEvent.ACTION_REVEAL_GEAR)
                             .setType(MetricsEvent.TYPE_ACTION));
                 }
+
                 mSwipeHelper.onMenuShown(row);
                 mNotificationGutsManager.closeAndSaveGuts(true /* removeLeavebehind */,
                         false /* force */, false /* removeControls */, -1 /* x */, -1 /* y */,
@@ -2020,7 +2021,11 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 mHeadsUpAppearanceController.updateHeadsUpAndPulsingRoundness(row);
                 if (GroupHunAnimationFix.isEnabled() && !animatingAway) {
                     // invalidate list to make sure the row is sorted to the correct section
-                    mHeadsUpManager.onEntryAnimatingAwayEnded(row.getEntry());
+                    if (NotificationBundleUi.isEnabled()) {
+                        row.getEntryAdapter().onEntryAnimatingAwayEnded();
+                    } else {
+                        mHeadsUpManager.onEntryAnimatingAwayEnded(row.getEntryLegacy());
+                    }
                 }
             });
         }

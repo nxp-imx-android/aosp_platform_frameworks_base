@@ -175,8 +175,6 @@ public final class NotificationEntry extends ListEntry {
     private boolean hasSentReply;
 
     private final MutableStateFlow<Boolean> mSensitive = StateFlowKt.MutableStateFlow(true);
-    private final ListenerSet<OnSensitivityChangedListener> mOnSensitivityChangedListeners =
-            new ListenerSet<>();
 
     private boolean mPulseSupressed;
     private boolean mIsMarkedForUserTriggeredMovement;
@@ -975,21 +973,11 @@ public final class NotificationEntry extends ListEntry {
         getRow().setSensitive(sensitive, deviceSensitive);
         if (sensitive != mSensitive.getValue()) {
             mSensitive.setValue(sensitive);
-            for (NotificationEntry.OnSensitivityChangedListener listener :
+            for (PipelineEntry.OnSensitivityChangedListener listener :
                     mOnSensitivityChangedListeners) {
                 listener.onSensitivityChanged(this);
             }
         }
-    }
-
-    /** Add a listener to be notified when the entry's sensitivity changes. */
-    public void addOnSensitivityChangedListener(OnSensitivityChangedListener listener) {
-        mOnSensitivityChangedListeners.addIfAbsent(listener);
-    }
-
-    /** Remove a listener that was registered above. */
-    public void removeOnSensitivityChangedListener(OnSensitivityChangedListener listener) {
-        mOnSensitivityChangedListeners.remove(listener);
     }
 
     /** @see #setHeadsUpStatusBarText(CharSequence) */
@@ -1041,16 +1029,6 @@ public final class NotificationEntry extends ListEntry {
      */
     public void markForUserTriggeredMovement(boolean marked) {
         mIsMarkedForUserTriggeredMovement = marked;
-    }
-
-    private boolean mSeenInShade = false;
-
-    public void setSeenInShade(boolean seen) {
-        mSeenInShade = seen;
-    }
-
-    public boolean isSeenInShade() {
-        return mSeenInShade;
     }
 
     public void setIsHeadsUpEntry(boolean isHeadsUpEntry) {
@@ -1160,12 +1138,6 @@ public final class NotificationEntry extends ListEntry {
             this.originalText = originalText;
             this.index = index;
         }
-    }
-
-    /** Listener interface for {@link #addOnSensitivityChangedListener} */
-    public interface OnSensitivityChangedListener {
-        /** Called when the sensitivity changes */
-        void onSensitivityChanged(@NonNull NotificationEntry entry);
     }
 
     /** @see #getDismissState() */

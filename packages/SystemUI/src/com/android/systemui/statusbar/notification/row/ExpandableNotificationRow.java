@@ -1671,18 +1671,28 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             l.reinflate();
             l.reInflateViews();
         }
-        if (NotificationBundleUi.isEnabled()) {
-            mEntryAdapter.prepareForInflation();
-        } else {
-            getEntryLegacy().getSbn().clearPackageContext();
+        if (NotificationBundleUi.isEnabled() && !getEntryAdapter().isViewBacked()) {
+            return;
         }
         // TODO: Move content inflation logic out of this call
-        RowContentBindParams params = mRowContentBindStage.getStageParams(mEntry);
-        params.setNeedsReinflation(true);
+        if (NotificationBundleUi.isEnabled()) {
+            mEntryAdapter.prepareForInflation();
+            getEntryAdapter().markForReinflation(mRowContentBindStage);
+        } else {
+            getEntryLegacy().getSbn().clearPackageContext();
+            RowContentBindParams params = mRowContentBindStage.getStageParams(getEntryLegacy());
+            params.setNeedsReinflation(true);
+        }
 
-        var rebindEndCallback = mRebindingTracker.trackRebinding(NotificationBundleUi.isEnabled()
-                ? mEntryAdapter.getKey() : getEntryLegacy().getKey());
-        mRowContentBindStage.requestRebind(mEntry, (e) -> rebindEndCallback.onFinished());
+        NotificationRebindingTracker.RebindFinishedCallback rebindEndCallback
+                = mRebindingTracker.trackRebinding(getKey());
+        if (NotificationBundleUi.isEnabled()) {
+            getEntryAdapter().requestRebind(mRowContentBindStage,
+                    (e) -> rebindEndCallback.onFinished());
+        } else {
+            mRowContentBindStage.requestRebind(getEntryLegacy(),
+                    (e) -> rebindEndCallback.onFinished());
+        }
         Trace.endSection();
     }
 
@@ -1726,8 +1736,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     isColorized = mEntryAdapter.isColorized();
                 }
             } else {
-                if (mEntry != null && mEntry.getSbn() != null) {
-                    isColorized = mEntry.getSbn().getNotification().isColorized();
+                if (getEntryLegacy() != null && getEntryLegacy().getSbn() != null) {
+                    isColorized = getEntryLegacy().getSbn().getNotification().isColorized();
                 }
             }
             boolean isTransparent = usesTransparentBackground();
@@ -1946,12 +1956,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         dismiss(fromAccessibility);
         if (canEntryBeDismissed()) {
             if (mOnUserInteractionCallback != null) {
+                Runnable futureDismissal = NotificationBundleUi.isEnabled()
+                        ? getEntryAdapter().registerFutureDismissal(
+                        mOnUserInteractionCallback, REASON_CANCEL)
+                        : mOnUserInteractionCallback.registerFutureDismissal(
+                                getEntryLegacy(), REASON_CANCEL);
                 if (Flags.notificationReentrantDismiss()) {
-                    Runnable futureDismissal = mOnUserInteractionCallback.registerFutureDismissal(
-                            mEntry, REASON_CANCEL);
-                    post(futureDismissal);
+                    if (futureDismissal != null) {
+                        post(futureDismissal);
+                    }
                 } else {
-                    mOnUserInteractionCallback.registerFutureDismissal(mEntry, REASON_CANCEL).run();
+                    if (futureDismissal != null) {
+                        futureDismissal.run();
+                    }
                 }
             }
         }
@@ -3348,17 +3365,15 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         }
 
         if (NotificationBundleUi.isEnabled()) {
-            final EntryAdapter entryAdapter = mEntryAdapter;
-            if (entryAdapter == null) {
+            if (getEntryAdapter() == null) {
                 return false;
             }
-            return entryAdapter.isPromotedOngoing();
+            return getEntryAdapter().isPromotedOngoing();
         } else {
-            final NotificationEntry entry = mEntry;
-            if (entry == null) {
+            if (getEntryLegacy() == null) {
                 return false;
             }
-            return entry.isPromotedOngoing();
+            return getEntryLegacy().isPromotedOngoing();
         }
     }
 

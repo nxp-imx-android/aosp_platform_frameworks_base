@@ -23,6 +23,7 @@ import android.app.PendingIntent
 import android.os.UserHandle
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
+import android.service.notification.NotificationListenerService.REASON_CANCEL
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -35,6 +36,7 @@ import com.android.systemui.statusbar.notification.collection.provider.mockHighP
 import com.android.systemui.statusbar.notification.mockNotificationActivityStarter
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_FULL_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
+import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -46,10 +48,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.Mockito
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -65,9 +68,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getBackingHashCode() {
-        val entry =
-            NotificationEntryBuilder()
-                .build()
+        val entry = NotificationEntryBuilder().build()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
         assertThat(underTest.backingHashCode).isEqualTo(entry.hashCode())
@@ -123,7 +124,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getRow_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -140,7 +141,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun isGroupRoot_adapter_groupSummary() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
@@ -185,7 +186,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun isClearable_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -202,7 +203,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getSummarization_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -221,7 +222,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun getIcons_adapter() {
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow = mock()
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()
 
@@ -323,7 +324,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         assertThat(underTest.isMarkedForUserTriggeredMovement)
             .isEqualTo(entry.isMarkedForUserTriggeredMovement)
 
-        underTest.markForUserTriggeredMovement()
+        underTest.markForUserTriggeredMovement(true)
         assertThat(underTest.isMarkedForUserTriggeredMovement)
             .isEqualTo(entry.isMarkedForUserTriggeredMovement)
     }
@@ -360,7 +361,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     fun canDragAndDrop() {
-        val pi = mock(PendingIntent::class.java)
+        val pi : PendingIntent = mock()
         Mockito.`when`(pi.isActivity).thenReturn(true)
         val notification: Notification =
             Notification.Builder(mContext, "")
@@ -446,7 +447,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .setFullScreenIntent(mock(PendingIntent::class.java), true)
+                .setFullScreenIntent(mock(), true)
                 .build()
 
         val entry =
@@ -464,7 +465,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .addAction(mock(Notification.Action::class.java))
+                .addAction(mock())
                 .build()
         val entry = NotificationEntryBuilder().setNotification(notification).build()
 
@@ -492,7 +493,7 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .addAction(mock(Notification.Action::class.java))
+                .addAction(mock())
                 .build()
 
         val entry = NotificationEntryBuilder().setNotification(notification).build()
@@ -520,10 +521,10 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         val notification: Notification =
             Notification.Builder(mContext, "")
                 .setSmallIcon(R.drawable.ic_person)
-                .addAction(mock(Notification.Action::class.java))
+                .addAction(mock())
                 .build()
         val entry = NotificationEntryBuilder().setNotification(notification).build()
-        val row = mock(ExpandableNotificationRow::class.java)
+        val row : ExpandableNotificationRow= mock()
 
         underTest = factory.create(entry) as NotificationEntryAdapter
 
@@ -532,6 +533,25 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
     }
 
     @Test
+    fun registerFutureDismissal() {
+        val notification: Notification =
+            Notification.Builder(mContext, "")
+                .setSmallIcon(R.drawable.ic_person)
+                .addAction(mock())
+                .build()
+        val entry = NotificationEntryBuilder().setNotification(notification).build()
+        val callback: OnUserInteractionCallback = mock()
+        whenever(callback.registerFutureDismissal(any(), any())).thenReturn(mock())
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+
+        underTest.registerFutureDismissal(
+            callback,
+            REASON_CANCEL,
+        )
+        verify(callback).registerFutureDismissal(entry, REASON_CANCEL)
+    }
+
     fun getRemoteInputEntryAdapter() {
         val notification: Notification =
             Notification.Builder(mContext, "").setSmallIcon(R.drawable.ic_person).build()

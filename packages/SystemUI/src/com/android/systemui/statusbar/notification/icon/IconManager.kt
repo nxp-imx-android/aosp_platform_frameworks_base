@@ -40,6 +40,7 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.InflationException
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import java.util.concurrent.ConcurrentHashMap
@@ -120,7 +121,7 @@ constructor(
         }
 
     private val sensitivityListener =
-        NotificationEntry.OnSensitivityChangedListener { entry -> updateIconsSafe(entry) }
+        PipelineEntry.OnSensitivityChangedListener { entry -> updateIconsSafe(entry) }
 
     private fun recalculateForImportantConversationChange() {
         for (entry in notifCollection.allNotifs) {
