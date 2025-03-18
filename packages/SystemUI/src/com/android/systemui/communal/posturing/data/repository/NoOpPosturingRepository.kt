@@ -16,7 +16,7 @@
 
 package com.android.systemui.communal.posturing.data.repository
 
-import com.android.systemui.communal.posturing.shared.model.PosturedState
+import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +25,6 @@ import kotlinx.coroutines.flow.asStateFlow
 
 @SysUISingleton
 class NoOpPosturingRepository @Inject constructor() : PosturingRepository {
-    override val posturedState: Flow<PosturedState> =
-        MutableStateFlow(PosturedState.Unknown).asStateFlow()
+    override val positionState: Flow<PositionState> =
+        MutableStateFlow(PositionState()).asStateFlow()
 }
