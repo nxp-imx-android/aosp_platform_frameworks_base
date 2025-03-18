@@ -232,7 +232,8 @@ public final class PerfettoTrace {
      * @param eventName The event name to appear in the trace.
      */
     public static PerfettoTrackEventExtra.Builder instant(Category category, String eventName) {
-        return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_INSTANT, category)
+        return PerfettoTrackEventExtra.builder(category.isEnabled())
+            .init(PERFETTO_TE_TYPE_INSTANT, category)
             .setEventName(eventName);
     }
 
@@ -243,7 +244,8 @@ public final class PerfettoTrace {
      * @param eventName The event name to appear in the trace.
      */
     public static PerfettoTrackEventExtra.Builder begin(Category category, String eventName) {
-        return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_SLICE_BEGIN, category)
+        return PerfettoTrackEventExtra.builder(category.isEnabled())
+            .init(PERFETTO_TE_TYPE_SLICE_BEGIN, category)
             .setEventName(eventName);
     }
 
@@ -253,7 +255,8 @@ public final class PerfettoTrace {
      * @param category The perfetto category.
      */
     public static PerfettoTrackEventExtra.Builder end(Category category) {
-        return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_SLICE_END, category);
+        return PerfettoTrackEventExtra.builder(category.isEnabled())
+            .init(PERFETTO_TE_TYPE_SLICE_END, category);
     }
 
     /**
@@ -263,7 +266,8 @@ public final class PerfettoTrace {
      * @param value The value of the counter.
      */
     public static PerfettoTrackEventExtra.Builder counter(Category category, long value) {
-        return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_COUNTER, category)
+        return PerfettoTrackEventExtra.builder(category.isEnabled())
+            .init(PERFETTO_TE_TYPE_COUNTER, category)
             .setCounter(value);
     }
 
@@ -286,7 +290,8 @@ public final class PerfettoTrace {
      * @param value The value of the counter.
      */
     public static PerfettoTrackEventExtra.Builder counter(Category category, double value) {
-        return PerfettoTrackEventExtra.builder().init(PERFETTO_TE_TYPE_COUNTER, category)
+        return PerfettoTrackEventExtra.builder(category.isEnabled())
+            .init(PERFETTO_TE_TYPE_COUNTER, category)
             .setCounter(value);
     }
 
