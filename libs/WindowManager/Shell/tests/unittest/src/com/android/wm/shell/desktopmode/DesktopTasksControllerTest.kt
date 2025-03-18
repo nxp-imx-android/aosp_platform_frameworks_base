@@ -5639,6 +5639,33 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun activateDesk_otherDeskWasActive_deactivatesOtherDesk() {
+        val previouslyActiveDeskId = 1
+        val activatingDeskId = 0
+        val transition = Binder()
+        val deskChange = mock(TransitionInfo.Change::class.java)
+        whenever(transitions.startTransition(eq(TRANSIT_TO_FRONT), any(), anyOrNull()))
+            .thenReturn(transition)
+        whenever(desksOrganizer.isDeskActiveAtEnd(deskChange, activatingDeskId)).thenReturn(true)
+        // Make desk inactive by activating another desk.
+        taskRepository.addDesk(DEFAULT_DISPLAY, deskId = previouslyActiveDeskId)
+        taskRepository.setActiveDesk(DEFAULT_DISPLAY, deskId = previouslyActiveDeskId)
+
+        controller.activateDesk(activatingDeskId, RemoteTransition(TestRemoteTransition()))
+
+        verify(desksOrganizer).deactivateDesk(any(), eq(previouslyActiveDeskId))
+        verify(desksTransitionsObserver)
+            .addPendingTransition(
+                argThat {
+                    this is DeskTransition.DeactivateDesk &&
+                        this.token == transition &&
+                        this.deskId == previouslyActiveDeskId
+                }
+            )
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,

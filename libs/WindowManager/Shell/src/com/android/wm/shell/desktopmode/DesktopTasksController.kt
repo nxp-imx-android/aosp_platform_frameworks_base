@@ -2892,7 +2892,7 @@ class DesktopTasksController(
      * null and may be used to run other desktop policies, such as minimizing another task if the
      * task limit has been exceeded.
      */
-    fun addDeskActivationChanges(
+    private fun addDeskActivationChanges(
         deskId: Int,
         wct: WindowContainerTransaction,
         newTask: TaskInfo? = null,
@@ -2950,6 +2950,8 @@ class DesktopTasksController(
                     }
                 }
         }
+        val deactivatingDesk = taskRepository.getActiveDeskId(displayId)?.takeIf { it != deskId }
+        val deactivationRunnable = prepareDeskDeactivationIfNeeded(wct, deactivatingDesk)
         return { transition ->
             val activateDeskTransition =
                 if (newTaskIdInFront != null) {
@@ -2970,6 +2972,7 @@ class DesktopTasksController(
             taskIdToMinimize?.let { minimizingTask ->
                 addPendingMinimizeTransition(transition, minimizingTask, MinimizeReason.TASK_LIMIT)
             }
+            deactivationRunnable?.invoke(transition)
         }
     }
 
