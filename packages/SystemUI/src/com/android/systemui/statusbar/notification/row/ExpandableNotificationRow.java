@@ -26,6 +26,7 @@ import static com.android.systemui.Flags.notificationRowAccessibilityExpanded;
 import static com.android.systemui.Flags.notificationRowTransparency;
 import static com.android.systemui.Flags.notificationsPinnedHunInShade;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
+import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
 import static com.android.systemui.statusbar.notification.collection.NotificationEntry.DismissState.PARENT_DISMISSED;
 import static com.android.systemui.statusbar.notification.row.NotificationContentView.VISIBLE_TYPE_HEADSUP;
@@ -102,6 +103,7 @@ import com.android.systemui.plugins.statusbar.NotificationMenuRowPlugin.MenuItem
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType;
 import com.android.systemui.statusbar.RemoteInputController;
 import com.android.systemui.statusbar.SmartReplyController;
 import com.android.systemui.statusbar.StatusBarIconView;
@@ -503,7 +505,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     private final ListenerSet<DismissButtonTargetVisibilityListener>
             mDismissButtonTargetVisibilityListeners = new ListenerSet<>();
-
+    @RedactionType
+    private int mRedactionType = REDACTION_TYPE_NONE;
     public NotificationContentView[] getLayouts() {
         return Arrays.copyOf(mLayouts, mLayouts.length);
     }
@@ -1864,6 +1867,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                 /* headerViewLowPriority= */ headerView,
                 /* onClickListener= */ mExpandClickListener
         );
+    }
+
+    /**
+     * Set the redaction type of the row.
+     */
+    public void setRedactionType(@RedactionType int redactionType) {
+        mRedactionType = redactionType;
     }
 
     /**
@@ -4516,6 +4526,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             pw.print(", expandedWhenPinned: " + mExpandedWhenPinned);
             pw.print(", isMinimized: " + mIsMinimized);
             pw.print(", isAboveShelf: " + isAboveShelf());
+            pw.print(", redactionType: " + mRedactionType);
 
             pw.println();
             if (NotificationContentView.INCLUDE_HEIGHTS_TO_DUMP) {
