@@ -145,7 +145,7 @@ constructor(
                                 KeyguardState.GLANCEABLE_HUB
                             } else if (isOccluded && !isDreaming) {
                                 KeyguardState.OCCLUDED
-                            } else if (hubV2 && isDreaming) {
+                            } else if (isDreaming) {
                                 KeyguardState.DREAMING
                             } else if (hubV2 && isIdleOnCommunal) {
                                 if (SceneContainerFlag.isEnabled) return@collect

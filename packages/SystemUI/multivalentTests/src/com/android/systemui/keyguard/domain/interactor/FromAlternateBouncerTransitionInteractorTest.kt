@@ -229,7 +229,6 @@ class FromAlternateBouncerTransitionInteractorTest(flags: FlagsParameterization)
         }
 
     @Test
-    @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
     fun transitionToDreaming() =
         kosmos.runTest {
             fakePowerRepository.updateWakefulness(
