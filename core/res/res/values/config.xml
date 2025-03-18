@@ -2123,14 +2123,27 @@
     <!-- Package name providing fused location support. Used only when
          config_enableFusedLocationOverlay is false. -->
     <string name="config_fusedLocationProviderPackageName" translatable="false">com.android.location.fused</string>
+    <!-- If true, will fallback to use a different app if the chosen overlay app is determined to
+         be unstable. Used only when config_enableFusedLocationOverlay is true. -->
+    <bool name="config_fusedLocationOverlayUnstableFallback" translatable="false">false</bool>
 
     <!-- If true will use the GNSS hardware implementation to service the GPS_PROVIDER. If false
          will allow the GPS_PROVIDER to be replaced by an app at run-time (restricted to the package
          specified by config_gnssLocationProviderPackageName). -->
     <bool name="config_useGnssHardwareProvider" translatable="false">true</bool>
+    <!-- Whether to enable gnss location provider overlay which allows gnss location provider to
+         be replaced by an app at run-time. When disabled, only the
+         config_gnssLocationProviderPackageName package will be searched for gnss location
+         provider, otherwise any system package is eligible. Anyone who wants to disable the overlay
+         mechanism can set it to false. Used only when config_useGnssHardwareProvider is false -->
+    <bool name="config_enableGnssLocationOverlay" translatable="false">true</bool>
     <!-- Package name providing GNSS location support. Used only when
          config_useGnssHardwareProvider is false. -->
     <string name="config_gnssLocationProviderPackageName" translatable="false">@null</string>
+    <!-- If true, will fallback to use a different app if the chosen overlay app is determined to
+         be unstable. Used only when config_useGnssHardwareProvider is false and
+         config_enableGnssLocationOverlay is true. -->
+    <bool name="config_gnssLocationOverlayUnstableFallback" translatable="false">false</bool>
 
     <!-- Default value for the ADAS GNSS Location Enabled setting if this setting has never been
          set before. -->

@@ -205,3 +205,10 @@ flag {
     bug: "209078566"
 }
 
+flag {
+    name: "service_watcher_unstable_fallback"
+    namespace: "location"
+    description: "Flag for service watcher to fallback on an unstable service"
+    bug: "402997842"
+    is_fixed_read_only: true
+}
