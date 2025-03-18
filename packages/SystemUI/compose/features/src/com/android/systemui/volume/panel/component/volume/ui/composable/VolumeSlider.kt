@@ -127,6 +127,8 @@ fun VolumeSlider(
                 SliderDefaults.colors(
                     activeTickColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    disabledActiveTickColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 )
             Slider(
                 value = state.value,
