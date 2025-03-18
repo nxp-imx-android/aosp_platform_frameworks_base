@@ -22,6 +22,7 @@ import android.content.Context
 import android.graphics.PorterDuff
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.NotificationTopLineView
 import android.view.View
 import android.view.View.GONE
 import android.view.View.MeasureSpec.AT_MOST
@@ -257,6 +258,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val time: DateTimeView? = root.findViewById(R.id.time)
     private val timeDivider: TextView? = root.findViewById(R.id.time_divider)
     private val title: TextView? = root.findViewById(R.id.title)
+    private val topLine: NotificationTopLineView? = root.findViewById(R.id.notification_top_line)
     private val verificationDivider: TextView? = root.findViewById(R.id.verification_divider)
     private val verificationIcon: ImageView? = root.findViewById(R.id.verification_icon)
     private val verificationText: TextView? = root.findViewById(R.id.verification_text)
@@ -264,6 +266,29 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private var oldProgressBarStub = root.findViewById<View>(R.id.progress) as? ViewStub
     private var oldProgressBar: ProgressBar? = null
     private val newProgressBar = root.findViewById<View>(R.id.progress) as? NotificationProgressBar
+
+    private val largeIconSizePx: Int =
+        root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
+
+    private val endMarginPx: Int =
+        if (notificationsRedesignTemplates()) {
+            root.context.resources.getDimensionPixelSize(R.dimen.notification_2025_margin)
+        } else {
+            root.context.resources.getDimensionPixelSize(
+                systemuiR.dimen.notification_shade_content_margin_horizontal
+            )
+        }
+
+    private val imageEndMarginPx: Int
+        get() = largeIconSizePx + 2 * endMarginPx
+
+    private val PromotedNotificationContentModel.imageEndMarginPxIfHasLargeIcon: Int
+        get() =
+            if (!skeletonLargeIcon.isNullOrEmpty()) {
+                imageEndMarginPx
+            } else {
+                0
+            }
 
     init {
         // Hide views that are never visible in the skeleton promoted notification.
@@ -281,6 +306,13 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             ?.drawable
             ?.mutate()
             ?.setColorFilter(SecondaryText.colorInt, PorterDuff.Mode.SRC_IN)
+
+        (rightIcon?.layoutParams as? MarginLayoutParams)?.let {
+            it.marginEnd = endMarginPx
+            rightIcon.layoutParams = it
+        }
+        bigText?.setImageEndMargin(largeIconSizePx + endMarginPx)
+        text?.setImageEndMargin(largeIconSizePx + endMarginPx)
 
         setTextViewColor(appNameDivider, SecondaryText)
         setTextViewColor(headerTextDivider, SecondaryText)
@@ -385,6 +417,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateTimeAndChronometer(content)
 
         updateHeaderDividers(content)
+
+        updateTopLine(content)
     }
 
     private fun updateHeaderDividers(content: PromotedNotificationContentModel) {
@@ -409,15 +443,17 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateConversationHeader(content: PromotedNotificationContentModel) {
-        updateTitle(conversationText, content)
         updateAppName(content)
         updateTimeAndChronometer(content)
-        updateConversationHeaderDividers(content)
-
         updateImageView(verificationIcon, content.verificationIcon)
         updateTextView(verificationText, content.verificationText)
 
+        updateConversationHeaderDividers(content)
+
+        updateTopLine(content)
+
         updateSmallIcon(conversationIcon, content)
+        updateTitle(conversationText, content)
     }
 
     private fun updateConversationHeaderDividers(content: PromotedNotificationContentModel) {
@@ -447,6 +483,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateTitle(titleView: TextView?, content: PromotedNotificationContentModel) {
+        (titleView?.layoutParams as? MarginLayoutParams)?.let {
+            it.marginEnd = content.imageEndMarginPxIfHasLargeIcon
+            titleView.layoutParams = it
+        }
         updateTextView(titleView, content.title, color = PrimaryText)
     }
 
@@ -495,6 +535,10 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         chronometer?.appendFontFeatureSetting("tnum")
     }
 
+    private fun updateTopLine(content: PromotedNotificationContentModel) {
+        topLine?.headerTextMarginEnd = content.imageEndMarginPxIfHasLargeIcon
+    }
+
     private fun inflateOldProgressBar() {
         if (oldProgressBar != null) {
             return
@@ -508,7 +552,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         view: ImageFloatingTextView?,
         content: PromotedNotificationContentModel,
     ) {
-        view?.setHasImage(false)
+        view?.setHasImage(!content.skeletonLargeIcon.isNullOrEmpty())
+        view?.setNumIndentLines(if (content.title != null) 0 else 1)
         updateTextView(view, content.text)
     }
 
