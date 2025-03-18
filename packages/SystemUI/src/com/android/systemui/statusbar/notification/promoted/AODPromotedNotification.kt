@@ -16,7 +16,6 @@
 
 package com.android.systemui.statusbar.notification.promoted
 
-import android.app.Flags
 import android.app.Flags.notificationsRedesignTemplates
 import android.app.Notification
 import android.content.Context
@@ -202,7 +201,7 @@ private class FrameLayoutWithMaxHeight(maxHeight: Int, context: Context) : Frame
 
 private val PromotedNotificationContentModel.layoutResource: Int?
     get() {
-        return if (Flags.notificationsRedesignTemplates()) {
+        return if (notificationsRedesignTemplates()) {
             when (style) {
                 Style.Base -> R.layout.notification_2025_template_expanded_base
                 Style.BigPicture -> R.layout.notification_2025_template_expanded_big_picture
@@ -289,7 +288,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         setTextViewColor(timeDivider, SecondaryText)
         setTextViewColor(verificationDivider, SecondaryText)
 
-        if (Flags.notificationsRedesignTemplates()) {
+        if (notificationsRedesignTemplates()) {
             (mainColumn?.layoutParams as? MarginLayoutParams)?.let { mainColumnMargins ->
                 mainColumnMargins.topMargin =
                     Notification.Builder.getContentMarginTop(
@@ -315,19 +314,15 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private fun updateBase(
         content: PromotedNotificationContentModel,
-        textView: ImageFloatingTextView? = null,
-        showOldProgress: Boolean = true,
+        textView: ImageFloatingTextView? = text,
     ) {
-        updateHeader(content, hideTitle = true)
+        updateHeader(content)
 
         updateTitle(title, content)
-        updateText(textView ?: text, content)
+        updateText(textView, content)
         updateSmallIcon(icon, content)
         updateImageView(rightIcon, content.skeletonLargeIcon)
-
-        if (showOldProgress) {
-            updateOldProgressBar(content)
-        }
+        updateOldProgressBar(content)
     }
 
     private fun updateBigPictureStyle(content: PromotedNotificationContentModel) {
@@ -345,14 +340,15 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateProgressStyle(content: PromotedNotificationContentModel) {
-        updateBase(content, showOldProgress = false)
+        updateBase(content)
 
         updateNewProgressBar(content)
     }
 
     private fun updateOldProgressBar(content: PromotedNotificationContentModel) {
         if (
-            content.oldProgress == null ||
+            content.style == Style.Progress ||
+                content.oldProgress == null ||
                 content.oldProgress.max == 0 ||
                 content.oldProgress.isIndeterminate
         ) {
@@ -381,27 +377,22 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
     }
 
-    private fun updateHeader(
-        content: PromotedNotificationContentModel,
-        hideTitle: Boolean = false,
-    ) {
+    private fun updateHeader(content: PromotedNotificationContentModel) {
         updateAppName(content)
         updateTextView(headerTextSecondary, content.subText)
-        if (!hideTitle) {
-            updateTitle(headerText, content)
-        }
+        // Not calling updateTitle(headerText, content) because the title is always a separate
+        // element in the expanded layout used for AOD RONs.
         updateTimeAndChronometer(content)
 
-        updateHeaderDividers(content, hideTitle = hideTitle)
+        updateHeaderDividers(content)
     }
 
-    private fun updateHeaderDividers(
-        content: PromotedNotificationContentModel,
-        hideTitle: Boolean = false,
-    ) {
-        val hasAppName = content.appName != null && content.appName.isNotEmpty()
-        val hasSubText = content.subText != null && content.subText.isNotEmpty()
-        val hasHeader = content.title != null && content.title.isNotEmpty() && !hideTitle
+    private fun updateHeaderDividers(content: PromotedNotificationContentModel) {
+        val hasAppName = content.appName != null
+        val hasSubText = content.subText != null
+        // Not setting hasHeader = content.title because the title is always a separate element in
+        // the expanded layout used for AOD RONs.
+        val hasHeader = false
         val hasTimeOrChronometer = content.time != null
 
         val hasTextBeforeSubText = hasAppName
@@ -421,7 +412,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateTitle(conversationText, content)
         updateAppName(content)
         updateTimeAndChronometer(content)
-        updateConversationHeaderDividers(content, hideTitle = true)
+        updateConversationHeaderDividers(content)
 
         updateImageView(verificationIcon, content.verificationIcon)
         updateTextView(verificationText, content.verificationText)
@@ -429,15 +420,14 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateSmallIcon(conversationIcon, content)
     }
 
-    private fun updateConversationHeaderDividers(
-        content: PromotedNotificationContentModel,
-        hideTitle: Boolean = false,
-    ) {
-        val hasTitle = content.title != null && !hideTitle
+    private fun updateConversationHeaderDividers(content: PromotedNotificationContentModel) {
+        // Not setting hasTitle = content.title because the title is always a separate element in
+        // the expanded layout used for AOD RONs.
+        val hasTitle = false
         val hasAppName = content.appName != null
         val hasTimeOrChronometer = content.time != null
         val hasVerification =
-            !content.verificationIcon.isNullOrEmpty() || !content.verificationText.isNullOrEmpty()
+            !content.verificationIcon.isNullOrEmpty() || content.verificationText != null
 
         val hasTextBeforeAppName = hasTitle
         val hasTextBeforeTime = hasTitle || hasAppName

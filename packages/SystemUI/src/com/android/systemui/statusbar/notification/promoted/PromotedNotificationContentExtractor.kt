@@ -183,9 +183,10 @@ constructor(
     private fun Notification.smallIconModel(imageModelProvider: ImageModelProvider): ImageModel? =
         imageModelProvider.getImageModel(smallIcon, SmallSquare)
 
-    private fun Notification.title(): CharSequence? = extras?.getCharSequence(EXTRA_TITLE)
+    private fun Notification.title(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
 
-    private fun Notification.bigTitle(): CharSequence? = extras?.getCharSequence(EXTRA_TITLE_BIG)
+    private fun Notification.bigTitle(): CharSequence? =
+        getCharSequenceExtraUnlessEmpty(EXTRA_TITLE_BIG)
 
     private fun Notification.callPerson(): Person? =
         extras?.getParcelable(EXTRA_CALL_PERSON, Person::class.java)
@@ -200,9 +201,10 @@ constructor(
         } ?: title()
     }
 
-    private fun Notification.text(): CharSequence? = extras?.getCharSequence(EXTRA_TEXT)
+    private fun Notification.text(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TEXT)
 
-    private fun Notification.bigText(): CharSequence? = extras?.getCharSequence(EXTRA_BIG_TEXT)
+    private fun Notification.bigText(): CharSequence? =
+        getCharSequenceExtraUnlessEmpty(EXTRA_BIG_TEXT)
 
     private fun Notification.text(style: Notification.Style?): CharSequence? {
         return when (style) {
@@ -211,17 +213,17 @@ constructor(
         } ?: text()
     }
 
-    private fun Notification.subText(): String? = extras?.getString(EXTRA_SUB_TEXT)
+    private fun Notification.subText(): String? = getStringExtraUnlessEmpty(EXTRA_SUB_TEXT)
 
     private fun Notification.shortCriticalText(): String? {
         if (!android.app.Flags.apiRichOngoing()) {
             return null
         }
-        if (this.shortCriticalText != null) {
-            return this.shortCriticalText
+        if (shortCriticalText != null) {
+            return shortCriticalText
         }
         if (Flags.promoteNotificationsAutomatically()) {
-            return this.extras?.getString(EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT)
+            return getStringExtraUnlessEmpty(EXTRA_AUTOMATICALLY_EXTRACTED_SHORT_CRITICAL_TEXT)
         }
         return null
     }
@@ -277,7 +279,7 @@ constructor(
         }
 
     private fun Notification.verificationText(): CharSequence? =
-        extras.getCharSequence(EXTRA_VERIFICATION_TEXT)
+        getCharSequenceExtraUnlessEmpty(EXTRA_VERIFICATION_TEXT)
 
     private fun Notification.Builder.extractStyleContent(
         notification: Notification,
@@ -344,3 +346,11 @@ constructor(
         contentBuilder.newProgress = createProgressModel(0xffffffff.toInt(), 0xff000000.toInt())
     }
 }
+
+private fun Notification.getCharSequenceExtraUnlessEmpty(key: String): CharSequence? =
+    extras?.getCharSequence(key)?.takeUnlessEmpty()
+
+private fun Notification.getStringExtraUnlessEmpty(key: String): String? =
+    extras?.getString(key)?.takeUnlessEmpty()
+
+private fun <T : CharSequence> T.takeUnlessEmpty(): T? = takeUnless { it.isEmpty() }
