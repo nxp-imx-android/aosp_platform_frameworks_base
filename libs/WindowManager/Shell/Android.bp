@@ -161,10 +161,11 @@ android_library {
     srcs: [
         ":wm_shell_protolog_src",
         // TODO(b/168581922) protologtool do not support kotlin(*.kt)
-        "src/com/android/wm/shell/EventLogTags.logtags",
         ":wm_shell-aidls",
         ":wm_shell-shared-aidls",
         ":wm_shell-sources-kt",
+        ":wm_shell_protolog_src",
+        "src/com/android/wm/shell/EventLogTags.logtags",
     ],
     resource_dirs: [
         "res",
