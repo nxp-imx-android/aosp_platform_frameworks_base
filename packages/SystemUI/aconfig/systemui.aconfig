@@ -2172,3 +2172,10 @@ flag {
         purpose: PURPOSE_BUGFIX
    }
 }
+
+flag {
+    name: "extended_apps_shortcut_category"
+    namespace: "systemui"
+    description: "Allow users to add shortcuts to open apps that are not present in the apps category in shortcut helper by default"
+    bug: "394290928"
+}
