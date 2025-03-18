@@ -306,9 +306,9 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
 
         // This method is always called, even with PI == null.
         if (resultIntent == null) {
-            verify(mServiceContext, times(1)).sendIntentSender(isNull(IntentSender.class));
+            verify(mServiceContext, times(1)).sendIntentSender(isNull());
         } else {
-            verify(mServiceContext, times(1)).sendIntentSender(notNull(IntentSender.class));
+            verify(mServiceContext, times(1)).sendIntentSender(notNull());
         }
 
         runWithCaller(CALLING_PACKAGE_1, USER_P0, () -> {
@@ -619,7 +619,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
                     makeResultIntent()));
 
             // The intent should be sent right away.
-            verify(mServiceContext, times(1)).sendIntentSender(notNull(IntentSender.class));
+            verify(mServiceContext, times(1)).sendIntentSender(notNull());
         });
 
         // Already pinned.
@@ -661,7 +661,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
             assertTrue(request.accept());
 
             // The intent is only sent once, so times(1).
-            verify(mServiceContext, times(1)).sendIntentSender(isNull(IntentSender.class));
+            verify(mServiceContext, times(1)).sendIntentSender(isNull());
         });
 
         // Still pinned.
@@ -698,7 +698,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
                     makeResultIntent()));
 
             // The intent should be sent right away.
-            verify(mServiceContext, times(1)).sendIntentSender(notNull(IntentSender.class));
+            verify(mServiceContext, times(1)).sendIntentSender(notNull());
         });
 
         // Already pinned.
@@ -742,7 +742,7 @@ public class ShortcutManagerTest8 extends BaseShortcutManagerTest {
             assertTrue(request.accept());
 
             // The intent is only sent once, so times(1).
-            verify(mServiceContext, times(1)).sendIntentSender(isNull(IntentSender.class));
+            verify(mServiceContext, times(1)).sendIntentSender(isNull());
         });
 
         // Still pinned.

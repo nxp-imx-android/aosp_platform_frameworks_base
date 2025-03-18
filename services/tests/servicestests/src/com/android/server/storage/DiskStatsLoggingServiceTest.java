@@ -85,7 +85,7 @@ public class DiskStatsLoggingServiceTest extends AndroidTestCase {
         mDownloads = new TemporaryFolder();
         mDownloads.create();
         mStorageStats = new ExternalStorageStats();
-        when(mSsm.queryExternalStatsForUser(isNull(String.class), any(UserHandle.class)))
+        when(mSsm.queryExternalStatsForUser((String)isNull(), any(UserHandle.class)))
                 .thenReturn(mStorageStats);
         when(mJobService.getSystemService(anyString())).thenReturn(mSsm);
     }
