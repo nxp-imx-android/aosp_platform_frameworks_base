@@ -444,7 +444,7 @@ public class MediaQualityService extends SystemService {
         public SoundProfile createSoundProfile(SoundProfile sp, int userId) {
             if ((sp.getPackageName() != null && !sp.getPackageName().isEmpty()
                     && !incomingPackageEqualsCallingUidPackage(sp.getPackageName()))
-                    && !hasGlobalPictureQualityServicePermission()) {
+                    && !hasGlobalSoundQualityServicePermission()) {
                 mMqManagerNotifier.notifyOnSoundProfileError(null, SoundProfile.ERROR_NO_PERMISSION,
                         Binder.getCallingUid(), Binder.getCallingPid());
             }
