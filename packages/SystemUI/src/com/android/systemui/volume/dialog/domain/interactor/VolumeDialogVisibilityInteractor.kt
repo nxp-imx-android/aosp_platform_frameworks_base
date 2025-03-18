@@ -108,6 +108,7 @@ constructor(
 
     /** Resets current dialog timeout. */
     fun resetDismissTimeout() {
+        controller.userActivity()
         mutableDismissDialogEvents.tryEmit(Unit)
     }
 

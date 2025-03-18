@@ -143,6 +143,7 @@ class VolumeDialogVisibilityInteractorTest : SysuiTestCase() {
 
                 assertThat(visibilityModel)
                     .isInstanceOf(VolumeDialogVisibilityModel.Visible::class.java)
+                assertThat(fakeVolumeDialogController.hasUserActivity).isTrue()
             }
         }
 }
