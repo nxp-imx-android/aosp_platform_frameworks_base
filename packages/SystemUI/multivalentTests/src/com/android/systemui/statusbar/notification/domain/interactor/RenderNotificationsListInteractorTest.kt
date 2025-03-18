@@ -28,7 +28,8 @@ import com.android.systemui.statusbar.notification.collection.GroupEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.byKey
 import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.mock
@@ -130,7 +131,7 @@ class RenderNotificationsListInteractorTest : SysuiTestCase() {
             val promoted2 =
                 mockNotificationEntry(
                     "key2",
-                    promotedContent = PromotedNotificationContentModel.Builder("key2").build(),
+                    promotedContent = PromotedNotificationContentBuilder("key2").build(),
                 )
 
             underTest.setRenderedList(listOf(notPromoted1, promoted2))
@@ -149,7 +150,7 @@ class RenderNotificationsListInteractorTest : SysuiTestCase() {
     private fun mockNotificationEntry(
         key: String,
         rank: Int = 0,
-        promotedContent: PromotedNotificationContentModel? = null,
+        promotedContent: PromotedNotificationContentModels? = null,
     ): NotificationEntry {
         val nBuilder = Notification.Builder(context, "a")
         val notification = nBuilder.build()
@@ -165,7 +166,7 @@ class RenderNotificationsListInteractorTest : SysuiTestCase() {
             whenever(this.representativeEntry).thenReturn(this)
             whenever(this.ranking).thenReturn(RankingBuilder().setRank(rank).build())
             whenever(this.sbn).thenReturn(mockSbn)
-            whenever(this.promotedNotificationContentModel).thenReturn(promotedContent)
+            whenever(this.promotedNotificationContentModels).thenReturn(promotedContent)
         }
     }
 }

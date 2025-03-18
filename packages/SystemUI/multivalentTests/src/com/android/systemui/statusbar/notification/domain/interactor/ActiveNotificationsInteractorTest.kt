@@ -29,7 +29,7 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.setActiveNotifs
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -170,7 +170,7 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
             val promoted1 =
                 activeNotificationModel(
                     key = "notif1",
-                    promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                 )
             val notPromoted2 = activeNotificationModel(key = "notif2", promotedContent = null)
 
@@ -208,14 +208,14 @@ class ActiveNotificationsInteractorTest : SysuiTestCase() {
             val promoted1 =
                 activeNotificationModel(
                     key = "notif1",
-                    promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                 )
             val notPromoted2 = activeNotificationModel(key = "notif2", promotedContent = null)
             val notPromoted3 = activeNotificationModel(key = "notif3", promotedContent = null)
             val promoted4 =
                 activeNotificationModel(
                     key = "notif4",
-                    promotedContent = PromotedNotificationContentModel.Builder("notif4").build(),
+                    promotedContent = PromotedNotificationContentBuilder("notif4").build(),
                 )
 
             activeNotificationListRepository.activeNotifications.value =

@@ -33,18 +33,21 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator.Companion.EXTRA_WAS_AUTOMATICALLY_PROMOTED
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.Style
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.row.RowImageInflater
 import com.android.systemui.testKosmos
 import com.android.systemui.util.time.fakeSystemClock
 import com.android.systemui.util.time.systemClock
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertNotNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 import org.junit.Test
@@ -112,12 +115,43 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             setContentText(TEST_CONTENT_TEXT)
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.subText).isEqualTo(TEST_SUB_TEXT)
-        assertThat(content?.title).isEqualTo(TEST_CONTENT_TITLE)
-        assertThat(content?.text).isEqualTo(TEST_CONTENT_TEXT)
+        content.privateVersion.apply {
+            assertThat(subText).isEqualTo(TEST_SUB_TEXT)
+            assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
+            assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
+        }
+
+        content.publicVersion.apply {
+            assertThat(subText).isNull()
+            assertThat(title).isNull()
+            assertThat(text).isNull()
+        }
+    }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractsContent_commonFields_noRedaction() {
+        val entry = createEntry {
+            setSubText(TEST_SUB_TEXT)
+            setContentTitle(TEST_CONTENT_TITLE)
+            setContentText(TEST_CONTENT_TEXT)
+        }
+
+        val content = requireContent(entry, redactionType = REDACTION_TYPE_NONE)
+
+        content.privateVersion.apply {
+            assertThat(subText).isEqualTo(TEST_SUB_TEXT)
+            assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
+            assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
+        }
+
+        content.publicVersion.apply {
+            assertThat(subText).isEqualTo(TEST_SUB_TEXT)
+            assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
+            assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
+        }
     }
 
     @Test
@@ -125,9 +159,9 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     fun extractContent_wasPromotedAutomatically_false() {
         val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry).privateVersion
 
-        assertThat(content!!.wasPromotedAutomatically).isFalse()
+        assertThat(content.wasPromotedAutomatically).isFalse()
     }
 
     @Test
@@ -135,9 +169,9 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     fun extractContent_wasPromotedAutomatically_true() {
         val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, true) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry).privateVersion
 
-        assertThat(content!!.wasPromotedAutomatically).isTrue()
+        assertThat(content.wasPromotedAutomatically).isTrue()
     }
 
     @Test
@@ -146,10 +180,9 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     fun extractContent_apiFlagOff_shortCriticalTextNotExtracted() {
         val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry).privateVersion
 
-        assertThat(content).isNotNull()
-        assertThat(content?.text).isNull()
+        assertThat(content.text).isNull()
     }
 
     @Test
@@ -161,10 +194,9 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     fun extractContent_apiFlagOn_shortCriticalTextExtracted() {
         val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry).privateVersion
 
-        assertThat(content).isNotNull()
-        assertThat(content?.shortCriticalText).isEqualTo(TEST_SHORT_CRITICAL_TEXT)
+        assertThat(content.shortCriticalText).isEqualTo(TEST_SHORT_CRITICAL_TEXT)
     }
 
     @Test
@@ -176,10 +208,9 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     fun extractContent_noShortCriticalTextSet_textIsNull() {
         val entry = createEntry { setShortCriticalText(null) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry).privateVersion
 
-        assertThat(content).isNotNull()
-        assertThat(content?.shortCriticalText).isNull()
+        assertThat(content.shortCriticalText).isNull()
     }
 
     @Test
@@ -379,17 +410,14 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             setWhen(providedCurrentTime)
         }
 
-        val content = extractContent(entry)
-
-        assertThat(content).isNotNull()
+        val content = requireContent(entry).privateVersion
 
         when (expected) {
-            ExpectedTime.Null -> assertThat(content?.time).isNull()
+            ExpectedTime.Null -> assertThat(content.time).isNull()
 
             ExpectedTime.Time -> {
-                val actual = content?.time as? When.Time
-                assertThat(actual).isNotNull()
-                assertThat(actual?.currentTimeMillis).isEqualTo(expectedCurrentTime)
+                val actual = assertNotNull(content.time as? When.Time)
+                assertThat(actual.currentTimeMillis).isEqualTo(expectedCurrentTime)
             }
 
             ExpectedTime.CountDown,
@@ -398,23 +426,24 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
                     expectedCurrentTime + systemClock.elapsedRealtime() -
                         systemClock.currentTimeMillis()
 
-                val actual = content?.time as? When.Chronometer
-                assertThat(actual).isNotNull()
-                assertThat(actual?.elapsedRealtimeMillis).isEqualTo(expectedElapsedRealtime)
-                assertThat(actual?.isCountDown).isEqualTo(expected == ExpectedTime.CountDown)
+                val actual = assertNotNull(content.time as? When.Chronometer)
+                assertThat(actual.elapsedRealtimeMillis).isEqualTo(expectedElapsedRealtime)
+                assertThat(actual.isCountDown).isEqualTo(expected == ExpectedTime.CountDown)
             }
         }
     }
+
+    // TODO: Add tests for the style of the publicVersion once we implement that
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
     fun extractContent_fromBaseStyle() {
         val entry = createEntry { setStyle(null) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.Base)
+        assertThat(content.privateVersion.style).isEqualTo(Style.Base)
+        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
     }
 
     @Test
@@ -422,10 +451,10 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     fun extractContent_fromBigPictureStyle() {
         val entry = createEntry { setStyle(BigPictureStyle()) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.BigPicture)
+        assertThat(content.privateVersion.style).isEqualTo(Style.BigPicture)
+        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
     }
 
     @Test
@@ -442,12 +471,15 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             )
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.BigText)
-        assertThat(content?.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
-        assertThat(content?.text).isEqualTo(TEST_BIG_TEXT)
+        assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
+        assertThat(content.privateVersion.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
+        assertThat(content.privateVersion.text).isEqualTo(TEST_BIG_TEXT)
+
+        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+        assertThat(content.publicVersion.title).isNull()
+        assertThat(content.publicVersion.text).isNull()
     }
 
     @Test
@@ -464,12 +496,15 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             )
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.BigText)
-        assertThat(content?.title).isEqualTo(TEST_CONTENT_TITLE)
-        assertThat(content?.text).isEqualTo(TEST_BIG_TEXT)
+        assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
+        assertThat(content.privateVersion.title).isEqualTo(TEST_CONTENT_TITLE)
+        assertThat(content.privateVersion.text).isEqualTo(TEST_BIG_TEXT)
+
+        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+        assertThat(content.publicVersion.title).isNull()
+        assertThat(content.publicVersion.text).isNull()
     }
 
     @Test
@@ -486,12 +521,15 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             )
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.BigText)
-        assertThat(content?.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
-        assertThat(content?.text).isEqualTo(TEST_CONTENT_TEXT)
+        assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
+        assertThat(content.privateVersion.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
+        assertThat(content.privateVersion.text).isEqualTo(TEST_CONTENT_TEXT)
+
+        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+        assertThat(content.publicVersion.title).isNull()
+        assertThat(content.publicVersion.text).isNull()
     }
 
     @Test
@@ -506,11 +544,14 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             )
         val entry = createEntry { setStyle(CallStyle.forOngoingCall(TEST_PERSON, hangUpIntent)) }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.Call)
-        assertThat(content?.title).isEqualTo(TEST_PERSON_NAME)
+        assertThat(content.privateVersion.style).isEqualTo(Style.Call)
+        assertThat(content.privateVersion.title).isEqualTo(TEST_PERSON_NAME)
+
+        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+        assertThat(content.publicVersion.title).isNull()
+        assertThat(content.publicVersion.text).isNull()
     }
 
     @Test
@@ -524,13 +565,17 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             setStyle(ProgressStyle().addProgressSegment(Segment(100)).setProgress(75))
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.Progress)
-        assertThat(content?.newProgress).isNotNull()
-        assertThat(content?.newProgress?.progress).isEqualTo(75)
-        assertThat(content?.newProgress?.progressMax).isEqualTo(100)
+        assertThat(content.privateVersion.style).isEqualTo(Style.Progress)
+        val newProgress = assertNotNull(content.privateVersion.newProgress)
+        assertThat(newProgress.progress).isEqualTo(75)
+        assertThat(newProgress.progressMax).isEqualTo(100)
+
+        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+        assertThat(content.publicVersion.title).isNull()
+        assertThat(content.publicVersion.text).isNull()
+        assertThat(content.publicVersion.newProgress).isNull()
     }
 
     @Test
@@ -540,10 +585,11 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             setStyle(MessagingStyle(TEST_PERSON).addMessage("message text", 0L, TEST_PERSON))
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.style).isEqualTo(Style.Ineligible)
+        assertThat(content.privateVersion.style).isEqualTo(Style.Ineligible)
+
+        assertThat(content.publicVersion.style).isEqualTo(Style.Ineligible)
     }
 
     @Test
@@ -553,18 +599,13 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ false)
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
 
-        assertThat(content).isNotNull()
+        val oldProgress = assertNotNull(content.privateVersion.oldProgress)
 
-        val oldProgress = content?.oldProgress
-        assertThat(oldProgress).isNotNull()
-
-        assertThat(content).isNotNull()
-        assertThat(content?.oldProgress).isNotNull()
-        assertThat(content?.oldProgress?.progress).isEqualTo(TEST_PROGRESS)
-        assertThat(content?.oldProgress?.max).isEqualTo(TEST_PROGRESS_MAX)
-        assertThat(content?.oldProgress?.isIndeterminate).isFalse()
+        assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
+        assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
+        assertThat(oldProgress.isIndeterminate).isFalse()
     }
 
     @Test
@@ -574,18 +615,25 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
             setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ true)
         }
 
-        val content = extractContent(entry)
+        val content = requireContent(entry)
+        val oldProgress = assertNotNull(content.privateVersion.oldProgress)
 
-        assertThat(content).isNotNull()
-        assertThat(content?.oldProgress).isNotNull()
-        assertThat(content?.oldProgress?.progress).isEqualTo(TEST_PROGRESS)
-        assertThat(content?.oldProgress?.max).isEqualTo(TEST_PROGRESS_MAX)
-        assertThat(content?.oldProgress?.isIndeterminate).isTrue()
+        assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
+        assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
+        assertThat(oldProgress.isIndeterminate).isTrue()
     }
 
-    private fun extractContent(entry: NotificationEntry): PromotedNotificationContentModel? {
+    private fun requireContent(
+        entry: NotificationEntry,
+        redactionType: Int = REDACTION_TYPE_PUBLIC,
+    ): PromotedNotificationContentModels = assertNotNull(extractContent(entry, redactionType))
+
+    private fun extractContent(
+        entry: NotificationEntry,
+        redactionType: Int = REDACTION_TYPE_PUBLIC,
+    ): PromotedNotificationContentModels? {
         val recoveredBuilder = Notification.Builder(context, entry.sbn.notification)
-        return underTest.extractContent(entry, recoveredBuilder, imageModelProvider)
+        return underTest.extractContent(entry, recoveredBuilder, redactionType, imageModelProvider)
     }
 
     private fun createEntry(

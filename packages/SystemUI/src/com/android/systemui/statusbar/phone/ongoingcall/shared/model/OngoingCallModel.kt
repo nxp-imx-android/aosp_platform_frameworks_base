@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.phone.ongoingcall.shared.model
 
 import android.app.PendingIntent
 import com.android.systemui.statusbar.StatusBarIconView
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 
 /** Represents the state of any ongoing calls. */
 sealed interface OngoingCallModel {
@@ -47,7 +47,7 @@ sealed interface OngoingCallModel {
         val intent: PendingIntent?,
         val notificationKey: String,
         val appName: String,
-        val promotedContent: PromotedNotificationContentModel?,
+        val promotedContent: PromotedNotificationContentModels?,
         val isAppVisible: Boolean,
     ) : OngoingCallModel
 }

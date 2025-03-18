@@ -26,7 +26,7 @@ import com.android.systemui.statusbar.notification.data.model.activeNotification
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.data.repository.addNotif
 import com.android.systemui.statusbar.notification.data.repository.removeNotif
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.shared.CallType
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.data.repository.ongoingCallRepository
@@ -39,7 +39,7 @@ fun inCallModel(
     intent: PendingIntent? = null,
     notificationKey: String = "test",
     appName: String = "",
-    promotedContent: PromotedNotificationContentModel? = null,
+    promotedContent: PromotedNotificationContentModels? = null,
     isAppVisible: Boolean = false,
 ) =
     OngoingCallModel.InCall(
@@ -77,7 +77,7 @@ object OngoingCallTestHelper {
         key: String = "notif",
         startTimeMs: Long = 1000L,
         statusBarChipIconView: StatusBarIconView? = createStatusBarIconViewOrNull(),
-        promotedContent: PromotedNotificationContentModel? = null,
+        promotedContent: PromotedNotificationContentModels? = null,
         contentIntent: PendingIntent? = null,
         uid: Int = DEFAULT_UID,
         appName: String = "Fake name",

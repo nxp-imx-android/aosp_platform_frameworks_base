@@ -43,6 +43,7 @@ import com.android.systemui.statusbar.notification.data.repository.ActiveNotific
 import com.android.systemui.statusbar.notification.data.repository.UnconfinedFakeHeadsUpRowRepository
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel.When
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
@@ -101,7 +102,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -121,7 +122,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -142,7 +143,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = "notif",
                         appName = "Fake App Name",
                         statusBarChipIcon = icon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif").build(),
                     )
                 )
             )
@@ -172,7 +173,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                         key = notifKey,
                         appName = "Fake App Name",
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentModel.Builder(notifKey).build(),
+                        promotedContent = PromotedNotificationContentBuilder(notifKey).build(),
                     )
                 )
             )
@@ -195,7 +196,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.colors =
                         PromotedNotificationContentModel.Colors(
                             backgroundColor = 56,
@@ -229,12 +230,12 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = "notif1",
                         statusBarChipIcon = firstIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif1").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif1").build(),
                     ),
                     activeNotificationModel(
                         key = "notif2",
                         statusBarChipIcon = secondIcon,
-                        promotedContent = PromotedNotificationContentModel.Builder("notif2").build(),
+                        promotedContent = PromotedNotificationContentBuilder("notif2").build(),
                     ),
                     activeNotificationModel(
                         key = "notif3",
@@ -264,13 +265,12 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key = firstKey,
                         statusBarChipIcon = null,
-                        promotedContent = PromotedNotificationContentModel.Builder(firstKey).build(),
+                        promotedContent = PromotedNotificationContentBuilder(firstKey).build(),
                     ),
                     activeNotificationModel(
                         key = secondKey,
                         statusBarChipIcon = null,
-                        promotedContent =
-                            PromotedNotificationContentModel.Builder(secondKey).build(),
+                        promotedContent = PromotedNotificationContentBuilder(secondKey).build(),
                     ),
                     activeNotificationModel(
                         key = thirdKey,
@@ -294,7 +294,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.shortCriticalText = "Arrived"
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                 }
@@ -321,7 +321,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.chips)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply { this.time = null }
+                PromotedNotificationContentBuilder("notif").applyToShared { this.time = null }
             setNotifs(
                 listOf(
                     activeNotificationModel(
@@ -346,7 +346,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.wasPromotedAutomatically = true
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                 }
@@ -374,7 +374,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.wasPromotedAutomatically = false
                     this.time = When.Time(currentTime + 30.minutes.inWholeMilliseconds)
                 }
@@ -402,7 +402,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 13.minutes.inWholeMilliseconds)
                 }
 
@@ -430,7 +430,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 500)
                 }
 
@@ -458,7 +458,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime)
                 }
 
@@ -486,7 +486,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime - 2.minutes.inWholeMilliseconds)
                 }
 
@@ -515,7 +515,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 3.minutes.inWholeMilliseconds)
                 }
 
@@ -555,7 +555,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val whenElapsed = currentElapsed - 1.minutes.inWholeMilliseconds
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time =
                         When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = false)
                 }
@@ -592,7 +592,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             val whenElapsed = currentElapsed + 10.minutes.inWholeMilliseconds
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time =
                         When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = true)
                 }
@@ -623,7 +623,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             setNotifs(
@@ -653,7 +653,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             setNotifs(
@@ -690,11 +690,11 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             val otherPromotedContentBuilder =
-                PromotedNotificationContentModel.Builder("other notif").apply {
+                PromotedNotificationContentBuilder("other notif").applyToShared {
                     this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             val icon = createStatusBarIconViewOrNull()
@@ -738,7 +738,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             fakeSystemClock.setCurrentTimeMillis(currentTime)
 
             val promotedContentBuilder =
-                PromotedNotificationContentModel.Builder("notif").apply {
+                PromotedNotificationContentBuilder("notif").applyToShared {
                     this.time = When.Time(currentTime + 10.minutes.inWholeMilliseconds)
                 }
             setNotifs(
@@ -781,7 +781,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key,
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentModel.Builder(key).build(),
+                        promotedContent = PromotedNotificationContentBuilder(key).build(),
                     )
                 )
             )
@@ -809,7 +809,7 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                     activeNotificationModel(
                         key,
                         statusBarChipIcon = createStatusBarIconViewOrNull(),
-                        promotedContent = PromotedNotificationContentModel.Builder(key).build(),
+                        promotedContent = PromotedNotificationContentBuilder(key).build(),
                     )
                 )
             )
