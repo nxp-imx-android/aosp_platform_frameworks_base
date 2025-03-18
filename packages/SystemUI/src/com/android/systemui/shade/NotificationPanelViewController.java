@@ -989,8 +989,10 @@ public final class NotificationPanelViewController implements
                         mBlurConfig.getMaxBlurRadiusPx(),
                         Shader.TileMode.CLAMP);
             }
+            debugLog("Applying blur RenderEffect to shade.");
             mView.setRenderEffect(mBlurRenderEffect);
         } else {
+            debugLog("Resetting blur RenderEffect on shade.");
             mView.setRenderEffect(null);
         }
     }

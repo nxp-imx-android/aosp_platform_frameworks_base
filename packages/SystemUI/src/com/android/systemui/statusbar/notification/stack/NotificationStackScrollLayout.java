@@ -6076,7 +6076,9 @@ public class NotificationStackScrollLayout
         if (mBlurRadius > 0) {
             mBlurEffect =
                     RenderEffect.createBlurEffect(mBlurRadius, mBlurRadius, Shader.TileMode.CLAMP);
+            spewLog("Setting up blur RenderEffect for NotificationStackScrollLayout");
         } else {
+            spewLog("Clearing the blur RenderEffect setup for NotificationStackScrollLayout");
             mBlurEffect = null;
         }
     }
@@ -6252,6 +6254,7 @@ public class NotificationStackScrollLayout
     @Override
     protected void dispatchDraw(@NonNull Canvas canvas) {
         if (mBlurEffect != null) {
+            spewLog("Applying blur RenderEffect to NotificationStackScrollLayout");
             // reuse the cached RenderNode to blur
             mBlurNode.setPosition(0, 0, canvas.getWidth(), canvas.getHeight());
             mBlurNode.setRenderEffect(mBlurEffect);
@@ -7024,5 +7027,11 @@ public class NotificationStackScrollLayout
     public void setMaxTopPadding(int maxTopPadding) {
         SceneContainerFlag.assertInLegacyMode();
         mMaxTopPadding = maxTopPadding;
+    }
+
+    private void spewLog(String logMsg) {
+        if (SPEW) {
+            Log.v(TAG, logMsg);
+        }
     }
 }
