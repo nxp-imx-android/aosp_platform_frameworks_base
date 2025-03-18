@@ -162,6 +162,7 @@ fun LargeTileContent(
             colors = colors,
             accessibilityUiState = accessibilityUiState,
             isVisible = isVisible,
+            modifier = Modifier.weight(1f),
         )
 
         if (sideDrawable != null) {
