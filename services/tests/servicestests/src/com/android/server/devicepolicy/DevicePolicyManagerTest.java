@@ -816,14 +816,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
                 MockUtils.checkIntentAction(
                         DeviceAdminReceiver.ACTION_DEVICE_ADMIN_DISABLED),
                 MockUtils.checkUserHandle(CALLER_USER_HANDLE),
-                isNull(String.class),
+                isNull(),
                 eq(AppOpsManager.OP_NONE),
                 any(Bundle.class),
                 any(BroadcastReceiver.class),
                 eq(dpms.mHandler),
                 eq(Activity.RESULT_OK),
-                isNull(String.class),
-                isNull(Bundle.class));
+                isNull(),
+                isNull());
 
         assertThat(dpm.isAdminActiveAsUser(admin1, CALLER_USER_HANDLE)).isFalse();
         verify(getServices().usageStatsManagerInternal).setActiveAdminApps(
@@ -873,14 +873,14 @@ public class DevicePolicyManagerTest extends DpmTestBase {
                 MockUtils.checkIntentAction(
                         DeviceAdminReceiver.ACTION_DEVICE_ADMIN_DISABLED),
                 MockUtils.checkUserHandle(CALLER_USER_HANDLE),
-                isNull(String.class),
+                isNull(),
                 eq(AppOpsManager.OP_NONE),
                 any(Bundle.class),
                 any(BroadcastReceiver.class),
                 eq(dpms.mHandler),
                 eq(Activity.RESULT_OK),
-                isNull(String.class),
-                isNull(Bundle.class));
+                isNull(),
+                isNull());
 
         assertThat(dpm.isAdminActiveAsUser(admin1, CALLER_USER_HANDLE)).isFalse();
         verify(getServices().usageStatsManagerInternal).setActiveAdminApps(
