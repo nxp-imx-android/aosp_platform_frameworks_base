@@ -22,8 +22,7 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.Back
 import com.android.compose.animation.scene.Swipe
 import com.android.compose.animation.scene.UserActionResult.HideOverlay
-import com.android.compose.animation.scene.UserActionResult.ShowOverlay
-import com.android.compose.animation.scene.UserActionResult.ShowOverlay.HideCurrentOverlays
+import com.android.compose.animation.scene.UserActionResult.ReplaceByOverlay
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.flags.EnableSceneContainer
@@ -91,10 +90,7 @@ class QuickSettingsShadeOverlayActionsViewModelTest : SysuiTestCase() {
 
             val action =
                 (actions?.get(Swipe.Down(fromSource = SceneContainerArea.StartHalf))
-                    as? ShowOverlay)
+                    as? ReplaceByOverlay)
             assertThat(action?.overlay).isEqualTo(Overlays.NotificationsShade)
-            val overlaysToHide = action?.hideCurrentOverlays as? HideCurrentOverlays.Some
-            assertThat(overlaysToHide).isNotNull()
-            assertThat(overlaysToHide?.overlays).containsExactly(Overlays.QuickSettingsShade)
         }
 }
