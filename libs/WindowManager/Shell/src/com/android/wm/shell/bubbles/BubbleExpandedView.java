@@ -843,7 +843,8 @@ public class BubbleExpandedView extends LinearLayout {
         onContainerClipUpdate();
     }
 
-    private void onContainerClipUpdate() {
+    /** Updates the clip bounds. */
+    public void onContainerClipUpdate() {
         if (mTopClip == 0 && mBottomClip == 0 && mRightClip == 0 && mLeftClip == 0) {
             if (mIsClipping) {
                 mIsClipping = false;

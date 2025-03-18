@@ -62,6 +62,7 @@ import com.android.wm.shell.bubbles.BubbleEducationController;
 import com.android.wm.shell.bubbles.BubbleLogger;
 import com.android.wm.shell.bubbles.BubblePositioner;
 import com.android.wm.shell.bubbles.BubbleResizabilityChecker;
+import com.android.wm.shell.bubbles.BubbleTaskUnfoldTransitionMerger;
 import com.android.wm.shell.bubbles.bar.BubbleBarDragListener;
 import com.android.wm.shell.bubbles.storage.BubblePersistentRepository;
 import com.android.wm.shell.common.DisplayController;
@@ -240,6 +241,13 @@ public abstract class WMShellModule {
             @ShellBackgroundThread ShellExecutor bgExecutor) {
         return new BubbleData(
                 context, logger, positioner, educationController, mainExecutor, bgExecutor);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<BubbleTaskUnfoldTransitionMerger> provideBubbleTaskUnfoldTransitionMerger(
+            Optional<BubbleController> bubbleController) {
+        return bubbleController.map(controller -> controller);
     }
 
     // Note: Handler needed for LauncherApps.register
@@ -703,7 +711,8 @@ public abstract class WMShellModule {
             Transitions transitions,
             @ShellMainThread ShellExecutor executor,
             @ShellMainThread Handler handler,
-            ShellInit shellInit) {
+            ShellInit shellInit,
+            Optional<BubbleTaskUnfoldTransitionMerger> bubbleTaskUnfoldTransitionMerger) {
         return new UnfoldTransitionHandler(
                 shellInit,
                 progressProvider.get(),
@@ -712,7 +721,8 @@ public abstract class WMShellModule {
                 transactionPool,
                 executor,
                 handler,
-                transitions);
+                transitions,
+                bubbleTaskUnfoldTransitionMerger);
     }
 
     @WMSingleton
