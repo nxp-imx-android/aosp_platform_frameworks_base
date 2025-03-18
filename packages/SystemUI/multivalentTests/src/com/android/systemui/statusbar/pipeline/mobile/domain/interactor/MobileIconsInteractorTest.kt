@@ -58,8 +58,35 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class MobileIconsInteractorTest : SysuiTestCase() {
-    private val kosmos by lazy {
+class MobileIconsInteractorTest : MobileIconsInteractorTestBase() {
+    override fun Kosmos.createInteractor() =
+        MobileIconsInteractorImpl(
+            mobileConnectionsRepository,
+            carrierConfigTracker,
+            tableLogger = mock(),
+            connectivityRepository,
+            FakeUserSetupRepository(),
+            testScope.backgroundScope,
+            context,
+            featureFlagsClassic,
+        )
+
+    @Test
+    fun iconInteractor_cachedPerSubId() =
+        kosmos.runTest {
+            connectionsRepository.setSubscriptions(listOf(SUB_1))
+            runCurrent()
+
+            val interactor1 = underTest.getMobileConnectionInteractorForSubId(SUB_1_ID)
+            val interactor2 = underTest.getMobileConnectionInteractorForSubId(SUB_1_ID)
+
+            assertThat(interactor1).isNotNull()
+            assertThat(interactor1).isSameInstanceAs(interactor2)
+        }
+}
+
+abstract class MobileIconsInteractorTestBase : SysuiTestCase() {
+    protected val kosmos by lazy {
         testKosmos().apply {
             mobileConnectionsRepositoryLogbufferName = "MobileIconsInteractorTest"
             mobileConnectionsRepository.fake.run {
@@ -78,22 +105,13 @@ class MobileIconsInteractorTest : SysuiTestCase() {
     }
 
     // shortcut rename
-    private val Kosmos.connectionsRepository by Fixture { mobileConnectionsRepository.fake }
+    protected val Kosmos.connectionsRepository by Fixture { mobileConnectionsRepository.fake }
 
-    private val Kosmos.carrierConfigTracker by Fixture { mock<CarrierConfigTracker>() }
+    protected val Kosmos.carrierConfigTracker by Fixture { mock<CarrierConfigTracker>() }
 
-    private val Kosmos.underTest by Fixture {
-        MobileIconsInteractorImpl(
-            mobileConnectionsRepository,
-            carrierConfigTracker,
-            tableLogger = mock(),
-            connectivityRepository,
-            FakeUserSetupRepository(),
-            testScope.backgroundScope,
-            context,
-            featureFlagsClassic,
-        )
-    }
+    protected val Kosmos.underTest by Fixture { createInteractor() }
+
+    abstract fun Kosmos.createInteractor(): MobileIconsInteractor
 
     @Test
     fun filteredSubscriptions_default() =
@@ -744,12 +762,15 @@ class MobileIconsInteractorTest : SysuiTestCase() {
             val latest by collectLastValue(underTest.mobileIsDefault)
 
             connectionsRepository.mobileIsDefault.value = true
+            runCurrent()
             assertThat(latest).isTrue()
 
             connectionsRepository.mobileIsDefault.value = false
+            runCurrent()
             assertThat(latest).isFalse()
 
             connectionsRepository.hasCarrierMergedConnection.value = true
+            runCurrent()
             assertThat(latest).isTrue()
         }
 
@@ -871,16 +892,6 @@ class MobileIconsInteractorTest : SysuiTestCase() {
             kosmos.connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.WIFI))
 
             assertThat(latest).isFalse()
-        }
-
-    @Test
-    fun iconInteractor_cachedPerSubId() =
-        kosmos.runTest {
-            val interactor1 = underTest.getMobileConnectionInteractorForSubId(SUB_1_ID)
-            val interactor2 = underTest.getMobileConnectionInteractorForSubId(SUB_1_ID)
-
-            assertThat(interactor1).isNotNull()
-            assertThat(interactor1).isSameInstanceAs(interactor2)
         }
 
     @Test
@@ -1007,8 +1018,8 @@ class MobileIconsInteractorTest : SysuiTestCase() {
 
     companion object {
 
-        private const val SUB_1_ID = 1
-        private val SUB_1 =
+        const val SUB_1_ID = 1
+        val SUB_1 =
             SubscriptionModel(
                 subscriptionId = SUB_1_ID,
                 carrierName = "Carrier $SUB_1_ID",
