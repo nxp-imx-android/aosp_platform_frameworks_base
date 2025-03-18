@@ -25,6 +25,7 @@ import static android.view.KeyEvent.KEYCODE_UNKNOWN;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.hardware.input.Flags.enableCustomizableInputGestures;
+import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.hardware.input.Flags.keyEventActivityDetection;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.hardware.input.Flags.useKeyGestureEventHandler;
@@ -2659,6 +2660,8 @@ public class InputManagerService extends IInputManager.Stub
     @SuppressWarnings("unused")
     @VisibleForTesting
     long interceptKeyBeforeDispatching(IBinder focus, KeyEvent event, int policyFlags) {
+        final long keyNotConsumedGoFallback = -2;
+        final long keyConsumed = -1;
         final long keyNotConsumed = 0;
         long value = keyNotConsumed;
         // TODO(b/358569822) Remove below once we have nicer API for listening to shortcuts
@@ -2672,6 +2675,16 @@ public class InputManagerService extends IInputManager.Stub
         if (value == keyNotConsumed) {
             value = mWindowManagerCallbacks.interceptKeyBeforeDispatching(focus, event,
                     policyFlags);
+        }
+        if (fixSearchModifierFallbacks() && value == keyNotConsumed && event.isMetaPressed()) {
+            // If the key has not been consumed and includes the meta key, do not send the event
+            // to the app and attempt to generate a fallback.
+            final KeyCharacterMap kcm = event.getKeyCharacterMap();
+            final KeyCharacterMap.FallbackAction fallbackAction =
+                    kcm.getFallbackAction(event.getKeyCode(), event.getMetaState());
+            if (fallbackAction != null) {
+                return keyNotConsumedGoFallback;
+            }
         }
         return value;
     }
@@ -3316,9 +3329,10 @@ public class InputManagerService extends IInputManager.Stub
          * @param token the window token that's about to receive this event
          * @param event the key event that's being dispatched
          * @param policyFlags the policy flags
-         * @return negative value if the key should be skipped (not sent to the app). 0 if the key
-         * should proceed getting dispatched to the app. positive value to indicate the additional
-         * time delay, in nanoseconds, to wait before sending this key to the app.
+         * @return -1 if the key should be skipped (not sent to the app). -2 if the key should not
+         * be sent to the app, but it should still generate a fallback.
+         * 0 if the key should proceed getting dispatched to the app. positive value to indicate the
+         * additional time delay, in nanoseconds, to wait before sending this key to the app.
          */
         long interceptKeyBeforeDispatching(IBinder token, KeyEvent event, int policyFlags);
 

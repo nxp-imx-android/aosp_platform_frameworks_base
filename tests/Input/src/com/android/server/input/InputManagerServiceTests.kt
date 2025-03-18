@@ -35,8 +35,8 @@ import android.os.PermissionEnforcer
 import android.os.SystemClock
 import android.os.test.FakePermissionEnforcer
 import android.os.test.TestLooper
-import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
 import android.view.View.OnKeyListener
@@ -370,6 +370,29 @@ class InputManagerServiceTests {
         val event = KeyEvent( /* downTime= */0, /* eventTime= */0, KeyEvent.ACTION_DOWN,
             KeyEvent.KEYCODE_SPACE, /* repeat= */0, KeyEvent.META_CTRL_ON)
         assertEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
+    }
+
+    @Test
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_FIX_SEARCH_MODIFIER_FALLBACKS)
+    fun testInterceptKeyBeforeDispatchingWithFallthroughEvent() {
+        service.systemRunning()
+        overrideSendActionKeyEventsToFocusedWindow(
+            /* hasPermission = */false,
+            /* hasPrivateFlag = */false
+        )
+        whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(0)
+
+        // Create a fallback for a key event with a meta modifier. Should result in -2,
+        // which represents the fallback event, which indicates that original key event will
+        // be ignored (not sent to app) and instead the fallback will be created and sent to the
+        // app.
+        val fallbackAction: KeyCharacterMap.FallbackAction = KeyCharacterMap.FallbackAction.obtain()
+        fallbackAction.keyCode = KeyEvent.KEYCODE_SEARCH
+        whenever(kcm.getFallbackAction(anyInt(), anyInt())).thenReturn(fallbackAction)
+
+        val event = KeyEvent( /* downTime= */0, /* eventTime= */0, KeyEvent.ACTION_DOWN,
+            KeyEvent.KEYCODE_SPACE, /* repeat= */0, KeyEvent.META_META_ON)
+        assertEquals(-2, service.interceptKeyBeforeDispatching(null, event, 0))
     }
 
     @Test
