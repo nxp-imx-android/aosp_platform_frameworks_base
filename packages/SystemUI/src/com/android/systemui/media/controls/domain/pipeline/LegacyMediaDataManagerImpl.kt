@@ -1296,10 +1296,7 @@ class LegacyMediaDataManagerImpl(
     }
 
     private fun isAbleToResume(data: MediaData): Boolean {
-        val isEligibleForResume =
-            data.isLocalSession() ||
-                (mediaFlags.isRemoteResumeAllowed() &&
-                    data.playbackLocation != MediaData.PLAYBACK_CAST_REMOTE)
+        val isEligibleForResume = data.isLocalSession()
         return useMediaResumption && data.resumeAction != null && isEligibleForResume
     }
 

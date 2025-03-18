@@ -45,7 +45,4 @@ class MediaFlags @Inject constructor(private val featureFlags: FeatureFlagsClass
      * whether the underlying notification was dismissed
      */
     fun isRetainingPlayersEnabled() = featureFlags.isEnabled(FlagsClassic.MEDIA_RETAIN_SESSIONS)
-
-    /** Check whether we allow remote media to generate resume controls */
-    fun isRemoteResumeAllowed() = featureFlags.isEnabled(FlagsClassic.MEDIA_REMOTE_RESUME)
 }

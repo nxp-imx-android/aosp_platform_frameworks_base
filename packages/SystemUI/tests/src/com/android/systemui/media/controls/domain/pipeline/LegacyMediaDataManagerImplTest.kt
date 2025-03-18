@@ -51,7 +51,6 @@ import com.android.systemui.InstanceIdSequenceFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dump.DumpManager
-import com.android.systemui.flags.Flags.MEDIA_REMOTE_RESUME
 import com.android.systemui.flags.Flags.MEDIA_RETAIN_SESSIONS
 import com.android.systemui.flags.fakeFeatureFlagsClassic
 import com.android.systemui.kosmos.testDispatcher
@@ -287,7 +286,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
         whenever(mediaSmartspaceTarget.creationTimeMillis).thenReturn(SMARTSPACE_CREATION_TIME)
         whenever(mediaSmartspaceTarget.expiryTimeMillis).thenReturn(SMARTSPACE_EXPIRY_TIME)
         fakeFeatureFlags.set(MEDIA_RETAIN_SESSIONS, false)
-        fakeFeatureFlags.set(MEDIA_REMOTE_RESUME, false)
         whenever(logger.getNewInstanceId()).thenReturn(instanceIdSequence.newInstanceId())
         whenever(keyguardUpdateMonitor.isUserInLockdown(any())).thenReturn(false)
     }
@@ -807,56 +805,6 @@ class LegacyMediaDataManagerImplTest(flags: FlagsParameterization) : SysuiTestCa
             )
 
         // WHEN the notification is removed
-        mediaDataManager.onNotificationRemoved(KEY)
-
-        // THEN the media data is removed
-        verify(listener).onMediaDataRemoved(eq(KEY), eq(false))
-    }
-
-    @Test
-    fun testOnNotificationRemoved_withResumption_isRemoteAndRemoteAllowed() {
-        // With the flag enabled to allow remote media to resume
-        fakeFeatureFlags.set(MEDIA_REMOTE_RESUME, true)
-
-        // GIVEN that the manager has a notification with a resume action, but is not local
-        whenever(controller.metadata).thenReturn(metadataBuilder.build())
-        whenever(playbackInfo.playbackType)
-            .thenReturn(MediaController.PlaybackInfo.PLAYBACK_TYPE_REMOTE)
-        addNotificationAndLoad()
-        val data = mediaDataCaptor.value
-        val dataRemoteWithResume =
-            data.copy(resumeAction = Runnable {}, playbackLocation = MediaData.PLAYBACK_CAST_LOCAL)
-        mediaDataManager.onMediaDataLoaded(KEY, null, dataRemoteWithResume)
-
-        // WHEN the notification is removed
-        mediaDataManager.onNotificationRemoved(KEY)
-
-        // THEN the media data is converted to a resume state
-        verify(listener)
-            .onMediaDataLoaded(
-                eq(PACKAGE_NAME),
-                eq(KEY),
-                capture(mediaDataCaptor),
-                eq(true),
-                eq(0),
-                eq(false),
-            )
-        assertThat(mediaDataCaptor.value.resumption).isTrue()
-    }
-
-    @Test
-    fun testOnNotificationRemoved_withResumption_isRcnAndRemoteAllowed() {
-        // With the flag enabled to allow remote media to resume
-        fakeFeatureFlags.set(MEDIA_REMOTE_RESUME, true)
-
-        // GIVEN that the manager has a remote cast notification
-        addNotificationAndLoad(remoteCastNotification)
-        val data = mediaDataCaptor.value
-        assertThat(data.playbackLocation).isEqualTo(MediaData.PLAYBACK_CAST_REMOTE)
-        val dataRemoteWithResume = data.copy(resumeAction = Runnable {})
-        mediaDataManager.onMediaDataLoaded(KEY, null, dataRemoteWithResume)
-
-        // WHEN the RCN is removed
         mediaDataManager.onNotificationRemoved(KEY)
 
         // THEN the media data is removed
