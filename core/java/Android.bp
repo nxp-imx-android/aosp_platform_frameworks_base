@@ -657,6 +657,17 @@ filegroup {
 }
 
 java_library {
+    name: "protolog-common-lib",
+    srcs: [
+        ":protolog-common-src",
+    ],
+    host_supported: true,
+    static_libs: [
+        "framework-annotations-lib",
+    ],
+}
+
+java_library {
     name: "protolog-group",
     srcs: [
         "com/android/internal/protolog/common/IProtoLogGroup.java",
@@ -693,8 +704,10 @@ java_library {
 java_library {
     name: "protolog-groups",
     srcs: [
-        ":protolog-common-src",
         "com/android/internal/protolog/WmProtoLogGroups.java",
+    ],
+    static_libs: [
+        "protolog-common-lib",
     ],
 }
 

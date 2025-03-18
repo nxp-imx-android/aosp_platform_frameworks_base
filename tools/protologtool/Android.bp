@@ -10,7 +10,6 @@ package {
 java_library_host {
     name: "protologtool-lib",
     srcs: [
-        ":protolog-common-src",
         "src/com/android/protolog/tool/**/*.kt",
     ],
     static_libs: [
@@ -18,6 +17,7 @@ java_library_host {
         "jsonlib",
         "perfetto_trace-full",
         "platformprotos",
+        "protolog-common-lib",
     ],
 }
 
