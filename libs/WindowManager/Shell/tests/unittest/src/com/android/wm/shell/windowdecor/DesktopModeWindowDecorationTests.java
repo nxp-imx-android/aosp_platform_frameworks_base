@@ -303,7 +303,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         doReturn(mInsetsState).when(mMockDisplayController).getInsetsState(anyInt());
         when(mMockHandleMenuFactory.create(any(), any(), any(), any(), any(), anyInt(), any(),
                 anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                any(), anyInt(), anyInt(), anyInt(), anyInt()))
+                anyBoolean(), any(), anyInt(), anyInt(), anyInt(), anyInt()))
                 .thenReturn(mMockHandleMenu);
         when(mMockMultiInstanceHelper.supportsMultiInstanceSplit(any(), anyInt()))
                 .thenReturn(false);
@@ -1450,6 +1450,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 any(),
                 any(),
                 any(),
+                any(),
                 anyBoolean()
         );
         // Run runnable to set captured link to used
@@ -1487,6 +1488,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 any(),
                 any(),
                 any(),
+                any(),
                 anyBoolean()
         );
         openInBrowserCaptor.getValue().invoke(new Intent(Intent.ACTION_MAIN, TEST_URI1));
@@ -1516,6 +1518,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 any(),
                 any(),
                 openInBrowserCaptor.capture(),
+                any(),
                 any(),
                 any(),
                 any(),
@@ -1584,6 +1587,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
                 any(),
                 any(),
                 any(),
+                any(),
                 closeClickListener.capture(),
                 any(),
                 anyBoolean()
@@ -1606,6 +1610,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
         createHandleMenu(decoration);
 
         verify(mMockHandleMenu).show(
+                any(),
                 any(),
                 any(),
                 any(),
@@ -1790,7 +1795,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     private void verifyHandleMenuCreated(@Nullable Uri uri) {
         verify(mMockHandleMenuFactory).create(any(), any(), any(), any(), any(), anyInt(),
                 any(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(),
-                anyBoolean(), argThat(intent ->
+                anyBoolean(), anyBoolean(), argThat(intent ->
                         (uri == null && intent == null) || intent.getData().equals(uri)),
                 anyInt(), anyInt(), anyInt(), anyInt());
     }
