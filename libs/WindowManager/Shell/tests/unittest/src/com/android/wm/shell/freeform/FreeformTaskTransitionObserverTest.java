@@ -373,6 +373,25 @@ public class FreeformTaskTransitionObserverTest extends ShellTestCase {
         verify(mDesksTransitionObserver).onTransitionReady(transition, info);
     }
 
+    @Test
+    public void onTransitionMerged_forwardsToDesksTransitionObserver() {
+        final IBinder merged = mock(IBinder.class);
+        final IBinder playing = mock(IBinder.class);
+
+        mTransitionObserver.onTransitionMerged(merged, playing);
+
+        verify(mDesksTransitionObserver).onTransitionMerged(merged, playing);
+    }
+
+    @Test
+    public void onTransitionFinished_forwardsToDesksTransitionObserver() {
+        final IBinder transition = mock(IBinder.class);
+
+        mTransitionObserver.onTransitionFinished(transition, /* aborted = */ false);
+
+        verify(mDesksTransitionObserver).onTransitionFinished(transition);
+    }
+
     private static TransitionInfo.Change createChange(int mode, int taskId, int windowingMode) {
         final ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
         taskInfo.taskId = taskId;

@@ -198,6 +198,15 @@ class RecentsMixedTransition extends DefaultMixedHandler.MixedTransition {
         }
     }
 
+    /**
+     * Called when the recents animation during desktop is about to finish.
+     */
+    void onAnimateRecentsDuringDesktopFinishing(boolean returnToApp,
+            @NonNull WindowContainerTransaction finishWct) {
+        mDesktopTasksController.onRecentsInDesktopAnimationFinishing(mTransition, finishWct,
+                returnToApp);
+    }
+
     @Override
     void mergeAnimation(
             @NonNull IBinder transition, @NonNull TransitionInfo info,
