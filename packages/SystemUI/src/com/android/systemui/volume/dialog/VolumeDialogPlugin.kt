@@ -68,6 +68,7 @@ constructor(
         viewModel.isShowingSafetyWarning
             .mapLatest { isShowingSafetyWarning ->
                 if (isShowingSafetyWarning) {
+                    viewModel.onSafetyWarningDialogShown()
                     showSafetyWarningVisibility { viewModel.onSafetyWarningDismissed() }
                 }
             }
@@ -76,6 +77,7 @@ constructor(
         viewModel.csdWarning
             .mapLatest { csdWarning ->
                 if (csdWarning != null) {
+                    viewModel.onCsdWarningDialogShown()
                     showCsdWarningDialog(csdWarning, viewModel.csdWarningConfigModel.actions) {
                         viewModel.onCsdWarningDismissed()
                     }
