@@ -77,7 +77,7 @@
     <string name="osu_sign_up_failed" msgid="5605453599586001793">"ছাইন আপ সম্পূৰ্ণ কৰিব পৰা নগ’ল। আকৌ চেষ্টা কৰিবলৈ টিপক।"</string>
     <string name="osu_sign_up_complete" msgid="7640183358878916847">"ছাইন আপ সম্পূৰ্ণ হৈছে সংযোগ কৰি থকা হৈছে…"</string>
     <string name="speed_label_slow" msgid="6069917670665664161">"লেহেমীয়া"</string>
-    <string name="speed_label_okay" msgid="1253594383880810424">"ঠিক"</string>
+    <string name="speed_label_okay" msgid="1253594383880810424">"ঠিক আছে"</string>
     <string name="speed_label_fast" msgid="2677719134596044051">"দ্ৰুত"</string>
     <string name="speed_label_very_fast" msgid="8215718029533182439">"অতি দ্ৰুত"</string>
     <string name="wifi_passpoint_expired" msgid="6540867261754427561">"ম্যাদ উকলিছে"</string>
@@ -578,7 +578,7 @@
     <string name="next" msgid="2699398661093607009">"পৰৱৰ্তী"</string>
     <string name="back" msgid="5554327870352703710">"উভতি যাওক"</string>
     <string name="save" msgid="3745809743277153149">"ছেভ কৰক"</string>
-    <string name="okay" msgid="949938843324579502">"ঠিক"</string>
+    <string name="okay" msgid="949938843324579502">"ঠিক আছে"</string>
     <string name="done" msgid="381184316122520313">"হ’ল"</string>
     <string name="alarms_and_reminders_label" msgid="6918395649731424294">"এলাৰ্ম আৰু ৰিমাইণ্ডাৰ"</string>
     <string name="alarms_and_reminders_switch_title" msgid="4939393911531826222">"এলাৰ্ম আৰু ৰিমাইণ্ডাৰ ছেট কৰাৰ অনুমতি দিয়ক"</string>
@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"বিল্ট-ইন স্পীকাৰ"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"টিভিৰ অডিঅ’"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"সংযোগ হোৱাত সমস্যা হৈছে। ডিভাইচটো অফ কৰি পুনৰ অন কৰক"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"সংযোগ কৰিব নোৱাৰি"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"তাঁৰযুক্ত অডিঅ’ ডিভাইচ"</string>
     <string name="help_label" msgid="3528360748637781274">"সহায় আৰু মতামত"</string>
     <string name="storage_category" msgid="2287342585424631813">"ষ্ট’ৰেজ"</string>

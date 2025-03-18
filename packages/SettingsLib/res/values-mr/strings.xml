@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"बिल्ट-इन स्पीकर"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"टीव्ही ऑडिओ"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"कनेक्‍ट करण्‍यात समस्‍या आली. डिव्हाइस बंद करा आणि नंतर सुरू करा"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"कनेक्ट करू शकत नाही"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"वायर असलेले ऑडिओ डिव्हाइस"</string>
     <string name="help_label" msgid="3528360748637781274">"मदत आणि फीडबॅक"</string>
     <string name="storage_category" msgid="2287342585424631813">"स्टोरेज"</string>

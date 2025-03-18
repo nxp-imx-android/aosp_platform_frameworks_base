@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Altifalante integrado"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"Áudio da TV"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Problema ao ligar. Desligue e volte a ligar o dispositivo."</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"Não é possível estabelecer ligação"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Dispositivo de áudio com fios"</string>
     <string name="help_label" msgid="3528360748637781274">"Ajuda e feedback"</string>
     <string name="storage_category" msgid="2287342585424631813">"Armazenamento"</string>

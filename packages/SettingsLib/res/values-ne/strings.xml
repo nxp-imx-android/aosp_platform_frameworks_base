@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"अन्तर्निर्मित स्पिकर"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"टिभीको अडियो"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"जोड्ने क्रममा समस्या भयो। यन्त्रलाई निष्क्रिय पारेर फेरि अन गर्नुहोस्"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"कनेक्ट गर्न सकिएन"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"तारयुक्त अडियो यन्त्र"</string>
     <string name="help_label" msgid="3528360748637781274">"मद्दत र प्रतिक्रिया"</string>
     <string name="storage_category" msgid="2287342585424631813">"भण्डारण"</string>
