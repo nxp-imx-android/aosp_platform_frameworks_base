@@ -85,7 +85,7 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX(
             Flags::enableDesktopWindowingEnterTransitionBugfix, true),
     ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX(
-            Flags::enableDesktopWindowingExitByMinimizeTransitionBugfix, false),
+            Flags::enableDesktopWindowingExitByMinimizeTransitionBugfix, true),
     ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX(
             Flags::enableDesktopWindowingExitTransitionsBugfix, true),
     ENABLE_DESKTOP_WINDOWING_HSUM(Flags::enableDesktopWindowingHsum, true),
