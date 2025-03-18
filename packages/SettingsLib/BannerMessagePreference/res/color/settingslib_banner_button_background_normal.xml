@@ -17,8 +17,8 @@
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_enabled="false"
-        android:alpha="@dimen/material_emphasis_disabled_background" android:color="?attr/colorOnSurface"/>
+        android:alpha="@dimen/material_emphasis_disabled_background" android:color="@color/settingslib_materialColorPrimary"/>
     <item android:state_checked="true" android:color="?attr/colorContainerChecked"/>
     <item android:state_checkable="true" android:color="?attr/colorContainerUnchecked"/>
-    <item android:color="?attr/colorContainer" />
+    <item android:color="@color/settingslib_materialColorPrimary" />
 </selector>

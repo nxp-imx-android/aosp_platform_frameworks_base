@@ -64,7 +64,6 @@
 
     <style name="Banner.PositiveButton.SettingsLib.Expressive"
         parent="@style/SettingsLibButtonStyle.Expressive.Filled.Extra">
-        <item name="android:textColor">?android:attr/textColorPrimaryInverse</item>
         <item name="materialSizeOverlay">@style/SizeOverlay.Material3Expressive.Button.Small</item>
     </style>
 
