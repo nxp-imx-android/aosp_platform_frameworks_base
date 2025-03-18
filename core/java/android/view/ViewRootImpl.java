@@ -11502,12 +11502,24 @@ public final class ViewRootImpl implements ViewParent,
 
         // Search through View-tree
         View rootView = getView();
-        if (rootView != null) {
-            Point point = new Point();
-            Rect rect = new Rect(0, 0, rootView.getWidth(), rootView.getHeight());
-            getChildVisibleRect(rootView, rect, point);
-            rootView.dispatchScrollCaptureSearch(rect, point, results::addTarget);
+        if (rootView == null) {
+            ScrollCaptureResponse.Builder response = new ScrollCaptureResponse.Builder();
+            response.setWindowTitle(getTitle().toString());
+            response.setPackageName(mContext.getPackageName());
+            response.setDescription("The root view was null");
+            try {
+                listener.onScrollCaptureResponse(response.build());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Failed to send scroll capture search result", e);
+            }
+            return;
         }
+
+        Point point = new Point();
+        Rect rect = new Rect(0, 0, rootView.getWidth(), rootView.getHeight());
+        getChildVisibleRect(rootView, rect, point);
+        rootView.dispatchScrollCaptureSearch(rect, point, results::addTarget);
+
         Runnable onComplete = () -> dispatchScrollCaptureSearchResponse(listener, results);
         results.setOnCompleteListener(onComplete);
         if (!results.isComplete()) {
@@ -11531,6 +11543,16 @@ public final class ViewRootImpl implements ViewParent,
         results.dump(pw);
         pw.flush();
         response.addMessage(writer.toString());
+
+        if (mView == null) {
+            response.setDescription("The root view disappeared!");
+            try {
+                listener.onScrollCaptureResponse(response.build());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Failed to send scroll capture search result", e);
+            }
+            return;
+        }
 
         if (selectedTarget == null) {
             response.setDescription("No scrollable targets found in window");
@@ -11558,6 +11580,7 @@ public final class ViewRootImpl implements ViewParent,
         boundsOnScreen.set(0, 0, mView.getWidth(), mView.getHeight());
         boundsOnScreen.offset(mAttachInfo.mTmpLocation[0], mAttachInfo.mTmpLocation[1]);
         response.setWindowBounds(boundsOnScreen);
+        Log.d(TAG, "ScrollCaptureSearchResponse: " + response);
 
         // Create a connection and return it to the caller
         ScrollCaptureConnection connection = new ScrollCaptureConnection(
