@@ -24,8 +24,8 @@ import android.provider.Settings;
 import android.service.voice.VisualQueryAttentionResult;
 import android.service.voice.VoiceInteractionSession;
 import android.util.Log;
+import android.view.WindowManager;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.app.AssistUtils;
 import com.android.internal.app.IVisualQueryDetectionAttentionListener;
 import com.android.internal.app.IVisualQueryRecognitionStatusListener;
@@ -199,12 +199,12 @@ public class AssistManager {
             SelectedUserInteractor selectedUserInteractor,
             ActivityManager activityManager,
             AssistInteractor interactor,
-            ViewCaptureAwareWindowManager viewCaptureAwareWindowManager) {
+            WindowManager windowManager) {
         mContext = context;
         mDeviceProvisionedController = controller;
         mCommandQueue = commandQueue;
         mAssistUtils = assistUtils;
-        mAssistDisclosure = new AssistDisclosure(context, uiHandler, viewCaptureAwareWindowManager);
+        mAssistDisclosure = new AssistDisclosure(context, uiHandler, windowManager);
         mLauncherProxyService = launcherProxyService;
         mPhoneStateMonitor = phoneStateMonitor;
         mAssistLogger = assistLogger;

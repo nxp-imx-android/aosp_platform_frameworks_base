@@ -50,7 +50,6 @@ import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
@@ -100,7 +99,7 @@ public class NotificationShadeWindowControllerImplTest extends SysuiTestCase {
     @Rule public final CheckFlagsRule checkFlagsRule =
         DeviceFlagsValueProvider.createCheckFlagsRule();
 
-    @Mock private ViewCaptureAwareWindowManager mWindowManager;
+    @Mock private WindowManager mWindowManager;
     @Mock private DozeParameters mDozeParameters;
     @Spy private final NotificationShadeWindowView mNotificationShadeWindowView = spy(
             new NotificationShadeWindowView(mContext, null));

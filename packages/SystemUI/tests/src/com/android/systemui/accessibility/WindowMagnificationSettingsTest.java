@@ -65,16 +65,12 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCapture;
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView;
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView.OnSeekBarWithIconButtonsChangeListener;
 import com.android.systemui.res.R;
 import com.android.systemui.util.settings.SecureSettings;
-
-import kotlin.Lazy;
 
 import org.junit.After;
 import org.junit.Before;
@@ -104,8 +100,6 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
     private SecureSettings mSecureSettings;
     @Mock
     private WindowMagnificationSettingsCallback mWindowMagnificationSettingsCallback;
-    @Mock
-    private Lazy<ViewCapture> mLazyViewCapture;
     private TestableWindowManager mWindowManager;
     private WindowMagnificationSettings mWindowMagnificationSettings;
     private MotionEventHelper mMotionEventHelper = new MotionEventHelper();
@@ -123,6 +117,7 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
         final WindowManager wm = mContext.getSystemService(WindowManager.class);
         mWindowManager = spy(new TestableWindowManager(wm));
         mContext.addMockSystemService(Context.WINDOW_SERVICE, mWindowManager);
+
         mContext.addMockSystemService(Context.ACCESSIBILITY_SERVICE, mAccessibilityManager);
 
         when(mSecureSettings.getIntForUser(anyString(), anyInt(), anyInt())).then(
@@ -130,11 +125,9 @@ public class WindowMagnificationSettingsTest extends SysuiTestCase {
         when(mSecureSettings.getFloatForUser(anyString(), anyFloat(), anyInt())).then(
                 returnsSecondArg());
 
-        ViewCaptureAwareWindowManager vwm = new ViewCaptureAwareWindowManager(mWindowManager,
-                mLazyViewCapture, /* isViewCaptureEnabled= */ false);
         mWindowMagnificationSettings = new WindowMagnificationSettings(mContext,
                 mWindowMagnificationSettingsCallback, mSfVsyncFrameProvider,
-                mSecureSettings, vwm);
+                mSecureSettings, mWindowManager);
 
         mSettingView = mWindowMagnificationSettings.getSettingView();
         mZoomSeekbar = mSettingView.findViewById(R.id.magnifier_zoom_slider);

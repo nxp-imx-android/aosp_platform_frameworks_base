@@ -66,7 +66,6 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.VisibleForTesting;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.util.Preconditions;
 import com.android.settingslib.Utils;
 import com.android.systemui.biometrics.data.repository.FacePropertyRepository;
@@ -167,7 +166,7 @@ public class ScreenDecorations implements
     ViewGroup mScreenDecorHwcWindow;
     @VisibleForTesting
     ScreenDecorHwcLayer mScreenDecorHwcLayer;
-    private ViewCaptureAwareWindowManager mWindowManager;
+    private WindowManager mWindowManager;
     private int mRotation;
     private UserSettingObserver mColorInversionSetting;
     private DelayableExecutor mExecutor;
@@ -337,7 +336,7 @@ public class ScreenDecorations implements
             FacePropertyRepository facePropertyRepository,
             JavaAdapter javaAdapter,
             CameraProtectionLoader cameraProtectionLoader,
-            ViewCaptureAwareWindowManager viewCaptureAwareWindowManager,
+            WindowManager windowManager,
             @ScreenDecorationsThread Handler handler,
             @ScreenDecorationsThread DelayableExecutor executor) {
         mContext = context;
@@ -353,7 +352,7 @@ public class ScreenDecorations implements
         mLogger = logger;
         mFacePropertyRepository = facePropertyRepository;
         mJavaAdapter = javaAdapter;
-        mWindowManager = viewCaptureAwareWindowManager;
+        mWindowManager = windowManager;
         mHandler = handler;
         mExecutor = executor;
     }

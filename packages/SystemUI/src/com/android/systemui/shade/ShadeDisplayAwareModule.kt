@@ -49,6 +49,8 @@ import com.android.systemui.statusbar.notification.stack.NotificationStackRebind
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl
 import com.android.systemui.statusbar.phone.ConfigurationForwarder
 import com.android.systemui.statusbar.policy.ConfigurationController
+import com.android.systemui.utils.windowmanager.WindowManagerProvider
+import com.android.systemui.utils.windowmanager.WindowManagerUtils
 import dagger.Module
 import dagger.Provides
 import dagger.multibindings.ClassKey
@@ -111,9 +113,10 @@ object ShadeDisplayAwareModule {
     fun provideShadeWindowManager(
         defaultWindowManager: WindowManager,
         @ShadeDisplayAware context: Context,
+        windowManagerProvider: WindowManagerProvider
     ): WindowManager {
         return if (ShadeWindowGoesAround.isEnabled) {
-            context.getSystemService(WindowManager::class.java) as WindowManager
+            windowManagerProvider.getWindowManager(context)
         } else {
             defaultWindowManager
         }

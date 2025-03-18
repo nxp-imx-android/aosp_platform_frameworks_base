@@ -87,6 +87,7 @@ import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.phone.AutoHideController;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.LightBarTransitionsController;
+import com.android.systemui.utils.windowmanager.WindowManagerUtils;
 import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.pip.Pip;
 
@@ -729,7 +730,7 @@ public class NavigationBarView extends FrameLayout {
             } else {
                 return;
             }
-            WindowManager wm = getContext().getSystemService(WindowManager.class);
+            WindowManager wm = WindowManagerUtils.getWindowManager(getContext());
             wm.updateViewLayout((View) getParent(), lp);
         }
     }

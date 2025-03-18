@@ -41,6 +41,7 @@ import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN
 import com.android.systemui.biometrics.shared.model.PromptKind
+import com.android.systemui.utils.windowmanager.WindowManagerUtils
 
 object Utils {
     private const val TAG = "SysUIBiometricUtils"
@@ -117,10 +118,9 @@ object Utils {
 
     @JvmStatic
     fun getNavbarInsets(context: Context): Insets {
-        val windowManager: WindowManager? = context.getSystemService(WindowManager::class.java)
-        val windowMetrics: WindowMetrics? = windowManager?.maximumWindowMetrics
-        return windowMetrics?.windowInsets?.getInsets(WindowInsets.Type.navigationBars())
-            ?: Insets.NONE
+        val windowManager: WindowManager = WindowManagerUtils.getWindowManager(context)
+        val windowMetrics: WindowMetrics = windowManager.maximumWindowMetrics
+        return windowMetrics.windowInsets.getInsets(WindowInsets.Type.navigationBars())
     }
 
     /** Converts `drawable` to a [Bitmap]. */

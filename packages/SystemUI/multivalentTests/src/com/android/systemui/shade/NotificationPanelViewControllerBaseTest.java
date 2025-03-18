@@ -172,6 +172,7 @@ import com.android.systemui.user.domain.interactor.UserSwitcherInteractor;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.util.time.SystemClock;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 import com.android.systemui.wallpapers.ui.viewmodel.WallpaperFocalAreaViewModel;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 
@@ -296,6 +297,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock private LargeScreenHeaderHelper mLargeScreenHeaderHelper;
     @Mock private StatusBarLongPressGestureDetector mStatusBarLongPressGestureDetector;
     @Mock protected SysUIStateDisplaysInteractor mSysUIStateDisplaysInteractor;
+    @Mock private WindowManagerProvider mWindowManagerProvider;
     protected final int mMaxUdfpsBurnInOffsetY = 5;
     protected FakeFeatureFlagsClassic mFeatureFlags = new FakeFeatureFlagsClassic();
     protected KeyguardClockInteractor mKeyguardClockInteractor;
@@ -672,7 +674,8 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mCastController,
                 new ResourcesSplitShadeStateController(),
                 () -> mKosmos.getCommunalTransitionViewModel(),
-                () -> mLargeScreenHeaderHelper
+                () -> mLargeScreenHeaderHelper,
+                mWindowManagerProvider
         );
     }
 

@@ -28,6 +28,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 
 import com.android.internal.logging.MetricsLogger;
@@ -79,6 +80,7 @@ import com.android.systemui.statusbar.policy.data.repository.FakeUserSetupReposi
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.user.domain.interactor.UserSwitcherInteractor;
 import com.android.systemui.util.kotlin.JavaAdapter;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import dagger.Lazy;
 
@@ -147,6 +149,7 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
     @Mock protected UserSwitcherInteractor mUserSwitcherInteractor;
     @Mock protected SelectedUserInteractor mSelectedUserInteractor;
     @Mock protected LargeScreenHeaderHelper mLargeScreenHeaderHelper;
+    @Mock protected WindowManagerProvider mWindowManagerProvider;
 
     protected FakeDisableFlagsRepository mDisableFlagsRepository =
             mKosmos.getFakeDisableFlagsRepository();
@@ -232,6 +235,9 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
 
         mMainHandler = new Handler(Looper.getMainLooper());
 
+        WindowManager wm = mContext.getSystemService(WindowManager.class);
+        when(mWindowManagerProvider.getWindowManager(mContext)).thenReturn(wm);
+
         mQsController = new QuickSettingsControllerImpl(
                 mPanelViewControllerLazy,
                 mPanelView,
@@ -268,7 +274,8 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
                 mCastController,
                 splitShadeStateController,
                 () -> mKosmos.getCommunalTransitionViewModel(),
-                () -> mLargeScreenHeaderHelper
+                () -> mLargeScreenHeaderHelper,
+                mWindowManagerProvider
         );
         mQsController.init();
 

@@ -20,7 +20,6 @@ import static android.hardware.biometrics.BiometricAuthenticator.TYPE_FACE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_BIOMETRIC_PROMPT_TRANSITION;
-import static com.android.systemui.Flags.enableViewCaptureTracing;
 
 import android.animation.Animator;
 import android.annotation.IntDef;
@@ -57,8 +56,6 @@ import android.window.OnBackInvokedDispatcher;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.android.app.animation.Interpolators;
-import com.android.app.viewcapture.ViewCapture;
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.widget.LockPatternUtils;
@@ -78,10 +75,9 @@ import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.util.concurrency.DelayableExecutor;
+import com.android.systemui.utils.windowmanager.WindowManagerUtils;
 
 import com.google.android.msdl.domain.MSDLPlayer;
-
-import kotlin.Lazy;
 
 import kotlinx.coroutines.CoroutineScope;
 
@@ -132,7 +128,7 @@ public class AuthContainerView extends LinearLayout
     private final Config mConfig;
     private final int mEffectiveUserId;
     private final IBinder mWindowToken = new Binder();
-    private final ViewCaptureAwareWindowManager mWindowManager;
+    private final WindowManager mWindowManager;
     @Nullable private final AuthContextPlugins mAuthContextPlugins;
     private final Interpolator mLinearOutSlowIn;
     private final LockPatternUtils mLockPatternUtils;
@@ -298,16 +294,13 @@ public class AuthContainerView extends LinearLayout
             @NonNull Provider<CredentialViewModel> credentialViewModelProvider,
             @NonNull @Background DelayableExecutor bgExecutor,
             @NonNull VibratorHelper vibratorHelper,
-            Lazy<ViewCapture> lazyViewCapture,
             @NonNull MSDLPlayer msdlPlayer) {
         super(config.mContext);
 
         mConfig = config;
         mLockPatternUtils = lockPatternUtils;
         mEffectiveUserId = userManager.getCredentialOwnerProfile(mConfig.mUserId);
-        WindowManager wm = getContext().getSystemService(WindowManager.class);
-        mWindowManager = new ViewCaptureAwareWindowManager(wm, lazyViewCapture,
-                enableViewCaptureTracing());
+        mWindowManager = WindowManagerUtils.getWindowManager(getContext());
         mAuthContextPlugins = authContextPlugins;
         mWakefulnessLifecycle = wakefulnessLifecycle;
         mApplicationCoroutineScope = applicationCoroutineScope;

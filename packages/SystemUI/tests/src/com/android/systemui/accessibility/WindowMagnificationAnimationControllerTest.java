@@ -51,8 +51,6 @@ import android.view.animation.AccelerateInterpolator;
 import android.window.InputTransferToken;
 
 import androidx.test.filters.LargeTest;
-
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
@@ -112,8 +110,6 @@ public class WindowMagnificationAnimationControllerTest extends SysuiTestCase {
     SysUiState mSysUiState;
     @Mock
     SecureSettings mSecureSettings;
-    @Mock
-    ViewCaptureAwareWindowManager mViewCaptureAwareWindowManager;
     private SpyWindowMagnificationController mController;
     private WindowMagnificationController mSpyController;
     private WindowMagnificationAnimationController mWindowMagnificationAnimationController;
@@ -167,7 +163,7 @@ public class WindowMagnificationAnimationControllerTest extends SysuiTestCase {
                 mSecureSettings,
                 scvhSupplier,
                 mSfVsyncFrameProvider,
-                mViewCaptureAwareWindowManager);
+                mWindowManager);
 
         mSpyController = mController.getSpyController();
     }
@@ -1023,7 +1019,7 @@ public class WindowMagnificationAnimationControllerTest extends SysuiTestCase {
                 SecureSettings secureSettings,
                 Supplier<SurfaceControlViewHost> scvhSupplier,
                 SfVsyncFrameCallbackProvider sfVsyncFrameProvider,
-                ViewCaptureAwareWindowManager viewCaptureAwareWindowManager) {
+                WindowManager windowManager) {
             super(
                     context,
                     handler,
@@ -1033,7 +1029,8 @@ public class WindowMagnificationAnimationControllerTest extends SysuiTestCase {
                     callback,
                     sysUiState,
                     secureSettings,
-                    scvhSupplier);
+                    scvhSupplier,
+                    windowManager);
             mSpyController = Mockito.mock(WindowMagnificationController.class);
         }
 

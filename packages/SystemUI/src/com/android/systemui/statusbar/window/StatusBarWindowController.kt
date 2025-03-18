@@ -19,7 +19,7 @@ package com.android.systemui.statusbar.window
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
+import android.view.WindowManager
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.fragments.FragmentHostManager
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
@@ -84,7 +84,7 @@ interface StatusBarWindowController {
     fun interface Factory {
         fun create(
             context: Context,
-            viewCaptureAwareWindowManager: ViewCaptureAwareWindowManager,
+            windowManager: WindowManager,
             statusBarConfigurationController: StatusBarConfigurationController,
             contentInsetsProvider: StatusBarContentInsetsProvider,
         ): StatusBarWindowController

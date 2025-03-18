@@ -82,7 +82,6 @@ import android.view.inputmethod.InputMethodManager;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.logging.MetricsLogger;
 import com.android.internal.logging.UiEventLogger;
 import com.android.systemui.SysuiTestCase;
@@ -217,8 +216,6 @@ public class NavigationBarTest extends SysuiTestCase {
     private LightBarController.Factory mLightBarcontrollerFactory;
     @Mock
     private WindowManager mWindowManager;
-    @Mock
-    private ViewCaptureAwareWindowManager mViewCaptureAwareWindowManager;
     @Mock
     private TelecomManager mTelecomManager;
     @Mock
@@ -685,7 +682,6 @@ public class NavigationBarTest extends SysuiTestCase {
                 null,
                 context,
                 mWindowManager,
-                mViewCaptureAwareWindowManager,
                 () -> mAssistManager,
                 mock(AccessibilityManager.class),
                 deviceProvisionedController,

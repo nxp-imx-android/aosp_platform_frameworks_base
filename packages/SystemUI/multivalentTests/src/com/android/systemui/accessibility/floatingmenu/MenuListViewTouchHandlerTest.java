@@ -101,7 +101,7 @@ public class MenuListViewTouchHandlerTest extends SysuiTestCase {
         mStubMenuView.setTranslationY(0);
         mMenuAnimationController = spy(new MenuAnimationController(
                 mStubMenuView, stubMenuViewAppearance));
-        mInteractView = spy(new DragToInteractView(mContext));
+        mInteractView = spy(new DragToInteractView(mContext, windowManager));
         mDismissView = spy(new DismissView(mContext));
 
         if (Flags.floatingMenuDragToEdit()) {

@@ -31,6 +31,7 @@ import com.android.systemui.display.shared.model.DisplayWindowProperties
 import com.android.systemui.res.R
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
+import com.android.systemui.utils.windowmanager.WindowManagerUtils
 import com.google.common.collect.HashBasedTable
 import com.google.common.collect.Table
 import java.io.PrintWriter
@@ -110,7 +111,7 @@ constructor(
                 return null
             }
             @SuppressLint("NonInjectedService") // Need to manually get the service
-            val windowManager = context.getSystemService(WindowManager::class.java) as WindowManager
+            val windowManager = WindowManagerUtils.getWindowManager(context)
             val layoutInflater = LayoutInflater.from(context)
             DisplayWindowProperties(displayId, windowType, context, windowManager, layoutInflater)
         }

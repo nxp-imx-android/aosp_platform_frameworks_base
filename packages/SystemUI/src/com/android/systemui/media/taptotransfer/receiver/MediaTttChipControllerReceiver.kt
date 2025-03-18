@@ -35,7 +35,6 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityManager
 import com.android.app.animation.Interpolators
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.internal.logging.InstanceId
 import com.android.internal.widget.CachingIconView
 import com.android.systemui.common.shared.model.ContentDescription
@@ -73,7 +72,7 @@ constructor(
     private val commandQueue: CommandQueue,
     context: Context,
     logger: MediaTttReceiverLogger,
-    viewCaptureAwareWindowManager: ViewCaptureAwareWindowManager,
+    windowManager: WindowManager,
     @Main private val mainExecutor: DelayableExecutor,
     accessibilityManager: AccessibilityManager,
     configurationController: ConfigurationController,
@@ -90,7 +89,7 @@ constructor(
     TemporaryViewDisplayController<ChipReceiverInfo, MediaTttReceiverLogger>(
         context,
         logger,
-        viewCaptureAwareWindowManager,
+        windowManager,
         mainExecutor,
         accessibilityManager,
         configurationController,
