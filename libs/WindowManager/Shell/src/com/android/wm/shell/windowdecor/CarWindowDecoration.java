@@ -89,9 +89,6 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
         updateRelayoutParams(mRelayoutParams, taskInfo, isCaptionVisible);
 
         relayout(mRelayoutParams, startT, finishT, wct, mRootView, mResult);
-        if (DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
-            setCaptionVisibility(isCaptionVisible);
-        }
         // After this line, mTaskInfo is up-to-date and should be used instead of taskInfo
         mBgExecutor.execute(() -> mTaskOrganizer.applyTransaction(wct));
 
@@ -100,19 +97,23 @@ public class CarWindowDecoration extends WindowDecoration<WindowDecorLinearLayou
             // Nothing is set up in this case including the decoration surface.
             return;
         }
+
         if (mRootView != mResult.mRootView) {
             mRootView = mResult.mRootView;
             setupRootView(mResult.mRootView, mClickListener);
         }
+
+        if (DesktopModeFlags.ENABLE_DESKTOP_APP_HANDLE_ANIMATION.isTrue()) {
+            setCaptionVisibility(mRootView, mRelayoutParams.mIsCaptionVisible);
+        }
     }
 
-    private void setCaptionVisibility(boolean visible) {
-        if (mRootView == null) {
-            return;
-        }
+    private void setCaptionVisibility(@NonNull View rootView, boolean visible) {
         final int v = visible ? View.VISIBLE : View.GONE;
-        final View captionView = mRootView.findViewById(getCaptionViewId());
-        captionView.setVisibility(v);
+        final View captionView = rootView.findViewById(getCaptionViewId());
+        if (captionView != null) {
+            captionView.setVisibility(v);
+        }
     }
 
     @Override
