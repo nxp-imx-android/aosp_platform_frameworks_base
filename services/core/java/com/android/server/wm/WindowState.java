@@ -2365,9 +2365,12 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             // Only a presentation window needs a transition because its visibility affets the
             // lifecycle of apps below (b/390481865).
             if (enablePresentationForConnectedDisplays() && isPresentation()) {
-                Transition transition = null;
+                final boolean wasTransitionOnDisplay =
+                        mTransitionController.isCollectingTransitionOnDisplay(displayContent);
+                Transition newlyCreatedTransition = null;
                 if (!mTransitionController.isCollecting()) {
-                    transition = mTransitionController.createAndStartCollecting(TRANSIT_CLOSE);
+                    newlyCreatedTransition =
+                            mTransitionController.createAndStartCollecting(TRANSIT_CLOSE);
                 }
                 mTransitionController.collect(mToken);
                 mAnimatingExit = true;
@@ -2376,9 +2379,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 // A presentation hides all activities behind on the same display.
                 mDisplayContent.ensureActivitiesVisible(/*starting=*/ null,
                         /*notifyClients=*/ true);
-                mTransitionController.getCollectingTransition().setReady(mToken, true);
-                if (transition != null) {
-                    mTransitionController.requestStartTransition(transition, null,
+                if (!wasTransitionOnDisplay && mTransitionController
+                        .isCollectingTransitionOnDisplay(displayContent)) {
+                    // Set the display ready only when the display gets added to the collecting
+                    // transition in this operation.
+                    mTransitionController.setReady(mToken);
+                }
+                if (newlyCreatedTransition != null) {
+                    mTransitionController.requestStartTransition(newlyCreatedTransition, null,
                             null /* remoteTransition */, null /* displayChange */);
                 }
             } else {
