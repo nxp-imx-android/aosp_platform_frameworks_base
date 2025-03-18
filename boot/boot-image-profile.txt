@@ -28829,7 +28829,6 @@ Landroid/media/audiopolicy/AudioProductStrategy$AudioAttributesGroup;
 Landroid/media/audiopolicy/AudioProductStrategy;
 Landroid/media/audiopolicy/AudioVolumeGroup$1;
 Landroid/media/audiopolicy/AudioVolumeGroup;
-Landroid/media/audiopolicy/AudioVolumeGroupChangeHandler;
 Landroid/media/audiopolicy/IAudioPolicyCallback$Stub$Proxy;
 Landroid/media/audiopolicy/IAudioPolicyCallback$Stub;
 Landroid/media/audiopolicy/IAudioPolicyCallback;
