@@ -147,7 +147,7 @@ public abstract class WindowManagerInternal {
              * @param bottom The rectangle bottom.
              */
             void onRectangleOnScreenRequested(int displayId, int left, int top, int right,
-                    int bottom);
+                    int bottom, int source);
         }
     }
 

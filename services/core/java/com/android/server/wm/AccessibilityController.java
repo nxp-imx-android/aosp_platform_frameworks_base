@@ -1412,7 +1412,7 @@ final class AccessibilityController {
                 }
                 final Message m = PooledLambda.obtainMessage(
                         mCallbacks::onRectangleOnScreenRequested, displayId, rectangle.left,
-                        rectangle.top, rectangle.right, rectangle.bottom);
+                        rectangle.top, rectangle.right, rectangle.bottom, source);
                 mHandler.sendMessage(m);
             }
         }

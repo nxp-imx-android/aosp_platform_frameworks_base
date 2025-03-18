@@ -62,12 +62,17 @@ import android.hardware.display.DisplayManagerInternal;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
 import android.testing.DexmakerShareClassLoaderRule;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.DisplayInfo;
+import android.view.View;
+import android.view.accessibility.Flags;
 import android.view.accessibility.IRemoteMagnificationAnimationCallback;
 import android.view.accessibility.MagnificationAnimationCallback;
 import android.widget.Scroller;
@@ -89,6 +94,7 @@ import com.google.common.truth.Expect;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,6 +118,20 @@ public class MagnificationControllerTest {
     private static final Region INITIAL_SCREEN_MAGNIFICATION_REGION =
             new Region(0, 0, 500, 600);
     private static final Rect TEST_RECT = new Rect(0, 50, 100, 51);
+
+    @ClassRule
+    public static final SetFlagsRule.ClassRule mSetFlagsClassRule = new SetFlagsRule.ClassRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = mSetFlagsClassRule.createSetFlagsRule();
+
+    private static final int TEST_SOURCE_UNDEFINED =
+            View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_UNDEFINED;
+    private static final int TEST_SOURCE_TEXT_CURSOR =
+            View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_TEXT_CURSOR;
+    private static final int TEST_SOURCE_INPUT_FOCUS =
+            View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_INPUT_FOCUS;
+    private static final int TEST_SOURCE_SCROLL_ONLY =
+            View.RECTANGLE_ON_SCREEN_REQUEST_SOURCE_SCROLL_ONLY;
+
     private static final float MAGNIFIED_CENTER_X = 100;
     private static final float MAGNIFIED_CENTER_Y = 200;
     private static final float DEFAULT_SCALE = 3f;
@@ -1760,12 +1780,31 @@ public class MagnificationControllerTest {
         UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
 
         callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
-                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom);
+                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom,
+                TEST_SOURCE_UNDEFINED);
 
         verify(mScreenMagnificationController).onRectangleOnScreenRequested(eq(TEST_DISPLAY),
-                eq(TEST_RECT.left), eq(TEST_RECT.top), eq(TEST_RECT.right), eq(TEST_RECT.bottom));
+                eq(TEST_RECT.left), eq(TEST_RECT.top), eq(TEST_RECT.right), eq(TEST_RECT.bottom),
+                eq(TEST_SOURCE_UNDEFINED));
         verify(mMagnificationConnectionManager, never()).onRectangleOnScreenRequested(anyInt(),
-                anyInt(), anyInt(), anyInt(), anyInt());
+                anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    public void onRectangleOnScreenRequested_windowIsActivated_windowDispatchEvent()
+            throws RemoteException {
+        setMagnificationEnabled(MODE_WINDOW);
+        UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
+
+        callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
+                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom,
+                TEST_SOURCE_UNDEFINED);
+
+        verify(mMagnificationConnectionManager).onRectangleOnScreenRequested(eq(TEST_DISPLAY),
+                eq(TEST_RECT.left), eq(TEST_RECT.top), eq(TEST_RECT.right), eq(TEST_RECT.bottom),
+                eq(TEST_SOURCE_UNDEFINED));
+        verify(mScreenMagnificationController, never()).onRectangleOnScreenRequested(anyInt(),
+                anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
     }
 
     @Test
@@ -1777,12 +1816,13 @@ public class MagnificationControllerTest {
         UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
 
         callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
-                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom);
+                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom,
+                TEST_SOURCE_UNDEFINED);
 
         verify(mScreenMagnificationController, never()).onRectangleOnScreenRequested(anyInt(),
-                anyInt(), anyInt(), anyInt(), anyInt());
+                anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
         verify(mMagnificationConnectionManager, never()).onRectangleOnScreenRequested(anyInt(),
-                anyInt(), anyInt(), anyInt(), anyInt());
+                anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
     }
 
     @Test
@@ -1790,12 +1830,13 @@ public class MagnificationControllerTest {
         UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
 
         callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
-                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom);
+                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom,
+                TEST_SOURCE_UNDEFINED);
 
         verify(mScreenMagnificationController, never()).onRectangleOnScreenRequested(
-                eq(TEST_DISPLAY), anyInt(), anyInt(), anyInt(), anyInt());
+                eq(TEST_DISPLAY), anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
         verify(mMagnificationConnectionManager, never()).onRectangleOnScreenRequested(anyInt(),
-                anyInt(), anyInt(), anyInt(), anyInt());
+                anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
     }
 
     @Test
@@ -1805,12 +1846,82 @@ public class MagnificationControllerTest {
         UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
 
         callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
-                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom);
+                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom,
+                TEST_SOURCE_UNDEFINED);
 
         verify(mScreenMagnificationController, never()).onRectangleOnScreenRequested(
-                eq(TEST_DISPLAY), anyInt(), anyInt(), anyInt(), anyInt());
+                eq(TEST_DISPLAY), anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
         verify(mMagnificationConnectionManager, never()).onRectangleOnScreenRequested(anyInt(),
-                anyInt(), anyInt(), anyInt(), anyInt());
+                anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public void onRectangleOnScreenRequested_flagOff_scrollOnly_dispatchWithUndefinedSource() {
+        onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
+                TEST_SOURCE_SCROLL_ONLY);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public void onRectangleOnScreenRequested_flagOn_scrollOnly_dispatchWithScrollOnlySource() {
+        onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(
+                TEST_SOURCE_SCROLL_ONLY);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public void onRectangleOnScreenRequested_flagOff_textCursor_dispatchWithUndefinedSource() {
+        onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
+                TEST_SOURCE_TEXT_CURSOR);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public void onRectangleOnScreenRequested_flagOn_textCursor_dispatchWithTextCursorSource() {
+        onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(
+                TEST_SOURCE_TEXT_CURSOR);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public void onRectangleOnScreenRequested_flagOff_inputFocus_dispatchWithUndefinedSource() {
+        onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
+                TEST_SOURCE_INPUT_FOCUS);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REQUEST_RECTANGLE_WITH_SOURCE)
+    public void onRectangleOnScreenRequested_flagOn_inputFocus_dispatchWithInputFocusSource() {
+        onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(
+                TEST_SOURCE_INPUT_FOCUS);
+    }
+
+    private void onRectangleOnScreenRequested_flagOffHelper_dispatchWithUndefinedSource(
+            int source) {
+        mMagnificationController.onFullScreenMagnificationActivationState(TEST_DISPLAY,
+                true);
+        UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
+
+        callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
+                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom, source);
+
+        verify(mScreenMagnificationController).onRectangleOnScreenRequested(eq(TEST_DISPLAY),
+                eq(TEST_RECT.left), eq(TEST_RECT.top), eq(TEST_RECT.right), eq(TEST_RECT.bottom),
+                eq(TEST_SOURCE_UNDEFINED));
+    }
+
+    private void onRectangleOnScreenRequested_flagOnHelper_dispatchWithExpectedSource(int source) {
+        mMagnificationController.onFullScreenMagnificationActivationState(TEST_DISPLAY,
+                true);
+        UiChangesForAccessibilityCallbacks callbacks = getUiChangesForAccessibilityCallbacks();
+
+        callbacks.onRectangleOnScreenRequested(TEST_DISPLAY,
+                TEST_RECT.left, TEST_RECT.top, TEST_RECT.right, TEST_RECT.bottom, source);
+
+        verify(mScreenMagnificationController).onRectangleOnScreenRequested(eq(TEST_DISPLAY),
+                eq(TEST_RECT.left), eq(TEST_RECT.top), eq(TEST_RECT.right), eq(TEST_RECT.bottom),
+                eq(source));
     }
 
     @Test
