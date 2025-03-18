@@ -1753,6 +1753,13 @@ class AppIdPermissionPolicy : SchemePolicy() {
         }
         val appIdPermissionFlags = newState.mutateUserState(userId)!!.mutateAppIdPermissionFlags()
         val permissionFlags = appIdPermissionFlags.mutateOrPut(appId) { MutableIndexedMap() }
+        // for debugging possible races TODO(b/401768134)
+        oldState.userStates[userId]?.appIdPermissionFlags[appId]?.map?.let {
+            if (permissionFlags.map === it) {
+                throw IllegalStateException("Unexpected sharing between old/new state")
+            }
+        }
+
         permissionFlags.putWithDefault(permissionName, newFlags, 0)
         if (permissionFlags.isEmpty()) {
             appIdPermissionFlags -= appId
