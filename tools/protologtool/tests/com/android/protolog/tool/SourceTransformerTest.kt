@@ -160,10 +160,10 @@ class SourceTransformerTest {
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0], "test %d %f",
                     LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 123)
 
-            invocation.arguments[0] as CompilationUnit
+            listOf<CodeProcessingException>()
         }
 
-        val out = sourceJarWriter.processClass(TEST_CODE, PATH, PATH, code)
+        val (out, _) = sourceJarWriter.processClass(TEST_CODE, PATH, PATH, code)
         code = StaticJavaParser.parse(out)
 
         val protoLogCalls = code.findAll(MethodCallExpr::class.java).filter {
@@ -201,10 +201,10 @@ class SourceTransformerTest {
             visitor.processCall(calls[2], "test %d %f",
                     LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 123)
 
-            invocation.arguments[0] as CompilationUnit
+            listOf<CodeProcessingException>()
         }
 
-        val out = sourceJarWriter.processClass(TEST_CODE_MULTICALLS, PATH, PATH, code)
+        val (out, _) = sourceJarWriter.processClass(TEST_CODE_MULTICALLS, PATH, PATH, code)
         code = StaticJavaParser.parse(out)
 
         val protoLogCalls = code.findAll(MethodCallExpr::class.java).filter {
@@ -238,10 +238,10 @@ class SourceTransformerTest {
                     "test %d %f abc %s\n test", LogLevel.WARN, LogGroup("TEST_GROUP",
                     true, true, "WM_TEST"), 123)
 
-            invocation.arguments[0] as CompilationUnit
+            listOf<CodeProcessingException>()
         }
 
-        val out = sourceJarWriter.processClass(TEST_CODE_MULTILINE, PATH, PATH, code)
+        val (out, _) = sourceJarWriter.processClass(TEST_CODE_MULTILINE, PATH, PATH, code)
         code = StaticJavaParser.parse(out)
 
         val protoLogCalls = code.findAll(MethodCallExpr::class.java).filter {
@@ -275,10 +275,10 @@ class SourceTransformerTest {
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0], "test",
                     LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 456)
 
-            invocation.arguments[0] as CompilationUnit
+            listOf<CodeProcessingException>()
         }
 
-        val out = sourceJarWriter.processClass(TEST_CODE_NO_PARAMS, PATH, PATH, code)
+        val (out, _) = sourceJarWriter.processClass(TEST_CODE_NO_PARAMS, PATH, PATH, code)
         code = StaticJavaParser.parse(out)
 
         val protoLogCalls = code.findAll(MethodCallExpr::class.java).filter {
@@ -309,10 +309,10 @@ class SourceTransformerTest {
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0], "test %d %f",
                     LogLevel.WARN, LogGroup("TEST_GROUP", true, false, "WM_TEST"), 789)
 
-            invocation.arguments[0] as CompilationUnit
+            listOf<CodeProcessingException>()
         }
 
-        val out = sourceJarWriter.processClass(TEST_CODE, PATH, PATH, code)
+        val (out, _) = sourceJarWriter.processClass(TEST_CODE, PATH, PATH, code)
         code = StaticJavaParser.parse(out)
 
         val protoLogCalls = code.findAll(MethodCallExpr::class.java).filter {
@@ -346,10 +346,10 @@ class SourceTransformerTest {
                     "test %d %f abc %s\n test", LogLevel.WARN, LogGroup("TEST_GROUP",
                     true, false, "WM_TEST"), 123)
 
-            invocation.arguments[0] as CompilationUnit
+            listOf<CodeProcessingException>()
         }
 
-        val out = sourceJarWriter.processClass(TEST_CODE_MULTILINE, PATH, PATH, code)
+        val (out, _) = sourceJarWriter.processClass(TEST_CODE_MULTILINE, PATH, PATH, code)
         code = StaticJavaParser.parse(out)
 
         val protoLogCalls = code.findAll(MethodCallExpr::class.java).filter {
