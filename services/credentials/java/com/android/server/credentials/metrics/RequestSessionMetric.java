@@ -246,6 +246,21 @@ public class RequestSessionMetric {
     }
 
     /**
+     * This collects the final chosen class type. While it is possible to collect this during
+     * browsing, note this only collects the final tapped bit.
+     *
+     * @param createOrCredentialType the string type to collect when an entry is tapped by the user
+     */
+    public void collectChosenClassType(String createOrCredentialType) {
+        String truncatedType = generateMetricKey(createOrCredentialType, DELTA_EXCEPTION_CUT);
+        try {
+            mChosenProviderFinalPhaseMetric.setChosenClassType(truncatedType);
+        } catch (Exception e) {
+            Slog.i(TAG, "Unexpected error collecting chosen class type metadata: " + e);
+        }
+    }
+
+    /**
      * Updates the final phase metric with the designated bit.
      *
      * @param exceptionBitFinalPhase represents if the final phase provider had an exception
