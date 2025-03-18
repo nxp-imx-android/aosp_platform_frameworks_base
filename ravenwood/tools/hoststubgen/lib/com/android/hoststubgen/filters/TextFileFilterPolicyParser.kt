@@ -528,7 +528,8 @@ class TextFileFilterPolicyParser {
                         )
                     }
                     val p = policy.withReason(
-                        "$FILTER_REASON (special-class AIDL)"
+                        "$FILTER_REASON (special-class AIDL)",
+                        StatsLabel.SupportedButBoring,
                     )
                     processor.onSpecialClassPolicy(classType, p)
                     aidlPolicy = p
@@ -541,7 +542,8 @@ class TextFileFilterPolicyParser {
                         )
                     }
                     val p = policy.withReason(
-                        "$FILTER_REASON (special-class feature flags)"
+                        "$FILTER_REASON (special-class feature flags)",
+                        StatsLabel.SupportedButBoring,
                     )
                     processor.onSpecialClassPolicy(classType, p)
                     featureFlagsPolicy = p
@@ -554,7 +556,8 @@ class TextFileFilterPolicyParser {
                         )
                     }
                     val p = policy.withReason(
-                        "$FILTER_REASON (special-class sysprops)"
+                        "$FILTER_REASON (special-class sysprops)",
+                        StatsLabel.SupportedButBoring,
                     )
                     processor.onSpecialClassPolicy(classType, p)
                     syspropsPolicy = p
@@ -567,7 +570,8 @@ class TextFileFilterPolicyParser {
                         )
                     }
                     val p = policy.withReason(
-                        "$FILTER_REASON (special-class R file)"
+                        "$FILTER_REASON (special-class R file)",
+                        StatsLabel.SupportedButBoring,
                     )
                     processor.onSpecialClassPolicy(classType, p)
                     rFilePolicy = p
