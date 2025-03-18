@@ -235,7 +235,6 @@ sealed class OngoingActivityChipModel {
             override val isImportantForPrivacy: Boolean = false,
             override val icon: ChipIcon,
             override val colors: ColorsModel,
-            // TODO(b/361346412): Enforce a max length requirement?
             val text: String,
             override val onClickListenerLegacy: View.OnClickListener? = null,
             override val clickBehavior: ClickBehavior,
