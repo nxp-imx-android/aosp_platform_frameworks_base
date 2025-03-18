@@ -24,8 +24,9 @@ import static android.view.accessibility.AccessibilityManager.AUTOCLICK_IGNORE_M
 import static android.view.accessibility.AccessibilityManager.AUTOCLICK_REVERT_TO_LEFT_CLICK_DEFAULT;
 
 import static com.android.server.accessibility.autoclick.AutoclickIndicatorView.SHOW_INDICATOR_DELAY_TIME;
-import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_DOUBLE_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickScrollPanel.DIRECTION_NONE;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_DOUBLE_CLICK;
+import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_DRAG;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_RIGHT_CLICK;
 import static com.android.server.accessibility.autoclick.AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL;
@@ -107,6 +108,12 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     // Default scroll direction is DIRECTION_NONE.
     private @AutoclickScrollPanel.ScrollDirection int mHoveredDirection = DIRECTION_NONE;
+
+    // True during the duration of a dragging event.
+    private boolean mDragModeIsDragging = false;
+    // The MotionEvent downTime attribute associated with the originating click for a dragging
+    // move.
+    private long mDragModeClickDownTime;
 
     @VisibleForTesting
     final ClickPanelControllerInterface clickPanelController =
@@ -206,7 +213,16 @@ public class AutoclickController extends BaseEventStreamTransformation {
             }
 
             if (!isPaused()) {
-                handleMouseMotion(event, policyFlags);
+                scheduleClick(event, policyFlags);
+
+                // When dragging, HOVER_MOVE events need to be manually converted to MOVE events
+                // using the initiating click's down time to simulate dragging.
+                if (mDragModeIsDragging
+                        && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
+                    event.setAction(MotionEvent.ACTION_MOVE);
+                    event.setDownTime(mDragModeClickDownTime);
+                    event.setButtonState(BUTTON_PRIMARY);
+                }
             }
         } else {
             cancelPendingClick();
@@ -283,7 +299,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         }
     }
 
-    private void handleMouseMotion(MotionEvent event, int policyFlags) {
+    private void scheduleClick(MotionEvent event, int policyFlags) {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_HOVER_MOVE: {
                 if (event.getPointerCount() == 1) {
@@ -388,6 +404,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
     @VisibleForTesting
     void onChangeForTesting(boolean selfChange, Uri uri) {
         mAutoclickSettingsObserver.onChange(selfChange, uri);
+    }
+
+    @VisibleForTesting
+    boolean isDraggingForTesting() {
+        return mDragModeIsDragging;
     }
 
     /**
@@ -687,7 +708,13 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             sendClick();
             resetInternalState();
-            resetSelectedClickTypeIfNecessary();
+
+            // If the user is currently dragging, do not reset their click type.
+            boolean stillDragging = mActiveClickType == AUTOCLICK_TYPE_DRAG
+                    && mDragModeIsDragging;
+            if (!stillDragging) {
+                resetSelectedClickTypeIfNecessary();
+            }
         }
 
         /**
@@ -722,8 +749,29 @@ public class AutoclickController extends BaseEventStreamTransformation {
             if (!mActive) {
                 return;
             }
+
+            if (mDragModeIsDragging) {
+                clearDraggingState();
+            }
             resetInternalState();
             mHandler.removeCallbacks(this);
+        }
+
+        // Reset the drag state after a canceled click to avoid potential side effects from
+        // leaving it in an inconsistent state.
+        private void clearDraggingState() {
+            if (mLastMotionEvent != null) {
+                // A final ACTION_UP event needs to be sent to alert the system that dragging has
+                // ended.
+                MotionEvent upEvent = MotionEvent.obtain(mLastMotionEvent);
+                upEvent.setAction(MotionEvent.ACTION_UP);
+                upEvent.setDownTime(mDragModeClickDownTime);
+                AutoclickController.super.onMotionEvent(upEvent, upEvent,
+                        mEventPolicyFlags);
+            }
+
+            resetSelectedClickTypeIfNecessary();
+            mDragModeIsDragging = false;
         }
 
         /**
@@ -948,6 +996,13 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         sendMotionEvent(actionButton, now);
                         sendMotionEvent(actionButton, now + doubleTapMinimumTimeout);
                         return;
+                    case AUTOCLICK_TYPE_DRAG:
+                        if (mDragModeIsDragging) {
+                            endDragEvent();
+                        } else {
+                            startDragEvent();
+                        }
+                        return;
                     default:
                         break;
                 }
@@ -998,6 +1053,65 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
             AutoclickController.super.onMotionEvent(upEvent, upEvent, mEventPolicyFlags);
             upEvent.recycle();
+        }
+
+        // To start a drag event, only send the DOWN and BUTTON_PRESS events.
+        private void startDragEvent() {
+            mDragModeClickDownTime = SystemClock.uptimeMillis();
+            mDragModeIsDragging = true;
+
+            MotionEvent downEvent =
+                    MotionEvent.obtain(
+                            /* downTime= */ mDragModeClickDownTime,
+                            /* eventTime= */ mDragModeClickDownTime,
+                            MotionEvent.ACTION_DOWN,
+                            /* pointerCount= */ 1,
+                            mTempPointerProperties,
+                            mTempPointerCoords,
+                            mMetaState,
+                            BUTTON_PRIMARY,
+                            /* xPrecision= */ 1.0f,
+                            /* yPrecision= */ 1.0f,
+                            mLastMotionEvent.getDeviceId(),
+                            /* edgeFlags= */ 0,
+                            mLastMotionEvent.getSource(),
+                            mLastMotionEvent.getFlags());
+            MotionEvent pressEvent = MotionEvent.obtain(downEvent);
+            pressEvent.setAction(MotionEvent.ACTION_BUTTON_PRESS);
+            AutoclickController.super.onMotionEvent(downEvent, downEvent,
+                    mEventPolicyFlags);
+            downEvent.recycle();
+            AutoclickController.super.onMotionEvent(pressEvent, pressEvent,
+                    mEventPolicyFlags);
+            pressEvent.recycle();
+        }
+
+        // To end a drag event, only send the BUTTON_RELEASE and UP events, making sure to
+        // include the originating drag click's down time.
+        private void endDragEvent() {
+            mDragModeIsDragging = false;
+
+            MotionEvent releaseEvent =
+                    MotionEvent.obtain(
+                            /* downTime= */ mDragModeClickDownTime,
+                            /* eventTime= */ mDragModeClickDownTime,
+                            MotionEvent.ACTION_BUTTON_RELEASE,
+                            /* pointerCount= */ 1,
+                            mTempPointerProperties,
+                            mTempPointerCoords,
+                            mMetaState,
+                            BUTTON_PRIMARY,
+                            /* xPrecision= */ 1.0f,
+                            /* yPrecision= */ 1.0f,
+                            mLastMotionEvent.getDeviceId(),
+                            /* edgeFlags= */ 0,
+                            mLastMotionEvent.getSource(),
+                            mLastMotionEvent.getFlags());
+            MotionEvent upEvent = MotionEvent.obtain(releaseEvent);
+            upEvent.setAction(MotionEvent.ACTION_UP);
+            AutoclickController.super.onMotionEvent(releaseEvent, releaseEvent,
+                    mEventPolicyFlags);
+            AutoclickController.super.onMotionEvent(upEvent, upEvent, mEventPolicyFlags);
         }
 
         @Override
