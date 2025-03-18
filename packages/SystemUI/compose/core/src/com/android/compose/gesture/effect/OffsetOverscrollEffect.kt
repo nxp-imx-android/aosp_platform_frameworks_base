@@ -36,14 +36,22 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 
+/**
+ * Returns a [remember]ed [OffsetOverscrollEffect].
+ *
+ * @param placeRelatively If `true`, the overscrolled content will be placed relatively, meaning
+ *   that its placement will be flipped in right-to-left layouts. If `false`, the content will be
+ *   placed absolutely - same placement for RTL and LTR.
+ */
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun rememberOffsetOverscrollEffect(
-    animationSpec: AnimationSpec<Float> = MaterialTheme.motionScheme.slowSpatialSpec()
+    animationSpec: AnimationSpec<Float> = MaterialTheme.motionScheme.slowSpatialSpec(),
+    placeRelatively: Boolean = true,
 ): OffsetOverscrollEffect {
     val animationScope = rememberCoroutineScope()
     return remember(animationScope, animationSpec) {
-        OffsetOverscrollEffect(animationScope, animationSpec)
+        OffsetOverscrollEffect(animationScope, animationSpec, placeRelatively)
     }
 }
 
@@ -63,13 +71,20 @@ data class OffsetOverscrollEffectFactory(
     private val animationSpec: AnimationSpec<Float>,
 ) : OverscrollFactory {
     override fun createOverscrollEffect(): OverscrollEffect {
-        return OffsetOverscrollEffect(animationScope, animationSpec)
+        return OffsetOverscrollEffect(
+            animationScope = animationScope,
+            animationSpec = animationSpec,
+            placeRelatively = true,
+        )
     }
 }
 
 /** An [OverscrollEffect] that offsets the content by the overscroll value. */
-class OffsetOverscrollEffect(animationScope: CoroutineScope, animationSpec: AnimationSpec<Float>) :
-    BaseContentOverscrollEffect(animationScope, animationSpec) {
+class OffsetOverscrollEffect(
+    animationScope: CoroutineScope,
+    animationSpec: AnimationSpec<Float>,
+    placeRelatively: Boolean,
+) : BaseContentOverscrollEffect(animationScope, animationSpec) {
     override val node: DelegatableNode =
         object : Modifier.Node(), LayoutModifierNode {
             override fun MeasureScope.measure(
@@ -80,11 +95,21 @@ class OffsetOverscrollEffect(animationScope: CoroutineScope, animationSpec: Anim
                 return layout(placeable.width, placeable.height) {
                     val offsetPx = computeOffset(density = this@measure, overscrollDistance)
                     if (offsetPx != 0) {
-                        placeable.placeRelativeWithLayer(
-                            with(requireConverter()) { offsetPx.toIntOffset() }
-                        )
+                        if (placeRelatively) {
+                            placeable.placeRelativeWithLayer(
+                                with(requireConverter()) { offsetPx.toIntOffset() }
+                            )
+                        } else {
+                            placeable.placeWithLayer(
+                                with(requireConverter()) { offsetPx.toIntOffset() }
+                            )
+                        }
                     } else {
-                        placeable.placeRelative(0, 0)
+                        if (placeRelatively) {
+                            placeable.placeRelative(0, 0)
+                        } else {
+                            placeable.place(0, 0)
+                        }
                     }
                 }
             }

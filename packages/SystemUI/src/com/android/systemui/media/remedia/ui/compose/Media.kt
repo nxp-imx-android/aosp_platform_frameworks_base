@@ -244,7 +244,8 @@ private fun CardCarouselContent(
                     userScrollEnabled = isSwipingEnabled,
                     pageSpacing = 8.dp,
                     key = { index: Int -> viewModel.cards[index].key },
-                    overscrollEffect = overscrollEffect ?: rememberOffsetOverscrollEffect(),
+                    overscrollEffect =
+                        overscrollEffect ?: rememberOffsetOverscrollEffect(placeRelatively = false),
                 ) { pageIndex: Int ->
                     Card(
                         viewModel = viewModel.cards[pageIndex],
@@ -269,7 +270,7 @@ private fun CardCarouselContent(
         if (behavior.isCarouselDismissible) {
             SwipeToDismiss(content = { PagerContent() }, onDismissed = onDismissed)
         } else {
-            val overscrollEffect = rememberOffsetOverscrollEffect()
+            val overscrollEffect = rememberOffsetOverscrollEffect(placeRelatively = false)
             SwipeToReveal(
                 foregroundContent = { PagerContent(overscrollEffect) },
                 foregroundContentEffect = overscrollEffect,
