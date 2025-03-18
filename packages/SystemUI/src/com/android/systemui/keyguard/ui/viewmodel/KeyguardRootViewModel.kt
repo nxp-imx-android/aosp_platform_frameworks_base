@@ -116,6 +116,7 @@ constructor(
     private val goneToDozingTransitionViewModel: GoneToDozingTransitionViewModel,
     private val goneToDreamingTransitionViewModel: GoneToDreamingTransitionViewModel,
     private val goneToLockscreenTransitionViewModel: GoneToLockscreenTransitionViewModel,
+    private val goneToGlanceableHubTransitionViewModel: GoneToGlanceableHubTransitionViewModel,
     private val lockscreenToAodTransitionViewModel: LockscreenToAodTransitionViewModel,
     private val lockscreenToDozingTransitionViewModel: LockscreenToDozingTransitionViewModel,
     private val lockscreenToDreamingTransitionViewModel: LockscreenToDreamingTransitionViewModel,
@@ -277,6 +278,7 @@ constructor(
                         primaryBouncerToAodTransitionViewModel.lockscreenAlpha,
                         primaryBouncerToGoneTransitionViewModel.lockscreenAlpha,
                         primaryBouncerToLockscreenTransitionViewModel.lockscreenAlpha(viewState),
+                        goneToGlanceableHubTransitionViewModel.keyguardAlpha,
                     )
                     .onStart { emit(0f) },
             ) { hideKeyguard, alpha ->

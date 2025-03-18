@@ -20,6 +20,8 @@ import android.animation.ValueAnimator
 import com.android.app.animation.Interpolators
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
+import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
+import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -48,6 +50,7 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     powerInteractor: PowerInteractor,
     private val communalSceneInteractor: CommunalSceneInteractor,
+    private val communalSettingsInteractor: CommunalSettingsInteractor,
     keyguardOcclusionInteractor: KeyguardOcclusionInteractor,
     private val keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor,
 ) :
@@ -77,6 +80,26 @@ constructor(
     }
 
     /**
+     * Attempt to show the glanceable hub from the gone state (eg due to power button press).
+     *
+     * This will return whether the hub was successfully shown or not.
+     */
+    fun showGlanceableHub(): Boolean {
+        val isRelevantKeyguardState =
+            transitionInteractor.startedKeyguardTransitionStep.value.to == KeyguardState.GONE
+        val showGlanceableHub =
+            isRelevantKeyguardState &&
+                communalSettingsInteractor.isV2FlagEnabled() &&
+                communalSettingsInteractor.autoOpenEnabled.value &&
+                !keyguardInteractor.isKeyguardOccluded.value
+        if (showGlanceableHub) {
+            communalSceneInteractor.snapToScene(CommunalScenes.Communal, "showGlanceableHub()")
+            return true
+        }
+        return false
+    }
+
+    /**
      * A special case supported on foldables, where folding the device may put the device on an
      * unlocked lockscreen, but if an occluding app is already showing (like a active phone call),
      * then go directly to OCCLUDED.
@@ -100,28 +123,36 @@ constructor(
             scope.launch {
                 keyguardShowWhileAwakeInteractor.showWhileAwakeEvents
                     .filterRelevantKeyguardState()
-                    .sample(communalSceneInteractor.isIdleOnCommunalNotEditMode, ::Pair)
-                    .collect { (lockReason, idleOnCommunal) ->
-                        val to =
-                            if (idleOnCommunal) {
-                                KeyguardState.GLANCEABLE_HUB
-                            } else {
-                                KeyguardState.LOCKSCREEN
-                            }
-                        startTransitionTo(to, ownerReason = "lockWhileAwake: $lockReason")
+                    .sample(communalSettingsInteractor.autoOpenEnabled, ::Pair)
+                    .collect { (lockReason, autoOpenHub) ->
+                        if (autoOpenHub) {
+                            communalSceneInteractor.changeScene(
+                                CommunalScenes.Communal,
+                                "lockWhileAwake: $lockReason",
+                            )
+                        } else {
+                            startTransitionTo(
+                                KeyguardState.LOCKSCREEN,
+                                ownerReason = "lockWhileAwake: $lockReason",
+                            )
+                        }
                     }
             }
         } else {
-            scope.launch("$TAG#listenForGoneToLockscreenOrHubOrOccluded") {
+            scope.launch("$TAG#listenForGoneToLockscreenOrHubOrOccluded", mainDispatcher) {
                 keyguardInteractor.isKeyguardShowing
                     .filterRelevantKeyguardStateAnd { isKeyguardShowing -> isKeyguardShowing }
-                    .sample(communalSceneInteractor.isIdleOnCommunalNotEditMode, ::Pair)
-                    .collect { (_, isIdleOnCommunal) ->
+                    .sample(communalSettingsInteractor.autoOpenEnabled, ::Pair)
+                    .collect { (_, autoOpenHub) ->
                         val to =
-                            if (isIdleOnCommunal) {
-                                KeyguardState.GLANCEABLE_HUB
-                            } else if (keyguardInteractor.isKeyguardOccluded.value) {
+                            if (keyguardInteractor.isKeyguardOccluded.value) {
                                 KeyguardState.OCCLUDED
+                            } else if (autoOpenHub) {
+                                communalSceneInteractor.changeScene(
+                                    CommunalScenes.Communal,
+                                    "keyguard interactor says keyguard is showing",
+                                )
+                                return@collect
                             } else {
                                 KeyguardState.LOCKSCREEN
                             }

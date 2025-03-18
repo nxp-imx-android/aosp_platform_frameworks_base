@@ -149,9 +149,18 @@ constructor(
     val isCommunalEnabled: StateFlow<Boolean> = communalSettingsInteractor.isCommunalEnabled
 
     /** Whether communal features are enabled and available. */
-    val isCommunalAvailable: Flow<Boolean> =
-        allOf(communalSettingsInteractor.isCommunalEnabled, keyguardInteractor.isKeyguardShowing)
-            .distinctUntilChanged()
+    @Deprecated("Use isCommunalEnabled instead", replaceWith = ReplaceWith("isCommunalEnabled"))
+    val isCommunalAvailable: Flow<Boolean> by lazy {
+        val availableFlow =
+            if (communalSettingsInteractor.isV2FlagEnabled()) {
+                communalSettingsInteractor.isCommunalEnabled
+            } else {
+                allOf(
+                    communalSettingsInteractor.isCommunalEnabled,
+                    keyguardInteractor.isKeyguardShowing,
+                )
+            }
+        availableFlow
             .onEach { available ->
                 logger.i({ "Communal is ${if (bool1) "" else "un"}available" }) {
                     bool1 = available
@@ -167,6 +176,7 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 replay = 1,
             )
+    }
 
     private val _isDisclaimerDismissed = MutableStateFlow(false)
     val isDisclaimerDismissed: Flow<Boolean> = _isDisclaimerDismissed.asStateFlow()
@@ -467,6 +477,7 @@ constructor(
                             size = CommunalContentSize.toSize(widget.spanY),
                         )
                     }
+
                     is CommunalWidgetContentModel.Pending -> {
                         WidgetContent.PendingWidget(
                             appWidgetId = widget.appWidgetId,
@@ -493,6 +504,7 @@ constructor(
                     when (model) {
                         is CommunalWidgetContentModel.Available ->
                             model.providerInfo.profile.identifier
+
                         is CommunalWidgetContentModel.Pending -> model.user.identifier
                     }
                 uid != disallowedByDevicePolicyUser.id
@@ -576,6 +588,7 @@ constructor(
             when (widget) {
                 is CommunalWidgetContentModel.Available ->
                     currentUserIds.contains(widget.providerInfo.profile?.identifier)
+
                 is CommunalWidgetContentModel.Pending -> true
             }
         }
