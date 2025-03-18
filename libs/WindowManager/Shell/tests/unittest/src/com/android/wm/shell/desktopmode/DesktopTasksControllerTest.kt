@@ -1526,6 +1526,37 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    fun launchIntent_taskInDesktopMode_onSecondaryDisplay_transitionStarted() {
+        setUpLandscapeDisplay()
+        taskRepository.addDesk(SECOND_DISPLAY, deskId = 2)
+        val intent = Intent().setComponent(homeComponentName)
+        whenever(
+                desktopMixedTransitionHandler.startLaunchTransition(
+                    eq(TRANSIT_OPEN),
+                    any(),
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyOrNull(),
+                )
+            )
+            .thenReturn(Binder())
+
+        controller.startLaunchIntentTransition(intent, Bundle.EMPTY, SECOND_DISPLAY)
+
+        val wct = getLatestDesktopMixedTaskWct(type = TRANSIT_OPEN)
+        // We expect two actions: open the app and start the desk
+        assertThat(wct.hierarchyOps).hasSize(2)
+        val hOps0 = wct.hierarchyOps[0]
+        val hOps1 = wct.hierarchyOps[1]
+        assertThat(hOps0.type).isEqualTo(HIERARCHY_OP_TYPE_PENDING_INTENT)
+        val activityOptions0 = ActivityOptions.fromBundle(hOps0.launchOptions)
+        assertThat(activityOptions0.launchDisplayId).isEqualTo(SECOND_DISPLAY)
+        assertThat(hOps1.type).isEqualTo(HIERARCHY_OP_TYPE_PENDING_INTENT)
+        val activityOptions1 = ActivityOptions.fromBundle(hOps1.launchOptions)
+        assertThat(activityOptions1.launchDisplayId).isEqualTo(SECOND_DISPLAY)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS)
     fun addMoveToDeskTaskChanges_landscapeDevice_userFullscreenOverride_defaultPortraitBounds() {
         setUpLandscapeDisplay()

@@ -859,20 +859,22 @@ class DesktopTasksController(
             val requestRes = transitions.dispatchRequest(Binder(), requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
 
-            desktopPipTransitionObserver.get().addPendingPipTransition(
-                DesktopPipTransitionObserver.PendingPipTransition(
-                    token = freeformTaskTransitionStarter.startPipTransition(wct),
-                    taskId = taskInfo.taskId,
-                    onSuccess = {
-                        onDesktopTaskEnteredPip(
-                            taskId = taskId,
-                            deskId = deskId,
-                            displayId = taskInfo.displayId,
-                            taskIsLastVisibleTaskBeforePip = isLastTask,
-                        )
-                    },
+            desktopPipTransitionObserver
+                .get()
+                .addPendingPipTransition(
+                    DesktopPipTransitionObserver.PendingPipTransition(
+                        token = freeformTaskTransitionStarter.startPipTransition(wct),
+                        taskId = taskInfo.taskId,
+                        onSuccess = {
+                            onDesktopTaskEnteredPip(
+                                taskId = taskId,
+                                deskId = deskId,
+                                displayId = taskInfo.displayId,
+                                taskIsLastVisibleTaskBeforePip = isLastTask,
+                            )
+                        },
+                    )
                 )
-            )
         } else {
             snapEventHandler.removeTaskIfTiled(displayId, taskId)
             val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
@@ -1232,6 +1234,7 @@ class DesktopTasksController(
                 pendingIntentBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
                 launchBounds = bounds
+                launchDisplayId = displayId
                 if (DesktopModeFlags.ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX.isTrue) {
                     // Sets launch bounds size as flexible so core can recalculate.
                     flexibleLaunchSize = true
