@@ -17,6 +17,7 @@
 package com.android.settingslib.devicestate
 
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK
+import android.util.Dumpable
 
 /**
  * Interface for managing [DEVICE_STATE_ROTATION_LOCK] setting.
@@ -25,7 +26,7 @@ import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK
  * specific device states, retrieve the setting value, and check if rotation is locked for specific
  * or all device states.
  */
-interface DeviceStateAutoRotateSettingManager {
+interface DeviceStateAutoRotateSettingManager : Dumpable {
     // TODO: b/397928958 - Rename all terms from rotationLock to autoRotate in all apis.
 
     /** Listener for changes in device-state based auto rotate setting. */
@@ -65,5 +66,3 @@ data class SettableDeviceState(
     /** Returns whether there is an auto-rotation setting for this device state. */
     val isSettable: Boolean
 )
-
-

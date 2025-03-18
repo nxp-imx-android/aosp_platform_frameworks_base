@@ -181,8 +181,10 @@ class DeviceStateAutoRotateSettingManagerImplTest {
 
     @Test
     fun getAutoRotateSetting_forInvalidPosture_returnsSettingForFallbackPosture() {
-        persistSettings(DEVICE_STATE_ROTATION_KEY_UNFOLDED, DEVICE_STATE_ROTATION_LOCK_UNLOCKED)
-        persistSettings(DEVICE_STATE_ROTATION_KEY_FOLDED, DEVICE_STATE_ROTATION_LOCK_LOCKED)
+        persistSettings(
+            "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED:" +
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_UNLOCKED"
+        )
 
         val autoRotateSetting = settingManager.getRotationLockSetting(DEVICE_STATE_HALF_FOLDED)
 
@@ -276,7 +278,6 @@ class DeviceStateAutoRotateSettingManagerImplTest {
                 SettableDeviceState(DEVICE_STATE_ROTATION_KEY_FOLDED, isSettable = true),
                 SettableDeviceState(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED, isSettable = false),
                 SettableDeviceState(DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY, isSettable = false),
-                SettableDeviceState(DEVICE_STATE_ROTATION_LOCK_IGNORED, isSettable = false),
             )
     }
 
