@@ -55,12 +55,12 @@ constructor(
     private val systemClock: SystemClock,
 ) {
     /**
-     * A flow modeling the notification chips that should be shown. Emits an empty list if there are
-     * no notifications that should show a status bar chip.
+     * A flow modeling the current notification chips. Emits an empty list if there are no
+     * notifications that are eligible to show a status bar chip.
      */
     val chips: Flow<List<OngoingActivityChipModel.Active>> =
         combine(
-                notifChipsInteractor.shownNotificationChips,
+                notifChipsInteractor.allNotificationChips,
                 headsUpNotificationInteractor.statusBarHeadsUpState,
             ) { notifications, headsUpState ->
                 notifications.map { it.toActivityChipModel(headsUpState) }
@@ -98,6 +98,10 @@ constructor(
                 notifChipsInteractor.onPromotedNotificationChipTapped(this@toActivityChipModel.key)
             }
         }
+        // If the app that posted this notification is visible, we want to hide the chip
+        // because information between the status bar chip and the app itself could be
+        // out-of-sync (like a timer that's slightly off)
+        val isHidden = this.isAppVisible
         val onClickListenerLegacy =
             View.OnClickListener {
                 StatusBarChipsModernization.assertInLegacyMode()
@@ -122,6 +126,7 @@ constructor(
                 colors = colors,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
@@ -133,6 +138,7 @@ constructor(
                 text = chipContent.shortCriticalText,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
@@ -147,6 +153,7 @@ constructor(
                 colors = colors,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
@@ -157,6 +164,7 @@ constructor(
                 colors = colors,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
@@ -173,6 +181,7 @@ constructor(
                         time = chipContent.time.currentTimeMillis,
                         onClickListenerLegacy = onClickListenerLegacy,
                         clickBehavior = clickBehavior,
+                        isHidden = isHidden,
                     )
                 } else {
                     // Don't show a `when` time that's close to now or in the past because it's
@@ -189,6 +198,7 @@ constructor(
                         colors = colors,
                         onClickListenerLegacy = onClickListenerLegacy,
                         clickBehavior = clickBehavior,
+                        isHidden = isHidden,
                     )
                 }
             }
@@ -201,6 +211,7 @@ constructor(
                     isEventInFuture = chipContent.time.isCountDown,
                     onClickListenerLegacy = onClickListenerLegacy,
                     clickBehavior = clickBehavior,
+                    isHidden = isHidden,
                 )
             }
         }
