@@ -85,6 +85,7 @@ class CollapsableTextView @JvmOverloads constructor(
                 Gravity.CENTER_VERTICAL, Gravity.CENTER, Gravity.CENTER_HORIZONTAL -> {
                     centerHorizontally(titleTextView)
                     centerHorizontally(collapseButton)
+                    centerHorizontally(learnMoreTextView)
                 }
             }
             isCollapsable = getBoolean(isCollapsableAttr, DEFAULT_COLLAPSABLE)
