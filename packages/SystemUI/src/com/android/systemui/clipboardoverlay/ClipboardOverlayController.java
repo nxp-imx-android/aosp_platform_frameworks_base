@@ -19,6 +19,7 @@ package com.android.systemui.clipboardoverlay;
 import static android.content.Intent.ACTION_CLOSE_SYSTEM_DIALOGS;
 
 import static com.android.internal.config.sysui.SystemUiDeviceConfigFlags.CLIPBOARD_OVERLAY_SHOW_ACTIONS;
+import static com.android.systemui.Flags.clipboardAnnounceLiveRegion;
 import static com.android.systemui.Flags.clipboardSharedTransitions;
 import static com.android.systemui.Flags.showClipboardIndication;
 import static com.android.systemui.clipboardoverlay.ClipboardOverlayEvent.CLIPBOARD_OVERLAY_ACTION_SHOWN;
@@ -307,13 +308,25 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
                 mClipboardLogger.logUnguarded(CLIPBOARD_OVERLAY_SHOWN_MINIMIZED);
                 mIsMinimized = true;
                 mView.setMinimized(true);
-                animateIn();
+                if (clipboardAnnounceLiveRegion()) {
+                    animateInWithAnnouncement(mClipboardModel.getType());
+                } else {
+                    animateIn();
+                }
             } else {
                 mClipboardLogger.logUnguarded(CLIPBOARD_OVERLAY_SHOWN_EXPANDED);
-                setExpandedView(this::animateIn);
+                setExpandedView(() -> {
+                    if (clipboardAnnounceLiveRegion()) {
+                        animateInWithAnnouncement(mClipboardModel.getType());
+                    } else {
+                        animateIn();
+                    }
+                });
             }
-            mWindow.withWindowAttached(() -> mView.announceForAccessibility(
-                    getAccessibilityAnnouncement(mClipboardModel.getType())));
+            if (!clipboardAnnounceLiveRegion()) {
+                mWindow.withWindowAttached(() -> mView.announceForAccessibility(
+                        getAccessibilityAnnouncement(mClipboardModel.getType())));
+            }
         } else if (!mIsMinimized) {
             setExpandedView(() -> {
             });
@@ -501,9 +514,20 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
         animateOut();
     }
 
-    private void animateIn() {
+    private void animateInWithAnnouncement(ClipboardModel.Type type) {
+        Animator entrance = animateIn();
+        entrance.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                super.onAnimationEnd(animation);
+                mView.announce(getAccessibilityAnnouncement(type));
+            }
+        });
+    }
+
+    private Animator animateIn() {
         if (mEnterAnimator != null && mEnterAnimator.isRunning()) {
-            return;
+            return mEnterAnimator;
         }
         mEnterAnimator = mView.getEnterAnimation();
         mEnterAnimator.addListener(new AnimatorListenerAdapter() {
@@ -526,6 +550,7 @@ public class ClipboardOverlayController implements ClipboardListener.ClipboardOv
             }
         });
         mEnterAnimator.start();
+        return mEnterAnimator;
     }
 
     private void finish(ClipboardOverlayEvent event) {

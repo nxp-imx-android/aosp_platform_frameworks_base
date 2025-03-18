@@ -24,6 +24,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:contentDescription="@string/clipboard_overlay_window_name">
+    <View
+        android:id="@+id/clipboard_announcement_live_region"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:accessibilityLiveRegion="polite"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
     <!-- Min edge spacing guideline off of which the preview and actions can be anchored (without
          this we'd need to express margins as the sum of two different dimens). -->
     <androidx.constraintlayout.widget.Guideline
