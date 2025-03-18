@@ -431,7 +431,10 @@ public class CsipDeviceManager {
                     for (BluetoothDevice device : sinksToSync) {
                         log("addMemberDevicesIntoMainDevice: sync audio sharing source to "
                                 + device.getAnonymizedAddress());
-                        assistant.addSource(device, metadata, /* isGroupOp= */ false);
+                        if (assistant.getConnectionStatus(device)
+                                == BluetoothProfile.STATE_CONNECTED) {
+                            assistant.addSource(device, metadata, /* isGroupOp= */ false);
+                        }
                     }
                 }
             }
