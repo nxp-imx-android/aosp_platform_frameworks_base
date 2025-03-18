@@ -83,7 +83,9 @@ public abstract class DevicePolicyManagerInternal {
     /**
      * @param userHandle the handle of the user whose profile owner is being fetched.
      * @return the configured supervision app if it exists and is the device owner or policy owner.
+     * @deprecated Use {@link android.app.supervision.SupervisionManagerInternal} methods instead.
      */
+    @Deprecated
     public abstract @Nullable ComponentName getProfileOwnerOrDeviceOwnerSupervisionComponent(
             @NonNull UserHandle userHandle);
 
@@ -114,7 +116,9 @@ public abstract class DevicePolicyManagerInternal {
      *
      * @param uid App uid.
      * @return true if the uid is the active supervision app.
+     * @deprecated Use {@link android.app.supervision.SupervisionManagerInternal} methods instead.
      */
+    @Deprecated
     public abstract boolean isActiveSupervisionApp(int uid);
 
     /**
