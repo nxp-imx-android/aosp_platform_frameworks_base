@@ -54,6 +54,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.PermissionChecker;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.media.IMediaRouter2;
 import android.media.IMediaRouter2Manager;
 import android.media.MediaRoute2Info;
@@ -102,6 +103,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -128,6 +130,9 @@ class MediaRouter2ServiceImpl {
             new String[] {
                 Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN
             };
+
+    private static final AtomicReference<MediaRouter2ServiceImpl> sInstance =
+            new AtomicReference<>();
 
     private final Context mContext;
     private final Looper mLooper;
@@ -239,6 +244,41 @@ class MediaRouter2ServiceImpl {
                 affectedRouter.get().maybeUpdateSystemRoutingPermissionLocked();
             }
         }
+    }
+
+    /**
+     * Conditionally handles a volume key press, and returns true if handled.
+     *
+     * <p>A volume key press will only be handled if a routing session subject to volume key presses
+     * exists.
+     *
+     * @param callerLogTag A tag to include in the log line indicating that the event is handled.
+     * @param direction One of {@link AudioManager#ADJUST_LOWER}, {@link AudioManager#ADJUST_RAISE},
+     *     or {@link AudioManager#ADJUST_SAME}. If the direction is not one of these, the key press
+     *     will not be handled.
+     * @param suggestedStream The suggested stream to adjust. If the stream is not {@link
+     *     AudioManager#USE_DEFAULT_STREAM_TYPE} or {@link AudioManager#STREAM_MUSIC}, the key press
+     *     will not be handled.
+     * @return Whether the key press was handled.
+     * @see SystemMediaRoute2Provider2#maybeHandleVolumeKeyEventForSystemMediaSession
+     */
+
+    /* package */ static boolean maybeHandleVolumeKeyEvent(
+            String callerLogTag, int direction, int suggestedStream) {
+        var service = Flags.enableMirroringInMediaRouter2() ? sInstance.get() : null;
+        var isRelevantStream =
+                suggestedStream == AudioManager.USE_DEFAULT_STREAM_TYPE
+                        || suggestedStream == AudioManager.STREAM_MUSIC;
+        if (service == null || !isRelevantStream) {
+            return false;
+        }
+        var handled = service.maybeHandleVolumeKeyEventInternal(direction);
+        if (handled) {
+            Log.i(
+                    TAG,
+                    "Volume key press handled by the routing framework. Caller: " + callerLogTag);
+        }
+        return handled;
     }
 
     // Start of methods that implement MediaRouter2 operations.
@@ -1092,6 +1132,24 @@ class MediaRouter2ServiceImpl {
             } else {
                 pw.println(indent + "  <no user records>");
             }
+        }
+    }
+
+    private boolean maybeHandleVolumeKeyEventInternal(int direction) {
+        synchronized (mLock) {
+            // TODO: b/396399175 - Replace this for-loop with a singleton system provider when
+            // multi-user support is properly implemented.
+            for (int i = 0; i < mUserRecords.size(); i++) {
+                var userRecord = mUserRecords.valueAt(i);
+                var systemProvider = userRecord.mHandler.getSystemProvider();
+                var handled =
+                        systemProvider.maybeHandleVolumeKeyEventForSystemMediaSession(
+                                DUMMY_REQUEST_ID, direction);
+                if (handled) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -2262,6 +2320,11 @@ class MediaRouter2ServiceImpl {
             throw new IllegalArgumentException(
                     TextUtils.formatSimple("Scanning state %d is not valid.", scanningState));
         }
+    }
+
+    /** Invoked when {@link MediaRouterService#systemRunning()} is invoked. */
+    /* package */ void systemRunning() {
+        sInstance.set(this);
     }
 
     final class UserRecord {

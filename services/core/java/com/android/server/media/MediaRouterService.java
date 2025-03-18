@@ -199,6 +199,7 @@ public final class MediaRouterService extends IMediaRouterService.Stub
                         },
                         TAG);
         updateRunningUserAndProfiles(ActivityManager.getCurrentUser());
+        mService2.systemRunning();
     }
 
     @Override

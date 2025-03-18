@@ -2574,6 +2574,11 @@ public class MediaSessionService extends SystemService implements Monitor {
                     return;
                 }
 
+                if (MediaRouter2ServiceImpl.maybeHandleVolumeKeyEvent(
+                        TAG, direction, suggestedStream)) {
+                    return;
+                }
+
                 // Execute mAudioService.adjustSuggestedStreamVolume() on
                 // handler thread of MediaSessionService.
                 // This will release the MediaSessionService.mLock sooner and avoid
