@@ -111,6 +111,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.contentDescription
@@ -163,6 +164,7 @@ import com.android.systemui.qs.panels.ui.model.SpacerGridCell
 import com.android.systemui.qs.panels.ui.model.TileGridCell
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.pipeline.shared.TileSpec
+import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.qs.shared.model.groupAndSort
 import com.android.systemui.res.R
 import kotlin.math.abs
@@ -616,11 +618,9 @@ private fun AvailableTileGrid(
                             }
                             .padding(16.dp),
                 ) {
-                    Text(
-                        text = category.label.load() ?: "",
-                        style = MaterialTheme.typography.titleMediumEmphasized,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp, bottom = 16.dp),
+                    CategoryHeader(
+                        category,
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
                     )
                     tiles.chunked(columns).forEach { row ->
                         Row(
@@ -854,6 +854,27 @@ private fun TileGridCell(
                 progress = progress,
             )
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun CategoryHeader(category: TileCategory, modifier: Modifier = Modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = spacedBy(8.dp),
+        modifier = modifier,
+    ) {
+        Icon(
+            painter = painterResource(category.iconId),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface,
+        )
+        Text(
+            text = category.label.load() ?: "",
+            style = MaterialTheme.typography.titleMediumEmphasized,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
     }
 }
 
