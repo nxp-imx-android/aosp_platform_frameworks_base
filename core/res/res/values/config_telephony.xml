@@ -262,7 +262,22 @@
          carrier_supported_satellite_services_per_provider_bundle does not support them.
          -->
     <string-array name="config_satellite_providers" translatable="false">
+        <!-- T-Mobile - USA -->
         <item>"310830"</item>
+        <!-- Entel Chile - Chile -->
+        <item>"73029"</item>
+        <!-- KDDI - Japan -->
+        <item>"44055"</item>
+        <!-- Kyivstar - Ukraine -->
+        <item>"255707"</item>
+        <!-- One NZ - New Zealand -->
+        <item>"53013"</item>
+        <!-- Optus - Australia -->
+        <item>"50559"</item>
+        <!-- Rogers - Canada -->
+        <item>"302723"</item>
+        <!-- Telstra - Australia -->
+        <item>"50511"</item>
     </string-array>
     <java-symbol type="array" name="config_satellite_providers" />
 
