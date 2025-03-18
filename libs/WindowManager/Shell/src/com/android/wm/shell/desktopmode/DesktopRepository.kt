@@ -1112,6 +1112,7 @@ class DesktopRepository(
     internal fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix  "
         pw.println("${prefix}DesktopRepository")
+        pw.println("${innerPrefix}userId=$userId")
         dumpDesktopTaskData(pw, innerPrefix)
         pw.println("${innerPrefix}activeTasksListeners=${activeTasksListeners.size}")
         pw.println("${innerPrefix}visibleTasksListeners=${visibleTasksListeners.size}")
