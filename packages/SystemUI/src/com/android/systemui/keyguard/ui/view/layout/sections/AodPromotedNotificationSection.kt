@@ -28,7 +28,7 @@ import androidx.constraintlayout.widget.ConstraintSet.TOP
 import com.android.systemui.keyguard.shared.model.KeyguardSection
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.promoted.AODPromotedNotification
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationLogger
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
@@ -40,7 +40,7 @@ class AodPromotedNotificationSection
 constructor(
     @ShadeDisplayAware private val context: Context,
     private val viewModelFactory: AODPromotedNotificationViewModel.Factory,
-    private val shadeInteractor: ShadeInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
     private val logger: PromotedNotificationLogger,
 ) : KeyguardSection() {
     var view: ComposeView? = null
@@ -90,7 +90,7 @@ constructor(
             context.resources.getDimensionPixelSize(R.dimen.below_clock_padding_start_icons)
 
         constraintSet.apply {
-            val isShadeLayoutWide = shadeInteractor.isShadeLayoutWide.value
+            val isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value
 
             if (isShadeLayoutWide) {
                 // When in split shade, align with top of smart space:

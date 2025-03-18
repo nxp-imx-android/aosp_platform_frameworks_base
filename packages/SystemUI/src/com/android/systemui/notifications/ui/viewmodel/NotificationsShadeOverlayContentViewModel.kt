@@ -23,6 +23,7 @@ import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
@@ -50,6 +51,7 @@ constructor(
     val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
     val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
+    shadeModeInteractor: ShadeModeInteractor,
     disableFlagsInteractor: DisableFlagsInteractor,
     mediaCarouselInteractor: MediaCarouselInteractor,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
@@ -62,13 +64,13 @@ constructor(
             traceName = "showClock",
             initialValue =
                 shouldShowClock(
-                    isShadeLayoutWide = shadeInteractor.isShadeLayoutWide.value,
+                    isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value,
                     areAnyNotificationsPresent =
                         activeNotificationsInteractor.areAnyNotificationsPresentValue,
                 ),
             source =
                 combine(
-                    shadeInteractor.isShadeLayoutWide,
+                    shadeModeInteractor.isShadeLayoutWide,
                     activeNotificationsInteractor.areAnyNotificationsPresent,
                     this::shouldShowClock,
                 ),

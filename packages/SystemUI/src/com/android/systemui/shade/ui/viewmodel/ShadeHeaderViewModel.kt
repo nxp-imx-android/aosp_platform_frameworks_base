@@ -99,12 +99,12 @@ constructor(
             traceName = "showClock",
             initialValue =
                 shouldShowClock(
-                    isShadeLayoutWide = shadeInteractor.isShadeLayoutWide.value,
+                    isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value,
                     overlays = sceneInteractor.currentOverlays.value,
                 ),
             source =
                 combine(
-                    shadeInteractor.isShadeLayoutWide,
+                    shadeModeInteractor.isShadeLayoutWide,
                     sceneInteractor.currentOverlays,
                     ::shouldShowClock,
                 ),

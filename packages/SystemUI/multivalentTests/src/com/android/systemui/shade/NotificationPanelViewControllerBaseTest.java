@@ -41,16 +41,12 @@ import static org.mockito.Mockito.when;
 
 import android.animation.Animator;
 import android.annotation.IdRes;
-import android.content.ContentResolver;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.PowerManager;
-import android.os.UserManager;
 import android.util.DisplayMetrics;
 import android.view.Display;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,10 +61,8 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.logging.testing.UiEventLoggerFake;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.internal.util.LatencyTracker;
-import com.android.keyguard.KeyguardSliceViewController;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent;
-import com.android.keyguard.logging.KeyguardLogger;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor;
 import com.android.systemui.classifier.FalsingCollectorFake;
@@ -142,7 +136,6 @@ import com.android.systemui.statusbar.notification.stack.AmbientState;
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
-import com.android.systemui.statusbar.notification.stack.NotificationStackSizeCalculator;
 import com.android.systemui.statusbar.notification.stack.domain.interactor.SharedNotificationContainerInteractor;
 import com.android.systemui.statusbar.phone.CentralSurfaces;
 import com.android.systemui.statusbar.phone.ConfigurationControllerImpl;
@@ -164,9 +157,7 @@ import com.android.systemui.statusbar.policy.CastController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.ResourcesSplitShadeStateController;
-import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.statusbar.policy.data.repository.FakeUserSetupRepository;
-import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.unfold.SysUIUnfoldComponent;
 import com.android.systemui.user.domain.interactor.UserSwitcherInteractor;
 import com.android.systemui.util.kotlin.JavaAdapter;
@@ -214,7 +205,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected DozeParameters mDozeParameters;
     @Mock protected ScreenOffAnimationController mScreenOffAnimationController;
     @Mock protected NotificationPanelView mView;
-    @Mock protected LayoutInflater mLayoutInflater;
     @Mock protected DynamicPrivacyController mDynamicPrivacyController;
     @Mock protected ShadeTouchableRegionManager mShadeTouchableRegionManager;
     @Mock protected KeyguardStateController mKeyguardStateController;
@@ -223,7 +213,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected CommandQueue mCommandQueue;
     @Mock protected VibratorHelper mVibratorHelper;
     @Mock protected LatencyTracker mLatencyTracker;
-    @Mock protected PowerManager mPowerManager;
     @Mock protected AccessibilityManager mAccessibilityManager;
     @Mock protected MetricsLogger mMetricsLogger;
     @Mock protected Resources mResources;
@@ -242,14 +231,12 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected ScrimController mScrimController;
     @Mock protected MediaDataManager mMediaDataManager;
     @Mock protected AmbientState mAmbientState;
-    @Mock protected UserManager mUserManager;
     @Mock protected UiEventLogger mUiEventLogger;
     @Mock protected KeyguardMediaController mKeyguardMediaController;
     @Mock protected NavigationModeController mNavigationModeController;
     @Mock protected NavigationBarController mNavigationBarController;
     @Mock protected QuickSettingsControllerImpl mQsController;
     @Mock protected ShadeHeaderController mShadeHeaderController;
-    @Mock protected ContentResolver mContentResolver;
     @Mock protected TapAgainViewController mTapAgainViewController;
     @Mock protected KeyguardIndicationController mKeyguardIndicationController;
     @Mock protected FragmentService mFragmentService;
@@ -261,12 +248,10 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected DumpManager mDumpManager;
     @Mock protected NotificationsQSContainerController mNotificationsQSContainerController;
     @Mock protected QsFrameTranslateController mQsFrameTranslateController;
-    @Mock protected StatusBarWindowStateController mStatusBarWindowStateController;
     @Mock protected KeyguardUnlockAnimationController mKeyguardUnlockAnimationController;
     @Mock protected NotificationShadeWindowController mNotificationShadeWindowController;
     @Mock protected SysUiState mSysUiState;
     @Mock protected NotificationListContainer mNotificationListContainer;
-    @Mock protected NotificationStackSizeCalculator mNotificationStackSizeCalculator;
     @Mock protected UnlockedScreenOffAnimationController mUnlockedScreenOffAnimationController;
     @Mock protected QS mQs;
     @Mock protected QSFragmentLegacy mQSFragment;
@@ -281,8 +266,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
     @Mock protected AlternateBouncerInteractor mAlternateBouncerInteractor;
     @Mock protected MotionEvent mDownMotionEvent;
     @Mock protected CoroutineDispatcher mMainDispatcher;
-    @Mock protected KeyguardSliceViewController mKeyguardSliceViewController;
-    private final KeyguardLogger mKeyguardLogger = new KeyguardLogger(logcatLogBuffer());
     @Captor
     protected ArgumentCaptor<NotificationStackScrollLayout.OnEmptySpaceClickListener>
             mEmptySpaceClickListenerCaptor;
@@ -363,9 +346,6 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                 mock(DeviceEntryUdfpsInteractor.class);
         when(deviceEntryUdfpsInteractor.isUdfpsSupported()).thenReturn(MutableStateFlow(false));
 
-        final SplitShadeStateController splitShadeStateController =
-                new ResourcesSplitShadeStateController();
-
         mShadeInteractor = new ShadeInteractorImpl(
                 mTestScope.getBackgroundScope(),
                 mKosmos.getDeviceProvisioningInteractor(),
@@ -380,8 +360,7 @@ public class NotificationPanelViewControllerBaseTest extends SysuiTestCase {
                         mTestScope.getBackgroundScope(),
                         mFakeKeyguardRepository,
                         mShadeRepository
-                ),
-                mKosmos.getShadeModeInteractor());
+                ));
         SystemClock systemClock = new FakeSystemClock();
         mStatusBarStateController = new StatusBarStateControllerImpl(
                 mUiEventLogger,
