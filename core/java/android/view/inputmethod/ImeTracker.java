@@ -232,6 +232,8 @@ public interface ImeTracker {
             PHASE_WM_NOTIFY_HIDE_ANIMATION_FINISHED,
             PHASE_WM_UPDATE_DISPLAY_WINDOW_ANIMATING_TYPES,
             PHASE_CLIENT_ON_CONTROLS_CHANGED,
+            PHASE_SERVER_IME_INVOKER,
+            PHASE_SERVER_CLIENT_INVOKER,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface Phase {}
@@ -473,6 +475,10 @@ public interface ImeTracker {
     /** InsetsController received a control for the IME. */
     int PHASE_CLIENT_ON_CONTROLS_CHANGED =
             ImeProtoEnums.PHASE_CLIENT_ON_CONTROLS_CHANGED;
+    /** Reached the IME invoker on the server. */
+    int PHASE_SERVER_IME_INVOKER = ImeProtoEnums.PHASE_SERVER_IME_INVOKER;
+    /** Reached the IME client invoker on the server. */
+    int PHASE_SERVER_CLIENT_INVOKER = ImeProtoEnums.PHASE_SERVER_CLIENT_INVOKER;
 
     /**
      * Called when an IME request is started.
