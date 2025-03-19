@@ -135,9 +135,7 @@ constructor(
                     capture =
                         if (Flags.dreamOverlayBouncerSwipeDirectionFiltering()) {
                             (abs(distanceY.toDouble()) > abs(distanceX.toDouble()) &&
-                                distanceY > 0) &&
-                                if (Flags.hubmodeFullscreenVerticalSwipeFix()) touchAvailable
-                                else true
+                                distanceY > 0) && touchAvailable
                         } else {
                             // If the user scrolling favors a vertical direction, begin capturing
                             // scrolls.
@@ -234,12 +232,8 @@ constructor(
         }
 
     init {
-        if (Flags.hubmodeFullscreenVerticalSwipeFix()) {
-            scope.launch {
-                communalViewModel.glanceableTouchAvailable.collect {
-                    onGlanceableTouchAvailable(it)
-                }
-            }
+        scope.launch {
+            communalViewModel.glanceableTouchAvailable.collect { onGlanceableTouchAvailable(it) }
         }
     }
 
@@ -277,10 +271,8 @@ constructor(
         val normalRegion =
             Rect(0, Math.round(height * (1 - bouncerZoneScreenPercentage)), width, height)
 
-        if (Flags.hubmodeFullscreenVerticalSwipeFix()) {
-            region.op(bounds, Region.Op.UNION)
-            exclusionRect?.apply { region.op(this, Region.Op.DIFFERENCE) }
-        }
+        region.op(bounds, Region.Op.UNION)
+        exclusionRect?.apply { region.op(this, Region.Op.DIFFERENCE) }
 
         if (exclusionRect != null) {
             val lowestBottom =
@@ -329,7 +321,7 @@ constructor(
         when (motionEvent.action) {
             MotionEvent.ACTION_CANCEL,
             MotionEvent.ACTION_UP -> {
-                if (Flags.hubmodeFullscreenVerticalSwipeFix() && capture == true) {
+                if (capture == true) {
                     communalViewModel.onResetTouchState()
                 }
                 touchSession?.apply { pop() }

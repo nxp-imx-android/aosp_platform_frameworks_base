@@ -23,7 +23,6 @@ import android.view.InputEvent
 import android.view.MotionEvent
 import androidx.annotation.VisibleForTesting
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.Flags
 import com.android.systemui.ambient.touch.TouchHandler.TouchSession
 import com.android.systemui.ambient.touch.dagger.ShadeModule
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
@@ -69,12 +68,8 @@ constructor(
     private val windowRootView by lazy { windowRootViewProvider.get().get() }
 
     init {
-        if (Flags.hubmodeFullscreenVerticalSwipeFix()) {
-            scope.launch {
-                communalViewModel.glanceableTouchAvailable.collect {
-                    onGlanceableTouchAvailable(it)
-                }
-            }
+        scope.launch {
+            communalViewModel.glanceableTouchAvailable.collect { onGlanceableTouchAvailable(it) }
         }
     }
 
@@ -115,8 +110,7 @@ constructor(
                         capture =
                             abs(distanceY.toDouble()) > abs(distanceX.toDouble()) &&
                                 distanceY < 0 &&
-                                if (Flags.hubmodeFullscreenVerticalSwipeFix()) touchAvailable
-                                else true
+                                touchAvailable
                         if (capture == true) {
                             if (SceneContainerFlag.isEnabled) {
                                 sceneInteractor.onRemoteUserInputStarted("shade touch handler")
@@ -161,12 +155,10 @@ constructor(
     }
 
     override fun getTouchInitiationRegion(bounds: Rect, region: Region, exclusionRect: Rect?) {
-        // If fullscreen swipe, use entire space minus exclusion region
-        if (Flags.hubmodeFullscreenVerticalSwipeFix()) {
-            region.op(bounds, Region.Op.UNION)
+        // For fullscreen swipe, use entire space minus exclusion region
+        region.op(bounds, Region.Op.UNION)
 
-            exclusionRect?.apply { region.op(this, Region.Op.DIFFERENCE) }
-        }
+        exclusionRect?.apply { region.op(this, Region.Op.DIFFERENCE) }
 
         val outBounds = Rect(bounds)
         outBounds.inset(0, 0, 0, outBounds.height() - initiationHeight)

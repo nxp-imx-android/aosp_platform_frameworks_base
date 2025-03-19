@@ -17,9 +17,7 @@
 package com.android.systemui.shade
 
 import android.graphics.Insets
-import android.graphics.Rect
 import android.os.powerManager
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper
@@ -34,7 +32,6 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
-import com.android.systemui.Flags.FLAG_HUBMODE_FULLSCREEN_VERTICAL_SWIPE_FIX
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambient.touch.TouchHandler
 import com.android.systemui.ambient.touch.TouchMonitor
@@ -50,7 +47,6 @@ import com.android.systemui.communal.ui.compose.CommunalContent
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.util.CommunalColors
 import com.android.systemui.communal.util.userTouchActivityNotifier
-import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
@@ -75,7 +71,6 @@ import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -424,82 +419,6 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             assertThat(available).isFalse()
             communalInteractor.setEditModeOpen(true)
             assertThat(available).isTrue()
-        }
-
-    @Test
-    @DisableFlags(FLAG_HUBMODE_FULLSCREEN_VERTICAL_SWIPE_FIX)
-    fun gestureExclusionZone_setAfterInit() =
-        kosmos.runTest {
-            goToScene(CommunalScenes.Communal)
-
-            assertThat(containerView.systemGestureExclusionRects)
-                .containsExactly(
-                    Rect(
-                        /* left= */ 0,
-                        /* top= */ TOP_SWIPE_REGION_WIDTH,
-                        /* right= */ CONTAINER_WIDTH,
-                        /* bottom= */ CONTAINER_HEIGHT - BOTTOM_SWIPE_REGION_WIDTH,
-                    )
-                )
-        }
-
-    @Test
-    @EnableFlags(FLAG_HUBMODE_FULLSCREEN_VERTICAL_SWIPE_FIX)
-    fun gestureExclusionZone_setAfterInit_fullSwipe() =
-        kosmos.runTest {
-            goToScene(CommunalScenes.Communal)
-
-            assertThat(containerView.systemGestureExclusionRects).isEmpty()
-        }
-
-    @Test
-    @DisableFlags(FLAG_HUBMODE_FULLSCREEN_VERTICAL_SWIPE_FIX)
-    fun gestureExclusionZone_unsetWhenShadeOpen() =
-        kosmos.runTest {
-            goToScene(CommunalScenes.Communal)
-
-            // Exclusion rect is set.
-            assertThat(containerView.systemGestureExclusionRects).isNotEmpty()
-
-            // Shade shows up.
-            shadeTestUtil.setQsExpansion(1.0f)
-            testableLooper.processAllMessages()
-
-            // Exclusion rects are unset.
-            assertThat(containerView.systemGestureExclusionRects).isEmpty()
-        }
-
-    @Test
-    @DisableFlags(FLAG_HUBMODE_FULLSCREEN_VERTICAL_SWIPE_FIX)
-    fun gestureExclusionZone_unsetWhenBouncerOpen() =
-        kosmos.runTest {
-            goToScene(CommunalScenes.Communal)
-
-            // Exclusion rect is set.
-            assertThat(containerView.systemGestureExclusionRects).isNotEmpty()
-
-            // Bouncer is visible.
-            fakeKeyguardBouncerRepository.setPrimaryShow(true)
-            testableLooper.processAllMessages()
-
-            // Exclusion rects are unset.
-            assertThat(containerView.systemGestureExclusionRects).isEmpty()
-        }
-
-    @Test
-    @DisableFlags(FLAG_HUBMODE_FULLSCREEN_VERTICAL_SWIPE_FIX)
-    fun gestureExclusionZone_unsetWhenHubClosed() =
-        kosmos.runTest {
-            goToScene(CommunalScenes.Communal)
-
-            // Exclusion rect is set.
-            assertThat(containerView.systemGestureExclusionRects).isNotEmpty()
-
-            // Leave the hub.
-            goToScene(CommunalScenes.Blank)
-
-            // Exclusion rect is unset.
-            assertThat(containerView.systemGestureExclusionRects).isEmpty()
         }
 
     @Test

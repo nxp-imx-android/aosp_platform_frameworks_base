@@ -89,7 +89,6 @@ import java.util.Optional;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
-@DisableFlags(Flags.FLAG_HUBMODE_FULLSCREEN_VERTICAL_SWIPE_FIX)
 public class BouncerSwipeTouchHandlerTest extends SysuiTestCase {
     private KosmosJavaAdapter mKosmos;
     @Mock
@@ -221,6 +220,9 @@ public class BouncerSwipeTouchHandlerTest extends SysuiTestCase {
         when(mKeyguardStateController.isKeyguardScreenRotationAllowed()).thenReturn(true);
         when(mWindowRootView.getResources()).thenReturn(mResources);
         setCommunalV2ConfigEnabled(true);
+
+        // Indicate touches are available.
+        mTouchHandler.onGlanceableTouchAvailable(true);
     }
 
     /**
@@ -387,6 +389,26 @@ public class BouncerSwipeTouchHandlerTest extends SysuiTestCase {
         assertThat(gestureListener.onScroll(event1, event2, 0, -distanceY)).isTrue();
 
         verify(mScrimController, never()).expand(any());
+    }
+
+    /**
+     * Ensures expansion does not happen for swipes when touch is not available.
+     */
+    @Test
+    public void testSwipe_hubTouchNotAvailable_notInitiated() {
+        // Hub touch is not available.
+        mTouchHandler.onGlanceableTouchAvailable(false);
+        mTouchHandler.onSessionStart(mTouchSession);
+        ArgumentCaptor<OnGestureListener> gestureListenerCaptor =
+                ArgumentCaptor.forClass(OnGestureListener.class);
+        verify(mTouchSession).registerGestureListener(gestureListenerCaptor.capture());
+
+        // A touch within range at the bottom of the screen should trigger listening.
+        assertThat(gestureListenerCaptor.getValue()
+                .onScroll(Mockito.mock(MotionEvent.class),
+                        Mockito.mock(MotionEvent.class),
+                        1,
+                        2)).isFalse();
     }
 
     /**
@@ -703,6 +725,56 @@ public class BouncerSwipeTouchHandlerTest extends SysuiTestCase {
 
         mKosmos.getTestScope().getTestScheduler().runCurrent();
         assertThat(mKosmos.getShadeRepository().getLegacyShadeTracking().getValue()).isFalse();
+    }
+
+    // Verifies that communal touch state is reset when gesture ends in ACTION_UP.
+    @Test
+    public void testFullSwipe_motionUpResetsTouchState() {
+        mTouchHandler.onGlanceableTouchAvailable(true);
+        mTouchHandler.onSessionStart(mTouchSession);
+        ArgumentCaptor<OnGestureListener> gestureListenerCaptor =
+                ArgumentCaptor.forClass(OnGestureListener.class);
+        ArgumentCaptor<InputChannelCompat.InputEventListener> inputListenerCaptor =
+                ArgumentCaptor.forClass(InputChannelCompat.InputEventListener.class);
+        verify(mTouchSession).registerGestureListener(gestureListenerCaptor.capture());
+        verify(mTouchSession).registerInputListener(inputListenerCaptor.capture());
+
+        // A touch within range at the bottom of the screen should trigger listening
+        assertThat(gestureListenerCaptor.getValue()
+                .onScroll(Mockito.mock(MotionEvent.class),
+                        Mockito.mock(MotionEvent.class),
+                        1,
+                        2)).isTrue();
+
+        MotionEvent upEvent = Mockito.mock(MotionEvent.class);
+        when(upEvent.getAction()).thenReturn(MotionEvent.ACTION_UP);
+        inputListenerCaptor.getValue().onInputEvent(upEvent);
+        verify(mCommunalViewModel).onResetTouchState();
+    }
+
+    // Verifies that communal touch state is reset when gesture ends in ACTION_CANCEL.
+    @Test
+    public void testFullSwipe_motionCancelResetsTouchState() {
+        mTouchHandler.onGlanceableTouchAvailable(true);
+        mTouchHandler.onSessionStart(mTouchSession);
+        ArgumentCaptor<OnGestureListener> gestureListenerCaptor =
+                ArgumentCaptor.forClass(OnGestureListener.class);
+        ArgumentCaptor<InputChannelCompat.InputEventListener> inputListenerCaptor =
+                ArgumentCaptor.forClass(InputChannelCompat.InputEventListener.class);
+        verify(mTouchSession).registerGestureListener(gestureListenerCaptor.capture());
+        verify(mTouchSession).registerInputListener(inputListenerCaptor.capture());
+
+        // A touch within range at the bottom of the screen should trigger listening
+        assertThat(gestureListenerCaptor.getValue()
+                .onScroll(Mockito.mock(MotionEvent.class),
+                        Mockito.mock(MotionEvent.class),
+                        1,
+                        2)).isTrue();
+
+        MotionEvent upEvent = Mockito.mock(MotionEvent.class);
+        when(upEvent.getAction()).thenReturn(MotionEvent.ACTION_CANCEL);
+        inputListenerCaptor.getValue().onInputEvent(upEvent);
+        verify(mCommunalViewModel).onResetTouchState();
     }
 
     private void swipeToPosition(float percent, float velocityY) {
