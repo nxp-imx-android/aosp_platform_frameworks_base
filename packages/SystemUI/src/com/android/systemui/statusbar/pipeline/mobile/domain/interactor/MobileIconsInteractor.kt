@@ -309,20 +309,20 @@ constructor(
 
     override val isStackable =
         if (NewStatusBarIcons.isEnabled && StatusBarRootModernization.isEnabled) {
-                icons.flatMapLatest { icons ->
-                    combine(icons.map { it.signalLevelIcon }) { signalLevelIcons ->
-                        // These are only stackable if:
-                        // - They are cellular
-                        // - There's exactly two
-                        // - They have the same number of levels
-                        signalLevelIcons.filterIsInstance<SignalIconModel.Cellular>().let {
-                            it.size == 2 && it[0].numberOfLevels == it[1].numberOfLevels
-                        }
+            icons.flatMapLatest { icons ->
+                combine(icons.map { it.signalLevelIcon }) { signalLevelIcons ->
+                    // These are only stackable if:
+                    // - They are cellular
+                    // - There's exactly two
+                    // - They have the same number of levels
+                    signalLevelIcons.filterIsInstance<SignalIconModel.Cellular>().let {
+                        it.size == 2 && it[0].numberOfLevels == it[1].numberOfLevels
                     }
                 }
-            } else {
-                flowOf(false)
             }
+        } else {
+            flowOf(false)
+        }
 
     /**
      * Copied from the old pipeline. We maintain a 2s period of time where we will keep the
