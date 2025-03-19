@@ -596,11 +596,11 @@ public class BubbleBarAnimationHelper {
         final Size size = getExpandedViewSize();
         Point position = getExpandedViewRestPosition(size);
 
-        final SizeChangeAnimation sca =
-                new SizeChangeAnimation(
-                        new Rect(origBounds.left - position.x, origBounds.top - position.y,
-                                origBounds.right - position.x, origBounds.bottom - position.y),
-                        new Rect(0, 0, size.getWidth(), size.getHeight()), origScale);
+        Rect startBounds = new Rect(origBounds.left - position.x, origBounds.top - position.y,
+                origBounds.right - position.x, origBounds.bottom - position.y);
+        Rect endBounds = new Rect(0, 0, size.getWidth(), size.getHeight());
+        final SizeChangeAnimation sca = new SizeChangeAnimation(startBounds, endBounds,
+                origScale, /* scaleFactor= */ 1f);
         sca.initialize(bbev, taskLeash, snapshot, startT);
 
         Animator a = sca.buildViewAnimator(bbev, tvSf, snapshot, /* onFinish */ (va) -> {
