@@ -206,8 +206,11 @@ constructor(
             }
             .flowOn(bgDispatcher)
 
-    override fun getWhenToStartHubState(user: UserInfo): Flow<WhenToStartHub> =
-        secureSettings
+    override fun getWhenToStartHubState(user: UserInfo): Flow<WhenToStartHub> {
+        if (!getV2FlagEnabled()) {
+            return MutableStateFlow(WhenToStartHub.NEVER)
+        }
+        return secureSettings
             .observerFlow(
                 userId = user.id,
                 names = arrayOf(Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB),
@@ -225,11 +228,13 @@ constructor(
                     Settings.Secure.GLANCEABLE_HUB_START_CHARGING -> WhenToStartHub.WHILE_CHARGING
                     Settings.Secure.GLANCEABLE_HUB_START_CHARGING_UPRIGHT ->
                         WhenToStartHub.WHILE_CHARGING_AND_POSTURED
+
                     Settings.Secure.GLANCEABLE_HUB_START_DOCKED -> WhenToStartHub.WHILE_DOCKED
                     else -> WhenToStartHub.NEVER
                 }
             }
             .flowOn(bgDispatcher)
+    }
 
     override fun getAllowedByDevicePolicy(user: UserInfo): Flow<Boolean> =
         broadcastDispatcher

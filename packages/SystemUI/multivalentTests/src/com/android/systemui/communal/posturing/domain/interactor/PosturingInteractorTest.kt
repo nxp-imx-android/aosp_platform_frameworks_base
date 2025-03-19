@@ -53,7 +53,7 @@ class PosturingInteractorTest : SysuiTestCase() {
 
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
-    private val underTest by lazy { kosmos.posturingInteractor }
+    private val Kosmos.underTest by Kosmos.Fixture { kosmos.posturingInteractor }
 
     @Test
     fun testNoDebugOverride() =

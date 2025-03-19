@@ -20,7 +20,6 @@ import android.annotation.SuppressLint
 import android.hardware.Sensor
 import android.hardware.TriggerEvent
 import android.hardware.TriggerEventListener
-import android.service.dreams.Flags.allowDreamWhenPostured
 import com.android.systemui.communal.posturing.data.model.PositionState
 import com.android.systemui.communal.posturing.data.repository.PosturingRepository
 import com.android.systemui.communal.posturing.shared.model.PosturedState
@@ -170,15 +169,10 @@ constructor(
      * NOTE: Due to smoothing, this signal may be delayed to ensure we have a stable reading before
      * being considered postured.
      */
-    val postured: Flow<Boolean> by lazy {
-        if (allowDreamWhenPostured()) {
-            combine(posturedSmoothed, debugPostured) { postured, debugValue ->
-                debugValue.asBoolean() ?: postured.asBoolean() ?: false
-            }
-        } else {
-            MutableStateFlow(false)
+    val postured: Flow<Boolean> =
+        combine(posturedSmoothed, debugPostured) { postured, debugValue ->
+            debugValue.asBoolean() ?: postured.asBoolean() ?: false
         }
-    }
 
     /**
      * Helper for observing a trigger sensor, which automatically unregisters itself after it
