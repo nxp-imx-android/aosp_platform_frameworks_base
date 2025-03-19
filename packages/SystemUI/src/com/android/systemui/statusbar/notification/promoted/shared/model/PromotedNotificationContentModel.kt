@@ -23,11 +23,13 @@ import android.app.Notification
 import android.app.Notification.FLAG_PROMOTED_ONGOING
 import androidx.annotation.ColorInt
 import com.android.internal.widget.NotificationProgressModel
+import com.android.systemui.Flags
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.row.ImageResult
 import com.android.systemui.statusbar.notification.row.LazyImage
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
+import com.android.systemui.util.Compile
 
 data class PromotedNotificationContentModels(
     /** The potentially redacted version of the content that will be exposed to the public */
@@ -238,6 +240,10 @@ data class PromotedNotificationContentModel(
          */
         @JvmStatic
         fun isPromotedForStatusBarChip(notification: Notification): Boolean {
+            if (Compile.IS_DEBUG && Flags.debugLiveUpdatesPromoteAll()) {
+                return true
+            }
+
             // Notification.isPromotedOngoing checks the ui_rich_ongoing flag, but we want the
             // status bar chip to be ready before all the features behind the ui_rich_ongoing flag
             // are ready.
