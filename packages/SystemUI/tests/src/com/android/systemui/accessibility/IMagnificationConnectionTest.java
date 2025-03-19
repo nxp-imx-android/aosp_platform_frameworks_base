@@ -49,7 +49,6 @@ import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.util.settings.SecureSettings;
-import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -93,8 +92,6 @@ public class IMagnificationConnectionTest extends SysuiTestCase {
     private AccessibilityLogger mA11yLogger;
     @Mock
     private IWindowManager mIWindowManager;
-    @Mock
-    private WindowManagerProvider mWindowManagerProvider;
 
     private IMagnificationConnection mIMagnificationConnection;
     private MagnificationImpl mMagnification;
@@ -116,7 +113,7 @@ public class IMagnificationConnectionTest extends SysuiTestCase {
                 mTestableLooper.getLooper(), mContext.getMainExecutor(), mCommandQueue,
                 mModeSwitchesController, mSysUiState, mLauncherProxyService, mSecureSettings,
                 mDisplayTracker, getContext().getSystemService(DisplayManager.class),
-                mA11yLogger, mIWindowManager, mAccessibilityManager, mWindowManagerProvider);
+                mA11yLogger, mIWindowManager, mAccessibilityManager);
         mMagnification.mWindowMagnificationControllerSupplier =
                 new FakeWindowMagnificationControllerSupplier(
                         mContext.getSystemService(DisplayManager.class));

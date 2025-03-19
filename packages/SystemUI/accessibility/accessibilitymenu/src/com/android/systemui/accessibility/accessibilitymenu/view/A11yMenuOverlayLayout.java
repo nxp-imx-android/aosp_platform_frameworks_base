@@ -143,7 +143,7 @@ public class A11yMenuOverlayLayout {
         final Display display = mDisplayManager.getDisplay(DEFAULT_DISPLAY);
         final Context uiContext = mService.createWindowContext(
                 display, TYPE_ACCESSIBILITY_OVERLAY, /* options= */null);
-        final WindowManager windowManager = WindowManagerUtils.getWindowManager(uiContext);
+        final WindowManager windowManager = uiContext.getSystemService(WindowManager.class);
         mLayout = new A11yMenuFrameLayout(uiContext);
         updateLayoutPosition(uiContext);
         inflateLayoutAndSetOnTouchListener(mLayout, uiContext);
