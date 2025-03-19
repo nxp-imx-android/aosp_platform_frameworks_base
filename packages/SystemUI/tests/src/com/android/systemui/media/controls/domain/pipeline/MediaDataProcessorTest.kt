@@ -2201,7 +2201,6 @@ class MediaDataProcessorTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_POSTS_OPTIMIZATION)
     fun postDuplicateNotification_doesNotCallListeners() {
         whenever(notificationLockscreenUserManager.isCurrentProfile(USER_ID)).thenReturn(true)
         whenever(notificationLockscreenUserManager.isProfileAvailable(USER_ID)).thenReturn(true)
@@ -2226,31 +2225,6 @@ class MediaDataProcessorTest(flags: FlagsParameterization) : SysuiTestCase() {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_MEDIA_CONTROLS_POSTS_OPTIMIZATION)
-    fun postDuplicateNotification_callsListeners() {
-        whenever(notificationLockscreenUserManager.isCurrentProfile(USER_ID)).thenReturn(true)
-        whenever(notificationLockscreenUserManager.isProfileAvailable(USER_ID)).thenReturn(true)
-
-        mediaDataProcessor.addInternalListener(mediaDataFilter)
-        mediaDataFilter.mediaDataProcessor = mediaDataProcessor
-        addNotificationAndLoad()
-        reset(listener)
-        mediaDataProcessor.onNotificationAdded(KEY, mediaNotification)
-        testScope.assertRunAllReady(foreground = 1, background = 1)
-        verify(listener)
-            .onMediaDataLoaded(
-                eq(KEY),
-                eq(KEY),
-                capture(mediaDataCaptor),
-                eq(true),
-                eq(0),
-                eq(false),
-            )
-        verify(kosmos.mediaLogger, never()).logDuplicateMediaNotification(eq(KEY))
-    }
-
-    @Test
-    @EnableFlags(Flags.FLAG_MEDIA_CONTROLS_POSTS_OPTIMIZATION)
     fun postDifferentIntentNotifications_CallsListeners() {
         whenever(notificationLockscreenUserManager.isCurrentProfile(USER_ID)).thenReturn(true)
         whenever(notificationLockscreenUserManager.isProfileAvailable(USER_ID)).thenReturn(true)

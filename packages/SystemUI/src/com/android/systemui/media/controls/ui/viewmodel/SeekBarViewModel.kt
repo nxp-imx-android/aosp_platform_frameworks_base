@@ -36,7 +36,6 @@ import androidx.annotation.WorkerThread
 import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.android.systemui.Flags
 import com.android.systemui.classifier.Classifier.MEDIA_SEEKBAR
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.media.NotificationMediaManager
@@ -151,7 +150,6 @@ constructor(
             }
 
             override fun onMetadataChanged(metadata: MediaMetadata?) {
-                if (!Flags.mediaControlsPostsOptimization()) return
                 val (enabled, duration) = getEnabledStateAndDuration(metadata)
                 if (_data.duration != duration) {
                     _data = _data.copy(enabled = enabled, duration = duration)
