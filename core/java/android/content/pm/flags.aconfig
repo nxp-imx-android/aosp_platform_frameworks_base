@@ -415,3 +415,10 @@ flag {
     description: "Continue parsing packages in system dirs instead of blocking on install completion for each directory."
     bug: "401622806"
 }
+
+flag {
+    name: "protect_supervision_packages"
+    namespace: "supervision"
+    description: "Feature flag to enable protecting Supervision packages."
+    bug: "404779514"
+}
