@@ -419,10 +419,11 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"I-click para magpares ng bagong device"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"Hindi ma-update ang preset"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"Preset"</string>
-    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
-    <skip />
-    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
-    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
+    <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"Default na mikropono para sa mga tawag"</string>
+  <string-array name="hearing_device_input_routing_options">
+    <item msgid="4582190415045337003">"Mikropono ng hearing aid"</item>
+    <item msgid="8501466270452446450">"Ang mikropono ng teleponong ito"</item>
+  </string-array>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"Napili"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"Paligid"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"Kaliwa"</string>
@@ -586,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"Kapag nagshe-share ka ng app, makikita ng <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> ang kahit anong ipinapakita o pine-play sa app na iyon. Kaya mag-ingat sa mga bagay-bagay tulad ng mga password, detalye ng pagbabayad, mensahe, larawan, at audio at video."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"Ibahagi ang screen"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"Na-disable ng <xliff:g id="APP_NAME">%1$s</xliff:g> ang opsyong ito"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"Hindi sinusuportahan ng app"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"Pumili ng app na ishe-share"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"I-cast ang iyong screen?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"Mag-cast ng isang app"</string>
@@ -800,8 +800,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Naka-on - Batay sa mukha"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Tapos na"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Ilapat"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"I-off"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Naka-silent"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"Default"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"Awtomatiko"</string>
@@ -983,6 +982,8 @@
     <string name="right_icon" msgid="1103955040645237425">"Icon ng kanan"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Pindutin nang matagal at i-drag para magdagdag ng mga tile"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Pindutin nang matagal at i-drag para ayusin ulit ang tile"</string>
+    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
+    <skip />
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"I-drag dito upang alisin"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Kailangan mo ng kahit <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> (na) tile"</string>
     <string name="qs_edit" msgid="5583565172803472437">"I-edit"</string>
@@ -1003,6 +1004,10 @@
     <string name="other" msgid="429768510980739978">"Iba pa"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"i-toggle ang laki ng tile"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"alisin ang tile"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
+    <skip />
+    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"magdagdag ng tile sa huling posisyon"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Ilipat ang tile"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Magdagdag ng tile sa gustong posisyon"</string>
@@ -1578,5 +1583,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Hindi Alam"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"I-reset ang lahat ng tile?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Magre-reset sa mga orihinal na setting ng device ang lahat ng tile ng Mga Mabilisang Setting"</string>
+    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
