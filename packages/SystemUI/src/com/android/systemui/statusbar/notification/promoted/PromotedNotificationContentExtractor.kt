@@ -112,12 +112,13 @@ constructor(
             if (redactionType == REDACTION_TYPE_NONE) {
                 privateVersion
             } else {
-                if (notification.publicVersion == null) {
-                    privateVersion.toDefaultPublicVersion()
-                } else {
-                    // TODO(b/400991304): implement extraction for [Notification.publicVersion]
-                    privateVersion.toDefaultPublicVersion()
-                }
+                notification.publicVersion?.let { publicNotification ->
+                    createAppDefinedPublicVersion(
+                        privateModel = privateVersion,
+                        publicNotification = publicNotification,
+                        imageModelProvider = imageModelProvider,
+                    )
+                } ?: createDefaultPublicVersion(privateModel = privateVersion)
             }
         return PromotedNotificationContentModels(
                 privateVersion = privateVersion,
@@ -126,19 +127,59 @@ constructor(
             .also { logger.logExtractionSucceeded(entry, it) }
     }
 
-    private fun PromotedNotificationContentModel.toDefaultPublicVersion():
-        PromotedNotificationContentModel =
-        PromotedNotificationContentModel.Builder(key = identity.key).let {
-            it.style = if (style == Style.Ineligible) Style.Ineligible else Style.Base
-            it.smallIcon = smallIcon
-            it.iconLevel = iconLevel
-            it.appName = appName
-            it.time = time
-            it.lastAudiblyAlertedMs = lastAudiblyAlertedMs
-            it.profileBadgeResId = profileBadgeResId
-            it.colors = colors
-            it.build()
-        }
+    private fun copyNonSensitiveFields(
+        privateModel: PromotedNotificationContentModel,
+        publicBuilder: PromotedNotificationContentModel.Builder,
+    ) {
+        publicBuilder.smallIcon = privateModel.smallIcon
+        publicBuilder.iconLevel = privateModel.iconLevel
+        publicBuilder.appName = privateModel.appName
+        publicBuilder.time = privateModel.time
+        publicBuilder.lastAudiblyAlertedMs = privateModel.lastAudiblyAlertedMs
+        publicBuilder.profileBadgeResId = privateModel.profileBadgeResId
+        publicBuilder.colors = privateModel.colors
+    }
+
+    private fun createDefaultPublicVersion(
+        privateModel: PromotedNotificationContentModel
+    ): PromotedNotificationContentModel =
+        PromotedNotificationContentModel.Builder(key = privateModel.identity.key)
+            .also {
+                it.style =
+                    if (privateModel.style == Style.Ineligible) Style.Ineligible else Style.Base
+                copyNonSensitiveFields(privateModel, it)
+            }
+            .build()
+
+    private fun createAppDefinedPublicVersion(
+        privateModel: PromotedNotificationContentModel,
+        publicNotification: Notification,
+        imageModelProvider: ImageModelProvider,
+    ): PromotedNotificationContentModel =
+        PromotedNotificationContentModel.Builder(key = privateModel.identity.key)
+            .also { publicBuilder ->
+                val notificationStyle = publicNotification.notificationStyle
+                publicBuilder.style =
+                    when {
+                        privateModel.style == Style.Ineligible -> Style.Ineligible
+                        notificationStyle == CallStyle::class.java -> Style.CollapsedCall
+                        else -> Style.CollapsedBase
+                    }
+                copyNonSensitiveFields(privateModel = privateModel, publicBuilder = publicBuilder)
+                publicBuilder.shortCriticalText = publicNotification.shortCriticalText()
+                publicBuilder.subText = publicNotification.subText()
+                // The standard public version is extracted as a collapsed notification,
+                //  so avoid using bigTitle or bigText, and instead get the collapsed versions.
+                publicBuilder.title = publicNotification.title(notificationStyle, expanded = false)
+                publicBuilder.text = publicNotification.text()
+                publicBuilder.skeletonLargeIcon =
+                    publicNotification.skeletonLargeIcon(imageModelProvider)
+                // Only CallStyle has styled content that shows in the collapsed version.
+                if (publicBuilder.style == Style.Call) {
+                    extractCallStyleContent(publicNotification, publicBuilder, imageModelProvider)
+                }
+            }
+            .build()
 
     private fun extractPrivateContent(
         key: String,
@@ -163,8 +204,8 @@ constructor(
         contentBuilder.shortCriticalText = notification.shortCriticalText()
         contentBuilder.lastAudiblyAlertedMs = lastAudiblyAlertedMs
         contentBuilder.profileBadgeResId = null // TODO
-        contentBuilder.title = notification.title(recoveredBuilder.style)
-        contentBuilder.text = notification.text(recoveredBuilder.style)
+        contentBuilder.title = notification.title(recoveredBuilder.style?.javaClass)
+        contentBuilder.text = notification.text(recoveredBuilder.style?.javaClass)
         contentBuilder.skeletonLargeIcon = notification.skeletonLargeIcon(imageModelProvider)
         contentBuilder.oldProgress = notification.oldProgress()
 
@@ -191,12 +232,16 @@ constructor(
     private fun Notification.callPerson(): Person? =
         extras?.getParcelable(EXTRA_CALL_PERSON, Person::class.java)
 
-    private fun Notification.title(style: Notification.Style?): CharSequence? {
-        return when (style) {
-            is BigTextStyle,
-            is BigPictureStyle,
-            is InboxStyle -> bigTitle()
-            is CallStyle -> callPerson()?.name
+    private fun Notification.title(
+        styleClass: Class<out Notification.Style>?,
+        expanded: Boolean = true,
+    ): CharSequence? {
+        // bigTitle is only used in the expanded form of 3 styles.
+        return when (styleClass) {
+            BigTextStyle::class.java,
+            BigPictureStyle::class.java,
+            InboxStyle::class.java -> if (expanded) bigTitle() else null
+            CallStyle::class.java -> callPerson()?.name?.takeUnlessEmpty()
             else -> null
         } ?: title()
     }
@@ -206,9 +251,9 @@ constructor(
     private fun Notification.bigText(): CharSequence? =
         getCharSequenceExtraUnlessEmpty(EXTRA_BIG_TEXT)
 
-    private fun Notification.text(style: Notification.Style?): CharSequence? {
-        return when (style) {
-            is BigTextStyle -> bigText()
+    private fun Notification.text(styleClass: Class<out Notification.Style>?): CharSequence? {
+        return when (styleClass) {
+            BigTextStyle::class.java -> bigText()
             else -> null
         } ?: text()
     }
@@ -293,17 +338,15 @@ constructor(
                 null -> Style.Base
 
                 is BigPictureStyle -> {
-                    style.extractContent(contentBuilder)
                     Style.BigPicture
                 }
 
                 is BigTextStyle -> {
-                    style.extractContent(contentBuilder)
                     Style.BigText
                 }
 
                 is CallStyle -> {
-                    style.extractContent(notification, contentBuilder, imageModelProvider)
+                    extractCallStyleContent(notification, contentBuilder, imageModelProvider)
                     Style.Call
                 }
 
@@ -316,19 +359,7 @@ constructor(
             }
     }
 
-    private fun BigPictureStyle.extractContent(
-        contentBuilder: PromotedNotificationContentModel.Builder
-    ) {
-        // Big title is handled in resolveTitle, and big picture is unsupported.
-    }
-
-    private fun BigTextStyle.extractContent(
-        contentBuilder: PromotedNotificationContentModel.Builder
-    ) {
-        // Big title and big text are handled in resolveTitle and resolveText.
-    }
-
-    private fun CallStyle.extractContent(
+    private fun extractCallStyleContent(
         notification: Notification,
         contentBuilder: PromotedNotificationContentModel.Builder,
         imageModelProvider: ImageModelProvider,

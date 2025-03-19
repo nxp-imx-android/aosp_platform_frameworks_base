@@ -32,12 +32,11 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.chips.notification.domain.interactor.statusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
-import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
-import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
+import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.policy.domain.interactor.sensitiveNotificationProtectionInteractor
 import com.android.systemui.statusbar.policy.mockSensitiveNotificationProtectionController
 import com.android.systemui.testKosmos
@@ -50,12 +49,8 @@ import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@EnableFlags(
-    PromotedNotificationUi.FLAG_NAME,
-    StatusBarNotifChips.FLAG_NAME,
-    StatusBarChipsModernization.FLAG_NAME,
-    StatusBarRootModernization.FLAG_NAME,
-)
+@EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+@EnableChipsModernization
 class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
@@ -111,10 +106,10 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
 
             renderNotificationListInteractor.setRenderedList(listOf(ronEntry))
 
-            // THEN aod content is sensitive
+            // THEN aod content is redacted
             val content by collectLastValue(underTest.content)
             assertThat(content).isNotNull()
-            assertThat(content?.title).isNull() // SOON: .isEqualTo("REDACTED")
+            assertThat(content!!.title).isEqualTo("REDACTED")
         }
 
     @Test
@@ -128,10 +123,10 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
 
             renderNotificationListInteractor.setRenderedList(listOf(ronEntry))
 
-            // THEN aod content is sensitive
+            // THEN aod content is redacted
             val content by collectLastValue(underTest.content)
             assertThat(content).isNotNull()
-            assertThat(content?.title).isNull() // SOON: .isEqualTo("REDACTED")
+            assertThat(content!!.title).isEqualTo("REDACTED")
         }
 
     private fun Kosmos.setKeyguardLocked(locked: Boolean) {
