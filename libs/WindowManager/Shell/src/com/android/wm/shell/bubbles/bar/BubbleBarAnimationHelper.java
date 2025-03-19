@@ -615,7 +615,7 @@ public class BubbleBarAnimationHelper {
 
         bbev.setSurfaceZOrderedOnTop(true);
         a.setDuration(EXPANDED_VIEW_ANIMATE_TO_REST_DURATION);
-        a.setInterpolator(Interpolators.EMPHASIZED);
+        a.setInterpolator(EMPHASIZED);
         a.start();
     }
 
