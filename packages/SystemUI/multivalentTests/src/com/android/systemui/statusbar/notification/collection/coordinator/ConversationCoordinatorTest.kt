@@ -39,6 +39,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.OnBefo
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifComparator
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
+import com.android.systemui.statusbar.notification.collection.makeClassifiedConversation
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManagerImpl
 import com.android.systemui.statusbar.notification.collection.render.NodeController
@@ -50,6 +51,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_PERSON
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifierImpl
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.withArgCaptor
 import com.google.common.truth.Truth.assertThat
@@ -69,6 +71,8 @@ import org.mockito.kotlin.mock
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
 class ConversationCoordinatorTest : SysuiTestCase() {
+    private val kosmos = testKosmos()
+
     // captured listeners and pluggables:
     private lateinit var promoter: NotifPromoter
     private lateinit var peopleAlertingSectioner: NotifSectioner
@@ -125,10 +129,10 @@ class ConversationCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testPrioritySectioner_doesNotClaim_classifiedConversation() {
+    fun testPrioritySectioner_reject_classifiedConversation() {
         val sectioner = coordinator.priorityPeopleSectioner
         for (id in SYSTEM_RESERVED_IDS) {
-            assertFalse(sectioner.isInSection(makeClassifiedConversation(id)))
+            assertFalse(sectioner.isInSection(kosmos.makeClassifiedConversation(id)))
         }
     }
 
@@ -175,10 +179,10 @@ class ConversationCoordinatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun testAlertingSectioner_doesNotClaim_classifiedConversation() {
+    fun testAlertingSectioner_reject_classifiedConversation() {
         val sectioner = coordinator.peopleAlertingSectioner
         for (id in SYSTEM_RESERVED_IDS) {
-            assertFalse(sectioner.isInSection(makeClassifiedConversation(id)))
+            assertFalse(sectioner.isInSection(kosmos.makeClassifiedConversation(id)))
         }
     }
 
@@ -203,10 +207,10 @@ class ConversationCoordinatorTest : SysuiTestCase() {
 
     @Test
     @DisableFlags(Flags.FLAG_SORT_SECTION_BY_TIME)
-    fun testSilentSectioner_doesNotClaim_classifiedConversation() {
+    fun testSilentSectioner_reject_classifiedConversation() {
         val sectioner = coordinator.peopleSilentSectioner
         for (id in SYSTEM_RESERVED_IDS) {
-            assertFalse(sectioner.isInSection(makeClassifiedConversation(id)))
+            assertFalse(sectioner.isInSection(kosmos.makeClassifiedConversation(id)))
         }
     }
 
@@ -304,19 +308,6 @@ class ConversationCoordinatorTest : SysuiTestCase() {
                 .also(buildBlock)
                 .build()
         assertEquals(type, peopleNotificationIdentifier.getPeopleNotificationType(entry))
-        return entry
-    }
-
-    private fun makeClassifiedConversation(channelId: String): NotificationEntry {
-        val channel = NotificationChannel(channelId, channelId, IMPORTANCE_LOW)
-        val entry =
-            NotificationEntryBuilder()
-                .updateRanking {
-                    it.setIsConversation(true)
-                    it.setShortcutInfo(mock())
-                    it.setChannel(channel)
-                }
-                .build()
         return entry
     }
 }

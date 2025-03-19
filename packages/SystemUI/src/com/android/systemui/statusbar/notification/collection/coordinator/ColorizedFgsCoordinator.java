@@ -97,11 +97,14 @@ public class ColorizedFgsCoordinator implements Coordinator {
             NotificationPriorityBucketKt.BUCKET_FOREGROUND_SERVICE) {
         @Override
         public boolean isInSection(PipelineEntry entry) {
-            NotificationEntry notificationEntry = entry.getRepresentativeEntry();
-            if (notificationEntry != null) {
-                return isRichOngoing(notificationEntry) || isPromotedNotifChip(notificationEntry);
+            NotificationEntry notifEntry = entry.getRepresentativeEntry();
+            if (notifEntry == null) {
+                return false;
             }
-            return false;
+            if (BundleUtil.Companion.isClassified(notifEntry)) {
+                return false;
+            }
+            return isRichOngoing(notifEntry) || isPromotedNotifChip(notifEntry);
         }
 
         /** get the sort key for any entry in the ongoing section */

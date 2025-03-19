@@ -17,6 +17,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification
 import android.app.Notification.FLAG_FOREGROUND_SERVICE
+import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Person
@@ -45,6 +46,7 @@ import com.android.systemui.statusbar.notification.collection.buildOngoingCallEn
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifPromoter
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifSectioner
+import com.android.systemui.statusbar.notification.collection.makeClassifiedConversation
 import com.android.systemui.statusbar.notification.collection.notifPipeline
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
@@ -99,6 +101,15 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
 
         // THEN the entry is in the fgs section
         assertTrue(sectioner.isInSection(entry))
+    }
+
+    @Test
+    fun testSectioner_reject_classifiedConversation() {
+        kosmos.runTest {
+            for (id in SYSTEM_RESERVED_IDS) {
+                assertFalse(sectioner.isInSection(kosmos.makeClassifiedConversation(id)))
+            }
+        }
     }
 
     @Test

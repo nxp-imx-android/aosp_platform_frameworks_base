@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager.IMPORTANCE_DEFAULT
+import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
 import android.app.Person
 import android.content.Intent
@@ -139,5 +140,18 @@ fun Kosmos.makeEntryOfPeopleType(@PeopleNotificationType type: Int): Notificatio
             }
             setNotification(makeMessagingStyleNotification().build())
         }
+    return entry
+}
+
+fun Kosmos.makeClassifiedConversation(channelId: String): NotificationEntry {
+    val channel = NotificationChannel(channelId, channelId, IMPORTANCE_LOW)
+    val entry =
+        NotificationEntryBuilder()
+            .updateRanking {
+                it.setIsConversation(true)
+                it.setShortcutInfo(mock())
+                it.setChannel(channel)
+            }
+            .build()
     return entry
 }
