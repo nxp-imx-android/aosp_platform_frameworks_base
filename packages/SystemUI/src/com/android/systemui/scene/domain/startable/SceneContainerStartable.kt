@@ -332,6 +332,7 @@ constructor(
     /** Switches between scenes based on ever-changing application state. */
     private fun automaticallySwitchScenes() {
         handleBouncerImeVisibility()
+        handleBouncerHiding()
         handleSimUnlock()
         handleDeviceUnlockStatus()
         handlePowerState()
@@ -347,6 +348,24 @@ constructor(
                 sceneInteractor.hideOverlay(
                     overlay = Overlays.Bouncer,
                     loggingReason = "IME hidden.",
+                )
+            }
+        }
+    }
+
+    private fun handleBouncerHiding() {
+        applicationScope.launch {
+            repeatWhen(
+                condition =
+                    authenticationInteractor
+                        .get()
+                        .authenticationMethod
+                        .map { !it.isSecure }
+                        .distinctUntilChanged()
+            ) {
+                sceneInteractor.hideOverlay(
+                    overlay = Overlays.Bouncer,
+                    loggingReason = "Authentication method changed to a non-secure one.",
                 )
             }
         }
@@ -432,6 +451,12 @@ constructor(
                             // to Lockscreen.
                             Scenes.Lockscreen to "device locked in a non-keyguard scene"
                         }
+                    }
+
+                    if (powerInteractor.detailedWakefulness.value.isAsleep()) {
+                        // The logic below is for when the device becomes unlocked. That must be a
+                        // no-op if the device is not awake.
+                        return@mapNotNull null
                     }
 
                     if (
@@ -833,7 +858,7 @@ constructor(
                 }
                 .collect {
                     val loggingReason = "Falsing detected."
-                    switchToScene(Scenes.Lockscreen, loggingReason)
+                    switchToScene(targetSceneKey = Scenes.Lockscreen, loggingReason = loggingReason)
                 }
         }
     }
