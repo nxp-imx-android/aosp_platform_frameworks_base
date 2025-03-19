@@ -136,7 +136,8 @@ sealed class OngoingActivityChipModel {
 
             /**
              * The [TimeSource] that should be used to track the current time for this timer. Should
-             * be compatible with [startTimeMs].
+             * be compatible units with [startTimeMs]. Only used in the Compose version of the
+             * chips.
              */
             val timeSource: TimeSource = TimeSource { SystemClock.elapsedRealtime() },
 
@@ -187,6 +188,12 @@ sealed class OngoingActivityChipModel {
              *   this model and the [Timer] model use the same units.
              */
             @CurrentTimeMillisLong val time: Long,
+
+            /**
+             * The [TimeSource] that should be used to track the current time for this timer. Should
+             * be compatible units with [time]. Only used in the Compose version of the chips.
+             */
+            val timeSource: TimeSource = TimeSource { System.currentTimeMillis() },
             override val onClickListenerLegacy: View.OnClickListener?,
             override val clickBehavior: ClickBehavior,
             override val transitionManager: TransitionManager? = null,
