@@ -61,4 +61,7 @@ interface ClockAnimations {
 
     /** Runs when an animation when the view is tapped on the lockscreen */
     fun onFidgetTap(x: Float, y: Float)
+
+    /** Update reactive axes for this clock */
+    fun onFontAxesChanged(style: ClockAxisStyle)
 }

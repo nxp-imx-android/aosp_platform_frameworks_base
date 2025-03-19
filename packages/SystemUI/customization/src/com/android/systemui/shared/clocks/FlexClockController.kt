@@ -99,12 +99,6 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
                 smallClock.events.onZenDataChanged(data)
                 largeClock.events.onZenDataChanged(data)
             }
-
-            override fun onFontAxesChanged(axes: ClockAxisStyle) {
-                val fontAxes = ClockAxisStyle(getDefaultAxes(clockCtx.settings).merge(axes))
-                smallClock.events.onFontAxesChanged(fontAxes)
-                largeClock.events.onFontAxesChanged(fontAxes)
-            }
         }
 
     override fun initialize(
@@ -113,10 +107,10 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
         foldFraction: Float,
         clockListener: ClockEventListener?,
     ) {
-        events.onFontAxesChanged(clockCtx.settings.axes)
         smallClock.run {
             layerController.onViewBoundsChanged = { clockListener?.onBoundsChanged(it) }
             events.onThemeChanged(theme.copy(isDarkTheme = isDarkTheme))
+            animations.onFontAxesChanged(clockCtx.settings.axes)
             animations.doze(dozeFraction)
             animations.fold(foldFraction)
             events.onTimeTick()
@@ -125,6 +119,7 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
         largeClock.run {
             layerController.onViewBoundsChanged = { clockListener?.onBoundsChanged(it) }
             events.onThemeChanged(theme.copy(isDarkTheme = isDarkTheme))
+            animations.onFontAxesChanged(clockCtx.settings.axes)
             animations.doze(dozeFraction)
             animations.fold(foldFraction)
             events.onTimeTick()
