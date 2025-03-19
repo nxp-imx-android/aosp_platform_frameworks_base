@@ -1355,11 +1355,15 @@ public class NotificationStackScrollLayoutController implements Dumpable {
      */
     public void setBlurRadius(float blurRadius) {
         if (blurRadius > 0.0f) {
+            debugLog(
+                    "Setting blur RenderEffect for NotificationStackScrollLayoutController with "
+                            + "radius " + blurRadius);
             mView.setRenderEffect(RenderEffect.createBlurEffect(
                     blurRadius,
                     blurRadius,
                     Shader.TileMode.CLAMP));
         } else {
+            debugLog("Resetting blur RenderEffect for NotificationStackScrollLayoutController");
             mView.setRenderEffect(null);
         }
     }
@@ -2173,6 +2177,12 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         private boolean shouldHeadsUpHandleTouch() {
             return SceneContainerFlag.isEnabled() && mLongPressedView == null
                     && !mSwipeHelper.isSwiping();
+        }
+    }
+
+    private void debugLog(String msg) {
+        if (DEBUG) {
+            Log.d(TAG, msg);
         }
     }
 }
