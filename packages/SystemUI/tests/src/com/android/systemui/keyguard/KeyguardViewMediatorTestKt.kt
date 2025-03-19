@@ -35,8 +35,14 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.activityTransitionAnimator
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.classifier.falsingCollector
+import com.android.systemui.common.data.repository.batteryRepository
+import com.android.systemui.common.data.repository.fake
+import com.android.systemui.communal.data.model.FEATURE_AUTO_OPEN
+import com.android.systemui.communal.data.model.SuppressionReason
 import com.android.systemui.communal.data.repository.communalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalSceneInteractor
+import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
+import com.android.systemui.communal.domain.interactor.setCommunalV2Enabled
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.ui.viewmodel.communalTransitionViewModel
 import com.android.systemui.concurrency.fakeExecutor
@@ -81,8 +87,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 /** Kotlin version of KeyguardViewMediatorTest to allow for coroutine testing. */
 @SmallTest
@@ -152,6 +161,7 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
                 keyguardInteractor,
                 keyguardTransitionBootInteractor,
                 { communalSceneInteractor },
+                { communalSettingsInteractor },
                 mock<WindowManagerOcclusionManager>(),
             )
         }
@@ -164,6 +174,10 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
     @Test
     fun doKeyguardTimeout_changesCommunalScene() =
         kosmos.runTest {
+            // Hub is enabled and hub condition is active.
+            setCommunalV2Enabled(true)
+            enableHubOnCharging()
+
             // doKeyguardTimeout message received.
             val timeoutOptions = Bundle()
             timeoutOptions.putBoolean(KeyguardViewMediator.EXTRA_TRIGGER_HUB, true)
@@ -174,4 +188,56 @@ class KeyguardViewMediatorTestKt : SysuiTestCase() {
             assertThat(communalSceneRepository.currentScene.value)
                 .isEqualTo(CommunalScenes.Communal)
         }
+
+    @Test
+    fun doKeyguardTimeout_communalNotAvailable_sleeps() =
+        kosmos.runTest {
+            // Hub disabled.
+            setCommunalV2Enabled(false)
+
+            // doKeyguardTimeout message received.
+            val timeoutOptions = Bundle()
+            timeoutOptions.putBoolean(KeyguardViewMediator.EXTRA_TRIGGER_HUB, true)
+            underTest.doKeyguardTimeout(timeoutOptions)
+            testableLooper.processAllMessages()
+
+            // Sleep is requested.
+            verify(powerManager)
+                .goToSleep(anyOrNull(), eq(PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON), eq(0))
+
+            // Hub scene is not changed.
+            assertThat(communalSceneRepository.currentScene.value).isEqualTo(CommunalScenes.Blank)
+        }
+
+    @Test
+    fun doKeyguardTimeout_hubConditionNotActive_sleeps() =
+        kosmos.runTest {
+            // Communal enabled, but hub condition set to never.
+            setCommunalV2Enabled(true)
+            disableHubShowingAutomatically()
+
+            // doKeyguardTimeout message received.
+            val timeoutOptions = Bundle()
+            timeoutOptions.putBoolean(KeyguardViewMediator.EXTRA_TRIGGER_HUB, true)
+            underTest.doKeyguardTimeout(timeoutOptions)
+            testableLooper.processAllMessages()
+
+            // Sleep is requested.
+            verify(powerManager)
+                .goToSleep(anyOrNull(), eq(PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON), eq(0))
+
+            // Hub scene is not changed.
+            assertThat(communalSceneRepository.currentScene.value).isEqualTo(CommunalScenes.Blank)
+        }
+
+    private fun Kosmos.enableHubOnCharging() {
+        communalSettingsInteractor.setSuppressionReasons(emptyList())
+        batteryRepository.fake.setDevicePluggedIn(true)
+    }
+
+    private fun Kosmos.disableHubShowingAutomatically() {
+        communalSettingsInteractor.setSuppressionReasons(
+            listOf(SuppressionReason.ReasonUnknown(FEATURE_AUTO_OPEN))
+        )
+    }
 }

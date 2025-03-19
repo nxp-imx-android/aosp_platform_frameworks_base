@@ -22,6 +22,7 @@ import com.android.systemui.statusbar.notification.promoted.shared.model.Promote
 import com.android.systemui.util.kotlin.FlowDumperImpl
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 
 @SysUISingleton
@@ -34,6 +35,16 @@ constructor(
     /** The content to show as the promoted notification on AOD */
     val content: Flow<PromotedNotificationContentModel?> =
         promotedNotificationsInteractor.aodPromotedNotification
+            .map {
+                // TODO(b/400991304): show the private version when unlocked
+                it?.publicVersion
+            }
+            .distinctUntilNewInstance()
 
     val isPresent: Flow<Boolean> = content.map { it != null }.dumpWhileCollecting("isPresent")
+
+    /**
+     * Returns flow where all subsequent repetitions of the same object instance are filtered out.
+     */
+    private fun <T> Flow<T>.distinctUntilNewInstance() = distinctUntilChanged { a, b -> a === b }
 }

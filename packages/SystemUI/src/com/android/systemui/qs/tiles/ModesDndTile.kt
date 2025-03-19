@@ -37,6 +37,7 @@ import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.QSHost
 import com.android.systemui.qs.QsEventLogger
 import com.android.systemui.qs.asQSTileIcon
+import com.android.systemui.qs.flags.QsInCompose
 import com.android.systemui.qs.logging.QSLogger
 import com.android.systemui.qs.tileimpl.QSTileImpl
 import com.android.systemui.qs.tiles.base.shared.model.QSTileConfigProvider
@@ -88,7 +89,11 @@ constructor(
 
     init {
         lifecycle.coroutineScope.launch {
-            lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            lifecycle.repeatOnLifecycle(
+                // TODO: b/403434908 - Workaround for "not listening to tile updates". Can be reset
+                //   to RESUMED if either b/403434908 is fixed or QsInCompose is inlined.
+                if (QsInCompose.isEnabled) Lifecycle.State.RESUMED else Lifecycle.State.CREATED
+            ) {
                 dataInteractor.tileData().collect { refreshState(it) }
             }
         }

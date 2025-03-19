@@ -1088,9 +1088,8 @@ constructor(
                     if (!success) finishedCallback?.onAnimationFinished()
                 }
             } else {
-                // This should never happen, as either the controller or factory should always be
-                // defined. This final call is for safety in case something goes wrong.
-                Log.wtf(TAG, "initAndRun with neither a controller nor factory")
+                // This happens when onDisposed() has already been called due to the animation being
+                // cancelled. Only issue the callback.
                 finishedCallback?.onAnimationFinished()
             }
         }

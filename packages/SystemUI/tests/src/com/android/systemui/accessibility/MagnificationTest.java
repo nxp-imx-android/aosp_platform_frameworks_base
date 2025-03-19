@@ -50,13 +50,13 @@ import android.view.accessibility.IMagnificationConnectionCallback;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.model.SysUiState;
 import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.settings.FakeDisplayTracker;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -98,7 +98,7 @@ public class MagnificationTest extends SysuiTestCase {
     @Mock
     private IWindowManager mIWindowManager;
     @Mock
-    private ViewCaptureAwareWindowManager mViewCaptureAwareWindowManager;
+    private WindowManagerProvider mWindowManagerProvider;
 
     @Before
     public void setUp() throws Exception {
@@ -132,8 +132,7 @@ public class MagnificationTest extends SysuiTestCase {
                 mCommandQueue, mModeSwitchesController,
                 mSysUiState, mLauncherProxyService, mSecureSettings, mDisplayTracker,
                 getContext().getSystemService(DisplayManager.class), mA11yLogger, mIWindowManager,
-                getContext().getSystemService(AccessibilityManager.class),
-                mViewCaptureAwareWindowManager);
+                getContext().getSystemService(AccessibilityManager.class), mWindowManagerProvider);
         mMagnification.mWindowMagnificationControllerSupplier = new FakeControllerSupplier(
                 mContext.getSystemService(DisplayManager.class), mWindowMagnificationController);
         mMagnification.mMagnificationSettingsSupplier = new FakeSettingsSupplier(

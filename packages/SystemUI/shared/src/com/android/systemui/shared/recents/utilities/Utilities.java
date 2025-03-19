@@ -37,6 +37,7 @@ import android.view.Surface;
 import android.view.WindowManager;
 
 import com.android.systemui.shared.recents.model.Task;
+import com.android.systemui.utils.windowmanager.WindowManagerUtils;
 
 /* Common code */
 public class Utilities {
@@ -152,7 +153,7 @@ public class Utilities {
     /** @return whether or not {@param context} represents that of a large screen device or not */
     @TargetApi(Build.VERSION_CODES.R)
     public static boolean isLargeScreen(Context context) {
-        return isLargeScreen(context.getSystemService(WindowManager.class), context.getResources());
+        return isLargeScreen(WindowManagerUtils.getWindowManager(context), context.getResources());
     }
 
     /** @return whether or not {@param context} represents that of a large screen device or not */

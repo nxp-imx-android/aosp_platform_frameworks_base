@@ -26,6 +26,8 @@ java_library {
         "src/**/*.kt",
     ],
     static_libs: [
+        "//frameworks/libs/systemui:view_capture",
+        "com_android_systemui_flags_lib",
         "kotlin-stdlib",
         "kotlinx_coroutines",
     ],

@@ -86,6 +86,7 @@ import static android.view.contentprotection.flags.Flags.createAccessibilityOver
 import static com.android.hardware.input.Flags.enableNew25q2Keycodes;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
+import static com.android.hardware.input.Flags.fixSearchModifierFallbacks;
 import static com.android.hardware.input.Flags.inputManagerLifecycleSupport;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
 import static com.android.hardware.input.Flags.modifierShortcutDump;
@@ -311,6 +312,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     static final int SHORT_PRESS_POWER_LOCK_OR_SLEEP = 6;
     static final int SHORT_PRESS_POWER_DREAM_OR_SLEEP = 7;
     static final int SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP = 8;
+    static final int SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP = 9;
 
     // must match: config_LongPressOnPowerBehavior in config.xml
     // The config value can be overridden using Settings.Global.POWER_BUTTON_LONG_PRESS
@@ -1234,8 +1236,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     break;
                 }
                 case SHORT_PRESS_POWER_DREAM_OR_SLEEP: {
-                    attemptToDreamFromShortPowerButtonPress(
-                            true,
+                    attemptToDreamOrAwakeFromShortPowerButtonPress(
+                            /* isScreenOn */ true,
+                            /* awakeWhenDream */ false,
+                            /* noDreamAction */
                             () -> sleepDefaultDisplayFromPowerButton(eventTime, 0));
                     break;
                 }
@@ -1269,11 +1273,20 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         lockNow(options);
                     } else {
                         // If the hub cannot be run, attempt to dream instead.
-                        attemptToDreamFromShortPowerButtonPress(
+                        attemptToDreamOrAwakeFromShortPowerButtonPress(
                                 /* isScreenOn */ true,
+                                /* awakeWhenDream */ false,
                                 /* noDreamAction */
                                 () -> sleepDefaultDisplayFromPowerButton(eventTime, 0));
                     }
+                    break;
+                }
+                case SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP: {
+                    attemptToDreamOrAwakeFromShortPowerButtonPress(
+                            /* isScreenOn */ true,
+                            /* awakeWhenDream */ true,
+                            /* noDreamAction */
+                            () -> sleepDefaultDisplayFromPowerButton(eventTime, 0));
                     break;
                 }
             }
@@ -1319,15 +1332,18 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     /**
-     * Attempt to dream from a power button press.
+     * Attempt to dream, awake or sleep from a power button press.
      *
      * @param isScreenOn Whether the screen is currently on.
+     * @param awakeWhenDream When it's set to {@code true}, awake the device from dreaming.
+     *        Otherwise, go to sleep.
      * @param noDreamAction The action to perform if dreaming is not possible.
      */
-    private void attemptToDreamFromShortPowerButtonPress(
-            boolean isScreenOn, Runnable noDreamAction) {
+    private void attemptToDreamOrAwakeFromShortPowerButtonPress(
+            boolean isScreenOn, boolean awakeWhenDream, Runnable noDreamAction) {
         if (mShortPressOnPowerBehavior != SHORT_PRESS_POWER_DREAM_OR_SLEEP
-                && mShortPressOnPowerBehavior != SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP) {
+                && mShortPressOnPowerBehavior != SHORT_PRESS_POWER_HUB_OR_DREAM_OR_SLEEP
+                && mShortPressOnPowerBehavior != SHORT_PRESS_POWER_DREAM_OR_AWAKE_OR_SLEEP) {
             // If the power button behavior isn't one that should be able to trigger the dream, give
             // up.
             noDreamAction.run();
@@ -1335,9 +1351,24 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         final DreamManagerInternal dreamManagerInternal = getDreamManagerInternal();
-        if (dreamManagerInternal == null || !dreamManagerInternal.canStartDreaming(isScreenOn)) {
-            Slog.d(TAG, "Can't start dreaming when attempting to dream from short power"
-                    + " press (isScreenOn=" + isScreenOn + ")");
+        if (dreamManagerInternal == null) {
+            Slog.d(TAG,
+                    "Can't access dream manager dreaming when attempting to start or stop dream "
+                    + "from short power press (isScreenOn="
+                            + isScreenOn + ", awakeWhenDream=" + awakeWhenDream + ")");
+            noDreamAction.run();
+            return;
+        }
+
+        if (!dreamManagerInternal.canStartDreaming(isScreenOn)) {
+            if (awakeWhenDream && dreamManagerInternal.isDreaming()) {
+                dreamManagerInternal.stopDream(false /*immediate*/, "short press power" /*reason*/);
+                return;
+            }
+            Slog.d(TAG,
+                    "Can't start dreaming and the device is not dreaming when attempting to start "
+                    + "or stop dream from short power press (isScreenOn="
+                            + isScreenOn + ", awakeWhenDream=" + awakeWhenDream + ")");
             noDreamAction.run();
             return;
         }
@@ -2312,6 +2343,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             return ActivityManager.getService();
         }
 
+        LockPatternUtils getLockPatternUtils() {
+            return new LockPatternUtils(mContext);
+        }
+
         ButtonOverridePermissionChecker getButtonOverridePermissionChecker() {
             return new ButtonOverridePermissionChecker();
         }
@@ -2360,7 +2395,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mAccessibilityShortcutController = injector.getAccessibilityShortcutController(
                 mContext, new Handler(), mCurrentUserId);
         mGlobalActionsFactory = injector.getGlobalActionsFactory();
-        mLockPatternUtils = new LockPatternUtils(mContext);
+        mLockPatternUtils = injector.getLockPatternUtils();
         mLogger = new MetricsLogger();
 
         Resources res = mContext.getResources();
@@ -4145,6 +4180,13 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (isValidGlobalKey(keyCode)
                 && mGlobalKeyManager.handleGlobalKey(mContext, keyCode, event)) {
             return true;
+        }
+
+        if (fixSearchModifierFallbacks()) {
+            // Pass event as unhandled to give other services, e.g. InputManagerService, the
+            // opportunity to determine if the event can be modified, e.g. generating a fallback for
+            // meta/search events.
+            return false;
         }
 
         // Reserve all the META modifier combos for system behavior

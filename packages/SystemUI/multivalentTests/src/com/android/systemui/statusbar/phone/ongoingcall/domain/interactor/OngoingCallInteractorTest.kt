@@ -29,7 +29,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
 import com.android.systemui.statusbar.gesture.swipeStatusBarAwayGestureHandler
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentBuilder
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallModel
 import com.android.systemui.statusbar.phone.ongoingcall.shared.model.OngoingCallTestHelper.addOngoingCallState
@@ -75,7 +75,7 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             val startTimeMs = 1000L
             val testIconView: StatusBarIconView = mock()
             val testIntent: PendingIntent = mock()
-            val testPromotedContent = PromotedNotificationContentModel.Builder(key).build()
+            val testPromotedContent = PromotedNotificationContentBuilder(key).build()
             addOngoingCallState(
                 key = key,
                 startTimeMs = startTimeMs,
@@ -106,7 +106,7 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             val startTimeMs = 1000L
             val testIconView: StatusBarIconView = mock()
             val testIntent: PendingIntent = mock()
-            val testPromotedContent = PromotedNotificationContentModel.Builder(key).build()
+            val testPromotedContent = PromotedNotificationContentBuilder(key).build()
             addOngoingCallState(
                 key = key,
                 startTimeMs = startTimeMs,

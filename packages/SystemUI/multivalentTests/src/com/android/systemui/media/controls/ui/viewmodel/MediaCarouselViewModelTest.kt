@@ -86,23 +86,23 @@ class MediaCarouselViewModelTest : SysuiTestCase() {
             loadMediaControl(KEY_2, instanceId2, isPlaying = true)
             loadMediaControl(KEY, instanceId1, isPlaying = false)
 
-            var mediaControl2 = sortedMedia?.get(0) as MediaCommonViewModel.MediaControl
-            var mediaControl1 = sortedMedia?.get(1) as MediaCommonViewModel.MediaControl
+            var mediaControl2 = sortedMedia?.get(0) as MediaControlViewModel
+            var mediaControl1 = sortedMedia?.get(1) as MediaControlViewModel
             assertThat(mediaControl2.instanceId).isEqualTo(instanceId2)
             assertThat(mediaControl1.instanceId).isEqualTo(instanceId1)
 
             loadMediaControl(KEY, instanceId1, isPlaying = true)
             loadMediaControl(KEY_2, instanceId2, isPlaying = false)
 
-            mediaControl2 = sortedMedia?.get(0) as MediaCommonViewModel.MediaControl
-            mediaControl1 = sortedMedia?.get(1) as MediaCommonViewModel.MediaControl
+            mediaControl2 = sortedMedia?.get(0) as MediaControlViewModel
+            mediaControl1 = sortedMedia?.get(1) as MediaControlViewModel
             assertThat(mediaControl2.instanceId).isEqualTo(instanceId2)
             assertThat(mediaControl1.instanceId).isEqualTo(instanceId1)
 
             underTest.onReorderingAllowed()
 
-            mediaControl1 = sortedMedia?.get(0) as MediaCommonViewModel.MediaControl
-            mediaControl2 = sortedMedia?.get(1) as MediaCommonViewModel.MediaControl
+            mediaControl1 = sortedMedia?.get(0) as MediaControlViewModel
+            mediaControl2 = sortedMedia?.get(1) as MediaControlViewModel
             assertThat(mediaControl1.instanceId).isEqualTo(instanceId1)
             assertThat(mediaControl2.instanceId).isEqualTo(instanceId2)
         }
@@ -115,7 +115,7 @@ class MediaCarouselViewModelTest : SysuiTestCase() {
 
             loadMediaControl(KEY, instanceId)
 
-            val mediaControl = sortedMedia?.get(0) as MediaCommonViewModel.MediaControl
+            val mediaControl = sortedMedia?.get(0) as MediaControlViewModel
             assertThat(mediaControl.instanceId).isEqualTo(instanceId)
 
             // when media control is added to carousel

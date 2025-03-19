@@ -2615,16 +2615,14 @@ bool ResTable_config::isLocaleBetterThan(const ResTable_config& o,
 }
 
 bool ResTable_config::isBetterThanBeforeLocale(const ResTable_config& o,
-        const ResTable_config* requested) const {
-    if (requested) {
-        if (imsi || o.imsi) {
-            if ((mcc != o.mcc) && requested->mcc) {
-                return (mcc);
-            }
+        const ResTable_config& requested) const {
+    if (imsi || o.imsi) {
+        if ((mcc != o.mcc) && requested.mcc) {
+            return mcc;
+        }
 
-            if ((mnc != o.mnc) && requested->mnc) {
-                return (mnc);
-            }
+        if ((mnc != o.mnc) && requested.mnc) {
+            return mnc;
         }
     }
     return false;

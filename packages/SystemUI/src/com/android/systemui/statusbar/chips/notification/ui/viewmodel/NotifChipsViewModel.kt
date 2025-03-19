@@ -55,12 +55,12 @@ constructor(
     private val systemClock: SystemClock,
 ) {
     /**
-     * A flow modeling the notification chips that should be shown. Emits an empty list if there are
-     * no notifications that should show a status bar chip.
+     * A flow modeling the current notification chips. Emits an empty list if there are no
+     * notifications that are eligible to show a status bar chip.
      */
     val chips: Flow<List<OngoingActivityChipModel.Active>> =
         combine(
-                notifChipsInteractor.shownNotificationChips,
+                notifChipsInteractor.allNotificationChips,
                 headsUpNotificationInteractor.statusBarHeadsUpState,
             ) { notifications, headsUpState ->
                 notifications.map { it.toActivityChipModel(headsUpState) }
@@ -72,6 +72,8 @@ constructor(
         headsUpState: TopPinnedState
     ): OngoingActivityChipModel.Active {
         StatusBarNotifChips.unsafeAssertInNewMode()
+        // Chips are never shown when locked, so it's safe to use the version with sensitive content
+        val chipContent = promotedContent.privateVersion
         val contentDescription = getContentDescription(this.appName)
         val icon =
             if (this.statusBarChipIconView != null) {
@@ -96,6 +98,10 @@ constructor(
                 notifChipsInteractor.onPromotedNotificationChipTapped(this@toActivityChipModel.key)
             }
         }
+        // If the app that posted this notification is visible, we want to hide the chip
+        // because information between the status bar chip and the app itself could be
+        // out-of-sync (like a timer that's slightly off)
+        val isHidden = this.isAppVisible
         val onClickListenerLegacy =
             View.OnClickListener {
                 StatusBarChipsModernization.assertInLegacyMode()
@@ -120,24 +126,23 @@ constructor(
                 colors = colors,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
-        if (this.promotedContent.shortCriticalText != null) {
+        if (chipContent.shortCriticalText != null) {
             return OngoingActivityChipModel.Active.Text(
                 key = this.key,
                 icon = icon,
                 colors = colors,
-                text = this.promotedContent.shortCriticalText,
+                text = chipContent.shortCriticalText,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
-        if (
-            Flags.promoteNotificationsAutomatically() &&
-                this.promotedContent.wasPromotedAutomatically
-        ) {
+        if (Flags.promoteNotificationsAutomatically() && chipContent.wasPromotedAutomatically) {
             // When we're promoting notifications automatically, the `when` time set on the
             // notification will likely just be set to the current time, which would cause the chip
             // to always show "now". We don't want early testers to get that experience since it's
@@ -148,32 +153,35 @@ constructor(
                 colors = colors,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
-        if (this.promotedContent.time == null) {
+        if (chipContent.time == null) {
             return OngoingActivityChipModel.Active.IconOnly(
                 key = this.key,
                 icon = icon,
                 colors = colors,
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
+                isHidden = isHidden,
             )
         }
 
-        when (this.promotedContent.time) {
+        when (chipContent.time) {
             is PromotedNotificationContentModel.When.Time -> {
                 return if (
-                    this.promotedContent.time.currentTimeMillis >=
+                    chipContent.time.currentTimeMillis >=
                         systemClock.currentTimeMillis() + FUTURE_TIME_THRESHOLD_MILLIS
                 ) {
                     OngoingActivityChipModel.Active.ShortTimeDelta(
                         key = this.key,
                         icon = icon,
                         colors = colors,
-                        time = this.promotedContent.time.currentTimeMillis,
+                        time = chipContent.time.currentTimeMillis,
                         onClickListenerLegacy = onClickListenerLegacy,
                         clickBehavior = clickBehavior,
+                        isHidden = isHidden,
                     )
                 } else {
                     // Don't show a `when` time that's close to now or in the past because it's
@@ -190,6 +198,7 @@ constructor(
                         colors = colors,
                         onClickListenerLegacy = onClickListenerLegacy,
                         clickBehavior = clickBehavior,
+                        isHidden = isHidden,
                     )
                 }
             }
@@ -198,10 +207,11 @@ constructor(
                     key = this.key,
                     icon = icon,
                     colors = colors,
-                    startTimeMs = this.promotedContent.time.elapsedRealtimeMillis,
-                    isEventInFuture = this.promotedContent.time.isCountDown,
+                    startTimeMs = chipContent.time.elapsedRealtimeMillis,
+                    isEventInFuture = chipContent.time.isCountDown,
                     onClickListenerLegacy = onClickListenerLegacy,
                     clickBehavior = clickBehavior,
+                    isHidden = isHidden,
                 )
             }
         }

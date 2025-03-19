@@ -164,9 +164,12 @@ class LinkCommand : public Command {
     AddOptionalSwitch("--no-resource-removal", "Disables automatic removal of resources without\n"
             "defaults. Use this only when building runtime resource overlay packages.",
         &options_.no_resource_removal);
-    AddOptionalSwitch("--enable-sparse-encoding",
-                      "This decreases APK size at the cost of resource retrieval performance.",
-                      &options_.use_sparse_encoding);
+    AddOptionalSwitch(
+        "--enable-sparse-encoding",
+        "Enables encoding sparse entries using a binary search tree.\n"
+        "This decreases APK size at the cost of resource retrieval performance.\n"
+        "Only applies sparse encoding if minSdk of the APK is >= 32",
+        &options_.use_sparse_encoding);
     AddOptionalSwitch("--enable-compact-entries",
         "This decreases APK size by using compact resource entries for simple data types.",
         &options_.table_flattener_options.use_compact_entries);

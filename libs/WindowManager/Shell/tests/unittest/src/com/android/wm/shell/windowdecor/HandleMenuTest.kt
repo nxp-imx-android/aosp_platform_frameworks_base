@@ -43,6 +43,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_UNDEFINED
@@ -95,6 +96,8 @@ class HandleMenuTest : ShellTestCase() {
     private lateinit var mockTaskResourceLoader: WindowDecorTaskResourceLoader
     @Mock
     private lateinit var mockAppIcon: Bitmap
+    @Mock
+    private lateinit var mockDesktopModeUiEventLogger: DesktopModeUiEventLogger
 
     private lateinit var handleMenu: HandleMenu
 
@@ -287,8 +290,10 @@ class HandleMenuTest : ShellTestCase() {
             shouldShowManageWindowsButton = false,
             shouldShowChangeAspectRatioButton = false,
             shouldShowDesktopModeButton = true,
+            shouldShowRestartButton = true,
             isBrowserApp = false,
             null /* openInAppOrBrowserIntent */,
+            mockDesktopModeUiEventLogger,
             captionWidth = HANDLE_WIDTH,
             captionHeight = 50,
             captionX = captionX,
@@ -304,6 +309,7 @@ class HandleMenuTest : ShellTestCase() {
             onChangeAspectRatioClickListener = mock(),
             openInAppOrBrowserClickListener = mock(),
             onOpenByDefaultClickListener = mock(),
+            onRestartClickListener = mock(),
             onCloseMenuClickListener = mock(),
             onOutsideTouchListener = mock(),
             forceShowSystemBars = forceShowSystemBars

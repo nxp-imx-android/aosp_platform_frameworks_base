@@ -79,6 +79,7 @@ import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.common.TaskStackListenerImpl;
 import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.common.split.SplitState;
+import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
 import com.android.wm.shell.compatui.letterbox.LetterboxTransitionObserver;
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
@@ -89,6 +90,7 @@ import com.android.wm.shell.desktopmode.DefaultDragToDesktopTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopDisplayEventHandler;
 import com.android.wm.shell.desktopmode.DesktopDisplayModeController;
+import com.android.wm.shell.desktopmode.DesktopImeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopMinimizationTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopMixedTransitionHandler;
@@ -1044,7 +1046,8 @@ public abstract class WMShellModule {
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
-            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
+            Optional<CompatUIHandler> compatUI
     ) {
         if (!DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.empty();
@@ -1062,7 +1065,7 @@ public abstract class WMShellModule {
                 activityOrientationChangeHandler, focusTransitionObserver, desktopModeEventLogger,
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
-                multiDisplayDragMoveIndicatorController));
+                multiDisplayDragMoveIndicatorController, compatUI.orElse(null)));
     }
 
     @WMSingleton
@@ -1522,6 +1525,18 @@ public abstract class WMShellModule {
                         inputManager,
                         displayController,
                         mainHandler));
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<DesktopImeHandler> provideDesktopImeHandler(
+            DisplayImeController displayImeController,
+            Context context,
+            ShellInit shellInit) {
+        if (!DesktopModeStatus.canEnterDesktopMode(context)) {
+            return Optional.empty();
+        }
+        return Optional.of(new DesktopImeHandler(displayImeController, shellInit));
     }
 
     //

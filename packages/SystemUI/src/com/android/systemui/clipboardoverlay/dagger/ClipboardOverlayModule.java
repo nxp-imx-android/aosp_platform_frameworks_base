@@ -19,9 +19,7 @@ package com.android.systemui.clipboardoverlay.dagger;
 import static android.view.WindowManager.LayoutParams.TYPE_SCREENSHOT;
 
 import static com.android.systemui.Flags.clipboardOverlayMultiuser;
-import static com.android.systemui.Flags.enableViewCaptureTracing;
 import static com.android.systemui.shared.Flags.usePreferredImageEditor;
-import static com.android.systemui.util.ConvenienceExtensionsKt.toKotlinLazy;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
@@ -31,8 +29,6 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 
-import com.android.app.viewcapture.ViewCapture;
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.systemui.clipboardoverlay.ActionIntentCreator;
 import com.android.systemui.clipboardoverlay.ClipboardOverlayView;
 import com.android.systemui.clipboardoverlay.DefaultIntentCreator;
@@ -40,6 +36,7 @@ import com.android.systemui.clipboardoverlay.IntentCreator;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import dagger.Lazy;
 import dagger.Module;
@@ -89,21 +86,9 @@ public interface ClipboardOverlayModule {
      */
     @Provides
     @OverlayWindowContext
-    static WindowManager provideWindowManager(@OverlayWindowContext Context context) {
-        return context.getSystemService(WindowManager.class);
-    }
-
-    /**
-     *
-     */
-    @Provides
-    @OverlayWindowContext
-    static ViewCaptureAwareWindowManager provideViewCaptureAwareWindowManager(
-            @OverlayWindowContext WindowManager windowManager,
-            Lazy<ViewCapture> daggerLazyViewCapture) {
-        return new ViewCaptureAwareWindowManager(windowManager,
-                /* lazyViewCapture= */ toKotlinLazy(daggerLazyViewCapture),
-                /* isViewCaptureEnabled= */ enableViewCaptureTracing());
+    static WindowManager provideWindowManager(@OverlayWindowContext Context context,
+            WindowManagerProvider windowManagerProvider) {
+        return windowManagerProvider.getWindowManager(context);
     }
 
     @Provides

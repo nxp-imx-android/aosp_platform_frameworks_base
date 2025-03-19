@@ -17,21 +17,23 @@
 package com.android.systemui.statusbar.notification.promoted
 
 import android.app.Notification
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.RedactionType
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
-import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
+import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 import com.android.systemui.statusbar.notification.row.shared.ImageModelProvider
 import org.junit.Assert
 
 class FakePromotedNotificationContentExtractor : PromotedNotificationContentExtractor {
     @JvmField
-    val contentForEntry = mutableMapOf<NotificationEntry, PromotedNotificationContentModel?>()
+    val contentForEntry = mutableMapOf<NotificationEntry, PromotedNotificationContentModels?>()
     @JvmField val extractCalls = mutableListOf<Pair<NotificationEntry, Notification.Builder>>()
 
     override fun extractContent(
         entry: NotificationEntry,
         recoveredBuilder: Notification.Builder,
+        @RedactionType redactionType: Int,
         imageModelProvider: ImageModelProvider,
-    ): PromotedNotificationContentModel? {
+    ): PromotedNotificationContentModels? {
         extractCalls.add(entry to recoveredBuilder)
 
         if (contentForEntry.isEmpty()) {
@@ -44,7 +46,7 @@ class FakePromotedNotificationContentExtractor : PromotedNotificationContentExtr
         }
     }
 
-    fun resetForEntry(entry: NotificationEntry, content: PromotedNotificationContentModel?) {
+    fun resetForEntry(entry: NotificationEntry, content: PromotedNotificationContentModels?) {
         contentForEntry.clear()
         contentForEntry[entry] = content
         extractCalls.clear()

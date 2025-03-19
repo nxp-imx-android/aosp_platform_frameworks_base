@@ -157,9 +157,19 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun showMedia_noActiveMedia_false() =
+    fun showMedia_InactiveMedia_false() =
         testScope.runTest {
             kosmos.mediaFilterRepository.addSelectedUserMediaEntry(MediaData(active = false))
+            runCurrent()
+
+            assertThat(underTest.showMedia).isFalse()
+        }
+
+    @Test
+    fun showMedia_noMedia_false() =
+        testScope.runTest {
+            kosmos.mediaFilterRepository.addSelectedUserMediaEntry(MediaData(active = true))
+            kosmos.mediaFilterRepository.clearSelectedUserMedia()
             runCurrent()
 
             assertThat(underTest.showMedia).isFalse()

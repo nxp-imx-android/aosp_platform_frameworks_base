@@ -231,7 +231,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             updateFullItemClickListener(clickListener);
             updateContentAlpha(deviceDisabled);
             updateSubtitle(subtitle);
-            updateDeviceStatusIcon(deviceStatusIcon);
+            updateDeviceStatusIcon(deviceStatusIcon, ongoingSessionStatus, connectionState);
             updateItemBackground(connectionState);
         }
 
@@ -523,11 +523,20 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             mStatusIcon.setAlpha(alphaValue);
         }
 
-        private void updateDeviceStatusIcon(@Nullable Drawable deviceStatusIcon) {
-            if (deviceStatusIcon == null) {
+        private void updateDeviceStatusIcon(@Nullable Drawable deviceStatusIcon,
+                @Nullable OngoingSessionStatus ongoingSessionStatus,
+                ConnectionState connectionState) {
+            boolean showOngoingSession =
+                    ongoingSessionStatus != null && connectionState == ConnectionState.DISCONNECTED;
+            if (deviceStatusIcon == null && !showOngoingSession) {
                 mStatusIcon.setVisibility(View.GONE);
             } else {
-                mStatusIcon.setImageDrawable(deviceStatusIcon);
+                if (showOngoingSession) {
+                    mStatusIcon.setImageDrawable(
+                            mContext.getDrawable(R.drawable.ic_sound_bars_anim));
+                } else {
+                    mStatusIcon.setImageDrawable(deviceStatusIcon);
+                }
                 mStatusIcon.setImageTintList(ColorStateList.valueOf(
                         mController.getColorSchemeLegacy().getColorItemContent()));
                 if (deviceStatusIcon instanceof AnimatedVectorDrawable) {

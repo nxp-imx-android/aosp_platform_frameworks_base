@@ -45,12 +45,17 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
 /** Models UI state and handles user input for a media control. */
-class MediaControlViewModel(
+data class MediaControlViewModel(
     @Application private val applicationContext: Context,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     @Background private val backgroundExecutor: Executor,
     private val interactor: MediaControlInteractor,
     private val logger: MediaUiEventLogger,
+    val instanceId: InstanceId,
+    val onAdded: (MediaControlViewModel) -> Unit,
+    val onRemoved: (Boolean) -> Unit,
+    val onUpdated: (MediaControlViewModel) -> Unit,
+    val updateTime: Long = 0,
 ) {
     val player: Flow<MediaPlayerViewModel?> =
         interactor.mediaControl

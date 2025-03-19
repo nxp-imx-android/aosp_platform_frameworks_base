@@ -29,6 +29,31 @@ import com.android.systemui.statusbar.notification.row.ImageResult
 import com.android.systemui.statusbar.notification.row.LazyImage
 import com.android.systemui.statusbar.notification.row.shared.ImageModel
 
+data class PromotedNotificationContentModels(
+    /** The potentially redacted version of the content that will be exposed to the public */
+    val publicVersion: PromotedNotificationContentModel,
+    /** The unredacted version of the content that will be kept private */
+    val privateVersion: PromotedNotificationContentModel,
+) {
+    val key: String
+        get() = privateVersion.identity.key
+
+    init {
+        check(publicVersion.identity.key == privateVersion.identity.key) {
+            "public and private models must have the same key"
+        }
+    }
+
+    fun toRedactedString(): String {
+        val publicVersionString =
+            "==privateVersion".takeIf { privateVersion === publicVersion }
+                ?: publicVersion.toRedactedString()
+        return ("PromotedNotificationContentModels(" +
+            "privateVersion=${privateVersion.toRedactedString()}, " +
+            "publicVersion=$publicVersionString)")
+    }
+}
+
 /**
  * The content needed to render a promoted notification to surfaces besides the notification stack,
  * like the skeleton view on AOD or the status bar chip.

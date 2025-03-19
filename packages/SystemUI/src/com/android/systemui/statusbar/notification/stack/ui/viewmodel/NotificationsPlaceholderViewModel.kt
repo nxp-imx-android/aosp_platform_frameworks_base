@@ -89,6 +89,17 @@ constructor(
             source = shadeModeInteractor.shadeMode.map { getQuickSettingsShadeContentKey(it) },
         )
 
+    /**
+     * Whether the current touch gesture is overscroll. If true, it means the NSSL has already
+     * consumed part of the gesture.
+     */
+    val isCurrentGestureOverscroll: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isCurrentGestureOverscroll",
+            initialValue = false,
+            source = interactor.isCurrentGestureOverscroll
+        )
+
     /** DEBUG: whether the placeholder should be made slightly visible for positional debugging. */
     val isVisualDebuggingEnabled: Boolean = featureFlags.isEnabled(Flags.NSSL_DEBUG_LINES)
 
@@ -156,13 +167,6 @@ constructor(
      */
     val syntheticScroll: Flow<Float> =
         interactor.syntheticScroll.dumpWhileCollecting("syntheticScroll")
-
-    /**
-     * Whether the current touch gesture is overscroll. If true, it means the NSSL has already
-     * consumed part of the gesture.
-     */
-    val isCurrentGestureOverscroll: Flow<Boolean> =
-        interactor.isCurrentGestureOverscroll.dumpWhileCollecting("isCurrentGestureOverScroll")
 
     /** Whether remote input is currently active for any notification. */
     val isRemoteInputActive = remoteInputInteractor.isRemoteInputActive

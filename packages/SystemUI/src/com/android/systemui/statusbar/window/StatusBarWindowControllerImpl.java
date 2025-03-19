@@ -47,7 +47,6 @@ import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager;
 import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DelegateTransitionAnimatorController;
@@ -78,7 +77,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     private static final boolean DEBUG = false;
 
     private final Context mContext;
-    private final ViewCaptureAwareWindowManager mWindowManager;
+    private final WindowManager mWindowManager;
     private final StatusBarConfigurationController mStatusBarConfigurationController;
     private final IWindowManager mIWindowManager;
     private final StatusBarContentInsetsProvider mContentInsetsProvider;
@@ -100,7 +99,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
     public StatusBarWindowControllerImpl(
             @Assisted Context context,
             @InternalWindowViewInflater StatusBarWindowViewInflater statusBarWindowViewInflater,
-            @Assisted ViewCaptureAwareWindowManager viewCaptureAwareWindowManager,
+            @Assisted WindowManager windowManager,
             @Assisted StatusBarConfigurationController statusBarConfigurationController,
             IWindowManager iWindowManager,
             @Assisted StatusBarContentInsetsProvider contentInsetsProvider,
@@ -108,7 +107,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
             Optional<UnfoldTransitionProgressProvider> unfoldTransitionProgressProvider,
             @Main Executor mainExecutor) {
         mContext = context;
-        mWindowManager = viewCaptureAwareWindowManager;
+        mWindowManager = windowManager;
         mStatusBarConfigurationController = statusBarConfigurationController;
         mIWindowManager = iWindowManager;
         mContentInsetsProvider = contentInsetsProvider;
@@ -406,7 +405,7 @@ public class StatusBarWindowControllerImpl implements StatusBarWindowController 
         @Override
         StatusBarWindowControllerImpl create(
                 @NonNull Context context,
-                @NonNull ViewCaptureAwareWindowManager viewCaptureAwareWindowManager,
+                @NonNull WindowManager windowManager,
                 @NonNull StatusBarConfigurationController statusBarConfigurationController,
                 @NonNull StatusBarContentInsetsProvider contentInsetsProvider);
     }

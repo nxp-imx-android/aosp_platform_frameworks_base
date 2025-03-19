@@ -152,9 +152,20 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     if (direction == AutoclickScrollPanel.DIRECTION_EXIT) {
                         return;
                     }
-                    // For direction buttons, perform scroll action immediately.
-                    if (hovered && direction != AutoclickScrollPanel.DIRECTION_NONE) {
-                        handleScroll(direction);
+
+                    // Handle all non-exit buttons when hovered.
+                    if (hovered) {
+                        // Clear the indicator.
+                        if (mAutoclickIndicatorScheduler != null) {
+                            mAutoclickIndicatorScheduler.cancel();
+                            if (mAutoclickIndicatorView != null) {
+                                mAutoclickIndicatorView.clearIndicator();
+                            }
+                        }
+                        // Perform scroll action.
+                        if (direction != DIRECTION_NONE) {
+                            handleScroll(direction);
+                        }
                     }
                 }
             };

@@ -465,6 +465,30 @@ class DesktopTasksController(
         return isFreeformDisplay
     }
 
+    /** Called when the recents transition that started while in desktop is finishing. */
+    fun onRecentsInDesktopAnimationFinishing(
+        transition: IBinder,
+        finishWct: WindowContainerTransaction,
+        returnToApp: Boolean,
+    ) {
+        if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
+        logV("onRecentsInDesktopAnimationFinishing returnToApp=%b", returnToApp)
+        if (returnToApp) return
+        // Home/Recents only exists in the default display.
+        val activeDesk = taskRepository.getActiveDeskId(DEFAULT_DISPLAY) ?: return
+        // Not going back to the active desk, deactivate it.
+        val runOnTransitStart =
+            performDesktopExitCleanUp(
+                wct = finishWct,
+                deskId = activeDesk,
+                displayId = DEFAULT_DISPLAY,
+                willExitDesktop = true,
+                shouldEndUpAtHome = true,
+                fromRecentsTransition = true,
+            )
+        runOnTransitStart?.invoke(transition)
+    }
+
     /** Creates a new desk in the given display. */
     fun createDesk(displayId: Int) {
         if (displayId == Display.INVALID_DISPLAY) {
@@ -835,20 +859,22 @@ class DesktopTasksController(
             val requestRes = transitions.dispatchRequest(Binder(), requestInfo, /* skip= */ null)
             wct.merge(requestRes.second, true)
 
-            desktopPipTransitionObserver.get().addPendingPipTransition(
-                DesktopPipTransitionObserver.PendingPipTransition(
-                    token = freeformTaskTransitionStarter.startPipTransition(wct),
-                    taskId = taskInfo.taskId,
-                    onSuccess = {
-                        onDesktopTaskEnteredPip(
-                            taskId = taskId,
-                            deskId = deskId,
-                            displayId = taskInfo.displayId,
-                            taskIsLastVisibleTaskBeforePip = isLastTask,
-                        )
-                    },
+            desktopPipTransitionObserver
+                .get()
+                .addPendingPipTransition(
+                    DesktopPipTransitionObserver.PendingPipTransition(
+                        token = freeformTaskTransitionStarter.startPipTransition(wct),
+                        taskId = taskInfo.taskId,
+                        onSuccess = {
+                            onDesktopTaskEnteredPip(
+                                taskId = taskId,
+                                deskId = deskId,
+                                displayId = taskInfo.displayId,
+                                taskIsLastVisibleTaskBeforePip = isLastTask,
+                            )
+                        },
+                    )
                 )
-            )
         } else {
             snapEventHandler.removeTaskIfTiled(displayId, taskId)
             val willExitDesktop = willExitDesktop(taskId, displayId, forceExitDesktop = false)
@@ -1208,6 +1234,7 @@ class DesktopTasksController(
                 pendingIntentBackgroundActivityStartMode =
                     ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOW_ALWAYS
                 launchBounds = bounds
+                launchDisplayId = displayId
                 if (DesktopModeFlags.ENABLE_SHELL_INITIAL_BOUNDS_REGRESSION_BUG_FIX.isTrue) {
                     // Sets launch bounds size as flexible so core can recalculate.
                     flexibleLaunchSize = true
@@ -1937,16 +1964,23 @@ class DesktopTasksController(
         displayId: Int,
         willExitDesktop: Boolean,
         shouldEndUpAtHome: Boolean = true,
+        fromRecentsTransition: Boolean = false,
     ): RunOnTransitStart? {
         if (!willExitDesktop) return null
         desktopModeEnterExitTransitionListener?.onExitDesktopModeTransitionStarted(
             FULLSCREEN_ANIMATION_DURATION
         )
-        removeWallpaperActivity(wct, displayId)
-        if (shouldEndUpAtHome) {
-            // If the transition should end up with user going to home, launch home with a pending
-            // intent.
-            addLaunchHomePendingIntent(wct, displayId)
+        // No need to clean up the wallpaper / reorder home when coming from a recents transition.
+        if (
+            !fromRecentsTransition ||
+                !DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue
+        ) {
+            removeWallpaperActivity(wct, displayId)
+            if (shouldEndUpAtHome) {
+                // If the transition should end up with user going to home, launch home with a
+                // pending intent.
+                addLaunchHomePendingIntent(wct, displayId)
+            }
         }
         return prepareDeskDeactivationIfNeeded(wct, deskId)
     }

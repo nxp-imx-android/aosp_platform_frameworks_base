@@ -24,10 +24,10 @@ import android.view.DisplayCutout.BOUNDS_POSITION_RIGHT
 import android.view.DisplayCutout.BOUNDS_POSITION_TOP
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowManager
 import android.view.WindowManager.InvalidDisplayException
 import android.view.WindowManager.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.ScreenDecorations
 import com.android.systemui.ScreenDecorationsThread
 import com.android.systemui.decor.DecorProvider
@@ -54,7 +54,7 @@ class PrivacyDotWindowController
 constructor(
     @Assisted private val displayId: Int,
     @Assisted private val privacyDotViewController: PrivacyDotViewController,
-    @Assisted private val viewCaptureAwareWindowManager: ViewCaptureAwareWindowManager,
+    @Assisted private val windowManager: WindowManager,
     @Assisted private val inflater: LayoutInflater,
     @ScreenDecorationsThread private val uiExecutor: Executor,
     private val dotFactory: PrivacyDotDecorProviderFactory,
@@ -106,7 +106,7 @@ constructor(
         try {
             // Wrapping this in a try/catch to avoid crashes when a display is instantly removed
             // after being added, and initialization hasn't finished yet.
-            viewCaptureAwareWindowManager.addView(rootView, params)
+            windowManager.addView(rootView, params)
         } catch (e: InvalidDisplayException) {
             Log.e(
                 TAG,
@@ -118,7 +118,7 @@ constructor(
     }
 
     fun stop() {
-        dotViews.forEach { viewCaptureAwareWindowManager.removeView(it) }
+        dotViews.forEach { windowManager.removeView(it) }
     }
 
     @AssistedFactory
@@ -126,7 +126,7 @@ constructor(
         fun create(
             displayId: Int,
             privacyDotViewController: PrivacyDotViewController,
-            viewCaptureAwareWindowManager: ViewCaptureAwareWindowManager,
+            windowManager: WindowManager,
             inflater: LayoutInflater,
         ): PrivacyDotWindowController
     }

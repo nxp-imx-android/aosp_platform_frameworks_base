@@ -252,17 +252,22 @@ public class HdmiControlService extends SystemService {
     static final AudioDeviceAttributes AUDIO_OUTPUT_DEVICE_HDMI_EARC =
             new AudioDeviceAttributes(AudioDeviceAttributes.ROLE_OUTPUT,
                     AudioDeviceInfo.TYPE_HDMI_EARC, "");
+    static final AudioDeviceAttributes AUDIO_OUTPUT_DEVICE_LINE_DIGITAL =
+            new AudioDeviceAttributes(AudioDeviceAttributes.ROLE_OUTPUT,
+            AudioDeviceInfo.TYPE_LINE_DIGITAL, "");
 
     // Audio output devices used for absolute volume behavior
     private static final List<AudioDeviceAttributes> AVB_AUDIO_OUTPUT_DEVICES =
             List.of(AUDIO_OUTPUT_DEVICE_HDMI,
                     AUDIO_OUTPUT_DEVICE_HDMI_ARC,
-                    AUDIO_OUTPUT_DEVICE_HDMI_EARC);
+                    AUDIO_OUTPUT_DEVICE_HDMI_EARC,
+                    AUDIO_OUTPUT_DEVICE_LINE_DIGITAL);
 
     // Audio output devices used for absolute volume behavior on TV panels
     private static final List<AudioDeviceAttributes> TV_AVB_AUDIO_OUTPUT_DEVICES =
             List.of(AUDIO_OUTPUT_DEVICE_HDMI_ARC,
-                    AUDIO_OUTPUT_DEVICE_HDMI_EARC);
+                    AUDIO_OUTPUT_DEVICE_HDMI_EARC,
+                    AUDIO_OUTPUT_DEVICE_LINE_DIGITAL);
 
     // Audio output devices used for absolute volume behavior on Playback devices
     private static final List<AudioDeviceAttributes> PLAYBACK_AVB_AUDIO_OUTPUT_DEVICES =

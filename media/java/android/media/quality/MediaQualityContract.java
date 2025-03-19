@@ -72,6 +72,43 @@ public class MediaQualityContract {
      */
     public static final String LEVEL_OFF = "level_off";
 
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "COLOR_TEMP", value = {
+            COLOR_TEMP_USER,
+            COLOR_TEMP_COOL,
+            COLOR_TEMP_STANDARD,
+            COLOR_TEMP_WARM,
+            COLOR_TEMP_USER_HDR10PLUS,
+            COLOR_TEMP_COOL_HDR10PLUS,
+            COLOR_TEMP_STANDARD_HDR10PLUS,
+            COLOR_TEMP_WARM_HDR10PLUS,
+            COLOR_TEMP_FMMSDR,
+            COLOR_TEMP_FMMHDR,
+    })
+    public @interface ColorTempValue {}
+
+    /** @hide */
+    public static final String COLOR_TEMP_USER = "color_temp_user";
+    /** @hide */
+    public static final String COLOR_TEMP_COOL = "color_temp_cool";
+    /** @hide */
+    public static final String COLOR_TEMP_STANDARD = "color_temp_standard";
+    /** @hide */
+    public static final String COLOR_TEMP_WARM = "color_temp_warm";
+    /** @hide */
+    public static final String COLOR_TEMP_USER_HDR10PLUS = "color_temp_user_hdr10plus";
+    /** @hide */
+    public static final String COLOR_TEMP_COOL_HDR10PLUS = "color_temp_cool_hdr10plus";
+    /** @hide */
+    public static final String COLOR_TEMP_STANDARD_HDR10PLUS = "color_temp_standard_hdr10plus";
+    /** @hide */
+    public static final String COLOR_TEMP_WARM_HDR10PLUS = "color_temp_warm_hdr10plus";
+    /** @hide */
+    public static final String COLOR_TEMP_FMMSDR = "color_temp_fmmsdr";
+    /** @hide */
+    public static final String COLOR_TEMP_FMMHDR = "color_temp_fmmhdr";
+
 
     /**
      * @hide
@@ -82,7 +119,6 @@ public class MediaQualityContract {
         String PARAMETER_NAME = "_name";
         String PARAMETER_PACKAGE = "_package";
         String PARAMETER_INPUT_ID = "_input_id";
-        String VENDOR_PARAMETERS = "_vendor_parameters";
     }
 
     /**

@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 import android.platform.test.annotations.Presubmit;
 
@@ -142,5 +143,47 @@ public class DeviceStateAutoRotateSettingIssueLoggerTests {
                         eq(FrameworkStatsLog.DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_REPORTED),
                         anyInt(),
                         anyBoolean()), never());
+    }
+
+    @Test
+    public void onStateChange_issueOccurredSettingChangedTwice_reportOnlyOnce() {
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateAutoRotateSettingChange();
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateChange();
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateAutoRotateSettingChange();
+
+        verify(() ->
+                FrameworkStatsLog.write(
+                        eq(FrameworkStatsLog.DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_REPORTED),
+                        anyInt(),
+                        anyBoolean()), times(1));
+    }
+
+    @Test
+    public void onStateChange_issueOccurredDeviceStateChangedTwice_reportOnlyOnce() {
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateChange();
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateAutoRotateSettingChange();
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateChange();
+
+        verify(() ->
+                FrameworkStatsLog.write(
+                        eq(FrameworkStatsLog.DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_REPORTED),
+                        anyInt(),
+                        anyBoolean()), times(1));
+    }
+
+    @Test
+    public void onStateChange_issueOccurredAfterDelay_reportOnce() {
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateAutoRotateSettingChange();
+        mTestTimeSupplier.delay(
+                DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_THRESHOLD_MILLIS + DELAY);
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateChange();
+        mTestTimeSupplier.delay(DELAY);
+        mDeviceStateAutoRotateSettingIssueLogger.onDeviceStateAutoRotateSettingChange();
+
+        verify(() ->
+                FrameworkStatsLog.write(
+                        eq(FrameworkStatsLog.DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_REPORTED),
+                        eq(DELAY),
+                        anyBoolean()), times(1));
     }
 }

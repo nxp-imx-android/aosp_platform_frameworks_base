@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.window
 
 import android.content.Context
 import android.view.WindowManager
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.data.repository.DisplayRepository
@@ -42,7 +41,6 @@ constructor(
     @Background backgroundApplicationScope: CoroutineScope,
     private val controllerFactory: StatusBarWindowController.Factory,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
-    private val viewCaptureAwareWindowManagerFactory: ViewCaptureAwareWindowManager.Factory,
     private val statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     private val statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
     displayRepository: DisplayRepository,
@@ -67,11 +65,9 @@ constructor(
             statusBarConfigurationControllerStore.forDisplay(displayId) ?: return null
         val contentInsetsProvider =
             statusBarContentInsetsProviderStore.forDisplay(displayId) ?: return null
-        val viewCaptureAwareWindowManager =
-            viewCaptureAwareWindowManagerFactory.create(statusBarDisplayContext.windowManager)
         return controllerFactory.create(
             statusBarDisplayContext.context,
-            viewCaptureAwareWindowManager,
+            statusBarDisplayContext.windowManager,
             statusBarConfigurationController,
             contentInsetsProvider,
         )
@@ -89,7 +85,7 @@ class SingleDisplayStatusBarWindowControllerStore
 @Inject
 constructor(
     context: Context,
-    viewCaptureAwareWindowManager: ViewCaptureAwareWindowManager,
+    windowManager: WindowManager,
     factory: StatusBarWindowControllerImpl.Factory,
     statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
     statusBarContentInsetsProviderStore: StatusBarContentInsetsProviderStore,
@@ -98,7 +94,7 @@ constructor(
     PerDisplayStore<StatusBarWindowController> by SingleDisplayStore(
         factory.create(
             context,
-            viewCaptureAwareWindowManager,
+            windowManager,
             statusBarConfigurationControllerStore.defaultDisplay,
             statusBarContentInsetsProviderStore.defaultDisplay,
         )

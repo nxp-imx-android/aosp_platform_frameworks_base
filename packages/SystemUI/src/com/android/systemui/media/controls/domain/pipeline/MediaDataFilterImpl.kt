@@ -248,7 +248,7 @@ constructor(
             // Update loading state with actual active value
             mediaFilterRepository.selectedUserEntries.value[lastActiveId]?.let {
                 mediaFilterRepository.addMediaDataLoadingState(
-                    MediaDataLoadingModel.Loaded(lastActiveId, immediately)
+                    MediaDataLoadingModel.Loaded(lastActiveId)
                 )
                 mediaLogger.logMediaLoaded(lastActiveId, it.active, "expiring reactivated id")
                 listeners.forEach { listener ->

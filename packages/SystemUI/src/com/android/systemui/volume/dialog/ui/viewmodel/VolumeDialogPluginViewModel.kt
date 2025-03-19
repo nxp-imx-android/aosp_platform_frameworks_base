@@ -70,8 +70,16 @@ constructor(
     val isShowingSafetyWarning: Flow<Boolean> = dialogSafetyWarningInteractor.isShowingSafetyWarning
     val csdWarning: Flow<Int?> = dialogCsdWarningInteractor.csdWarning
 
+    fun onSafetyWarningDialogShown() {
+        dialogVisibilityInteractor.resetDismissTimeout()
+    }
+
     fun onSafetyWarningDismissed() {
         dialogSafetyWarningInteractor.onSafetyWarningDismissed()
+    }
+
+    fun onCsdWarningDialogShown() {
+        dialogVisibilityInteractor.resetDismissTimeout()
     }
 
     fun onCsdWarningDismissed() {

@@ -42,6 +42,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetwork
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
 import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.getTelephonyCallbackForType
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.MobileTelephonyHelpers.signalStrength
 import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
@@ -92,47 +93,53 @@ import org.mockito.MockitoAnnotations
  */
 @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
 @SmallTest
-class MobileConnectionTelephonySmokeTests : SysuiTestCase() {
-    private lateinit var underTest: MobileConnectionRepositoryImpl
+class MobileConnectionTelephonySmokeTests : MobileConnectionTelephonySmokeTestsBase() {
+    override fun recreateRepo(): MobileConnectionRepository =
+        MobileConnectionRepositoryImpl(
+            SUB_1_ID,
+            context,
+            subscriptionModel,
+            DEFAULT_NAME,
+            SEP,
+            connectivityManager,
+            telephonyManager,
+            systemUiCarrierConfig,
+            fakeBroadcastDispatcher,
+            mobileMappings,
+            testDispatcher,
+            logger,
+            tableLogger,
+            flags,
+            testScope.backgroundScope,
+        )
+}
 
-    private val flags =
+abstract class MobileConnectionTelephonySmokeTestsBase : SysuiTestCase() {
+    protected lateinit var underTest: MobileConnectionRepository
+
+    protected val flags =
         FakeFeatureFlagsClassic().also { it.set(Flags.ROAMING_INDICATOR_VIA_DISPLAY_INFO, true) }
 
-    @Mock private lateinit var connectivityManager: ConnectivityManager
-    @Mock private lateinit var telephonyManager: TelephonyManager
-    @Mock private lateinit var logger: MobileInputLogger
-    @Mock private lateinit var tableLogger: TableLogBuffer
-    @Mock private lateinit var subscriptionModel: StateFlow<SubscriptionModel?>
+    @Mock protected lateinit var connectivityManager: ConnectivityManager
+    @Mock protected lateinit var telephonyManager: TelephonyManager
+    @Mock protected lateinit var logger: MobileInputLogger
+    @Mock protected lateinit var tableLogger: TableLogBuffer
+    @Mock protected lateinit var subscriptionModel: StateFlow<SubscriptionModel?>
 
-    private val mobileMappings = FakeMobileMappingsProxy()
-    private val systemUiCarrierConfig = SystemUiCarrierConfig(SUB_1_ID, testCarrierConfig())
+    protected val mobileMappings = FakeMobileMappingsProxy()
+    protected val systemUiCarrierConfig = SystemUiCarrierConfig(SUB_1_ID, testCarrierConfig())
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val testScope = TestScope(testDispatcher)
+    protected val testDispatcher = UnconfinedTestDispatcher()
+    protected val testScope = TestScope(testDispatcher)
+
+    abstract fun recreateRepo(): MobileConnectionRepository
 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         whenever(telephonyManager.subscriptionId).thenReturn(SUB_1_ID)
 
-        underTest =
-            MobileConnectionRepositoryImpl(
-                SUB_1_ID,
-                context,
-                subscriptionModel,
-                DEFAULT_NAME,
-                SEP,
-                connectivityManager,
-                telephonyManager,
-                systemUiCarrierConfig,
-                fakeBroadcastDispatcher,
-                mobileMappings,
-                testDispatcher,
-                logger,
-                tableLogger,
-                flags,
-                testScope.backgroundScope,
-            )
+        underTest = recreateRepo()
     }
 
     @Test
@@ -329,9 +336,9 @@ class MobileConnectionTelephonySmokeTests : SysuiTestCase() {
     }
 
     companion object {
-        private const val SUB_1_ID = 1
+        const val SUB_1_ID = 1
 
-        private val DEFAULT_NAME = NetworkNameModel.Default("default name")
-        private const val SEP = "-"
+        val DEFAULT_NAME = NetworkNameModel.Default("default name")
+        const val SEP = "-"
     }
 }

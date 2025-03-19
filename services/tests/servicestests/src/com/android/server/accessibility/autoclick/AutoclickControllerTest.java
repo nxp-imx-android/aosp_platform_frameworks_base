@@ -25,6 +25,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -862,6 +863,23 @@ public class AutoclickControllerTest {
         // Verify scroll panel is still only shown once (not called again).
         verify(mockScrollPanel, times(1)).show();
         assertThat(motionEventCaptor.downEvent).isNull();
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void scrollPanelController_directionalButtonsHideIndicator() {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Create a spy on the real object to verify method calls.
+        AutoclickIndicatorView spyIndicatorView = spy(mController.mAutoclickIndicatorView);
+        mController.mAutoclickIndicatorView = spyIndicatorView;
+
+        // Simulate hover on direction button.
+        mController.mScrollPanelController.onHoverButtonChange(
+                AutoclickScrollPanel.DIRECTION_UP, true);
+
+        // Verify clearIndicator was called.
+        verify(spyIndicatorView).clearIndicator();
     }
 
     @Test

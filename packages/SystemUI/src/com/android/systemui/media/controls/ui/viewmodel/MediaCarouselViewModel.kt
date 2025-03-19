@@ -56,7 +56,7 @@ constructor(
     val hasAnyMediaOrRecommendations: StateFlow<Boolean> = interactor.hasAnyMediaOrRecommendation
     val hasActiveMediaOrRecommendations: StateFlow<Boolean> =
         interactor.hasActiveMediaOrRecommendation
-    val mediaItems: StateFlow<List<MediaCommonViewModel>> =
+    val mediaItems: StateFlow<List<MediaControlViewModel>> =
         interactor.currentMedia
             .map { sortedItems ->
                 val mediaList = buildList {
@@ -91,8 +91,7 @@ constructor(
 
     var updateHostVisibility: () -> Unit = {}
 
-    private val mediaControlByInstanceId =
-        mutableMapOf<InstanceId, MediaCommonViewModel.MediaControl>()
+    private val mediaControlByInstanceId = mutableMapOf<InstanceId, MediaControlViewModel>()
 
     private var modelsPendingRemoval: MutableSet<MediaCommonModel> = mutableSetOf()
 
@@ -108,18 +107,16 @@ constructor(
         interactor.reorderMedia()
     }
 
-    private fun toViewModel(
-        commonModel: MediaCommonModel.MediaControl
-    ): MediaCommonViewModel.MediaControl {
+    private fun toViewModel(commonModel: MediaCommonModel.MediaControl): MediaControlViewModel {
         val instanceId = commonModel.mediaLoadedModel.instanceId
-        return mediaControlByInstanceId[instanceId]?.copy(
-            immediatelyUpdateUi = commonModel.mediaLoadedModel.immediatelyUpdateUi,
-            updateTime = commonModel.updateTime,
-        )
-            ?: MediaCommonViewModel.MediaControl(
+        return mediaControlByInstanceId[instanceId]?.copy(updateTime = commonModel.updateTime)
+            ?: MediaControlViewModel(
+                    applicationContext = applicationContext,
+                    backgroundDispatcher = backgroundDispatcher,
+                    backgroundExecutor = backgroundExecutor,
+                    interactor = controlInteractorFactory.create(instanceId),
+                    logger = logger,
                     instanceId = instanceId,
-                    immediatelyUpdateUi = commonModel.mediaLoadedModel.immediatelyUpdateUi,
-                    controlViewModel = createMediaControlViewModel(instanceId),
                     onAdded = {
                         mediaLogger.logMediaCardAdded(instanceId)
                         onMediaControlAddedOrUpdated(it, commonModel)
@@ -130,31 +127,20 @@ constructor(
                         mediaLogger.logMediaCardRemoved(instanceId)
                     },
                     onUpdated = { onMediaControlAddedOrUpdated(it, commonModel) },
-                    isMediaFromRec = commonModel.isMediaFromRec,
                     updateTime = commonModel.updateTime,
                 )
                 .also { mediaControlByInstanceId[instanceId] = it }
     }
 
-    private fun createMediaControlViewModel(instanceId: InstanceId): MediaControlViewModel {
-        return MediaControlViewModel(
-            applicationContext = applicationContext,
-            backgroundDispatcher = backgroundDispatcher,
-            backgroundExecutor = backgroundExecutor,
-            interactor = controlInteractorFactory.create(instanceId),
-            logger = logger,
-        )
-    }
-
     private fun onMediaControlAddedOrUpdated(
-        commonViewModel: MediaCommonViewModel,
+        controlViewModel: MediaControlViewModel,
         commonModel: MediaCommonModel.MediaControl,
     ) {
         if (commonModel.canBeRemoved && !Utils.useMediaResumption(applicationContext)) {
             // This media control is due for removal as it is now paused + timed out, and resumption
             // setting is off.
             if (isReorderingAllowed()) {
-                commonViewModel.onRemoved(true)
+                controlViewModel.onRemoved(true)
             } else {
                 modelsPendingRemoval.add(commonModel)
             }

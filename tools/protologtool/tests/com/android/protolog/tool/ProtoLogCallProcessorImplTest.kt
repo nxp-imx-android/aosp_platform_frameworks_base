@@ -16,11 +16,14 @@
 
 package com.android.protolog.tool
 
+import com.android.internal.protolog.common.InvalidFormatStringException
 import com.android.internal.protolog.common.LogLevel
 import com.github.javaparser.StaticJavaParser
 import com.github.javaparser.ast.expr.MethodCallExpr
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Test
+import com.google.common.truth.Truth
 
 class ProtoLogCallProcessorImplTest {
     private data class LogCall(
@@ -227,5 +230,39 @@ class ProtoLogCallProcessorImplTest {
         groupMap["TEST"] = LogGroup("TEST", false, true, "WindowManager")
         visitor.process(StaticJavaParser.parse(code), processor, "")
         checkCalls()
+    }
+
+    @Test
+    fun throws_clear_error_message_on_invalid_format_exception() {
+        val code = """
+            package org.example;
+
+            class Test {
+                void test() {
+                    ProtoLog.d(ProtoLogGroup.TEST, "Invalid message %9 %");
+                }
+            }
+        """
+        groupMap["TEST"] = LogGroup("TEST", false, true, "WindowManager")
+
+        val processor = object : ProtoLogCallVisitor {
+            override fun processCall(
+                call: MethodCallExpr,
+                messageString: String,
+                level: LogLevel,
+                group: LogGroup,
+                lineNumber: Int,
+            ) {
+                throw InvalidFormatStringException("Invalid Protolog message format")
+            }
+        }
+
+        val exception = assertThrows(InvalidProtoLogCallException::class.java) {
+            visitor.process(StaticJavaParser.parse(code), processor, "MyTestFile.java")
+        }
+        Truth.assertThat(exception).hasMessageThat()
+            .contains("Code processing error in MyTestFile.java:6")
+        Truth.assertThat(exception.cause).hasMessageThat()
+            .contains("Invalid Protolog message format")
     }
 }

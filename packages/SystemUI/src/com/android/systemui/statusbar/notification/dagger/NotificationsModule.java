@@ -83,7 +83,6 @@ import com.android.systemui.statusbar.notification.logging.dagger.NotificationsL
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractorImpl;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
-import com.android.systemui.statusbar.notification.row.NotificationActionClickManager;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactory;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactoryLooperImpl;
 import com.android.systemui.statusbar.notification.row.NotificationGutsManager;
@@ -325,7 +324,7 @@ public interface NotificationsModule {
         if (PromotedNotificationContentModel.featureFlagEnabled()) {
             return implProvider.get();
         } else {
-            return (entry, recoveredBuilder, imageModelProvider) -> null;
+            return (entry, recoveredBuilder, redactionType, imageModelProvider) -> null;
         }
     }
 

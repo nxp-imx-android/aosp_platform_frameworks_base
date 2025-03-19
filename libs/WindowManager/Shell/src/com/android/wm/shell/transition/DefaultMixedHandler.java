@@ -394,6 +394,9 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
                 if (mixed.mType == MixedTransition.TYPE_RECENTS_DURING_SPLIT) {
                     ((RecentsMixedTransition) mixed).onAnimateRecentsDuringSplitFinishing(
                             returnToApp, finishWct, finishT);
+                } else if (mixed.mType == MixedTransition.TYPE_RECENTS_DURING_DESKTOP) {
+                    ((RecentsMixedTransition) mixed).onAnimateRecentsDuringDesktopFinishing(
+                            returnToApp, finishWct);
                 }
             }
         }

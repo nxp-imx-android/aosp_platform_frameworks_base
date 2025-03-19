@@ -39,6 +39,8 @@ import androidx.core.view.accessibility.AccessibilityNodeInfoCompat.Accessibilit
 import com.android.internal.policy.SystemBarUtils
 import com.android.window.flags.Flags
 import com.android.wm.shell.R
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_OPENED
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.windowdecor.AppHandleAnimator
 import com.android.wm.shell.windowdecor.WindowManagerWrapper
@@ -53,7 +55,8 @@ class AppHandleViewHolder(
     onCaptionTouchListener: View.OnTouchListener,
     onCaptionButtonClickListener: OnClickListener,
     private val windowManagerWrapper: WindowManagerWrapper,
-    private val handler: Handler
+    private val handler: Handler,
+    private val desktopModeUiEventLogger: DesktopModeUiEventLogger,
 ) : WindowDecorationViewHolder<AppHandleViewHolder.HandleData>(rootView) {
 
     data class HandleData(
@@ -201,6 +204,7 @@ class AppHandleViewHolder(
                 // Passthrough the a11y click action so the caption handle, so that app handle menu
                 // is opened on a11y click, similar to a real click
                 if (action == AccessibilityAction.ACTION_CLICK.id) {
+                    desktopModeUiEventLogger.log(taskInfo, A11Y_APP_HANDLE_MENU_OPENED)
                     captionHandle.performClick()
                 }
                 return super.performAccessibilityAction(host, action, args)
@@ -216,10 +220,13 @@ class AppHandleViewHolder(
             }
         }
 
-        // Update a11y action text so that Talkback announces "Press double tap to open app handle
-        // menu" while focused on status bar input layer
+        // Update a11y action text so that Talkback announces "Press double tap to open menu"
+        // while focused on status bar input layer
         ViewCompat.replaceAccessibilityAction(
-            view, AccessibilityActionCompat.ACTION_CLICK, "Open app handle menu", null
+            view,
+            AccessibilityActionCompat.ACTION_CLICK,
+            context.getString(R.string.app_handle_chip_accessibility_announce),
+            null
         )
     }
 
@@ -297,12 +304,14 @@ class AppHandleViewHolder(
             onCaptionButtonClickListener: OnClickListener,
             windowManagerWrapper: WindowManagerWrapper,
             handler: Handler,
+            desktopModeUiEventLogger: DesktopModeUiEventLogger,
         ): AppHandleViewHolder = AppHandleViewHolder(
             rootView,
             onCaptionTouchListener,
             onCaptionButtonClickListener,
             windowManagerWrapper,
             handler,
+            desktopModeUiEventLogger,
         )
     }
 }

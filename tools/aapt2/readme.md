@@ -5,6 +5,10 @@
   2017. This README will be updated more frequently in the future.
 - Added a new flag `--no-compress-fonts`. This can significantly speed up loading fonts from APK
   assets, at the cost of increasing the storage size of the APK.
+- Changed the behavior of `--enable-sparse-encoding`. Sparse encoding is only applied if the
+  minSdkVersion is >= 32.
+- Changed the behavior of `--force-sparse-encoding`. Sparse encoding is only applied if the
+  minSdkVersion is >= 32 or is not set.
 
 ## Version 2.19
 - Added navigation resource type.

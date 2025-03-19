@@ -41,7 +41,6 @@ import android.widget.ScrollView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.app.viewcapture.ViewCapture
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.widget.LockPatternUtils
 import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN
@@ -116,7 +115,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var activityTaskManager: ActivityTaskManager
     @Mock private lateinit var accessibilityManager: AccessibilityManager
-    @Mock private lateinit var lazyViewCapture: Lazy<ViewCapture>
 
     private lateinit var displayRepository: FakeDisplayRepository
     private lateinit var displayStateInteractor: DisplayStateInteractor
@@ -689,7 +687,6 @@ open class AuthContainerViewTest : SysuiTestCase() {
             { credentialViewModel },
             fakeExecutor,
             vibrator,
-            lazyViewCapture,
             msdlPlayer,
         ) {
         override fun postOnAnimation(runnable: Runnable) {

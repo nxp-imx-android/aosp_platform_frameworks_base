@@ -118,9 +118,17 @@ class ProtoLogCallProcessorImpl(
                                     "- not a ProtoLogGroup enum member: $call", context)
                         }
 
-                        logCallVisitor?.processCall(call, messageString, getLevelForMethodName(
-                            call.name.toString(), call, context), groupMap.getValue(groupName),
-                            context.lineNumber)
+                        try {
+                            logCallVisitor?.processCall(
+                                call, messageString, getLevelForMethodName(
+                                    call.name.toString(), call, context
+                                ), groupMap.getValue(groupName),
+                                context.lineNumber
+                            )
+                        } catch (e: Throwable) {
+                            throw InvalidProtoLogCallException("Error processing log call: $call",
+                                context, e)
+                        }
                     } else if (call.name.id == "init") {
                         // No processing
                     } else {

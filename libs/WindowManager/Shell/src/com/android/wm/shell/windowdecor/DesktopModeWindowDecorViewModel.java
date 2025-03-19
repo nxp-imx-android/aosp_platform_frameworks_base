@@ -108,6 +108,8 @@ import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.compatui.CompatUIController;
+import com.android.wm.shell.compatui.api.CompatUIHandler;
+import com.android.wm.shell.compatui.impl.CompatUIRequests;
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler;
 import com.android.wm.shell.desktopmode.DesktopImmersiveController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
@@ -266,6 +268,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final DesktopTilingDecorViewModel mDesktopTilingDecorViewModel;
     private final MultiDisplayDragMoveIndicatorController mMultiDisplayDragMoveIndicatorController;
     private final LatencyTracker mLatencyTracker;
+    private final CompatUIHandler mCompatUI;
 
     public DesktopModeWindowDecorViewModel(
             Context context,
@@ -306,7 +309,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
-            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
+            CompatUIHandler compatUI) {
         this(
                 context,
                 shellExecutor,
@@ -353,7 +357,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 recentsTransitionHandler,
                 desktopModeCompatPolicy,
                 desktopTilingDecorViewModel,
-                multiDisplayDragMoveIndicatorController);
+                multiDisplayDragMoveIndicatorController,
+                compatUI);
     }
 
     @VisibleForTesting
@@ -403,7 +408,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RecentsTransitionHandler recentsTransitionHandler,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopTilingDecorViewModel desktopTilingDecorViewModel,
-            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController) {
+            MultiDisplayDragMoveIndicatorController multiDisplayDragMoveIndicatorController,
+            CompatUIHandler compatUI) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -444,6 +450,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mActivityOrientationChangeHandler = activityOrientationChangeHandler;
         mAssistContentRequester = assistContentRequester;
         mWindowDecorViewHostSupplier = windowDecorViewHostSupplier;
+        mCompatUI = compatUI;
         mOnDisplayChangingListener = (displayId, fromRotation, toRotation, displayAreaInfo, t) -> {
             DesktopModeWindowDecoration decoration;
             RunningTaskInfo taskInfo;
@@ -1795,6 +1802,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         mMultiInstanceHelper,
                         mWindowDecorCaptionHandleRepository,
                         mDesktopModeEventLogger,
+                        mDesktopModeUiEventLogger,
                         mDesktopModeCompatPolicy);
         mWindowDecorByTaskId.put(taskInfo.taskId, windowDecoration);
 
@@ -1862,6 +1870,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         });
         windowDecoration.setOnChangeAspectRatioClickListener(() -> {
             CompatUIController.launchUserAspectRatioSettings(mContext, taskInfo);
+            return Unit.INSTANCE;
+        });
+        windowDecoration.setOnRestartClickListener(() -> {
+            mCompatUI.sendCompatUIRequest(new CompatUIRequests.DisplayCompatShowRestartDialog(
+                    taskInfo.taskId));
             return Unit.INSTANCE;
         });
         windowDecoration.setOnMaximizeHoverListener(() -> {

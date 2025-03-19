@@ -21,7 +21,6 @@ import android.graphics.PixelFormat
 import android.view.Gravity
 import android.view.WindowInsets
 import android.view.WindowManager
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -38,7 +37,7 @@ import javax.inject.Inject
 class TopLevelWindowEffects @Inject constructor(
     @Application private val context: Context,
     @Application private val applicationScope: CoroutineScope,
-    private val windowManager: ViewCaptureAwareWindowManager,
+    private val windowManager: WindowManager,
     private val squeezeEffectInteractor: SqueezeEffectInteractor,
     private val keyEventInteractor: KeyEventInteractor,
     private val viewModelFactory: SqueezeEffectViewModel.Factory

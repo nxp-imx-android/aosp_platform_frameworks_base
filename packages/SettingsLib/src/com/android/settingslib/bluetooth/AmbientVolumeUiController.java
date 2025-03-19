@@ -80,6 +80,7 @@ public class AmbientVolumeUiController implements
         mLocalDataManager = new HearingDeviceLocalDataManager(context);
         mLocalDataManager.setOnDeviceLocalDataChangeListener(this,
                 ThreadUtils.getBackgroundExecutor());
+        mLocalDataManager.start();
     }
 
     @VisibleForTesting

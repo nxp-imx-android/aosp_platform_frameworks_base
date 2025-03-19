@@ -1942,14 +1942,9 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
     }
 
     public void notifyGesture(AccessibilityGestureEvent gestureEvent) {
-        if (android.view.accessibility.Flags.copyEventsForGestureDetection()) {
-            // We will use this event async, so copy it because it contains MotionEvents.
-            mInvocationHandler.obtainMessage(InvocationHandler.MSG_ON_GESTURE,
-                    gestureEvent.copyForAsync()).sendToTarget();
-        } else {
-            mInvocationHandler.obtainMessage(InvocationHandler.MSG_ON_GESTURE,
-                    gestureEvent).sendToTarget();
-        }
+        // We will use this event async, so copy it because it contains MotionEvents.
+        mInvocationHandler.obtainMessage(InvocationHandler.MSG_ON_GESTURE,
+                gestureEvent.copyForAsync()).sendToTarget();
     }
 
     public void notifySystemActionsChangedLocked() {
@@ -2426,9 +2421,7 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
                 case MSG_ON_GESTURE: {
                     if (message.obj instanceof AccessibilityGestureEvent gesture) {
                         notifyGestureInternal(gesture);
-                        if (android.view.accessibility.Flags.copyEventsForGestureDetection()) {
-                            gesture.recycle();
-                        }
+                        gesture.recycle();
                     }
                 } break;
                 case MSG_CLEAR_ACCESSIBILITY_CACHE: {

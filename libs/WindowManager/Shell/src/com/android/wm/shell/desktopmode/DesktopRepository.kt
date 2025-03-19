@@ -1112,6 +1112,7 @@ class DesktopRepository(
     internal fun dump(pw: PrintWriter, prefix: String) {
         val innerPrefix = "$prefix  "
         pw.println("${prefix}DesktopRepository")
+        pw.println("${innerPrefix}userId=$userId")
         dumpDesktopTaskData(pw, innerPrefix)
         pw.println("${innerPrefix}activeTasksListeners=${activeTasksListeners.size}")
         pw.println("${innerPrefix}visibleTasksListeners=${visibleTasksListeners.size}")
@@ -1298,6 +1299,7 @@ class DesktopRepository(
             deskByDisplayId[displayId]?.let { sequenceOf(it) } ?: emptySequence()
 
         override fun remove(deskId: Int) {
+            setDeskInactive(deskId)
             deskByDisplayId[deskId]?.clear()
         }
 
@@ -1397,6 +1399,7 @@ class DesktopRepository(
             desktopDisplays[displayId]?.orderedDesks?.asSequence() ?: emptySequence()
 
         override fun remove(deskId: Int) {
+            setDeskInactive(deskId)
             desktopDisplays.forEach { _, display ->
                 display.orderedDesks.removeIf { it.deskId == deskId }
             }

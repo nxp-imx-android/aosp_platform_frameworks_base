@@ -36,7 +36,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.test.filters.SmallTest
-import com.android.app.viewcapture.ViewCaptureAwareWindowManager
 import com.android.app.viewcapture.ViewCaptureFactory
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.internal.logging.UiEventLogger
@@ -143,7 +142,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
         mock<ScrimManager> { on { currentController }.thenReturn(mScrimController) }
     private val mSystemDialogsCloser = mock<SystemDialogsCloser>()
     private val mDreamOverlayCallbackController = mock<DreamOverlayCallbackController>()
-    private val mLazyViewCapture = lazy { viewCaptureSpy }
 
     private val mViewCaptor = argumentCaptor<View>()
     private val mTouchHandlersCaptor = argumentCaptor<Set<TouchHandler>>()
@@ -156,7 +154,6 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
     private val gestureInteractor = spy(kosmos.gestureInteractor)
 
     private lateinit var mCommunalInteractor: CommunalInteractor
-    private lateinit var mViewCaptureAwareWindowManager: ViewCaptureAwareWindowManager
     private lateinit var environmentComponents: EnvironmentComponents
 
     private lateinit var mService: DreamOverlayService
@@ -244,18 +241,12 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                 mComplicationComponentFactory,
                 mAmbientTouchComponentFactory,
             )
-        mViewCaptureAwareWindowManager =
-            ViewCaptureAwareWindowManager(
-                mWindowManager,
-                mLazyViewCapture,
-                isViewCaptureEnabled = false,
-            )
         mService =
             DreamOverlayService(
                 mContext,
                 mLifecycleOwner,
                 mMainExecutor,
-                mViewCaptureAwareWindowManager,
+                mWindowManager,
                 mComplicationComponentFactory,
                 mDreamComplicationComponentFactory,
                 mDreamOverlayComponentFactory,

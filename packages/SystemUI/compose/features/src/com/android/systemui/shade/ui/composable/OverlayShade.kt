@@ -55,6 +55,7 @@ import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.mechanics.behavior.verticalExpandContainerBackground
+import com.android.systemui.Flags
 import com.android.systemui.res.R
 import com.android.systemui.shade.ui.composable.OverlayShade.rememberShadeExpansionMotion
 
@@ -189,9 +190,17 @@ object OverlayShade {
     }
 
     object Colors {
-        val ScrimBackground = Color(0f, 0f, 0f, alpha = 0.2f)
+        val ScrimBackground = Color(0f, 0f, 0f, alpha = 0.3f)
         val PanelBackground: Color
-            @Composable @ReadOnlyComposable get() = MaterialTheme.colorScheme.surfaceContainer
+            @Composable
+            @ReadOnlyComposable
+            get() {
+                return if (Flags.notificationShadeBlur()) {
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainer
+                }
+            }
     }
 
     object Dimensions {

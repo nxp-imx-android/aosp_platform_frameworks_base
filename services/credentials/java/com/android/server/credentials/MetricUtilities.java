@@ -383,7 +383,9 @@ public class MetricUtilities {
                     /* api_name */
                     initialPhaseMetric.getApiName(),
                     /* primary_candidates_indicated */
-                    candidatePrimaryProviderList
+                    candidatePrimaryProviderList,
+                    /* api_prepared */
+                    initialPhaseMetric.hasApiUsedPrepareFlow()
             );
         } catch (Exception e) {
             Slog.w(TAG, "Unexpected error during candidate provider uid metric emit: " + e);
@@ -442,7 +444,9 @@ public class MetricUtilities {
                     /* autofill_session_id */
                     initialPhaseMetric.getAutofillSessionId(),
                     /* autofill_request_id */
-                    initialPhaseMetric.getAutofillRequestId()
+                    initialPhaseMetric.getAutofillRequestId(),
+                    /* api_prepared */
+                    initialPhaseMetric.hasApiUsedPrepareFlow()
             );
         } catch (Exception e) {
             Slog.w(TAG, "Unexpected error during initial metric emit: " + e);

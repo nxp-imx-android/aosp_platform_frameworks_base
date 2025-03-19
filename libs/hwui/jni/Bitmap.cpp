@@ -28,7 +28,9 @@
 #include "SkRefCnt.h"
 #include "SkStream.h"
 #include "SkTypes.h"
+#ifdef __linux__  // Only Linux support parcel
 #include "android/binder_parcel.h"
+#endif
 #include "android_nio_utils.h"
 
 #ifdef __ANDROID__
@@ -851,6 +853,7 @@ static jobject Bitmap_createFromParcel(JNIEnv* env, jobject, jobject parcel) {
 #endif
 }
 
+#ifdef __linux__  // Only Linux support parcel
 // Returns whether this bitmap should be written to the parcel as mutable.
 static bool shouldParcelAsMutable(SkBitmap& bitmap, AParcel* parcel) {
     // If the bitmap is immutable, then parcel as immutable.
@@ -867,6 +870,7 @@ static bool shouldParcelAsMutable(SkBitmap& bitmap, AParcel* parcel) {
     // writing it to the parcel.
     return !shouldUseAshmem(parcel, bitmap.computeByteSize());
 }
+#endif
 
 static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, jint density,
                                      jobject parcel) {

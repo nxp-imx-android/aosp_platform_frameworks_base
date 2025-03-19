@@ -29,13 +29,13 @@ import java.util.function.LongSupplier;
 /**
  * Logs potential race conditions that lead to incorrect auto-rotate setting.
  *
- * Before go/auto-rotate-refactor, there is a race condition that happen during device state
+ * <p>Before go/auto-rotate-refactor, there is a race condition that happen during device state
  * changes, as a result, incorrect auto-rotate setting are written for a device state in
  * DEVICE_STATE_ROTATION_LOCK. Realistically, users shouldn’t be able to change
  * DEVICE_STATE_ROTATION_LOCK while the device folds/unfolds.
  *
- * This class monitors the time between a device state change and a subsequent change to the device
- * state based auto-rotate setting.  If the duration is less than a threshold
+ * <p>This class monitors the time between a device state change and a subsequent change to the
+ * device state based auto-rotate setting.  If the duration is less than a threshold
  * (DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_THRESHOLD), a potential issue is logged. The logging of
  * the atom is not expected to occur often, realistically estimated once a month on few devices.
  * But the number could be bigger, as that's what this metric is set to reveal.
@@ -72,23 +72,33 @@ public class DeviceStateAutoRotateSettingIssueLogger {
     }
 
     private void onStateChange() {
-        // Only move forward if both of the events have occurred already
-        if (mLastDeviceStateChangeTime != TIME_NOT_SET
-                && mLastDeviceStateAutoRotateSettingChangeTime != TIME_NOT_SET) {
-            final long duration =
-                    mLastDeviceStateAutoRotateSettingChangeTime - mLastDeviceStateChangeTime;
-            boolean isDeviceStateChangeFirst = duration > 0;
+        // Only move forward if both of the events have occurred already.
+        if (mLastDeviceStateChangeTime == TIME_NOT_SET
+                || mLastDeviceStateAutoRotateSettingChangeTime == TIME_NOT_SET) {
+            return;
+        }
+        final long duration =
+                mLastDeviceStateAutoRotateSettingChangeTime - mLastDeviceStateChangeTime;
+        boolean isDeviceStateChangeFirst = duration > 0;
 
-            if (abs(duration)
-                    < DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_THRESHOLD_MILLIS) {
-                FrameworkStatsLog.write(
-                        FrameworkStatsLog.DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_REPORTED,
-                        (int) abs(duration),
-                        isDeviceStateChangeFirst);
-            }
+        if (abs(duration)
+                < DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_THRESHOLD_MILLIS) {
+            FrameworkStatsLog.write(
+                    FrameworkStatsLog.DEVICE_STATE_AUTO_ROTATE_SETTING_ISSUE_REPORTED,
+                    (int) abs(duration),
+                    isDeviceStateChangeFirst);
 
+            // This pair is logged, reset both timestamps.
             mLastDeviceStateAutoRotateSettingChangeTime = TIME_NOT_SET;
             mLastDeviceStateChangeTime = TIME_NOT_SET;
+        } else {
+            // This pair was not logged, reset the earlier timestamp.
+            if (isDeviceStateChangeFirst) {
+                mLastDeviceStateChangeTime = TIME_NOT_SET;
+            } else {
+                mLastDeviceStateAutoRotateSettingChangeTime = TIME_NOT_SET;
+            }
         }
+
     }
 }

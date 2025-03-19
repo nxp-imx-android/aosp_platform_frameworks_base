@@ -93,6 +93,7 @@ import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
 import com.android.wm.shell.desktopmode.CaptionState;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
+import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
 import com.android.wm.shell.desktopmode.DesktopModeUtils;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionHandleRepository;
@@ -163,6 +164,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private Function0<Unit> mOnNewWindowClickListener;
     private Function0<Unit> mOnManageWindowsClickListener;
     private Function0<Unit> mOnChangeAspectRatioClickListener;
+    private Function0<Unit> mOnRestartClickListener;
     private Function0<Unit> mOnMaximizeHoverListener;
     private DragPositioningCallback mDragPositioningCallback;
     private DragResizeInputListener mDragResizeListener;
@@ -210,6 +212,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final MultiInstanceHelper mMultiInstanceHelper;
     private final WindowDecorCaptionHandleRepository mWindowDecorCaptionHandleRepository;
     private final DesktopUserRepositories mDesktopUserRepositories;
+    private final DesktopModeUiEventLogger mDesktopModeUiEventLogger;
     private boolean mIsRecentsTransitionRunning = false;
     private boolean mIsDragging = false;
     private Runnable mLoadAppInfoRunnable;
@@ -242,6 +245,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             MultiInstanceHelper multiInstanceHelper,
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             DesktopModeEventLogger desktopModeEventLogger,
+            DesktopModeUiEventLogger desktopModeUiEventLogger,
             DesktopModeCompatPolicy desktopModeCompatPolicy) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
@@ -256,7 +260,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 DefaultMaximizeMenuFactory.INSTANCE,
                 DefaultHandleMenuFactory.INSTANCE, multiInstanceHelper,
                 windowDecorCaptionHandleRepository, desktopModeEventLogger,
-                desktopModeCompatPolicy);
+                desktopModeUiEventLogger, desktopModeCompatPolicy);
     }
 
     DesktopModeWindowDecoration(
@@ -293,6 +297,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             MultiInstanceHelper multiInstanceHelper,
             WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
             DesktopModeEventLogger desktopModeEventLogger,
+            DesktopModeUiEventLogger desktopModeUiEventLogger,
             DesktopModeCompatPolicy desktopModeCompatPolicy) {
         super(context, userContext, displayController, taskOrganizer, taskInfo,
                 taskSurface, surfaceControlBuilderSupplier, surfaceControlTransactionSupplier,
@@ -320,6 +325,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mTaskResourceLoader = taskResourceLoader;
         mTaskResourceLoader.onWindowDecorCreated(taskInfo);
         mDesktopModeCompatPolicy = desktopModeCompatPolicy;
+        mDesktopModeUiEventLogger = desktopModeUiEventLogger;
     }
 
     /**
@@ -406,6 +412,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /** Registers a listener to be called when the aspect ratio action is triggered. */
     void setOnChangeAspectRatioClickListener(Function0<Unit> listener) {
         mOnChangeAspectRatioClickListener = listener;
+    }
+
+    /** Registers a listener to be called when the aspect ratio action is triggered. */
+    void setOnRestartClickListener(Function0<Unit> listener) {
+        mOnRestartClickListener = listener;
     }
 
     /** Registers a listener to be called when the maximize header button is hovered. */
@@ -889,10 +900,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mOnCaptionTouchListener,
                     mOnCaptionButtonClickListener,
                     mWindowManagerWrapper,
-                    mHandler
+                    mHandler,
+                    mDesktopModeUiEventLogger
             );
-        } else if (mRelayoutParams.mLayoutResId
-                == R.layout.desktop_mode_app_header) {
+        } else if (mRelayoutParams.mLayoutResId == R.layout.desktop_mode_app_header) {
             return mAppHeaderViewHolderFactory.create(
                     mResult.mRootView,
                     mOnCaptionTouchListener,
@@ -902,7 +913,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     mOnLeftSnapClickListener,
                     mOnRightSnapClickListener,
                     mOnMaximizeOrRestoreClickListener,
-                    mOnMaximizeHoverListener);
+                    mOnMaximizeHoverListener,
+                    mDesktopModeUiEventLogger);
         }
         throw new IllegalArgumentException("Unexpected layout resource id");
     }
@@ -1366,7 +1378,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMaximizeMenu = mMaximizeMenuFactory.create(mSyncQueue, mRootTaskDisplayAreaOrganizer,
                 mDisplayController, mTaskInfo, mContext,
                 (width, height) -> calculateMaximizeMenuPosition(width, height),
-                mSurfaceControlTransactionSupplier);
+                mSurfaceControlTransactionSupplier, mDesktopModeUiEventLogger);
 
         mMaximizeMenu.show(
                 /* isTaskInImmersiveMode= */
@@ -1461,6 +1473,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 && mMinimumInstancesFound;
         final boolean shouldShowChangeAspectRatioButton = HandleMenu.Companion
                 .shouldShowChangeAspectRatioButton(mTaskInfo);
+        final boolean shouldShowRestartButton = HandleMenu.Companion
+                .shouldShowRestartButton(mTaskInfo);
         final boolean inDesktopImmersive = mDesktopUserRepositories.getProfile(mTaskInfo.userId)
                 .isTaskInFullImmersiveState(mTaskInfo.taskId);
         final boolean isBrowserApp = isBrowserApp();
@@ -1477,8 +1491,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 shouldShowManageWindowsButton,
                 shouldShowChangeAspectRatioButton,
                 isDesktopModeSupportedOnDisplay(mContext, mDisplay),
+                shouldShowRestartButton,
                 isBrowserApp,
                 isBrowserApp ? getAppLink() : getBrowserLink(),
+                mDesktopModeUiEventLogger,
                 mResult.mCaptionWidth,
                 mResult.mCaptionHeight,
                 mResult.mCaptionX,
@@ -1513,6 +1529,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     }
                     return Unit.INSTANCE;
                 },
+                /* onRestartClickListener= */ mOnRestartClickListener,
                 /* onCloseMenuClickListener= */ () -> {
                     closeHandleMenu();
                     return Unit.INSTANCE;
@@ -1963,6 +1980,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 MultiInstanceHelper multiInstanceHelper,
                 WindowDecorCaptionHandleRepository windowDecorCaptionHandleRepository,
                 DesktopModeEventLogger desktopModeEventLogger,
+                DesktopModeUiEventLogger desktopModeUiEventLogger,
                 DesktopModeCompatPolicy desktopModeCompatPolicy) {
             return new DesktopModeWindowDecoration(
                     context,
@@ -1990,6 +2008,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                     multiInstanceHelper,
                     windowDecorCaptionHandleRepository,
                     desktopModeEventLogger,
+                    desktopModeUiEventLogger,
                     desktopModeCompatPolicy);
         }
     }

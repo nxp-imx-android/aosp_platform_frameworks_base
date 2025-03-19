@@ -14,23 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.app.viewcapture
+package com.android.systemui.volume.dialog.domain.interactor
 
-import android.view.fakeWindowManager
 import com.android.systemui.kosmos.Kosmos
-import org.mockito.kotlin.mock
+import com.android.systemui.volume.dialog.shared.model.CsdWarningConfigModel
 
-val Kosmos.mockViewCaptureAwareWindowManager by
-    Kosmos.Fixture { mock<ViewCaptureAwareWindowManager>() }
+val Kosmos.volumeDialogCsdWarningInteractor: VolumeDialogCsdWarningInteractor by
+    Kosmos.Fixture { VolumeDialogCsdWarningInteractor(volumeDialogStateInteractor) }
 
-val Kosmos.realCaptureAwareWindowManager by
-    Kosmos.Fixture {
-        ViewCaptureAwareWindowManager(
-            fakeWindowManager,
-            lazyViewCapture = lazy { mock<ViewCapture>() },
-            isViewCaptureEnabled = false,
-        )
-    }
-
-var Kosmos.viewCaptureAwareWindowManager: ViewCaptureAwareWindowManager by
-    Kosmos.Fixture { mockViewCaptureAwareWindowManager }
+val Kosmos.csdWarningConfigModel: CsdWarningConfigModel by
+    Kosmos.Fixture { CsdWarningConfigModel(emptyList()) }

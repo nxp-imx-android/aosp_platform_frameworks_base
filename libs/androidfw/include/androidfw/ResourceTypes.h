@@ -1416,7 +1416,10 @@ struct ResTable_config
     // match the requested configuration at all.
     bool isLocaleBetterThan(const ResTable_config& o, const ResTable_config* requested) const;
 
-    bool isBetterThanBeforeLocale(const ResTable_config& o, const ResTable_config* requested) const;
+    // The first part of isBetterThan() that only compares the fields that are higher priority than
+    // the locale. Use it when you need to do custom locale matching to filter out the configs prior
+    // to that.
+    bool isBetterThanBeforeLocale(const ResTable_config& o, const ResTable_config& requested) const;
 
     String8 toString() const;
 

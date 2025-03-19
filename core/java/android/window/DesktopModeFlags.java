@@ -48,6 +48,8 @@ public enum DesktopModeFlags {
     DISABLE_NON_RESIZABLE_APP_SNAP_RESIZE(Flags::disableNonResizableAppSnapResizing, true),
     ENABLE_ACCESSIBLE_CUSTOM_HEADERS(Flags::enableAccessibleCustomHeaders, true),
     ENABLE_APP_HEADER_WITH_TASK_DENSITY(Flags::enableAppHeaderWithTaskDensity, true),
+    ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION(
+            Flags::enableCameraCompatForDesktopWindowing, true),
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION(Flags::enableCaptionCompatInsetForceConsumption,
             true),
     ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION_ALWAYS(
@@ -83,7 +85,7 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX(
             Flags::enableDesktopWindowingEnterTransitionBugfix, true),
     ENABLE_DESKTOP_WINDOWING_EXIT_BY_MINIMIZE_TRANSITION_BUGFIX(
-            Flags::enableDesktopWindowingExitByMinimizeTransitionBugfix, false),
+            Flags::enableDesktopWindowingExitByMinimizeTransitionBugfix, true),
     ENABLE_DESKTOP_WINDOWING_EXIT_TRANSITIONS_BUGFIX(
             Flags::enableDesktopWindowingExitTransitionsBugfix, true),
     ENABLE_DESKTOP_WINDOWING_HSUM(Flags::enableDesktopWindowingHsum, true),
@@ -103,7 +105,7 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_WINDOWING_TASK_LIMIT(Flags::enableDesktopWindowingTaskLimit, true),
     ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY(Flags::enableDesktopWindowingWallpaperActivity,
             true),
-    ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD(Flags::enableDragResizeSetUpInBgThread, false),
+    ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD(Flags::enableDragResizeSetUpInBgThread, true),
     ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX(
             Flags::enableDragToDesktopIncomingTransitionsBugfix, false),
     ENABLE_FULLY_IMMERSIVE_IN_DESKTOP(Flags::enableFullyImmersiveInDesktop, true),

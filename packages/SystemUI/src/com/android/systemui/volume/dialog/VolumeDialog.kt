@@ -18,6 +18,7 @@ package com.android.systemui.volume.dialog
 
 import android.content.Context
 import android.os.Bundle
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
@@ -57,8 +58,10 @@ constructor(
                 attributes.apply {
                     title = "VolumeDialog" // Not the same as Window#setTitle
                 }
-            setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT)
+            setGravity(Gravity.END)
         }
+        setCancelable(false)
         setCanceledOnTouchOutside(true)
     }
 

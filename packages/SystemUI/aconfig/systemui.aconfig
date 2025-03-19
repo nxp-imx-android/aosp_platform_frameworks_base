@@ -289,6 +289,15 @@ flag {
   }
 }
 
+flag {
+    name: "notification_skip_silent_updates"
+    namespace: "systemui"
+    description: "Do not notify HeadsUpManager for silent updates."
+    bug: "401068530"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
 
 flag {
     name: "scene_container"
@@ -530,6 +539,14 @@ flag {
   description: "Read only flag for using a new font in the status bar"
   bug: "393609116"
   is_fixed_read_only: true
+}
+
+flag {
+    name: "icon_refresh_2025"
+    namespace: "systemui"
+    description: "Build time flag for 2025 icon refresh"
+    bug: "391605373"
+    is_fixed_read_only: true
 }
 
 flag {
@@ -1856,10 +1873,11 @@ flag {
 }
 
 flag {
-  name: "shade_header_fonts"
+  name: "shade_header_font_update"
   namespace: "systemui"
   description: "Updates the fonts of the shade header"
-  bug: "393609724"
+  bug: "393609960"
+  is_fixed_read_only: true
 }
 
 flag {
@@ -2153,4 +2171,18 @@ flag {
    metadata {
         purpose: PURPOSE_BUGFIX
    }
+}
+
+flag {
+    name: "extended_apps_shortcut_category"
+    namespace: "systemui"
+    description: "Allow users to add shortcuts to open apps that are not present in the apps category in shortcut helper by default"
+    bug: "394290928"
+}
+
+flag {
+    name: "use_aad_prox_sensor"
+    namespace: "systemui"
+    description: "Use AAD proximity sensor if flag is enabled and sensor is present"
+    bug: "402534470"
 }

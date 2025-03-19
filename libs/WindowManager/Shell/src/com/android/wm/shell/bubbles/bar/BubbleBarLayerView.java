@@ -349,6 +349,7 @@ public class BubbleBarLayerView extends FrameLayout
                 }
             };
             mDragController = new BubbleBarExpandedViewDragController(
+                    mContext,
                     mExpandedView,
                     mDismissView,
                     mAnimationHelper,

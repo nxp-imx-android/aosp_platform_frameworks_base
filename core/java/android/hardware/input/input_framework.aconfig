@@ -213,3 +213,12 @@ flag {
    is_fixed_read_only: true
 }
 
+flag {
+    name: "fix_search_modifier_fallbacks"
+    namespace: "input"
+    description: "Fixes a bug in which fallbacks from Search based key combinations were not activating."
+    bug: "384113980"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

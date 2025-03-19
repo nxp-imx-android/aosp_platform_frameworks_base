@@ -1978,6 +1978,11 @@ NativeInputManager::interceptKeyBeforeDispatching(const sp<IBinder>& token,
         return inputdispatcher::KeyEntry::InterceptKeyResult::SKIP;
     }
 
+    // -2 : Skip sending even to application and go directly to post processing e.g. fallbacks.
+    if (delayMillis == -2) {
+        return inputdispatcher::KeyEntry::InterceptKeyResult::FALLBACK;
+    }
+
     return milliseconds_to_nanoseconds(delayMillis);
 }
 

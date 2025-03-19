@@ -225,6 +225,22 @@ public class RequestSessionMetric {
     }
 
     /**
+     * Collects initializations for Get flow metrics.
+     *
+     * @param request the get credential request containing information to parse for metrics
+     * @param isApiPrepared indicates this API flow utilized the 'prepare' flow
+     */
+    public void collectGetFlowInitialMetricInfo(GetCredentialRequest request,
+            boolean isApiPrepared) {
+        try {
+            collectGetFlowInitialMetricInfo(request);
+            mInitialPhaseMetric.setApiUsedPrepareFlow(isApiPrepared);
+        } catch (Exception e) {
+            Slog.i(TAG, "Unexpected error collecting get flow initial metric: " + e);
+        }
+    }
+
+    /**
      * During browsing, where multiple entries can be selected, this collects the browsing phase
      * metric information. This is emitted together with the final phase, and the recursive path
      * with authentication entries, which may occur in rare circumstances, are captured.

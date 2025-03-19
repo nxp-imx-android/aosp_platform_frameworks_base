@@ -1219,6 +1219,8 @@
             6 - Lock if keyguard enabled or go to sleep (doze)
             7 - Dream if possible or go to sleep (doze)
             8 - Go to glanceable hub or dream if possible, or sleep if neither is available (doze)
+            9 - Go to dream if device is not dreaming, stop dream if device is dreaming, or sleep if
+                neither is available (doze)
     -->
     <integer name="config_shortPressOnPowerBehavior">1</integer>
 
@@ -3206,6 +3208,10 @@
          devices, the main user is the system user which is always a permanent admin anyway.
          Note that HSUM devices without this enabled will not automatically have a main user. -->
     <bool name="config_isMainUserPermanentAdmin">true</bool>
+
+    <!-- Whether all secondary users (and the system user) are eligible to have profiles.
+         If false, only the MainUser is eligible to have profiles. -->
+    <bool name="config_supportProfilesOnNonMainUser">false</bool>
 
     <!-- Whether switch to headless system user is allowed. If allowed,
     headless system user can run in the foreground even though it is not a full user. -->

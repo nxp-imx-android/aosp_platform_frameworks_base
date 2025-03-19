@@ -66,6 +66,7 @@ import com.android.internal.protolog.IProtoLogConfigurationService.RegisterClien
 import com.android.internal.protolog.common.ILogger;
 import com.android.internal.protolog.common.IProtoLog;
 import com.android.internal.protolog.common.IProtoLogGroup;
+import com.android.internal.protolog.common.InvalidFormatStringException;
 import com.android.internal.protolog.common.LogDataType;
 import com.android.internal.protolog.common.LogLevel;
 
@@ -207,7 +208,12 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
     @Override
     public void log(LogLevel logLevel, IProtoLogGroup group, String messageString, Object... args) {
-        log(logLevel, group, new Message(messageString), args);
+        try {
+            log(logLevel, group, new Message(messageString), args);
+        } catch (InvalidFormatStringException e) {
+            Slog.e(LOG_TAG, "Invalid protolog string format", e);
+            log(logLevel, group, new Message("INVALID MESSAGE"), new Object[0]);
+        }
     }
 
     /**
@@ -831,7 +837,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             this.mMessageString = null;
         }
 
-        private Message(@NonNull String messageString) {
+        private Message(@NonNull String messageString) throws InvalidFormatStringException {
             this.mMessageHash = null;
             final List<Integer> argTypes = LogDataType.parseFormatString(messageString);
             this.mMessageMask = LogDataType.logDataTypesToBitMask(argTypes);

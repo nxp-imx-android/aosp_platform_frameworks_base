@@ -67,6 +67,7 @@ public class FooterView extends StackScrollerDecorView {
     private FooterViewButton mSettingsButton;
     private FooterViewButton mHistoryButton;
     private boolean mShouldBeHidden;
+    private boolean mIsBlurSupported;
 
     // Footer label
     private TextView mSeenNotifsFooterTextView;
@@ -390,15 +391,20 @@ public class FooterView extends StackScrollerDecorView {
 
         if (!notificationFooterBackgroundTintOptimization()) {
             if (notificationShadeBlur()) {
-                Color backgroundColor = Color.valueOf(
-                        SurfaceEffectColors.surfaceEffect1(getContext()));
-                scHigh = ColorUtils.setAlphaComponent(backgroundColor.toArgb(), 0xFF);
-                // Apply alpha on background drawables.
-                int backgroundAlpha = (int) (backgroundColor.alpha() * 0xFF);
-                clearAllBg.setAlpha(backgroundAlpha);
-                settingsBg.setAlpha(backgroundAlpha);
-                if (historyBg != null) {
-                    historyBg.setAlpha(backgroundAlpha);
+                if (mIsBlurSupported) {
+                    Color backgroundColor = Color.valueOf(
+                            SurfaceEffectColors.surfaceEffect1(getContext()));
+                    scHigh = ColorUtils.setAlphaComponent(backgroundColor.toArgb(), 0xFF);
+                    // Apply alpha on background drawables.
+                    int backgroundAlpha = (int) (backgroundColor.alpha() * 0xFF);
+                    clearAllBg.setAlpha(backgroundAlpha);
+                    settingsBg.setAlpha(backgroundAlpha);
+                    if (historyBg != null) {
+                        historyBg.setAlpha(backgroundAlpha);
+                    }
+                } else {
+                    scHigh = mContext.getColor(
+                            com.android.internal.R.color.materialColorSurfaceContainer);
                 }
             } else {
                 scHigh = mContext.getColor(
@@ -435,6 +441,16 @@ public class FooterView extends StackScrollerDecorView {
                     "textColor(onSurface)=" + hexColorString(onSurface)
                             + " backgroundTint(surfaceContainerHigh)=" + hexColorString(scHigh)
                             + " background=" + DrawableDumpKt.dumpToString(settingsBg));
+        }
+    }
+
+    public void setIsBlurSupported(boolean isBlurSupported) {
+        if (notificationShadeBlur()) {
+            if (mIsBlurSupported == isBlurSupported) {
+                return;
+            }
+            mIsBlurSupported = isBlurSupported;
+            updateColors();
         }
     }
 

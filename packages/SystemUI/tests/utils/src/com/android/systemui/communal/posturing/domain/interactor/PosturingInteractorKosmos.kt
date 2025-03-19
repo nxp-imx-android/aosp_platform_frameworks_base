@@ -18,6 +18,27 @@ package com.android.systemui.communal.posturing.domain.interactor
 
 import com.android.systemui.communal.posturing.data.repository.posturingRepository
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.runCurrent
+import com.android.systemui.kosmos.testDispatcher
+import com.android.systemui.log.logcatLogBuffer
+import com.android.systemui.util.sensors.asyncSensorManager
+import com.android.systemui.util.time.systemClock
 
 val Kosmos.posturingInteractor by
-    Kosmos.Fixture<PosturingInteractor> { PosturingInteractor(repository = posturingRepository) }
+    Kosmos.Fixture<PosturingInteractor> {
+        PosturingInteractor(
+            repository = posturingRepository,
+            asyncSensorManager = asyncSensorManager,
+            applicationScope = applicationCoroutineScope,
+            bgDispatcher = testDispatcher,
+            logBuffer = logcatLogBuffer("PosturingInteractor"),
+            clock = systemClock,
+        )
+    }
+
+fun Kosmos.advanceTimeBySlidingWindowAndRun() {
+    advanceTimeBy(PosturingInteractor.SLIDING_WINDOW_DURATION)
+    runCurrent()
+}
