@@ -74,7 +74,7 @@ constructor(
     private val singleShadeOverScrollerFactory: SingleShadeLockScreenOverScroller.Factory,
     private val activityStarter: ActivityStarter,
     wakefulnessLifecycle: WakefulnessLifecycle,
-    configurationController: ConfigurationController,
+    @ShadeDisplayAware configurationController: ConfigurationController,
     falsingManager: FalsingManager,
     dumpManager: DumpManager,
     qsTransitionControllerFactory: LockscreenShadeQsTransitionController.Factory,
