@@ -308,7 +308,7 @@ public final class AdvancedProtectionManager {
     }
 
     /**
-     * Enables or disables advanced protection on the device.
+     * Enables or disables advanced protection on the device. Can only be called by an admin user.
      *
      * @param enabled {@code true} to enable advanced protection, {@code false} to disable it.
      * @hide
