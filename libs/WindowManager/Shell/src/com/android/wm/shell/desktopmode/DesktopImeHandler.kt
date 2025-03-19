@@ -24,6 +24,7 @@ import android.graphics.Rect
 import android.os.IBinder
 import android.view.SurfaceControl.Transaction
 import android.view.WindowManager.TRANSIT_CHANGE
+import android.view.animation.PathInterpolator
 import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
@@ -35,7 +36,6 @@ import com.android.wm.shell.common.DisplayImeController
 import com.android.wm.shell.common.DisplayImeController.ImePositionProcessor.IME_ANIMATION_DEFAULT
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
-import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.shared.animation.WindowAnimator
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
@@ -66,8 +66,13 @@ class DesktopImeHandler(
         }
     }
 
-    var topTask: ActivityManager.RunningTaskInfo? = null
-    var previousBounds: Rect? = null
+    private val taskToImeTarget = mutableMapOf<Int, ImeTarget>()
+
+    data class ImeTarget(
+        var topTask: ActivityManager.RunningTaskInfo,
+        var previousBounds: Rect? = null,
+        var newBounds: Rect? = null,
+    )
 
     override fun onImeStartPositioning(
         displayId: Int,
@@ -84,27 +89,22 @@ class DesktopImeHandler(
         if (showing) {
             // Only get the top task when the IME will be showing. Otherwise just restore
             // previously manipulated task.
-            val currentTopTask =
-                if (Flags.enableDisplayFocusInShellTransitions()) {
-                    shellTaskOrganizer.getRunningTaskInfo(
-                        focusTransitionObserver.globallyFocusedTaskId
-                    )
-                } else {
-                    shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo ->
-                        taskInfo.isFocused
-                    }
-                } ?: return IME_ANIMATION_DEFAULT
+            val currentTopTask = getFocusedTask(displayId) ?: return IME_ANIMATION_DEFAULT
             if (!userRepositories.current.isActiveTask(currentTopTask.taskId))
                 return IME_ANIMATION_DEFAULT
 
-            topTask = currentTopTask
             val taskBounds =
                 currentTopTask.configuration.windowConfiguration?.bounds
                     ?: return IME_ANIMATION_DEFAULT
-            val token = currentTopTask.token
+
+            // We have already moved this task, do not move it multiple times during the same IME
+            // session.
+            if (taskToImeTarget[currentTopTask.taskId] != null) return IME_ANIMATION_DEFAULT
+
+            val imeTarget = ImeTarget(currentTopTask, Rect(taskBounds))
+            taskToImeTarget[currentTopTask.taskId] = imeTarget
 
             // Save the previous bounds to restore after IME disappears
-            previousBounds = Rect(taskBounds)
             val taskHeight = taskBounds.height()
             val stableBounds = Rect()
             val displayLayout =
@@ -129,21 +129,38 @@ class DesktopImeHandler(
 
             val finalBounds = Rect(taskBounds.left, finalTop, taskBounds.right, finalBottom)
 
-            logD("Moving task %d due to IME", currentTopTask.taskId)
-            val wct = WindowContainerTransaction().setBounds(token, finalBounds)
+            logD("Moving task %d due to IME", imeTarget.topTask.taskId)
+            val wct = WindowContainerTransaction().setBounds(imeTarget.topTask.token, finalBounds)
             transitions.startTransition(TRANSIT_CHANGE, wct, this)
+            taskToImeTarget[currentTopTask.taskId]?.newBounds = finalBounds
         } else {
+            val wct = WindowContainerTransaction()
+            taskToImeTarget.forEach { taskId, imeTarget ->
+                val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: return@forEach
+                // If the current bounds are not equal to the newBounds we have saved, the task
+                // must have moved by other means.
+                if (task.configuration.windowConfiguration.bounds == imeTarget.newBounds) {
+                    val finalBounds = imeTarget.previousBounds ?: return@forEach
 
-            // Restore the previous bounds if they exist
-            val finalBounds = previousBounds ?: return IME_ANIMATION_DEFAULT
-            val previousTask = topTask ?: return IME_ANIMATION_DEFAULT
-
-            logD("Restoring bounds of task %d due to IME", previousTask.taskId)
-            val wct = WindowContainerTransaction().setBounds(previousTask.token, finalBounds)
-            transitions.startTransition(TRANSIT_CHANGE, wct, this)
+                    // Restore the previous bounds if they exist
+                    wct.setBounds(imeTarget.topTask.token, finalBounds)
+                }
+            }
+            if (!wct.isEmpty) {
+                transitions.startTransition(TRANSIT_CHANGE, wct, this)
+            }
+            // Ime has disappeared let's remove all the targets.
+            taskToImeTarget.clear()
         }
         return IME_ANIMATION_DEFAULT
     }
+
+    private fun getFocusedTask(displayId: Int): ActivityManager.RunningTaskInfo? =
+        if (Flags.enableDisplayFocusInShellTransitions()) {
+            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
+        } else {
+            shellTaskOrganizer.getRunningTasks(displayId).find { taskInfo -> taskInfo.isFocused }
+        }
 
     override fun startAnimation(
         transition: IBinder,
@@ -228,12 +245,15 @@ class DesktopImeHandler(
 
     private companion object {
         private const val TAG = "DesktopImeHandler"
+        // NOTE: All these constants came from InsetsController.
+        private const val ANIMATION_DURATION_SHOW_MS = 275L
+        private const val ANIMATION_DURATION_HIDE_MS = 340L
+        private val INTERPOLATOR = PathInterpolator(0.4f, 0f, 0.2f, 1f)
 
         private val boundsChangeAnimatorDef =
             WindowAnimator.BoundsAnimationParams(
-                durationMs = RESIZE_DURATION_MS,
-                interpolator = Interpolators.STANDARD_ACCELERATE,
+                durationMs = ANIMATION_DURATION_SHOW_MS,
+                interpolator = INTERPOLATOR,
             )
-        private const val RESIZE_DURATION_MS = 300L
     }
 }
