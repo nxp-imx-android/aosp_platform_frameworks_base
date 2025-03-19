@@ -7417,6 +7417,10 @@ public class NotificationManagerService extends SystemService {
                         adjustments);
                 if (newChannel == null || newChannel.getId().equals(r.getChannel().getId())) {
                     adjustments.remove(KEY_TYPE);
+                } else if (android.app.Flags.apiRichOngoing() && hasFlag(r.getNotification().flags,
+                        FLAG_PROMOTED_ONGOING)) {
+                    // Don't bundle any promoted ongoing notifications
+                    adjustments.remove(KEY_TYPE);
                 } else {
                     // Save the app-provided type for logging.
                     int classification = adjustments.getInt(KEY_TYPE);
