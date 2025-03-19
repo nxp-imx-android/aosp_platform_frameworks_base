@@ -230,21 +230,24 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mPictureProfileLock")
         @Override
         public void updatePictureProfile(String id, PictureProfile pp, int userId) {
-            Long dbId = mPictureProfileTempIdMap.getKey(id);
-            if (!hasPermissionToUpdatePictureProfile(dbId, pp)) {
-                mMqManagerNotifier.notifyOnPictureProfileError(id,
-                        PictureProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
-            synchronized (mPictureProfileLock) {
-                ContentValues values = MediaQualityUtils.getContentValues(dbId,
-                        pp.getProfileType(),
-                        pp.getName(),
-                        pp.getPackageName(),
-                        pp.getInputId(),
-                        pp.getParameters());
-                updateDatabaseOnPictureProfileAndNotifyManagerAndHal(values, pp.getParameters());
-            }
+            mHandler.post(() -> {
+                Long dbId = mPictureProfileTempIdMap.getKey(id);
+                if (!hasPermissionToUpdatePictureProfile(dbId, pp)) {
+                    mMqManagerNotifier.notifyOnPictureProfileError(id,
+                            PictureProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
+                }
+                synchronized (mPictureProfileLock) {
+                    ContentValues values = MediaQualityUtils.getContentValues(dbId,
+                            pp.getProfileType(),
+                            pp.getName(),
+                            pp.getPackageName(),
+                            pp.getInputId(),
+                            pp.getParameters());
+                    updateDatabaseOnPictureProfileAndNotifyManagerAndHal(values,
+                            pp.getParameters());
+                }
+            });
         }
 
         private boolean hasPermissionToUpdatePictureProfile(Long dbId, PictureProfile toUpdate) {
@@ -258,35 +261,37 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mPictureProfileLock")
         @Override
         public void removePictureProfile(String id, int userId) {
-            synchronized (mPictureProfileLock) {
-                Long dbId = mPictureProfileTempIdMap.getKey(id);
+            mHandler.post(() -> {
+                synchronized (mPictureProfileLock) {
+                    Long dbId = mPictureProfileTempIdMap.getKey(id);
 
-                PictureProfile toDelete = mMqDatabaseUtils.getPictureProfile(dbId);
-                if (!hasPermissionToRemovePictureProfile(toDelete)) {
-                    mMqManagerNotifier.notifyOnPictureProfileError(id,
-                            PictureProfile.ERROR_NO_PERMISSION,
-                            Binder.getCallingUid(), Binder.getCallingPid());
-                }
-
-                if (dbId != null) {
-                    SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
-                    String selection = BaseParameters.PARAMETER_ID + " = ?";
-                    String[] selectionArgs = {Long.toString(dbId)};
-                    int result = db.delete(mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
-                            selection, selectionArgs);
-                    if (result == 0) {
+                    PictureProfile toDelete = mMqDatabaseUtils.getPictureProfile(dbId);
+                    if (!hasPermissionToRemovePictureProfile(toDelete)) {
                         mMqManagerNotifier.notifyOnPictureProfileError(id,
-                                PictureProfile.ERROR_INVALID_ARGUMENT,
+                                PictureProfile.ERROR_NO_PERMISSION,
                                 Binder.getCallingUid(), Binder.getCallingPid());
-                    } else {
-                        mMqManagerNotifier.notifyOnPictureProfileRemoved(
-                                mPictureProfileTempIdMap.getValue(dbId), toDelete,
-                                Binder.getCallingUid(), Binder.getCallingPid());
-                        mPictureProfileTempIdMap.remove(dbId);
-                        mHalNotifier.notifyHalOnPictureProfileChange(dbId, null);
+                    }
+
+                    if (dbId != null) {
+                        SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
+                        String selection = BaseParameters.PARAMETER_ID + " = ?";
+                        String[] selectionArgs = {Long.toString(dbId)};
+                        int result = db.delete(mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
+                                selection, selectionArgs);
+                        if (result == 0) {
+                            mMqManagerNotifier.notifyOnPictureProfileError(id,
+                                    PictureProfile.ERROR_INVALID_ARGUMENT,
+                                    Binder.getCallingUid(), Binder.getCallingPid());
+                        } else {
+                            mMqManagerNotifier.notifyOnPictureProfileRemoved(
+                                    mPictureProfileTempIdMap.getValue(dbId), toDelete,
+                                    Binder.getCallingUid(), Binder.getCallingPid());
+                            mPictureProfileTempIdMap.remove(dbId);
+                            mHalNotifier.notifyHalOnPictureProfileChange(dbId, null);
+                        }
                     }
                 }
-            }
+            });
         }
 
         private boolean hasPermissionToRemovePictureProfile(PictureProfile toDelete) {
@@ -448,56 +453,60 @@ public class MediaQualityService extends SystemService {
 
         @GuardedBy("mSoundProfileLock")
         @Override
-        public SoundProfile createSoundProfile(SoundProfile sp, int userId) {
-            if ((sp.getPackageName() != null && !sp.getPackageName().isEmpty()
-                    && !incomingPackageEqualsCallingUidPackage(sp.getPackageName()))
-                    && !hasGlobalSoundQualityServicePermission()) {
-                mMqManagerNotifier.notifyOnSoundProfileError(null, SoundProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
+        public void createSoundProfile(SoundProfile sp, int userId) {
+            mHandler.post(() -> {
+                if ((sp.getPackageName() != null && !sp.getPackageName().isEmpty()
+                        && !incomingPackageEqualsCallingUidPackage(sp.getPackageName()))
+                        && !hasGlobalSoundQualityServicePermission()) {
+                    mMqManagerNotifier.notifyOnSoundProfileError(null, SoundProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
+                }
 
-            synchronized (mSoundProfileLock) {
-                SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
+                synchronized (mSoundProfileLock) {
+                    SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
 
-                ContentValues values = MediaQualityUtils.getContentValues(null,
-                        sp.getProfileType(),
-                        sp.getName(),
-                        sp.getPackageName() == null || sp.getPackageName().isEmpty()
-                                ? getPackageOfCallingUid() : sp.getPackageName(),
-                        sp.getInputId(),
-                        sp.getParameters());
+                    ContentValues values = MediaQualityUtils.getContentValues(null,
+                            sp.getProfileType(),
+                            sp.getName(),
+                            sp.getPackageName() == null || sp.getPackageName().isEmpty()
+                                    ? getPackageOfCallingUid() : sp.getPackageName(),
+                            sp.getInputId(),
+                            sp.getParameters());
 
-                // id is auto-generated by SQLite upon successful insertion of row
-                Long id = db.insert(mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
-                        null, values);
-                MediaQualityUtils.populateTempIdMap(mSoundProfileTempIdMap, id);
-                String value = mSoundProfileTempIdMap.getValue(id);
-                sp.setProfileId(value);
-                mMqManagerNotifier.notifyOnSoundProfileAdded(value, sp, Binder.getCallingUid(),
-                        Binder.getCallingPid());
-                return sp;
-            }
+                    // id is auto-generated by SQLite upon successful insertion of row
+                    Long id = db.insert(mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
+                            null, values);
+                    MediaQualityUtils.populateTempIdMap(mSoundProfileTempIdMap, id);
+                    String value = mSoundProfileTempIdMap.getValue(id);
+                    sp.setProfileId(value);
+                    mMqManagerNotifier.notifyOnSoundProfileAdded(value, sp, Binder.getCallingUid(),
+                            Binder.getCallingPid());
+                }
+            });
         }
 
         @GuardedBy("mSoundProfileLock")
         @Override
         public void updateSoundProfile(String id, SoundProfile sp, int userId) {
-            Long dbId = mSoundProfileTempIdMap.getKey(id);
-            if (!hasPermissionToUpdateSoundProfile(dbId, sp)) {
-                mMqManagerNotifier.notifyOnSoundProfileError(id, SoundProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
+            mHandler.post(() -> {
+                Long dbId = mSoundProfileTempIdMap.getKey(id);
+                if (!hasPermissionToUpdateSoundProfile(dbId, sp)) {
+                    mMqManagerNotifier.notifyOnSoundProfileError(id,
+                            SoundProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
+                }
 
-            synchronized (mSoundProfileLock) {
-                ContentValues values = MediaQualityUtils.getContentValues(dbId,
-                        sp.getProfileType(),
-                        sp.getName(),
-                        sp.getPackageName(),
-                        sp.getInputId(),
-                        sp.getParameters());
+                synchronized (mSoundProfileLock) {
+                    ContentValues values = MediaQualityUtils.getContentValues(dbId,
+                            sp.getProfileType(),
+                            sp.getName(),
+                            sp.getPackageName(),
+                            sp.getInputId(),
+                            sp.getParameters());
 
-                updateDatabaseOnSoundProfileAndNotifyManagerAndHal(values, sp.getParameters());
-            }
+                    updateDatabaseOnSoundProfileAndNotifyManagerAndHal(values, sp.getParameters());
+                }
+            });
         }
 
         private boolean hasPermissionToUpdateSoundProfile(Long dbId, SoundProfile sp) {
@@ -511,34 +520,36 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mSoundProfileLock")
         @Override
         public void removeSoundProfile(String id, int userId) {
-            synchronized (mSoundProfileLock) {
-                Long dbId = mSoundProfileTempIdMap.getKey(id);
-                SoundProfile toDelete = mMqDatabaseUtils.getSoundProfile(dbId);
-                if (!hasPermissionToRemoveSoundProfile(toDelete)) {
-                    mMqManagerNotifier.notifyOnSoundProfileError(id,
-                            SoundProfile.ERROR_NO_PERMISSION,
-                            Binder.getCallingUid(), Binder.getCallingPid());
-                }
-                if (dbId != null) {
-                    SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
-                    String selection = BaseParameters.PARAMETER_ID + " = ?";
-                    String[] selectionArgs = {Long.toString(dbId)};
-                    int result = db.delete(mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
-                            selection,
-                            selectionArgs);
-                    if (result == 0) {
+            mHandler.post(() -> {
+                synchronized (mSoundProfileLock) {
+                    Long dbId = mSoundProfileTempIdMap.getKey(id);
+                    SoundProfile toDelete = mMqDatabaseUtils.getSoundProfile(dbId);
+                    if (!hasPermissionToRemoveSoundProfile(toDelete)) {
                         mMqManagerNotifier.notifyOnSoundProfileError(id,
-                                SoundProfile.ERROR_INVALID_ARGUMENT,
+                                SoundProfile.ERROR_NO_PERMISSION,
                                 Binder.getCallingUid(), Binder.getCallingPid());
-                    } else {
-                        mMqManagerNotifier.notifyOnSoundProfileRemoved(
-                                mSoundProfileTempIdMap.getValue(dbId), toDelete,
-                                Binder.getCallingUid(), Binder.getCallingPid());
-                        mSoundProfileTempIdMap.remove(dbId);
-                        mHalNotifier.notifyHalOnSoundProfileChange(dbId, null);
+                    }
+                    if (dbId != null) {
+                        SQLiteDatabase db = mMediaQualityDbHelper.getWritableDatabase();
+                        String selection = BaseParameters.PARAMETER_ID + " = ?";
+                        String[] selectionArgs = {Long.toString(dbId)};
+                        int result = db.delete(mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
+                                selection,
+                                selectionArgs);
+                        if (result == 0) {
+                            mMqManagerNotifier.notifyOnSoundProfileError(id,
+                                    SoundProfile.ERROR_INVALID_ARGUMENT,
+                                    Binder.getCallingUid(), Binder.getCallingPid());
+                        } else {
+                            mMqManagerNotifier.notifyOnSoundProfileRemoved(
+                                    mSoundProfileTempIdMap.getValue(dbId), toDelete,
+                                    Binder.getCallingUid(), Binder.getCallingPid());
+                            mSoundProfileTempIdMap.remove(dbId);
+                            mHalNotifier.notifyHalOnSoundProfileChange(dbId, null);
+                        }
                     }
                 }
-            }
+            });
         }
 
         private boolean hasPermissionToRemoveSoundProfile(SoundProfile toDelete) {
@@ -849,14 +860,16 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mPictureProfileLock")
         @Override
         public void setPictureProfileAllowList(List<String> packages, int userId) {
-            if (!hasGlobalPictureQualityServicePermission()) {
-                mMqManagerNotifier.notifyOnPictureProfileError(null,
-                        PictureProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
-            SharedPreferences.Editor editor = mPictureProfileSharedPreference.edit();
-            editor.putString(ALLOWLIST, String.join(COMMA_DELIMITER, packages));
-            editor.commit();
+            mHandler.post(() -> {
+                if (!hasGlobalPictureQualityServicePermission()) {
+                    mMqManagerNotifier.notifyOnPictureProfileError(null,
+                            PictureProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
+                }
+                SharedPreferences.Editor editor = mPictureProfileSharedPreference.edit();
+                editor.putString(ALLOWLIST, String.join(COMMA_DELIMITER, packages));
+                editor.commit();
+            });
         }
 
         @GuardedBy("mSoundProfileLock")
@@ -877,13 +890,16 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mSoundProfileLock")
         @Override
         public void setSoundProfileAllowList(List<String> packages, int userId) {
-            if (!hasGlobalSoundQualityServicePermission()) {
-                mMqManagerNotifier.notifyOnSoundProfileError(null, SoundProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
-            SharedPreferences.Editor editor = mSoundProfileSharedPreference.edit();
-            editor.putString(ALLOWLIST, String.join(COMMA_DELIMITER, packages));
-            editor.commit();
+            mHandler.post(() -> {
+                if (!hasGlobalSoundQualityServicePermission()) {
+                    mMqManagerNotifier.notifyOnSoundProfileError(null,
+                            SoundProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
+                }
+                SharedPreferences.Editor editor = mSoundProfileSharedPreference.edit();
+                editor.putString(ALLOWLIST, String.join(COMMA_DELIMITER, packages));
+                editor.commit();
+            });
         }
 
         @Override
@@ -894,22 +910,24 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mPictureProfileLock")
         @Override
         public void setAutoPictureQualityEnabled(boolean enabled, int userId) {
-            if (!hasGlobalPictureQualityServicePermission()) {
-                mMqManagerNotifier.notifyOnPictureProfileError(null,
-                        PictureProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
-            synchronized (mPictureProfileLock) {
-                try {
-                    if (mMediaQuality != null) {
-                        if (mMediaQuality.isAutoPqSupported()) {
-                            mMediaQuality.setAutoPqEnabled(enabled);
-                        }
-                    }
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to set auto picture quality", e);
+            mHandler.post(() -> {
+                if (!hasGlobalPictureQualityServicePermission()) {
+                    mMqManagerNotifier.notifyOnPictureProfileError(null,
+                            PictureProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
                 }
-            }
+                synchronized (mPictureProfileLock) {
+                    try {
+                        if (mMediaQuality != null) {
+                            if (mMediaQuality.isAutoPqSupported()) {
+                                mMediaQuality.setAutoPqEnabled(enabled);
+                            }
+                        }
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Failed to set auto picture quality", e);
+                    }
+                }
+            });
         }
 
         @GuardedBy("mPictureProfileLock")
@@ -932,22 +950,24 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mPictureProfileLock")
         @Override
         public void setSuperResolutionEnabled(boolean enabled, int userId) {
-            if (!hasGlobalPictureQualityServicePermission()) {
-                mMqManagerNotifier.notifyOnPictureProfileError(null,
-                        PictureProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
-            synchronized (mPictureProfileLock) {
-                try {
-                    if (mMediaQuality != null) {
-                        if (mMediaQuality.isAutoSrSupported()) {
-                            mMediaQuality.setAutoSrEnabled(enabled);
-                        }
-                    }
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to set super resolution", e);
+            mHandler.post(() -> {
+                if (!hasGlobalPictureQualityServicePermission()) {
+                    mMqManagerNotifier.notifyOnPictureProfileError(null,
+                            PictureProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
                 }
-            }
+                synchronized (mPictureProfileLock) {
+                    try {
+                        if (mMediaQuality != null) {
+                            if (mMediaQuality.isAutoSrSupported()) {
+                                mMediaQuality.setAutoSrEnabled(enabled);
+                            }
+                        }
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Failed to set super resolution", e);
+                    }
+                }
+            });
         }
 
         @GuardedBy("mPictureProfileLock")
@@ -970,22 +990,25 @@ public class MediaQualityService extends SystemService {
         @GuardedBy("mSoundProfileLock")
         @Override
         public void setAutoSoundQualityEnabled(boolean enabled, int userId) {
-            if (!hasGlobalSoundQualityServicePermission()) {
-                mMqManagerNotifier.notifyOnSoundProfileError(null, SoundProfile.ERROR_NO_PERMISSION,
-                        Binder.getCallingUid(), Binder.getCallingPid());
-            }
-
-            synchronized (mSoundProfileLock) {
-                try {
-                    if (mMediaQuality != null) {
-                        if (mMediaQuality.isAutoAqSupported()) {
-                            mMediaQuality.setAutoAqEnabled(enabled);
-                        }
-                    }
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Failed to set auto sound quality", e);
+            mHandler.post(() -> {
+                if (!hasGlobalSoundQualityServicePermission()) {
+                    mMqManagerNotifier.notifyOnSoundProfileError(null,
+                            SoundProfile.ERROR_NO_PERMISSION,
+                            Binder.getCallingUid(), Binder.getCallingPid());
                 }
-            }
+
+                synchronized (mSoundProfileLock) {
+                    try {
+                        if (mMediaQuality != null) {
+                            if (mMediaQuality.isAutoAqSupported()) {
+                                mMediaQuality.setAutoAqEnabled(enabled);
+                            }
+                        }
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Failed to set auto sound quality", e);
+                    }
+                }
+            });
         }
 
         @GuardedBy("mSoundProfileLock")
