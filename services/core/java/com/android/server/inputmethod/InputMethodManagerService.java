@@ -3194,7 +3194,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     // TODO(b/353463205) check callers to see if we can make statsToken @NonNull
-    boolean showCurrentInputInternal(IBinder windowToken, @Nullable ImeTracker.Token statsToken) {
+    boolean showCurrentInputInternal(IBinder windowToken, @NonNull ImeTracker.Token statsToken) {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.showCurrentInputInternal");
         ImeTracing.getInstance().triggerManagerServiceDump(
                 "InputMethodManagerService#showSoftInput", mDumper);
@@ -3214,7 +3214,7 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     }
 
     // TODO(b/353463205) check callers to see if we can make statsToken @NonNull
-    boolean hideCurrentInputInternal(IBinder windowToken, @Nullable ImeTracker.Token statsToken) {
+    boolean hideCurrentInputInternal(IBinder windowToken, @NonNull ImeTracker.Token statsToken) {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMMS.hideCurrentInputInternal");
         ImeTracing.getInstance().triggerManagerServiceDump(
                 "InputMethodManagerService#hideSoftInput", mDumper);
