@@ -329,10 +329,6 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
         }
 
         @Override
-        public void scheduleSyncDueToBatteryLevelChange(long delayMillis) {
-        }
-
-        @Override
         public void scheduleSyncDueToProcessStateChange(int flags, long delayMillis) {
         }
     }

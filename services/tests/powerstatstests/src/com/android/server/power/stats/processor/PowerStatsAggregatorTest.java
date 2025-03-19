@@ -59,9 +59,8 @@ public class PowerStatsAggregatorTest {
 
     @Before
     public void setup() throws ParseException {
-        mHistory = new BatteryStatsHistory(null, 1024, null,
-                mock(BatteryStatsHistory.HistoryStepDetailsCalculator.class), mClock,
-                mMonotonicClock, mock(BatteryStatsHistory.TraceDelegate.class), null);
+        mHistory = new BatteryStatsHistory(null, 1024, null, mClock, mMonotonicClock,
+                mock(BatteryStatsHistory.TraceDelegate.class), null);
 
         AggregatedPowerStatsConfig config = new AggregatedPowerStatsConfig();
         config.trackPowerComponent(TEST_POWER_COMPONENT)

@@ -21,7 +21,6 @@ import com.android.internal.protolog.common.LogLevel
 import com.github.javaparser.StaticJavaParser
 import com.github.javaparser.ast.expr.MethodCallExpr
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertThrows
 import org.junit.Test
 import com.google.common.truth.Truth
 
@@ -124,7 +123,7 @@ class ProtoLogCallProcessorImplTest {
         checkCalls()
     }
 
-    @Test(expected = InvalidProtoLogCallException::class)
+    @Test
     fun process_groupNotImported() {
         val code = """
             package org.example2;
@@ -138,7 +137,10 @@ class ProtoLogCallProcessorImplTest {
             }
         """
         groupMap["TEST"] = LogGroup("TEST", true, true, "WindowManager")
-        visitor.process(StaticJavaParser.parse(code), processor, "")
+        val errors = visitor.process(StaticJavaParser.parse(code), processor, "")
+
+        Truth.assertThat(errors).hasSize(1)
+        Truth.assertThat(errors.first()).isInstanceOf(InvalidProtoLogCallException::class.java)
     }
 
     @Test
@@ -159,7 +161,7 @@ class ProtoLogCallProcessorImplTest {
         assertEquals(0, calls.size)
     }
 
-    @Test(expected = InvalidProtoLogCallException::class)
+    @Test
     fun process_unknownGroup() {
         val code = """
             package org.example;
@@ -170,10 +172,13 @@ class ProtoLogCallProcessorImplTest {
                 }
             }
         """
-        visitor.process(StaticJavaParser.parse(code), processor, "")
+        val errors = visitor.process(StaticJavaParser.parse(code), processor, "")
+
+        Truth.assertThat(errors).hasSize(1)
+        Truth.assertThat(errors.first()).isInstanceOf(InvalidProtoLogCallException::class.java)
     }
 
-    @Test(expected = InvalidProtoLogCallException::class)
+    @Test
     fun process_staticGroup() {
         val code = """
             package org.example;
@@ -184,10 +189,13 @@ class ProtoLogCallProcessorImplTest {
                 }
             }
         """
-        visitor.process(StaticJavaParser.parse(code), processor, "")
+        val errors = visitor.process(StaticJavaParser.parse(code), processor, "")
+
+        Truth.assertThat(errors).hasSize(1)
+        Truth.assertThat(errors.first()).isInstanceOf(InvalidProtoLogCallException::class.java)
     }
 
-    @Test(expected = InvalidProtoLogCallException::class)
+    @Test
     fun process_badGroup() {
         val code = """
             package org.example;
@@ -198,10 +206,13 @@ class ProtoLogCallProcessorImplTest {
                 }
             }
         """
-        visitor.process(StaticJavaParser.parse(code), processor, "")
+        val errors = visitor.process(StaticJavaParser.parse(code), processor, "")
+
+        Truth.assertThat(errors).hasSize(1)
+        Truth.assertThat(errors.first()).isInstanceOf(InvalidProtoLogCallException::class.java)
     }
 
-    @Test(expected = InvalidProtoLogCallException::class)
+    @Test
     fun process_invalidSignature() {
         val code = """
             package org.example;
@@ -212,7 +223,10 @@ class ProtoLogCallProcessorImplTest {
                 }
             }
         """
-        visitor.process(StaticJavaParser.parse(code), processor, "")
+        val errors = visitor.process(StaticJavaParser.parse(code), processor, "")
+
+        Truth.assertThat(errors).hasSize(1)
+        Truth.assertThat(errors.first()).isInstanceOf(InvalidProtoLogCallException::class.java)
     }
 
     @Test
@@ -257,9 +271,10 @@ class ProtoLogCallProcessorImplTest {
             }
         }
 
-        val exception = assertThrows(InvalidProtoLogCallException::class.java) {
-            visitor.process(StaticJavaParser.parse(code), processor, "MyTestFile.java")
-        }
+        val errors = visitor.process(StaticJavaParser.parse(code), processor, "MyTestFile.java")
+        Truth.assertThat(errors).hasSize(1)
+
+        val exception = errors.first()
         Truth.assertThat(exception).hasMessageThat()
             .contains("Code processing error in MyTestFile.java:6")
         Truth.assertThat(exception.cause).hasMessageThat()

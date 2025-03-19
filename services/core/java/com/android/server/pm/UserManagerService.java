@@ -8049,6 +8049,14 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         @Override
+        public int[] getProfileIdsExcludingHidden(@UserIdInt int userId, boolean enabledOnly) {
+            synchronized (mUsersLock) {
+                return getProfileIdsLU(userId, null /* userType */, enabledOnly, /* excludeHidden */
+                        true).toArray();
+            }
+        }
+
+        @Override
         public @Nullable LauncherUserInfo getLauncherUserInfo(@UserIdInt int userId) {
             UserInfo userInfo;
             synchronized (mUsersLock) {

@@ -32,6 +32,7 @@ import com.android.systemui.statusbar.notification.stack.data.repository.headsUp
 import com.android.systemui.statusbar.notification.visibilityLocationProvider
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.util.kotlin.JavaAdapter
+import org.mockito.kotlin.mock
 
 var Kosmos.visualStabilityCoordinator: VisualStabilityCoordinator by
     Kosmos.Fixture {
@@ -54,3 +55,5 @@ var Kosmos.visualStabilityCoordinator: VisualStabilityCoordinator by
             visualStabilityCoordinatorLogger,
         )
     }
+
+var Kosmos.mockVisualStabilityCoordinator: VisualStabilityCoordinator by Kosmos.Fixture { mock() }

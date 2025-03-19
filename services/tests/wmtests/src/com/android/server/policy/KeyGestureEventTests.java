@@ -491,6 +491,11 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
 
     @Test
     public void testKeyGestureBack() {
+        mPhoneWindowManager.overrideDelegateBackGestureRemote(true);
+        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
+        mPhoneWindowManager.assertBackEventInjected();
+
+        mPhoneWindowManager.overrideDelegateBackGestureRemote(false);
         sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_BACK);
         mPhoneWindowManager.assertBackEventInjected();
     }

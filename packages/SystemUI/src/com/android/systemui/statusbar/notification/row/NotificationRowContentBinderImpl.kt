@@ -710,7 +710,7 @@ constructor(
                         .also {
                             logger.logAsyncTaskProgress(
                                 entry.logKey,
-                                "extracted promoted notification content: $it",
+                                "extracted promoted notification content: ${it?.toRedactedString()}",
                             )
                         }
                 } else {

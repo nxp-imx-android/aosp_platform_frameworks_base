@@ -114,8 +114,7 @@ public class PowerStatsExporterTest {
 
         mPowerStatsStore = new PowerStatsStore(storeDirectory, new TestHandler());
         mDirectory = new BatteryHistoryDirectory(storeDirectory, 0);
-        mHistory = new BatteryStatsHistory(Parcel.obtain(), 10000, mDirectory,
-                mock(BatteryStatsHistory.HistoryStepDetailsCalculator.class), mClock,
+        mHistory = new BatteryStatsHistory(Parcel.obtain(), 10000, mDirectory, mClock,
                 mMonotonicClock, null, null);
         mPowerStatsAggregator = new PowerStatsAggregator(config);
 

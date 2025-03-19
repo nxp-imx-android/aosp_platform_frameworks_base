@@ -79,7 +79,7 @@ public class BatteryStatsHistory {
     private static final String TAG = "BatteryStatsHistory";
 
     // Current on-disk Parcel version. Must be updated when the format of the parcelable changes
-    private static final int VERSION = 213;
+    private static final int VERSION = 214;
 
     // Part of initial delta int that specifies the time delta.
     static final int DELTA_TIME_MASK = 0x7ffff;
@@ -316,7 +316,6 @@ public class BatteryStatsHistory {
     }
 
     private final Parcel mHistoryBuffer;
-    private final HistoryStepDetailsCalculator mStepDetailsCalculator;
     private final Clock mClock;
 
     private int mMaxHistoryBufferSize;
@@ -336,25 +335,6 @@ public class BatteryStatsHistory {
      * deserialization of a parcel, such as Settings app or checkin file.
      */
     private List<Parcel> mHistoryParcels = null;
-
-    /**
-     * When iterating history files, the current file index.
-     */
-    private BatteryHistoryFragment mCurrentFragment;
-
-    /**
-     * When iterating history files, the current file parcel.
-     */
-    private Parcel mCurrentParcel;
-    /**
-     * When iterating history file, the current parcel's Parcel.dataSize().
-     */
-    private int mCurrentParcelEnd;
-    /**
-     * Used when BatteryStatsImpl object is created from deserialization of a parcel,
-     * such as Settings app or checkin file, to iterate over history parcels.
-     */
-    private int mParcelIndex = 0;
 
     private final ReentrantLock mWriteLock = new ReentrantLock();
 
@@ -384,26 +364,9 @@ public class BatteryStatsHistory {
     // Monotonically increasing size of written history
     private long mMonotonicHistorySize;
     private final ArraySet<PowerStats.Descriptor> mWrittenPowerStatsDescriptors = new ArraySet<>();
-    private byte mLastHistoryStepLevel = 0;
     private boolean mMutable = true;
     private int mIteratorCookie;
     private final BatteryStatsHistory mWritableHistory;
-
-    /**
-     * A delegate responsible for computing additional details for a step in battery history.
-     */
-    public interface HistoryStepDetailsCalculator {
-        /**
-         * Returns additional details for the current history step or null.
-         */
-        @Nullable
-        HistoryStepDetails getHistoryStepDetails();
-
-        /**
-         * Resets the calculator to get ready for a new battery session
-         */
-        void clear();
-    }
 
     /**
      * A delegate for android.os.Trace to allow testing static calls. Due to
@@ -472,21 +435,17 @@ public class BatteryStatsHistory {
      * @param maxHistoryBufferSize the most amount of RAM to used for buffering of history steps
      */
     public BatteryStatsHistory(Parcel historyBuffer, int maxHistoryBufferSize,
-            @Nullable BatteryHistoryStore store, HistoryStepDetailsCalculator stepDetailsCalculator,
-            Clock clock, MonotonicClock monotonicClock, TraceDelegate tracer,
-            EventLogger eventLogger) {
-        this(historyBuffer, maxHistoryBufferSize, store,
-                stepDetailsCalculator,
-                clock, monotonicClock, tracer, eventLogger, null);
+            @Nullable BatteryHistoryStore store, Clock clock, MonotonicClock monotonicClock,
+            TraceDelegate tracer, EventLogger eventLogger) {
+        this(historyBuffer, maxHistoryBufferSize, store, clock, monotonicClock, tracer, eventLogger,
+                null);
     }
 
     private BatteryStatsHistory(@Nullable Parcel historyBuffer, int maxHistoryBufferSize,
-            @Nullable BatteryHistoryStore store,
-            @NonNull HistoryStepDetailsCalculator stepDetailsCalculator, @NonNull Clock clock,
+            @Nullable BatteryHistoryStore store, @NonNull Clock clock,
             @NonNull MonotonicClock monotonicClock, @NonNull TraceDelegate tracer,
             @NonNull EventLogger eventLogger, @Nullable BatteryStatsHistory writableHistory) {
         mMaxHistoryBufferSize = maxHistoryBufferSize;
-        mStepDetailsCalculator = stepDetailsCalculator;
         mTracer = tracer;
         mClock = clock;
         mMonotonicClock = monotonicClock;
@@ -527,7 +486,6 @@ public class BatteryStatsHistory {
         mClock = Clock.SYSTEM_CLOCK;
         mTracer = null;
         mStore = null;
-        mStepDetailsCalculator = null;
         mEventLogger = new EventLogger();
         mWritableHistory = null;
         mMutable = false;
@@ -556,9 +514,6 @@ public class BatteryStatsHistory {
         mNextHistoryTagIdx = 0;
         mNumHistoryTagChars = 0;
         mHistoryBufferLastPos = -1;
-        if (mStepDetailsCalculator != null) {
-            mStepDetailsCalculator.clear();
-        }
     }
 
     /**
@@ -596,7 +551,7 @@ public class BatteryStatsHistory {
                 Parcel historyBufferCopy = Parcel.obtain();
                 historyBufferCopy.appendFrom(mHistoryBuffer, 0, mHistoryBuffer.dataSize());
 
-                return new BatteryStatsHistory(historyBufferCopy, 0, mStore, null,
+                return new BatteryStatsHistory(historyBufferCopy, 0, mStore,
                         null, null, null, mEventLogger, this);
             }
         } finally {
@@ -712,10 +667,6 @@ public class BatteryStatsHistory {
         if (mStore != null) {
             mStore.lock();
         }
-        mCurrentFragment = null;
-        mCurrentParcel = null;
-        mCurrentParcelEnd = 0;
-        mParcelIndex = 0;
         BatteryStatsHistoryIterator iterator = new BatteryStatsHistoryIterator(
                 this, startTimeMs, endTimeMs);
         mIteratorCookie = System.identityHashCode(iterator);
@@ -1614,6 +1565,21 @@ public class BatteryStatsHistory {
     }
 
     /**
+     * Records an update containing HistoryStepDetails, except if the details are empty.
+     */
+    public void recordHistoryStepDetails(HistoryStepDetails details, long elapsedRealtimeMs,
+            long uptimeMs) {
+        if (details.isEmpty()) {
+            return;
+        }
+        synchronized (this) {
+            mHistoryCur.stepDetails = details;
+            writeHistoryItem(elapsedRealtimeMs, uptimeMs);
+            mHistoryCur.stepDetails = null;
+        }
+    }
+
+    /**
      * Writes the current history item to history.
      */
     public void writeHistoryItem(long elapsedRealtimeMs, long uptimeMs) {
@@ -1632,8 +1598,8 @@ public class BatteryStatsHistory {
                     mHistoryAddTmp.processStateChange = null;
                     mHistoryAddTmp.eventCode = HistoryItem.EVENT_NONE;
                     mHistoryAddTmp.states &= ~HistoryItem.STATE_CPU_RUNNING_FLAG;
+                    mHistoryAddTmp.stepDetails = null;
                     writeHistoryItem(wakeElapsedTimeMs, uptimeMs, mHistoryAddTmp);
-
                 }
             }
             mHistoryCur.states |= HistoryItem.STATE_CPU_RUNNING_FLAG;
@@ -1952,15 +1918,8 @@ public class BatteryStatsHistory {
         }
         int firstToken = deltaTimeToken | (cur.states & BatteryStatsHistory.DELTA_STATE_MASK);
 
-        if (cur.batteryLevel < mLastHistoryStepLevel || mLastHistoryStepLevel == 0) {
-            cur.stepDetails = mStepDetailsCalculator.getHistoryStepDetails();
-            if (cur.stepDetails != null) {
-                batteryLevelInt |= BatteryStatsHistory.BATTERY_LEVEL_DETAILS_FLAG;
-                mLastHistoryStepLevel = cur.batteryLevel;
-            }
-        } else {
-            cur.stepDetails = null;
-            mLastHistoryStepLevel = cur.batteryLevel;
+        if (cur.stepDetails != null) {
+            batteryLevelInt |= BatteryStatsHistory.BATTERY_LEVEL_DETAILS_FLAG;
         }
 
         final boolean batteryLevelIntChanged = batteryLevelInt != 0;
@@ -2055,6 +2014,7 @@ public class BatteryStatsHistory {
                         + Integer.toHexString(cur.states2));
             }
         }
+        cur.tagsFirstOccurrence = false;
         if (cur.wakelockTag != null || cur.wakeReasonTag != null) {
             int wakeLockIndex;
             int wakeReasonIndex;

@@ -84,6 +84,7 @@ import com.android.internal.protolog.ProtoLog;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.RemoteCallable;
 import com.android.wm.shell.common.ShellExecutor;
@@ -314,13 +315,14 @@ public class Transitions implements RemoteCallable<Transitions>,
             @NonNull ShellTaskOrganizer organizer,
             @NonNull TransactionPool pool,
             @NonNull DisplayController displayController,
+            @NonNull DisplayInsetsController displayInsetsController,
             @NonNull ShellExecutor mainExecutor,
             @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
             @NonNull HomeTransitionObserver homeTransitionObserver,
             @NonNull FocusTransitionObserver focusTransitionObserver) {
         this(context, shellInit, new ShellCommandHandler(), shellController, organizer, pool,
-                displayController, mainExecutor, mainHandler, animExecutor,
+                displayController, displayInsetsController, mainExecutor, mainHandler, animExecutor,
                 new RootTaskDisplayAreaOrganizer(mainExecutor, context, shellInit),
                 homeTransitionObserver, focusTransitionObserver);
     }
@@ -332,6 +334,7 @@ public class Transitions implements RemoteCallable<Transitions>,
             @NonNull ShellTaskOrganizer organizer,
             @NonNull TransactionPool pool,
             @NonNull DisplayController displayController,
+            @NonNull DisplayInsetsController displayInsetsController,
             @NonNull ShellExecutor mainExecutor,
             @NonNull Handler mainHandler,
             @NonNull ShellExecutor animExecutor,
@@ -345,8 +348,8 @@ public class Transitions implements RemoteCallable<Transitions>,
         mDisplayController = displayController;
         mPlayerImpl = new TransitionPlayerImpl();
         mDefaultTransitionHandler = new DefaultTransitionHandler(context, shellInit,
-                displayController, pool, mainExecutor, mainHandler, animExecutor, rootTDAOrganizer,
-                InteractionJankMonitor.getInstance());
+                displayController, displayInsetsController, pool, mainExecutor, mainHandler,
+                animExecutor, rootTDAOrganizer, InteractionJankMonitor.getInstance());
         mRemoteTransitionHandler = new RemoteTransitionHandler(mMainExecutor);
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;

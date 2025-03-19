@@ -19,14 +19,20 @@ package com.android.systemui.statusbar.notification.collection
 import android.app.Notification
 import android.content.Context
 import android.os.Build
+import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
+import com.android.systemui.statusbar.notification.collection.notifcollection.NotifLifetimeExtender
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
 import com.android.systemui.statusbar.notification.icon.IconPack
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import kotlinx.coroutines.flow.StateFlow
 
-class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
+class BundleEntryAdapter(
+    private val highPriorityProvider: HighPriorityProvider,
+    val entry: BundleEntry,
+) : EntryAdapter {
     /** TODO (b/394483200): convert to PipelineEntry.ROOT_ENTRY when pipeline is migrated? */
     override fun getParent(): GroupEntry {
         return GroupEntry.ROOT_ENTRY
@@ -92,6 +98,41 @@ class BundleEntryAdapter(val entry: BundleEntry) : EntryAdapter {
 
     override fun getSbn(): StatusBarNotification? {
         return null
+    }
+
+    override fun getRanking(): NotificationListenerService.Ranking? {
+        return null
+    }
+
+    override fun endLifetimeExtension(
+        callback: NotifLifetimeExtender.OnEndLifetimeExtensionCallback?,
+        extender: NotifLifetimeExtender,
+    ) {
+        Log.wtf(TAG, "endLifetimeExtension() called")
+    }
+
+    override fun onImportanceChanged() {
+        Log.wtf(TAG, "onImportanceChanged() called")
+    }
+
+    override fun markForUserTriggeredMovement() {
+        Log.wtf(TAG, "markForUserTriggeredMovement() called")
+    }
+
+    override fun isMarkedForUserTriggeredMovement(): Boolean {
+        return false
+    }
+
+    override fun isHighPriority(): Boolean {
+        return highPriorityProvider.isHighPriority(entry)
+    }
+
+    override fun setInlineControlsShown(currentlyVisible: Boolean) {
+        // nothing to do, yet
+    }
+
+    override fun isBlockable(): Boolean {
+        return false
     }
 
     override fun canDragAndDrop(): Boolean {

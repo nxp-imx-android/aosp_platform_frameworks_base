@@ -78,6 +78,8 @@ import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryAdapter;
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
+import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
@@ -1023,6 +1025,8 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
                     mock(NotificationIconStyleProvider.class),
                     mock(VisualStabilityCoordinator.class),
                     mock(NotificationActionClickManager.class),
+                    mock(HighPriorityProvider.class),
+                    mock(HeadsUpManager.class),
                     entry);
             row.setEntryAdapter(entryAdapter);
         } else {

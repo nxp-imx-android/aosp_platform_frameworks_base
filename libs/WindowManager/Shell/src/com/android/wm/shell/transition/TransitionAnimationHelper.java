@@ -39,6 +39,11 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.WindowConfiguration;
 import android.graphics.Color;
+import android.graphics.Insets;
+import android.graphics.Rect;
+import android.util.SparseArray;
+import android.view.InsetsSource;
+import android.view.InsetsState;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -47,6 +52,9 @@ import android.window.TransitionInfo;
 import com.android.internal.R;
 import com.android.internal.policy.TransitionAnimation;
 import com.android.internal.protolog.ProtoLog;
+import com.android.wm.shell.common.DisplayController;
+import com.android.wm.shell.common.DisplayInsetsController;
+import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 import com.android.wm.shell.shared.TransitionUtil;
 
@@ -324,5 +332,78 @@ public class TransitionAnimationHelper {
             }
         }
         return false;
+    }
+
+    /**
+     * In some situations (eg. TaskBar) the content area of a display appears to be rounded. For
+     * these situations, we may want the animation to also express the same rounded corners (even
+     * though in steady-state, the app internally manages the insets). This class Keeps track of,
+     * and provides, the bounds of rounded-corner display content.
+     *
+     * This is used to enable already-running animations to adapt to changes in taskbar/navbar
+     * position live.
+     */
+    public static class RoundedContentPerDisplay implements
+            DisplayInsetsController.OnInsetsChangedListener {
+
+        /** The current bounds of the display content (post-inset). */
+        final Rect mBounds = new Rect();
+
+        @Override
+        public void insetsChanged(InsetsState insetsState) {
+            Insets insets = Insets.NONE;
+            for (int i = insetsState.sourceSize() - 1; i >= 0; i--) {
+                final InsetsSource source = insetsState.sourceAt(i);
+                if (!source.hasFlags(InsetsSource.FLAG_INSETS_ROUNDED_CORNER)) {
+                    continue;
+                }
+                insets = Insets.max(source.calculateInsets(insetsState.getDisplayFrame(), false),
+                        insets);
+            }
+            mBounds.set(insetsState.getDisplayFrame());
+            mBounds.inset(insets);
+        }
+    }
+
+    /**
+     * Keeps track of the bounds of rounded-corner display content (post-inset).
+     *
+     * @see RoundedContentPerDisplay
+     */
+    public static class RoundedContentTracker implements
+            DisplayController.OnDisplaysChangedListener {
+        final DisplayController mDisplayController;
+        final DisplayInsetsController mDisplayInsetsController;
+        final SparseArray<RoundedContentPerDisplay> mPerDisplay = new SparseArray<>();
+
+        RoundedContentTracker(DisplayController dc, DisplayInsetsController dic) {
+            mDisplayController = dc;
+            mDisplayInsetsController = dic;
+        }
+
+        void init() {
+            mDisplayController.addDisplayWindowListener(this);
+        }
+
+        RoundedContentPerDisplay forDisplay(int displayId) {
+            return mPerDisplay.get(displayId);
+        }
+
+        @Override
+        public void onDisplayAdded(int displayId) {
+            final RoundedContentPerDisplay perDisplay = new RoundedContentPerDisplay();
+            mDisplayInsetsController.addInsetsChangedListener(displayId, perDisplay);
+            mPerDisplay.put(displayId, perDisplay);
+            final DisplayLayout dl = mDisplayController.getDisplayLayout(displayId);
+            perDisplay.mBounds.set(0, 0, dl.width(), dl.height());
+        }
+
+        @Override
+        public void onDisplayRemoved(int displayId) {
+            final RoundedContentPerDisplay listener = mPerDisplay.removeReturnOld(displayId);
+            if (listener != null) {
+                mDisplayInsetsController.removeInsetsChangedListener(displayId, listener);
+            }
+        }
     }
 }

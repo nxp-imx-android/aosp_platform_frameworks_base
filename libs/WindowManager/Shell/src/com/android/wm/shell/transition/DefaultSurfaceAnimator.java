@@ -42,9 +42,10 @@ public class DefaultSurfaceAnimator {
             @NonNull Animation anim, @NonNull SurfaceControl leash,
             @NonNull Runnable finishCallback, @NonNull TransactionPool pool,
             @NonNull ShellExecutor mainExecutor, @Nullable Point position, float cornerRadius,
-            @Nullable Rect clipRect) {
+            @Nullable Rect clipRect,
+            @Nullable TransitionAnimationHelper.RoundedContentPerDisplay roundedBounds) {
         final DefaultAnimationAdapter adapter = new DefaultAnimationAdapter(anim, leash,
-                position, clipRect, cornerRadius);
+                position, clipRect, cornerRadius, roundedBounds);
         buildSurfaceAnimation(animations, anim, finishCallback, pool, mainExecutor, adapter);
     }
 
@@ -109,9 +110,17 @@ public class DefaultSurfaceAnimator {
         @Nullable final Rect mClipRect;
         @Nullable private final Rect mAnimClipRect;
         final float mCornerRadius;
+        final int mWindowBottom;
+
+        /**
+         * Inset changes aren't synchronized with transitions, so use a "provider" to track the
+         * bottom of the display content during the animation.
+         */
+        @Nullable final TransitionAnimationHelper.RoundedContentPerDisplay mRoundedContentBounds;
 
         DefaultAnimationAdapter(@NonNull Animation anim, @NonNull SurfaceControl leash,
-                @Nullable Point position, @Nullable Rect clipRect, float cornerRadius) {
+                @Nullable Point position, @Nullable Rect clipRect, float cornerRadius,
+                TransitionAnimationHelper.RoundedContentPerDisplay roundedBounds) {
             super(leash);
             mAnim = anim;
             mPosition = (position != null && (position.x != 0 || position.y != 0))
@@ -119,6 +128,8 @@ public class DefaultSurfaceAnimator {
             mClipRect = (clipRect != null && !clipRect.isEmpty()) ? clipRect : null;
             mAnimClipRect = mClipRect != null ? new Rect() : null;
             mCornerRadius = cornerRadius;
+            mWindowBottom = clipRect != null ? clipRect.bottom : 0;
+            mRoundedContentBounds = roundedBounds;
         }
 
         @Override
@@ -136,6 +147,11 @@ public class DefaultSurfaceAnimator {
 
             if (mClipRect != null) {
                 boolean needCrop = false;
+                if (mRoundedContentBounds != null) {
+                    mClipRect.bottom = Math.min(mRoundedContentBounds.mBounds.bottom,
+                            mWindowBottom);
+                }
+
                 mAnimClipRect.set(mClipRect);
                 if (transformation.hasClipRect()) {
                     mAnimClipRect.intersectUnchecked(transformation.getClipRect());

@@ -28,6 +28,7 @@ import static android.view.SurfaceControlProto.NAME;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
+import android.annotation.DurationNanosLong;
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
 import android.annotation.IntDef;
@@ -469,9 +470,9 @@ public final class SurfaceControl implements Parcelable {
 
         private final long mFrameVsyncId;
         private final @JankType int mJankType;
-        private final long mFrameIntervalNs;
-        private final long mScheduledAppFrameTimeNs;
-        private final long mActualAppFrameTimeNs;
+        private final @DurationNanosLong long mFrameIntervalNs;
+        private final @DurationNanosLong long mScheduledAppFrameTimeNs;
+        private final @DurationNanosLong long mActualAppFrameTimeNs;
 
         /**
          * @hide
@@ -512,7 +513,7 @@ public final class SurfaceControl implements Parcelable {
          * @return the frame interval in ns
          * @hide
          */
-        public long getFrameIntervalNanos() {
+        public @DurationNanosLong long getFrameIntervalNanos() {
             return mFrameIntervalNs;
         }
 
@@ -525,7 +526,7 @@ public final class SurfaceControl implements Parcelable {
          *
          * @return scheduled app time in ns
          */
-        public long getScheduledAppFrameTimeNanos() {
+        public @DurationNanosLong long getScheduledAppFrameTimeNanos() {
             return mScheduledAppFrameTimeNs;
         }
 
@@ -534,7 +535,7 @@ public final class SurfaceControl implements Parcelable {
          *
          * @return the actual app time in ns
          */
-        public long getActualAppFrameTimeNanos() {
+        public @DurationNanosLong long getActualAppFrameTimeNanos() {
             return mActualAppFrameTimeNs;
         }
 

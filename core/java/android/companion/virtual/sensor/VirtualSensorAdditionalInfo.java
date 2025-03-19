@@ -90,6 +90,7 @@ public final class VirtualSensorAdditionalInfo implements Parcelable {
      *
      * @see SensorAdditionalInfo#type
      */
+    @VirtualSensorAdditionalInfo.Type
     public int getType() {
         return mType;
     }
@@ -114,6 +115,21 @@ public final class VirtualSensorAdditionalInfo implements Parcelable {
         @NonNull
         private final ArrayList<float[]> mValues = new ArrayList<>();
 
+        /** Payload size for {@link SensorAdditionalInfo#TYPE_SAMPLING} */
+        private static final int TYPE_SAMPLING_PLAYLOAD_SIZE = 2;
+
+        /** Payload size for {@link SensorAdditionalInfo#TYPE_UNTRACKED_DELAY} */
+        private static final int TYPE_UNTRACKED_DELAY_PAYLOAD_SIZE = 2;
+
+        /** Payload size for {@link SensorAdditionalInfo#TYPE_INTERNAL_TEMPERATURE} */
+        private static final int TYPE_INTERNAL_TEMPERATURE_PLAYLOAD_SIZE = 1;
+
+        /** Payload size for {@link SensorAdditionalInfo#TYPE_VEC3_CALIBRATION} */
+        private static final int TYPE_VEC3_CALIBRATION_PAYLOAD_SIZE = 12;
+
+        /** Payload size for {@link SensorAdditionalInfo#TYPE_SENSOR_PLACEMENT} */
+        private static final int TYPE_SENSOR_PLACEMENT_PAYLOAD_SIZE = 12;
+
         /**
          * Creates a new builder.
          *
@@ -135,28 +151,31 @@ public final class VirtualSensorAdditionalInfo implements Parcelable {
         }
 
         /**
-         * Additional info payload data represented in float values. Depending on the type of
-         * information, this may be null.
+         * Additional info payload data represented in float values.
          *
+         * @param values the float values of this additional info frame.
+         * @throws IllegalArgumentException if the payload size doesn't match the expectation
+         *   for the given type, as documented in {@link SensorAdditionalInfo}.
          * @see SensorAdditionalInfo#floatValues
          */
         @NonNull
         public Builder addValues(@NonNull float[] values) {
-            if (values.length > 14) {
-                throw new IllegalArgumentException("Maximum payload value size is 14.");
-            }
             if (mValues.isEmpty()) {
                 switch (mType) {
                     case SensorAdditionalInfo.TYPE_UNTRACKED_DELAY:
+                        assertValuesLength(values, TYPE_UNTRACKED_DELAY_PAYLOAD_SIZE);
+                        break;
                     case SensorAdditionalInfo.TYPE_SAMPLING:
-                        assertValuesLength(values, 2);
+                        assertValuesLength(values, TYPE_SAMPLING_PLAYLOAD_SIZE);
                         break;
                     case SensorAdditionalInfo.TYPE_INTERNAL_TEMPERATURE:
-                        assertValuesLength(values, 1);
+                        assertValuesLength(values, TYPE_INTERNAL_TEMPERATURE_PLAYLOAD_SIZE);
                         break;
                     case SensorAdditionalInfo.TYPE_VEC3_CALIBRATION:
+                        assertValuesLength(values, TYPE_VEC3_CALIBRATION_PAYLOAD_SIZE);
+                        break;
                     case SensorAdditionalInfo.TYPE_SENSOR_PLACEMENT:
-                        assertValuesLength(values, 11);
+                        assertValuesLength(values, TYPE_SENSOR_PLACEMENT_PAYLOAD_SIZE);
                         break;
                 }
             } else if (values.length != mValues.getFirst().length) {

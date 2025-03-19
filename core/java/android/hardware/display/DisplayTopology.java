@@ -169,7 +169,23 @@ public final class DisplayTopology implements Parcelable {
      * @hide
      */
     public void addDisplay(int displayId, float width, float height) {
-        addDisplay(displayId, width, height, /* shouldLog= */ true);
+        if (findDisplay(displayId, mRoot) != null) {
+            return;
+        }
+        if (mRoot == null) {
+            mRoot = new TreeNode(displayId, width, height, POSITION_LEFT, /* offset= */ 0);
+            mPrimaryDisplayId = displayId;
+        } else if (mRoot.mChildren.isEmpty()) {
+            // This is the 2nd display. Align the middles of the top and bottom edges.
+            float offset = mRoot.mWidth / 2 - width / 2;
+            TreeNode display = new TreeNode(displayId, width, height, POSITION_TOP, offset);
+            mRoot.mChildren.add(display);
+        } else {
+            TreeNode rightMostDisplay = findRightMostDisplay(mRoot, mRoot.mWidth).first;
+            TreeNode newDisplay = new TreeNode(displayId, width, height, POSITION_RIGHT,
+                    /* offset= */ 0);
+            rightMostDisplay.mChildren.add(newDisplay);
+        }
     }
 
     /**
@@ -216,7 +232,7 @@ public final class DisplayTopology implements Parcelable {
         while (!queue.isEmpty()) {
             TreeNode node = queue.poll();
             if (node.mDisplayId != displayId) {
-                addDisplay(node.mDisplayId, node.mWidth, node.mHeight, /* shouldLog= */ false);
+                addDisplay(node.mDisplayId, node.mWidth, node.mHeight);
             }
             queue.addAll(node.mChildren);
         }
@@ -227,10 +243,6 @@ public final class DisplayTopology implements Parcelable {
             } else {
                 mPrimaryDisplayId = Display.INVALID_DISPLAY;
             }
-            Slog.i(TAG,  "Primary display with ID " + displayId
-                    + " removed, new primary display: " + mPrimaryDisplayId);
-        } else {
-            Slog.i(TAG, "Display with ID " + displayId + " removed");
         }
         return true;
     }
@@ -596,37 +608,6 @@ public final class DisplayTopology implements Parcelable {
         PrintWriter writer = new PrintWriter(out);
         dump(writer);
         return out.toString();
-    }
-
-    private void addDisplay(int displayId, float width, float height, boolean shouldLog) {
-        if (findDisplay(displayId, mRoot) != null) {
-            return;
-        }
-        if (mRoot == null) {
-            mRoot = new TreeNode(displayId, width, height, POSITION_LEFT, /* offset= */ 0);
-            mPrimaryDisplayId = displayId;
-            if (shouldLog) {
-                Slog.i(TAG, "First display added: " + mRoot);
-            }
-        } else if (mRoot.mChildren.isEmpty()) {
-            // This is the 2nd display. Align the middles of the top and bottom edges.
-            float offset = mRoot.mWidth / 2 - width / 2;
-            TreeNode display = new TreeNode(displayId, width, height, POSITION_TOP, offset);
-            mRoot.mChildren.add(display);
-            if (shouldLog) {
-                Slog.i(TAG, "Second display added: " + display + ", parent ID: "
-                        + mRoot.mDisplayId);
-            }
-        } else {
-            TreeNode rightMostDisplay = findRightMostDisplay(mRoot, mRoot.mWidth).first;
-            TreeNode newDisplay = new TreeNode(displayId, width, height, POSITION_RIGHT,
-                    /* offset= */ 0);
-            rightMostDisplay.mChildren.add(newDisplay);
-            if (shouldLog) {
-                Slog.i(TAG, "Display added: " + newDisplay + ", parent ID: "
-                        + rightMostDisplay.mDisplayId);
-            }
-        }
     }
 
     /**

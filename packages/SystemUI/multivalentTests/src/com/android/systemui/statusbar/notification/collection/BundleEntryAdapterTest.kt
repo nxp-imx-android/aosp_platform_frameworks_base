@@ -25,7 +25,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier.Companion.TYPE_NON_PERSON
+import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -36,13 +38,15 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
 class BundleEntryAdapterTest : SysuiTestCase() {
+    private val kosmos = testKosmos()
     private lateinit var underTest: BundleEntryAdapter
 
     @get:Rule val setFlagsRule = SetFlagsRule()
+    private val factory: EntryAdapterFactory = kosmos.entryAdapterFactory
 
     @Before
     fun setUp() {
-        underTest = BundleEntryAdapter(BundleEntry("key"))
+        underTest = factory.create(BundleEntry("key")) as BundleEntryAdapter
     }
 
     @Test

@@ -226,7 +226,7 @@ private val PromotedNotificationContentModel.layoutResource: Int?
 private class AODPromotedNotificationViewUpdater(root: View) {
     private val alertedIcon: ImageView? = root.findViewById(R.id.alerted_icon)
     private val alternateExpandTarget: View? = root.findViewById(R.id.alternate_expand_target)
-    private val appNameDivider: View? = root.findViewById(R.id.app_name_divider)
+    private val appNameDivider: TextView? = root.findViewById(R.id.app_name_divider)
     private val appNameText: TextView? = root.findViewById(R.id.app_name_text)
     private val bigPicture: BigPictureNotificationImageView? = root.findViewById(R.id.big_picture)
     private val bigText: ImageFloatingTextView? = root.findViewById(R.id.big_text)
@@ -241,9 +241,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         )
     private val expandButton: NotificationExpandButton? = root.findViewById(R.id.expand_button)
     private val headerText: TextView? = root.findViewById(R.id.header_text)
-    private val headerTextDivider: View? = root.findViewById(R.id.header_text_divider)
+    private val headerTextDivider: TextView? = root.findViewById(R.id.header_text_divider)
     private val headerTextSecondary: TextView? = root.findViewById(R.id.header_text_secondary)
-    private val headerTextSecondaryDivider: View? =
+    private val headerTextSecondaryDivider: TextView? =
         root.findViewById(R.id.header_text_secondary_divider)
     private val icon: NotificationRowIconView? = root.findViewById(R.id.icon)
     private val leftIcon: ImageView? = root.findViewById(R.id.left_icon)
@@ -256,9 +256,9 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     private val rightIcon: ImageView? = root.findViewById(R.id.right_icon)
     private val text: ImageFloatingTextView? = root.findViewById(R.id.text)
     private val time: DateTimeView? = root.findViewById(R.id.time)
-    private val timeDivider: View? = root.findViewById(R.id.time_divider)
+    private val timeDivider: TextView? = root.findViewById(R.id.time_divider)
     private val title: TextView? = root.findViewById(R.id.title)
-    private val verificationDivider: View? = root.findViewById(R.id.verification_divider)
+    private val verificationDivider: TextView? = root.findViewById(R.id.verification_divider)
     private val verificationIcon: ImageView? = root.findViewById(R.id.verification_icon)
     private val verificationText: TextView? = root.findViewById(R.id.verification_text)
 
@@ -282,6 +282,12 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             ?.drawable
             ?.mutate()
             ?.setColorFilter(SecondaryText.colorInt, PorterDuff.Mode.SRC_IN)
+
+        setTextViewColor(appNameDivider, SecondaryText)
+        setTextViewColor(headerTextDivider, SecondaryText)
+        setTextViewColor(headerTextSecondaryDivider, SecondaryText)
+        setTextViewColor(timeDivider, SecondaryText)
+        setTextViewColor(verificationDivider, SecondaryText)
 
         if (Flags.notificationsRedesignTemplates()) {
             (mainColumn?.layoutParams as? MarginLayoutParams)?.let { mainColumnMargins ->

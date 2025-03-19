@@ -37,9 +37,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
 import com.android.settingslib.R;
+import com.android.settingslib.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 public class LeAudioProfile implements LocalBluetoothProfile {
@@ -59,6 +61,10 @@ public class LeAudioProfile implements LocalBluetoothProfile {
 
     // Order of this profile in device profiles list
     private static final int ORDINAL = 1;
+    // Cached callbacks being registered before service is connected.
+    private ConcurrentHashMap<BluetoothLeAudio.Callback, Executor>
+            mCachedCallbackExecutorMap = new ConcurrentHashMap<>();
+
 
     // These callbacks run on the main thread.
     private final class LeAudioServiceListener implements BluetoothProfile.ServiceListener {
@@ -88,7 +94,19 @@ public class LeAudioProfile implements LocalBluetoothProfile {
             // Check current list of CachedDevices to see if any are hearing aid devices.
             mDeviceManager.updateHearingAidsDevices();
             mProfileManager.callServiceConnectedListeners();
-            mIsProfileReady = true;
+            if (!mIsProfileReady) {
+                mIsProfileReady = true;
+                if (Flags.adoptPrimaryGroupManagementApiV2()) {
+                    if (DEBUG) {
+                        Log.d(
+                                TAG,
+                                "onServiceConnected, register mCachedCallbackExecutorMap = "
+                                        + mCachedCallbackExecutorMap);
+                    }
+                    mCachedCallbackExecutorMap.forEach(
+                            (callback, executor) -> registerCallback(executor, callback));
+                }
+            }
         }
 
         public void onServiceDisconnected(int profile) {
@@ -96,7 +114,12 @@ public class LeAudioProfile implements LocalBluetoothProfile {
                 Log.d(TAG, "Bluetooth service disconnected");
             }
             mProfileManager.callServiceDisconnectedListeners();
-            mIsProfileReady = false;
+            if (mIsProfileReady) {
+                mIsProfileReady = false;
+                if (Flags.adoptPrimaryGroupManagementApiV2()) {
+                    mCachedCallbackExecutorMap.clear();
+                }
+            }
         }
     }
 
@@ -367,6 +390,9 @@ public class LeAudioProfile implements LocalBluetoothProfile {
             @NonNull BluetoothLeAudio.Callback callback) {
         if (mService == null) {
             Log.w(TAG, "Proxy not attached to service. Cannot register callback.");
+            if (Flags.adoptPrimaryGroupManagementApiV2()) {
+                mCachedCallbackExecutorMap.putIfAbsent(callback, executor);
+            }
             return;
         }
         mService.registerCallback(executor, callback);
@@ -384,6 +410,9 @@ public class LeAudioProfile implements LocalBluetoothProfile {
      *                              callback is registered
      */
     public void unregisterCallback(@NonNull BluetoothLeAudio.Callback callback) {
+        if (Flags.adoptPrimaryGroupManagementApiV2()) {
+            mCachedCallbackExecutorMap.remove(callback);
+        }
         if (mService == null) {
             Log.w(TAG, "Proxy not attached to service. Cannot unregister callback.");
             return;

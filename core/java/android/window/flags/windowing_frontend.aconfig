@@ -516,6 +516,17 @@ flag {
 }
 
 flag {
+    name: "safe_release_snapshot_aggressively"
+    namespace: "windowing_frontend"
+    description: "Protect task snapshot memory from premature release, which can occur when a local variable holds a reference while the snapshot is removed from the cache."
+    bug: "238206323"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "scramble_snapshot_file_name"
     namespace: "windowing_frontend"
     description: "Scramble the file name of task snapshot."
@@ -524,4 +535,22 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+    name: "delegate_back_gesture_to_shell"
+    namespace: "windowing_frontend"
+    description: "Delegate back gesture event to back animation controller."
+    bug: "394599430"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "enable_multidisplay_trackpad_back_gesture"
+    namespace: "lse_desktop_experience"
+    description: "Adds support for trackpad back gestures on connected displays"
+    bug: "382774299"
 }

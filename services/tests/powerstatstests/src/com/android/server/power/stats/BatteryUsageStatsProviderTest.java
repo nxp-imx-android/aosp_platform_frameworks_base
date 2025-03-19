@@ -575,7 +575,7 @@ public class BatteryUsageStatsProviderTest {
         accumulateBatteryUsageStats(batteryStats, 10000000, 0);
         // Accumulate every 200 bytes of battery history
         accumulateBatteryUsageStats(batteryStats, 200, 1);
-        accumulateBatteryUsageStats(batteryStats, 50, 5);
+        accumulateBatteryUsageStats(batteryStats, 50, 4);
         // Accumulate on every invocation of accumulateBatteryUsageStats
         accumulateBatteryUsageStats(batteryStats, 0, 7);
     }

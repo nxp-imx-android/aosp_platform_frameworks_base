@@ -55,7 +55,6 @@ import static android.app.AppOpsManager.SAMPLING_STRATEGY_RARELY_USED;
 import static android.app.AppOpsManager.SAMPLING_STRATEGY_UNIFORM;
 import static android.app.AppOpsManager.SAMPLING_STRATEGY_UNIFORM_OPS;
 import static android.app.AppOpsManager.SECURITY_EXCEPTION_ON_INVALID_ATTRIBUTION_TAG_CHANGE;
-import static android.app.AppOpsManager.UID_STATE_NONEXISTENT;
 import static android.app.AppOpsManager.WATCH_FOREGROUND_CHANGES;
 import static android.app.AppOpsManager._NUM_OP;
 import static android.app.AppOpsManager.extractFlagsFromKey;
@@ -464,7 +463,19 @@ public class AppOpsService extends IAppOpsService.Stub {
                     Clock.SYSTEM_CLOCK, mConstants);
 
             mUidStateTracker.addUidStateChangedCallback(new HandlerExecutor(mHandler),
-                    this::onUidStateChanged);
+                    new AppOpsUidStateTracker.UidStateChangedCallback() {
+                        @Override
+                        public void onUidStateChanged(int uid, int uidState,
+                                boolean foregroundModeMayChange) {
+                            AppOpsService.this
+                                    .onUidStateChanged(uid, uidState, foregroundModeMayChange);
+                        }
+
+                        @Override
+                        public void onUidProcessDeath(int uid) {
+                            AppOpsService.this.onUidProcessDeath(uid);
+                        }
+                    });
         }
         return mUidStateTracker;
     }
@@ -1500,9 +1511,6 @@ public class AppOpsService extends IAppOpsService.Stub {
     // The callback method from AppOpsUidStateTracker
     private void onUidStateChanged(int uid, int state, boolean foregroundModeMayChange) {
         synchronized (this) {
-            if (state == UID_STATE_NONEXISTENT) {
-                onUidProcessDeathLocked(uid);
-            }
             UidState uidState = getUidStateLocked(uid, false);
 
             boolean hasForegroundWatchers = false;
@@ -1590,11 +1598,6 @@ public class AppOpsService extends IAppOpsService.Stub {
                 }
             }
 
-            if (state == UID_STATE_NONEXISTENT) {
-                // For UID_STATE_NONEXISTENT, we don't call onUidStateChanged for AttributedOps
-                return;
-            }
-
             if (uidState != null) {
                 int numPkgs = uidState.pkgOps.size();
                 for (int pkgNum = 0; pkgNum < numPkgs; pkgNum++) {
@@ -1619,31 +1622,32 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
     }
 
-    @GuardedBy("this")
-    private void onUidProcessDeathLocked(int uid) {
-        if (!mUidStates.contains(uid) || !Flags.finishRunningOpsForKilledPackages()) {
-            return;
-        }
-        final SparseLongArray chainsToFinish = new SparseLongArray();
-        doForAllAttributedOpsInUidLocked(uid, (attributedOp) -> {
-            attributedOp.doForAllInProgressStartOpEvents((event) -> {
-                if (event == null) {
-                    return;
-                }
-                int chainId = event.getAttributionChainId();
-                if (chainId != ATTRIBUTION_CHAIN_ID_NONE) {
-                    long currentEarliestStartTime =
-                            chainsToFinish.get(chainId, Long.MAX_VALUE);
-                    if (event.getStartTime() < currentEarliestStartTime) {
-                        // Store the earliest chain link we're finishing, so that we can go back
-                        // and finish any links in the chain that started after this one
-                        chainsToFinish.put(chainId, event.getStartTime());
+    private void onUidProcessDeath(int uid) {
+        synchronized (this) {
+            if (!mUidStates.contains(uid) || !Flags.finishRunningOpsForKilledPackages()) {
+                return;
+            }
+            final SparseLongArray chainsToFinish = new SparseLongArray();
+            doForAllAttributedOpsInUidLocked(uid, (attributedOp) -> {
+                attributedOp.doForAllInProgressStartOpEvents((event) -> {
+                    if (event == null) {
+                        return;
                     }
-                }
-                attributedOp.finished(event.getClientId());
+                    int chainId = event.getAttributionChainId();
+                    if (chainId != ATTRIBUTION_CHAIN_ID_NONE) {
+                        long currentEarliestStartTime =
+                                chainsToFinish.get(chainId, Long.MAX_VALUE);
+                        if (event.getStartTime() < currentEarliestStartTime) {
+                            // Store the earliest chain link we're finishing, so that we can go back
+                            // and finish any links in the chain that started after this one
+                            chainsToFinish.put(chainId, event.getStartTime());
+                        }
+                    }
+                    attributedOp.finished(event.getClientId());
+                });
             });
-        });
-        finishChainsLocked(chainsToFinish);
+            finishChainsLocked(chainsToFinish);
+        }
     }
 
     @GuardedBy("this")

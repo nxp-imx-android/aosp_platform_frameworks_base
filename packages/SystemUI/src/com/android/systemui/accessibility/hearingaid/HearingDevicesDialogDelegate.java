@@ -327,9 +327,7 @@ public class HearingDevicesDialogDelegate implements SystemUIDialog.Delegate,
                 setupDeviceListView(dialog, hearingDeviceItemList);
                 setupPairNewDeviceButton(dialog);
                 setupPresetSpinner(dialog, activeHearingDevice);
-                if (com.android.settingslib.flags.Flags.hearingDevicesInputRoutingControl()
-                        && com.android.systemui.Flags
-                        .hearingDevicesInputRoutingUiImprovement()) {
+                if (com.android.settingslib.flags.Flags.hearingDevicesInputRoutingControl()) {
                     setupInputRoutingSpinner(dialog, activeHearingDevice);
                 }
                 if (com.android.settingslib.flags.Flags.hearingDevicesAmbientVolumeControl()) {

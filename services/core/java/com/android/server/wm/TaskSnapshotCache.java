@@ -36,6 +36,7 @@ class TaskSnapshotCache extends SnapshotCache<Task> {
     void putSnapshot(Task task, TaskSnapshot snapshot) {
         synchronized (mLock) {
             snapshot.addReference(TaskSnapshot.REFERENCE_CACHE);
+            snapshot.setSafeRelease(mSafeSnapshotReleaser);
             final CacheEntry entry = mRunningCache.get(task.mTaskId);
             if (entry != null) {
                 mAppIdMap.remove(entry.topApp);

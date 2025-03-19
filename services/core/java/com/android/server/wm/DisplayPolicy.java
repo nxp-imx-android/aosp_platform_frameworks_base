@@ -137,6 +137,7 @@ import com.android.internal.view.AppearanceRegion;
 import com.android.internal.widget.PointerLocationView;
 import com.android.server.LocalServices;
 import com.android.server.UiThread;
+import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.policy.WindowManagerPolicy.ScreenOnListener;
 import com.android.server.policy.WindowManagerPolicy.WindowManagerFuncs;
 import com.android.server.statusbar.StatusBarManagerInternal;
@@ -1924,6 +1925,11 @@ public class DisplayPolicy {
                             LocalServices.getService(WallpaperManagerInternal.class);
                     if (wpMgr != null) {
                         wpMgr.onDisplayRemoveSystemDecorations(displayId);
+                    }
+                    final NotificationManagerInternal notificationManager =
+                            LocalServices.getService(NotificationManagerInternal.class);
+                    if (notificationManager != null) {
+                        notificationManager.onDisplayRemoveSystemDecorations(displayId);
                     }
                 });
     }

@@ -37,7 +37,6 @@ import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.media.AudioDevicePort;
 import android.media.AudioManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.telephony.TelephonyCallback;
 import android.telephony.TelephonyManager;
@@ -164,7 +163,6 @@ public class HearingDevicePhoneCallNotificationControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HEARING_INPUT_CHANGE_WHEN_COMM_DEVICE)
     public void onCallStateChanged_nonHearingDevice_offHookThenIdle_callAddAndRemoveListener() {
         final ArgumentCaptor<AudioManager.OnCommunicationDeviceChangedListener> listenerCaptor =
                 ArgumentCaptor.forClass(AudioManager.OnCommunicationDeviceChangedListener.class);
@@ -185,7 +183,6 @@ public class HearingDevicePhoneCallNotificationControllerTest {
 
 
     @Test
-    @EnableFlags(Flags.FLAG_HEARING_INPUT_CHANGE_WHEN_COMM_DEVICE)
     public void onCallStateChanged_hearingDeviceFromCommunicationDeviceChanged_showNotification() {
         final ArgumentCaptor<AudioManager.OnCommunicationDeviceChangedListener> listenerCaptor =
                 ArgumentCaptor.forClass(AudioManager.OnCommunicationDeviceChangedListener.class);
@@ -209,7 +206,6 @@ public class HearingDevicePhoneCallNotificationControllerTest {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_HEARING_INPUT_CHANGE_WHEN_COMM_DEVICE)
     public void onCallStateChanged_offHookMultiple_addListenerOnlyOneTime() {
         AudioDeviceInfo a2dpDeviceInfo = createAudioDeviceInfo(TEST_ADDRESS,
                 AudioManager.DEVICE_OUT_BLUETOOTH_A2DP);

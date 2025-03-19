@@ -5198,12 +5198,6 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * </tr>
      * <tr>
      * <td style="text-align: center;">PRIV</td>
-     * <td style="text-align: center;">S1080P</td>
-     * <td style="text-align: center;">PRIV</td>
-     * <td style="text-align: center;">UHD</td>
-     * </tr>
-     * <tr>
-     * <td style="text-align: center;">PRIV</td>
      * <td style="text-align: center;">S720P</td>
      * <td style="text-align: center;">JPEG/JPEG_R</td>
      * <td style="text-align: center;">MAXIMUM_16_9</td>
@@ -5271,28 +5265,36 @@ public final class CameraCharacteristics extends CameraMetadata<CameraCharacteri
      * </thead>
      * <tbody>
      * <tr>
-     * <td style="text-align: center;">PRIV</td>
+     * <td style="text-align: center;">PRIV Preview</td>
      * <td style="text-align: center;">S1080P</td>
-     * <td style="text-align: center;">PRIV</td>
+     * <td style="text-align: center;">PRIV Video</td>
      * <td style="text-align: center;">S1080P</td>
      * <td style="text-align: center;"></td>
      * <td style="text-align: center;"></td>
      * </tr>
      * <tr>
-     * <td style="text-align: center;">PRIV</td>
+     * <td style="text-align: center;">PRIV Preview</td>
      * <td style="text-align: center;">S1080P</td>
-     * <td style="text-align: center;">PRIV</td>
+     * <td style="text-align: center;">PRIV Video</td>
      * <td style="text-align: center;">S1440P</td>
      * <td style="text-align: center;"></td>
      * <td style="text-align: center;"></td>
      * </tr>
      * <tr>
-     * <td style="text-align: center;">PRIV</td>
+     * <td style="text-align: center;">PRIV Preview</td>
      * <td style="text-align: center;">S1080P</td>
-     * <td style="text-align: center;">YUV</td>
+     * <td style="text-align: center;">PRIV Video</td>
+     * <td style="text-align: center;">UHD</td>
+     * <td style="text-align: center;"></td>
+     * <td style="text-align: center;"></td>
+     * </tr>
+     * <tr>
+     * <td style="text-align: center;">PRIV Preview</td>
      * <td style="text-align: center;">S1080P</td>
+     * <td style="text-align: center;">YUV Analysis</td>
      * <td style="text-align: center;">S1080P</td>
-     * <td style="text-align: center;">PRIV</td>
+     * <td style="text-align: center;">PRIV Video</td>
+     * <td style="text-align: center;">1080P</td>
      * </tr>
      * </tbody>
      * </table>
