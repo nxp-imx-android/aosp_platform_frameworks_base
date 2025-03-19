@@ -803,4 +803,10 @@ public abstract class ActivityTaskManagerInternal {
 
     /** Returns whether assist data is allowed. */
     public abstract boolean isAssistDataAllowed();
+
+    /**
+     * Delegate back gesture request from shell.
+     * Returns true if the back gesture request was successful, false otherwise.
+     */
+    public abstract boolean requestBackGesture();
 }

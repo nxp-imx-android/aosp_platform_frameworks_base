@@ -4633,6 +4633,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     @SuppressLint("MissingPermission")
     private void injectBackGesture(long downtime) {
+        if (mActivityTaskManagerInternal.requestBackGesture()) {
+            return;
+        }
         // Create and inject down event
         KeyEvent downEvent = new KeyEvent(downtime, downtime, KeyEvent.ACTION_DOWN,
                 KeyEvent.KEYCODE_BACK, 0 /* repeat */, 0 /* metaState */,

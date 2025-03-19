@@ -202,6 +202,7 @@ class TestPhoneWindowManager {
     private boolean mIsTalkBackEnabled;
     private boolean mIsTalkBackShortcutGestureEnabled;
 
+    private boolean mDelegateBackGestureRemote;
     private boolean mIsVoiceAccessEnabled;
 
     private Intent mBrowserIntent;
@@ -580,6 +581,12 @@ class TestPhoneWindowManager {
         setPhoneCallIsInProgress();
     }
 
+    void overrideDelegateBackGestureRemote(boolean isDelegating) {
+        mDelegateBackGestureRemote = isDelegating;
+        doReturn(mDelegateBackGestureRemote).when(mActivityTaskManagerInternal)
+                .requestBackGesture();
+    }
+
     void prepareBrightnessDecrease(float currentBrightness) {
         doReturn(0.0f).when(mPowerManager).getBrightnessConstraint(
                 DEFAULT_DISPLAY, PowerManager.BRIGHTNESS_CONSTRAINT_TYPE_MINIMUM);
@@ -661,13 +668,21 @@ class TestPhoneWindowManager {
     }
 
     void assertBackEventInjected() {
-        ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
-        verify(mInputManager, times(2)).injectInputEvent(intentCaptor.capture(), anyInt());
-        List<InputEvent> inputEvents = intentCaptor.getAllValues();
-        Assert.assertEquals(KeyEvent.KEYCODE_BACK, ((KeyEvent) inputEvents.get(0)).getKeyCode());
-        Assert.assertEquals(KeyEvent.KEYCODE_BACK, ((KeyEvent) inputEvents.get(1)).getKeyCode());
-        // Reset verifier for next call.
-        Mockito.clearInvocations(mContext);
+        if (mDelegateBackGestureRemote) {
+            Mockito.verify(mActivityTaskManagerInternal).requestBackGesture();
+            ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
+            verify(mInputManager, never()).injectInputEvent(intentCaptor.capture(), anyInt());
+        } else {
+            ArgumentCaptor<InputEvent> intentCaptor = ArgumentCaptor.forClass(InputEvent.class);
+            verify(mInputManager, times(2)).injectInputEvent(intentCaptor.capture(), anyInt());
+            List<InputEvent> inputEvents = intentCaptor.getAllValues();
+            Assert.assertEquals(KeyEvent.KEYCODE_BACK,
+                    ((KeyEvent) inputEvents.get(0)).getKeyCode());
+            Assert.assertEquals(KeyEvent.KEYCODE_BACK,
+                    ((KeyEvent) inputEvents.get(1)).getKeyCode());
+            // Reset verifier for next call.
+            Mockito.clearInvocations(mContext);
+        }
     }
 
     void overrideSearchKeyBehavior(int behavior) {
