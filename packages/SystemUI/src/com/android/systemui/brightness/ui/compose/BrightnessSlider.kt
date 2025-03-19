@@ -37,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -73,6 +74,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.modifiers.padding
+import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.drawInOverlay
 import com.android.systemui.Flags
 import com.android.systemui.biometrics.Utils.toBitmap
@@ -139,7 +141,7 @@ fun BrightnessSlider(
         } else {
             null
         }
-    val colors = SliderDefaults.colors()
+    val colors = colors()
 
     // The value state is recreated every time gammaValue changes, so we recreate this derivedState
     // We have to use value as that's the value that changes when the user is dragging (gammaValue
@@ -211,6 +213,7 @@ fun BrightnessSlider(
                 interactionSource = interactionSource,
                 enabled = enabled,
                 thumbSize = DpSize(4.dp, 52.dp),
+                colors = colors,
             )
         },
         track = { sliderState ->
@@ -293,6 +296,7 @@ fun BrightnessSlider(
                 trackInsideCornerSize = 2.dp,
                 drawStopIndicator = null,
                 thumbTrackGapSize = ThumbTrackGapSize,
+                colors = colors,
             )
         },
     )
@@ -440,4 +444,14 @@ object BrightnessSliderMotionTestKeys {
     val AnimatingIcon = MotionTestValueKey<Boolean>("animatingIcon")
     val ActiveIconAlpha = MotionTestValueKey<Float>("activeIconAlpha")
     val InactiveIconAlpha = MotionTestValueKey<Float>("inactiveIconAlpha")
+}
+
+@Composable
+private fun colors(): SliderColors {
+    return SliderDefaults.colors()
+        .copy(
+            inactiveTrackColor = LocalAndroidColorScheme.current.surfaceEffect2,
+            activeTickColor = MaterialTheme.colorScheme.onPrimary,
+            inactiveTickColor = MaterialTheme.colorScheme.onSurface,
+        )
 }
