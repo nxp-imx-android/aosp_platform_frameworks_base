@@ -542,6 +542,13 @@ flag {
 }
 
 flag {
+    name: "debug_live_updates_promote_all"
+    namespace: "systemui"
+    description: "Promote all notifications to Live Updates (RONs). (For testing/debugging only, do not promote/release!)"
+    bug: "404838239"
+}
+
+flag {
     name: "compose_bouncer"
     namespace: "systemui"
     description: "Use the new compose bouncer in SystemUI"
