@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 import android.os.BatteryConsumer;
 import android.os.BatteryManager;
@@ -58,7 +57,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,6 +85,8 @@ public class BatteryStatsHistoryTest {
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     private final Parcel mHistoryBuffer = Parcel.obtain();
     private File mSystemDir;
@@ -97,14 +99,11 @@ public class BatteryStatsHistoryTest {
     @Mock
     private BatteryStatsHistory.TraceDelegate mTracer;
     @Mock
-    private BatteryStatsHistory.HistoryStepDetailsCalculator mStepDetailsCalculator;
-    @Mock
     private BatteryStatsHistory.EventLogger mEventLogger;
     private List<String> mReadFiles = new ArrayList<>();
 
     @Before
     public void setUp() throws IOException {
-        MockitoAnnotations.initMocks(this);
         mSystemDir = Files.createTempDirectory("BatteryStatsHistoryTest").toFile();
         mHistoryDir = new File(mSystemDir, "battery-history");
         String[] files = mHistoryDir.list();
@@ -138,14 +137,10 @@ public class BatteryStatsHistoryTest {
         mClock.currentTime = 1743645660000L;    //  2025-04-03, 2:01:00 AM
 
         mHistory = new BatteryStatsHistory(mHistoryBuffer, MAX_HISTORY_BUFFER_SIZE, mDirectory,
-                mStepDetailsCalculator, mClock, mMonotonicClock, mTracer,
+                mClock, mMonotonicClock, mTracer,
                 mEventLogger);
         mHistory.forceRecordAllHistory();
         mHistory.startRecordingHistory(mClock.realtime, mClock.uptime, false);
-
-        when(mStepDetailsCalculator.getHistoryStepDetails())
-                .thenReturn(new BatteryStats.HistoryStepDetails());
-
         mHistoryPrinter = new BatteryStats.HistoryPrinter(TimeZone.getTimeZone("GMT"));
     }
 
@@ -288,7 +283,7 @@ public class BatteryStatsHistoryTest {
 
         // create a new BatteryStatsHistory object, it will pick up existing history files.
         BatteryStatsHistory history2 = new BatteryStatsHistory(mHistoryBuffer, 1024, mDirectory,
-                null, mClock, mMonotonicClock, mTracer, mEventLogger);
+                mClock, mMonotonicClock, mTracer, mEventLogger);
         // verify constructor can pick up all files from file system.
         verifyFileNames(history2, fileList);
         verifyActiveFile(history2, "33000.bh");
@@ -595,7 +590,7 @@ public class BatteryStatsHistoryTest {
         // Keep the preserved part of history short - we only need to capture the very tail of
         // history.
         mHistory = new BatteryStatsHistory(mHistoryBuffer, 6000, mDirectory,
-                mStepDetailsCalculator, mClock, mMonotonicClock, mTracer, mEventLogger);
+                mClock, mMonotonicClock, mTracer, mEventLogger);
 
         mHistory.forceRecordAllHistory();
 

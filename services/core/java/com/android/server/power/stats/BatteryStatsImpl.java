@@ -117,7 +117,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.os.BatteryStatsHistory;
-import com.android.internal.os.BatteryStatsHistory.HistoryStepDetailsCalculator;
 import com.android.internal.os.BatteryStatsHistoryIterator;
 import com.android.internal.os.BinderCallsStats;
 import com.android.internal.os.BinderTransactionNameResolver;
@@ -653,7 +652,6 @@ public class BatteryStatsImpl extends BatteryStats {
 
     public interface PlatformIdleStateCallback {
         public void fillLowPowerStats(RpmStats rpmStats);
-        public String getSubsystemLowPowerStats();
     }
 
     /** interface to update rail information for power monitor */
@@ -1065,10 +1063,6 @@ public class BatteryStatsImpl extends BatteryStats {
          */
         void cancelCpuSyncDueToWakelockChange();
 
-        /**
-         * Schedules a sync caused by the battery level change
-         */
-        void scheduleSyncDueToBatteryLevelChange(long delayMillis);
         /** Schedule removal of UIDs corresponding to a removed user */
         void scheduleCleanupDueToRemovedUser(int userId);
         /** Schedule a sync because of a process state change */
@@ -1131,8 +1125,8 @@ public class BatteryStatsImpl extends BatteryStats {
     private boolean mShuttingDown;
 
     private final HistoryEventTracker mActiveEvents = new HistoryEventTracker();
-    private final HistoryStepDetailsCalculatorImpl mStepDetailsCalculator =
-            new HistoryStepDetailsCalculatorImpl();
+    private final BatteryHistoryStepDetailsProvider mStepDetailsProvider =
+            new BatteryHistoryStepDetailsProvider(this);
 
     private boolean mHaveBatteryLevel = false;
     private boolean mBatteryPluggedIn;
@@ -4553,184 +4547,6 @@ public class BatteryStatsImpl extends BatteryStats {
         return kmt;
     }
 
-    private class HistoryStepDetailsCalculatorImpl implements HistoryStepDetailsCalculator {
-        private final HistoryStepDetails mDetails = new HistoryStepDetails();
-
-        private boolean mHasHistoryStepDetails;
-        private boolean mUpdateRequested;
-
-        /**
-         * Total time (in milliseconds) spent executing in user code.
-         */
-        private long mLastStepCpuUserTimeMs;
-        private long mCurStepCpuUserTimeMs;
-        /**
-         * Total time (in milliseconds) spent executing in kernel code.
-         */
-        private long mLastStepCpuSystemTimeMs;
-        private long mCurStepCpuSystemTimeMs;
-        /**
-         * Times from /proc/stat (but measured in milliseconds).
-         */
-        private long mLastStepStatUserTimeMs;
-        private long mLastStepStatSystemTimeMs;
-        private long mLastStepStatIOWaitTimeMs;
-        private long mLastStepStatIrqTimeMs;
-        private long mLastStepStatSoftIrqTimeMs;
-        private long mLastStepStatIdleTimeMs;
-        private long mCurStepStatUserTimeMs;
-        private long mCurStepStatSystemTimeMs;
-        private long mCurStepStatIOWaitTimeMs;
-        private long mCurStepStatIrqTimeMs;
-        private long mCurStepStatSoftIrqTimeMs;
-        private long mCurStepStatIdleTimeMs;
-
-        @Override
-        public HistoryStepDetails getHistoryStepDetails() {
-            if (!mUpdateRequested) {
-                mUpdateRequested = true;
-                // Perform a CPU update right after we do this collection, so we have started
-                // collecting good data for the next step.
-                requestImmediateCpuUpdate();
-
-                if (mPlatformIdleStateCallback != null) {
-                    mDetails.statSubsystemPowerState =
-                            mPlatformIdleStateCallback.getSubsystemLowPowerStats();
-                    if (DEBUG) {
-                        Slog.i(TAG,
-                                "WRITE SubsystemPowerState:" + mDetails.statSubsystemPowerState);
-                    }
-                }
-            }
-
-            if (!mHasHistoryStepDetails) {
-                // We are not generating a delta, so all we need to do is reset the stats
-                // we will later be doing a delta from.
-                final int uidCount = mUidStats.size();
-                for (int i = 0; i < uidCount; i++) {
-                    final BatteryStatsImpl.Uid uid = mUidStats.valueAt(i);
-                    uid.mLastStepUserTimeMs = uid.mCurStepUserTimeMs;
-                    uid.mLastStepSystemTimeMs = uid.mCurStepSystemTimeMs;
-                }
-                mLastStepCpuUserTimeMs = mCurStepCpuUserTimeMs;
-                mLastStepCpuSystemTimeMs = mCurStepCpuSystemTimeMs;
-                mLastStepStatUserTimeMs = mCurStepStatUserTimeMs;
-                mLastStepStatSystemTimeMs = mCurStepStatSystemTimeMs;
-                mLastStepStatIOWaitTimeMs = mCurStepStatIOWaitTimeMs;
-                mLastStepStatIrqTimeMs = mCurStepStatIrqTimeMs;
-                mLastStepStatSoftIrqTimeMs = mCurStepStatSoftIrqTimeMs;
-                mLastStepStatIdleTimeMs = mCurStepStatIdleTimeMs;
-                return null;
-            } else {
-                if (DEBUG) {
-                    Slog.d(TAG, "Step stats last: user=" + mLastStepCpuUserTimeMs + " sys="
-                            + mLastStepStatSystemTimeMs + " io=" + mLastStepStatIOWaitTimeMs
-                            + " irq=" + mLastStepStatIrqTimeMs + " sirq="
-                            + mLastStepStatSoftIrqTimeMs + " idle=" + mLastStepStatIdleTimeMs);
-                    Slog.d(TAG, "Step stats cur: user=" + mCurStepCpuUserTimeMs + " sys="
-                            + mCurStepStatSystemTimeMs + " io=" + mCurStepStatIOWaitTimeMs
-                            + " irq=" + mCurStepStatIrqTimeMs + " sirq="
-                            + mCurStepStatSoftIrqTimeMs + " idle=" + mCurStepStatIdleTimeMs);
-                }
-                mDetails.userTime = (int) (mCurStepCpuUserTimeMs - mLastStepCpuUserTimeMs);
-                mDetails.systemTime = (int) (mCurStepCpuSystemTimeMs - mLastStepCpuSystemTimeMs);
-                mDetails.statUserTime = (int) (mCurStepStatUserTimeMs - mLastStepStatUserTimeMs);
-                mDetails.statSystemTime =
-                        (int) (mCurStepStatSystemTimeMs - mLastStepStatSystemTimeMs);
-                mDetails.statIOWaitTime =
-                        (int) (mCurStepStatIOWaitTimeMs - mLastStepStatIOWaitTimeMs);
-                mDetails.statIrqTime = (int) (mCurStepStatIrqTimeMs - mLastStepStatIrqTimeMs);
-                mDetails.statSoftIrqTime =
-                        (int) (mCurStepStatSoftIrqTimeMs - mLastStepStatSoftIrqTimeMs);
-                mDetails.statIdlTime = (int) (mCurStepStatIdleTimeMs - mLastStepStatIdleTimeMs);
-                mDetails.appCpuUid1 = mDetails.appCpuUid2 = mDetails.appCpuUid3 = -1;
-                mDetails.appCpuUTime1 = mDetails.appCpuUTime2 = mDetails.appCpuUTime3 = 0;
-                mDetails.appCpuSTime1 = mDetails.appCpuSTime2 = mDetails.appCpuSTime3 = 0;
-                final int uidCount = mUidStats.size();
-                for (int i = 0; i < uidCount; i++) {
-                    final BatteryStatsImpl.Uid uid = mUidStats.valueAt(i);
-                    final int totalUTimeMs =
-                            (int) (uid.mCurStepUserTimeMs - uid.mLastStepUserTimeMs);
-                    final int totalSTimeMs =
-                            (int) (uid.mCurStepSystemTimeMs - uid.mLastStepSystemTimeMs);
-                    final int totalTimeMs = totalUTimeMs + totalSTimeMs;
-                    uid.mLastStepUserTimeMs = uid.mCurStepUserTimeMs;
-                    uid.mLastStepSystemTimeMs = uid.mCurStepSystemTimeMs;
-                    if (totalTimeMs <= (mDetails.appCpuUTime3 + mDetails.appCpuSTime3)) {
-                        continue;
-                    }
-                    if (totalTimeMs <= (mDetails.appCpuUTime2 + mDetails.appCpuSTime2)) {
-                        mDetails.appCpuUid3 = uid.mUid;
-                        mDetails.appCpuUTime3 = totalUTimeMs;
-                        mDetails.appCpuSTime3 = totalSTimeMs;
-                    } else {
-                        mDetails.appCpuUid3 = mDetails.appCpuUid2;
-                        mDetails.appCpuUTime3 = mDetails.appCpuUTime2;
-                        mDetails.appCpuSTime3 = mDetails.appCpuSTime2;
-                        if (totalTimeMs <= (mDetails.appCpuUTime1 + mDetails.appCpuSTime1)) {
-                            mDetails.appCpuUid2 = uid.mUid;
-                            mDetails.appCpuUTime2 = totalUTimeMs;
-                            mDetails.appCpuSTime2 = totalSTimeMs;
-                        } else {
-                            mDetails.appCpuUid2 = mDetails.appCpuUid1;
-                            mDetails.appCpuUTime2 = mDetails.appCpuUTime1;
-                            mDetails.appCpuSTime2 = mDetails.appCpuSTime1;
-                            mDetails.appCpuUid1 = uid.mUid;
-                            mDetails.appCpuUTime1 = totalUTimeMs;
-                            mDetails.appCpuSTime1 = totalSTimeMs;
-                        }
-                    }
-                }
-                mLastStepCpuUserTimeMs = mCurStepCpuUserTimeMs;
-                mLastStepCpuSystemTimeMs = mCurStepCpuSystemTimeMs;
-                mLastStepStatUserTimeMs = mCurStepStatUserTimeMs;
-                mLastStepStatSystemTimeMs = mCurStepStatSystemTimeMs;
-                mLastStepStatIOWaitTimeMs = mCurStepStatIOWaitTimeMs;
-                mLastStepStatIrqTimeMs = mCurStepStatIrqTimeMs;
-                mLastStepStatSoftIrqTimeMs = mCurStepStatSoftIrqTimeMs;
-                mLastStepStatIdleTimeMs = mCurStepStatIdleTimeMs;
-                return mDetails;
-            }
-        }
-
-        public void addCpuStats(int totalUTimeMs, int totalSTimeMs, int statUserTimeMs,
-                int statSystemTimeMs, int statIOWaitTimeMs, int statIrqTimeMs,
-                int statSoftIrqTimeMs, int statIdleTimeMs) {
-            if (DEBUG) {
-                Slog.d(TAG, "Adding cpu: tuser=" + totalUTimeMs + " tsys=" + totalSTimeMs
-                        + " user=" + statUserTimeMs + " sys=" + statSystemTimeMs
-                        + " io=" + statIOWaitTimeMs + " irq=" + statIrqTimeMs
-                        + " sirq=" + statSoftIrqTimeMs + " idle=" + statIdleTimeMs);
-            }
-            mCurStepCpuUserTimeMs += totalUTimeMs;
-            mCurStepCpuSystemTimeMs += totalSTimeMs;
-            mCurStepStatUserTimeMs += statUserTimeMs;
-            mCurStepStatSystemTimeMs += statSystemTimeMs;
-            mCurStepStatIOWaitTimeMs += statIOWaitTimeMs;
-            mCurStepStatIrqTimeMs += statIrqTimeMs;
-            mCurStepStatSoftIrqTimeMs += statSoftIrqTimeMs;
-            mCurStepStatIdleTimeMs += statIdleTimeMs;
-        }
-
-        public void finishAddingCpuLocked() {
-            mHasHistoryStepDetails = true;
-            mUpdateRequested = false;
-        }
-
-        @Override
-        public void clear() {
-            mHasHistoryStepDetails = false;
-            mLastStepCpuUserTimeMs = mCurStepCpuUserTimeMs = 0;
-            mLastStepCpuSystemTimeMs = mCurStepCpuSystemTimeMs = 0;
-            mLastStepStatUserTimeMs = mCurStepStatUserTimeMs = 0;
-            mLastStepStatSystemTimeMs = mCurStepStatSystemTimeMs = 0;
-            mLastStepStatIOWaitTimeMs = mCurStepStatIOWaitTimeMs = 0;
-            mLastStepStatIrqTimeMs = mCurStepStatIrqTimeMs = 0;
-            mLastStepStatSoftIrqTimeMs = mCurStepStatSoftIrqTimeMs = 0;
-            mLastStepStatIdleTimeMs = mCurStepStatIdleTimeMs = 0;
-        }
-    }
-
     @GuardedBy("this")
     @Override
     public void commitCurrentHistoryBatchLocked() {
@@ -5557,7 +5373,7 @@ public class BatteryStatsImpl extends BatteryStats {
     public void addCpuStatsLocked(int totalUTimeMs, int totalSTimeMs, int statUserTimeMs,
             int statSystemTimeMs, int statIOWaitTimeMs, int statIrqTimeMs,
             int statSoftIrqTimeMs, int statIdleTimeMs) {
-        mStepDetailsCalculator.addCpuStats(totalUTimeMs, totalSTimeMs, statUserTimeMs,
+        mStepDetailsProvider.addCpuStats(totalUTimeMs, totalSTimeMs, statUserTimeMs,
                 statSystemTimeMs, statIOWaitTimeMs, statIrqTimeMs,
                 statSoftIrqTimeMs, statIdleTimeMs);
     }
@@ -5567,7 +5383,7 @@ public class BatteryStatsImpl extends BatteryStats {
      */
     @GuardedBy("this")
     public void finishAddingCpuStatsLocked() {
-        mStepDetailsCalculator.finishAddingCpuLocked();
+        mStepDetailsProvider.finishAddingCpuLocked();
     }
 
     public void noteProcessDiedLocked(int uid, int pid) {
@@ -11515,8 +11331,7 @@ public class BatteryStatsImpl extends BatteryStats {
 
         mBatteryHistoryDirectory = batteryHistoryDirectory;
         mHistory = new BatteryStatsHistory(null /* historyBuffer */, mConstants.MAX_HISTORY_BUFFER,
-                mBatteryHistoryDirectory, mStepDetailsCalculator, mClock, mMonotonicClock,
-                traceDelegate, eventLogger);
+                mBatteryHistoryDirectory, mClock, mMonotonicClock, traceDelegate, eventLogger);
 
         mCpuPowerStatsCollector = new CpuPowerStatsCollector(mPowerStatsCollectorInjector);
         mCpuPowerStatsCollector.addConsumer(this::recordPowerStats);
@@ -11721,6 +11536,12 @@ public class BatteryStatsImpl extends BatteryStats {
 
     public void setCallback(BatteryCallback cb) {
         mCallback = cb;
+    }
+
+    void updateCpuDetails() {
+        if (mCallback != null) {
+            mCallback.batteryNeedsCpuUpdate();
+        }
     }
 
     public void setRadioScanningTimeoutLocked(long timeoutUs) {
@@ -12342,6 +12163,8 @@ public class BatteryStatsImpl extends BatteryStats {
             }
             mWakeupReasonStats.clear();
         }
+
+        mStepDetailsProvider.reset();
 
         if (mTmpRailStats != null) {
             mTmpRailStats.reset();
@@ -14948,6 +14771,8 @@ public class BatteryStatsImpl extends BatteryStats {
             mCpuUidFreqTimeReader.onSystemReady();
         }
 
+        mStepDetailsProvider.onSystemReady();
+
         mPowerStatsCollectorInjector.setContext(context);
 
         mCpuPowerStatsCollector.setEnabled(
@@ -15270,6 +15095,7 @@ public class BatteryStatsImpl extends BatteryStats {
 
         reportChangesToStatsLog(status, plugType, level);
 
+        boolean requestStepDetails = false;
         final boolean onBattery = isOnBattery(plugType, status);
         if (!mHaveBatteryLevel) {
             mHaveBatteryLevel = true;
@@ -15289,6 +15115,7 @@ public class BatteryStatsImpl extends BatteryStats {
 
             mMaxChargeStepLevel = mMinDischargeStepLevel =
                     mLastChargeStepLevel = mLastDischargeStepLevel = level;
+            requestStepDetails = true;
         } else if (mBatteryLevel != level || mOnBattery != onBattery) {
             recordDailyStatsIfNeededLocked(level >= 100 && onBattery, currentTimeMs);
         }
@@ -15332,16 +15159,13 @@ public class BatteryStatsImpl extends BatteryStats {
             }
             mBatteryChargeUah = chargeUah;
             setOnBatteryLocked(elapsedRealtimeMs, uptimeMs, onBattery, oldStatus, level, chargeUah);
+            requestStepDetails = true;
         } else {
             boolean changed = false;
             if (mBatteryLevel != level) {
                 mBatteryLevel = level;
                 changed = true;
-
-                // TODO(adamlesinski): Schedule the creation of a HistoryStepDetails record
-                // which will pull external stats.
-                mExternalSync.scheduleSyncDueToBatteryLevelChange(
-                        mConstants.BATTERY_LEVEL_COLLECTION_DELAY_MS);
+                requestStepDetails = true;
             }
             if (mBatteryStatus != status) {
                 mBatteryStatus = status;
@@ -15461,6 +15285,9 @@ public class BatteryStatsImpl extends BatteryStats {
 
         if (mAccumulateBatteryUsageStats) {
             mBatteryUsageStatsProvider.accumulateBatteryUsageStatsAsync(this, mHandler);
+        }
+        if (requestStepDetails) {
+            mStepDetailsProvider.requestUpdate();
         }
     }
 
