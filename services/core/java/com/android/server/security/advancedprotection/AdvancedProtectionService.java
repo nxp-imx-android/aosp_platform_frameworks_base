@@ -17,6 +17,7 @@
 package com.android.server.security.advancedprotection;
 
 import static android.provider.Settings.Secure.ADVANCED_PROTECTION_MODE;
+import static android.provider.Settings.Secure.AAPM_USB_DATA_PROTECTION;
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 
 import android.Manifest;
@@ -69,6 +70,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /** @hide */
 public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  {
@@ -129,7 +131,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
             Slog.e(TAG, "Failed to initialize DisallowCellular2g", e);
           }
         }
-        if (android.security.Flags.aapmFeatureUsbDataProtection()) {
+        if (android.security.Flags.aapmFeatureUsbDataProtection()
+                // Usb data protection is enabled by default
+                && mStore.retrieveInt(AAPM_USB_DATA_PROTECTION, AdvancedProtectionStore.ON)
+                == AdvancedProtectionStore.ON) {
           try {
             mHooks.add(new UsbDataAdvancedProtectionHook(mContext, enabled));
           } catch (Exception e) {
@@ -183,7 +188,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
 
     // Without permission check
     private boolean isAdvancedProtectionEnabledInternal() {
-        return mStore.retrieve();
+        return mStore.retrieveAdvancedProtectionModeEnabled();
     }
 
     @Override
@@ -217,11 +222,39 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         try {
             synchronized (mCallbacks) {
                 if (enabled != isAdvancedProtectionEnabledInternal()) {
-                    mStore.store(enabled);
+                    mStore.storeAdvancedProtectionModeEnabled(enabled);
                     sendModeChanged(enabled);
                     logAdvancedProtectionEnabled(enabled);
                 }
             }
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    public void setUsbDataProtectionEnabled(boolean enabled) {
+        int value = enabled ? AdvancedProtectionStore.ON
+                : AdvancedProtectionStore.OFF;
+        setAdvancedProtectionSubSettingInt(AAPM_USB_DATA_PROTECTION, value);
+    }
+
+    private void setAdvancedProtectionSubSettingInt(String key, int value) {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            synchronized (mCallbacks) {
+                mStore.storeInt(key, value);
+                Slog.i(TAG, "Advanced protection: subsetting" + key + " is " + value);
+            }
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    public boolean isUsbDataProtectionEnabled() {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            return mStore.retrieveInt(AAPM_USB_DATA_PROTECTION, AdvancedProtectionStore.ON)
+                == AdvancedProtectionStore.ON;
         } finally {
             Binder.restoreCallingIdentity(identity);
         }
@@ -419,8 +452,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
     @VisibleForTesting
     static class AdvancedProtectionStore {
         private final Context mContext;
-        private static final int APM_ON = 1;
-        private static final int APM_OFF = 0;
+        static final int ON = 1;
+        static final int OFF = 0;
         private final UserManagerInternal mUserManager;
 
         AdvancedProtectionStore(@NonNull Context context) {
@@ -428,15 +461,26 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
             mUserManager = LocalServices.getService(UserManagerInternal.class);
         }
 
-        void store(boolean enabled) {
+        void storeAdvancedProtectionModeEnabled(boolean enabled) {
             Settings.Secure.putIntForUser(mContext.getContentResolver(),
-                    ADVANCED_PROTECTION_MODE, enabled ? APM_ON : APM_OFF,
+                    ADVANCED_PROTECTION_MODE, enabled ? ON : OFF,
                     mUserManager.getMainUserId());
         }
 
-        boolean retrieve() {
+        boolean retrieveAdvancedProtectionModeEnabled() {
             return Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    ADVANCED_PROTECTION_MODE, APM_OFF, mUserManager.getMainUserId()) == APM_ON;
+                    ADVANCED_PROTECTION_MODE, OFF, mUserManager.getMainUserId()) == ON;
+        }
+
+        void storeInt(String key, int value) {
+            Settings.Secure.putIntForUser(mContext.getContentResolver(),
+                    key, value,
+                    mUserManager.getMainUserId());
+        }
+
+        int retrieveInt(String key, int defaultValue) {
+            return Settings.Secure.getIntForUser(mContext.getContentResolver(),
+                    key, defaultValue, mUserManager.getMainUserId());
         }
     }
 

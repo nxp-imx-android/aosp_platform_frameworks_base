@@ -13317,10 +13317,18 @@ public final class Settings {
         public static final String CONTEXTUAL_SEARCH_PACKAGE = "contextual_search_package";
 
         /**
-         * Inetger property which determines whether advanced protection is on or not.
+         * Integer property which determines whether advanced protection is on or not.
          * @hide
          */
         public static final String ADVANCED_PROTECTION_MODE = "advanced_protection_mode";
+
+        /**
+         * Integer property which determines whether advanced protection USB data protection
+         * feature is on or not.
+         *
+         * @hide
+         */
+        public static final String AAPM_USB_DATA_PROTECTION = "aapm_usb_data_protection";
     }
 
     /**
