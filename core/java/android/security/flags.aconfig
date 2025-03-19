@@ -52,13 +52,6 @@ flag {
 }
 
 flag {
-    name: "binary_transparency_sepolicy_hash"
-    namespace: "hardware_backed_security"
-    description: "Collect sepolicy hash from sysfs"
-    bug: "308471499"
-}
-
-flag {
     name: "frp_enforcement"
     is_exported: true
     namespace: "hardware_backed_security"
