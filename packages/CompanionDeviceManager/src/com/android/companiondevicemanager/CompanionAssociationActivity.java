@@ -359,11 +359,7 @@ public class CompanionAssociationActivity extends FragmentActivity implements
                 if (CompanionDeviceDiscoveryService.getScanResult().getValue().isEmpty()) {
                     // If the scan times out, do NOT close the activity automatically and let the
                     // user manually cancel the flow.
-                    synchronized (LOCK) {
-                        if (sDiscoveryStarted) {
-                            stopDiscovery();
-                        }
-                    }
+                    stopDiscovery();
                     mTimeoutMessage.setText(getString(R.string.message_discovery_hard_timeout));
                     mTimeoutMessage.setVisibility(View.VISIBLE);
                 }
@@ -455,8 +451,14 @@ public class CompanionAssociationActivity extends FragmentActivity implements
     }
 
     private void stopDiscovery() {
-        if (mRequest != null && !mRequest.isSelfManaged()) {
-            CompanionDeviceDiscoveryService.stop(this);
+        if (mRequest == null || mRequest.isSelfManaged()) {
+            return;
+        }
+
+        synchronized (LOCK) {
+            if (sDiscoveryStarted) {
+                CompanionDeviceDiscoveryService.stop(this);
+            }
         }
     }
 
