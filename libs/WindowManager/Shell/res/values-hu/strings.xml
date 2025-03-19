@@ -100,7 +100,7 @@
     <string name="camera_compat_treatment_applied_button_description" msgid="2944157113330703897">"Nem sikerült a hiba kijavítása?\nKoppintson a visszaállításhoz."</string>
     <string name="camera_compat_dismiss_button_description" msgid="2795364433503817511">"Nincsenek problémái kamerával? Koppintson az elvetéshez."</string>
     <string name="windowing_app_handle_education_tooltip" msgid="2929643449849791854">"Az alkalmazásmenü itt található"</string>
-    <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"Asztali ablakkezelési módba lépve több alkalmazást nyithat meg egyidejűleg"</string>
+    <string name="windowing_desktop_mode_image_button_education_tooltip" msgid="7171915734817051666">"Asztali ablakkezelési módba lépve egyidejűleg több alkalmazást is megnyithat"</string>
     <string name="windowing_desktop_mode_exit_education_tooltip" msgid="5225660258192054132">"Az alkalmazásmenüből bármikor visszatérhet a teljes képernyőre"</string>
     <string name="letterbox_education_dialog_title" msgid="7739895354143295358">"Több mindent láthat és tehet"</string>
     <string name="letterbox_education_split_screen_text" msgid="449233070804658627">"Húzzon ide egy másik alkalmazást az osztott képernyő használatához"</string>
@@ -132,6 +132,8 @@
     <string name="new_window_text" msgid="6318648868380652280">"Új ablak"</string>
     <string name="manage_windows_text" msgid="5567366688493093920">"Ablakok kezelése"</string>
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"Méretarány módosítása"</string>
+    <!-- no translation found for handle_menu_restart_text (3907767216238298098) -->
+    <skip />
     <string name="close_text" msgid="4986518933445178928">"Bezárás"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"Menü bezárása"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (Asztali ablakkezelési mód)"</string>
