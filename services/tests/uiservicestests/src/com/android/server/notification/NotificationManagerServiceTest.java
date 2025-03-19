@@ -18657,4 +18657,37 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
         verify(mGroupHelper).onNotificationRemoved(eq(n), any(), eq(false));
     }
+
+    @Test
+    public void onDisplayRemoveSystemDecorations_cancelToasts() throws RemoteException {
+        final String testPackage = "testPackageName";
+        final INotificationManager service = ((INotificationManager) mService.mService);
+        final IBinder firstExternal = new Binder();
+        final IBinder secondExternal = new Binder();
+        final IBinder firstBuiltin = new Binder();
+        service.enqueueTextToast(testPackage,
+                firstExternal, "First external", TOAST_DURATION,
+                /* isUiContext= */ true, /* displayId= */ 10, /* callback= */ null);
+        service.enqueueTextToast(testPackage,
+                secondExternal, "Second external", TOAST_DURATION,
+                /* isUiContext= */ true, /* displayId= */ 10, /* callback= */ null);
+        service.enqueueTextToast(testPackage,
+                firstBuiltin, "First built-in", TOAST_DURATION, /* isUiContext= */ true,
+                /* displayId= */ DEFAULT_DISPLAY, /* callback= */ null);
+
+        mInternalService.onDisplayRemoveSystemDecorations(10);
+
+        verify(mStatusBar).showToast(anyInt(), eq(testPackage), eq(firstExternal),
+                any(String.class), any(IBinder.class), anyInt(), any(), eq(10));
+        verify(mStatusBar).hideToast(eq(testPackage), eq(firstExternal));
+        // The second toast has not been shown but invokes hide() anyway as
+        // NotificationManagerService does not remembered if it invoked show().
+        verify(mStatusBar, never()).showToast(anyInt(), eq(testPackage), eq(secondExternal),
+                any(String.class), any(IBinder.class), anyInt(), any(), eq(10));
+        verify(mStatusBar).hideToast(eq(testPackage), eq(secondExternal));
+        // The toast on the default display is shown as other notifications are cancelled.
+        verify(mStatusBar).showToast(anyInt(), eq(testPackage), eq(firstBuiltin), any(String.class),
+                any(IBinder.class), anyInt(), any(), eq(DEFAULT_DISPLAY));
+        verify(mStatusBar, never()).hideToast(eq(testPackage), eq(firstBuiltin));
+    }
 }
