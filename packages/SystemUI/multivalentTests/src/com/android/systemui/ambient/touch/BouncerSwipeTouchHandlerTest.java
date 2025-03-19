@@ -712,17 +712,39 @@ public class BouncerSwipeTouchHandlerTest extends SysuiTestCase {
     }
 
     @Test
-    public void testTouchSessionStart_notifiesShadeOfUserInteraction() {
-        mTouchHandler.onSessionStart(mTouchSession);
-
+    public void testSwipeUp_notifiesShadeOfUserInteraction() {
+        // Start a swipe up gesture that will open the bouncer.
+        final float swipeUpPercentage = .3f;
+        final float velocityY = -1;
+        swipeToPosition(swipeUpPercentage, velocityY);
         mKosmos.getTestScope().getTestScheduler().runCurrent();
         assertThat(mKosmos.getShadeRepository().getLegacyShadeTracking().getValue()).isTrue();
 
+        // End touch session.
         ArgumentCaptor<TouchHandler.TouchSession.Callback> onRemovedCallbackCaptor =
                 ArgumentCaptor.forClass(TouchHandler.TouchSession.Callback.class);
         verify(mTouchSession).registerCallback(onRemovedCallbackCaptor.capture());
         onRemovedCallbackCaptor.getValue().onRemoved();
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
 
+        // Shade notified that the tracking stops.
+        assertThat(mKosmos.getShadeRepository().getLegacyShadeTracking().getValue()).isFalse();
+    }
+
+    @Test
+    public void testSwipeDown_doesNotNotifYShadeOfUserInteraction() {
+        mTouchHandler.onSessionStart(mTouchSession);
+
+        final float percent = .15f;
+        final float distanceY = SCREEN_HEIGHT_PX * percent;
+
+        // Swiping down, which will not open the bouncer.
+        final MotionEvent event1 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE,
+                0, SCREEN_HEIGHT_PX - distanceY, 0);
+        final MotionEvent event2 = MotionEvent.obtain(0, 0, MotionEvent.ACTION_MOVE,
+                0, SCREEN_HEIGHT_PX, 0);
+
+        // Shade is not notified since swipe is not captured.
         mKosmos.getTestScope().getTestScheduler().runCurrent();
         assertThat(mKosmos.getShadeRepository().getLegacyShadeTracking().getValue()).isFalse();
     }

@@ -142,6 +142,10 @@ constructor(
                             abs(distanceY.toDouble()) > abs(distanceX.toDouble())
                         }
                     if (capture == true) {
+                        // Set legacy shade tracking when opening bouncer, same as lock screen does.
+                        // This prevents issues with the bouncer swipe getting cancelled/stuck
+                        // midway.
+                        shadeRepository.setLegacyShadeTracking(true)
                         // reset expanding
                         expanded = false
                         // Since the user is dragging the bouncer up, set scrimmed to false.
@@ -294,8 +298,13 @@ constructor(
         currentScrimController = scrimManager.currentController
         isKeyguardScreenRotationAllowed = keyguardStateController.isKeyguardScreenRotationAllowed()
 
-        shadeRepository.setLegacyShadeTracking(true)
         session.registerCallback {
+            if (capture == true) {
+                // Only set tracking to false if we started capturing a bouncer swipe gesture.
+                // Otherwise this can interfere with opening the shade.
+                shadeRepository.setLegacyShadeTracking(false)
+            }
+
             velocityTracker?.apply { recycle() }
             velocityTracker = null
 
@@ -306,7 +315,6 @@ constructor(
             if (!Flags.communalBouncerDoNotModifyPluginOpen()) {
                 notificationShadeWindowController.setForcePluginOpen(false, this)
             }
-            shadeRepository.setLegacyShadeTracking(false)
         }
         session.registerGestureListener(onGestureListener)
         session.registerInputListener { ev: InputEvent -> onMotionEvent(ev) }
