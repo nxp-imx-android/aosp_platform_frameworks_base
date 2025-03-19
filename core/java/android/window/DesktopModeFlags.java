@@ -66,16 +66,16 @@ public enum DesktopModeFlags {
     ENABLE_DESKTOP_INDICATOR_IN_SEPARATE_THREAD_BUGFIX(
             Flags::enableDesktopIndicatorInSeparateThreadBugfix, false),
     ENABLE_DESKTOP_OPENING_DEEPLINK_MINIMIZE_ANIMATION_BUGFIX(
-            Flags::enableDesktopOpeningDeeplinkMinimizeAnimationBugfix, false),
+            Flags::enableDesktopOpeningDeeplinkMinimizeAnimationBugfix, true),
     ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX(
-            Flags::enableDesktopRecentsTransitionsCornersBugfix, false),
+            Flags::enableDesktopRecentsTransitionsCornersBugfix, true),
     ENABLE_DESKTOP_SKIP_COMPAT_UI_EDUCATION_IN_DESKTOP_MODE_BUGFIX(
             Flags::skipCompatUiEducationInDesktopMode, true),
     ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS(Flags::enableDesktopSystemDialogsTransitions, true),
     ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX(
-            Flags::enableDesktopTabTearingMinimizeAnimationBugfix, false),
+            Flags::enableDesktopTabTearingMinimizeAnimationBugfix, true),
     ENABLE_DESKTOP_TRAMPOLINE_CLOSE_ANIMATION_BUGFIX(
-            Flags::enableDesktopTrampolineCloseAnimationBugfix, false),
+            Flags::enableDesktopTrampolineCloseAnimationBugfix, true),
     ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER(
             Flags::enableDesktopWallpaperActivityForSystemUser, true),
     ENABLE_DESKTOP_WINDOWING_APP_TO_WEB(Flags::enableDesktopWindowingAppToWeb, true),
@@ -107,7 +107,7 @@ public enum DesktopModeFlags {
             true),
     ENABLE_DRAG_RESIZE_SET_UP_IN_BG_THREAD(Flags::enableDragResizeSetUpInBgThread, true),
     ENABLE_DRAG_TO_DESKTOP_INCOMING_TRANSITIONS_BUGFIX(
-            Flags::enableDragToDesktopIncomingTransitionsBugfix, false),
+            Flags::enableDragToDesktopIncomingTransitionsBugfix, true),
     ENABLE_FULLY_IMMERSIVE_IN_DESKTOP(Flags::enableFullyImmersiveInDesktop, true),
     ENABLE_HANDLE_INPUT_FIX(Flags::enableHandleInputFix, true),
     ENABLE_HOLD_TO_DRAG_APP_HANDLE(Flags::enableHoldToDragAppHandle, true),
@@ -134,7 +134,7 @@ public enum DesktopModeFlags {
     ENABLE_TOP_VISIBLE_ROOT_TASK_PER_USER_TRACKING(Flags::enableTopVisibleRootTaskPerUserTracking,
             true),
     ENABLE_VISUAL_INDICATOR_IN_TRANSITION_BUGFIX(
-            Flags::enableVisualIndicatorInTransitionBugfix, false),
+            Flags::enableVisualIndicatorInTransitionBugfix, true),
     ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS(Flags::enableWindowingDynamicInitialBounds, true),
     ENABLE_WINDOWING_EDGE_DRAG_RESIZE(Flags::enableWindowingEdgeDragResize, true),
     ENABLE_WINDOWING_SCALED_RESIZING(Flags::enableWindowingScaledResizing, true),
