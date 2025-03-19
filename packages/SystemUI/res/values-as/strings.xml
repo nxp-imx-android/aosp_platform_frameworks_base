@@ -419,10 +419,11 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"নতুন ডিভাইচ পেয়াৰ কৰিবলৈ ক্লিক কৰক"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"প্ৰিছেট আপডে’ট কৰিব পৰা নগ’ল"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"প্ৰিছেট"</string>
-    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
-    <skip />
-    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
-    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
+    <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"কলৰ বাবে ডিফ’ল্ট মাইক্ৰ’ফ’ন"</string>
+  <string-array name="hearing_device_input_routing_options">
+    <item msgid="4582190415045337003">"শ্ৰৱণ যন্ত্ৰৰ মাইক্ৰ’ফ’ন"</item>
+    <item msgid="8501466270452446450">"এই ফ’নটোৰ মাইক্ৰ’ফ’ন"</item>
+  </string-array>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"বাছনি কৰা হৈছে"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"আশ-পাশ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"বাওঁফাল"</string>
@@ -800,8 +801,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"অন আছে - মুখাৱয়ব ভিত্তিক"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"কৰা হ’ল"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"প্ৰয়োগ কৰক"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"অফ কৰক"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"নীৰৱ"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ডিফ’ল্ট"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"স্বয়ংক্ৰিয়"</string>
@@ -983,6 +983,8 @@
     <string name="right_icon" msgid="1103955040645237425">"সোঁ আইকন"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"টাইল যোগ কৰিবলৈ হেঁচি ধৰি টানি আনক"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"টাইলসমূহ পুনৰ সজাবলৈ ধৰি টানক"</string>
+    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
+    <skip />
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"আঁতৰাবৰ বাবে টানি আনি ইয়াত এৰি দিয়ক"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"আপোনাক অতিকমেও <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>খন টাইল লাগিব"</string>
     <string name="qs_edit" msgid="5583565172803472437">"সম্পাদনা কৰক"</string>
@@ -1003,6 +1005,10 @@
     <string name="other" msgid="429768510980739978">"অন্যান্য"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"টাইলৰ আকাৰ ট’গল কৰক"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"টাইল আঁতৰাবলৈ"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
+    <skip />
+    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"অন্তিম স্থানত টাইল যোগ দিয়ক"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"টাইল স্থানান্তৰ কৰক"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"বিচৰা স্থানত টাইল যোগ দিয়ক"</string>
@@ -1578,5 +1584,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"অজ্ঞাত"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"আটাইবোৰ টাইল ৰিছেট কৰিবনে?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"আটাইবোৰ ক্ষিপ্ৰ ছেটিঙৰ টাইল ডিভাইচৰ মূল ছেটিংছলৈ ৰিছেট হ’ব"</string>
+    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

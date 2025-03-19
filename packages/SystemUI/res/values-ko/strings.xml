@@ -419,10 +419,11 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"새 기기와 페어링하려면 클릭하세요"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"사전 설정을 업데이트할 수 없음"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"미리 설정"</string>
-    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
-    <skip />
-    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
-    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
+    <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"통화용 기본 마이크"</string>
+  <string-array name="hearing_device_input_routing_options">
+    <item msgid="4582190415045337003">"보청기 마이크"</item>
+    <item msgid="8501466270452446450">"이 휴대전화의 마이크"</item>
+  </string-array>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"선택됨"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"주변 소리"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"왼쪽"</string>
@@ -800,8 +801,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"켜짐 - 얼굴 기준"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"완료"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"적용"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"사용 중지"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"무음"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"기본값"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"자동"</string>
@@ -983,6 +983,8 @@
     <string name="right_icon" msgid="1103955040645237425">"오른쪽 아이콘"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"길게 터치하고 드래그하여 타일 추가"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"길게 터치하고 드래그하여 타일 재정렬"</string>
+    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
+    <skip />
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"여기로 드래그하여 삭제"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>개 이상의 타일이 필요합니다."</string>
     <string name="qs_edit" msgid="5583565172803472437">"수정"</string>
@@ -1003,6 +1005,10 @@
     <string name="other" msgid="429768510980739978">"기타"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"타일 크기 전환"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"타일 삭제"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
+    <skip />
+    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"마지막 위치에 타일 추가"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"타일 이동"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"원하는 위치에 타일 추가"</string>
@@ -1578,5 +1584,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"알 수 없음"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"모든 타일을 재설정하시겠습니까?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"모든 빠른 설정 타일이 기기의 원래 설정으로 재설정됩니다."</string>
+    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

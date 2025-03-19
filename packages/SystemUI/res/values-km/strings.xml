@@ -419,10 +419,11 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"ចុច ដើម្បីផ្គូផ្គងឧបករណ៍ថ្មី"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"មិនអាច​ប្ដូរ​ការកំណត់ជាមុន​បានទេ"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"កំណត់ជាមុន"</string>
-    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
-    <skip />
-    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
-    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
+    <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"មីក្រូហ្វូន​លំនាំ​ដើមសម្រាប់ការហៅទូរសព្ទ"</string>
+  <string-array name="hearing_device_input_routing_options">
+    <item msgid="4582190415045337003">"មីក្រូហ្វូនដែលមានឧបករណ៍​ជំនួយការ​ស្ដាប់"</item>
+    <item msgid="8501466270452446450">"មីក្រូហ្វូនរបស់ទូរសព្ទនេះ"</item>
+  </string-array>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"បានជ្រើសរើស"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"មជ្ឈដ្ឋានជុំវិញ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ឆ្វេង"</string>
@@ -586,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"នៅពេលអ្នកបង្ហាញកម្មវិធីណាមួយ <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> មើលឃើញអ្វីគ្រប់យ៉ាងដែលបង្ហាញ ឬចាក់ក្នុងកម្មវិធីនោះ។ ដូច្នេះ សូមប្រុងប្រយ័ត្នចំពោះអ្វីៗដូចជា ពាក្យសម្ងាត់ ព័ត៌មានលម្អិតអំពីការទូទាត់ប្រាក់ សារ រូបថត ព្រមទាំងសំឡេង និងវីដេអូ។"</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"បង្ហាញ​អេក្រង់"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> បានបិទជម្រើសនេះ"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"មិនអាចប្រើបានតាមកម្មវិធីនេះទេ"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"ជ្រើសរើស​កម្មវិធី​ដើម្បី​ចែករំលែក"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"បញ្ជូនអេក្រង់របស់អ្នកឬ?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"បញ្ជូនកម្មវិធីមួយ"</string>
@@ -800,8 +800,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"បើក - ផ្អែកលើមុខ"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"រួចរាល់"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ប្រើ"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"បិទ"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"ស្ងាត់"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"លំនាំដើម"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ស្វ័យប្រវត្តិ"</string>
@@ -983,6 +982,8 @@
     <string name="right_icon" msgid="1103955040645237425">"រូបតំណាង​ខាង​ស្ដាំ"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ចុច​ឱ្យ​ជាប់ រួចអូសដើម្បី​បញ្ចូល​ប្រអប់"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ចុច​ឱ្យ​ជាប់ រួចអូស​ដើម្បី​រៀបចំ​ប្រអប់​ឡើងវិញ"</string>
+    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
+    <skip />
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"អូសទីនេះដើម្បីយកចេញ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"អ្នក​ត្រូវការ​ប្រអប់​យ៉ាងតិច <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
     <string name="qs_edit" msgid="5583565172803472437">"កែ"</string>
@@ -1003,6 +1004,10 @@
     <string name="other" msgid="429768510980739978">"ផ្សេងៗ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"បិទ/បើកទំហំរបស់ប្រអប់"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"ដកប្រអប់ចេញ"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
+    <skip />
+    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"បញ្ចូលប្រអប់ទៅទីតាំងចុងក្រោយ"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ផ្លាស់ទី​ប្រអប់"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"បញ្ចូលប្រអប់ទៅទីតាំងដែលចង់បាន"</string>
@@ -1578,5 +1583,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"មិនស្គាល់"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"កំណត់ប្រអប់ទាំងអស់​ឡើងវិញឬ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ប្រអប់​ការកំណត់រហ័សទាំងអស់នឹងកំណត់ឡើងវិញទៅការ​កំណត់ដើមរបស់ឧបករណ៍"</string>
+    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

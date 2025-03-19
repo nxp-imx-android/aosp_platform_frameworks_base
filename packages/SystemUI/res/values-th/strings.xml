@@ -419,10 +419,11 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"คลิกเพื่อจับคู่อุปกรณ์ใหม่"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"ไม่สามารถอัปเดตค่าที่กำหนดล่วงหน้า"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ค่าที่กำหนดล่วงหน้า"</string>
-    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
-    <skip />
-    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
-    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
+    <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"ไมโครโฟนเริ่มต้นสำหรับการโทร"</string>
+  <string-array name="hearing_device_input_routing_options">
+    <item msgid="4582190415045337003">"ไมโครโฟนเครื่องช่วยฟัง"</item>
+    <item msgid="8501466270452446450">"ไมโครโฟนของโทรศัพท์เครื่องนี้"</item>
+  </string-array>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"เลือกแล้ว"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"เสียงแวดล้อม"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ซ้าย"</string>
@@ -586,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"เมื่อกำลังแชร์แอป <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> จะมองเห็นทุกสิ่งที่แสดงหรือเล่นอยู่ในแอปดังกล่าว ดังนั้นโปรดระวังสิ่งต่างๆ อย่างเช่นรหัสผ่าน รายละเอียดการชำระเงิน ข้อความ รูปภาพ รวมถึงเสียงและวิดีโอ"</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"แชร์หน้าจอ"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> ปิดใช้ตัวเลือกนี้"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"แอปไม่รองรับ"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"เลือกแอปที่จะแชร์"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"แคสต์หน้าจอของคุณไหม"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"แคสต์แอปเดียว"</string>
@@ -800,8 +800,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"เปิด - ตามใบหน้า"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"เสร็จสิ้น"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ใช้"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ปิด"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"ปิดเสียง"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"ค่าเริ่มต้น"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"อัตโนมัติ"</string>
@@ -983,6 +982,8 @@
     <string name="right_icon" msgid="1103955040645237425">"ไอคอนทางขวา"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"กดค้างแล้วลากเพื่อเพิ่มการ์ด"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"กดค้างแล้วลากเพื่อจัดเรียงการ์ดใหม่"</string>
+    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
+    <skip />
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ลากมาที่นี่เพื่อนำออก"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"คุณต้องมีการ์ดอย่างน้อย <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> รายการ"</string>
     <string name="qs_edit" msgid="5583565172803472437">"แก้ไข"</string>
@@ -1003,6 +1004,10 @@
     <string name="other" msgid="429768510980739978">"อื่นๆ"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"สลับขนาดของการ์ด"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"นำชิ้นส่วนออก"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
+    <skip />
+    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"เพิ่มการ์ดไปยังตำแหน่งสุดท้าย"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"ย้ายชิ้นส่วน"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"เพิ่มการ์ดไปยังตำแหน่งที่ต้องการ"</string>
@@ -1578,5 +1583,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ไม่ทราบ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"รีเซ็ตการ์ดทั้งหมดใช่ไหม"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"การ์ดการตั้งค่าด่วนทั้งหมดจะรีเซ็ตเป็นการตั้งค่าเดิมของอุปกรณ์"</string>
+    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

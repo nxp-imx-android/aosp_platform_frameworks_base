@@ -419,10 +419,11 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"नवीन डिव्हाइस पेअर करण्यासाठी क्लिक करा"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"प्रीसेट अपडेट करता आले नाही"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"प्रीसेट"</string>
-    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
-    <skip />
-    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
-    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
+    <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"कॉलसाठी डीफॉल्ट मायक्रोफोन"</string>
+  <string-array name="hearing_device_input_routing_options">
+    <item msgid="4582190415045337003">"श्रवणयंत्र मायक्रोफोन"</item>
+    <item msgid="8501466270452446450">"या फोनचा मायक्रोफोन"</item>
+  </string-array>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"निवडला आहे"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"जवळपासचे"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"डावे"</string>
@@ -586,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"तुम्ही अ‍ॅप शेअर करता, तेव्हा त्या अ‍ॅपमध्ये दाखवल्या किंवा प्ले होणाऱ्या कोणत्याही गोष्टी <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> साठी दृश्यमान असतात. त्यामुळे पासवर्ड, पेमेंट तपशील, मेसेज, फोटो आणि ऑडिओ व व्हिडिओ यांसारख्या गोष्टींबाबत सावधगिरी बाळगा."</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"स्क्रीन शेअर करा"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> हा पर्याय बंद केला आहे"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"ॲपद्वारे सपोर्ट नाही"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"शेअर करण्यासाठी अ‍ॅप निवडा"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"तुमची स्क्रीन कास्ट करायची आहे का?"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"एक अ‍ॅप कास्ट करा"</string>
@@ -800,8 +800,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"सुरू - चेहऱ्यावर आधारित"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"पूर्ण झाले"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करा"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करा"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"सायलंट"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"डीफॉल्ट"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"ऑटोमॅटिक"</string>
@@ -983,6 +982,8 @@
     <string name="right_icon" msgid="1103955040645237425">"उजवे आयकन"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"टाइल जोडण्यासाठी धरून ठेवून ड्रॅग करा"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"टाइलची पुनर्रचना करण्यासाठी धरून ठेवून ड्रॅग करा"</string>
+    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
+    <skip />
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"काढण्यासाठी येथे ड्रॅग करा"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"तुम्हाला किमान <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> टाइलची गरज आहे"</string>
     <string name="qs_edit" msgid="5583565172803472437">"संपादित करा"</string>
@@ -1003,6 +1004,10 @@
     <string name="other" msgid="429768510980739978">"अन्य"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"टाइलचा आकार टॉगल करा"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"टाइल काढून टाका"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
+    <skip />
+    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"टाइल शेवटच्या स्थानावर जोडा"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"टाइल हलवा"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"हव्या असलेल्या स्थानावर टाइल जोडा"</string>
@@ -1578,5 +1583,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"अज्ञात"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"सर्व टाइल रीसेट करायच्या?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"सर्व क्विक सेटिंग्ज टाइल डिव्हाइसच्या मूळ सेटिंग्जवर रीसेट केल्या जातील"</string>
+    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
