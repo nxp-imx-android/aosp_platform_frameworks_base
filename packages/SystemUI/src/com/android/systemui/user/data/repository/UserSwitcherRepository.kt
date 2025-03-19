@@ -68,7 +68,9 @@ constructor(
         context.resources.getBoolean(R.bool.qs_show_user_switcher_for_single_user)
 
     private val userSwitchingMustGoThroughLoginScreen =
-        context.resources.getBoolean(R.bool.config_userSwitchingMustGoThroughLoginScreen)
+        context.resources.getBoolean(
+            com.android.internal.R.bool.config_userSwitchingMustGoThroughLoginScreen
+        )
 
     override val isEnabled: Flow<Boolean> = conflatedCallbackFlow {
         suspend fun updateState() {
