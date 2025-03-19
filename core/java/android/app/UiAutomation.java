@@ -1316,6 +1316,64 @@ public final class UiAutomation {
     }
 
     /**
+     * Takes a screenshot from the specified display.
+     *
+     * @param displayId The ID of the display to capture.
+     * @return A {@link android.graphics.Bitmap} representing the screenshot of the specified
+     *         display.
+     * @throws IllegalArgumentException If the provided {@code displayId} does not correspond to
+     * a valid display.
+     * @throws IOException If an error occurs while creating the screenshot or processing the
+     * captured screenshot into a bitmap.
+     * @hide
+     */
+    @TestApi
+    @NonNull
+    @SuppressLint("UnflaggedApi") // TestApi
+    public Bitmap takeScreenshot(int displayId) throws IOException {
+        if (DEBUG) {
+            Log.d(LOG_TAG, "Taking screenshot of display " + displayId);
+        }
+        Display display = DisplayManagerGlobal.getInstance().getRealDisplay(displayId);
+        if (display == null) {
+            throw new IllegalArgumentException("Error finding the display " + displayId);
+        }
+        Point displaySize = new Point();
+        display.getRealSize(displaySize);
+
+        // Take the screenshot
+        ScreenCapture.SynchronousScreenCaptureListener syncScreenCapture =
+                ScreenCapture.createSyncCaptureListener();
+        try {
+            if (!mUiAutomationConnection.takeScreenshot(
+                    new Rect(0, 0, displaySize.x, displaySize.y), syncScreenCapture, displayId)) {
+                throw new IOException("Fail to capture screenshot for display=" + displayId
+                        + " due to remote error.");
+            }
+        } catch (RemoteException e) {
+            e.rethrowFromSystemServer();
+        }
+
+        final ScreenshotHardwareBuffer screenshotBuffer = syncScreenCapture.getBuffer();
+        if (screenshotBuffer == null) {
+            throw new IOException("Empty screenshot buffer for display=" + displayId);
+        }
+        Bitmap screenShot = screenshotBuffer.asBitmap();
+        if (screenShot == null) {
+            throw new IOException("Fail to create screenshot bitmap for display=" + displayId);
+        }
+        Bitmap swBitmap;
+        try (HardwareBuffer buffer = screenshotBuffer.getHardwareBuffer()) {
+            swBitmap = screenShot.copy(Bitmap.Config.ARGB_8888, false);
+        }
+        screenShot.recycle();
+
+        // Optimization
+        swBitmap.setHasAlpha(false);
+        return swBitmap;
+    }
+
+    /**
      * Used to capture a screenshot of a Window. This can return null in the following cases:
      * 1. Window content hasn't been layed out.
      * 2. Window doesn't have a valid SurfaceControl
