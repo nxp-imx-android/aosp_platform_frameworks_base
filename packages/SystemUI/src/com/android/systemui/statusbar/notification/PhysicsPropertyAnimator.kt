@@ -157,6 +157,10 @@ private fun startAnimation(
         animator.addEndListener { _, _, _, _ ->
             propertyData.animator = null
             propertyData.doubleOvershootAvoidingListener = null
+            // Let's make sure we never get stuck with an offset even when canceling
+            // We never actually cancel running animations but keep it around, so this only
+            // triggers if things really should end.
+            propertyData.offset = 0f
         }
     }
     if (animatableProperty.avoidDoubleOvershoot
