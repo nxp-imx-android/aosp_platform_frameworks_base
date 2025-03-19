@@ -89,6 +89,11 @@ interface DesktopState {
      */
     val isFreeformEnabled: Boolean
 
+    /**
+     * Whether the home screen should be shown behind freeform tasks in the desktop.
+     */
+    val shouldShowHomeBehindDesktop: Boolean
+
     companion object {
         /** Creates a new [DesktopState] from a context. */
         @JvmStatic
