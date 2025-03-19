@@ -15,18 +15,18 @@
  */
 package com.android.systemui.statusbar.notification.collection.coordinator
 
-import com.android.systemui.Flags.notificationSkipSilentUpdates
-
 import android.app.Notification
 import android.app.Notification.GROUP_ALERT_SUMMARY
 import android.util.ArrayMap
 import android.util.ArraySet
 import com.android.internal.annotations.VisibleForTesting
+import com.android.systemui.Flags.notificationSkipSilentUpdates
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationRemoteInputManager
 import com.android.systemui.statusbar.chips.notification.domain.interactor.StatusBarNotificationChipsInteractor
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
+import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.notification.NotifPipelineFlags
 import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.GroupEntry
@@ -91,6 +91,7 @@ constructor(
     private val mLaunchFullScreenIntentProvider: LaunchFullScreenIntentProvider,
     private val mFlags: NotifPipelineFlags,
     private val statusBarNotificationChipsInteractor: StatusBarNotificationChipsInteractor,
+    private val statusBarChipsUiEventLogger: StatusBarChipsUiEventLogger,
     @IncomingHeader private val mIncomingHeaderController: NodeController,
     @Main private val mExecutor: DelayableExecutor,
 ) : Coordinator {
@@ -146,6 +147,14 @@ constructor(
         // not just any notification.
 
         val isCurrentlyHeadsUp = mHeadsUpManager.isHeadsUpEntry(entry.key)
+
+        if (isCurrentlyHeadsUp) {
+            // If the chip's notif is currently showing as heads up, then we'll stop showing it.
+            statusBarChipsUiEventLogger.logChipTapToHide(entry.sbn.instanceId)
+        } else {
+            statusBarChipsUiEventLogger.logChipTapToShow(entry.sbn.instanceId)
+        }
+
         val posted =
             PostedEntry(
                 entry,
@@ -478,8 +487,10 @@ constructor(
                                 // instead of waiting for any sort of minimum timeout.
                                 // TODO(b/401068530) Ensure that status bar chip HUNs are not
                                 //  removed for silent update
-                                hunMutator.removeNotification(posted.key,
-                                    /* releaseImmediately= */ true)
+                                hunMutator.removeNotification(
+                                    posted.key,
+                                    /* releaseImmediately= */ true,
+                                )
                             } else {
                                 // Do NOT remove HUN for non-user update.
                                 // Let the HUN show for its remaining duration.
@@ -596,8 +607,11 @@ constructor(
                     // TODO(b/403703828) Move canceling to OnBeforeFinalizeFilter, since we are not
                     //  removing from HeadsUpManager and don't need to deal with re-entrant behavior
                     //  between HeadsUpCoordinator, HeadsUpManager, and VisualStabilityManager.
-                    if (posted?.shouldHeadsUpEver == false
-                        && !posted.isHeadsUpEntry && posted.isBinding) {
+                    if (
+                        posted?.shouldHeadsUpEver == false &&
+                            !posted.isHeadsUpEntry &&
+                            posted.isBinding
+                    ) {
                         // Don't let the bind finish
                         cancelHeadsUpBind(posted.entry)
                     }

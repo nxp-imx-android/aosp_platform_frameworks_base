@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.phone.ongoingcall.shared.model
 
 import android.app.PendingIntent
+import com.android.internal.logging.InstanceId
 import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.activity.data.repository.fake
 import com.android.systemui.kosmos.Kosmos
@@ -41,6 +42,7 @@ fun inCallModel(
     appName: String = "",
     promotedContent: PromotedNotificationContentModels? = null,
     isAppVisible: Boolean = false,
+    instanceId: InstanceId? = null,
 ) =
     OngoingCallModel.InCall(
         startTimeMs,
@@ -50,6 +52,7 @@ fun inCallModel(
         appName,
         promotedContent,
         isAppVisible,
+        instanceId,
     )
 
 object OngoingCallTestHelper {
@@ -82,6 +85,7 @@ object OngoingCallTestHelper {
         uid: Int = DEFAULT_UID,
         appName: String = "Fake name",
         isAppVisible: Boolean = false,
+        instanceId: InstanceId? = null,
     ) {
         if (StatusBarChipsModernization.isEnabled) {
             activityManagerRepository.fake.startingIsAppVisibleValue = isAppVisible
@@ -95,6 +99,7 @@ object OngoingCallTestHelper {
                     promotedContent = promotedContent,
                     uid = uid,
                     appName = appName,
+                    instanceId = instanceId,
                 )
             )
         } else {
@@ -107,6 +112,7 @@ object OngoingCallTestHelper {
                     appName = appName,
                     promotedContent = promotedContent,
                     isAppVisible = isAppVisible,
+                    instanceId = instanceId,
                 )
             )
         }

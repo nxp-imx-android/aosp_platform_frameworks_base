@@ -319,7 +319,7 @@ private fun List<ActiveNotificationModel>.toNotificationProto(): Notifications.N
                 Notifications.Notification().apply {
                     uid = notification.uid
                     packageName = notification.packageName
-                    notification.instanceId?.let { instanceId = it }
+                    notification.instanceId?.let { instanceId = it.id }
                     // TODO(b/308623704) check if we can set groupInstanceId as well
                     isGroupSummary = notification.isGroupSummary
                     section = NotificationPanelLogger.toNotificationSection(notification.bucket)

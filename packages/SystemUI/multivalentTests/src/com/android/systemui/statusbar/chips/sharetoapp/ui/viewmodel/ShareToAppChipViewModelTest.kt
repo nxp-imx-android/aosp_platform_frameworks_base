@@ -385,6 +385,8 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.IconOnly::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
+
             val icon =
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
@@ -409,6 +411,8 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
+
             val icon =
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)
@@ -427,6 +431,8 @@ class ShareToAppChipViewModelTest : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
+
             val icon =
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)

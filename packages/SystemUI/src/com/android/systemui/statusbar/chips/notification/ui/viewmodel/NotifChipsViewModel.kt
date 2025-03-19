@@ -127,6 +127,7 @@ constructor(
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
                 isHidden = isHidden,
+                instanceId = instanceId,
             )
         }
 
@@ -139,6 +140,7 @@ constructor(
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
                 isHidden = isHidden,
+                instanceId = instanceId,
             )
         }
 
@@ -154,6 +156,7 @@ constructor(
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
                 isHidden = isHidden,
+                instanceId = instanceId,
             )
         }
 
@@ -165,6 +168,7 @@ constructor(
                 onClickListenerLegacy = onClickListenerLegacy,
                 clickBehavior = clickBehavior,
                 isHidden = isHidden,
+                instanceId = instanceId,
             )
         }
 
@@ -182,6 +186,7 @@ constructor(
                         onClickListenerLegacy = onClickListenerLegacy,
                         clickBehavior = clickBehavior,
                         isHidden = isHidden,
+                        instanceId = instanceId,
                     )
                 } else {
                     // Don't show a `when` time that's close to now or in the past because it's
@@ -199,6 +204,7 @@ constructor(
                         onClickListenerLegacy = onClickListenerLegacy,
                         clickBehavior = clickBehavior,
                         isHidden = isHidden,
+                        instanceId = instanceId,
                     )
                 }
             }
@@ -212,6 +218,7 @@ constructor(
                     onClickListenerLegacy = onClickListenerLegacy,
                     clickBehavior = clickBehavior,
                     isHidden = isHidden,
+                    instanceId = instanceId,
                 )
             }
         }
