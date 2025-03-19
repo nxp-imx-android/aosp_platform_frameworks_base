@@ -174,7 +174,7 @@ public final class VirtualSensor implements Parcelable {
     @FlaggedApi(Flags.FLAG_VIRTUAL_SENSOR_ADDITIONAL_INFO)
     public void sendAdditionalInfo(@NonNull VirtualSensorAdditionalInfo info) {
         if (!Flags.virtualSensorAdditionalInfo()) {
-            return;
+            throw new UnsupportedOperationException("Sensor additional info not supported.");
         }
         if ((mFlags & VirtualSensorConfig.ADDITIONAL_INFO_MASK) == 0) {
             throw new UnsupportedOperationException("Sensor additional info not supported.");
