@@ -608,7 +608,9 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mBgHandler,
                 onConversationSettingsListener,
                 mBubblesManagerOptional,
-                mShadeController);
+                mShadeController,
+                row.canViewBeDismissed(),
+                row.getCloseButtonOnClickListener(row));
     }
 
     /**

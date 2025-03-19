@@ -171,6 +171,8 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
     private ConversationIconFactory mIconFactory;
     @Mock
     private Notification.BubbleMetadata mBubbleMetadata;
+    @Mock
+    private View.OnClickListener mCloseListener;
     private Handler mTestHandler;
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
@@ -298,7 +300,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 true,
                 mTestHandler,
                 mTestHandler, null, Optional.of(mBubblesManager),
-                mShadeController);
+                mShadeController, true, mCloseListener);
     }
 
     @Test
@@ -402,7 +404,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 true,
                 mTestHandler,
                 mTestHandler, null, Optional.of(mBubblesManager),
-                mShadeController);
+                mShadeController, true, null);
         final TextView nameView = mNotificationInfo.findViewById(R.id.delegate_name);
         assertEquals(VISIBLE, nameView.getVisibility());
         assertTrue(nameView.getText().toString().contains("Proxied"));
@@ -442,7 +444,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 true,
                 mTestHandler,
                 mTestHandler, null, Optional.of(mBubblesManager),
-                mShadeController);
+                mShadeController, true, null);
 
         final View feedback = mNotificationInfo.findViewById(R.id.feedback);
         assertEquals(VISIBLE, feedback.getVisibility());
@@ -484,7 +486,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 true,
                 mTestHandler,
                 mTestHandler, null, Optional.of(mBubblesManager),
-                mShadeController);
+                mShadeController, true, null);
 
         final View settingsButton = mNotificationInfo.findViewById(R.id.info);
         settingsButton.performClick();
@@ -524,7 +526,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 false,
                 mTestHandler,
                 mTestHandler, null, Optional.of(mBubblesManager),
-                mShadeController);
+                mShadeController, true, null);
         final View settingsButton = mNotificationInfo.findViewById(R.id.info);
         assertTrue(settingsButton.getVisibility() != View.VISIBLE);
     }
@@ -601,7 +603,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 true,
                 mTestHandler,
                 mTestHandler, null, Optional.of(mBubblesManager),
-                mShadeController);
+                mShadeController, true, null);
         assertThat(((TextView) mNotificationInfo.findViewById(R.id.priority_summary)).getText())
                 .isEqualTo(mContext.getString(
                         R.string.notification_channel_summary_priority_dnd));
@@ -633,7 +635,7 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
                 true,
                 mTestHandler,
                 mTestHandler, null, Optional.of(mBubblesManager),
-                mShadeController);
+                mShadeController, true, null);
         assertThat(((TextView) mNotificationInfo.findViewById(R.id.priority_summary)).getText())
                 .isEqualTo(mContext.getString(
                         R.string.notification_channel_summary_priority_baseline));
@@ -1018,4 +1020,19 @@ public class NotificationConversationInfoTest extends SysuiTestCase {
         // THEN the user is not presented with the People Tile pinning request
         verify(mPeopleSpaceWidgetManager, never()).requestPinAppWidget(eq(mShortcutInfo), any());
     }
+
+
+    @Test
+    public void testDismiss() throws Exception {
+        doStandardBind();
+
+        View dismiss = mNotificationInfo.findViewById(R.id.inline_dismiss);
+        dismiss.performClick();
+        mTestableLooper.processAllMessages();
+
+        // Verify action performed on button click
+        verify(mCloseListener).onClick(any());
+
+    }
+
 }

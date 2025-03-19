@@ -218,7 +218,7 @@ public class NotificationConversationInfo extends LinearLayout implements
             @Background Handler bgHandler,
             OnConversationSettingsClickListener onConversationSettingsClickListener,
             Optional<BubblesManager> bubblesManagerOptional,
-            ShadeController shadeController) {
+            ShadeController shadeController, boolean isDismissable, OnClickListener onCloseClick) {
         mINotificationManager = iNotificationManager;
         mPeopleSpaceWidgetManager = peopleSpaceWidgetManager;
         mOnUserInteractionCallback = onUserInteractionCallback;
@@ -262,6 +262,11 @@ public class NotificationConversationInfo extends LinearLayout implements
 
         bindHeader();
         bindActions();
+
+        View dismissButton = findViewById(R.id.inline_dismiss);
+        dismissButton.setOnClickListener(onCloseClick);
+        dismissButton.setVisibility(dismissButton.hasOnClickListeners() && isDismissable
+                ? VISIBLE : GONE);
 
         View done = findViewById(R.id.done);
         done.setOnClickListener(mOnDone);
