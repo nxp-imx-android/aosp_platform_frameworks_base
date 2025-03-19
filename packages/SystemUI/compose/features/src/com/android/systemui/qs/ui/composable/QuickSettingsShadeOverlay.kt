@@ -39,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onPlaced
@@ -266,7 +267,10 @@ fun ContentScope.QuickSettingsLayout(
                 BrightnessSliderContainer(
                     viewModel = viewModel.brightnessSliderViewModel,
                     containerColors =
-                        ContainerColors.singleColor(OverlayShade.Colors.PanelBackground),
+                        ContainerColors(
+                            idleColor = Color.Transparent,
+                            mirrorColor = OverlayShade.Colors.PanelBackground,
+                        ),
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
