@@ -60,6 +60,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntryB
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManagerImpl
@@ -376,6 +377,8 @@ class ExpandableNotificationRowBuilder(
                     Mockito.mock(NotificationIconStyleProvider::class.java),
                     Mockito.mock(VisualStabilityCoordinator::class.java),
                     Mockito.mock(NotificationActionClickManager::class.java),
+                    Mockito.mock(HighPriorityProvider::class.java),
+                    Mockito.mock(HeadsUpManager::class.java),
                 )
                 .create(entry)
 

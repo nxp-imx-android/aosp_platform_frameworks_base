@@ -33,6 +33,7 @@ import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.ArraySet;
 import android.util.IconDrawableFactory;
@@ -66,7 +67,6 @@ import com.android.systemui.statusbar.StatusBarState;
 import com.android.systemui.statusbar.StatusBarStateControllerImpl;
 import com.android.systemui.statusbar.notification.AssistantFeedbackController;
 import com.android.systemui.statusbar.notification.NotificationActivityStarter;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewListener;
 import com.android.systemui.statusbar.notification.collection.render.NotifGutsViewManager;
@@ -289,10 +289,21 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     @VisibleForTesting
     protected boolean bindGuts(final ExpandableNotificationRow row,
             NotificationMenuRowPlugin.MenuItem item) {
-        NotificationEntry entry = row.getEntry();
+
+        StatusBarNotification sbn = NotificationBundleUi.isEnabled()
+                ? row.getEntryAdapter().getSbn()
+                : row.getEntryLegacy().getSbn();
+        NotificationListenerService.Ranking ranking  = NotificationBundleUi.isEnabled()
+                ? row.getEntryAdapter().getRanking()
+                : row.getEntryLegacy().getRanking();
+
+        if (sbn == null || ranking == null) {
+            // only valid for notification rows
+            return false;
+        }
 
         row.setGutsView(item);
-        row.setTag(entry.getSbn().getPackageName());
+        row.setTag(sbn.getPackageName());
         row.getGuts().setClosedListener((NotificationGuts g) -> {
             row.onGutsClosed();
             if (!g.willBeRemoved() && !row.isRemoved()) {
@@ -304,28 +315,37 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mGutsMenuItem = null;
             }
             if (mGutsListener != null) {
-                mGutsListener.onGutsClose(entry);
+                if (NotificationBundleUi.isEnabled()) {
+                    mGutsListener.onGutsClose(row.getEntryAdapter());
+                    row.updateBubbleButton();
+                } else {
+                    mGutsListener.onGutsClose(row.getEntryLegacy());
+                }
             }
-            mHeadsUpManager.setGutsShown(row.getEntry(), false);
+            if(NotificationBundleUi.isEnabled()) {
+                row.getEntryAdapter().setInlineControlsShown(false);
+            } else {
+                mHeadsUpManager.setGutsShown(row.getEntryLegacy(), false);
+            }
         });
 
         View gutsView = item.getGutsView();
 
         try {
             if (gutsView instanceof NotificationSnooze) {
-                initializeSnoozeView(row, (NotificationSnooze) gutsView);
+                initializeSnoozeView(row, sbn, ranking, (NotificationSnooze) gutsView);
             } else if (gutsView instanceof NotificationInfo) {
-                initializeNotificationInfo(row, (NotificationInfo) gutsView);
+                initializeNotificationInfo(row, sbn, ranking, (NotificationInfo) gutsView);
             } else if (gutsView instanceof NotificationConversationInfo) {
                 initializeConversationNotificationInfo(
-                        row, (NotificationConversationInfo) gutsView);
+                        row, sbn, ranking, (NotificationConversationInfo) gutsView);
             } else if (gutsView instanceof PartialConversationInfo) {
-                initializePartialConversationNotificationInfo(row,
+                initializePartialConversationNotificationInfo(row, sbn, ranking,
                         (PartialConversationInfo) gutsView);
             } else if (gutsView instanceof FeedbackInfo) {
-                initializeFeedbackInfo(row, (FeedbackInfo) gutsView);
+                initializeFeedbackInfo(row, sbn, ranking, (FeedbackInfo) gutsView);
             } else if (gutsView instanceof PromotedPermissionGutsContent) {
-                initializeDemoteView(row, (PromotedPermissionGutsContent) gutsView);
+                initializeDemoteView(row, sbn, (PromotedPermissionGutsContent) gutsView);
             }
             return true;
         } catch (Exception e) {
@@ -342,13 +362,14 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
      */
     private void initializeSnoozeView(
             final ExpandableNotificationRow row,
+            final StatusBarNotification sbn,
+            final NotificationListenerService.Ranking ranking,
             NotificationSnooze notificationSnoozeView) {
         NotificationGuts guts = row.getGuts();
-        StatusBarNotification sbn = row.getEntry().getSbn();
 
         notificationSnoozeView.setSnoozeListener(mListContainer.getSwipeActionHelper());
         notificationSnoozeView.setStatusBarNotification(sbn);
-        notificationSnoozeView.setSnoozeOptions(row.getEntry().getSnoozeCriteria());
+        notificationSnoozeView.setSnoozeOptions(ranking.getSnoozeCriteria());
         guts.setHeightChangedListener((NotificationGuts g) -> {
             mListContainer.onHeightChanged(row, row.isShown() /* needsAnimation */);
         });
@@ -362,8 +383,8 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
      */
     private void initializeDemoteView(
             final ExpandableNotificationRow row,
+            StatusBarNotification sbn,
             PromotedPermissionGutsContent demoteGuts) {
-        StatusBarNotification sbn = row.getEntry().getSbn();
         demoteGuts.setStatusBarNotification(sbn);
         demoteGuts.setOnDemoteAction(new View.OnClickListener() {
             @Override
@@ -387,16 +408,17 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
      */
     private void initializeFeedbackInfo(
             final ExpandableNotificationRow row,
+            final StatusBarNotification sbn,
+            final NotificationListenerService.Ranking ranking,
             FeedbackInfo feedbackInfo) {
-        if (mAssistantFeedbackController.getFeedbackIcon(row.getEntry()) == null) {
+        if (mAssistantFeedbackController.getFeedbackIcon(ranking) == null) {
             return;
         }
-        StatusBarNotification sbn = row.getEntry().getSbn();
         UserHandle userHandle = sbn.getUser();
         PackageManager pmUser = CentralSurfaces.getPackageManagerForUser(mContext,
                 userHandle.getIdentifier());
 
-        feedbackInfo.bindGuts(pmUser, sbn, row.getEntry(), row, mAssistantFeedbackController,
+        feedbackInfo.bindGuts(pmUser, sbn, ranking, row, mAssistantFeedbackController,
                 mStatusBarService, this);
     }
 
@@ -408,9 +430,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     @VisibleForTesting
     void initializeNotificationInfo(
             final ExpandableNotificationRow row,
+            final StatusBarNotification sbn,
+            final NotificationListenerService.Ranking ranking,
             NotificationInfo notificationInfoView) throws Exception {
         NotificationGuts guts = row.getGuts();
-        StatusBarNotification sbn = row.getEntry().getSbn();
         String packageName = sbn.getPackageName();
         // Settings link is only valid for notifications that specify a non-system user
         NotificationInfo.OnSettingsClickListener onSettingsClick = null;
@@ -449,18 +472,22 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mChannelEditorDialogController,
                 mPackageDemotionInteractor,
                 packageName,
-                row.getEntry().getChannel(),
-                row.getEntry(),
+                ranking,
+                sbn,
+                NotificationBundleUi.isEnabled() ? null : row.getEntryLegacy(),
+                NotificationBundleUi.isEnabled() ? row.getEntryAdapter() : null,
                 onSettingsClick,
                 onAppSettingsClick,
                 onNasFeedbackClick,
                 mUiEventLogger,
                 mDeviceProvisionedController.isDeviceProvisioned(),
                 NotificationBundleUi.isEnabled()
-                        ? !row.getEntry().isBlockable()
+                        ? !row.getEntryAdapter().isBlockable()
                         : row.getIsNonblockable(),
                 row.canViewBeDismissed(),
-                mHighPriorityProvider.isHighPriority(row.getEntry()),
+                NotificationBundleUi.isEnabled()
+                        ? row.getEntryAdapter().isHighPriority()
+                        : mHighPriorityProvider.isHighPriority(row.getEntryLegacy()),
                 mAssistantFeedbackController,
                 mMetricsLogger,
                 row.getCloseButtonOnClickListener(row));
@@ -474,9 +501,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     @VisibleForTesting
     void initializePartialConversationNotificationInfo(
             final ExpandableNotificationRow row,
+            final StatusBarNotification sbn,
+            final NotificationListenerService.Ranking ranking,
             PartialConversationInfo notificationInfoView) throws Exception {
         NotificationGuts guts = row.getGuts();
-        StatusBarNotification sbn = row.getEntry().getSbn();
         String packageName = sbn.getPackageName();
         // Settings link is only valid for notifications that specify a non-system user
         NotificationInfo.OnSettingsClickListener onSettingsClick = null;
@@ -499,12 +527,12 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mNotificationManager,
                 mChannelEditorDialogController,
                 packageName,
-                row.getEntry().getChannel(),
-                row.getEntry(),
+                ranking,
+                sbn,
                 onSettingsClick,
                 mDeviceProvisionedController.isDeviceProvisioned(),
                 NotificationBundleUi.isEnabled()
-                        ? !row.getEntry().isBlockable()
+                        ? !row.getEntryAdapter().isBlockable()
                         : row.getIsNonblockable());
     }
 
@@ -516,10 +544,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
     @VisibleForTesting
     void initializeConversationNotificationInfo(
             final ExpandableNotificationRow row,
+            final StatusBarNotification sbn,
+            final NotificationListenerService.Ranking ranking,
             NotificationConversationInfo notificationInfoView) throws Exception {
         NotificationGuts guts = row.getGuts();
-        NotificationEntry entry = row.getEntry();
-        StatusBarNotification sbn = entry.getSbn();
         String packageName = sbn.getPackageName();
         // Settings link is only valid for notifications that specify a non-system user
         NotificationConversationInfo.OnSettingsClickListener onSettingsClick = null;
@@ -567,9 +595,10 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 mNotificationManager,
                 mOnUserInteractionCallback,
                 packageName,
-                entry.getChannel(),
-                entry,
-                entry.getBubbleMetadata(),
+                NotificationBundleUi.isEnabled() ? null : row.getEntryLegacy(),
+                NotificationBundleUi.isEnabled() ? row.getEntryAdapter() : null,
+                ranking,
+                sbn,
                 onSettingsClick,
                 onNasFeedbackClick,
                 iconFactoryLoader,
@@ -746,13 +775,21 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                         row::onGutsOpened);
 
                 if (mGutsListener != null) {
-                    mGutsListener.onGutsOpen(row.getEntry(), guts);
+                    if(NotificationBundleUi.isEnabled()) {
+                        mGutsListener.onGutsOpen(row.getEntryAdapter(), guts);
+                    } else {
+                        mGutsListener.onGutsOpen(row.getEntryLegacy(), guts);
+                    }
                 }
 
                 row.closeRemoteInput();
                 mListContainer.onHeightChanged(row, true /* needsAnimation */);
                 mGutsMenuItem = menuItem;
-                mHeadsUpManager.setGutsShown(row.getEntry(), true);
+                if(NotificationBundleUi.isEnabled()) {
+                    row.getEntryAdapter().setInlineControlsShown(true);
+                } else {
+                    mHeadsUpManager.setGutsShown(row.getEntryLegacy(), true);
+                }
             }
         };
         guts.post(mOpenRunnable);

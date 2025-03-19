@@ -81,6 +81,7 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntryB
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener;
+import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider;
 import com.android.systemui.statusbar.notification.collection.provider.NotificationDismissibilityProvider;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
@@ -746,7 +747,9 @@ public class NotificationTestHelper {
                 mock(PeopleNotificationIdentifier.class),
                 mock(NotificationIconStyleProvider.class),
                 mock(VisualStabilityCoordinator.class),
-                mock(NotificationActionClickManager.class)
+                mock(NotificationActionClickManager.class),
+                mock(HighPriorityProvider.class),
+                mock(HeadsUpManager.class)
         ).create(entry);
 
         row.initialize(

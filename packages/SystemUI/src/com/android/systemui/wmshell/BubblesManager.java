@@ -64,6 +64,7 @@ import com.android.systemui.statusbar.NotificationLockscreenUserManager;
 import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.notification.NotifPipelineFlags;
 import com.android.systemui.statusbar.notification.NotificationChannelHelper;
+import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotifCollection;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
@@ -615,6 +616,28 @@ public class BubblesManager {
         if (entry.getRow() != null) {
             entry.getRow().updateBubbleButton();
         }
+    }
+
+    /**
+     * When a notification is set as important, make it a bubble
+     *
+     * @param entryAdapter the important notification.
+     */
+    public void onUserSetImportantConversation(EntryAdapter entryAdapter) {
+        if (entryAdapter.getSbn() != null
+                && entryAdapter.getSbn().getNotification().getBubbleMetadata() == null) {
+            // No bubble metadata, nothing to do.
+            return;
+        }
+        try {
+            int flags = Notification.BubbleMetadata.FLAG_SUPPRESS_NOTIFICATION;
+            mBarService.onNotificationBubbleChanged(entryAdapter.getKey(), true, flags);
+        } catch (RemoteException e) {
+            Log.e(TAG, e.getMessage());
+        }
+        mShadeController.collapseShade(true);
+        // NotificationGutsManager will refresh the ENR when the guts close and update the
+        // bubble button if needed
     }
 
     /**
