@@ -48,7 +48,7 @@ fun SwipeToDismiss(
     onDismissed: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val overscrollEffect = rememberOffsetOverscrollEffect(placeRelatively = false)
+    val overscrollEffect = rememberOffsetOverscrollEffect()
 
     // This is the width of the content UI box. It's not a state because it's not observed in any
     // composition and is an object with a value to avoid the extra cost associated with boxing and

@@ -65,7 +65,7 @@ fun SwipeToReveal(
     // This composable supports an overscroll effect, to make it possible for the user to
     // "stretch" the UI when the side is fully revealed but the user keeps trying to reveal it
     // further.
-    val revealedContentEffect = rememberOffsetOverscrollEffect(placeRelatively = false)
+    val revealedContentEffect = rememberOffsetOverscrollEffect()
 
     // This is the width of the revealed content UI box. It's not a state because it's not
     // observed in any composition and is an object with a value to avoid the extra cost
