@@ -4519,9 +4519,6 @@ final class InstallPackageHelper {
      * at boot.
      */
     private boolean needSignatureMatchToSystem(String packageName) {
-        if (!android.security.Flags.extendVbChainToUpdatedApk()) {
-            return false;
-        }
         return mPm.mInjector.getSystemConfig().getPreinstallPackagesWithStrictSignatureCheck()
             .contains(packageName);
     }

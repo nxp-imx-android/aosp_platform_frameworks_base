@@ -545,8 +545,7 @@ public class PackageManagerServiceUtils {
             // Also make sure the parsed signatures are consistent with the disabled package
             // setting, if any. The additional UNKNOWN check is because disabled package settings
             // may not have SigningDetails currently, and we don't want to cause an uninstall.
-            if (android.security.Flags.extendVbChainToUpdatedApk()
-                    && match && disabledPkgSetting != null
+            if (match && disabledPkgSetting != null
                     && disabledPkgSetting.getSigningDetails() != SigningDetails.UNKNOWN) {
                 match = matchSignatureInSystem(packageName, parsedSignatures, disabledPkgSetting);
             }
