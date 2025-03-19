@@ -105,6 +105,7 @@ class BubbleViewInfoTaskTest {
                 shellInit,
                 shellCommandHandler,
                 mock<DisplayInsetsController>(),
+                mock<UserManager>(),
                 mainExecutor
             )
         bubblePositioner = BubblePositioner(context, windowManager)

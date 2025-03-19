@@ -92,6 +92,7 @@ class BubbleControllerTest {
     private lateinit var displayController: DisplayController
     private lateinit var displayImeController: DisplayImeController
     private lateinit var displayInsetsController: DisplayInsetsController
+    private lateinit var userManager: UserManager
     private lateinit var imeListener: ImeListener
 
     @Before
@@ -128,6 +129,7 @@ class BubbleControllerTest {
         displayController = mock<DisplayController>()
         displayImeController = mock<DisplayImeController>()
         displayInsetsController = mock<DisplayInsetsController>()
+        userManager = mock<UserManager>()
 
         bubbleController =
             createBubbleController(
@@ -328,6 +330,7 @@ class BubbleControllerTest {
                 shellInit,
                 shellCommandHandler,
                 displayInsetsController,
+                userManager,
                 mainExecutor,
             )
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }

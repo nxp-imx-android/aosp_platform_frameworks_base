@@ -61,6 +61,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.view.SurfaceControl;
@@ -127,6 +128,8 @@ public class RecentTasksControllerTest extends ShellTestCase {
     private DesktopUserRepositories mDesktopUserRepositories;
     @Mock
     private DesktopRepository mDesktopRepository;
+    @Mock
+    private UserManager mUserManager;
 
     private ShellTaskOrganizer mShellTaskOrganizer;
     private RecentTasksController mRecentTasksController;
@@ -151,7 +154,7 @@ public class RecentTasksControllerTest extends ShellTestCase {
                 .thenReturn(mock(KeyguardManager.class));
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
-                mDisplayInsetsController, mMainExecutor));
+                mDisplayInsetsController, mUserManager, mMainExecutor));
         mRecentTasksControllerReal = new RecentTasksController(mContext, mShellInit,
                 mShellController, mShellCommandHandler, mTaskStackListener, mActivityTaskManager,
                 Optional.of(mDesktopUserRepositories), mTaskStackTransitionObserver,

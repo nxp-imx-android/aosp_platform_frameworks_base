@@ -189,6 +189,7 @@ class BubbleBarLayerViewTest {
                 shellInit,
                 shellCommandHandler,
                 mock<DisplayInsetsController>(),
+                mock<UserManager>(),
                 mainExecutor,
             )
         val surfaceSynchronizer = { obj: Runnable -> obj.run() }

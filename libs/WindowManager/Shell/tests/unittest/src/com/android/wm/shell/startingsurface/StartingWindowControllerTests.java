@@ -31,6 +31,7 @@ import static org.mockito.Mockito.verify;
 import android.content.Context;
 import android.hardware.display.DisplayManager;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.view.Display;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -72,6 +73,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
     private @Mock StartingWindowTypeAlgorithm mTypeAlgorithm;
     private @Mock IconProvider mIconProvider;
     private @Mock TransactionPool mTransactionPool;
+    private @Mock UserManager mUserManager;
     private StartingWindowController mController;
     private ShellInit mShellInit;
     private ShellController mShellController;
@@ -84,7 +86,7 @@ public class StartingWindowControllerTests extends ShellTestCase {
         doReturn(super.mContext.getResources()).when(mContext).getResources();
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
-                mDisplayInsetsController, mMainExecutor));
+                mDisplayInsetsController, mUserManager, mMainExecutor));
         mController = new StartingWindowController(mContext, mShellInit, mShellController,
                 mTaskOrganizer, mMainExecutor, mTypeAlgorithm, mIconProvider, mTransactionPool);
         mShellInit.init();
