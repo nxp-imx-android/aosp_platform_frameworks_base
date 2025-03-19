@@ -3135,6 +3135,16 @@ interface ITelephony {
     boolean setSatelliteIgnoreCellularServiceState(in boolean enabled);
 
     /**
+     * This API can be used by only CTS to control the feature
+     * {@code config_support_disable_satellite_while_enable_in_progress}.
+     *
+     * @param reset Whether to reset the override.
+     * @param supported Whether to support the feature.
+     * @return {@code true} if the value is set successfully, {@code false} otherwise.
+     */
+    boolean setSupportDisableSatelliteWhileEnableInProgress(boolean reset, boolean supported);
+
+    /**
      * This API can be used by only CTS to update satellite pointing UI app package and class names.
      *
      * @param packageName The package name of the satellite pointing UI app.
