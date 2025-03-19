@@ -23891,10 +23891,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 UserHandle.USER_ALL);
 
         synchronized (getLockObject()) {
-            final EnforcingAdmin admin = enforcePermissionAndGetEnforcingAdmin(null,
-                    MANAGE_DEVICE_POLICY_MTE, callerPackageName, caller.getUserId());
-            final Integer policyFromAdmin = mDevicePolicyEngine.getGlobalPolicySetByAdmin(
-                    PolicyDefinition.MEMORY_TAGGING, admin);
+            final Integer policyFromAdmin = mDevicePolicyEngine.getResolvedPolicy(
+                    PolicyDefinition.MEMORY_TAGGING, UserHandle.USER_ALL);
+
             return (policyFromAdmin != null ? policyFromAdmin
                     : DevicePolicyManager.MTE_NOT_CONTROLLED_BY_POLICY);
         }
