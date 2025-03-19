@@ -2378,9 +2378,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER)
     @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun moveToFullscreen_tdaFreeform_windowingModeFullscreen_removesWallpaperActivity() {
+        whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context))
+            .thenReturn(false)
         val homeTask = setUpHomeTask()
         val task = setUpFreeformTask()
-
         assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
             .configuration
             .windowConfiguration
@@ -2432,9 +2433,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
     fun moveToFullscreen_tdaFreeform_windowingModeFullscreen_homeBehindFullscreen_multiDesksEnabled() {
+        whenever(DesktopModeStatus.enterDesktopByDefaultOnFreeformDisplay(context))
+            .thenReturn(false)
         val homeTask = setUpHomeTask()
         val task = setUpFreeformTask()
-
         assertNotNull(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(DEFAULT_DISPLAY))
             .configuration
             .windowConfiguration
