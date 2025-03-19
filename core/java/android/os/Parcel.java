@@ -4623,11 +4623,9 @@ public final class Parcel {
             object = readValue(type, loader, clazz, itemTypes);
             int actual = dataPosition() - start;
             if (actual != length) {
-                String error = "Unparcelling of " + object + " of type "
-                                + Parcel.valueTypeToString(type) + "  consumed " + actual
-                                + " bytes, but " + length + " expected.";
-                Slog.wtfStack(TAG, error);
-                throw new BadParcelableException(error);
+                Slog.wtfStack(TAG,
+                        "Unparcelling of " + object + " of type " + Parcel.valueTypeToString(type)
+                                + "  consumed " + actual + " bytes, but " + length + " expected.");
             }
         } else {
             object = readValue(type, loader, clazz, itemTypes);
