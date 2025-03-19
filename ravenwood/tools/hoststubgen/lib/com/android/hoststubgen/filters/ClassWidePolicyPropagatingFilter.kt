@@ -60,7 +60,7 @@ class ClassWidePolicyPropagatingFilter(
                 }
 
                 return p.withReason(policy.reason)
-                    .wrapReason("class-wide in $className")
+                    .wrapReason("class-wide in $className", policy.statsLabelOverride)
             }
             // If the class's policy is remove, then remove it.
             if (policy.policy == FilterPolicy.Remove) {
