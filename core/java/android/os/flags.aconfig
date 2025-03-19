@@ -13,6 +13,16 @@ flag {
 }
 
 flag {
+    name: "adpf_25q2_metrics"
+    namespace: "game"
+    description: "Add missing metrics for ADPF 25Q2 features."
+    bug: "367803904"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "adpf_gpu_report_actual_work_duration"
     is_exported: true
     namespace: "game"
