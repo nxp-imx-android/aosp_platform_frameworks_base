@@ -259,3 +259,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_output_switcher_personal_audio_sharing"
+    namespace: "cross_device_experiences"
+    description: "Enables personal audio sharing in the output switcher."
+    bug: "385672684"
+}
