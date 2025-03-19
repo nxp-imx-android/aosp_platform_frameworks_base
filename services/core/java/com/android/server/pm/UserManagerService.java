@@ -1652,6 +1652,13 @@ public class UserManagerService extends IUserManager.Stub {
         return users;
     }
 
+    @GuardedBy("mUsersLock")
+    private IntArray getProfileIdsLU(@UserIdInt int userId, @Nullable String userType,
+            boolean enabledOnly, boolean excludeHidden) {
+        return getProfileIdsLU(userId, userType, enabledOnly, excludeHidden,
+                /* includeAlwaysVisible */ false);
+    }
+
     /**
      *  Assume permissions already checked and caller's identity cleared
      *  <p>If userType is {@code null}, returns all profiles for user; else, only returns
@@ -1659,7 +1666,7 @@ public class UserManagerService extends IUserManager.Stub {
      */
     @GuardedBy("mUsersLock")
     private IntArray getProfileIdsLU(@UserIdInt int userId, @Nullable String userType,
-            boolean enabledOnly, boolean excludeHidden) {
+            boolean enabledOnly, boolean excludeHidden, boolean includeAlwaysVisible) {
         UserInfo user = getUserInfoLU(userId);
         IntArray result = new IntArray(mUsers.size());
         if (user == null) {
@@ -1669,7 +1676,10 @@ public class UserManagerService extends IUserManager.Stub {
         final int userSize = mUsers.size();
         for (int i = 0; i < userSize; i++) {
             UserInfo profile = mUsers.valueAt(i).info;
-            if (!isSameProfileGroup(user, profile)) {
+            if (!includeAlwaysVisible && !isSameProfileGroup(user, profile)) {
+                continue;
+            }
+            if (includeAlwaysVisible && !isSameProfileGroupOrIsAlwaysVisible(user, profile)) {
                 continue;
             }
             if (enabledOnly && !profile.isEnabled()) {
@@ -1739,6 +1749,22 @@ public class UserManagerService extends IUserManager.Stub {
         if (userId == otherUserId) return true;
         checkQueryUsersPermission("check if in the same profile group");
         return isSameProfileGroupNoChecks(userId, otherUserId);
+    }
+
+    /**
+     * Returns whether the users are in the same profile group, or if either the asker or the
+     * target is an always visible profile.
+     */
+    @GuardedBy("mUsersLock")
+    private boolean isSameProfileGroupOrIsAlwaysVisible(UserInfo asker, UserInfo target) {
+        if (asker.id == target.id) return true;
+        UserData askerData = getUserDataLU(asker.id);
+        if (askerData != null && askerData.userProperties.getAlwaysVisible()) {
+            return true;
+        }
+        UserData targetData = getUserDataLU(target.id);
+        return (targetData != null && targetData.userProperties.getAlwaysVisible())
+                || isSameProfileGroup(asker, target);
     }
 
     /** Returns whether users are in the same profile group. */
@@ -8046,9 +8072,15 @@ public class UserManagerService extends IUserManager.Stub {
 
         @Override
         public @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly) {
+            return getProfileIds(userId, enabledOnly, /* includeAlwaysVisible */ false);
+        }
+
+        @Override
+        public @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly,
+                boolean includeAlwaysVisible) {
             synchronized (mUsersLock) {
                 return getProfileIdsLU(userId, null /* userType */, enabledOnly, /* excludeHidden */
-                        false).toArray();
+                        false, includeAlwaysVisible).toArray();
             }
         }
 

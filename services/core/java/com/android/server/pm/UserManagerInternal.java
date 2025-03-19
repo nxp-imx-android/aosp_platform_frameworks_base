@@ -329,6 +329,22 @@ public abstract class UserManagerInternal {
     public abstract @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly);
 
     /**
+     * Returns an array of ids for profiles associated with the specified user including the user
+     * itself.
+     * <p>Note that this includes all profile types (not including Restricted profiles), and,
+     * optionally, any {@link UserProperties#getAlwaysVisible() always visible} profiles.
+     *
+     * @param userId      id of the user to return profiles for
+     * @param enabledOnly whether return only {@link UserInfo#isEnabled() enabled} profiles
+     * @param includeAlwaysVisible whether to also include {@link UserProperties#getAlwaysVisible()
+     *        visible} profiles, even if userId is not their parent
+     * @return A non-empty array of ids of profiles associated with the specified user if the user
+     *         exists. Otherwise, an empty array.
+     */
+    public abstract @NonNull int[] getProfileIds(@UserIdInt int userId, boolean enabledOnly,
+            boolean includeAlwaysVisible);
+
+    /**
      * Returns a list of the users that are associated with the specified user, including the user
      * itself. This includes the user, its profiles, its parent, and its parent's other profiles,
      * as applicable.

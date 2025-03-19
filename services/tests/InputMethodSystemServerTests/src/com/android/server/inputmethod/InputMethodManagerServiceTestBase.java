@@ -225,6 +225,8 @@ public class InputMethodManagerServiceTestBase {
         when(mMockUserManagerInternal.isUserRunning(anyInt())).thenReturn(true);
         when(mMockUserManagerInternal.getProfileIds(anyInt(), anyBoolean()))
                 .thenReturn(new int[] {0});
+        when(mMockUserManagerInternal.getProfileIds(anyInt(), anyBoolean(), anyBoolean()))
+                .thenReturn(new int[] {0});
         when(mMockUserManagerInternal.getUserIds()).thenReturn(new int[] {0});
         when(mMockActivityManagerInternal.isSystemReady()).thenReturn(true);
         when(mMockActivityManagerInternal.getCurrentUserId()).thenReturn(mUserId);
