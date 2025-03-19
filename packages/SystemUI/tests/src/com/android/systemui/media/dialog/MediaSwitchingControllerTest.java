@@ -109,6 +109,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4.class)
@@ -151,8 +152,10 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private MediaDevice mMediaDevice1;
     @Mock
     private MediaDevice mMediaDevice2;
-    @Mock
-    private NearbyDevice mNearbyDevice1;
+    @Mock private MediaDevice mMediaDevice3;
+    @Mock private MediaDevice mMediaDevice4;
+    @Mock private MediaDevice mMediaDevice5;
+    @Mock private NearbyDevice mNearbyDevice1;
     @Mock
     private NearbyDevice mNearbyDevice2;
     @Mock
@@ -1548,6 +1551,89 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
         assertThat(items.get(0).getMediaDevice().get()).isEqualTo(mMediaDevice1);
         assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
+    @Test
+    public void selectedDevicesAddedInSameOrderWhenRlpDoesNotExist() {
+        setUpSelectedDevicesAndOrdering();
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaDevice> devices =
+                mMediaSwitchingController.getMediaItemList().stream()
+                        .filter(item -> item.getMediaDevice().isPresent())
+                        .map(item -> item.getMediaDevice().orElse(null))
+                        .collect(Collectors.toList());
+        assertThat(devices)
+                .containsExactly(
+                        mMediaDevice4,
+                        mMediaDevice3,
+                        mMediaDevice5,
+                        mMediaDevice1,
+                        mMediaDevice2)
+                .inOrder();
+    }
+
+    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
+    @Test
+    public void selectedDevicesAddedInSortedOrderWhenRlpDoesNotExist() {
+        setUpSelectedDevicesAndOrdering();
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaDevice> devices =
+                mMediaSwitchingController.getMediaItemList().stream()
+                        .filter(item -> item.getMediaDevice().isPresent())
+                        .map(item -> item.getMediaDevice().orElse(null))
+                        .collect(Collectors.toList());
+
+        assertThat(devices)
+                .containsExactly(
+                        mMediaDevice5,
+                        mMediaDevice4,
+                        mMediaDevice3,
+                        mMediaDevice1,
+                        mMediaDevice2)
+                .inOrder();
+    }
+
+    private void setUpSelectedDevicesAndOrdering() {
+        when(mMediaDevice1.getId()).thenReturn(TEST_DEVICE_1_ID);
+        when(mMediaDevice2.getId()).thenReturn(TEST_DEVICE_2_ID);
+        when(mMediaDevice3.getId()).thenReturn(TEST_DEVICE_3_ID);
+        when(mMediaDevice4.getId()).thenReturn(TEST_DEVICE_4_ID);
+        when(mMediaDevice5.getId()).thenReturn(TEST_DEVICE_5_ID);
+        mMediaDevices.clear();
+        Collections.addAll(
+                mMediaDevices,
+                mMediaDevice2,
+                mMediaDevice1,
+                mMediaDevice4,
+                mMediaDevice3,
+                mMediaDevice5);
+        List<MediaDevice> selectedMediaDevices = new ArrayList<>();
+        Collections.addAll(selectedMediaDevices, mMediaDevice3, mMediaDevice4, mMediaDevice5);
+        doReturn(selectedMediaDevices).when(mLocalMediaManager).getSelectedMediaDevice();
+        // Sort the media devices in the order they appear in the deviceOrder list
+        List<MediaDevice> deviceOrder = new ArrayList<>();
+        Collections.addAll(
+                deviceOrder,
+                mMediaDevice1,
+                mMediaDevice2,
+                mMediaDevice3,
+                mMediaDevice4,
+                mMediaDevice5);
+        for (int i = 0; i < deviceOrder.size(); i++) {
+            for (int j = i + 1; j < deviceOrder.size(); j++) {
+                when(deviceOrder.get(i).compareTo(deviceOrder.get(j))).thenReturn(-1);
+                when(deviceOrder.get(j).compareTo(deviceOrder.get(i))).thenReturn(1);
+            }
+        }
+        when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false);
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+        mMediaSwitchingController.getMediaItemList().clear();
     }
 
     @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
