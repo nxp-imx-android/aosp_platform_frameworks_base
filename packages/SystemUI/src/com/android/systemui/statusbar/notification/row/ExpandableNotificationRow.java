@@ -687,8 +687,14 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         } else {
             Trace.beginSection("ExpNotRow#onNotifUpdated (leaf)");
         }
-        for (NotificationContentView l : mLayouts) {
-            l.onNotificationUpdated(getEntry());
+        if (NotificationBundleUi.isEnabled()) {
+            for (NotificationContentView l : mLayouts) {
+                l.onNotificationUpdated(null);
+            }
+        } else {
+            for (NotificationContentView l : mLayouts) {
+                l.onNotificationUpdated(getEntryLegacy());
+            }
         }
         mShowingPublicInitialized = false;
         if (mMenuRow != null) {
@@ -755,7 +761,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
      */
     public void updateBubbleButton() {
         for (NotificationContentView l : mLayouts) {
-            l.updateBubbleButton(getEntry());
+            l.updateBubbleButton(NotificationBundleUi.isEnabled()
+                    ? null
+                    : getEntryLegacy());
         }
     }
 
@@ -1510,8 +1518,12 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     public void setBubbleClickListener(@Nullable OnClickListener l) {
         mBubbleClickListener = l;
         // ensure listener is passed to the content views
-        mPrivateLayout.updateBubbleButton(getEntry());
-        mPublicLayout.updateBubbleButton(getEntry());
+        mPrivateLayout.updateBubbleButton(NotificationBundleUi.isEnabled()
+                ? null
+                : getEntryLegacy());
+        mPublicLayout.updateBubbleButton(NotificationBundleUi.isEnabled()
+                ? null
+                : getEntryLegacy());
     }
 
     /**
@@ -1714,7 +1726,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
                     isColorized = mEntryAdapter.isColorized();
                 }
             } else {
-                if (mEntry != null) {
+                if (mEntry != null && mEntry.getSbn() != null) {
                     isColorized = mEntry.getSbn().getNotification().isColorized();
                 }
             }

@@ -201,5 +201,6 @@ public interface EntryAdapter {
 
     void onEntryClicked(ExpandableNotificationRow row);
 
+    @Nullable RemoteInputEntryAdapter getRemoteInputEntryAdapter();
 }
 
