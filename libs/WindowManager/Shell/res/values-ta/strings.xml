@@ -132,6 +132,8 @@
     <string name="new_window_text" msgid="6318648868380652280">"புதிய சாளரம்"</string>
     <string name="manage_windows_text" msgid="5567366688493093920">"சாளரங்களை நிர்வகிக்கலாம்"</string>
     <string name="change_aspect_ratio_text" msgid="9104456064548212806">"தோற்ற விகிதத்தை மாற்று"</string>
+    <!-- no translation found for handle_menu_restart_text (3907767216238298098) -->
+    <skip />
     <string name="close_text" msgid="4986518933445178928">"மூடும்"</string>
     <string name="collapse_menu_text" msgid="7515008122450342029">"மெனுவை மூடும்"</string>
     <string name="desktop_mode_app_header_chip_text" msgid="7617377295944971651">"<xliff:g id="APP_NAME">%1$s</xliff:g> (டெஸ்க்டாப் சாளரமாக்குதல்)"</string>
