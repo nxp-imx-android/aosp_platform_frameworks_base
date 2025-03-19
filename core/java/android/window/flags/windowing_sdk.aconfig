@@ -125,7 +125,7 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
+    namespace: "car_framework"
     name: "safe_region_letterboxing"
     description: "Enables letterboxing for a safe region"
     bug: "380132497"
