@@ -17,6 +17,7 @@
 package android.app.jank.tests;
 
 import android.app.jank.AppJankStats;
+import android.app.jank.JankTracker;
 import android.app.jank.RelativeFrameTimeHistogram;
 import android.os.Process;
 
@@ -55,5 +56,27 @@ public class JankUtils {
         overrunHistogram.addRelativeFrameTimeMillis(5);
         overrunHistogram.addRelativeFrameTimeMillis(25);
         return overrunHistogram;
+    }
+
+    /**
+     * When JankStats are reported they are processed on a background thread. This method checks
+     * every 100 ms up to the maxWaitTime to see if the pending stat count is greater than zero.
+     * If the pending stat count is greater than zero it will return or keep trying until
+     * maxWaitTime has elapsed.
+     */
+    public static void waitForResults(JankTracker jankTracker, int maxWaitTimeMs) {
+        int currentWaitTimeMs = 0;
+        int threadSleepTimeMs = 100;
+        while (currentWaitTimeMs < maxWaitTimeMs) {
+            try {
+                Thread.sleep(threadSleepTimeMs);
+                if (!jankTracker.getPendingJankStats().isEmpty()) {
+                    return;
+                }
+                currentWaitTimeMs += threadSleepTimeMs;
+            } catch (InterruptedException exception) {
+                // do nothing and continue.
+            }
+        }
     }
 }

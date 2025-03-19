@@ -60,6 +60,7 @@ import java.util.HashMap;
 @RunWith(AndroidJUnit4.class)
 public class IntegrationTests {
     public static final int WAIT_FOR_TIMEOUT_MS = 5000;
+    public static final int WAIT_FOR_PENDING_JANKSTATS_MS = 1000;
 
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
@@ -116,18 +117,8 @@ public class IntegrationTests {
 
         editText.reportAppJankStats(JankUtils.getAppJankStats());
 
-        // reportAppJankStats performs the work on a background thread, check periodically to see
-        // if the work is complete.
-        for (int i = 0; i < 10; i++) {
-            try {
-                Thread.sleep(100);
-                if (jankTracker.getPendingJankStats().size() > 0) {
-                    break;
-                }
-            } catch (InterruptedException exception) {
-                //do nothing and continue
-            }
-        }
+        // wait until pending results are available.
+        JankUtils.waitForResults(jankTracker, WAIT_FOR_PENDING_JANKSTATS_MS);
 
         pendingStats = jankTracker.getPendingJankStats();
 
@@ -247,18 +238,8 @@ public class IntegrationTests {
         int mismatchedAppUID = 25;
         editText.reportAppJankStats(JankUtils.getAppJankStats(mismatchedAppUID));
 
-        // reportAppJankStats performs the work on a background thread, check periodically to see
-        // if the work is complete.
-        for (int i = 0; i < 10; i++) {
-            try {
-                Thread.sleep(100);
-                if (jankTracker.getPendingJankStats().size() > 0) {
-                    break;
-                }
-            } catch (InterruptedException exception) {
-                //do nothing and continue
-            }
-        }
+        // wait until pending results should be available.
+        JankUtils.waitForResults(jankTracker, WAIT_FOR_PENDING_JANKSTATS_MS);
 
         pendingStats = jankTracker.getPendingJankStats();
 
