@@ -53,7 +53,6 @@ import com.android.systemui.recents.LauncherProxyService;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.util.settings.SecureSettings;
-import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import java.io.PrintWriter;
 import java.util.concurrent.Executor;
@@ -97,19 +96,17 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
         private final WindowMagnifierCallback mWindowMagnifierCallback;
         private final SysUiState mSysUiState;
         private final SecureSettings mSecureSettings;
-        private final WindowManagerProvider mWindowManagerProvider;
 
         WindowMagnificationControllerSupplier(Context context, Handler handler,
                 WindowMagnifierCallback windowMagnifierCallback,
                 DisplayManager displayManager, SysUiState sysUiState,
-                SecureSettings secureSettings, WindowManagerProvider windowManagerProvider) {
+                SecureSettings secureSettings) {
             super(displayManager);
             mContext = context;
             mHandler = handler;
             mWindowMagnifierCallback = windowMagnifierCallback;
             mSysUiState = sysUiState;
             mSecureSettings = secureSettings;
-            mWindowManagerProvider = windowManagerProvider;
         }
 
         @Override
@@ -117,9 +114,8 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
             final Context windowContext = mContext.createWindowContext(display,
                         TYPE_ACCESSIBILITY_OVERLAY,
                         /* options */ null);
-            final WindowManager windowManager = mWindowManagerProvider
-                    .getWindowManager(windowContext);
             windowContext.setTheme(com.android.systemui.res.R.style.Theme_SystemUI);
+            final WindowManager windowManager = windowContext.getSystemService(WindowManager.class);
 
             Supplier<SurfaceControlViewHost> scvhSupplier = () ->
                     new SurfaceControlViewHost(mContext,
@@ -150,20 +146,17 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
         private final Executor mExecutor;
         private final DisplayManager mDisplayManager;
         private final IWindowManager mIWindowManager;
-        private final WindowManagerProvider mWindowManagerProvider;
 
         FullscreenMagnificationControllerSupplier(Context context,
                 DisplayManager displayManager,
                 Handler handler,
-                Executor executor, IWindowManager iWindowManager,
-                WindowManagerProvider windowManagerProvider) {
+                Executor executor, IWindowManager iWindowManager) {
             super(displayManager);
             mContext = context;
             mHandler = handler;
             mExecutor = executor;
             mDisplayManager = displayManager;
             mIWindowManager = iWindowManager;
-            mWindowManagerProvider = windowManagerProvider;
         }
 
         @Override
@@ -179,7 +172,7 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
                     mExecutor,
                     mDisplayManager,
                     windowContext.getSystemService(AccessibilityManager.class),
-                    mWindowManagerProvider.getWindowManager(windowContext),
+                    windowContext.getSystemService(WindowManager.class),
                     mIWindowManager,
                     scvhSupplier);
         }
@@ -195,32 +188,28 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
         private final Context mContext;
         private final MagnificationSettingsController.Callback mSettingsControllerCallback;
         private final SecureSettings mSecureSettings;
-        private final WindowManagerProvider mWindowManagerProvider;
 
         SettingsSupplier(Context context,
                 MagnificationSettingsController.Callback settingsControllerCallback,
                 DisplayManager displayManager,
-                SecureSettings secureSettings, WindowManagerProvider windowManagerProvider) {
+                SecureSettings secureSettings) {
             super(displayManager);
             mContext = context;
             mSettingsControllerCallback = settingsControllerCallback;
             mSecureSettings = secureSettings;
-            mWindowManagerProvider = windowManagerProvider;
         }
 
         @Override
         protected MagnificationSettingsController createInstance(Display display) {
             final Context windowContext = mContext.createWindowContext(display,
                     TYPE_ACCESSIBILITY_OVERLAY, /* options */ null);
-            final WindowManager windowManager = mWindowManagerProvider
-                    .getWindowManager(windowContext);
             windowContext.setTheme(com.android.systemui.res.R.style.Theme_SystemUI);
+
             return new MagnificationSettingsController(
                     windowContext,
                     new SfVsyncFrameCallbackProvider(),
                     mSettingsControllerCallback,
-                    mSecureSettings,
-                    windowManager);
+                    mSecureSettings);
         }
     }
 
@@ -234,12 +223,10 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
             SysUiState sysUiState, LauncherProxyService launcherProxyService,
             SecureSettings secureSettings, DisplayTracker displayTracker,
             DisplayManager displayManager, AccessibilityLogger a11yLogger,
-            IWindowManager iWindowManager, AccessibilityManager accessibilityManager,
-            WindowManagerProvider windowManagerProvider) {
+            IWindowManager iWindowManager, AccessibilityManager accessibilityManager) {
         this(context, mainHandler.getLooper(), executor, commandQueue,
                 modeSwitchesController, sysUiState, launcherProxyService, secureSettings,
-                displayTracker, displayManager, a11yLogger, iWindowManager, accessibilityManager,
-                windowManagerProvider);
+                displayTracker, displayManager, a11yLogger, iWindowManager, accessibilityManager);
     }
 
     @VisibleForTesting
@@ -249,8 +236,7 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
             SecureSettings secureSettings, DisplayTracker displayTracker,
             DisplayManager displayManager, AccessibilityLogger a11yLogger,
             IWindowManager iWindowManager,
-            AccessibilityManager accessibilityManager,
-            WindowManagerProvider windowManagerProvider) {
+            AccessibilityManager accessibilityManager) {
         mHandler = new Handler(looper) {
             @Override
             public void handleMessage(@NonNull Message msg) {
@@ -269,13 +255,11 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
         mA11yLogger = a11yLogger;
         mWindowMagnificationControllerSupplier = new WindowMagnificationControllerSupplier(context,
                 mHandler, mWindowMagnifierCallback,
-                displayManager, sysUiState, secureSettings, windowManagerProvider);
+                displayManager, sysUiState, secureSettings);
         mFullscreenMagnificationControllerSupplier = new FullscreenMagnificationControllerSupplier(
-                context, displayManager, mHandler, mExecutor, iWindowManager,
-                windowManagerProvider);
+                context, displayManager, mHandler, mExecutor, iWindowManager);
         mMagnificationSettingsSupplier = new SettingsSupplier(context,
-                mMagnificationSettingsControllerCallback, displayManager, secureSettings,
-                windowManagerProvider);
+                mMagnificationSettingsControllerCallback, displayManager, secureSettings);
 
         mModeSwitchesController.setClickListenerDelegate(
                 displayId -> mHandler.post(() -> {

@@ -60,10 +60,8 @@ public class MagnificationSettingsController implements ComponentCallbacks {
             @UiContext Context context,
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider,
             @NonNull Callback settingsControllerCallback,
-            SecureSettings secureSettings,
-            WindowManager windowManager) {
-        this(context, sfVsyncFrameProvider, settingsControllerCallback,  secureSettings,
-                windowManager, null);
+            SecureSettings secureSettings) {
+        this(context, sfVsyncFrameProvider, settingsControllerCallback,  secureSettings, null);
     }
 
     @VisibleForTesting
@@ -72,7 +70,6 @@ public class MagnificationSettingsController implements ComponentCallbacks {
             SfVsyncFrameCallbackProvider sfVsyncFrameProvider,
             @NonNull Callback settingsControllerCallback,
             SecureSettings secureSettings,
-            WindowManager windowManager,
             WindowMagnificationSettings windowMagnificationSettings) {
         mContext = context.createWindowContext(
                 context.getDisplay(),
@@ -85,9 +82,10 @@ public class MagnificationSettingsController implements ComponentCallbacks {
         if (windowMagnificationSettings != null) {
             mWindowMagnificationSettings = windowMagnificationSettings;
         } else {
+            WindowManager wm = mContext.getSystemService(WindowManager.class);
             mWindowMagnificationSettings = new WindowMagnificationSettings(mContext,
                     mWindowMagnificationSettingsCallback,
-                    sfVsyncFrameProvider, secureSettings, windowManager);
+                    sfVsyncFrameProvider, secureSettings, wm);
         }
     }
 

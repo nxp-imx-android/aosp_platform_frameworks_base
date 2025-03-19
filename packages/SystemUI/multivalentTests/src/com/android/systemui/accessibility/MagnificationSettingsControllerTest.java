@@ -23,7 +23,6 @@ import static org.mockito.Mockito.verify;
 
 import android.content.pm.ActivityInfo;
 import android.testing.TestableLooper;
-import android.view.WindowManager;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -57,15 +56,13 @@ public class MagnificationSettingsControllerTest extends SysuiTestCase {
     private SfVsyncFrameCallbackProvider mSfVsyncFrameProvider;
     @Mock
     private SecureSettings mSecureSettings;
-    @Mock
-    private WindowManager mWindowManager;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mMagnificationSettingsController = new MagnificationSettingsController(
                 mContext, mSfVsyncFrameProvider,
-                mMagnificationSettingControllerCallback, mSecureSettings, mWindowManager,
+                mMagnificationSettingControllerCallback, mSecureSettings,
                 mWindowMagnificationSettings);
     }
 
