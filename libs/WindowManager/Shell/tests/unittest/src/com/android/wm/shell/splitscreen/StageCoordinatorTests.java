@@ -548,6 +548,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_ENABLE_REQUEST_FULLSCREEN_BUGFIX})
     public void testDismiss_fullscreenDisplay() {
         when(mStageCoordinator.isSplitActive()).thenReturn(true);
 
@@ -555,7 +556,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         mStageCoordinator.prepareExitSplitScreen(STAGE_TYPE_MAIN, wct, EXIT_REASON_DRAG_DIVIDER);
 
         assertEquals(wct.getChanges().get(mMainChildTaskInfo.token.asBinder()).getWindowingMode(),
-                WINDOWING_MODE_UNDEFINED);
+                WINDOWING_MODE_FULLSCREEN);
     }
 
     @Test
