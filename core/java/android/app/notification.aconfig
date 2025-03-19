@@ -287,7 +287,7 @@ flag {
   name: "notif_entry_creation_time_use_elapsed_realtime"
   namespace: "systemui"
   description: "makes the notification entry expect its creation time to be elapsedRealtime, not uptimeMillis"
-  bug: "343631648"
+  bug: "389606876"
   metadata {
     purpose: PURPOSE_BUGFIX
   }
