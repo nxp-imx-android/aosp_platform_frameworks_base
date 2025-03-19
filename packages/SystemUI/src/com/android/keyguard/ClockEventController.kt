@@ -57,6 +57,7 @@ import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockController
 import com.android.systemui.plugins.clocks.ClockEventListener
 import com.android.systemui.plugins.clocks.ClockFaceController
+import com.android.systemui.plugins.clocks.ClockFaceController.Companion.updateTheme
 import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockTickRate
 import com.android.systemui.plugins.clocks.VRectF
@@ -263,19 +264,19 @@ constructor(
         if (regionSamplingEnabled) {
             clock?.smallClock?.run {
                 val isDark = smallRegionSampler?.currentRegionDarkness()?.isDark ?: isDarkTheme
-                events.onThemeChanged(theme.copy(isDarkTheme = isDark))
+                updateTheme { it.copy(isDarkTheme = isDark) }
             }
             clock?.largeClock?.run {
                 val isDark = largeRegionSampler?.currentRegionDarkness()?.isDark ?: isDarkTheme
-                events.onThemeChanged(theme.copy(isDarkTheme = isDark))
+                updateTheme { it.copy(isDarkTheme = isDark) }
             }
             return
         }
 
         clock?.run {
             Log.i(TAG, "isThemeDark: $isDarkTheme")
-            smallClock.events.onThemeChanged(smallClock.theme.copy(isDarkTheme = isDarkTheme))
-            largeClock.events.onThemeChanged(largeClock.theme.copy(isDarkTheme = isDarkTheme))
+            smallClock.updateTheme { it.copy(isDarkTheme = isDarkTheme) }
+            largeClock.updateTheme { it.copy(isDarkTheme = isDarkTheme) }
         }
     }
 
