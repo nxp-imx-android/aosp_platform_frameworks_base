@@ -17,6 +17,8 @@
 package com.android.server;
 
 import static android.Manifest.permission.MODIFY_DAY_NIGHT_MODE;
+import static android.app.UiModeManager.FORCE_INVERT_TYPE_DARK;
+import static android.app.UiModeManager.FORCE_INVERT_TYPE_OFF;
 import static android.app.UiModeManager.MODE_ATTENTION_THEME_OVERLAY_DAY;
 import static android.app.UiModeManager.MODE_ATTENTION_THEME_OVERLAY_NIGHT;
 import static android.app.UiModeManager.MODE_ATTENTION_THEME_OVERLAY_OFF;
@@ -89,6 +91,7 @@ import android.os.Process;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.os.test.FakePermissionEnforcer;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.provider.Settings;
 import android.service.dreams.DreamManagerInternal;
@@ -1512,6 +1515,44 @@ public class UiModeManagerServiceTest extends UiServiceTestCase {
     @Test
     public void testAttentionModeThemeOverlay_nightModeEnabled() throws RemoteException {
         testAttentionModeThemeOverlay(true);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertState_nightModeFalse_returnsOff() throws RemoteException {
+        mService.setNightModeActivated(false);
+
+        assertThat(mUiManagerService.getForceInvertStateInternal())
+                .isEqualTo(FORCE_INVERT_TYPE_OFF);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertState_nightModeTrueAndForceInvertOff_returnsOff()
+            throws RemoteException {
+        mService.setNightModeActivated(true);
+
+        Settings.Secure.putInt(
+                mContentResolver,
+                Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
+                /* value= */ 0);
+
+        assertThat(mUiManagerService.getForceInvertStateInternal())
+                .isEqualTo(FORCE_INVERT_TYPE_OFF);
+    }
+
+    @Test
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    public void getForceInvertState_nightModeTrueAndForceInvertOn_returnsDark() throws Exception {
+        mService.setNightModeActivated(true);
+
+        Settings.Secure.putInt(
+                mContentResolver,
+                Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED,
+                /* value= */ 1);
+
+        assertThat(mUiManagerService.getForceInvertStateInternal())
+                .isEqualTo(FORCE_INVERT_TYPE_DARK);
     }
 
     private void triggerDockIntent() {
