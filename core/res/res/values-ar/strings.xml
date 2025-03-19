@@ -1808,9 +1808,9 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"زيادة تعتيم الشاشة"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"سماعات الأذن الطبية"</string>
     <string name="autoclick_feature_name" msgid="8149248738736949630">"النقر التلقائي"</string>
-    <string name="hearing_device_status_disconnected" msgid="497547752953543832">"غير متّصل"</string>
-    <string name="hearing_device_status_connected" msgid="2149385149669918764">"متّصل"</string>
-    <string name="hearing_device_status_active" msgid="4770378695482566032">"متّصل حاليًا"</string>
+    <string name="hearing_device_status_disconnected" msgid="497547752953543832">"غير متّصلة"</string>
+    <string name="hearing_device_status_connected" msgid="2149385149669918764">"متّصلة"</string>
+    <string name="hearing_device_status_active" msgid="4770378695482566032">"متّصلة حاليًا"</string>
     <string name="hearing_device_status_loading" msgid="5717083847663109747">"غير متاح بعد"</string>
     <string name="accessibility_shortcut_enabling_service" msgid="5473495203759847687">"تم الضغط مع الاستمرار على مفتاحَي التحكّم في مستوى الصوت. تم تفعيل <xliff:g id="SERVICE_NAME">%1$s</xliff:g>."</string>
     <string name="accessibility_shortcut_disabling_service" msgid="8675244165062700619">"تم الضغط مع الاستمرار على مفتاحَي التحكّم في مستوى الصوت. تم إيقاف <xliff:g id="SERVICE_NAME">%1$s</xliff:g>."</string>
