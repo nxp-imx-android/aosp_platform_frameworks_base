@@ -4558,7 +4558,9 @@ class Task extends TaskFragment {
      */
     void setMainWindowSizeChangeTransaction(SurfaceControl.Transaction t) {
         setMainWindowSizeChangeTransaction(t, this);
-        forAllWindows(WindowState::requestRedrawForSync, true);
+        if (!Flags.alwaysSeqIdLayout()) {
+            forAllWindows(WindowState::requestRedrawForSync, true);
+        }
     }
 
     private void setMainWindowSizeChangeTransaction(SurfaceControl.Transaction t, Task origin) {
