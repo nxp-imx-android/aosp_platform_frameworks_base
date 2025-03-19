@@ -26,37 +26,33 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
-import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
 import kotlinx.coroutines.CoroutineScope
 
-interface BundleHeaderViewModel {
-    val titleText: String
-    val numberOfChildren: Int?
-    val bundleIcon: Drawable?
-    val previewIcons: List<Drawable>
+class BundleHeaderViewModel(val interactor: BundleInteractor) {
+    val titleText
+        get() = interactor.titleText
 
-    val state: SceneTransitionLayoutState
+    val numberOfChildren
+        get() = interactor.numberOfChildren
 
-    val hasUnreadMessages: Boolean
-    val backgroundDrawable: Drawable?
+    val hasUnreadMessages
+        get() = interactor.hasUnreadMessages
 
-    fun onHeaderClicked(scope: CoroutineScope)
-}
+    val bundleIcon
+        get() = interactor.bundleIcon
 
-class BundleHeaderViewModelImpl : BundleHeaderViewModel {
-    override var titleText by mutableStateOf("")
-    override var numberOfChildren by mutableStateOf<Int?>(1)
-    override var hasUnreadMessages by mutableStateOf(true)
-    override var bundleIcon by mutableStateOf<Drawable?>(null)
-    override var previewIcons by mutableStateOf(listOf<Drawable>())
-    override var backgroundDrawable by mutableStateOf<Drawable?>(null)
+    val previewIcons
+        get() = interactor.previewIcons
+
+    var backgroundDrawable by mutableStateOf<Drawable?>(null)
 
     var onExpandClickListener: View.OnClickListener? = null
 
     @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-    override var state: MutableSceneTransitionLayoutState =
+    val state: MutableSceneTransitionLayoutState =
         MutableSceneTransitionLayoutState(
             BundleHeader.Scenes.Collapsed,
             MotionScheme.standard(),
@@ -72,16 +68,18 @@ class BundleHeaderViewModelImpl : BundleHeaderViewModel {
             },
         )
 
-    override fun onHeaderClicked(scope: CoroutineScope) {
+    fun onHeaderClicked(scope: CoroutineScope) {
         val targetScene =
             when (state.currentScene) {
-                BundleHeader.Scenes.Collapsed -> BundleHeader.Scenes.Expanded
+                BundleHeader.Scenes.Collapsed -> {
+                    interactor.rowExpanded()
+                    BundleHeader.Scenes.Expanded
+                }
                 BundleHeader.Scenes.Expanded -> BundleHeader.Scenes.Collapsed
                 else -> error("Unknown Scene")
             }
         state.setTargetScene(targetScene, scope)
 
         onExpandClickListener?.onClick(null)
-        hasUnreadMessages = false
     }
 }

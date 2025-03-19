@@ -60,7 +60,7 @@ import com.android.systemui.statusbar.notification.row.HybridGroupManager;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.AsyncHybridViewInflation;
-import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
+import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModel;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationHeaderViewWrapper;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -127,7 +127,7 @@ public class NotificationChildrenContainer extends ViewGroup
      * view variants have to be null.
      */
     private ComposeView mBundleHeaderView;
-    private BundleHeaderViewModelImpl mBundleHeaderViewModel;
+    private BundleHeaderViewModel mBundleHeaderViewModel;
 
     private NotificationHeaderView mGroupHeader;
     private NotificationHeaderViewWrapper mGroupHeaderWrapper;
@@ -512,7 +512,7 @@ public class NotificationChildrenContainer extends ViewGroup
      * Init the bundle header view. The ComposeView is initialized within with the passed viewModel.
      * This can only be init once and not in conjunction with any other header view.
      */
-    public void initBundleHeader(@NonNull BundleHeaderViewModelImpl viewModel) {
+    public void initBundleHeader(@NonNull BundleHeaderViewModel viewModel) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         if (mBundleHeaderView != null) return;
         initBundleDimens();
