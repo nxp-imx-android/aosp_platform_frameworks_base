@@ -34,7 +34,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionModeOnCanceled
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.util.kotlin.Utils.Companion.sample
+import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineDispatcher
@@ -95,16 +95,13 @@ constructor(
             powerInteractor.detailedWakefulness
                 .debounce(50L)
                 .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwake() }
-                .sample(
-                    transitionInteractor.startedKeyguardTransitionStep,
-                    wakeToGoneInteractor.canWakeDirectlyToGone,
-                )
+                .sample(wakeToGoneInteractor.canWakeDirectlyToGone, ::Pair)
                 .collect {
                     (
                         detailedWakefulness,
-                        startedStep,
                         canWakeDirectlyToGone,
                     ) ->
+                    val startedStep = transitionInteractor.startedKeyguardTransitionStep.value
                     val isKeyguardOccludedLegacy = keyguardInteractor.isKeyguardOccluded.value
                     val biometricUnlockMode = keyguardInteractor.biometricUnlockState.value.mode
                     val primaryBouncerShowing = keyguardInteractor.primaryBouncerShowing.value

@@ -24,7 +24,6 @@ import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVi
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.scene.shared.model.Scenes
-import com.android.systemui.util.kotlin.sample
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -54,8 +53,8 @@ constructor(
     /** Occlusion state to apply whenever a keyguard transition is STARTED, if any. */
     private val occlusionStateFromStartedStep: Flow<OccludedState> =
         keyguardTransitionInteractor.startedKeyguardTransitionStep
-            .sample(powerInteractor.detailedWakefulness, ::Pair)
-            .map { (startedStep, wakefulness) ->
+            .map { startedStep ->
+                val wakefulness = powerInteractor.detailedWakefulness.value
                 val transitioningFromPowerButtonGesture =
                     KeyguardState.deviceIsAsleepInState(startedStep.from) &&
                         startedStep.to == KeyguardState.OCCLUDED &&
