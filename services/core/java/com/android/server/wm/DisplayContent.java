@@ -4982,22 +4982,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return win != null;
     }
 
-    /**
-     * Callbacks when the given type of {@link WindowContainer} animation finished running in the
-     * hierarchy.
-     */
-    void onWindowAnimationFinished(@NonNull WindowContainer wc, int type) {
-        if (mImeScreenshot != null) {
-            ProtoLog.i(WM_DEBUG_IME,
-                    "onWindowAnimationFinished, wc=%s, type=%s, imeSnapshot=%s, target=%s",
-                    wc, SurfaceAnimator.animationTypeToString(type), mImeScreenshot,
-                    mImeScreenshot.getImeTarget());
-        }
-        if ((type & WindowState.EXIT_ANIMATING_TYPES) != 0) {
-            removeImeSurfaceByTarget(wc);
-        }
-    }
-
     // TODO: Super unexpected long method that should be broken down...
     void applySurfaceChangesTransaction() {
         final WindowSurfacePlacer surfacePlacer = mWmService.mWindowPlacerLocked;

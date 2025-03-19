@@ -55,14 +55,12 @@ import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
 import android.annotation.CallSuper;
-import android.annotation.ColorInt;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ActivityInfo.ScreenOrientation;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Debug;
@@ -105,7 +103,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -218,14 +215,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     protected final WindowManagerService mWmService;
     final TransitionController mTransitionController;
 
-    /**
-     * Sources which triggered a surface animation on this container. An animation target can be
-     * promoted to higher level, for example, from a set of {@link ActivityRecord}s to
-     * {@link Task}. In this case, {@link ActivityRecord}s are set on this variable while
-     * the animation is running, and reset after finishing it.
-     */
-    private final ArraySet<WindowContainer> mSurfaceAnimationSources = new ArraySet<>();
-
     private final Point mTmpPos = new Point();
     protected final Point mLastSurfacePosition = new Point();
     protected @Surface.Rotation int mLastDeltaRotation = Surface.ROTATION_0;
@@ -279,17 +268,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      */
     int mTransitFlags;
 
-    /** Layer used to constrain the animation to a container's stack bounds. */
-    SurfaceControl mAnimationBoundsLayer;
-
-    /** Whether this container needs to create mAnimationBoundsLayer for cropping animations. */
-    boolean mNeedsAnimationBoundsLayer;
-
-    /**
-     * This gets used during some open/close transitions as well as during a change transition
-     * where it represents the starting-state snapshot.
-     */
-    final Point mTmpPoint = new Point();
     protected final Rect mTmpRect = new Rect();
     final Rect mTmpPrevBounds = new Rect();
 
@@ -2961,7 +2939,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
     }
 
     void cancelAnimation() {
-        doAnimationFinished(mSurfaceAnimator.getAnimationType(), mSurfaceAnimator.getAnimation());
         mSurfaceAnimator.cancelAnimation();
     }
 
@@ -2990,10 +2967,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
 
         return isExitingPip || inPinnedWindowingMode()
                 || (getParent() != null && getParent().inPinnedWindowingMode());
-    }
-
-    ArraySet<WindowContainer> getAnimationSources() {
-        return mSurfaceAnimationSources;
     }
 
     @Override
@@ -3094,21 +3067,10 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         return mAnimationLeash;
     }
 
-    private void doAnimationFinished(@AnimationType int type, AnimationAdapter anim) {
-        for (int i = 0; i < mSurfaceAnimationSources.size(); ++i) {
-            mSurfaceAnimationSources.valueAt(i).onAnimationFinished(type, anim);
-        }
-        mSurfaceAnimationSources.clear();
-        if (mDisplayContent != null) {
-            mDisplayContent.onWindowAnimationFinished(this, type);
-        }
-    }
-
     /**
      * Called when an animation has finished running.
      */
     protected void onAnimationFinished(@AnimationType int type, AnimationAdapter anim) {
-        doAnimationFinished(type, anim);
         mWmService.onAnimationFinished();
     }
 
@@ -3819,50 +3781,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         }
         t.setSecure(mSurfaceControl, !canScreenshot);
         return true;
-    }
-
-    private class AnimationRunnerBuilder {
-        /**
-         * Runs when the surface stops animating
-         */
-        private final List<Runnable> mOnAnimationFinished = new LinkedList<>();
-        /**
-         * Runs when the animation is cancelled but the surface is still animating
-         */
-        private final List<Runnable> mOnAnimationCancelled = new LinkedList<>();
-
-        private void setTaskBackgroundColor(@ColorInt int backgroundColor) {
-            TaskDisplayArea taskDisplayArea = getTaskDisplayArea();
-
-            if (taskDisplayArea != null && backgroundColor != Color.TRANSPARENT) {
-                taskDisplayArea.setBackgroundColor(backgroundColor);
-
-                // Atomic counter to make sure the clearColor callback is only called one.
-                // It will be called twice in the case we cancel the animation without restart
-                // (in that case it will run as the cancel and finished callbacks).
-                final AtomicInteger callbackCounter = new AtomicInteger(0);
-                final Runnable clearBackgroundColorHandler = () -> {
-                    if (callbackCounter.getAndIncrement() == 0) {
-                        taskDisplayArea.clearBackgroundColor();
-                    }
-                };
-
-                // We want to make sure this is called both when the surface stops animating and
-                // also when an animation is cancelled (i.e. animation is replaced by another
-                // animation but and so the surface is still animating)
-                mOnAnimationFinished.add(clearBackgroundColorHandler);
-                mOnAnimationCancelled.add(clearBackgroundColorHandler);
-            }
-        }
-
-        private IAnimationStarter build() {
-            return (Transaction t, AnimationAdapter adapter, boolean hidden,
-                    @AnimationType int type, @Nullable AnimationAdapter snapshotAnim) -> {
-                startAnimation(getPendingTransaction(), adapter, !isVisible(), type,
-                        (animType, anim) -> mOnAnimationFinished.forEach(Runnable::run),
-                        () -> mOnAnimationCancelled.forEach(Runnable::run), snapshotAnim);
-            };
-        }
     }
 
     private interface IAnimationStarter {

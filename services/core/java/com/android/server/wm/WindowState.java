@@ -4689,40 +4689,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return super.handleCompleteDeferredRemoval();
     }
 
-    boolean clearAnimatingFlags() {
-        boolean didSomething = false;
-        // We also don't clear the mAnimatingExit flag for windows which have the
-        // mRemoveOnExit flag. This indicates an explicit remove request has been issued
-        // by the client. We should let animation proceed and not clear this flag or
-        // they won't eventually be removed by WindowStateAnimator#finishExit.
-        if (!mRemoveOnExit) {
-            // Clear mAnimating flag together with mAnimatingExit. When animation
-            // changes from exiting to entering, we need to clear this flag until the
-            // new animation gets applied, so that isAnimationStarting() becomes true
-            // until then.
-            // Otherwise applySurfaceChangesTransaction will fail to skip surface
-            // placement for this window during this period, one or more frame will
-            // show up with wrong position or scale.
-            if (mAnimatingExit) {
-                mAnimatingExit = false;
-                ProtoLog.d(WM_DEBUG_ANIM, "Clear animatingExit: reason=clearAnimatingFlags win=%s",
-                        this);
-                didSomething = true;
-            }
-            if (mDestroying) {
-                mDestroying = false;
-                mWmService.mDestroySurface.remove(this);
-                didSomething = true;
-            }
-        }
-
-        for (int i = mChildren.size() - 1; i >= 0; --i) {
-            didSomething |= (mChildren.get(i)).clearAnimatingFlags();
-        }
-
-        return didSomething;
-    }
-
     public boolean isRtl() {
         return getConfiguration().getLayoutDirection() == View.LAYOUT_DIRECTION_RTL;
     }
