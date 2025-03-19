@@ -160,24 +160,16 @@ public class HearingDevicePhoneCallNotificationController {
                 mHearingDevice = null;
             }
             if (state == TelephonyManager.CALL_STATE_OFFHOOK) {
-                if (com.android.server.accessibility.Flags.hearingInputChangeWhenCommDevice()) {
-                    AudioDeviceInfo commDevice = mAudioManager.getCommunicationDevice();
-                    if (commDevice == null) {
-                        return;
-                    }
-                    mHearingDevice = getSupportedInputHearingDeviceInfo(List.of(commDevice));
-                    if (mHearingDevice != null) {
-                        showNotificationIfNeeded();
-                    } else {
-                        addOnCommunicationDeviceChangedListenerIfNeeded(mCommDeviceChangedExecutor,
-                                mCommDeviceChangedListener);
-                    }
+                AudioDeviceInfo commDevice = mAudioManager.getCommunicationDevice();
+                if (commDevice == null) {
+                    return;
+                }
+                mHearingDevice = getSupportedInputHearingDeviceInfo(List.of(commDevice));
+                if (mHearingDevice != null) {
+                    showNotificationIfNeeded();
                 } else {
-                    mHearingDevice = getSupportedInputHearingDeviceInfo(
-                            mAudioManager.getAvailableCommunicationDevices());
-                    if (mHearingDevice != null) {
-                        showNotificationIfNeeded();
-                    }
+                    addOnCommunicationDeviceChangedListenerIfNeeded(mCommDeviceChangedExecutor,
+                            mCommDeviceChangedListener);
                 }
             }
         }
