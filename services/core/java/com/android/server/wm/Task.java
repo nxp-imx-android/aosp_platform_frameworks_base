@@ -5764,15 +5764,16 @@ class Task extends TaskFragment {
             return false;
         }
 
-        // If we have a watcher, preflight the move before committing to it.  First check
-        // for *other* available tasks, but if none are available, then try again allowing the
-        // current task to be selected.
+        // If we have a watcher, preflight the move before committing to it.
+        // Checks for other available tasks; however, if none are available, skips because this
+        // is the bottommost task.
         if (mAtmService.mController != null && isTopRootTaskInDisplayArea()) {
-            ActivityRecord next = topRunningActivity(null, task.mTaskId);
-            if (next == null) {
-                next = topRunningActivity(null, INVALID_TASK_ID);
-            }
+            final ActivityRecord next = getDisplayArea().getActivity(
+                    a -> isTopRunning(a, task.mTaskId, null /* notTop */));
             if (next != null) {
+                if (next.isState(RESUMED)) {
+                    return true;
+                }
                 // ask watcher if this is allowed
                 boolean moveOK = true;
                 try {
