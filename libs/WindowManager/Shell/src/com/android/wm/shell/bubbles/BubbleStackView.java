@@ -2959,6 +2959,9 @@ public class BubbleStackView extends FrameLayout
         if (mIsExpanded) {
             mExpandedViewAnimationController.animateForImeVisibilityChange(visible);
             BubbleExpandedView expandedView = getExpandedView();
+            if (expandedView != null) {
+                expandedView.setImeVisible(visible);
+            }
             if (mPositioner.showBubblesVertically() && expandedView != null) {
                 float selectedY = mPositioner.getExpandedBubbleXY(getState().selectedIndex,
                         getState()).y;
