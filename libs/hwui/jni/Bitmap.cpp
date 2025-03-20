@@ -2,6 +2,9 @@
 #include "Bitmap.h"
 
 #include <android-base/unique_fd.h>
+#ifdef __linux__
+#include <com_android_graphics_hwui_flags.h>
+#endif
 #include <hwui/Bitmap.h>
 #include <hwui/Paint.h>
 #include <inttypes.h>
@@ -32,15 +35,6 @@
 #include "android/binder_parcel.h"
 #endif
 #include "android_nio_utils.h"
-
-#ifdef __ANDROID__
-#include <com_android_graphics_hwui_flags.h>
-namespace hwui_flags = com::android::graphics::hwui::flags;
-#else
-namespace hwui_flags {
-constexpr bool bitmap_parcel_ashmem_as_immutable() { return false; }
-}
-#endif
 
 #define DEBUG_PARCEL 0
 
@@ -861,7 +855,7 @@ static bool shouldParcelAsMutable(SkBitmap& bitmap, AParcel* parcel) {
         return false;
     }
 
-    if (!hwui_flags::bitmap_parcel_ashmem_as_immutable()) {
+    if (!com::android::graphics::hwui::flags::bitmap_parcel_ashmem_as_immutable()) {
         return true;
     }
 
