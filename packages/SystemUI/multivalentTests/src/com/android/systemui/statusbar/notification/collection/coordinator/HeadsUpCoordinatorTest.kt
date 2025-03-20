@@ -17,7 +17,9 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification.GROUP_ALERT_ALL
 import android.app.Notification.GROUP_ALERT_SUMMARY
+import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.platform.test.annotations.EnableFlags
+import android.service.notification.Flags.FLAG_NOTIFICATION_CLASSIFICATION
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -50,6 +52,7 @@ import com.android.systemui.statusbar.notification.interruption.HeadsUpViewBinde
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProvider.FullScreenIntentDecision
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper.DecisionImpl
 import com.android.systemui.statusbar.notification.interruption.NotificationInterruptStateProviderWrapper.FullScreenIntentDecisionImpl
+import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
 import com.android.systemui.statusbar.notification.row.mockNotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -61,7 +64,6 @@ import com.android.systemui.util.mockito.eq
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.withArgCaptor
 import com.android.systemui.util.time.FakeSystemClock
-import java.util.ArrayList
 import java.util.function.Consumer
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -105,6 +107,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
 
     private val notifPipeline: NotifPipeline = mock()
     private val logger = HeadsUpCoordinatorLogger(logcatLogBuffer(), verbose = true)
+    private val interruptLogger: VisualInterruptionDecisionLogger = mock()
     private val headsUpManager: HeadsUpManagerImpl = mock()
     private val headsUpViewBinder: HeadsUpViewBinder = mock()
     private val visualInterruptionDecisionProvider: VisualInterruptionDecisionProvider = mock()
@@ -135,6 +138,7 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
             HeadsUpCoordinator(
                 kosmos.applicationCoroutineScope,
                 logger,
+                interruptLogger,
                 systemClock,
                 notifCollection,
                 headsUpManager,
@@ -918,6 +922,48 @@ class HeadsUpCoordinatorTest : SysuiTestCase() {
         verify(headsUpManager).showNotification(groupChild1)
         verify(headsUpManager, never()).showNotification(groupChild2)
         assertFalse(groupSummary.hasInterrupted())
+    }
+
+    private fun helpTestNoTransferToBundleChildForChannel(channelId: String) {
+        // Set up for normal alert transfer from summary to child
+        // but here child is classified so it should not happen
+        val bundleChild =
+            helper.createClassifiedEntry(/* isSummary= */ false, GROUP_ALERT_SUMMARY, channelId);
+        setShouldHeadsUp(bundleChild, true)
+        setShouldHeadsUp(groupSummary, true)
+        whenever(notifPipeline.allNotifs).thenReturn(listOf(groupSummary, bundleChild))
+
+        collectionListener.onEntryAdded(groupSummary)
+        collectionListener.onEntryAdded(bundleChild)
+
+        beforeTransformGroupsListener.onBeforeTransformGroups(listOf(groupSummary, bundleChild))
+        beforeFinalizeFilterListener.onBeforeFinalizeFilter(listOf(groupSummary, bundleChild))
+
+        verify(headsUpViewBinder, never()).bindHeadsUpView(eq(groupSummary), any(), any())
+        verify(headsUpViewBinder, never()).bindHeadsUpView(eq(bundleChild), any(), any())
+
+        verify(headsUpManager, never()).showNotification(groupSummary)
+        verify(headsUpManager, never()).showNotification(bundleChild)
+
+        // Capture last param
+        val decision = withArgCaptor {
+            verify(interruptLogger)
+                .logDecision(capture(), capture(), capture())
+        }
+        assertFalse(decision.shouldInterrupt)
+        assertEquals(decision.logReason, "disqualified-transfer-target")
+
+        // Must clear invocations, otherwise these calls get stored for the next call from the same
+        // test, which complains that there are more invocations than expected
+        clearInvocations(interruptLogger)
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    fun testNoTransfer_toBundleChild() {
+        for (id in SYSTEM_RESERVED_IDS) {
+            helpTestNoTransferToBundleChildForChannel(id)
+        }
     }
 
     @Test

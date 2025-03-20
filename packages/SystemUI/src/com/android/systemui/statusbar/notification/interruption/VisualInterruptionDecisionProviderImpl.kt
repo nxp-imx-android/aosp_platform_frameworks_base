@@ -87,7 +87,7 @@ constructor(
         val eventLogData: EventLogData?
     }
 
-    private class DecisionImpl(
+    class DecisionImpl(
         override val shouldInterrupt: Boolean,
         override val logReason: String,
     ) : Decision

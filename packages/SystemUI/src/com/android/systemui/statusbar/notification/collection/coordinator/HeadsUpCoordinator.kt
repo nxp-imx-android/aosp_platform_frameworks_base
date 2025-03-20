@@ -17,6 +17,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator
 
 import android.app.Notification
 import android.app.Notification.GROUP_ALERT_SUMMARY
+import android.app.NotificationChannel.SYSTEM_RESERVED_IDS
 import android.util.ArrayMap
 import android.util.ArraySet
 import com.android.internal.annotations.VisibleForTesting
@@ -48,7 +49,10 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.interruption.HeadsUpViewBinder
+import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionLogger
 import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProvider
+import com.android.systemui.statusbar.notification.interruption.VisualInterruptionDecisionProviderImpl.DecisionImpl
+import com.android.systemui.statusbar.notification.interruption.VisualInterruptionType
 import com.android.systemui.statusbar.notification.logKey
 import com.android.systemui.statusbar.notification.row.NotificationActionClickManager
 import com.android.systemui.statusbar.notification.shared.GroupHunAnimationFix
@@ -81,6 +85,7 @@ class HeadsUpCoordinator
 constructor(
     @Application private val applicationScope: CoroutineScope,
     private val mLogger: HeadsUpCoordinatorLogger,
+    private val mInterruptLogger: VisualInterruptionDecisionLogger,
     private val mSystemClock: SystemClock,
     private val notifCollection: NotifCollection,
     private val mHeadsUpManager: HeadsUpManager,
@@ -290,6 +295,19 @@ constructor(
                     return@forEach
                 }
 
+                if (isDisqualifiedChild(childToReceiveParentHeadsUp)) {
+                    mInterruptLogger.logDecision(
+                        VisualInterruptionType.PEEK.name,
+                        childToReceiveParentHeadsUp,
+                        DecisionImpl(shouldInterrupt = false,
+                            logReason = "disqualified-transfer-target"))
+                    postedEntries.forEach {
+                        it.shouldHeadsUpEver = false
+                        it.shouldHeadsUpAgain = false
+                        handlePostedEntry(it, hunMutator, scenario = "disqualified-transfer-target")
+                    }
+                    return@forEach
+                }
                 // At this point we just need to initiate the transfer
                 val summaryUpdate = mPostedEntries[logicalSummary.key]
 
@@ -391,6 +409,14 @@ constructor(
             // Also take this opportunity to clean up any stale entry update times
             cleanUpEntryTimes()
         }
+
+    private fun isDisqualifiedChild(entry: NotificationEntry): Boolean  {
+        if (entry.channel == null || entry.channel.id == null) {
+            return false
+        }
+        return entry.channel.id in SYSTEM_RESERVED_IDS
+    }
+
 
     /**
      * Find the posted child with the newest when, and return it if it is isolated and has
