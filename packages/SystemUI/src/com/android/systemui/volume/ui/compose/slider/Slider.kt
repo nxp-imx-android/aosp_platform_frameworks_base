@@ -18,9 +18,9 @@
 
 package com.android.systemui.volume.ui.compose.slider
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.SpringSpec
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,11 +32,11 @@ import androidx.compose.material3.SliderState
 import androidx.compose.material3.VerticalSlider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -53,14 +53,9 @@ import com.android.systemui.haptics.slider.compose.ui.SliderHapticsViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.volume.haptics.ui.VolumeHapticsConfigsProvider
 import kotlin.math.round
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-
-private val defaultSpring =
-    SpringSpec<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessHigh)
 
 @Composable
 fun Slider(
@@ -87,55 +82,31 @@ fun Slider(
     },
 ) {
     require(stepDistance >= 0) { "stepDistance must not be negative" }
-    val coroutineScope = rememberCoroutineScope()
-    val snappedValue = snapValue(value, valueRange, stepDistance)
+    val snappedValue by valueState(value, isEnabled)
     val hapticsViewModel = haptics.createViewModel(snappedValue, valueRange, interactionSource)
 
-    val animatable = remember { Animatable(snappedValue) }
-    var animationJob: Job? by remember { mutableStateOf(null) }
     val sliderState =
         remember(valueRange) { SliderState(value = snappedValue, valueRange = valueRange) }
     val valueChange: (Float) -> Unit = { newValue ->
         hapticsViewModel?.onValueChange(newValue)
-        val snappedNewValue = snapValue(newValue, valueRange, stepDistance)
-        if (animatable.targetValue != snappedNewValue) {
-            onValueChanged(snappedNewValue)
-            animationJob?.cancel()
-            animationJob =
-                coroutineScope.launch {
-                    animatable.animateTo(
-                        targetValue = snappedNewValue,
-                        animationSpec = defaultSpring,
-                    )
-                }
-        }
+        onValueChanged(newValue)
     }
     val semantics =
         createSemantics(
             accessibilityParams,
-            animatable.targetValue,
+            snappedValue,
             valueRange,
             valueChange,
             isEnabled,
             stepDistance,
         )
 
-    LaunchedEffect(snappedValue) {
-        if (!animatable.isRunning && animatable.targetValue != snappedValue) {
-            animationJob?.cancel()
-            animationJob =
-                coroutineScope.launch {
-                    animatable.animateTo(targetValue = snappedValue, animationSpec = defaultSpring)
-                }
-        }
-    }
-
     sliderState.onValueChangeFinished = {
         hapticsViewModel?.onValueChangeEnded()
-        onValueChangeFinished?.invoke(animatable.targetValue)
+        onValueChangeFinished?.invoke(snappedValue)
     }
     sliderState.onValueChange = valueChange
-    sliderState.value = animatable.value
+    sliderState.value = snappedValue
 
     if (isVertical) {
         VerticalSlider(
@@ -161,16 +132,26 @@ fun Slider(
     }
 }
 
-private fun snapValue(
-    value: Float,
-    valueRange: ClosedFloatingPointRange<Float>,
-    stepDistance: Float,
-): Float {
-    if (stepDistance == 0f) {
-        return value
-    }
-    val coercedValue = value.coerceIn(valueRange)
-    return Math.round(coercedValue / stepDistance) * stepDistance
+@Composable
+private fun valueState(targetValue: Float, isEnabled: Boolean): State<Float> {
+    var prevValue by remember { mutableFloatStateOf(targetValue) }
+    var prevEnabled by remember { mutableStateOf(isEnabled) }
+    // Don't animate slider value when receive the first value and when changing isEnabled state
+    val value =
+        if (prevEnabled != isEnabled) mutableFloatStateOf(targetValue)
+        else
+            animateFloatAsState(
+                targetValue = targetValue,
+                animationSpec =
+                    spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMedium,
+                    ),
+                label = "VolumeSliderValueAnimation",
+            )
+    prevValue = targetValue
+    prevEnabled = isEnabled
+    return value
 }
 
 private fun createSemantics(
