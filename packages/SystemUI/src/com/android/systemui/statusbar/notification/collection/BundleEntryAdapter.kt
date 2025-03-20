@@ -33,6 +33,11 @@ class BundleEntryAdapter(
     private val highPriorityProvider: HighPriorityProvider,
     val entry: BundleEntry,
 ) : EntryAdapter {
+
+    override fun getBackingHashCode(): Int {
+        return entry.hashCode()
+    }
+
     /** TODO (b/394483200): convert to PipelineEntry.ROOT_ENTRY when pipeline is migrated? */
     override fun getParent(): GroupEntry {
         return GroupEntry.ROOT_ENTRY

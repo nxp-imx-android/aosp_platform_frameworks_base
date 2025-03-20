@@ -37,7 +37,10 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @RunWithLooper
+@EnableFlags(NotificationBundleUi.FLAG_NAME)
 class BundleEntryAdapterTest : SysuiTestCase() {
+    private lateinit var entry: BundleEntry
+
     private val kosmos = testKosmos()
     private lateinit var underTest: BundleEntryAdapter
 
@@ -46,120 +49,107 @@ class BundleEntryAdapterTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
-        underTest = factory.create(BundleEntry("key")) as BundleEntryAdapter
+        entry = BundleEntry("key")
+        underTest = factory.create(entry) as BundleEntryAdapter
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getBackingHashCode() {
+        assertThat(underTest.backingHashCode).isEqualTo(entry.hashCode())
+    }
+
+    @Test
     fun getParent_adapter() {
         assertThat(underTest.parent).isEqualTo(GroupEntry.ROOT_ENTRY)
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isTopLevelEntry_adapter() {
         assertThat(underTest.isTopLevelEntry).isTrue()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getRow_adapter() {
         assertThat(underTest.row).isNull()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isGroupRoot_adapter() {
         assertThat(underTest.isGroupRoot).isTrue()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getKey_adapter() {
         assertThat(underTest.key).isEqualTo("key")
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isClearable_adapter() {
         assertThat(underTest.isClearable).isTrue()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getSummarization_adapter() {
         assertThat(underTest.summarization).isNull()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getContrastedColor_adapter() {
         assertThat(underTest.getContrastedColor(context, false, Color.WHITE))
             .isEqualTo(Notification.COLOR_DEFAULT)
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun canPeek_adapter() {
         assertThat(underTest.canPeek()).isFalse()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getWhen_adapter() {
         assertThat(underTest.`when`).isEqualTo(0)
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isColorized() {
         assertThat(underTest.isColorized).isFalse()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getSbn() {
         assertThat(underTest.sbn).isNull()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun canDragAndDrop() {
         assertThat(underTest.canDragAndDrop()).isFalse()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isBubble() {
         assertThat(underTest.isBubble).isFalse()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getStyle() {
         assertThat(underTest.style).isNull()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getSectionBucket() {
         assertThat(underTest.sectionBucket).isEqualTo(underTest.entry.bucket)
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun isAmbient() {
         assertThat(underTest.isAmbient).isFalse()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun canShowFullScreen() {
         assertThat(underTest.isFullScreenCapable()).isFalse()
     }
 
     @Test
-    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getPeopleNotificationType() {
         assertThat(underTest.getPeopleNotificationType()).isEqualTo(TYPE_NON_PERSON)
     }

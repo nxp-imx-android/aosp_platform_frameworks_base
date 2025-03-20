@@ -311,6 +311,20 @@ class DeviceEntryHapticsInteractorTest : SysuiTestCase() {
             assertThat(playSuccessHaptic).isNull()
         }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun playSuccessHaptic_onDeviceEntry_fromDeviceEntryIcon() =
+        testScope.runTest {
+            underTest = kosmos.deviceEntryHapticsInteractor
+            val playSuccessHaptic by collectLastValue(underTest.playSuccessHapticOnDeviceEntry)
+
+            kosmos.fakeKeyguardRepository.setKeyguardDismissible(true)
+            runCurrent()
+            kosmos.deviceEntrySourceInteractor.attemptEnterDeviceFromDeviceEntryIcon()
+
+            assertThat(playSuccessHaptic).isNotNull()
+        }
+
     // Mock dependencies for DeviceEntrySourceInteractor#deviceEntryFromBiometricSource
     private fun configureDeviceEntryFromBiometricSource(
         isFpUnlock: Boolean = false,

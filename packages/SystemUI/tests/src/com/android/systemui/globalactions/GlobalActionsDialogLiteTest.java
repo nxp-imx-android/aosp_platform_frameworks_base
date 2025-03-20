@@ -618,6 +618,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
         when(mKeyguardUpdateMonitor.getUserHasTrust(anyInt())).thenReturn(true);
         mGlobalActionsDialogLite.showOrHideDialog(true, true, null /* view */,
                 Display.DEFAULT_DISPLAY);
+        // Clear the dismiss override so we don't have behavior after dismissing the dialog
+        mGlobalActionsDialogLite.mDialog.setDismissOverride(null);
 
         // Then smart lock will be disabled
         verify(mLockPatternUtils).requireCredentialEntry(eq(expectedUser));
@@ -739,6 +741,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Show dialog with keyguard showing
         mGlobalActionsDialogLite.showOrHideDialog(true, true, null, Display.DEFAULT_DISPLAY);
+        // Clear the dismiss override so we don't have behavior after dismissing the dialog
+        mGlobalActionsDialogLite.mDialog.setDismissOverride(null);
 
         assertOneItemOfType(mGlobalActionsDialogLite.mItems,
                 GlobalActionsDialogLite.SystemUpdateAction.class);
@@ -764,12 +768,15 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         // Show dialog with keyguard showing
         mGlobalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
+        // Clear the dismiss override so we don't have behavior after dismissing the dialog
+        mGlobalActionsDialogLite.mDialog.setDismissOverride(null);
 
         assertNoItemsOfType(mGlobalActionsDialogLite.mItems,
                 GlobalActionsDialogLite.SystemUpdateAction.class);
 
         // Hide dialog
         mGlobalActionsDialogLite.showOrHideDialog(false, false, null, Display.DEFAULT_DISPLAY);
+
     }
 
     @Test
@@ -783,6 +790,8 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
 
         mGlobalActionsDialogLite.showOrHideDialog(false, true, null, Display.DEFAULT_DISPLAY);
         mTestableLooper.processAllMessages();
+        // Clear the dismiss override so we don't have behavior after dismissing the dialog
+        mGlobalActionsDialogLite.mDialog.setDismissOverride(null);
 
         assertThat(mGlobalActionsDialogLite.mDialog.isShowing()).isTrue();
 

@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator;
 import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.IMPORTANCE_DEFAULT;
 import static android.app.NotificationManager.IMPORTANCE_LOW;
+import static android.app.NotificationManager.IMPORTANCE_MIN;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST;
 
@@ -36,7 +37,6 @@ import static org.mockito.Mockito.when;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.platform.test.annotations.EnableFlags;
 
 import androidx.annotation.Nullable;
@@ -265,18 +265,35 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     }
 
     @Test
-    public void testIncludeInSectionSilent() {
-        // GIVEN the entry isn't high priority
+    public void testSilentSectioner_accepts_highPriorityFalse_ambientFalse() {
         when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(false);
         setRankingAmbient(false);
-
-        // THEN entry is in the silent section
-        assertFalse(mAlertingSectioner.isInSection(mEntry));
-        assertTrue(mSilentSectioner.isInSection(mEntry));
+        assertOnlyInSection(mEntry, mSilentSectioner);
     }
 
     @Test
-    public void testSilentSectioner_acceptsBundle() {
+    public void testSilentSectioner_rejects_highPriorityFalse_ambientTrue() {
+        when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(false);
+        setRankingAmbient(true);
+        assertFalse(mSilentSectioner.isInSection(mEntry));
+    }
+
+    @Test
+    public void testSilentSectioner_rejects_highPriorityTrue_ambientFalse() {
+        when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(true);
+        setRankingAmbient(false);
+        assertFalse(mSilentSectioner.isInSection(mEntry));
+    }
+
+    @Test
+    public void testSilentSectioner_rejects_highPriorityTrue_ambientTrue() {
+        when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(true);
+        setRankingAmbient(true);
+        assertFalse(mSilentSectioner.isInSection(mEntry));
+    }
+
+    @Test
+    public void testSilentSectioner_accepts_bundle() {
         BundleEntry bundleEntry = new BundleEntry("testBundleKey");
         assertTrue(mSilentSectioner.isInSection(bundleEntry));
     }
@@ -291,14 +308,7 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     public void testMinSection() {
         when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(false);
         setRankingAmbient(true);
-        assertInSection(mEntry, mMinimizedSectioner);
-    }
-
-    @Test
-    public void testSilentSection() {
-        when(mHighPriorityProvider.isHighPriority(mEntry)).thenReturn(false);
-        setRankingAmbient(false);
-        assertInSection(mEntry, mSilentSectioner);
+        assertOnlyInSection(mEntry, mMinimizedSectioner);
     }
 
     @Test
@@ -344,7 +354,8 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     @Test
     public void testAlertingSectioner_rejectsBundle() {
         for (String id : SYSTEM_RESERVED_IDS) {
-            assertFalse(mAlertingSectioner.isInSection(makeClassifiedNotifEntry(id)));
+            assertFalse(
+                    mAlertingSectioner.isInSection(makeClassifiedNotifEntry(id, IMPORTANCE_LOW)));
         }
     }
 
@@ -369,7 +380,7 @@ public class RankingCoordinatorTest extends SysuiTestCase {
         reset(mInvalidationListener);
     }
 
-    private void assertInSection(NotificationEntry entry, NotifSectioner section) {
+    private void assertOnlyInSection(NotificationEntry entry, NotifSectioner section) {
         for (NotifSectioner current: mSections) {
             if (current == section) {
                 assertTrue(current.isInSection(entry));
@@ -396,16 +407,17 @@ public class RankingCoordinatorTest extends SysuiTestCase {
     private void setRankingAmbient(boolean ambient) {
         mEntry.setRanking(new RankingBuilder(mEntry.getRanking())
                 .setImportance(ambient
-                        ? NotificationManager.IMPORTANCE_MIN
+                        ? IMPORTANCE_MIN
                         : IMPORTANCE_DEFAULT)
                 .build());
         assertEquals(ambient, mEntry.getRanking().isAmbient());
     }
 
-    private NotificationEntry makeClassifiedNotifEntry(String channelId) {
-        NotificationChannel channel = new NotificationChannel(channelId, channelId, IMPORTANCE_LOW);
+    private NotificationEntry makeClassifiedNotifEntry(String channelId, int importance) {
+        NotificationChannel channel = new NotificationChannel(channelId, channelId, importance);
         return new NotificationEntryBuilder()
-                .updateRanking((rankingBuilder -> rankingBuilder.setChannel(channel)))
+                .updateRanking((rankingBuilder ->
+                        rankingBuilder.setChannel(channel).setImportance(importance)))
                 .build();
     }
 }

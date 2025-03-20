@@ -10,10 +10,10 @@
             android:insetRight="0dp"
             android:insetTop="8dp">
             <shape android:shape="rectangle">
-                <corners android:radius="@dimen/magic_action_button_corner_radius" />
+                <corners android:radius="@dimen/animated_action_button_corner_radius" />
                 <solid android:color="@androidprv:color/materialColorPrimaryContainer" />
                 <stroke
-                    android:width="@dimen/magic_action_button_outline_stroke_width"
+                    android:width="@dimen/animated_action_button_outline_stroke_width"
                     android:color="@androidprv:color/materialColorOutlineVariant" />
             </shape>
         </inset>

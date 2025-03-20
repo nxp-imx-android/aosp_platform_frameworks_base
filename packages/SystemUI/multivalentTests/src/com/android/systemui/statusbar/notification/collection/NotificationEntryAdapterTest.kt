@@ -64,6 +64,17 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    fun getBackingHashCode() {
+        val entry =
+            NotificationEntryBuilder()
+                .build()
+
+        underTest = factory.create(entry) as NotificationEntryAdapter
+        assertThat(underTest.backingHashCode).isEqualTo(entry.hashCode())
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun getParent_adapter() {
         val ge = GroupEntryBuilder().build()
         val notification: Notification =

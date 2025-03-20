@@ -25,7 +25,6 @@ import static android.media.MediaRouter2.SCANNING_STATE_SCANNING_FULL;
 import static android.media.MediaRouter2.SCANNING_STATE_WHILE_INTERACTIVE;
 import static android.media.MediaRouter2Utils.getOriginalId;
 import static android.media.MediaRouter2Utils.getProviderId;
-
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_CREATE_SESSION;
 import static com.android.server.media.MediaRouterStatsLog.MEDIA_ROUTER_EVENT_REPORTED__EVENT_TYPE__EVENT_TYPE_DESELECT_ROUTE;
@@ -78,14 +77,12 @@ import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
-
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.media.flags.Flags;
 import com.android.server.LocalServices;
 import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
-
 import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -3857,6 +3854,16 @@ class MediaRouter2ServiceImpl {
                         && activelyScanningPackages.equals(mUserRecord.mActivelyScanningPackages)) {
                     return false;
                 }
+
+                var oldShouldPerformActiveScan =
+                        mUserRecord.mCompositeDiscoveryPreference.shouldPerformActiveScan();
+                var newShouldPerformActiveScan = newPreference.shouldPerformActiveScan();
+                if (oldShouldPerformActiveScan != newShouldPerformActiveScan) {
+                    // State access is synchronized with service.mLock.
+                    // Linter still fails due to b/323906305#comment3
+                    mMediaRouterMetricLogger.updateScanningState(newShouldPerformActiveScan);
+                }
+
                 mUserRecord.mCompositeDiscoveryPreference = newPreference;
                 mUserRecord.mActivelyScanningPackages = activelyScanningPackages;
             }

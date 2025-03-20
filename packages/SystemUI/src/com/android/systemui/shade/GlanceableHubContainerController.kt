@@ -43,6 +43,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.annotations.VisibleForTesting
+import com.android.keyguard.UserActivityNotifier
 import com.android.systemui.Flags
 import com.android.systemui.ambient.touch.TouchMonitor
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent
@@ -101,6 +102,7 @@ constructor(
     private val keyguardMediaController: KeyguardMediaController,
     private val lockscreenSmartspaceController: LockscreenSmartspaceController,
     @CommunalTouchLog logBuffer: LogBuffer,
+    private val userActivityNotifier: UserActivityNotifier,
 ) : LifecycleOwner {
     private val logger = Logger(logBuffer, TAG)
 
@@ -655,11 +657,17 @@ constructor(
             }
             return handled || hubShowing
         } finally {
-            powerManager.userActivity(
-                SystemClock.uptimeMillis(),
-                PowerManager.USER_ACTIVITY_EVENT_TOUCH,
-                0,
-            )
+            if (Flags.bouncerUiRevamp()) {
+                userActivityNotifier.notifyUserActivity(
+                    event = PowerManager.USER_ACTIVITY_EVENT_TOUCH
+                )
+            } else {
+                powerManager.userActivity(
+                    SystemClock.uptimeMillis(),
+                    PowerManager.USER_ACTIVITY_EVENT_TOUCH,
+                    0,
+                )
+            }
         }
     }
 

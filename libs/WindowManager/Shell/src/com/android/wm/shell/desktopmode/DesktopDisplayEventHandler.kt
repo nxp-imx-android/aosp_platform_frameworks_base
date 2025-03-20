@@ -89,6 +89,15 @@ class DesktopDisplayEventHandler(
         // TODO: b/362720497 - move desks in closing display to the remaining desk.
     }
 
+    override fun onDesktopModeEligibleChanged(displayId: Int) {
+        if (
+            DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue &&
+                displayId != DEFAULT_DISPLAY
+        ) {
+            desktopDisplayModeController.refreshDisplayWindowingMode()
+        }
+    }
+
     override fun onDeskRemoved(lastDisplayId: Int, deskId: Int) {
         val remainingDesks = desktopRepository.getNumberOfDesks(lastDisplayId)
         if (remainingDesks == 0) {

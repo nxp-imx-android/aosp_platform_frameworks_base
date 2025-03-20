@@ -67,10 +67,14 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Test BatteryStatsHistory.
@@ -141,7 +145,7 @@ public class BatteryStatsHistoryTest {
                 mEventLogger);
         mHistory.forceRecordAllHistory();
         mHistory.startRecordingHistory(mClock.realtime, mClock.uptime, false);
-        mHistoryPrinter = new BatteryStats.HistoryPrinter(TimeZone.getTimeZone("GMT"));
+        mHistoryPrinter = new BatteryStats.HistoryPrinter(TimeZone.getTimeZone("GMT"), 0);
     }
 
     @Test
@@ -863,6 +867,39 @@ public class BatteryStatsHistoryTest {
             }
         }
         return events;
+    }
+
+
+    @Test
+    public void historyLogTimeFormatter() {
+        historyLogTimeFormatting("GMT");
+        historyLogTimeFormatting("PST");
+        historyLogTimeFormatting("NST");        // UTC−03:30
+        historyLogTimeFormatting("NPT");        // UTC+05:45
+    }
+
+    private void historyLogTimeFormatting(String timeZoneId) {
+        TimeZone timeZone = TimeZone.getTimeZone(timeZoneId);
+        BatteryStats.HistoryPrinter printer = new BatteryStats.HistoryPrinter(timeZone, 0);
+        SimpleDateFormat simpleDateFormat =
+                new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.US);
+        simpleDateFormat.getCalendar().setTimeZone(timeZone);
+        Date date = new Date();
+
+        HistoryItem item = new HistoryItem();
+        long base = 1738746000000L;
+        for (long offset = 1; offset < TimeUnit.DAYS.toMillis(365 * 100); offset *= 7) {
+            item.currentTime = base + offset;
+            date.setTime(item.currentTime);
+            String expected = simpleDateFormat.format(date);
+            StringWriter sw = new StringWriter();
+            PrintWriter writer = new PrintWriter(sw);
+            printer.printNextItem(writer, item, 0, false, false);
+            writer.flush();
+            String actual = sw.toString().trim().substring(0, "MM-dd HH:mm:ss.SSS".length());
+
+            assertThat(actual).isEqualTo(expected);
+        }
     }
 
     private static void awaitCompletion() {

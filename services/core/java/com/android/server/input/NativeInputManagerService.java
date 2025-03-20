@@ -116,7 +116,7 @@ interface NativeInputManagerService {
     void setMinTimeBetweenUserActivityPokes(long millis);
 
     boolean transferTouchGesture(IBinder fromChannelToken, IBinder toChannelToken,
-            boolean isDragDrop);
+            boolean isDragDrop, boolean transferEntireGesture);
 
     /**
      * Transfer the current touch gesture to the window identified by 'destChannelToken' positioned
@@ -420,7 +420,7 @@ interface NativeInputManagerService {
 
         @Override
         public native boolean transferTouchGesture(IBinder fromChannelToken, IBinder toChannelToken,
-                boolean isDragDrop);
+                boolean isDragDrop, boolean transferEntireGesture);
 
         @Override
         @Deprecated

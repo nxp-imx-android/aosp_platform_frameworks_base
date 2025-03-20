@@ -22,6 +22,7 @@ import android.platform.test.annotations.EnableFlags
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.InstanceId
 import com.android.systemui.Flags.FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.data.repository.activityManagerRepository
@@ -392,6 +393,33 @@ class NotifChipsViewModelTest : SysuiTestCase() {
             assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active.Text::class.java)
             assertThat((latest!![0] as OngoingActivityChipModel.Active.Text).text)
                 .isEqualTo("Arrived")
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    fun chips_shortCriticalText_usesInstanceId() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val promotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.shortCriticalText = "Arrived"
+                }
+            val instanceId = InstanceId.fakeInstanceId(30)
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                        instanceId = instanceId,
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat(latest!![0].instanceId).isEqualTo(instanceId)
         }
 
     @Test
@@ -770,6 +798,41 @@ class NotifChipsViewModelTest : SysuiTestCase() {
                 .isEqualTo(whenElapsed)
             assertThat((latest!![0] as OngoingActivityChipModel.Active.Timer).isEventInFuture)
                 .isTrue()
+        }
+
+    @Test
+    @DisableFlags(FLAG_PROMOTE_NOTIFICATIONS_AUTOMATICALLY)
+    fun chips_countDownTime_usesInstanceId() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.chips)
+
+            val instanceId = InstanceId.fakeInstanceId(20)
+            val currentTime = 30.minutes.inWholeMilliseconds
+            fakeSystemClock.setCurrentTimeMillis(currentTime)
+
+            val currentElapsed =
+                currentTime + fakeSystemClock.elapsedRealtime() -
+                    fakeSystemClock.currentTimeMillis()
+            val whenElapsed = currentElapsed + 10.minutes.inWholeMilliseconds
+            val promotedContentBuilder =
+                PromotedNotificationContentBuilder("notif").applyToShared {
+                    this.time =
+                        When.Chronometer(elapsedRealtimeMillis = whenElapsed, isCountDown = true)
+                }
+            setNotifs(
+                listOf(
+                    activeNotificationModel(
+                        key = "notif",
+                        statusBarChipIcon = createStatusBarIconViewOrNull(),
+                        promotedContent = promotedContentBuilder.build(),
+                        instanceId = instanceId,
+                    )
+                )
+            )
+
+            assertThat(latest).hasSize(1)
+            assertThat(latest!![0]).isInstanceOf(OngoingActivityChipModel.Active::class.java)
+            assertThat((latest!![0]).instanceId).isEqualTo(instanceId)
         }
 
     @Test

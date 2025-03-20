@@ -69,7 +69,9 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.util.LatencyTracker;
 import com.android.keyguard.KeyguardUpdateMonitor;
+import com.android.keyguard.UserActivityNotifier;
 import com.android.systemui.Dumpable;
+import com.android.systemui.Flags;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.biometrics.dagger.BiometricsBackground;
 import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor;
@@ -146,6 +148,7 @@ public class UdfpsController implements DozeReceiver, Dumpable {
     private final Execution mExecution;
     private final FingerprintManager mFingerprintManager;
     @NonNull private final LayoutInflater mInflater;
+    private final UserActivityNotifier mUserActivityNotifier;
     private final WindowManager mWindowManager;
     private final DelayableExecutor mFgExecutor;
     @NonNull private final Executor mBiometricExecutor;
@@ -696,11 +699,13 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             Lazy<DefaultUdfpsTouchOverlayViewModel> defaultUdfpsTouchOverlayViewModel,
             @NonNull UdfpsOverlayInteractor udfpsOverlayInteractor,
             @NonNull PowerInteractor powerInteractor,
-            @Application CoroutineScope scope) {
+            @Application CoroutineScope scope,
+            UserActivityNotifier userActivityNotifier) {
         mContext = context;
         mExecution = execution;
         mVibrator = vibrator;
         mInflater = inflater;
+        mUserActivityNotifier = userActivityNotifier;
         mIgnoreRefreshRate = mContext.getResources()
                     .getBoolean(R.bool.config_ignoreUdfpsVote);
         // The fingerprint manager is queried for UDFPS before this class is constructed, so the
@@ -1045,8 +1050,13 @@ public class UdfpsController implements DozeReceiver, Dumpable {
             mLatencyTracker.onActionStart(ACTION_UDFPS_ILLUMINATE);
         }
         // Refresh screen timeout and boost process priority if possible.
-        mPowerManager.userActivity(mSystemClock.uptimeMillis(),
-                PowerManager.USER_ACTIVITY_EVENT_TOUCH, 0);
+        if (Flags.bouncerUiRevamp()) {
+            mUserActivityNotifier.notifyUserActivity(mSystemClock.uptimeMillis(),
+                    PowerManager.USER_ACTIVITY_EVENT_TOUCH);
+        } else {
+            mPowerManager.userActivity(mSystemClock.uptimeMillis(),
+                    PowerManager.USER_ACTIVITY_EVENT_TOUCH, 0);
+        }
 
         if (!mOnFingerDown) {
             playStartHaptic();

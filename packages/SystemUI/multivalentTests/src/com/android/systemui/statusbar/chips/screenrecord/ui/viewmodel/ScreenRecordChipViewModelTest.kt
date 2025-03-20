@@ -111,6 +111,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Countdown::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
             assertThat((latest as OngoingActivityChipModel.Active).icon).isNull()
             assertThat((latest as OngoingActivityChipModel.Active).onClickListenerLegacy).isNull()
         }
@@ -158,6 +159,7 @@ class ScreenRecordChipViewModelTest : SysuiTestCase() {
 
             assertThat(latest).isInstanceOf(OngoingActivityChipModel.Active.Timer::class.java)
             assertThat((latest as OngoingActivityChipModel.Active).isImportantForPrivacy).isTrue()
+            assertThat((latest as OngoingActivityChipModel.Active).instanceId).isNotNull()
             val icon =
                 (((latest as OngoingActivityChipModel.Active).icon)
                         as OngoingActivityChipModel.ChipIcon.SingleColorIcon)

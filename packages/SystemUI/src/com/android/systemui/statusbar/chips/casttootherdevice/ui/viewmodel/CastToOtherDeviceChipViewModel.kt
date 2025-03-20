@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.chips.casttootherdevice.ui.viewmodel
 
 import android.content.Context
 import androidx.annotation.DrawableRes
-import androidx.annotation.VisibleForTesting
 import com.android.internal.jank.Cuj
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
@@ -44,6 +43,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.ChipTransitionHelper
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickCallback
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipViewModel.Companion.createDialogLaunchOnClickListener
+import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -70,7 +70,11 @@ constructor(
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     private val endMediaProjectionDialogHelper: EndMediaProjectionDialogHelper,
     @StatusBarChipsLog private val logger: LogBuffer,
+    private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : OngoingActivityChipViewModel {
+    // There can only be 1 active cast-to-other-device chip at a time, so we can re-use the ID.
+    private val instanceId = uiEventLogger.createNewInstanceId()
+
     /** The cast chip to show, based only on MediaProjection API events. */
     private val projectionChip: StateFlow<OngoingActivityChipModel> =
         mediaProjectionChipInteractor.projection
@@ -213,8 +217,10 @@ constructor(
                     createCastScreenToOtherDeviceDialogDelegate(state),
                     dialogTransitionAnimator,
                     DIALOG_CUJ,
-                    logger,
-                    TAG,
+                    instanceId = instanceId,
+                    uiEventLogger = uiEventLogger,
+                    logger = logger,
+                    tag = TAG,
                 ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -223,10 +229,13 @@ constructor(
                             createCastScreenToOtherDeviceDialogDelegate(state),
                             dialogTransitionAnimator,
                             DIALOG_CUJ,
-                            logger,
-                            TAG,
+                            instanceId = instanceId,
+                            uiEventLogger = uiEventLogger,
+                            logger = logger,
+                            tag = TAG,
                         )
                 ),
+            instanceId = instanceId,
         )
     }
 
@@ -248,8 +257,10 @@ constructor(
                     createGenericCastToOtherDeviceDialogDelegate(deviceName),
                     dialogTransitionAnimator,
                     DIALOG_CUJ_AUDIO_ONLY,
-                    logger,
-                    TAG,
+                    instanceId = instanceId,
+                    uiEventLogger = uiEventLogger,
+                    logger = logger,
+                    tag = TAG,
                 ),
             clickBehavior =
                 OngoingActivityChipModel.ClickBehavior.ExpandAction(
@@ -257,10 +268,13 @@ constructor(
                         createGenericCastToOtherDeviceDialogDelegate(deviceName),
                         dialogTransitionAnimator,
                         DIALOG_CUJ_AUDIO_ONLY,
-                        logger,
-                        TAG,
+                        instanceId = instanceId,
+                        uiEventLogger = uiEventLogger,
+                        logger = logger,
+                        tag = TAG,
                     )
                 ),
+            instanceId = instanceId,
         )
     }
 
@@ -281,7 +295,7 @@ constructor(
         )
 
     companion object {
-        @VisibleForTesting const val KEY = "CastToOtherDevice"
+        const val KEY = "CastToOtherDevice"
         @DrawableRes val CAST_TO_OTHER_DEVICE_ICON = R.drawable.ic_cast_connected
         private val DIALOG_CUJ =
             DialogCuj(Cuj.CUJ_STATUS_BAR_LAUNCH_DIALOG_FROM_CHIP, tag = "Cast to other device")

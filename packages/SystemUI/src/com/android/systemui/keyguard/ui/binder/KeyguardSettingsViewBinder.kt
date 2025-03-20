@@ -26,6 +26,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
+import com.android.systemui.Flags
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.common.ui.binder.IconViewBinder
 import com.android.systemui.common.ui.binder.TextViewBinder
@@ -59,7 +60,9 @@ object KeyguardSettingsViewBinder {
                         viewModel.isVisible.distinctUntilChanged().collect { isVisible ->
                             view.animateVisibility(visible = isVisible)
                             if (isVisible) {
-                                vibratorHelper.vibrate(KeyguardBottomAreaVibrations.Activated)
+                                if (!Flags.msdlFeedback()) {
+                                    vibratorHelper.vibrate(KeyguardBottomAreaVibrations.Activated)
+                                }
                                 val textView = view.requireViewById(R.id.text) as TextView
                                 view.setOnTouchListener(
                                     KeyguardSettingsButtonOnTouchListener(viewModel = viewModel)

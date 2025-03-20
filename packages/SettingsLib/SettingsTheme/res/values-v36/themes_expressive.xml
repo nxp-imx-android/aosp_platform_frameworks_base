@@ -53,6 +53,17 @@
         <item name="colorControlNormal">?android:attr/colorControlNormal</item>
 
         <!-- For AndroidX AlertDialog -->
-        <!--item name="alertDialogTheme">@style/Theme.AlertDialog.SettingsLib</item-->
+        <item name="alertDialogTheme">@style/Theme.AlertDialog.SettingsLib.Expressive</item>
+    </style>
+
+    <style name="Theme.AlertDialog.SettingsLib.Expressive">
+        <item name="colorAccent">@color/settingslib_materialColorPrimary</item>
+        <item name="android:colorBackground">@color/settingslib_materialColorSurfaceContainerHigh</item>
+        <item name="android:windowTitleStyle">@style/Widget.SettingsLib.DialogWindowTitle</item>
+        <item name="dialogPreferredPadding">@dimen/settingslib_expressive_space_small4</item>
+        <item name="buttonBarStyle">@style/Widget.SettingsLib.ButtonBar</item>
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.SettingsLib.DialogButton.Filled</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.SettingsLib.DialogButton.Outline</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.SettingsLib.DialogButton</item>
     </style>
 </resources>

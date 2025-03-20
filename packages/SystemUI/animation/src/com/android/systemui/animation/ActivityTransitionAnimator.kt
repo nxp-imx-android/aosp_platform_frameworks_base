@@ -1483,7 +1483,8 @@ constructor(
             // TODO(b/397646693): remove this exception.
             val isEligibleForReparenting = controller.isLaunching
             val viewRoot = controller.transitionContainer.viewRootImpl
-            val skipReparenting = skipReparentTransaction || viewRoot == null
+            val skipReparenting =
+                skipReparentTransaction || !window.leash.isValid || viewRoot == null
             if (moveTransitionAnimationLayer() && isEligibleForReparenting && !skipReparenting) {
                 reparent = true
             }

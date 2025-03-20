@@ -487,7 +487,7 @@ open class WifiUtils {
                 context,
                 lifecycleOwner.lifecycleScope,
                 ssid,
-                WindowManager.LayoutParams.FIRST_APPLICATION_WINDOW,
+                WindowManager.LayoutParams.TYPE_APPLICATION,
                 { intent -> context.startActivity(intent) },
                 onAllowed
             )

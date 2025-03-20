@@ -818,6 +818,14 @@
         <item name="android:minWidth">0dp</item>
     </style>
 
+    <style name="TextAppearance.NotificationMenuButtonText">
+        <item name="android:textSize">@dimen/notification_importance_header_text</item>
+        <item name="android:fontFamily">@*android:string/config_headlineFontFamily</item>
+        <item name="android:textColor">@androidprv:color/materialColorOnSurface</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+
     <style name="TextAppearance.HeadsUpStatusBarText"
         parent="@*android:style/TextAppearance.DeviceDefault.Notification.Info">
     </style>

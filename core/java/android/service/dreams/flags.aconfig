@@ -84,3 +84,11 @@ flag {
     description: "Allow dreaming when device is stationary and upright"
     bug: "383208131"
 }
+
+flag {
+    name: "dreams_v2"
+    namespace: "systemui"
+    description: "Enables various improvements to the dream experience "
+        "such as new triggers and various bug fixes"
+    bug: "375689917"
+}

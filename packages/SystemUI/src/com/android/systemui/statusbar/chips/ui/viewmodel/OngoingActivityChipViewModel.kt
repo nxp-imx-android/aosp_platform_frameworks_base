@@ -17,6 +17,7 @@
 package com.android.systemui.statusbar.chips.ui.viewmodel
 
 import android.view.View
+import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.DialogCuj
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.animation.Expandable
@@ -26,6 +27,7 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.chips.StatusBarChipsLog
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.view.ChipBackgroundContainer
+import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.ongoingcall.StatusBarChipsModernization
 import kotlinx.coroutines.flow.StateFlow
@@ -44,12 +46,17 @@ interface OngoingActivityChipViewModel {
             dialogDelegate: SystemUIDialog.Delegate,
             dialogTransitionAnimator: DialogTransitionAnimator,
             cuj: DialogCuj,
+            instanceId: InstanceId,
+            uiEventLogger: StatusBarChipsUiEventLogger,
             @StatusBarChipsLog logger: LogBuffer,
             tag: String,
         ): View.OnClickListener {
             return View.OnClickListener { view ->
                 StatusBarChipsModernization.assertInLegacyMode()
+
                 logger.log(tag, LogLevel.INFO, {}, { "Chip clicked" })
+                uiEventLogger.logChipTapToShow(instanceId)
+
                 val dialog = dialogDelegate.createDialog()
                 val launchableView =
                     view.requireViewById<ChipBackgroundContainer>(
@@ -67,12 +74,17 @@ interface OngoingActivityChipViewModel {
             dialogDelegate: SystemUIDialog.Delegate,
             dialogTransitionAnimator: DialogTransitionAnimator,
             cuj: DialogCuj,
+            instanceId: InstanceId,
+            uiEventLogger: StatusBarChipsUiEventLogger,
             @StatusBarChipsLog logger: LogBuffer,
             tag: String,
         ): (Expandable) -> Unit {
             return { expandable ->
                 StatusBarChipsModernization.unsafeAssertInNewMode()
+
                 logger.log(tag, LogLevel.INFO, {}, { "Chip clicked" })
+                uiEventLogger.logChipTapToShow(instanceId)
+
                 val dialog = dialogDelegate.createDialog()
 
                 val controller = expandable.dialogTransitionController(cuj)

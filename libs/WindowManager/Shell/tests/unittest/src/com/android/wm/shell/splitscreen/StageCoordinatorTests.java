@@ -571,8 +571,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     }
 
     @Test
-    @DisableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
-            Flags.FLAG_ENABLE_INPUT_LAYER_TRANSITION_FIX})
+    @DisableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     public void testRequestEnterSplit_didNotEnterSplitSelect_doesNotApplyTransaction() {
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         mStageCoordinator.registerSplitSelectListener(

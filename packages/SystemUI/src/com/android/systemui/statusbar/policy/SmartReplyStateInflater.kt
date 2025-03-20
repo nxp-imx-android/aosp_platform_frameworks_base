@@ -397,13 +397,13 @@ constructor(
         delayOnClickListener: Boolean,
         packageContext: Context,
     ): Button {
-        val isMagicAction =
-            Flags.notificationMagicActionsTreatment() &&
+        val isAnimatedAction =
+            Flags.notificationAnimatedActionsTreatment() &&
                 smartActions.fromAssistant &&
-                action.extras.getBoolean(Notification.Action.EXTRA_IS_MAGIC, false)
+                action.extras.getBoolean(Notification.Action.EXTRA_IS_ANIMATED, false)
         val layoutRes =
-            if (isMagicAction) {
-                R.layout.magic_action_button
+            if (isAnimatedAction) {
+                R.layout.animated_action_button
             } else {
                 if (notificationsRedesignTemplates()) {
                     R.layout.notification_2025_smart_action_button

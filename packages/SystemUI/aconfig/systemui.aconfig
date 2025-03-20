@@ -542,6 +542,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_window_no_custom_touch"
+    namespace: "systemui"
+    description: "Don't have any custom touch handling in StatusBarWindowView"
+    bug: "391894499"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
     description: "Build time flag for 2025 icon refresh"
@@ -556,6 +566,13 @@ flag {
         " we can test promoted notifications with teamfooders. This flag should *never* be released "
         "to trunkfood or nextfood."
     bug: "367705002"
+}
+
+flag {
+    name: "debug_live_updates_promote_all"
+    namespace: "systemui"
+    description: "Promote all notifications to Live Updates (RONs). (For testing/debugging only, do not promote/release!)"
+    bug: "404838239"
 }
 
 flag {
@@ -1987,9 +2004,9 @@ flag {
 }
 
 flag {
-   name: "notification_magic_actions_treatment"
+   name: "notification_animated_actions_treatment"
    namespace: "systemui"
-   description: "Special UI treatment for magic actions"
+   description: "Special UI treatment for animated actions and replys"
    bug: "383567383"
 }
 
@@ -2186,3 +2203,11 @@ flag {
     description: "Use AAD proximity sensor if flag is enabled and sensor is present"
     bug: "402534470"
 }
+
+flag {
+    name: "enable_underlay"
+    namespace: "ailabs"
+    description: "Enable the underlay additional layer"
+    bug: "403422950"
+}
+

@@ -54,6 +54,7 @@ import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChip
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModelLegacy
 import com.android.systemui.statusbar.chips.ui.model.OngoingActivityChipModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
+import com.android.systemui.statusbar.chips.uievents.StatusBarChipsUiEventLogger
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.events.shared.model.SystemEventAnimationState.Idle
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
@@ -228,6 +229,7 @@ constructor(
     @Background bgScope: CoroutineScope,
     @Background bgDispatcher: CoroutineDispatcher,
     shadeDisplaysInteractor: Provider<ShadeDisplaysInteractor>,
+    private val uiEventLogger: StatusBarChipsUiEventLogger,
 ) : HomeStatusBarViewModel, ExclusiveActivatable() {
 
     private val hydrator = Hydrator(traceName = "HomeStatusBarViewModel.hydrator")
@@ -591,6 +593,7 @@ constructor(
             if (StatusBarPopupChips.isEnabled) {
                 launch { statusBarPopupChips.activate() }
             }
+            launch { uiEventLogger.hydrateUiEventLogging(chipsFlow = chipsVisibilityModel) }
             awaitCancellation()
         }
     }

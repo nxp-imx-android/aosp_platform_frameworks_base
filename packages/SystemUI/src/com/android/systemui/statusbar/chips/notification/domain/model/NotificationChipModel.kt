@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.chips.notification.domain.model
 
+import com.android.internal.logging.InstanceId
 import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModels
 
@@ -35,4 +36,6 @@ data class NotificationChipModel(
      * hasn't become visible since the notification became promoted.
      */
     val lastAppVisibleTime: Long?,
+    /** An optional per-notification ID used for logging. */
+    val instanceId: InstanceId?,
 )

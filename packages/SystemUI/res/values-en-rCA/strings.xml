@@ -982,11 +982,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Right icon"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Hold and drag to add tiles"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Hold and drag to rearrange tiles"</string>
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Tap to position tile"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Drag here to remove"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"You need at least <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tiles"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edit"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Edit tiles"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Time"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Show hours, minutes, and seconds"</item>
@@ -1002,6 +1002,8 @@
     <string name="other" msgid="429768510980739978">"Other"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"toggle the tile\'s size"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"remove tile"</string>
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"toggle placement mode"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"toggle selection"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"add tile to the last position"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Move tile"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Add tile to desired position"</string>
@@ -1577,5 +1579,6 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Unknown"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reset all tiles?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"All Quick Settings tiles will reset to the device’s original settings"</string>
+    <string name="demote_explain_text" msgid="1600426458580544250">"<xliff:g id="APPLICATION">%1$s</xliff:g> will no longer show Live Updates here. You can change this any time in Settings."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

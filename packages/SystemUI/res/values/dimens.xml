@@ -300,6 +300,9 @@
     <!-- Side padding on the side of notifications -->
     <dimen name="notification_side_paddings">16dp</dimen>
 
+    <!-- Width of inline notification menu item buttons -->
+    <dimen name="notification_menu_item_width">112dp</dimen>
+
     <!-- Starting translateY offset of the HUN appear and disappear animations. Indicates
     the amount by the view is positioned above the screen before the animation starts. -->
     <dimen name="heads_up_appear_y_above_screen">32dp</dimen>
@@ -370,10 +373,12 @@
     <dimen name="min_notification_layout_height">48dp</dimen>
 
     <!-- Size of the space to place a notification menu item -->
-    <dimen name="notification_menu_icon_size">64dp</dimen>
+    <dimen name="notification_menu_icon_size">120dp</dimen>
 
     <!-- The space around a notification menu item  -->
     <dimen name="notification_menu_icon_padding">20dp</dimen>
+    <!-- The space around a notification menu button  -->
+    <dimen name="notification_menu_button_padding">8dp</dimen>
 
     <!-- scroll view the size of 3 channel rows -->
     <dimen name="notification_blocker_channel_list_height">192dp</dimen>
@@ -1160,16 +1165,16 @@
     <dimen name="notification_2025_smart_reply_button_corner_radius">18dp</dimen>
     <dimen name="notification_2025_smart_reply_button_min_height">48dp</dimen>
 
-    <!-- Magic Action params. -->
+    <!-- Animated Action params. -->
     <!-- Corner radius = half of min_height to create rounded sides. -->
-    <dimen name="magic_action_button_corner_radius">16dp</dimen>
-    <dimen name="magic_action_button_icon_size">20dp</dimen>
-    <dimen name="magic_action_button_outline_stroke_width">1dp</dimen>
-    <dimen name="magic_action_button_padding_horizontal">12dp</dimen>
-    <dimen name="magic_action_button_inset_vertical">8dp</dimen>
-    <dimen name="magic_action_button_drawable_padding">8dp</dimen>
-    <dimen name="magic_action_button_touch_target_height">48dp</dimen>
-    <dimen name="magic_action_button_font_size">12sp</dimen>
+    <dimen name="animated_action_button_corner_radius">16dp</dimen>
+    <dimen name="animated_action_button_icon_size">20dp</dimen>
+    <dimen name="animated_action_button_outline_stroke_width">1dp</dimen>
+    <dimen name="animated_action_button_padding_horizontal">12dp</dimen>
+    <dimen name="animated_action_button_inset_vertical">8dp</dimen>
+    <dimen name="animated_action_button_drawable_padding">8dp</dimen>
+    <dimen name="animated_action_button_touch_target_height">48dp</dimen>
+    <dimen name="animated_action_button_font_size">12sp</dimen>
 
     <!-- A reasonable upper bound for the height of the smart reply button. The measuring code
             needs to start with a guess for the maximum size. Currently two-line smart reply buttons

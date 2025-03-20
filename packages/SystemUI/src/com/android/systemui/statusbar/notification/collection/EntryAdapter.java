@@ -36,6 +36,11 @@ import kotlinx.coroutines.flow.StateFlow;
 public interface EntryAdapter {
 
     /**
+     * Returns the hash code of the backing entry
+     */
+    int getBackingHashCode();
+
+    /**
      * Gets the parent of this entry, or null if the entry's view is not attached
      */
     @Nullable PipelineEntry getParent();
@@ -195,5 +200,6 @@ public interface EntryAdapter {
     NotificationEntry.DismissState getDismissState();
 
     void onEntryClicked(ExpandableNotificationRow row);
+
 }
 

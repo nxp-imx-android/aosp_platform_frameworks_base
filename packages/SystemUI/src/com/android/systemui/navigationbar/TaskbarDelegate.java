@@ -239,6 +239,7 @@ public class TaskbarDelegate implements CommandQueue.Callbacks,
     @Override
     public void onDisplayAddSystemDecorations(int displayId) {
         CommandQueue.Callbacks.super.onDisplayAddSystemDecorations(displayId);
+        mEdgeBackGestureHandler.onDisplayAddSystemDecorations(displayId);
         if (mLauncherProxyService.getProxy() == null) {
             return;
         }
@@ -253,6 +254,7 @@ public class TaskbarDelegate implements CommandQueue.Callbacks,
     @Override
     public void onDisplayRemoved(int displayId) {
         CommandQueue.Callbacks.super.onDisplayRemoved(displayId);
+        mEdgeBackGestureHandler.onDisplayRemoveSystemDecorations(displayId);
         if (mLauncherProxyService.getProxy() == null) {
             return;
         }
@@ -267,6 +269,7 @@ public class TaskbarDelegate implements CommandQueue.Callbacks,
     @Override
     public void onDisplayRemoveSystemDecorations(int displayId) {
         CommandQueue.Callbacks.super.onDisplayRemoveSystemDecorations(displayId);
+        mEdgeBackGestureHandler.onDisplayRemoveSystemDecorations(displayId);
         if (mLauncherProxyService.getProxy() == null) {
             return;
         }

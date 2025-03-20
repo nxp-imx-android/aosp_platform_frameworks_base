@@ -318,6 +318,11 @@
     <bool name="config_send_satellite_datagram_to_modem_in_demo_mode">false</bool>
     <java-symbol type="bool" name="config_send_satellite_datagram_to_modem_in_demo_mode" />
 
+    <!-- Whether the device supports disabling satellite while satellite enabling is in progress.
+         -->
+    <bool name="config_support_disable_satellite_while_enable_in_progress">true</bool>
+    <java-symbol type="bool" name="config_support_disable_satellite_while_enable_in_progress" />
+
     <!-- List of country codes where oem-enabled satellite services are either allowed or disallowed
          by the device. Each country code is a lowercase 2 character ISO-3166-1 alpha-2.
          -->

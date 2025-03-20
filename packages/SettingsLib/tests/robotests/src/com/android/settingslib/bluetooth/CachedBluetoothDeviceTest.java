@@ -2357,6 +2357,78 @@ public class CachedBluetoothDeviceTest {
                 Integer.parseInt(TWS_BATTERY_LEFT));
     }
 
+    @Test
+    public void getBatteryLevelsInfo_leAudioDeviceWithBattery_returnBatteryLevelsInfo() {
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET)).thenReturn(
+                "false".getBytes());
+        when(mProfileManager.getLeAudioProfile()).thenReturn(mLeAudioProfile);
+        updateProfileStatus(mLeAudioProfile, BluetoothProfile.STATE_CONNECTED);
+        mCachedDevice.addMemberDevice(mSubCachedDevice);
+        when(mLeAudioProfile.getAudioLocation(mSubDevice)).thenReturn(
+                BluetoothLeAudio.AUDIO_LOCATION_BACK_LEFT);
+        when(mSubDevice.getBatteryLevel()).thenReturn(Integer.parseInt(TWS_BATTERY_LEFT));
+        when(mLeAudioProfile.getAudioLocation(mDevice)).thenReturn(
+                BluetoothLeAudio.AUDIO_LOCATION_SIDE_RIGHT);
+        when(mDevice.getBatteryLevel()).thenReturn(Integer.parseInt(TWS_BATTERY_RIGHT));
+
+        BatteryLevelsInfo batteryLevelsInfo = mCachedDevice.getBatteryLevelsInfo();
+
+        assertThat(batteryLevelsInfo.getLeftBatteryLevel()).isEqualTo(
+                Integer.parseInt(TWS_BATTERY_LEFT));
+        assertThat(batteryLevelsInfo.getRightBatteryLevel()).isEqualTo(
+                Integer.parseInt(TWS_BATTERY_RIGHT));
+        assertThat(batteryLevelsInfo.getCaseBatteryLevel()).isEqualTo(
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+        assertThat(batteryLevelsInfo.getOverallBatteryLevel()).isEqualTo(
+                Integer.parseInt(TWS_BATTERY_LEFT));
+    }
+
+    @Test
+    public void disconnect_removeBroadcastSource() {
+        when(mCachedDevice.getGroupId()).thenReturn(1);
+        when(mSubCachedDevice.getGroupId()).thenReturn(1);
+        mCachedDevice.addMemberDevice(mSubCachedDevice);
+        LocalBluetoothLeBroadcast broadcast = mock(LocalBluetoothLeBroadcast.class);
+        LocalBluetoothLeBroadcastAssistant assistant = mock(
+                LocalBluetoothLeBroadcastAssistant.class);
+        when(mProfileManager.getLeAudioBroadcastProfile()).thenReturn(broadcast);
+        when(mProfileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistant);
+        when(broadcast.isEnabled(null)).thenReturn(true);
+        BluetoothLeBroadcastReceiveState state = mock(BluetoothLeBroadcastReceiveState.class);
+        when(state.getSourceId()).thenReturn(1);
+        when(assistant.getAllSources(mDevice)).thenReturn(ImmutableList.of(state));
+        when(assistant.getAllSources(mSubDevice)).thenReturn(ImmutableList.of(state));
+
+        mCachedDevice.disconnect();
+        verify(assistant).removeSource(mDevice, /* sourceId= */1);
+        verify(assistant).removeSource(mSubDevice, /* sourceId= */1);
+        verify(mDevice).disconnect();
+        verify(mSubDevice).disconnect();
+    }
+
+    @Test
+    public void unpair_removeBroadcastSource() {
+        when(mCachedDevice.getGroupId()).thenReturn(1);
+        when(mSubCachedDevice.getGroupId()).thenReturn(1);
+        mCachedDevice.addMemberDevice(mSubCachedDevice);
+        when(mCachedDevice.getBondState()).thenReturn(BluetoothDevice.BOND_BONDED);
+        LocalBluetoothLeBroadcast broadcast = mock(LocalBluetoothLeBroadcast.class);
+        LocalBluetoothLeBroadcastAssistant assistant = mock(
+                LocalBluetoothLeBroadcastAssistant.class);
+        when(mProfileManager.getLeAudioBroadcastProfile()).thenReturn(broadcast);
+        when(mProfileManager.getLeAudioBroadcastAssistantProfile()).thenReturn(assistant);
+        when(broadcast.isEnabled(null)).thenReturn(true);
+        BluetoothLeBroadcastReceiveState state = mock(BluetoothLeBroadcastReceiveState.class);
+        when(state.getSourceId()).thenReturn(1);
+        when(assistant.getAllSources(mDevice)).thenReturn(ImmutableList.of(state));
+        when(assistant.getAllSources(mSubDevice)).thenReturn(ImmutableList.of(state));
+
+        mCachedDevice.unpair();
+        verify(assistant).removeSource(mDevice, /* sourceId= */1);
+        verify(assistant).removeSource(mSubDevice, /* sourceId= */1);
+        verify(mDevice).removeBond();
+    }
+
     private void updateProfileStatus(LocalBluetoothProfile profile, int status) {
         doReturn(status).when(profile).getConnectionStatus(mDevice);
         mCachedDevice.onProfileStateChanged(profile, status);

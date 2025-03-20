@@ -207,6 +207,21 @@ class PhysicsPropertyAnimatorTest : SysuiTestCase() {
     }
 
     @Test
+    fun testCancelAnimationResetsOffset() {
+        PhysicsPropertyAnimator.setProperty(
+            view,
+            property,
+            200f,
+            animationProperties,
+            true,
+            finishListener,
+        )
+        val propertyData = ViewState.getChildTag(view, property.tag) as PropertyData
+        propertyData.animator?.cancel()
+        Assert.assertTrue(propertyData.offset == 0f)
+    }
+
+    @Test
     fun testUsingListenerProperties() {
         val finishListener2 = Mockito.mock(DynamicAnimation.OnAnimationEndListener::class.java)
         val animationProperties: AnimationProperties =

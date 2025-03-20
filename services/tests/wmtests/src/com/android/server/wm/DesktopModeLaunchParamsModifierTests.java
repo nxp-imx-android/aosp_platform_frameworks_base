@@ -21,7 +21,7 @@ import static android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
-import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+import static android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_LARGE_VALUE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_MEDIUM_VALUE;
 import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO_SMALL_VALUE;
@@ -282,6 +282,7 @@ public class DesktopModeLaunchParamsModifierTests extends
         final DisplayContent dc = spy(createNewDisplay());
         final Task existingFreeformTask = new TaskBuilder(mSupervisor).setCreateActivity(true)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM).setPackage(packageName).build();
+        existingFreeformTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
         existingFreeformTask.setBounds(
                 /* left */ 0,
                 /* top */ 0,
@@ -293,8 +294,8 @@ public class DesktopModeLaunchParamsModifierTests extends
         // so first instance will close.
         final Task launchingTask = new TaskBuilder(mSupervisor).setPackage(packageName)
                 .setCreateActivity(true).build();
+        launchingTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
         launchingTask.onDisplayChanged(dc);
-        launchingTask.intent.addFlags(FLAG_ACTIVITY_NEW_TASK);
 
         // New instance should inherit task bounds of old instance.
         assertEquals(RESULT_DONE,

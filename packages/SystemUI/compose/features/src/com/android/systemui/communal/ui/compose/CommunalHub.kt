@@ -54,7 +54,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -76,8 +79,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -99,6 +102,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -174,6 +179,7 @@ import com.android.compose.animation.Easings.Emphasized
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
+import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.internal.R.dimen.system_app_widget_background_radius
 import com.android.systemui.Flags
 import com.android.systemui.Flags.communalResponsiveGrid
@@ -254,6 +260,7 @@ fun CommunalHub(
     val windowMetrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(context)
     val screenWidth = windowMetrics.bounds.width()
     val layoutDirection = LocalLayoutDirection.current
+
     if (viewModel.isEditMode) {
         ObserveNewWidgetAddedEffect(communalContent, gridState, viewModel)
     } else {
@@ -757,11 +764,33 @@ fun calculateWidgetSize(
 }
 
 @Composable
+private fun horizontalPaddingWithInsets(padding: Dp): Dp {
+    val orientation = LocalConfiguration.current.orientation
+    val displayCutoutPaddings = WindowInsets.displayCutout.asPaddingValues()
+    val horizontalDisplayCutoutPadding =
+        remember(orientation, displayCutoutPaddings) {
+            if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                maxOf(
+                    // Top in portrait becomes startPadding (or endPadding) in landscape
+                    displayCutoutPaddings.calculateTopPadding(),
+                    // Bottom in portrait becomes endPadding (or startPadding) in landscape
+                    displayCutoutPaddings.calculateBottomPadding(),
+                )
+            } else {
+                0.dp
+            }
+        }
+    return padding + horizontalDisplayCutoutPadding
+}
+
+@Composable
 private fun HorizontalGridWrapper(
     minContentPadding: PaddingValues,
     gridState: LazyGridState,
     dragDropState: GridDragDropState?,
     setContentOffset: (offset: Offset) -> Unit,
+    minHorizontalArrangement: Dp,
+    minVerticalArrangement: Dp,
     modifier: Modifier = Modifier,
     content: LazyGridScope.(sizeInfo: SizeInfo?) -> Unit,
 ) {
@@ -775,8 +804,8 @@ private fun HorizontalGridWrapper(
             state = gridState,
             flingBehavior = flingBehavior,
             minContentPadding = minContentPadding,
-            minHorizontalArrangement = Dimensions.ItemSpacing,
-            minVerticalArrangement = Dimensions.ItemSpacing,
+            minHorizontalArrangement = minHorizontalArrangement,
+            minVerticalArrangement = minVerticalArrangement,
             setContentOffset = setContentOffset,
             // Temporarily disable user gesture scrolling while dragging a widget to prevent
             // conflicts between the drag and scroll gestures. Programmatic scrolling remains
@@ -833,6 +862,7 @@ private fun BoxScope.CommunalHubLazyGrid(
         Modifier.align(Alignment.TopStart).onGloballyPositioned { setGridCoordinates(it) }
     var list = communalContent
     var dragDropState: GridDragDropState? = null
+    var arrangementSpacing = Dimensions.ItemSpacing
     if (viewModel.isEditMode && viewModel is CommunalEditModeViewModel) {
         list = contentListState.list
         // for drag & drop operations within the communal hub grid
@@ -866,6 +896,9 @@ private fun BoxScope.CommunalHubLazyGrid(
         Box(Modifier.fillMaxSize().dragAndDropTarget(dragAndDropTargetState)) {}
     } else if (communalResponsiveGrid()) {
         gridModifier = gridModifier.fillMaxSize()
+        if (isCompactWindow()) {
+            arrangementSpacing = Dimensions.ItemSpacingCompact
+        }
     } else {
         gridModifier = gridModifier.height(hubDimensions.GridHeight)
     }
@@ -875,6 +908,8 @@ private fun BoxScope.CommunalHubLazyGrid(
         gridState = gridState,
         dragDropState = dragDropState,
         minContentPadding = minContentPadding,
+        minHorizontalArrangement = arrangementSpacing,
+        minVerticalArrangement = arrangementSpacing,
         setContentOffset = setContentOffset,
     ) { sizeInfo ->
         /** Override spans based on the responsive grid size */
@@ -1839,11 +1874,21 @@ private fun nonScalableTextSize(sizeInDp: Dp) = with(LocalDensity.current) { siz
 @Composable
 private fun gridContentPadding(isEditMode: Boolean, toolbarSize: IntSize?): PaddingValues {
     if (!isEditMode || toolbarSize == null) {
-        return PaddingValues(
-            start = Dimensions.ItemSpacing,
-            end = Dimensions.ItemSpacing,
-            top = hubDimensions.GridTopSpacing,
-        )
+        return if (communalResponsiveGrid()) {
+            val horizontalPaddings: Dp =
+                if (isCompactWindow()) {
+                    horizontalPaddingWithInsets(Dimensions.ItemSpacingCompact)
+                } else {
+                    Dimensions.ItemSpacing
+                }
+            PaddingValues(start = horizontalPaddings, end = horizontalPaddings)
+        } else {
+            PaddingValues(
+                start = Dimensions.ItemSpacing,
+                end = Dimensions.ItemSpacing,
+                top = hubDimensions.GridTopSpacing,
+            )
+        }
     }
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -1867,6 +1912,16 @@ private fun gridContentPadding(isEditMode: Boolean, toolbarSize: IntSize?): Padd
             top = verticalPadding + toolbarHeight,
             bottom = verticalPadding,
         )
+    }
+}
+
+/** Compact size in landscape or portrait */
+@Composable
+fun isCompactWindow(): Boolean {
+    val windowSizeClass = LocalWindowSizeClass.current
+    return remember(windowSizeClass) {
+        windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact ||
+            windowSizeClass.heightSizeClass == WindowHeightSizeClass.Compact
     }
 }
 
@@ -1910,6 +1965,9 @@ class Dimensions(val context: Context, val config: Configuration) {
     companion object {
         val CardHeightFull
             get() = 530.adjustedDp
+
+        val ItemSpacingCompact
+            get() = 12.adjustedDp
 
         val ItemSpacing
             get() = if (communalResponsiveGrid()) 32.adjustedDp else 50.adjustedDp

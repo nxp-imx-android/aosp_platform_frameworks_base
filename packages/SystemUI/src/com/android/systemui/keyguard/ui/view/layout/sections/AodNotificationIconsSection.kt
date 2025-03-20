@@ -34,7 +34,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardSection
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.AlwaysOnDisplayNotificationIconViewStore
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.StatusBarIconViewBindingFailureTracker
@@ -56,7 +56,7 @@ constructor(
     private val nicAodIconViewStore: AlwaysOnDisplayNotificationIconViewStore,
     private val systemBarUtilsState: SystemBarUtilsState,
     private val rootViewModel: KeyguardRootViewModel,
-    private val shadeInteractor: ShadeInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
 ) : KeyguardSection() {
 
     private var nicBindingDisposable: DisposableHandle? = null
@@ -99,7 +99,7 @@ constructor(
             context.resources.getDimensionPixelSize(customR.dimen.status_view_margin_horizontal)
         val height = context.resources.getDimensionPixelSize(R.dimen.notification_shelf_height)
         val isVisible = rootViewModel.isNotifIconContainerVisible.value
-        val isShadeLayoutWide = shadeInteractor.isShadeLayoutWide.value
+        val isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value
 
         constraintSet.apply {
             if (PromotedNotificationUiAod.isEnabled) {

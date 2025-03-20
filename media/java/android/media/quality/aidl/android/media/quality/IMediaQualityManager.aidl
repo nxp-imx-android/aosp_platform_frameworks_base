@@ -32,7 +32,7 @@ import android.media.quality.SoundProfile;
  */
 interface IMediaQualityManager {
     // TODO: use UserHandle
-    PictureProfile createPictureProfile(in PictureProfile pp, int userId);
+    void createPictureProfile(in PictureProfile pp, int userId);
     void updatePictureProfile(in String id, in PictureProfile pp, int userId);
     void removePictureProfile(in String id, int userId);
     boolean setDefaultPictureProfile(in String id, int userId);

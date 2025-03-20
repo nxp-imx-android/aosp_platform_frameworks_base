@@ -25,10 +25,7 @@
             <solid
                 android:color="@color/settingslib_materialColorSurfaceContainer" />
             <corners
-                android:topLeftRadius="@dimen/settingslib_preference_corner_radius"
-                android:bottomLeftRadius="4dp"
-                android:topRightRadius="@dimen/settingslib_preference_corner_radius"
-                android:bottomRightRadius="4dp" />
+                android:radius="@dimen/settingslib_expressive_radius_extralarge1" />
         </shape>
     </item>
 </ripple>

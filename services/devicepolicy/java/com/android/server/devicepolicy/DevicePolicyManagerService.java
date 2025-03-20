@@ -9628,32 +9628,30 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 }
             }
 
-            // TODO: with a quick glance this logic seems incomplete that it doesn't properly handle
-            // the different behaviour between a profile with separate challenge vs a profile with
-            // unified challenge, which was part of getActiveAdminsForLockscreenPoliciesLocked()
-            // before the migration.
             if (Flags.setKeyguardDisabledFeaturesCoexistence()) {
-                Integer features = mDevicePolicyEngine.getResolvedPolicy(
-                        PolicyDefinition.KEYGUARD_DISABLED_FEATURES,
-                        affectedUserId);
-
                 return Binder.withCleanCallingIdentity(() -> {
-                    int combinedFeatures = features == null ? 0 : features;
-                    List<UserInfo> profiles = mUserManager.getProfiles(affectedUserId);
-                    for (UserInfo profile : profiles) {
-                        int profileId = profile.id;
-                        if (profileId == affectedUserId) {
+                    if (!parent && isManagedProfile(userHandle)) {
+                        return mDevicePolicyEngine.getResolvedPolicy(
+                                PolicyDefinition.KEYGUARD_DISABLED_FEATURES, userHandle);
+                    }
+
+                    int targetUserId = getProfileParentUserIfRequested(userHandle, parent);
+
+                    int combinedPolicy = DevicePolicyManager.KEYGUARD_DISABLE_FEATURES_NONE;
+                    for (UserInfo profile : mUserManager.getProfiles(targetUserId)) {
+                        if (mLockPatternUtils.isSeparateProfileChallengeEnabled(profile.id)) {
                             continue;
                         }
-                        Integer profileFeatures = mDevicePolicyEngine.getResolvedPolicy(
-                                PolicyDefinition.KEYGUARD_DISABLED_FEATURES,
-                                profileId);
-                        if (profileFeatures != null) {
-                            combinedFeatures |= (profileFeatures
-                                    & PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER);
+
+                        Integer profilePolicy = mDevicePolicyEngine.getResolvedPolicy(
+                                PolicyDefinition.KEYGUARD_DISABLED_FEATURES, profile.id);
+                        profilePolicy = profilePolicy == null ? 0 : profilePolicy;
+                        if (profile.id != userHandle) {
+                            profilePolicy &= PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
                         }
+                        combinedPolicy |= profilePolicy;
                     }
-                    return combinedFeatures;
+                    return combinedPolicy;
                 });
             }
 

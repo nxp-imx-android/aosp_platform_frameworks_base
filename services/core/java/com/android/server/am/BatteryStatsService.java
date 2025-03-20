@@ -3368,6 +3368,14 @@ public final class BatteryStatsService extends IBatteryStats.Stub
                     return;
                 } else if ("-a".equals(arg)) {
                     flags |= BatteryStats.DUMP_VERBOSE;
+                } else if ("--debug".equals(arg)) {
+                    i++;
+                    if (i >= args.length) {
+                        pw.println("Missing time argument for --flags HEX");
+                        dumpHelp(pw);
+                        return;
+                    }
+                    flags |= ParseUtils.parseIntWithBase(args[i], 16, 0);
                 } else if (arg.length() > 0 && arg.charAt(0) == '-'){
                     pw.println("Unknown option: " + arg);
                     dumpHelp(pw);

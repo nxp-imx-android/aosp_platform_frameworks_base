@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FusedLocationProvider extends LocationProviderBase {
 
     private static final String TAG = "FusedLocationProvider";
+    private static final String ATTRIBUTION_TAG = "FusedOverlayService";
 
     private static final ProviderProperties PROPERTIES = new ProviderProperties.Builder()
                 .setHasAltitudeSupport(true)
@@ -89,8 +90,12 @@ public class FusedLocationProvider extends LocationProviderBase {
 
     public FusedLocationProvider(Context context) {
         super(context, TAG, PROPERTIES);
-        mContext = context;
-        mLocationManager = Objects.requireNonNull(context.getSystemService(LocationManager.class));
+        if (Flags.missingAttributionTagsInOverlay()) {
+            mContext = context.createAttributionContext(ATTRIBUTION_TAG);
+        } else {
+            mContext = context;
+        }
+        mLocationManager = Objects.requireNonNull(mContext.getSystemService(LocationManager.class));
 
         mGpsListener = new ChildLocationListener(GPS_PROVIDER);
         mNetworkListener = new ChildLocationListener(NETWORK_PROVIDER);

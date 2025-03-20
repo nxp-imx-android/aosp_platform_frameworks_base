@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.function.Consumer;
 
 /**
@@ -112,6 +114,9 @@ import java.util.function.Consumer;
     /** The interface for endpoint communication (retrieved from HAL in init()) */
     private IEndpointCommunication mHubInterface = null;
 
+    /** Thread pool executor for handling timeout */
+    private final ScheduledExecutorService mSessionTimeoutExecutor;
+
     /*
      * The list of previous registration records.
      */
@@ -154,15 +159,31 @@ import java.util.function.Consumer;
         }
     }
 
+    @VisibleForTesting
+    ContextHubEndpointManager(
+            Context context,
+            IContextHubWrapper contextHubProxy,
+            HubInfoRegistry hubInfoRegistry,
+            ContextHubTransactionManager transactionManager,
+            ScheduledExecutorService scheduledExecutorService) {
+        mContext = context;
+        mContextHubProxy = contextHubProxy;
+        mHubInfoRegistry = hubInfoRegistry;
+        mTransactionManager = transactionManager;
+        mSessionTimeoutExecutor = scheduledExecutorService;
+    }
+
     /* package */ ContextHubEndpointManager(
             Context context,
             IContextHubWrapper contextHubProxy,
             HubInfoRegistry hubInfoRegistry,
             ContextHubTransactionManager transactionManager) {
-        mContext = context;
-        mContextHubProxy = contextHubProxy;
-        mHubInfoRegistry = hubInfoRegistry;
-        mTransactionManager = transactionManager;
+        this(
+                context,
+                contextHubProxy,
+                hubInfoRegistry,
+                transactionManager,
+                new ScheduledThreadPoolExecutor(1));
     }
 
     /**
@@ -264,7 +285,8 @@ import java.util.function.Consumer;
                         callback,
                         packageName,
                         attributionTag,
-                        mTransactionManager);
+                        mTransactionManager,
+                        mSessionTimeoutExecutor);
         broker.register();
         mEndpointMap.put(endpointId, broker);
 

@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.notification.row
+package com.android.wm.shell.bubbles
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.util.AttributeSet
-import android.widget.Button
+import android.app.ActivityManager
+import android.view.SurfaceControl
+import android.window.TransitionInfo
 
-/**
- * Custom Button for Magic Action Button, which includes the custom background and foreground.
- */
-@SuppressLint("AppCompatCustomView")
-class MagicActionButton @JvmOverloads constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-) : Button(context, attrs, defStyleAttr) {
-    init {
-        background = MagicActionBackgroundDrawable(context)
-    }
+/** Merges a bubble task transition with the unfold transition. */
+interface BubbleTaskUnfoldTransitionMerger {
+
+    /** Attempts to merge the transition. Returns `true` if the change was merged. */
+    fun mergeTaskWithUnfold(
+        taskInfo: ActivityManager.RunningTaskInfo,
+        change: TransitionInfo.Change,
+        startT: SurfaceControl.Transaction,
+        finishT: SurfaceControl.Transaction
+    ): Boolean
 }

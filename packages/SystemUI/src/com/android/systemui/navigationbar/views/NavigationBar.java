@@ -502,10 +502,6 @@ public class NavigationBar extends ViewController<NavigationBarView> implements 
                 boolean mHasBlurs;
 
                 @Override
-                public void onWallpaperZoomOutChanged(float zoomOut) {
-                }
-
-                @Override
                 public void onBlurRadiusChanged(int radius) {
                     boolean hasBlurs = radius != 0;
                     if (hasBlurs == mHasBlurs) {

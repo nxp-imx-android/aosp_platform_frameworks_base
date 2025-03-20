@@ -419,10 +419,11 @@
     <string name="accessibility_hearing_device_pair_new_device" msgid="8440082580186130090">"စက်အသစ် တွဲချိတ်ရန် နှိပ်ပါ"</string>
     <string name="hearing_devices_presets_error" msgid="350363093458408536">"အသင့်သုံးကို အပ်ဒိတ်လုပ်၍မရပါ"</string>
     <string name="hearing_devices_preset_label" msgid="7878267405046232358">"ကြိုတင်သတ်မှတ်ချက်"</string>
-    <!-- no translation found for hearing_devices_input_routing_label (730396728151232306) -->
-    <skip />
-    <!-- no translation found for hearing_device_input_routing_options:0 (4582190415045337003) -->
-    <!-- no translation found for hearing_device_input_routing_options:1 (8501466270452446450) -->
+    <string name="hearing_devices_input_routing_label" msgid="730396728151232306">"ခေါ်ဆိုမှုများအတွက် မူရင်းမိုက်ခရိုဖုန်း"</string>
+  <string-array name="hearing_device_input_routing_options">
+    <item msgid="4582190415045337003">"နားကြားကိရိယာ မိုက်ခရိုဖုန်း"</item>
+    <item msgid="8501466270452446450">"ဤဖုန်း၏ မိုက်ခရိုဖုန်း"</item>
+  </string-array>
     <string name="hearing_devices_spinner_item_selected" msgid="3137083889662762383">"ရွေးထားသည်"</string>
     <string name="hearing_devices_ambient_label" msgid="629440938614895797">"ဝန်းကျင်အသံ"</string>
     <string name="hearing_devices_ambient_control_left" msgid="3586965448230412600">"ဘယ်"</string>
@@ -800,8 +801,7 @@
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ဖွင့် - မျက်နှာအခြေခံ"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"ပြီးပြီ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"အသုံးပြုရန်"</string>
-    <!-- no translation found for inline_turn_off_notifications (2653064779176881329) -->
-    <skip />
+    <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ပိတ်ရန်"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"အသံပိတ်ရန်"</string>
     <string name="notification_alert_title" msgid="3656229781017543655">"မူလ"</string>
     <string name="notification_automatic_title" msgid="3745465364578762652">"အလိုအလျောက်"</string>
@@ -983,6 +983,8 @@
     <string name="right_icon" msgid="1103955040645237425">"လက်ယာသင်္ကေတ"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"အကွက်များထည့်ရန် ဖိဆွဲပါ"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"အကွက်ငယ်များ ပြန်စီစဉ်ရန် ဖိပြီးဆွဲပါ"</string>
+    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
+    <skip />
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ဖယ်ရှားရန် ဤနေရာသို့ဖိဆွဲပါ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"အနည်းဆုံး <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ကွက် ရှိရမည်"</string>
     <string name="qs_edit" msgid="5583565172803472437">"တည်းဖြတ်ရန်"</string>
@@ -1003,6 +1005,10 @@
     <string name="other" msgid="429768510980739978">"အခြား"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"အကွက်ငယ်၏ အရွယ်အစားကို ပြောင်းရန်"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"အကွက်ငယ်ကို ဖယ်ရှားရန်"</string>
+    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
+    <skip />
+    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
+    <skip />
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"နောက်ဆုံးနေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"အကွက်ငယ်ကို ရွှေ့ရန်"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"ဆန္ဒရှိရာ နေရာတွင် အကွက်ငယ် ထည့်ရန်"</string>
@@ -1578,5 +1584,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"အမျိုးအမည်မသိ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"အကွက်ငယ်အားလုံးကို ပြင်ဆင်သတ်မှတ်မလား။"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"အမြန်ဆက်တင်များ အကွက်ငယ်အားလုံးကို စက်ပစ္စည်း၏ မူရင်းဆက်တင်များသို့ ပြင်ဆင်သတ်မှတ်ပါမည်"</string>
+    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>၊ <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

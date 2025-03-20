@@ -16,8 +16,11 @@
 
 package com.android.systemui.statusbar.chips.ui.compose
 
+import android.annotation.IdRes
 import android.content.res.ColorStateList
+import android.util.Log
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -234,10 +237,35 @@ private fun StatusBarIcon(
     AndroidView(
         modifier = modifier,
         factory = { _ ->
-            iconFactory.invoke()?.apply {
-                layoutParams = ViewGroup.LayoutParams(iconSizePx, iconSizePx)
-            } ?: throw IllegalStateException("Missing StatusBarIconView for $notificationKey")
+            // Use a wrapper frame layout so that we still return a view even if the icon is null
+            val wrapperFrameLayout = FrameLayout(context)
+
+            val icon = iconFactory.invoke()
+            if (icon == null) {
+                Log.e(TAG, "Missing StatusBarIconView for $notificationKey")
+            } else {
+                icon.apply {
+                    id = CUSTOM_ICON_VIEW_ID
+                    layoutParams = ViewGroup.LayoutParams(iconSizePx, iconSizePx)
+                }
+                // If needed, remove the icon from its old parent (views can only be attached
+                // to 1 parent at a time)
+                (icon.parent as? ViewGroup)?.apply {
+                    this.removeView(icon)
+                    this.removeTransientView(icon)
+                }
+                wrapperFrameLayout.addView(icon)
+            }
+
+            wrapperFrameLayout
         },
-        update = { iconView -> iconView.imageTintList = colorTintList },
+        update = { frameLayout ->
+            frameLayout.findViewById<StatusBarIconView>(CUSTOM_ICON_VIEW_ID)?.apply {
+                this.imageTintList = colorTintList
+            }
+        },
     )
 }
+
+private const val TAG = "OngoingActivityChip"
+@IdRes private val CUSTOM_ICON_VIEW_ID = R.id.ongoing_activity_chip_custom_icon

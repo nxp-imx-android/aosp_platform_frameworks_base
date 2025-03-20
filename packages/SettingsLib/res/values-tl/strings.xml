@@ -627,8 +627,7 @@
     <string name="tv_media_transfer_internal_speakers" msgid="4662765121700213785">"Built-in na speaker"</string>
     <string name="tv_media_transfer_hdmi_title" msgid="6715658310934507444">"Audio ng TV"</string>
     <string name="profile_connect_timeout_subtext" msgid="4043408193005851761">"Nagkaproblema sa pagkonekta. I-off at pagkatapos ay i-on ang device"</string>
-    <!-- no translation found for bluetooth_key_missing_subtext (1003639333895028298) -->
-    <skip />
+    <string name="bluetooth_key_missing_subtext" msgid="1003639333895028298">"Hindi makakonekta"</string>
     <string name="media_transfer_wired_device_name" msgid="4447880899964056007">"Wired na audio device"</string>
     <string name="help_label" msgid="3528360748637781274">"Tulong at feedback"</string>
     <string name="storage_category" msgid="2287342585424631813">"Storage"</string>

@@ -562,26 +562,6 @@ public class WindowStateTests extends WindowTestsBase {
     }
 
     @Test
-    public void testDeferredRemovalByAnimating() {
-        final WindowState appWindow = newWindowBuilder("appWindow", TYPE_APPLICATION).build();
-        makeWindowVisible(appWindow);
-        spyOn(appWindow.mWinAnimator);
-        doReturn(true).when(appWindow.mWinAnimator).getShown();
-        final AnimationAdapter animation = mock(AnimationAdapter.class);
-        final ActivityRecord activity = appWindow.mActivityRecord;
-        activity.startAnimation(appWindow.getPendingTransaction(),
-                animation, false /* hidden */, SurfaceAnimator.ANIMATION_TYPE_APP_TRANSITION);
-
-        appWindow.removeIfPossible();
-        assertTrue(appWindow.mAnimatingExit);
-        assertFalse(appWindow.mRemoved);
-
-        activity.cancelAnimation();
-        assertFalse(appWindow.mAnimatingExit);
-        assertTrue(appWindow.mRemoved);
-    }
-
-    @Test
     public void testOnExitAnimationDone() {
         final WindowState parent = newWindowBuilder("parent", TYPE_APPLICATION).build();
         final WindowState child = newWindowBuilder("child", TYPE_APPLICATION_PANEL).setParent(

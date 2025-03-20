@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.android.systemui.scene.domain.startable
 
 import android.app.StatusBarManager
@@ -121,6 +123,7 @@ import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.settings.data.repository.userAwareSecureSettingsRepository
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -2608,6 +2611,75 @@ class SceneContainerStartableTest : SysuiTestCase() {
         }
 
     @Test
+    fun handleDeviceUnlockStatus_returnsToLsFromBouncer_whenGoesToSleep() =
+        testScope.runTest {
+            val authMethod by collectLastValue(kosmos.authenticationInteractor.authenticationMethod)
+            val isUnlocked by
+                collectLastValue(
+                    kosmos.deviceUnlockedInteractor.deviceUnlockStatus.map { it.isUnlocked }
+                )
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+            val isAwake by collectLastValue(powerInteractor.isAwake)
+            prepareState(
+                isDeviceUnlocked = false,
+                initialSceneKey = Scenes.Lockscreen,
+                authenticationMethod = AuthenticationMethodModel.Pin,
+                startsAwake = true,
+            )
+            underTest.start()
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Pin)
+            assertThat(isUnlocked).isFalse()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+            assertThat(isAwake).isTrue()
+
+            sceneInteractor.showOverlay(Overlays.Bouncer, "")
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Pin)
+            assertThat(isUnlocked).isFalse()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+            assertThat(isAwake).isTrue()
+
+            powerInteractor.setAsleepForTest()
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Pin)
+            assertThat(isUnlocked).isFalse()
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+            assertThat(isAwake).isFalse()
+        }
+
+    @Test
+    fun hidesBouncer_whenAuthMethodChangesToNonSecure() =
+        testScope.runTest {
+            val authMethod by collectLastValue(kosmos.authenticationInteractor.authenticationMethod)
+            val currentScene by collectLastValue(kosmos.sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(kosmos.sceneInteractor.currentOverlays)
+            prepareState(
+                authenticationMethod = AuthenticationMethodModel.Password,
+                initialSceneKey = Scenes.Lockscreen,
+            )
+            underTest.start()
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Password)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+
+            sceneInteractor.showOverlay(Overlays.Bouncer, "")
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.Password)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.Bouncer)
+
+            kosmos.fakeAuthenticationRepository.setAuthenticationMethod(
+                AuthenticationMethodModel.None
+            )
+            runCurrent()
+
+            assertThat(authMethod).isEqualTo(AuthenticationMethodModel.None)
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).doesNotContain(Overlays.Bouncer)
+        }
+
+    @Test
     fun replacesLockscreenSceneOnBackStack_whenFaceUnlocked_fromShade_noAlternateBouncer() =
         testScope.runTest {
             val transitionState =
@@ -2898,7 +2970,10 @@ class SceneContainerStartableTest : SysuiTestCase() {
             sceneInteractor.changeScene(it, "prepareState, initialSceneKey isn't null")
         }
         for (overlay in initialOverlays) {
-            sceneInteractor.showOverlay(overlay, "prepareState, initialOverlays isn't empty")
+            sceneInteractor.instantlyShowOverlay(
+                overlay,
+                "prepareState, initialOverlays isn't empty",
+            )
         }
         if (startsAwake) {
             powerInteractor.setAwakeForTest()

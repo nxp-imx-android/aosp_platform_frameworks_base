@@ -47,7 +47,7 @@ constructor(
         scope.launchTraced("ShadeStateTraceLogger") {
             launch {
                 val stateLogger = createTraceStateLogger("isShadeLayoutWide")
-                shadeInteractor.isShadeLayoutWide.collect { stateLogger.log(it.toString()) }
+                shadeModeInteractor.isShadeLayoutWide.collect { stateLogger.log(it.toString()) }
             }
             launch {
                 val stateLogger = createTraceStateLogger("shadeMode")

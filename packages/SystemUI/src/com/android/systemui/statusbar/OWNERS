@@ -6,8 +6,8 @@ caitlinshk@google.com
 evanlaird@google.com
 pixel@google.com
 
-per-file *Biometrics* = set noparent
-per-file *Biometrics* = file:../keyguard/OWNERS
+per-file *Biometric* = set noparent
+per-file *Biometric* = file:../keyguard/OWNERS
 per-file *Doze* = set noparent
 per-file *Doze* = file:../keyguard/OWNERS
 per-file *Keyboard* = set noparent

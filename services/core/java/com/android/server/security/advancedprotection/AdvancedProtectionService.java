@@ -27,6 +27,7 @@ import android.annotation.Nullable;
 import android.app.StatsManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.Handler;
@@ -73,7 +74,7 @@ import java.util.List;
 import java.util.Set;
 
 /** @hide */
-public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  {
+public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
     private static final String TAG = "AdvancedProtectionService";
     private static final int MODE_CHANGED = 0;
     private static final int CALLBACK_ADDED = 1;
@@ -90,6 +91,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
     private final Context mContext;
     private final Handler mHandler;
     private final AdvancedProtectionStore mStore;
+    private final UserManagerInternal mUserManager;
 
     // Features living with the service - their code will be executed when state changes
     private final ArrayList<AdvancedProtectionHook> mHooks = new ArrayList<>();
@@ -106,7 +108,8 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         super(PermissionEnforcer.fromContext(context));
         mContext = context;
         mHandler = new AdvancedProtectionHandler(FgThread.get().getLooper());
-        mStore = new AdvancedProtectionStore(context);
+        mStore = new AdvancedProtectionStore(mContext);
+        mUserManager = LocalServices.getService(UserManagerInternal.class);
     }
 
     private void initFeatures(boolean enabled) {
@@ -156,12 +159,18 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
 
     // Only for tests
     @VisibleForTesting
-    AdvancedProtectionService(@NonNull Context context, @NonNull AdvancedProtectionStore store,
-            @NonNull Looper looper, @NonNull PermissionEnforcer permissionEnforcer,
-            @Nullable AdvancedProtectionHook hook, @Nullable AdvancedProtectionProvider provider) {
+    AdvancedProtectionService(
+            @NonNull Context context,
+            @NonNull AdvancedProtectionStore store,
+            @NonNull UserManagerInternal userManager,
+            @NonNull Looper looper,
+            @NonNull PermissionEnforcer permissionEnforcer,
+            @Nullable AdvancedProtectionHook hook,
+            @Nullable AdvancedProtectionProvider provider) {
         super(permissionEnforcer);
         mContext = context;
         mStore = store;
+        mUserManager = userManager;
         mHandler = new AdvancedProtectionHandler(looper);
         if (hook != null) {
             mHooks.add(hook);
@@ -218,8 +227,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
     @EnforcePermission(Manifest.permission.MANAGE_ADVANCED_PROTECTION_MODE)
     public void setAdvancedProtectionEnabled(boolean enabled) {
         setAdvancedProtectionEnabled_enforcePermission();
+        final UserHandle user = Binder.getCallingUserHandle();
         final long identity = Binder.clearCallingIdentity();
         try {
+            enforceAdminUser(user);
             synchronized (mCallbacks) {
                 if (enabled != isAdvancedProtectionEnabledInternal()) {
                     mStore.storeAdvancedProtectionModeEnabled(enabled);
@@ -364,6 +375,13 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         return features;
     }
 
+    private void enforceAdminUser(UserHandle user) {
+        UserInfo info = mUserManager.getUserInfo(user.getIdentifier());
+        if (!info.isAdmin()) {
+            throw new SecurityException("Only an admin user can manage advanced protection mode");
+        }
+    }
+
     @Override
     public void onShellCommand(FileDescriptor in, FileDescriptor out,
             FileDescriptor err, @NonNull String[] args, ShellCallback callback,
@@ -451,36 +469,34 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
 
     @VisibleForTesting
     static class AdvancedProtectionStore {
-        private final Context mContext;
         static final int ON = 1;
         static final int OFF = 0;
-        private final UserManagerInternal mUserManager;
+        private final Context mContext;
 
         AdvancedProtectionStore(@NonNull Context context) {
             mContext = context;
-            mUserManager = LocalServices.getService(UserManagerInternal.class);
         }
 
         void storeAdvancedProtectionModeEnabled(boolean enabled) {
             Settings.Secure.putIntForUser(mContext.getContentResolver(),
                     ADVANCED_PROTECTION_MODE, enabled ? ON : OFF,
-                    mUserManager.getMainUserId());
+                    UserHandle.USER_SYSTEM);
         }
 
         boolean retrieveAdvancedProtectionModeEnabled() {
             return Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    ADVANCED_PROTECTION_MODE, OFF, mUserManager.getMainUserId()) == ON;
+                    ADVANCED_PROTECTION_MODE, OFF, UserHandle.USER_SYSTEM) == ON;
         }
 
         void storeInt(String key, int value) {
             Settings.Secure.putIntForUser(mContext.getContentResolver(),
                     key, value,
-                    mUserManager.getMainUserId());
+                    UserHandle.USER_SYSTEM);
         }
 
         int retrieveInt(String key, int defaultValue) {
             return Settings.Secure.getIntForUser(mContext.getContentResolver(),
-                    key, defaultValue, mUserManager.getMainUserId());
+                    key, defaultValue, UserHandle.USER_SYSTEM);
         }
     }
 
@@ -492,12 +508,12 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
         @Override
         public void handleMessage(@NonNull Message msg) {
             switch (msg.what) {
-                //arg1 == enabled
+                // arg1 == enabled
                 case MODE_CHANGED:
                     handleAllCallbacks(msg.arg1 == 1);
                     break;
-                //arg1 == enabled
-                //obj == callback
+                // arg1 == enabled
+                // obj == callback
                 case CALLBACK_ADDED:
                     handleSingleCallback(msg.arg1 == 1, (IAdvancedProtectionCallback) msg.obj);
                     break;
@@ -546,7 +562,7 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub  
     private final class DeathRecipient implements IBinder.DeathRecipient {
         private final IBinder mBinder;
 
-        DeathRecipient(IBinder  binder) {
+        DeathRecipient(IBinder binder) {
             mBinder = binder;
         }
 

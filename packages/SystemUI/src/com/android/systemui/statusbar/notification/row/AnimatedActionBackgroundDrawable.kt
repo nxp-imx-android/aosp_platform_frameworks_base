@@ -36,7 +36,7 @@ import com.android.wm.shell.shared.animation.Interpolators
 import android.graphics.drawable.RippleDrawable
 import androidx.core.content.ContextCompat
 
-class MagicActionBackgroundDrawable(
+class AnimatedActionBackgroundDrawable(
     context: Context,
 ) : RippleDrawable(
     ContextCompat.getColorStateList(
@@ -56,13 +56,13 @@ class BaseBackgroundDrawable(
     context: Context,
 ) : Drawable() {
 
-    private val cornerRadius = context.resources.getDimension(R.dimen.magic_action_button_corner_radius)
-    private val outlineStrokeWidth = context.resources.getDimension(R.dimen.magic_action_button_outline_stroke_width)
+    private val cornerRadius = context.resources.getDimension(R.dimen.animated_action_button_corner_radius)
+    private val outlineStrokeWidth = context.resources.getDimension(R.dimen.animated_action_button_outline_stroke_width)
     private val insetVertical = 8 * context.resources.displayMetrics.density
 
     private val buttonShape = Path()
     // Color and style
-    private val outlineStaticColor = context.getColor(R.color.magic_action_button_stroke_color)
+    private val outlineStaticColor = context.getColor(R.color.animated_action_button_stroke_color)
     private val bgPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         val bgColor =
             context.getColor(

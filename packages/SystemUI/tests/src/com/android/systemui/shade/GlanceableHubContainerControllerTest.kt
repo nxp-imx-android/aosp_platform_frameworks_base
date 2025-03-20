@@ -56,6 +56,7 @@ import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInterac
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.keyguard.userActivityNotifier
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
@@ -137,6 +138,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                 keyguardMediaController,
                 lockscreenSmartspaceController,
                 logcatLogBuffer("GlanceableHubContainerControllerTest"),
+                kosmos.userActivityNotifier,
             )
         }
 
@@ -177,6 +179,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     keyguardMediaController,
                     lockscreenSmartspaceController,
                     logcatLogBuffer("GlanceableHubContainerControllerTest"),
+                    kosmos.userActivityNotifier,
                 )
 
             // First call succeeds.
@@ -206,6 +209,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     keyguardMediaController,
                     lockscreenSmartspaceController,
                     logcatLogBuffer("GlanceableHubContainerControllerTest"),
+                    kosmos.userActivityNotifier,
                 )
 
             assertThat(controller.lifecycle.currentState).isEqualTo(Lifecycle.State.INITIALIZED)
@@ -231,6 +235,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     keyguardMediaController,
                     lockscreenSmartspaceController,
                     logcatLogBuffer("GlanceableHubContainerControllerTest"),
+                    kosmos.userActivityNotifier,
                 )
 
             // Only initView without attaching a view as we don't want the flows to start collecting

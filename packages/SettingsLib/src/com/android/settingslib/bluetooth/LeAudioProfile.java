@@ -45,6 +45,27 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 public class LeAudioProfile implements LocalBluetoothProfile {
+    public static final int LEFT_DEVICE_ID = BluetoothLeAudio.AUDIO_LOCATION_FRONT_LEFT
+            | BluetoothLeAudio.AUDIO_LOCATION_BACK_LEFT
+            | BluetoothLeAudio.AUDIO_LOCATION_FRONT_LEFT_OF_CENTER
+            | BluetoothLeAudio.AUDIO_LOCATION_SIDE_LEFT
+            | BluetoothLeAudio.AUDIO_LOCATION_TOP_FRONT_LEFT
+            | BluetoothLeAudio.AUDIO_LOCATION_TOP_BACK_LEFT
+            | BluetoothLeAudio.AUDIO_LOCATION_TOP_SIDE_LEFT
+            | BluetoothLeAudio.AUDIO_LOCATION_BOTTOM_FRONT_LEFT
+            | BluetoothLeAudio.AUDIO_LOCATION_FRONT_LEFT_WIDE
+            | BluetoothLeAudio.AUDIO_LOCATION_LEFT_SURROUND;
+    public static final int RIGHT_DEVICE_ID = BluetoothLeAudio.AUDIO_LOCATION_FRONT_RIGHT
+            | BluetoothLeAudio.AUDIO_LOCATION_BACK_RIGHT
+            | BluetoothLeAudio.AUDIO_LOCATION_FRONT_RIGHT_OF_CENTER
+            | BluetoothLeAudio.AUDIO_LOCATION_SIDE_RIGHT
+            | BluetoothLeAudio.AUDIO_LOCATION_TOP_FRONT_RIGHT
+            | BluetoothLeAudio.AUDIO_LOCATION_TOP_BACK_RIGHT
+            | BluetoothLeAudio.AUDIO_LOCATION_TOP_SIDE_RIGHT
+            | BluetoothLeAudio.AUDIO_LOCATION_BOTTOM_FRONT_RIGHT
+            | BluetoothLeAudio.AUDIO_LOCATION_FRONT_RIGHT_WIDE
+            | BluetoothLeAudio.AUDIO_LOCATION_RIGHT_SURROUND;
+
     private static final String TAG = "LeAudioProfile";
     private static boolean DEBUG = true;
 

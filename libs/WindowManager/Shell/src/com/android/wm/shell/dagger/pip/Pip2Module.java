@@ -19,6 +19,7 @@ package com.android.wm.shell.dagger.pip;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.os.Handler;
+import android.window.DesktopModeFlags;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
@@ -42,6 +43,8 @@ import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.common.pip.SizeSpecSource;
 import com.android.wm.shell.dagger.WMShellBaseModule;
 import com.android.wm.shell.dagger.WMSingleton;
+import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
+import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopUserRepositories;
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler;
 import com.android.wm.shell.pip2.phone.PhonePipMenuController;
@@ -55,6 +58,7 @@ import com.android.wm.shell.pip2.phone.PipTransition;
 import com.android.wm.shell.pip2.phone.PipTransitionState;
 import com.android.wm.shell.pip2.phone.PipUiStateChangeController;
 import com.android.wm.shell.shared.annotations.ShellMainThread;
+import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.sysui.ShellCommandHandler;
 import com.android.wm.shell.sysui.ShellController;
@@ -91,12 +95,13 @@ public abstract class Pip2Module {
             DisplayController displayController,
             Optional<SplitScreenController> splitScreenControllerOptional,
             PipDesktopState pipDesktopState,
+            Optional<DesktopPipTransitionController> desktopPipTransitionController,
             PipInteractionHandler pipInteractionHandler) {
         return new PipTransition(context, shellInit, shellTaskOrganizer, transitions,
                 pipBoundsState, null, pipBoundsAlgorithm, pipTaskListener,
                 pipScheduler, pipStackListenerController, pipDisplayLayoutState,
                 pipUiStateChangeController, displayController, splitScreenControllerOptional,
-                pipDesktopState, pipInteractionHandler);
+                pipDesktopState, desktopPipTransitionController, pipInteractionHandler);
     }
 
     @WMSingleton
@@ -248,6 +253,22 @@ public abstract class Pip2Module {
     ) {
         return new PipDesktopState(pipDisplayLayoutState, desktopUserRepositoriesOptional,
                 dragToDesktopTransitionHandlerOptional, rootTaskDisplayAreaOrganizer);
+    }
+
+    @WMSingleton
+    @Provides
+    static Optional<DesktopPipTransitionController> provideDesktopPipTransitionController(
+            Context context, Optional<DesktopTasksController> desktopTasksControllerOptional,
+            Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
+            PipDesktopState pipDesktopState
+    ) {
+        if (DesktopModeStatus.canEnterDesktopMode(context)
+                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()) {
+            return Optional.of(
+                    new DesktopPipTransitionController(desktopTasksControllerOptional.get(),
+                            desktopUserRepositoriesOptional.get(), pipDesktopState));
+        }
+        return Optional.empty();
     }
 
     @BindsOptionalOf
