@@ -61,8 +61,6 @@ data class PromotedNotificationContentModel(
     val style: Style,
 
     // for CallStyle:
-    val personIcon: ImageModel?,
-    val personName: CharSequence?,
     val verificationIcon: ImageModel?,
     val verificationText: CharSequence?,
 
@@ -87,8 +85,6 @@ data class PromotedNotificationContentModel(
         var colors: Colors = Colors(backgroundColor = 0, primaryTextColor = 0)
 
         // for CallStyle:
-        var personIcon: ImageModel? = null
-        var personName: CharSequence? = null
         var verificationIcon: ImageModel? = null
         var verificationText: CharSequence? = null
 
@@ -113,8 +109,6 @@ data class PromotedNotificationContentModel(
                 oldProgress = oldProgress,
                 colors = colors,
                 style = style,
-                personIcon = personIcon,
-                personName = personName,
                 verificationIcon = verificationIcon,
                 verificationText = verificationText,
                 newProgress = newProgress,
@@ -171,8 +165,6 @@ data class PromotedNotificationContentModel(
             "oldProgress=$oldProgress, " +
             "colors=$colors, " +
             "style=$style, " +
-            "personIcon=${personIcon?.toRedactedString()}, " +
-            "personName=${personName?.toRedactedString()}, " +
             "verificationIcon=$verificationIcon, " +
             "verificationText=$verificationText, " +
             "newProgress=$newProgress)")
