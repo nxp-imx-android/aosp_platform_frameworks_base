@@ -667,7 +667,7 @@ private fun Shortcut(
                 onShortcutCustomizationRequested(
                     ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Add(
                         label = shortcut.label,
-                        shortcutCommand = shortcut.commands.first(),
+                        defaultShortcutCommand = shortcut.commands.firstOrNull { !it.isCustom },
                     )
                 )
             },
@@ -675,7 +675,8 @@ private fun Shortcut(
                 onShortcutCustomizationRequested(
                     ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Delete(
                         label = shortcut.label,
-                        shortcutCommand = shortcut.commands.first(),
+                        defaultShortcutCommand = shortcut.commands.firstOrNull { !it.isCustom },
+                        customShortcutCommand = shortcut.commands.firstOrNull { it.isCustom },
                     )
                 )
             },
