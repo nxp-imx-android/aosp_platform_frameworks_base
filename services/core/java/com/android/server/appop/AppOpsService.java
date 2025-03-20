@@ -276,7 +276,6 @@ public class AppOpsService extends IAppOpsService.Stub {
             Process.SHELL_UID};
 
     final Context mContext;
-    final AtomicFile mStorageFile;
     final AtomicFile mRecentAccessesFile;
     private final @Nullable File mNoteOpCallerStacktracesFile;
     /* AMS handler, this shouldn't be used for IO */
@@ -994,9 +993,13 @@ public class AppOpsService extends IAppOpsService.Stub {
         }
     }
 
+    public AppOpsService(Handler handler, Context context) {
+        this(new File(SystemServiceManager.ensureSystemDir(), "appops_accesses.xml"),
+                handler, context);
+    }
+
     @VisibleForTesting
-    public AppOpsService(File recentAccessesFile, File storageFile, Handler handler,
-            Context context) {
+    public AppOpsService(File recentAccessesFile, Handler handler, Context context) {
         mContext = context;
         mKnownDeviceIds.put(Context.DEVICE_ID_DEFAULT, PERSISTENT_DEVICE_ID_DEFAULT);
 
@@ -1032,7 +1035,6 @@ public class AppOpsService extends IAppOpsService.Stub {
                 code -> notifyWatchersOnDefaultDevice(code, UID_ANY));
 
         LockGuard.installLock(this, LockGuard.INDEX_APP_OPS);
-        mStorageFile = new AtomicFile(storageFile, "appops_legacy");
         mRecentAccessesFile = new AtomicFile(recentAccessesFile, "appops_accesses");
         mRecentAccessPersistence = new AppOpsRecentAccessPersistence(mRecentAccessesFile, this);
 
@@ -5270,7 +5272,9 @@ public class AppOpsService extends IAppOpsService.Stub {
      */
     private void readRecentAccesses() {
         if (!mRecentAccessesFile.exists()) {
-            readRecentAccesses(mStorageFile);
+            final File legacyFile =
+                    new File(SystemServiceManager.ensureSystemDir(), "appops.xml");
+            readRecentAccesses(new AtomicFile(legacyFile, "appops_legacy"));
         } else {
             if (deviceAwareAppOpNewSchemaEnabled()) {
                 synchronized (this) {

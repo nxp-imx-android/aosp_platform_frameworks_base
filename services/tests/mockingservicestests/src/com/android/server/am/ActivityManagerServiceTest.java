@@ -154,7 +154,6 @@ import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 import org.mockito.verification.VerificationMode;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1716,8 +1715,7 @@ public class ActivityManagerServiceTest {
         }
 
         @Override
-        public AppOpsService getAppOpsService(File recentAccessesFile, File storageFile,
-                Handler handler) {
+        public AppOpsService getAppOpsService(Handler handler) {
             return mAppOpsService;
         }
 

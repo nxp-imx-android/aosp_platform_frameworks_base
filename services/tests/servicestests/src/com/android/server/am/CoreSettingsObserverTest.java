@@ -48,8 +48,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.io.File;
-
 /**
  * Test class for {@link CoreSettingsObserver}.
  *
@@ -179,8 +177,7 @@ public class CoreSettingsObserverTest {
         }
 
         @Override
-        public AppOpsService getAppOpsService(File recentAccessesFile, File storageFile,
-                Handler handler) {
+        public AppOpsService getAppOpsService(Handler handler) {
             return null;
         }
 

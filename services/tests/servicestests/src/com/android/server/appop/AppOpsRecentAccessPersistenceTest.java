@@ -80,7 +80,7 @@ public class AppOpsRecentAccessPersistenceTest {
         HandlerThread handlerThread = new HandlerThread(TAG);
         handlerThread.start();
         Handler handler = new Handler(handlerThread.getLooper());
-        mAppOpsService = new AppOpsService(mRecentAccessFile, mRecentAccessFile, handler, mContext);
+        mAppOpsService = new AppOpsService(mRecentAccessFile, handler, mContext);
     }
 
     @After
