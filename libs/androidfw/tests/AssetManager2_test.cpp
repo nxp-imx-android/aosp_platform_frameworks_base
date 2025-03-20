@@ -621,7 +621,7 @@ TEST_F(AssetManager2Test, GetResourceLocales) {
   AssetManager2 assetmanager;
   assetmanager.SetApkAssets({system_assets_, basic_de_fr_assets_});
 
-  std::set<std::string> locales = assetmanager.GetResourceLocales();
+  auto locales = assetmanager.GetResourceLocales();
 
   // We expect the locale sv from the system assets, and de and fr from basic_de_fr assets.
   EXPECT_EQ(3u, locales.size());
