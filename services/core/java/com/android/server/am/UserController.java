@@ -112,6 +112,7 @@ import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.storage.IStorageManager;
 import android.os.storage.StorageManager;
+import android.security.KeyStoreAuthorization;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArraySet;
@@ -1524,9 +1525,10 @@ class UserController implements Handler.Callback {
 
     private void dispatchUserLocking(@UserIdInt int userId,
             @Nullable List<KeyEvictedCallback> keyEvictedCallbacks) {
-        // Evict the user's credential encryption key. Performed on FgThread to make it
-        // serialized with call to UserManagerService.onBeforeUnlockUser in finishUserUnlocking
-        // to prevent data corruption.
+        // Evict user secrets that require strong authentication to unlock. This includes locking
+        // the user's credential-encrypted storage and evicting the user's keystore super keys.
+        // Performed on FgThread to make it serialized with call to
+        // UserManagerService.onBeforeUnlockUser in finishUserUnlocking to prevent data corruption.
         FgThread.getHandler().post(() -> {
             synchronized (mLock) {
                 if (mStartedUsers.get(userId) != null) {
@@ -1539,6 +1541,10 @@ class UserController implements Handler.Callback {
                 mInjector.getStorageManager().lockCeStorage(userId);
             } catch (RemoteException re) {
                 throw re.rethrowAsRuntimeException();
+            }
+            if (com.android.server.flags.Flags.userDataRefactoring()) {
+                // Send communication to keystore to wipe key cache for the given userId.
+                mInjector.getKeyStoreAuthorization().onUserStorageLocked(userId);
             }
             if (keyEvictedCallbacks == null) {
                 return;
@@ -4043,6 +4049,10 @@ class UserController implements Handler.Callback {
 
         KeyguardManager getKeyguardManager() {
             return mService.mContext.getSystemService(KeyguardManager.class);
+        }
+
+        KeyStoreAuthorization getKeyStoreAuthorization() {
+            return KeyStoreAuthorization.getInstance();
         }
 
         void batteryStatsServiceNoteEvent(int code, String name, int uid) {
