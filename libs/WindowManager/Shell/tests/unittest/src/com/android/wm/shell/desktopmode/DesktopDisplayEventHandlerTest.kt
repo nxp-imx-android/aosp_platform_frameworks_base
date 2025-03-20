@@ -238,20 +238,22 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Test
     fun testConnectExternalDisplay() {
         onDisplaysChangedListenerCaptor.lastValue.onDisplayAdded(externalDisplayId)
-        verify(desktopDisplayModeController).refreshDisplayWindowingMode()
+        verify(desktopDisplayModeController).updateExternalDisplayWindowingMode(externalDisplayId)
+        verify(desktopDisplayModeController).updateDefaultDisplayWindowingMode()
     }
 
     @Test
     fun testDisconnectExternalDisplay() {
         onDisplaysChangedListenerCaptor.lastValue.onDisplayRemoved(externalDisplayId)
-        verify(desktopDisplayModeController).refreshDisplayWindowingMode()
+        verify(desktopDisplayModeController).updateDefaultDisplayWindowingMode()
     }
 
     @Test
     @EnableFlags(DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
     fun testDesktopModeEligibleChanged() {
         onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
-        verify(desktopDisplayModeController).refreshDisplayWindowingMode()
+        verify(desktopDisplayModeController).updateExternalDisplayWindowingMode(externalDisplayId)
+        verify(desktopDisplayModeController).updateDefaultDisplayWindowingMode()
     }
 
     private class FakeDesktopRepositoryInitializer : DesktopRepositoryInitializer {
