@@ -17,6 +17,10 @@
 
 package android.hardware;
 
+import com.android.tradeinmode.flags.Flags;
+
+
+import android.annotation.FlaggedApi;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
@@ -813,6 +817,27 @@ public final class Sensor {
     public static final String STRING_TYPE_HEADING = "android.sensor.heading";
 
     /**
+     * A constant describing a moisture intrusion sensor.
+     *
+     * See {@link android.hardware.SensorEvent#values SensorEvent.values} for more details.
+     *
+     * This sensor requires permission {@code android.permission.READ_MOISTURE_INTRUSION}.
+     * It will not be returned by {@code SensorManager.getSensorsList} nor
+     * {@code SensorManager.getDefaultSensor} if the application doesn't have this permission.
+     * @hide This sensor is only expected to be used by platform services
+     */
+    @FlaggedApi(Flags.FLAG_TRADE_IN_MODE_2025Q4)
+    public static final int TYPE_MOISTURE_INTRUSION = 43;
+
+    /**
+     * A constant string describing a moisture intrusion sensor.
+     *
+     * @see #TYPE_MOISTURE_INTRUSION
+     * @hide This sensor is only expected to be used by platform services
+     */
+    @FlaggedApi(Flags.FLAG_TRADE_IN_MODE_2025Q4)
+    public static final String STRING_TYPE_MOISTURE_INTRUSION = "android.sensor.moisture_intrusion";
+    /**
      * A constant describing all sensor types.
      */
 
@@ -938,6 +963,7 @@ public final class Sensor {
             9, // SENSOR_TYPE_ACCELEROMETER_LIMITED_AXES_UNCALIBRATED
             9, // SENSOR_TYPE_GYROSCOPE_LIMITED_AXES_UNCALIBRATED
             2, // SENSOR_TYPE_HEADING
+            1, // SENSOR_TYPE_MOISTURE_INTRUSION
     };
 
     /**
@@ -1409,6 +1435,9 @@ public final class Sensor {
                 return true;
             case TYPE_HEADING:
                 mStringType = STRING_TYPE_HEADING;
+                return true;
+            case TYPE_MOISTURE_INTRUSION:
+                mStringType = STRING_TYPE_MOISTURE_INTRUSION;
                 return true;
             default:
                 return false;
