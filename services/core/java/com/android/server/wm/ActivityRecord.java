@@ -1434,7 +1434,7 @@ final class ActivityRecord extends WindowToken {
             // precede the configuration change from the resize.)
             mLastReportedPictureInPictureMode = inPictureInPictureMode;
             mLastReportedMultiWindowMode = inPictureInPictureMode;
-            if (!isPip2ExperimentEnabled()) {
+            if (forceUpdate || !isPip2ExperimentEnabled()) {
                 // PiP2 should handle sending out the configuration as a part of Shell Transitions.
                 ensureActivityConfiguration(true /* ignoreVisibility */);
             }
@@ -6367,6 +6367,15 @@ final class ActivityRecord extends WindowToken {
             isSuccessful = false;
         }
         if (isSuccessful) {
+            final int lastReportedWinMode = mLastReportedConfiguration.getMergedConfiguration()
+                    .windowConfiguration.getWindowingMode();
+            if (isPip2ExperimentEnabled()
+                    && lastReportedWinMode == WINDOWING_MODE_PINNED && !inPinnedWindowingMode()) {
+                // If an activity that was previously reported as pinned has a different windowing
+                // mode, then send the latest activity configuration even if this activity is
+                // stopping. This ensures that app gets onPictureInPictureModeChanged after onStop.
+                updatePictureInPictureMode(null /* targetRootTaskBounds */, true /* forceUpdate */);
+            }
             mAtmService.mH.postDelayed(mStopTimeoutRunnable, STOP_TIMEOUT);
         } else {
             // Just in case, assume it to be stopped.
