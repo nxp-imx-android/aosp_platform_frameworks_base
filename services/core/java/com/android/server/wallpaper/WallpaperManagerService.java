@@ -747,13 +747,22 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         if (connection == null) {
             return false;
         }
+        boolean isWallpaperDesktopExperienceEnabled = isDeviceEligibleForDesktopExperienceWallpaper(
+                mContext);
+        boolean isLiveWallpaperSupportedInDesktopExperience =
+                mContext.getResources().getBoolean(
+                        R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
         // Non image wallpaper.
         if (connection.mInfo != null) {
+            if (isWallpaperDesktopExperienceEnabled
+                    && !isLiveWallpaperSupportedInDesktopExperience) {
+                return false;
+            }
             return connection.mInfo.supportsMultipleDisplays();
         }
 
         // Image wallpaper
-        if (isDeviceEligibleForDesktopExperienceWallpaper(mContext)) {
+        if (isWallpaperDesktopExperienceEnabled) {
             return mWallpaperCropper.isWallpaperCompatibleForDisplay(displayId,
                     connection.mWallpaper);
         }
