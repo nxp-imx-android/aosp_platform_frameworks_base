@@ -67,7 +67,7 @@ class AppCompatSafeRegionPolicy {
         });
     }
 
-    private boolean allowSafeRegionLetterboxing(PackageManager pm) {
+    private boolean allowSafeRegionLetterboxing(@NonNull PackageManager pm) {
         try {
             return pm.getPropertyAsUser(
                     PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING,
@@ -75,7 +75,7 @@ class AppCompatSafeRegionPolicy {
                     /* className */ null,
                     mActivityRecord.mUserId).getBoolean();
         } catch (PackageManager.NameNotFoundException e) {
-            return true;
+            return false;
         }
     }
 
