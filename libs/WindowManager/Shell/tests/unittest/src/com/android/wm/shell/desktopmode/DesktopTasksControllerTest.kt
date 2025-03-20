@@ -32,9 +32,9 @@ import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.CONFIG_DENSITY
+import android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -1200,9 +1200,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         existingTask.topActivity = testComponent
         existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
         // Set up new instance of already existing task.
-        val launchingTask = setUpFullscreenTask()
+        val launchingTask =
+            setUpFullscreenTask().apply {
+                topActivityInfo = ActivityInfo().apply { launchMode = LAUNCH_SINGLE_INSTANCE }
+            }
         launchingTask.topActivity = testComponent
-        launchingTask.baseIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
 
         // Move new instance to desktop. By default multi instance is not supported so first
         // instance will close.
@@ -1224,10 +1226,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         existingTask.topActivity = testComponent
         existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
         // Set up new instance of already existing task.
-        val launchingTask = setUpFreeformTask(active = false)
+        val launchingTask =
+            setUpFreeformTask(active = false).apply {
+                topActivityInfo = ActivityInfo().apply { launchMode = LAUNCH_SINGLE_INSTANCE }
+            }
         taskRepository.removeTask(launchingTask.displayId, launchingTask.taskId)
         launchingTask.topActivity = testComponent
-        launchingTask.baseIntent.addFlags(FLAG_ACTIVITY_NEW_TASK)
 
         // Move new instance to desktop. By default multi instance is not supported so first
         // instance will close.

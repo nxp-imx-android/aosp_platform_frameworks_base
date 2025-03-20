@@ -22,7 +22,6 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.TaskInfo
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo.LAUNCH_MULTIPLE
 import android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE
 import android.content.pm.ActivityInfo.LAUNCH_SINGLE_INSTANCE_PER_TASK
@@ -303,21 +302,19 @@ fun getInheritedExistingTaskBounds(
         // Top task is an instance of launching activity. Activity will be launching in a new
         // task with the existing task also being closed. Inherit existing task bounds to
         // prevent new task jumping.
-        (isLaunchingNewTask(launchMode, intentFlags) && isClosingExitingInstance(intentFlags)) ->
+        (isLaunchingNewSingleTask(launchMode) && isClosingExitingInstance(intentFlags)) ->
             lastTask.configuration.windowConfiguration.bounds
         else -> null
     }
 }
 
 /**
- * Returns true if the launch mode or intent will result in a new task being created for the
- * activity.
+ * Returns true if the launch mode will result in a single new task being created for the activity.
  */
-private fun isLaunchingNewTask(launchMode: Int, intentFlags: Int) =
+private fun isLaunchingNewSingleTask(launchMode: Int) =
     launchMode == LAUNCH_SINGLE_TASK ||
         launchMode == LAUNCH_SINGLE_INSTANCE ||
-        launchMode == LAUNCH_SINGLE_INSTANCE_PER_TASK ||
-        (intentFlags and FLAG_ACTIVITY_NEW_TASK) != 0
+        launchMode == LAUNCH_SINGLE_INSTANCE_PER_TASK
 
 /**
  * Returns true if the intent will result in an existing task instance being closed if a new one
