@@ -49,6 +49,7 @@ class StatusBannerPreference @JvmOverloads constructor(
     var iconLevel: BannerStatus = BannerStatus.GENERIC
         set(value) {
             field = value
+            updateIconTint(value)
             notifyChanged()
         }
     var buttonLevel: BannerStatus = BannerStatus.GENERIC
@@ -81,7 +82,7 @@ class StatusBannerPreference @JvmOverloads constructor(
             if (icon == null) {
                 icon = getIconDrawable(iconLevel)
             } else {
-                icon!!.setTintList(ColorStateList.valueOf(getBackgroundColor(iconLevel)))
+                updateIconTint(iconLevel)
             }
             buttonLevel = getInteger(R.styleable.StatusBanner_buttonLevel, 0).toBannerStatus()
             buttonText = getString(R.styleable.StatusBanner_buttonText) ?: ""
@@ -251,5 +252,13 @@ class StatusBannerPreference @JvmOverloads constructor(
                 R.drawable.settingslib_expressive_background_generic
             )
         }
+    }
+
+    /**
+     * Sets the icon's tint color based on the icon level. If an icon is not defined, this is a
+     * no-op.
+     */
+    private fun updateIconTint(iconLevel: BannerStatus) {
+        icon?.setTintList(ColorStateList.valueOf(getBackgroundColor(iconLevel)))
     }
 }
