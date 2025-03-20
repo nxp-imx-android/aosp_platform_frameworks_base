@@ -32,6 +32,7 @@ import com.android.internal.graphics.SfVsyncFrameCallbackProvider;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.accessibility.WindowMagnificationSettings.MagnificationSize;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import org.junit.After;
 import org.junit.Before;
@@ -58,14 +59,14 @@ public class MagnificationSettingsControllerTest extends SysuiTestCase {
     @Mock
     private SecureSettings mSecureSettings;
     @Mock
-    private WindowManager mWindowManager;
+    private WindowManagerProvider mWindowManagerProvider;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mMagnificationSettingsController = new MagnificationSettingsController(
                 mContext, mSfVsyncFrameProvider,
-                mMagnificationSettingControllerCallback, mSecureSettings, mWindowManager,
+                mMagnificationSettingControllerCallback, mSecureSettings, mWindowManagerProvider,
                 mWindowMagnificationSettings);
     }
 

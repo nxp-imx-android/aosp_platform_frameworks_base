@@ -212,15 +212,13 @@ public class MagnificationImpl implements Magnification, CommandQueue.Callbacks 
         protected MagnificationSettingsController createInstance(Display display) {
             final Context windowContext = mContext.createWindowContext(display,
                     TYPE_ACCESSIBILITY_OVERLAY, /* options */ null);
-            final WindowManager windowManager = mWindowManagerProvider
-                    .getWindowManager(windowContext);
             windowContext.setTheme(com.android.systemui.res.R.style.Theme_SystemUI);
             return new MagnificationSettingsController(
                     windowContext,
                     new SfVsyncFrameCallbackProvider(),
                     mSettingsControllerCallback,
                     mSecureSettings,
-                    windowManager);
+                    mWindowManagerProvider);
         }
     }
 
