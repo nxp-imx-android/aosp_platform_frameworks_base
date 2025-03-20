@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.ui.compose
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntRect
@@ -66,6 +68,7 @@ constructor(
     @Composable
     fun ContentScope.Content(modifier: Modifier = Modifier) {
         CommunalTouchableSurface(viewModel = viewModel, modifier = modifier) {
+            val orientation = LocalConfiguration.current.orientation
             Layout(
                 modifier = Modifier.fillMaxSize(),
                 content = {
@@ -150,13 +153,29 @@ constructor(
 
                 val bottomAreaPlaceable = bottomAreaMeasurable.measure(noMinConstraints)
 
+                val communalGridMaxHeight: Int
+                val communalGridPositionY: Int
+                if (Flags.communalResponsiveGrid()) {
+                    val communalGridVerticalMargin = constraints.maxHeight - lockIconBounds.top
+                    // Bias the widgets up by a small offset for visual balance in landscape
+                    // orientation
+                    val verticalOffset =
+                        (if (orientation == Configuration.ORIENTATION_LANDSCAPE) (-3).dp else 0.dp)
+                            .roundToPx()
+                    // Use even top and bottom margin for grid to be centered in maxHeight (window)
+                    communalGridMaxHeight = constraints.maxHeight - communalGridVerticalMargin * 2
+                    communalGridPositionY = communalGridVerticalMargin + verticalOffset
+                } else {
+                    communalGridMaxHeight = lockIconBounds.top
+                    communalGridPositionY = 0
+                }
                 val communalGridPlaceable =
                     communalGridMeasurable.measure(
-                        noMinConstraints.copy(maxHeight = lockIconBounds.top)
+                        noMinConstraints.copy(maxHeight = communalGridMaxHeight)
                     )
 
                 layout(constraints.maxWidth, constraints.maxHeight) {
-                    communalGridPlaceable.place(x = 0, y = 0)
+                    communalGridPlaceable.place(x = 0, y = communalGridPositionY)
                     lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
 
                     val bottomAreaTop = constraints.maxHeight - bottomAreaPlaceable.height
