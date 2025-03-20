@@ -44,6 +44,7 @@ public class PipExpandAnimator extends ValueAnimator {
     private final SurfaceControl.Transaction mStartTransaction;
     private final SurfaceControl.Transaction mFinishTransaction;
     private final @Surface.Rotation int mRotation;
+    private final Boolean mIsPipInDesktopMode;
 
     // optional callbacks for tracking animation start and end
     @Nullable
@@ -112,7 +113,8 @@ public class PipExpandAnimator extends ValueAnimator {
             @NonNull Rect startBounds,
             @NonNull Rect endBounds,
             @Nullable Rect sourceRectHint,
-            @Surface.Rotation int rotation) {
+            @Surface.Rotation int rotation,
+            boolean isPipInDesktopMode) {
         mLeash = leash;
         mStartTransaction = startTransaction;
         mFinishTransaction = finishTransaction;
@@ -124,6 +126,7 @@ public class PipExpandAnimator extends ValueAnimator {
         mInsetEvaluator = new RectEvaluator(new Rect());
         mPipSurfaceTransactionHelper = new PipSurfaceTransactionHelper(context);
         mRotation = rotation;
+        mIsPipInDesktopMode = isPipInDesktopMode;
 
         mSourceRectHint = sourceRectHint != null ? new Rect(sourceRectHint) : null;
         if (mSourceRectHint != null) {
@@ -179,7 +182,7 @@ public class PipExpandAnimator extends ValueAnimator {
                     mAnimatedRect, insets, degrees, x, y,
                     true /* isExpanding */, mRotation == ROTATION_90);
         }
-        mPipSurfaceTransactionHelper.round(tx, mLeash, false /* applyCornerRadius */)
+        mPipSurfaceTransactionHelper.round(tx, mLeash, mIsPipInDesktopMode /* applyCornerRadius */)
                 .shadow(tx, mLeash, false /* applyShadowRadius */);
     }
 
