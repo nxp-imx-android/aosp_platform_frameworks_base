@@ -36,7 +36,6 @@ import com.android.systemui.clipboardoverlay.IntentCreator;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
-import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import dagger.Lazy;
 import dagger.Module;
@@ -86,9 +85,8 @@ public interface ClipboardOverlayModule {
      */
     @Provides
     @OverlayWindowContext
-    static WindowManager provideWindowManager(@OverlayWindowContext Context context,
-            WindowManagerProvider windowManagerProvider) {
-        return windowManagerProvider.getWindowManager(context);
+    static WindowManager provideWindowManager(@OverlayWindowContext Context context) {
+        return context.getSystemService(WindowManager.class);
     }
 
     @Provides

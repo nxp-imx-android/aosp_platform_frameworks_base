@@ -21,8 +21,6 @@ import android.hardware.display.DisplayManager;
 import android.view.Display;
 import android.view.WindowManager;
 
-import com.android.systemui.utils.windowmanager.WindowManagerProvider;
-
 import javax.inject.Inject;
 
 /**
@@ -31,17 +29,14 @@ import javax.inject.Inject;
 public class DisplayHelper {
     private final Context mContext;
     private final DisplayManager mDisplayManager;
-    private final WindowManagerProvider mWindowManagerProvider;
 
     /**
      * Default constructor.
      */
     @Inject
-    public DisplayHelper(Context context, DisplayManager displayManager,
-            WindowManagerProvider windowManagerProvider) {
+    public DisplayHelper(Context context, DisplayManager displayManager) {
         mContext = context;
         mDisplayManager = displayManager;
-        mWindowManagerProvider = windowManagerProvider;
     }
 
 
@@ -50,8 +45,9 @@ public class DisplayHelper {
      */
     public Rect getMaxBounds(int displayId, int windowContextType) {
         final Display display = mDisplayManager.getDisplay(displayId);
-        WindowManager windowManager = mWindowManagerProvider.getWindowManager(mContext
-                .createDisplayContext(display).createWindowContext(windowContextType, null));
+        WindowManager windowManager = mContext
+                .createDisplayContext(display).createWindowContext(windowContextType, null)
+                .getSystemService(WindowManager.class);
         return windowManager.getMaximumWindowMetrics().getBounds();
     }
 }
