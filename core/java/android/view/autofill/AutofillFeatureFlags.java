@@ -422,7 +422,7 @@ public class AutofillFeatureFlags {
      *
      * @hide
      */
-    public static final boolean DEFAULT_SESSION_FILL_EVENT_HISTORY_ENABLED = false;
+    public static final boolean DEFAULT_SESSION_FILL_EVENT_HISTORY_ENABLED = true;
 
     /**
      * @hide
