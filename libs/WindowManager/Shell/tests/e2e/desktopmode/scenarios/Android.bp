@@ -42,5 +42,6 @@ java_library {
         "wm-flicker-common-app-helpers",
         "launcher-helper-lib",
         "launcher-aosp-tapl",
+        "desktop-test-lib",
     ],
 }

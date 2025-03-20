@@ -28,6 +28,7 @@ import android.tools.device.apphelpers.IStandardAppHelper
 import android.tools.helpers.SYSTEMUI_PACKAGE
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.wm.WindowingMode
+import android.view.KeyEvent.KEYCODE_D
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_UP
 import android.view.KeyEvent.KEYCODE_EQUALS
@@ -534,6 +535,12 @@ open class DesktopModeAppHelper(private val innerHelper: IStandardAppHelper) :
                 ?.find { it.resourceName.endsWith(DESKTOP_MODE_BUTTON) }
 
         desktopModeButton?.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
+    fun moveToNextDisplayViaKeyboard(wmHelper: WindowManagerStateHelper) {
+        val keyEventHelper = KeyEventHelper(getInstrumentation())
+        keyEventHelper.press(KEYCODE_D, META_META_ON or META_CTRL_ON)
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
