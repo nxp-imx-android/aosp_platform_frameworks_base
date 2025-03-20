@@ -78,6 +78,9 @@ interface DesksOrganizer {
     /** Whether the desk is activate according to the given change at the end of a transition. */
     fun isDeskActiveAtEnd(change: TransitionInfo.Change, deskId: Int): Boolean
 
+    /** Allows for other classes to respond to task changes this organizer receives. */
+    fun setOnDesktopTaskInfoChangedListener(listener: (ActivityManager.RunningTaskInfo) -> Unit)
+
     /** A callback that is invoked when the desk container is created. */
     fun interface OnCreateCallback {
         /** Calls back when the [deskId] has been created. */
