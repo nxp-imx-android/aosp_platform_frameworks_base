@@ -67,8 +67,8 @@ constructor(
 
     private var removalListener: Job? = null
 
-    /** Called when the status bar on the given display is touched. */
-    fun onStatusBarTouched(event: MotionEvent, statusBarWidth: Int) {
+    /** Called when the status bar or launcher homescreen on the given display is touched. */
+    fun onStatusBarOrLauncherTouched(event: MotionEvent, statusBarWidth: Int) {
         ShadeWindowGoesAround.isUnexpectedlyInLegacyMode()
         updateShadeDisplayIfNeeded(event)
         updateExpansionIntent(event, statusBarWidth)

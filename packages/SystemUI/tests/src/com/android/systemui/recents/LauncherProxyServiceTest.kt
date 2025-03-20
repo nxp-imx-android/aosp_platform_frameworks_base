@@ -22,10 +22,11 @@ import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.PowerManager
 import android.os.UserManager
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.testing.TestableContext
 import android.testing.TestableLooper
 import android.view.Display
+import android.view.MotionEvent
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.app.AssistUtils
@@ -49,9 +50,11 @@ import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.navigationbar.views.NavigationBar
 import com.android.systemui.process.ProcessWrapper
 import com.android.systemui.recents.LauncherProxyService.ACTION_QUICKSTEP
+import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.settings.FakeDisplayTracker
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.shade.ShadeViewController
+import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy
 import com.android.systemui.shared.recents.ILauncherProxy
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_MASK
 import com.android.systemui.shared.system.QuickStepContract.WAKEFULNESS_ASLEEP
@@ -69,6 +72,7 @@ import com.android.wm.shell.sysui.ShellInterface
 import com.google.common.util.concurrent.MoreExecutors
 import java.util.Optional
 import java.util.concurrent.Executor
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -77,6 +81,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
 import org.mockito.Mockito.any
@@ -90,6 +95,9 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.never
 import org.mockito.kotlin.whenever
 
 @SmallTest
@@ -119,6 +127,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     @Mock private lateinit var shellInterface: ShellInterface
     @Mock private lateinit var navBarController: NavigationBarController
     @Mock private lateinit var shadeViewController: ShadeViewController
+    @Mock private lateinit var sceneInteractor: SceneInteractor
     @Mock private lateinit var screenPinningRequest: ScreenPinningRequest
     @Mock private lateinit var navModeController: NavigationModeController
     @Mock private lateinit var statusBarWinController: NotificationShadeWindowController
@@ -134,6 +143,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     private lateinit var unfoldTransitionProgressForwarder:
         Optional<UnfoldTransitionProgressForwarder>
     @Mock private lateinit var broadcastDispatcher: BroadcastDispatcher
+    @Mock private lateinit var statusBarShadeDisplayPolicy: StatusBarTouchShadeDisplayPolicy
     @Mock private lateinit var backAnimation: Optional<BackAnimation>
 
     @Before
@@ -142,22 +152,20 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
         val serviceComponent = ComponentName("test_package", "service_provider")
         context.addMockService(serviceComponent, launcherProxy)
-        context.addMockServiceResolver(
-            TestableContext.MockServiceResolver {
-                if (it.action == ACTION_QUICKSTEP) serviceComponent else null
-            }
-        )
+        context.addMockServiceResolver {
+            if (it.action == ACTION_QUICKSTEP) serviceComponent else null
+        }
         whenever(launcherProxy.queryLocalInterface(ArgumentMatchers.anyString()))
             .thenReturn(launcherProxy)
         whenever(launcherProxy.asBinder()).thenReturn(launcherProxy)
+        doNothing().whenever(sceneInteractor).onRemoteUserInputStarted(anyString())
+        doNothing().whenever(shadeViewController).startInputFocusTransfer()
 
         // packageManager.resolveServiceAsUser has to return non-null for
         // LauncherProxyService#isEnabled to become true.
         context.setMockPackageManager(packageManager)
         whenever(packageManager.resolveServiceAsUser(any(), anyInt(), anyInt()))
             .thenReturn(mock(ResolveInfo::class.java))
-
-        mSetFlagsRule.disableFlags(com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
 
         // return isSystemUser as true by default.
         `when`(processWrapper.isSystemUser).thenReturn(true)
@@ -172,6 +180,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun wakefulnessLifecycle_dispatchFinishedWakingUpSetsSysUIflagToAWAKE() {
         // WakefulnessLifecycle is initialized to AWAKE initially, and won't emit a noop.
         wakefulnessLifecycle.dispatchFinishedGoingToSleep()
@@ -187,6 +196,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun wakefulnessLifecycle_dispatchStartedWakingUpSetsSysUIflagToWAKING() {
         wakefulnessLifecycle.dispatchStartedWakingUp(PowerManager.WAKE_REASON_UNKNOWN)
 
@@ -198,6 +208,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun wakefulnessLifecycle_dispatchFinishedGoingToSleepSetsSysUIflagToASLEEP() {
         wakefulnessLifecycle.dispatchFinishedGoingToSleep()
 
@@ -209,6 +220,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun wakefulnessLifecycle_dispatchStartedGoingToSleepSetsSysUIflagToGOING_TO_SLEEP() {
         wakefulnessLifecycle.dispatchStartedGoingToSleep(
             PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON
@@ -222,6 +234,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun connectToLauncherService_primaryUserNoVisibleBgUsersSupported_expectBindService() {
         `when`(processWrapper.isSystemUser).thenReturn(true)
         `when`(userManager.isVisibleBackgroundUsersSupported()).thenReturn(false)
@@ -232,6 +245,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun connectToLauncherService_nonPrimaryUserNoVisibleBgUsersSupported_expectNoBindService() {
         `when`(processWrapper.isSystemUser).thenReturn(false)
         `when`(userManager.isVisibleBackgroundUsersSupported()).thenReturn(false)
@@ -242,6 +256,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun connectToLauncherService_nonPrimaryBgUserVisibleBgUsersSupported_expectBindService() {
         `when`(processWrapper.isSystemUser).thenReturn(false)
         `when`(userManager.isVisibleBackgroundUsersSupported()).thenReturn(true)
@@ -253,6 +268,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun connectToLauncherService_nonPrimaryFgUserVisibleBgUsersSupported_expectNoBindService() {
         `when`(processWrapper.isSystemUser).thenReturn(false)
         `when`(userManager.isVisibleBackgroundUsersSupported()).thenReturn(true)
@@ -264,6 +280,7 @@ class LauncherProxyServiceTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun notifySysUiStateFlagsForAllDisplays_triggersUpdateInAllDisplays() =
         kosmos.testScope.runTest {
             kosmos.displayRepository.apply {
@@ -285,15 +302,14 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @DisableFlags(Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
     fun updateSystemUiStateFlags_updatesAllNavBars() =
         kosmos.testScope.runTest {
             kosmos.displayRepository.apply {
                 addDisplay(0)
                 addDisplay(1)
             }
-            kosmos.fakeSysUIStatePerDisplayRepository.apply {
-                add(1, sysUiStateFactory.create(1))
-            }
+            kosmos.fakeSysUIStatePerDisplayRepository.apply { add(1, sysUiStateFactory.create(1)) }
             val navBar0 = mock<NavigationBar>()
             val navBar1 = mock<NavigationBar>()
             whenever(navBarController.getNavigationBar(eq(0))).thenReturn(navBar0)
@@ -303,6 +319,77 @@ class LauncherProxyServiceTest : SysuiTestCase() {
 
             verify(navBar0).updateSystemUiStateFlags()
             verify(navBar1).updateSystemUiStateFlags()
+        }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_SHADE_WINDOW_GOES_AROUND,
+        Flags.FLAG_SCENE_CONTAINER,
+        Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR,
+    )
+    fun onStatusBarTouchEvent_withSceneFlag_callsOnLauncherDrag() =
+        kosmos.testScope.runTest {
+            val shadeDisplayId = 1
+            whenever(statusBarShadeDisplayPolicy.displayId)
+                .thenReturn(MutableStateFlow(shadeDisplayId))
+
+            val event =
+                MotionEvent.obtain(500, 500, MotionEvent.ACTION_MOVE, 500f, 500f, 0).apply {
+                    displayId = 0
+                }
+
+            subject.mSysUiProxy.onStatusBarTouchEvent(event)
+            verify(statusBarShadeDisplayPolicy)
+                .onStatusBarOrLauncherTouched(
+                    argThat<MotionEvent> { displayId == event.displayId },
+                    anyInt(),
+                )
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun onStatusBarTouchEvent_withoutSceneFlag_onDifferentDisplayTouch_ignoresInput() =
+        kosmos.testScope.runTest {
+            val shadeDisplayId = 1
+            whenever(statusBarShadeDisplayPolicy.displayId)
+                .thenReturn(MutableStateFlow(shadeDisplayId))
+
+            val event =
+                MotionEvent.obtain(500, 500, MotionEvent.ACTION_DOWN, 500f, 500f, 0).apply {
+                    displayId = 0
+                }
+
+            subject.mSysUiProxy.onStatusBarTouchEvent(event)
+            verify(statusBarShadeDisplayPolicy, never())
+                .onStatusBarOrLauncherTouched(
+                    argThat<MotionEvent> { displayId == event.displayId },
+                    anyInt(),
+                )
+            verify(shadeViewController, never()).startExpandLatencyTracking()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @DisableFlags(Flags.FLAG_SCENE_CONTAINER, Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR)
+    fun onStatusBarTouchEvent_withoutSceneFlag_onSameDisplayTouch_handlesInput() =
+        kosmos.testScope.runTest {
+            val shadeDisplayId = 0
+            whenever(statusBarShadeDisplayPolicy.displayId)
+                .thenReturn(MutableStateFlow(shadeDisplayId))
+
+            val event =
+                MotionEvent.obtain(500, 500, MotionEvent.ACTION_DOWN, 500f, 500f, 0).apply {
+                    displayId = shadeDisplayId
+                }
+
+            subject.mSysUiProxy.onStatusBarTouchEvent(event)
+            verify(statusBarShadeDisplayPolicy, never())
+                .onStatusBarOrLauncherTouched(
+                    argThat<MotionEvent> { displayId == shadeDisplayId },
+                    anyInt(),
+                )
+            verify(shadeViewController).startExpandLatencyTracking()
         }
 
     private fun createLauncherProxyService(ctx: Context): LauncherProxyService {
@@ -317,8 +404,9 @@ class LauncherProxyServiceTest : SysuiTestCase() {
             navModeController,
             statusBarWinController,
             kosmos.fakeSysUIStatePerDisplayRepository,
+            { sceneInteractor },
             mock(),
-            mock(),
+            statusBarShadeDisplayPolicy,
             userTracker,
             userManager,
             wakefulnessLifecycle,

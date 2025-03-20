@@ -63,10 +63,12 @@ import android.os.Looper;
 import android.os.PatternMatcher;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.util.Log;
 import android.view.Display;
+import android.view.DisplayInfo;
 import android.view.InputDevice;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
@@ -110,6 +112,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.settings.DisplayTracker;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeViewController;
+import com.android.systemui.shade.display.StatusBarTouchShadeDisplayPolicy;
 import com.android.systemui.shade.domain.interactor.ShadeInteractor;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
 import com.android.systemui.shared.recents.ILauncherProxy;
@@ -126,6 +129,8 @@ import com.android.wm.shell.back.BackAnimation;
 import com.android.wm.shell.shared.desktopmode.DesktopModeStatus;
 import com.android.wm.shell.sysui.ShellInterface;
 
+import dagger.Lazy;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -136,8 +141,6 @@ import java.util.function.Supplier;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
-import dagger.Lazy;
 
 /**
  * Class to send information from SysUI to Launcher with a binder.
@@ -168,6 +171,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
     private final NotificationShadeWindowController mStatusBarWinController;
     private final Provider<SceneInteractor> mSceneInteractor;
     private final Provider<ShadeInteractor> mShadeInteractor;
+    private final StatusBarTouchShadeDisplayPolicy mShadeDisplayPolicy;
 
     private final Runnable mConnectionRunnable = () ->
             internalConnectToCurrentUser("runnable: startConnectionToCurrentUser");
@@ -224,6 +228,12 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         // TODO: change the method signature to use (boolean inputFocusTransferStarted)
         @Override
         public void onStatusBarTouchEvent(MotionEvent event) {
+            moveShadeWindowIfNeeded(event);
+            if (shouldIgnoreEvent(event)) {
+                Log.d(TAG_OPS, "Ignoring launcher swipe event for legacy shade due to touch event"
+                        + " on display without notification shade");
+                return;
+            }
             verifyCallerAndClearCallingIdentity("onStatusBarTouchEvent", () -> {
                 if (SceneContainerFlag.isEnabled()) {
                     //TODO(b/329863123) implement latency tracking for shade scene
@@ -267,6 +277,31 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
                     event.recycle();
                 });
             });
+        }
+
+        @VisibleForTesting
+        public void moveShadeWindowIfNeeded(MotionEvent event) {
+            if (ShadeWindowGoesAround.isEnabled() && SceneContainerFlag.isEnabled()) {
+                Trace.beginSection("LauncherProxyService#moveShadeWindowIfNeeded");
+                // TODO: b/407496148 - Refactor to use DisplayMetricsRepository instead
+                final DisplayInfo displayInfo = new DisplayInfo();
+                mDisplayTracker.getDisplay(event.getDisplayId()).getDisplayInfo(displayInfo);
+                int displayWidth = displayInfo.logicalWidth;
+                mShadeDisplayPolicy.onStatusBarOrLauncherTouched(event, displayWidth);
+                Trace.endSection();
+            }
+        }
+
+        @VisibleForTesting
+        public boolean shouldIgnoreEvent(MotionEvent event) {
+            if (ShadeWindowGoesAround.isEnabled() && !SceneContainerFlag.isEnabled()) {
+                // For legacy shade case, don't attempt to handle touch events on display that
+                // doesn't have the shade. They're handled with SceneContainerFlag enabled.
+                boolean touchingDisplayWithoutShade =
+                        event.getDisplayId() != mShadeDisplayPolicy.getDisplayId().getValue();
+                return touchingDisplayWithoutShade;
+            }
+            return false;
         }
 
         @Override
@@ -694,6 +729,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
             PerDisplayRepository<SysUiState> perDisplaySysUiStateRepository,
             Provider<SceneInteractor> sceneInteractor,
             Provider<ShadeInteractor> shadeInteractor,
+            StatusBarTouchShadeDisplayPolicy shadeDisplayPolicy,
             UserTracker userTracker,
             UserManager userManager,
             WakefulnessLifecycle wakefulnessLifecycle,
@@ -733,6 +769,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         mStatusBarWinController = statusBarWinController;
         mSceneInteractor = sceneInteractor;
         mShadeInteractor = shadeInteractor;
+        mShadeDisplayPolicy = shadeDisplayPolicy;
         mUserTracker = userTracker;
         mConnectionBackoffAttempts = 0;
         mRecentsComponentName = ComponentName.unflattenFromString(context.getString(
