@@ -505,7 +505,9 @@ public class BatteryHistoryDirectory implements BatteryStatsHistory.BatteryHisto
                 for (int i = 0; i < mHistoryFiles.size(); i++) {
                     size += (int) mHistoryFiles.get(i).atomicFile.getBaseFile().length();
                 }
-                while (size > mMaxHistorySize) {
+                // Trim until the directory size is within the limit or there is just one most
+                // recent file left in the directory
+                while (size > mMaxHistorySize && mHistoryFiles.size() > 1) {
                     BatteryHistoryFile oldest = mHistoryFiles.get(0);
                     int length = (int) oldest.atomicFile.getBaseFile().length();
                     oldest.atomicFile.delete();
