@@ -79,6 +79,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.systemui.util.settings.SecureSettings;
+import com.android.systemui.utils.windowmanager.WindowManagerProvider;
 
 import javax.inject.Inject;
 
@@ -105,6 +106,7 @@ public class ImmersiveModeConfirmation implements CoreStartable, CommandQueue.Ca
     private long mShowDelayMs = 0L;
     private final IBinder mWindowToken = new Binder();
     private final CommandQueue mCommandQueue;
+    private final WindowManagerProvider mWindowManagerProvider;
 
     private ClingWindowView mClingWindow;
     /** The wrapper on the last {@link WindowManager} used to add the confirmation window. */
@@ -131,7 +133,8 @@ public class ImmersiveModeConfirmation implements CoreStartable, CommandQueue.Ca
 
     @Inject
     public ImmersiveModeConfirmation(Context context, CommandQueue commandQueue,
-            SecureSettings secureSettings, @Background Handler backgroundHandler) {
+            SecureSettings secureSettings, @Background Handler backgroundHandler,
+            WindowManagerProvider windowManagerProvider) {
         mSysUiContext = context;
         final Display display = mSysUiContext.getDisplay();
         mDisplayContext = display.getDisplayId() == DEFAULT_DISPLAY
@@ -139,6 +142,7 @@ public class ImmersiveModeConfirmation implements CoreStartable, CommandQueue.Ca
         mCommandQueue = commandQueue;
         mSecureSettings = secureSettings;
         mBackgroundHandler = backgroundHandler;
+        mWindowManagerProvider = windowManagerProvider;
     }
 
     boolean loadSetting(int currentUserId) {
@@ -523,7 +527,7 @@ public class ImmersiveModeConfirmation implements CoreStartable, CommandQueue.Ca
         mWindowContextRootDisplayAreaId = rootDisplayAreaId;
         mWindowContext = mDisplayContext.createWindowContext(
                 IMMERSIVE_MODE_CONFIRMATION_WINDOW_TYPE, options);
-        mWindowManager = mWindowContext.getSystemService(WindowManager.class);
+        mWindowManager = mWindowManagerProvider.getWindowManager(mWindowContext);
         return mWindowManager;
     }
 
