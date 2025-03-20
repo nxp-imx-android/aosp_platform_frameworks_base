@@ -95,6 +95,7 @@ import android.os.UserHandle;
 import android.service.voice.VoiceInteractionManagerInternal;
 import android.util.Slog;
 import android.view.RemoteAnimationDefinition;
+import android.window.DesktopModeFlags;
 import android.window.SizeConfigurationBuckets;
 import android.window.TransitionInfo;
 
@@ -1281,7 +1282,7 @@ class ActivityClientController extends IActivityClientController.Stub {
         }
     }
 
-    private static void executeMultiWindowFullscreenRequest(int fullscreenRequest, Task requester) {
+    private void executeMultiWindowFullscreenRequest(int fullscreenRequest, Task requester) {
         final int targetWindowingMode;
         if (fullscreenRequest == FULLSCREEN_MODE_REQUEST_ENTER) {
             final int restoreWindowingMode = requester.getRequestedOverrideWindowingMode();
@@ -1294,7 +1295,13 @@ class ActivityClientController extends IActivityClientController.Stub {
                     requester.getParent().mRemoteToken.toWindowContainerToken();
         } else {
             targetWindowingMode = requester.mMultiWindowRestoreWindowingMode;
-            requester.restoreWindowingMode();
+            if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()
+                    && targetWindowingMode == WINDOWING_MODE_PINNED) {
+                final ActivityRecord r = requester.topRunningActivity();
+                enterPictureInPictureMode(r.token, r.pictureInPictureArgs);
+            } else {
+                requester.restoreWindowingMode();
+            }
         }
         if (targetWindowingMode == WINDOWING_MODE_FULLSCREEN) {
             requester.setBounds(null);
