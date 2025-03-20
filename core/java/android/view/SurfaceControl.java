@@ -2592,7 +2592,7 @@ public final class SurfaceControl implements Parcelable {
         int[] dataspaces = nativeGetCompositionDataspaces();
         ColorSpace srgb = ColorSpace.get(ColorSpace.Named.SRGB);
         ColorSpace[] colorSpaces = { srgb, srgb };
-        if (dataspaces.length == 2) {
+        if (dataspaces != null && dataspaces.length == 2) {
             for (int i = 0; i < 2; ++i) {
                 ColorSpace cs = ColorSpace.getFromDataSpace(dataspaces[i]);
                 if (cs != null) {
