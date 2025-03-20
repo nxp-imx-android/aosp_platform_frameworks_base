@@ -245,7 +245,7 @@ constructor(
     val configurationBasedDimensions: Flow<ConfigurationBasedDimensions> =
         if (SceneContainerFlag.isEnabled) {
                 combine(
-                    shadeInteractor.isShadeLayoutWide,
+                    shadeModeInteractor.isShadeLayoutWide,
                     shadeModeInteractor.shadeMode,
                     configurationInteractor.onAnyConfigurationChange,
                 ) { isShadeLayoutWide, shadeMode, _ ->

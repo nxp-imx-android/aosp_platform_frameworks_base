@@ -199,8 +199,7 @@ public class QuickSettingsControllerImplBaseTest extends SysuiTestCase {
                         mTestScope.getBackgroundScope(),
                         mKeyguardRepository,
                         mShadeRepository
-                ),
-                mKosmos.getShadeModeInteractor());
+                ));
 
         when(mResources.getDimensionPixelSize(
                 R.dimen.lockscreen_shade_qs_transition_distance)).thenReturn(DEFAULT_HEIGHT);

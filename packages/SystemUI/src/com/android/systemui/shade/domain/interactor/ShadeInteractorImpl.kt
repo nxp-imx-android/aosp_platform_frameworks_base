@@ -55,11 +55,7 @@ constructor(
     userSetupRepository: UserSetupRepository,
     userSwitcherInteractor: UserSwitcherInteractor,
     private val baseShadeInteractor: BaseShadeInteractor,
-    shadeModeInteractor: ShadeModeInteractor,
-) :
-    ShadeInteractor,
-    BaseShadeInteractor by baseShadeInteractor,
-    ShadeModeInteractor by shadeModeInteractor {
+) : ShadeInteractor, BaseShadeInteractor by baseShadeInteractor {
     override val isShadeEnabled: StateFlow<Boolean> =
         disableFlagsInteractor.disableFlags
             .map { it.isShadeEnabled() }
@@ -127,8 +123,4 @@ constructor(
                 disableFlags.isQuickSettingsEnabled() &&
                 !isDozing
         }
-
-    companion object {
-        private const val TAG = "ShadeInteractor"
-    }
 }
