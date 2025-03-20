@@ -40,6 +40,7 @@ import com.android.wm.shell.windowdecor.DragResizeInputListener.TaskResizeInputE
 import com.google.common.truth.Truth.assertThat
 import java.util.function.Consumer
 import java.util.function.Supplier
+import kotlin.test.assertNotNull
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -69,9 +70,12 @@ class DragResizeInputListenerTest : ShellTestCase() {
     private val sinkInputChannel = mock<InputChannel>()
     private val decorationSurface = SurfaceControl.Builder().setName("decoration surface").build()
     private val createdSurfaces = ArrayList<SurfaceControl>()
+    private val removedSurfaces = ArrayList<SurfaceControl>()
 
     @After
     fun tearDown() {
+        createdSurfaces.clear()
+        removedSurfaces.clear()
         decorationSurface.release()
     }
 
@@ -217,6 +221,19 @@ class DragResizeInputListenerTest : ShellTestCase() {
         assertThat(createdSurfaces[1].isValid).isFalse()
     }
 
+    @Test
+    fun testClose_releasesDecorationSurfaceWithoutRemoval() {
+        val inputListener = create()
+        testBgExecutor.flushAll()
+        inputListener.close()
+        testMainExecutor.flushAll()
+        testBgExecutor.flushAll()
+
+        val decorationSurface = assertNotNull(createdSurfaces[0])
+        assertThat(decorationSurface.isValid).isFalse()
+        assertThat(removedSurfaces.contains(decorationSurface)).isFalse()
+    }
+
     private fun verifyNoInputChannelGrantRequests() {
         verify(mockWindowSession, never())
             .grantInputChannel(
@@ -258,7 +275,10 @@ class DragResizeInputListenerTest : ShellTestCase() {
             {
                 object : StubTransaction() {
                     override fun remove(sc: SurfaceControl): SurfaceControl.Transaction {
-                        return super.remove(sc).also { sc.release() }
+                        return super.remove(sc).also {
+                            sc.release()
+                            removedSurfaces.add(sc)
+                        }
                     }
                 }
             },
