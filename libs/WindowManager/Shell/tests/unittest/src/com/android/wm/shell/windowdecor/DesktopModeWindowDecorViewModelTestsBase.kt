@@ -362,14 +362,12 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected fun onTaskChanging(
         task: RunningTaskInfo,
         leash: SurfaceControl = SurfaceControl(),
-        changeMode: Int
     ) {
         desktopModeWindowDecorViewModel.onTaskChanging(
             task,
             leash,
             StubTransaction(),
             StubTransaction(),
-            changeMode
         )
     }
 

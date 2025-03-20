@@ -27,7 +27,6 @@ import static android.view.MotionEvent.ACTION_HOVER_EXIT;
 import static android.view.MotionEvent.ACTION_MOVE;
 import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowInsets.Type.statusBars;
-import static android.view.WindowManager.TRANSIT_TO_BACK;
 
 import static com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_MODE_APP_HANDLE_MENU;
 import static com.android.window.flags.Flags.enableDisplayFocusInShellTransitions;
@@ -80,7 +79,6 @@ import android.view.ViewConfiguration;
 import android.view.ViewRootImpl;
 import android.window.DesktopModeFlags;
 import android.window.TaskSnapshot;
-import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -602,8 +600,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
-            SurfaceControl.Transaction finishT,
-            @TransitionInfo.TransitionMode int changeMode) {
+            SurfaceControl.Transaction finishT) {
         final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(taskInfo.taskId);
         if (!shouldShowWindowDecor(taskInfo)) {
             if (decoration != null) {
@@ -617,8 +614,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         } else {
             decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                     false /* shouldSetTaskPositionAndCrop */,
-                    mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion,
-                    /*isMovingToBack= */ changeMode == TRANSIT_TO_BACK);
+                    mFocusTransitionObserver.hasGlobalFocus(taskInfo), mExclusionRegion);
         }
     }
 
@@ -633,7 +629,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         decoration.relayout(taskInfo, startT, finishT, false /* applyStartTransactionOnDraw */,
                 false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
-                mExclusionRegion, /* isMovingToBack= */ false);
+                mExclusionRegion);
     }
 
     @Override
@@ -1892,7 +1888,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         windowDecoration.relayout(taskInfo, startT, finishT,
                 false /* applyStartTransactionOnDraw */, false /* shouldSetTaskPositionAndCrop */,
                 mFocusTransitionObserver.hasGlobalFocus(taskInfo),
-                mExclusionRegion, /* isMovingToBack= */ false);
+                mExclusionRegion);
         if (!DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue()) {
             incrementEventReceiverTasks(taskInfo.displayId);
         }

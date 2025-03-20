@@ -51,7 +51,6 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewRootImpl
 import android.view.WindowInsets.Type.statusBars
-import android.view.WindowManager.TRANSIT_CHANGE
 import android.window.WindowContainerTransaction
 import android.window.WindowContainerTransaction.HierarchyOp
 import androidx.test.filters.SmallTest
@@ -135,7 +134,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
         task.setWindowingMode(WINDOWING_MODE_UNDEFINED)
         task.setActivityType(ACTIVITY_TYPE_UNDEFINED)
-        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
+        onTaskChanging(task, taskSurface)
 
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
         verify(decoration).close()
@@ -150,12 +149,12 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val taskSurface = SurfaceControl()
         setUpMockDecorationForTask(task)
 
-        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
+        onTaskChanging(task, taskSurface)
         assertFalse(windowDecorByTaskIdSpy.contains(task.taskId))
 
         task.setWindowingMode(WINDOWING_MODE_FREEFORM)
         task.setActivityType(ACTIVITY_TYPE_STANDARD)
-        onTaskChanging(task, taskSurface, TRANSIT_CHANGE)
+        onTaskChanging(task, taskSurface)
         assertTrue(windowDecorByTaskIdSpy.contains(task.taskId))
     }
 
