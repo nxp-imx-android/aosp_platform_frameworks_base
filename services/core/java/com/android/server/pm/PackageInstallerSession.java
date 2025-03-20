@@ -3610,10 +3610,8 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
         // Needs to happen before the first v4 signature verification, which happens in
         // getAddedApkLitesLocked.
-        if (android.security.Flags.extendVbChainToUpdatedApk()) {
-            if (!isIncrementalInstallation()) {
-                enableFsVerityToAddedApksWithIdsig();
-            }
+        if (!isIncrementalInstallation()) {
+            enableFsVerityToAddedApksWithIdsig();
         }
 
         final List<ApkLite> addedFiles = getAddedApkLitesLocked();
@@ -4124,8 +4122,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
         stageFileLocked(origFile, targetFile);
 
         // Stage APK's v4 signature if present, and fs-verity is supported.
-        if (android.security.Flags.extendVbChainToUpdatedApk()
-                && VerityUtils.isFsVeritySupported()) {
+        if (VerityUtils.isFsVeritySupported()) {
             maybeStageV4SignatureLocked(origFile, targetFile);
         }
         // Stage ART managed install files (e.g., dex metadata (.dm)) and corresponding fs-verity
@@ -4152,9 +4149,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private void inheritFileLocked(File origFile, List<String> artManagedFilePaths) {
         mResolvedInheritedFiles.add(origFile);
 
-        if (android.security.Flags.extendVbChainToUpdatedApk()) {
-            maybeInheritV4SignatureLocked(origFile);
-        }
+        maybeInheritV4SignatureLocked(origFile);
 
         // Inherit ART managed install files (e.g., dex metadata (.dm)) if present.
         if (com.android.art.flags.Flags.artServiceV3()) {
