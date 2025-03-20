@@ -101,7 +101,6 @@ import com.android.wm.shell.desktopmode.DesktopModeKeyGestureHandler;
 import com.android.wm.shell.desktopmode.DesktopModeLoggerTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopModeMoveToDisplayTransitionHandler;
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger;
-import com.android.wm.shell.desktopmode.DesktopPipTransitionObserver;
 import com.android.wm.shell.desktopmode.DesktopTaskChangeListener;
 import com.android.wm.shell.desktopmode.DesktopTasksController;
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter;
@@ -793,7 +792,6 @@ public abstract class WMShellModule {
             OverviewToDesktopTransitionObserver overviewToDesktopTransitionObserver,
             DesksOrganizer desksOrganizer,
             Optional<DesksTransitionObserver> desksTransitionObserver,
-            Optional<DesktopPipTransitionObserver> desktopPipTransitionObserver,
             UserProfileContexts userProfileContexts,
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DragToDisplayTransitionHandler dragToDisplayTransitionHandler,
@@ -837,7 +835,6 @@ public abstract class WMShellModule {
                 overviewToDesktopTransitionObserver,
                 desksOrganizer,
                 desksTransitionObserver.get(),
-                desktopPipTransitionObserver,
                 userProfileContexts,
                 desktopModeCompatPolicy,
                 dragToDisplayTransitionHandler,
@@ -1250,7 +1247,6 @@ public abstract class WMShellModule {
             Transitions transitions,
             ShellTaskOrganizer shellTaskOrganizer,
             Optional<DesktopMixedTransitionHandler> desktopMixedTransitionHandler,
-            Optional<DesktopPipTransitionObserver> desktopPipTransitionObserver,
             Optional<BackAnimationController> backAnimationController,
             DesktopWallpaperActivityTokenProvider desktopWallpaperActivityTokenProvider,
             ShellInit shellInit) {
@@ -1263,7 +1259,6 @@ public abstract class WMShellModule {
                                         transitions,
                                         shellTaskOrganizer,
                                         desktopMixedTransitionHandler.get(),
-                                        desktopPipTransitionObserver,
                                         backAnimationController.get(),
                                         desktopWallpaperActivityTokenProvider,
                                         shellInit)));
@@ -1279,19 +1274,6 @@ public abstract class WMShellModule {
         if (DesktopModeStatus.canEnterDesktopModeOrShowAppHandle(context)) {
             return Optional.of(
                     new DesksTransitionObserver(desktopUserRepositories, desksOrganizer));
-        }
-        return Optional.empty();
-    }
-
-    @WMSingleton
-    @Provides
-    static Optional<DesktopPipTransitionObserver> provideDesktopPipTransitionObserver(
-            Context context
-    ) {
-        if (DesktopModeStatus.canEnterDesktopMode(context)
-                && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()) {
-            return Optional.of(
-                    new DesktopPipTransitionObserver());
         }
         return Optional.empty();
     }

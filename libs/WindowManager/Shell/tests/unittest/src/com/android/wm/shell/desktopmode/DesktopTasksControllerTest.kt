@@ -265,7 +265,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @Mock private lateinit var desksOrganizer: DesksOrganizer
     @Mock private lateinit var userProfileContexts: UserProfileContexts
     @Mock private lateinit var desksTransitionsObserver: DesksTransitionObserver
-    @Mock private lateinit var desktopPipTransitionObserver: DesktopPipTransitionObserver
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var mockDisplayContext: Context
     @Mock private lateinit var dragToDisplayTransitionHandler: DragToDisplayTransitionHandler
@@ -460,7 +459,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             overviewToDesktopTransitionObserver,
             desksOrganizer,
             desksTransitionsObserver,
-            Optional.of(desktopPipTransitionObserver),
             userProfileContexts,
             desktopModeCompatPolicy,
             dragToDisplayTransitionHandler,
@@ -3540,15 +3538,20 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             .addPendingTransition(DeskTransition.DeactivateDesk(token = transition, deskId = 0))
     }
 
-    @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun onPipTaskMinimize_autoEnterEnabled_startPipTransition() {
-        val task = setUpPipTask(autoEnterEnabled = true)
+    private fun minimizePipTask(task: RunningTaskInfo) {
         val handler = mock(TransitionHandler::class.java)
         whenever(transitions.dispatchRequest(any(), any(), anyOrNull()))
             .thenReturn(android.util.Pair(handler, WindowContainerTransaction()))
 
         controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
+    fun onPipTaskMinimize_autoEnterEnabled_startPipTransition() {
+        val task = setUpPipTask(autoEnterEnabled = true)
+
+        minimizePipTask(task)
 
         verify(freeformTaskTransitionStarter).startPipTransition(any())
         verify(freeformTaskTransitionStarter, never())
@@ -3568,7 +3571,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
             .thenReturn(Binder())
 
-        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+        minimizePipTask(task)
 
         verify(freeformTaskTransitionStarter)
             .startMinimizedModeTransition(any(), eq(task.taskId), anyBoolean())
@@ -3579,33 +3582,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
     fun onPipTaskMinimize_autoEnterEnabled_sendsTaskbarRoundingUpdate() {
         val task = setUpPipTask(autoEnterEnabled = true)
-        val handler = mock(TransitionHandler::class.java)
-        whenever(transitions.dispatchRequest(any(), any(), anyOrNull()))
-            .thenReturn(android.util.Pair(handler, WindowContainerTransaction()))
 
-        controller.minimizeTask(task, MinimizeReason.MINIMIZE_BUTTON)
+        minimizePipTask(task)
 
         verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
-    }
-
-    @Test
-    @EnableFlags(
-        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
-        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
-    )
-    fun onDesktopTaskEnteredPip_pipIsLastTask_removesWallpaper() {
-        val task = setUpPipTask(autoEnterEnabled = true)
-
-        controller.onDesktopTaskEnteredPip(
-            taskId = task.taskId,
-            deskId = DEFAULT_DISPLAY,
-            displayId = task.displayId,
-            taskIsLastVisibleTaskBeforePip = true,
-        )
-
-        // Wallpaper is moved to the back
-        val wct = getLatestTransition()
-        wct.assertReorder(wallpaperToken, /* toTop= */ false)
     }
 
     @Test
@@ -3613,18 +3593,13 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
         Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun onDesktopTaskEnteredPip_pipIsLastTask_deactivatesDesk() {
+    fun onPipTaskMinimize_isLastTask_deactivatesDesk() {
         val deskId = DEFAULT_DISPLAY
         val task = setUpPipTask(autoEnterEnabled = true, deskId = deskId)
         val transition = Binder()
-        whenever(transitions.startTransition(any(), any(), anyOrNull())).thenReturn(transition)
+        whenever(freeformTaskTransitionStarter.startPipTransition(any())).thenReturn(transition)
 
-        controller.onDesktopTaskEnteredPip(
-            taskId = task.taskId,
-            deskId = deskId,
-            displayId = task.displayId,
-            taskIsLastVisibleTaskBeforePip = true,
-        )
+        minimizePipTask(task)
 
         verify(desksOrganizer).deactivateDesk(any(), eq(deskId))
         verify(desksTransitionsObserver)
@@ -3632,44 +3607,31 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun onDesktopTaskEnteredPip_pipIsLastTask_launchesHome() {
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP,
+        Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
+    )
+    fun onPipTaskMinimize_isLastTask_removesWallpaper() {
         val task = setUpPipTask(autoEnterEnabled = true)
 
-        controller.onDesktopTaskEnteredPip(
-            taskId = task.taskId,
-            deskId = DEFAULT_DISPLAY,
-            displayId = task.displayId,
-            taskIsLastVisibleTaskBeforePip = true,
-        )
+        minimizePipTask(task)
 
-        val wct = getLatestTransition()
-        wct.assertPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
+        // Wallpaper is moved to the back
+        arg.lastValue.assertReorder(wallpaperToken, /* toTop= */ false)
     }
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_PIP)
-    fun onDesktopTaskEnteredPip_pipIsNotLastTask_doesntExitDesktopMode() {
+    fun onPipTaskMinimize_isLastTask_launchesHome() {
         val task = setUpPipTask(autoEnterEnabled = true)
-        val deskId = DEFAULT_DISPLAY
-        setUpFreeformTask(deskId = deskId) // launch another freeform task
-        val transition = Binder()
-        whenever(transitions.startTransition(any(), any(), anyOrNull())).thenReturn(transition)
 
-        controller.onDesktopTaskEnteredPip(
-            taskId = task.taskId,
-            deskId = deskId,
-            displayId = task.displayId,
-            taskIsLastVisibleTaskBeforePip = false,
-        )
+        minimizePipTask(task)
 
-        // No transition to exit Desktop mode is started
-        verifyWCTNotExecuted()
-        verify(desktopModeEnterExitTransitionListener, never())
-            .onExitDesktopModeTransitionStarted(FULLSCREEN_ANIMATION_DURATION)
-        verify(desksOrganizer, never()).deactivateDesk(any(), eq(deskId))
-        verify(desksTransitionsObserver, never())
-            .addPendingTransition(DeskTransition.DeactivateDesk(transition, deskId))
+        val arg = argumentCaptor<WindowContainerTransaction>()
+        verify(freeformTaskTransitionStarter).startPipTransition(arg.capture())
+        arg.lastValue.assertPendingIntent(launchHomeIntent(DEFAULT_DISPLAY))
     }
 
     @Test
