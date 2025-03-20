@@ -1483,6 +1483,44 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         verify(mLocalMediaManager, atLeastOnce()).connectDevice(outputMediaDevice);
     }
 
+    @Test
+    public void connectDeviceButton_remoteDevice_noButton() {
+        when(mMediaDevice1.getFeatures()).thenReturn(
+                ImmutableList.of(MediaRoute2Info.FEATURE_REMOTE_PLAYBACK));
+        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
+        mMediaSwitchingController.start(mCb);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+
+        assertThat(getNumberOfConnectDeviceButtons(resultList)).isEqualTo(0);
+    }
+
+    @Test
+    public void connectDeviceButton_localDevice_hasButton() {
+        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
+        mMediaSwitchingController.start(mCb);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList();
+
+        assertThat(getNumberOfConnectDeviceButtons(resultList)).isEqualTo(1);
+        assertThat(resultList.get(resultList.size() - 1).getMediaItemType()).isEqualTo(
+                MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE);
+    }
+
+    @Test
+    public void connectDeviceButton_localDeviceButtonDisabledByParam_noButton() {
+        when(mLocalMediaManager.getCurrentConnectedDevice()).thenReturn(mMediaDevice1);
+        mMediaSwitchingController.start(mCb);
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> resultList = mMediaSwitchingController.getMediaItemList(
+                false /* addConnectDeviceButton */);
+
+        assertThat(getNumberOfConnectDeviceButtons(resultList)).isEqualTo(0);
+    }
+
     @DisableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
     public void connectDeviceButton_presentAtAllTimesForNonGroupOutputs() {
@@ -1495,7 +1533,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .getSelectedMediaDevice();
 
         // Verify that there is initially one "Connect a device" button present.
-        assertThat(getNumberOfConnectDeviceButtons()).isEqualTo(1);
+        assertThat(getNumberOfConnectDeviceButtons(
+                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
 
         // Change the selected device, and verify that there is still one "Connect a device" button
         // present.
@@ -1504,7 +1543,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .getSelectedMediaDevice();
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        assertThat(getNumberOfConnectDeviceButtons()).isEqualTo(1);
+        assertThat(getNumberOfConnectDeviceButtons(
+                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
@@ -1523,7 +1563,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         doReturn(selectedInputMediaDevice).when(mInputRouteManager).getSelectedInputDevice();
 
         // Verify that there is initially one "Connect a device" button present.
-        assertThat(getNumberOfConnectDeviceButtons()).isEqualTo(1);
+        assertThat(getNumberOfConnectDeviceButtons(
+                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
 
         // Change the selected device, and verify that there is still one "Connect a device" button
         // present.
@@ -1532,7 +1573,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                 .getSelectedMediaDevice();
         mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
 
-        assertThat(getNumberOfConnectDeviceButtons()).isEqualTo(1);
+        assertThat(getNumberOfConnectDeviceButtons(
+                mMediaSwitchingController.getMediaItemList())).isEqualTo(1);
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
@@ -1633,7 +1675,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mLocalMediaManager.isPreferenceRouteListingExist()).thenReturn(false);
         mMediaSwitchingController.start(mCb);
         reset(mCb);
-        mMediaSwitchingController.getMediaItemList().clear();
+        mMediaSwitchingController.clearMediaItemList();
     }
 
     @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
@@ -1691,9 +1733,9 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(items.get(0).isFirstDeviceInGroup()).isTrue();
     }
 
-    private int getNumberOfConnectDeviceButtons() {
+    private int getNumberOfConnectDeviceButtons(List<MediaItem> itemList) {
         int numberOfConnectDeviceButtons = 0;
-        for (MediaItem item : mMediaSwitchingController.getMediaItemList()) {
+        for (MediaItem item : itemList) {
             if (item.getMediaItemType() == MediaItem.MediaItemType.TYPE_PAIR_NEW_DEVICE) {
                 numberOfConnectDeviceButtons++;
             }
