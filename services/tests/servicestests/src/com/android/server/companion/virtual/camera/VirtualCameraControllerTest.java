@@ -23,6 +23,7 @@ import static android.companion.virtual.camera.VirtualCameraConfig.SENSOR_ORIENT
 import static android.graphics.ImageFormat.YUV_420_888;
 import static android.graphics.PixelFormat.RGBA_8888;
 import static android.hardware.camera2.CameraMetadata.LENS_FACING_BACK;
+import static android.hardware.camera2.CameraMetadata.LENS_FACING_EXTERNAL;
 import static android.hardware.camera2.CameraMetadata.LENS_FACING_FRONT;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -38,11 +39,15 @@ import android.companion.virtual.camera.VirtualCameraCallback;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtualcamera.IVirtualCameraService;
 import android.companion.virtualcamera.VirtualCameraConfiguration;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.AttributionSource;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.Looper;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.testing.TestableLooper;
 
 import junitparams.JUnitParamsRunner;
@@ -50,12 +55,14 @@ import junitparams.Parameters;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Presubmit
@@ -88,6 +95,8 @@ public class VirtualCameraControllerTest {
     private VirtualCameraController mVirtualCameraController;
     private final HandlerExecutor mCallbackHandler =
             new HandlerExecutor(new Handler(Looper.getMainLooper()));
+
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() throws Exception {
@@ -168,7 +177,7 @@ public class VirtualCameraControllerTest {
                 CAMERA_LENS_FACING_2);
     }
 
-    @Parameters(method = "getAllLensFacingDirections")
+    @Parameters(method = "getSingleCamerasLensFacingDirections")
     @Test
     public void registerMultipleSameLensFacingCameras_withCustomCameraPolicy_throwsException(
             int lensFacing) {
@@ -180,6 +189,30 @@ public class VirtualCameraControllerTest {
                                 CAMERA_WIDTH_2, CAMERA_HEIGHT_2, CAMERA_FORMAT_2, CAMERA_MAX_FPS_2,
                                 CAMERA_NAME_2, CAMERA_SENSOR_ORIENTATION_2, lensFacing),
                         AttributionSource.myAttributionSource()));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS)
+    public void registerMultipleExternalCameras_withCustomCameraPolicy_succeeds() {
+        mVirtualCameraController.registerCamera(
+                createVirtualCameraConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1,
+                        CAMERA_MAX_FPS_1, CAMERA_NAME_1, CAMERA_SENSOR_ORIENTATION_1,
+                        LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource());
+
+        mVirtualCameraController.registerCamera(
+                createVirtualCameraConfig(CAMERA_WIDTH_2, CAMERA_HEIGHT_2, CAMERA_FORMAT_2,
+                        CAMERA_MAX_FPS_2, CAMERA_NAME_2, CAMERA_SENSOR_ORIENTATION_2,
+                        LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource());
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_EXTERNAL_VIRTUAL_CAMERAS)
+    public void registerExternalCameras_withCustomCameraPolicy_throwsException_whenNotSupported() {
+        assertThrows(IllegalArgumentException.class,
+                () -> mVirtualCameraController.registerCamera(
+                createVirtualCameraConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1,
+                        CAMERA_MAX_FPS_1, CAMERA_NAME_1, CAMERA_SENSOR_ORIENTATION_1,
+                        LENS_FACING_EXTERNAL), AttributionSource.myAttributionSource()));
     }
 
     @Parameters(method = "getAllLensFacingDirections")
@@ -218,10 +251,21 @@ public class VirtualCameraControllerTest {
         assertThat(configuration.lensFacing).isEqualTo(lensFacing);
     }
 
-    private static Integer[] getAllLensFacingDirections() {
+    @SuppressWarnings("unused") // Parameter for parametrized tests
+    private static Integer[] getSingleCamerasLensFacingDirections() {
         return new Integer[]{
                 LENS_FACING_BACK,
-                LENS_FACING_FRONT
+                LENS_FACING_FRONT,
         };
+    }
+
+    @SuppressWarnings("unused") // Parameter for parametrized tests
+    private static List<Integer> getAllLensFacingDirections() {
+        List<Integer> lensFacingDirections = new ArrayList<>(
+                List.of(LENS_FACING_BACK, LENS_FACING_FRONT));
+        if (Flags.externalVirtualCameras()) {
+            lensFacingDirections.add(LENS_FACING_EXTERNAL);
+        }
+        return lensFacingDirections;
     }
 }
