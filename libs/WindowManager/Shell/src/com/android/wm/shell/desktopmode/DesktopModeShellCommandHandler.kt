@@ -54,13 +54,23 @@ class DesktopModeShellCommandHandler(
             pw.println("Error: task id should be provided as arguments")
             return false
         }
-        val taskId =
+        var taskId =
             try {
                 args[1].toInt()
             } catch (e: NumberFormatException) {
                 pw.println("Error: task id should be an integer")
                 return false
             }
+
+        if (taskId == 0) {
+            taskId = focusTransitionObserver.globallyFocusedTaskId
+        }
+
+        if (taskId == INVALID_TASK_ID) {
+            pw.println("Error: no appropriate task found")
+            return false
+        }
+
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
             return controller.moveTaskToDefaultDeskAndActivate(taskId, transitionSource = UNKNOWN)
         }
@@ -257,14 +267,20 @@ class DesktopModeShellCommandHandler(
 
     override fun printShellCommandHelp(pw: PrintWriter, prefix: String) {
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            pw.println("$prefix moveTaskToDesk <taskId> ")
-            pw.println("$prefix  Move a task with given id to desktop mode.")
+            pw.println("$prefix moveTaskToDesk <taskId|0>")
+            pw.println(
+                "$prefix  Move a task with given id to desktop mode. " +
+                    "TaskId 0 means focused task on the default display."
+            )
             pw.println("$prefix moveToNextDisplay <taskId> ")
             pw.println("$prefix  Move a task with given id to next display.")
             return
         }
-        pw.println("$prefix moveTaskToDesk <taskId> <deskId>")
-        pw.println("$prefix  Move a task with given id to the given desk and activate it.")
+        pw.println("$prefix moveTaskToDesk <taskId|0> <deskId>")
+        pw.println(
+            "$prefix  Move a task with given id to the given desk and activate it. " +
+                "TaskId 0 means focused task on the default display."
+        )
         pw.println("$prefix moveToNextDisplay <taskId>")
         pw.println("$prefix  Move a task with given id to next display.")
         pw.println("$prefix createDesk <displayId>")
