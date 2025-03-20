@@ -542,6 +542,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_window_no_custom_touch"
+    namespace: "systemui"
+    description: "Don't have any custom touch handling in StatusBarWindowView"
+    bug: "391894499"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
     description: "Build time flag for 2025 icon refresh"
