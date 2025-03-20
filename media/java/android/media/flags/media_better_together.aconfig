@@ -62,6 +62,16 @@ flag {
 }
 
 flag {
+    name: "enable_fix_for_empty_system_routes_crash"
+    namespace: "media_better_together"
+    description: "Fixes a bug causing SystemUI to crash due to an empty system routes list in the routing framework."
+    bug: "357468728"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_suggested_device_api"
     is_exported: true
     namespace: "media_better_together"
