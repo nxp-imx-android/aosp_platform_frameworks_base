@@ -150,7 +150,7 @@ public enum DesktopModeFlags {
     INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES(
             Flags::inheritTaskBoundsForTrampolineTaskLaunches, true),
     SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX(
-            Flags::skipDecorViewRelayoutWhenClosingBugfix, false),
+            Flags::skipDecorViewRelayoutWhenClosingBugfix, true),
     // go/keep-sorted end
     ;
 
