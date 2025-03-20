@@ -66,7 +66,7 @@ public class AppOpsRecentAccessPersistenceTest {
     private AppOpsService mAppOpsService;
 
     @Rule public final MockitoRule mockito = MockitoJUnit.rule();
-    @Mock private AppOpsServiceTestingShim mAppOpCheckingService;
+    @Mock private AppOpsCheckingServiceInterface mAppOpCheckingService;
 
     @Before
     public void setUp() {

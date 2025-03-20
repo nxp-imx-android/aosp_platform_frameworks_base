@@ -1005,14 +1005,8 @@ public class AppOpsService extends IAppOpsService.Stub {
             mSwitchedOps.put(switchCode,
                     ArrayUtils.appendInt(mSwitchedOps.get(switchCode), switchedCode));
         }
-        if (PermissionManager.USE_ACCESS_CHECKING_SERVICE) {
-            mAppOpsCheckingService = new AppOpsCheckingServiceTracingDecorator(
-                    LocalServices.getService(AppOpsCheckingServiceInterface.class));
-        } else {
-            mAppOpsCheckingService = new AppOpsCheckingServiceTracingDecorator(
-                    new AppOpsCheckingServiceImpl(storageFile, this, handler, context,
-                            mSwitchedOps));
-        }
+        mAppOpsCheckingService = LocalServices.getService(AppOpsCheckingServiceInterface.class);
+
         mAppOpsCheckingService.addAppOpsModeChangedListener(
                 new AppOpsCheckingServiceInterface.AppOpsModeChangedListener() {
                     @Override
