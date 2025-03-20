@@ -20,8 +20,10 @@ import android.app.role.mockRoleManager
 import android.content.applicationContext
 import android.content.res.mainResources
 import android.hardware.input.fakeInputManager
+import android.os.fakeExecutorHandler
 import android.view.windowManager
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.keyboard.shortcut.data.repository.AppLaunchDataRepository
 import com.android.systemui.keyboard.shortcut.data.repository.CustomInputGesturesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.CustomShortcutCategoriesRepository
@@ -33,6 +35,7 @@ import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperCust
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperInputDeviceRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperStateRepository
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutHelperTestHelper
+import com.android.systemui.keyboard.shortcut.data.repository.UserVisibleAppsRepository
 import com.android.systemui.keyboard.shortcut.data.source.AccessibilityShortcutsSource
 import com.android.systemui.keyboard.shortcut.data.source.AppCategoriesShortcutsSource
 import com.android.systemui.keyboard.shortcut.data.source.CurrentAppShortcutsSource
@@ -44,6 +47,7 @@ import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutCustomiz
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCategoriesInteractor
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperCustomizationModeInteractor
 import com.android.systemui.keyboard.shortcut.domain.interactor.ShortcutHelperStateInteractor
+import com.android.systemui.keyboard.shortcut.fakes.FakeLauncherApps
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutHelperExclusions
 import com.android.systemui.keyboard.shortcut.ui.ShortcutCustomizationDialogStarter
 import com.android.systemui.keyboard.shortcut.ui.viewmodel.ShortcutCustomizationViewModel
@@ -246,4 +250,16 @@ val Kosmos.shortcutCustomizationViewModelFactory by
                 )
             }
         }
+    }
+
+val Kosmos.fakeLauncherApps by Kosmos.Fixture { FakeLauncherApps() }
+
+val Kosmos.userVisibleAppsRepository by
+    Kosmos.Fixture {
+        UserVisibleAppsRepository(
+            userTracker,
+            fakeExecutor,
+            fakeExecutorHandler,
+            fakeLauncherApps.launcherApps,
+        )
     }
