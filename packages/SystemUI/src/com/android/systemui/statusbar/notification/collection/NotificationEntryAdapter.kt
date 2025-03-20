@@ -44,6 +44,9 @@ class NotificationEntryAdapter(
     private val headsUpManager: HeadsUpManager,
     private val entry: NotificationEntry,
 ) : EntryAdapter {
+    override fun getBackingHashCode(): Int {
+        return entry.hashCode()
+    }
 
     override fun getParent(): PipelineEntry? {
         return entry.parent

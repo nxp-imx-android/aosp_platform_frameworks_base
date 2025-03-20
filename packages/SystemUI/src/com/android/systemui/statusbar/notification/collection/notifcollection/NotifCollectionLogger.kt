@@ -119,9 +119,9 @@ class NotifCollectionLogger @Inject constructor(
         })
     }
 
-    fun logDismissNonExistentNotif(entry: NotificationEntry, index: Int, count: Int) {
+    fun logDismissNonExistentNotif(entryKey: String, index: Int, count: Int) {
         buffer.log(TAG, INFO, {
-            str1 = entry.logKey
+            str1 = logKey(entryKey)
             int1 = index
             int2 = count
         }, {
