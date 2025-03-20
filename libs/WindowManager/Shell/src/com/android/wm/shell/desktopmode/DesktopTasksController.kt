@@ -449,6 +449,11 @@ class DesktopTasksController(
             return false
         }
 
+        // Secondary displays are always desktop-first
+        if (displayId != DEFAULT_DISPLAY) {
+            return true
+        }
+
         val tdaInfo = rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(displayId)
         // A non-organized display (e.g., non-trusted virtual displays used in CTS) doesn't have
         // TDA.
@@ -1140,6 +1145,7 @@ class DesktopTasksController(
         }
         val t =
             if (remoteTransition == null) {
+                logV("startLaunchTransition -- no remoteTransition -- wct = $launchTransaction")
                 desktopMixedTransitionHandler.startLaunchTransition(
                     transitionType = transitionType,
                     wct = launchTransaction,
