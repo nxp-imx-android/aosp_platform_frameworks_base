@@ -4594,24 +4594,12 @@ class Task extends TaskFragment {
         // Calling Task#setWindowingMode() for leaf task since this is a specialization of
         // {@link #setWindowingMode(int)} for root task.
         if (!isRootTask()) {
-            clearRestoreWindowingMode(windowingMode);
+            mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
             super.setWindowingMode(windowingMode);
             return;
         }
 
         setWindowingModeInner(windowingMode, false /* creating */);
-    }
-
-    /**
-     * Clears {@link #mMultiWindowRestoreWindowingMode} if the windowing mode has changed.
-     *
-     * @param windowingMode the windowing mode being requested
-     */
-    private void clearRestoreWindowingMode(int windowingMode) {
-        if (!DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()
-                || windowingMode != getWindowingMode()) {
-            mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
-        }
     }
 
     /**
@@ -4663,7 +4651,7 @@ class Task extends TaskFragment {
         }
 
         // Reset multi-window restore windowing mode.
-        clearRestoreWindowingMode(windowingMode);
+        mMultiWindowRestoreWindowingMode = INVALID_WINDOWING_MODE;
 
         final ActivityRecord topActivity = getTopNonFinishingActivity();
 
