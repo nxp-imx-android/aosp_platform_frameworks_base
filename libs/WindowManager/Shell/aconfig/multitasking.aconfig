@@ -179,6 +179,16 @@ flag {
 }
 
 flag {
+    name: "fix_missing_user_change_callbacks"
+    namespace: "multitasking"
+    description: "Fix a race condition that could make Shell miss a user change callback."
+    bug: "404251029"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_bubble_bar_on_phones"
     namespace: "multitasking"
     description: "Try out bubble bar on phones"
