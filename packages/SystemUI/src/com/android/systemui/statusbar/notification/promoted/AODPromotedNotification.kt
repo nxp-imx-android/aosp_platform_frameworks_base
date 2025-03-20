@@ -170,23 +170,34 @@ private class FrameLayoutWithMaxHeight(maxHeight: Int, context: Context) : Frame
 
     // This mirrors the logic in NotificationContentView.onMeasure.
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        if (childCount < 1) {
-            return
+        if (childCount != 1) {
+            Log.wtf(TAG, "Should contain exactly one child.")
+            return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         }
 
-        val child = getChildAt(0)
-        val childLayoutHeight = child.layoutParams.height
-        val childHeightSpec =
-            if (childLayoutHeight >= 0) {
-                makeMeasureSpec(maxHeight.coerceAtMost(childLayoutHeight), EXACTLY)
-            } else {
-                makeMeasureSpec(maxHeight, AT_MOST)
-            }
-        measureChildWithMargins(child, widthMeasureSpec, 0, childHeightSpec, 0)
-        val childMeasuredHeight = child.measuredHeight
+        val horizPadding = paddingStart + paddingEnd
+        val vertPadding = paddingTop + paddingBottom
 
+        val ownWidthSize = MeasureSpec.getSize(widthMeasureSpec)
         val ownHeightMode = MeasureSpec.getMode(heightMeasureSpec)
         val ownHeightSize = MeasureSpec.getSize(heightMeasureSpec)
+
+        val availableHeight =
+            if (ownHeightMode != UNSPECIFIED) {
+                maxHeight.coerceAtMost(ownHeightSize)
+            } else {
+                maxHeight
+            }
+
+        val child = getChildAt(0)
+        val childWidthSpec = makeMeasureSpec(ownWidthSize, EXACTLY)
+        val childHeightSpec =
+            child.layoutParams.height
+                .takeIf { it >= 0 }
+                ?.let { makeMeasureSpec(availableHeight.coerceAtMost(it), EXACTLY) }
+                ?: run { makeMeasureSpec(availableHeight, AT_MOST) }
+        measureChildWithMargins(child, childWidthSpec, horizPadding, childHeightSpec, vertPadding)
+        val childMeasuredHeight = child.measuredHeight
 
         val ownMeasuredWidth = MeasureSpec.getSize(widthMeasureSpec)
         val ownMeasuredHeight =
@@ -195,7 +206,6 @@ private class FrameLayoutWithMaxHeight(maxHeight: Int, context: Context) : Frame
             } else {
                 childMeasuredHeight
             }
-
         setMeasuredDimension(ownMeasuredWidth, ownMeasuredHeight)
     }
 }
