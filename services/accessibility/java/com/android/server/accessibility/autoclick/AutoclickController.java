@@ -42,6 +42,7 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.util.Slog;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -891,8 +892,20 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         final int pointerIndex = mClickScheduler.mLastMotionEvent.getActionIndex();
                         mLastCursorX = mClickScheduler.mLastMotionEvent.getX(pointerIndex);
                         mLastCursorY = mClickScheduler.mLastMotionEvent.getY(pointerIndex);
+
+                        // Remove previous scroll panel if exists.
+                        if (mAutoclickScrollPanel.isVisible()) {
+                            mAutoclickScrollPanel.hide();
+                        }
+                        // Show scroll panel at the cursor position.
+                        mAutoclickScrollPanel.show(mLastCursorX, mLastCursorY);
+                    } else {
+                        // Fallback: Show scroll panel at its default position (center of screen).
+                        Slog.w(LOG_TAG,
+                                "Showing scroll panel at default position - no cursor position "
+                                        + "available");
+                        mAutoclickScrollPanel.show();
                     }
-                    mAutoclickScrollPanel.show();
                 }
                 return;
             }

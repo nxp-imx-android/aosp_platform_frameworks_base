@@ -24,6 +24,7 @@ import static com.android.server.testutils.MockitoUtilsKt.eq;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -862,7 +863,7 @@ public class AutoclickControllerTest {
         mTestableLooper.processAllMessages();
 
         // Verify scroll panel is shown once.
-        verify(mockScrollPanel, times(1)).show();
+        verify(mockScrollPanel, times(1)).show(anyFloat(), anyFloat());
         assertThat(motionEventCaptor.downEvent).isNull();
 
         // Second significant hover move event to trigger another autoclick.
@@ -878,7 +879,7 @@ public class AutoclickControllerTest {
         mTestableLooper.processAllMessages();
 
         // Verify scroll panel is still only shown once (not called again).
-        verify(mockScrollPanel, times(1)).show();
+        verify(mockScrollPanel, times(1)).show(anyFloat(), anyFloat());
         assertThat(motionEventCaptor.downEvent).isNull();
     }
 
