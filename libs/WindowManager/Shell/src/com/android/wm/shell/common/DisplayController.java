@@ -355,6 +355,19 @@ public class DisplayController {
         }
     }
 
+    private void onDesktopModeEligibleChanged(int displayId) {
+        synchronized (mDisplays) {
+            if (mDisplays.get(displayId) == null || getDisplay(displayId) == null) {
+                Slog.w(TAG, "Skipping onDesktopModeEligibleChanged on unknown"
+                        + " display, displayId=" + displayId);
+                return;
+            }
+            for (int i = mDisplayChangedListeners.size() - 1; i >= 0; --i) {
+                mDisplayChangedListeners.get(i).onDesktopModeEligibleChanged(displayId);
+            }
+        }
+    }
+
     private static class DisplayRecord {
         private int mDisplayId;
         private Context mContext;
@@ -422,6 +435,13 @@ public class DisplayController {
                         new ArraySet<>(restricted), new ArraySet<>(unrestricted));
             });
         }
+
+        @Override
+        public void onDesktopModeEligibleChanged(int displayId) {
+            mMainExecutor.execute(() -> {
+                DisplayController.this.onDesktopModeEligibleChanged(displayId);
+            });
+        }
     }
 
     /**
@@ -467,5 +487,10 @@ public class DisplayController {
          * Called when the display topology has changed.
          */
         default void onTopologyChanged(DisplayTopology topology) {}
+
+        /**
+         * Called when the eligibility of the desktop mode for a display have changed.
+         */
+        default void onDesktopModeEligibleChanged(int displayId) {}
     }
 }

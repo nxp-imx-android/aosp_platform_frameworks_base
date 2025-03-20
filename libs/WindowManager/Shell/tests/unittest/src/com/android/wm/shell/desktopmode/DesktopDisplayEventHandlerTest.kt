@@ -23,6 +23,7 @@ import androidx.test.filters.SmallTest
 import com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession
 import com.android.dx.mockito.inline.extended.ExtendedMockito.never
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
+import com.android.server.display.feature.flags.Flags as DisplayFlags
 import com.android.window.flags.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -243,6 +244,13 @@ class DesktopDisplayEventHandlerTest : ShellTestCase() {
     @Test
     fun testDisconnectExternalDisplay() {
         onDisplaysChangedListenerCaptor.lastValue.onDisplayRemoved(externalDisplayId)
+        verify(desktopDisplayModeController).refreshDisplayWindowingMode()
+    }
+
+    @Test
+    @EnableFlags(DisplayFlags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    fun testDesktopModeEligibleChanged() {
+        onDisplaysChangedListenerCaptor.lastValue.onDesktopModeEligibleChanged(externalDisplayId)
         verify(desktopDisplayModeController).refreshDisplayWindowingMode()
     }
 
