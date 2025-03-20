@@ -81,6 +81,7 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.window.ScreenCapture;
 import android.window.ScreenCapture.SynchronousScreenCaptureListener;
+import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -156,7 +157,7 @@ import java.util.function.IntConsumer;
  */
 public class BubbleController implements ConfigurationChangeListener,
         RemoteCallable<BubbleController>, Bubbles.SysuiProxy.Provider,
-        BubbleBarDragListener {
+        BubbleBarDragListener, BubbleTaskUnfoldTransitionMerger {
 
     private static final String TAG = TAG_WITH_CLASS_NAME ? "BubbleController" : TAG_BUBBLES;
 
@@ -2173,6 +2174,32 @@ public class BubbleController implements ConfigurationChangeListener,
                 }
             });
         });
+    }
+
+    @Override
+    public boolean mergeTaskWithUnfold(@NonNull ActivityManager.RunningTaskInfo taskInfo,
+            @NonNull TransitionInfo.Change change,
+            @NonNull SurfaceControl.Transaction startT,
+            @NonNull SurfaceControl.Transaction finishT) {
+        if (!mBubbleTransitions.mTaskViewTransitions.isTaskViewTask(taskInfo)) {
+            // if this task isn't managed by bubble transitions just bail.
+            return false;
+        }
+        if (isShowingAsBubbleBar()) {
+            // if bubble bar is enabled, the task view will switch to a new surface on unfold, so we
+            // should not merge the transition.
+            return false;
+        }
+
+        boolean merged = mBubbleTransitions.mTaskViewTransitions.updateBoundsForUnfold(
+                change.getEndAbsBounds(), startT, finishT, change.getTaskInfo(), change.getLeash());
+        if (merged) {
+            BubbleViewProvider selectedBubble = mBubbleData.getSelectedBubble();
+            if (selectedBubble != null && selectedBubble.getExpandedView() != null) {
+                selectedBubble.getExpandedView().onContainerClipUpdate();
+            }
+        }
+        return merged;
     }
 
     /** When bubbles are floating, this will be used to notify the floating views. */

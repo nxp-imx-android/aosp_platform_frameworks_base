@@ -24,8 +24,12 @@ import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assume.assumeTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,16 +81,15 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     @Mock
     TaskViewTaskController mTaskViewTaskController;
     @Mock
-    ActivityManager.RunningTaskInfo mTaskInfo;
-    @Mock
     WindowContainerToken mToken;
     @Mock
     ShellTaskOrganizer mOrganizer;
     @Mock
     SyncTransactionQueue mSyncQueue;
 
-    Executor mExecutor = command -> command.run();
+    Executor mExecutor = Runnable::run;
 
+    ActivityManager.RunningTaskInfo mTaskInfo;
     TaskViewRepository mTaskViewRepository;
     TaskViewTransitions mTaskViewTransitions;
 
@@ -304,5 +307,67 @@ public class TaskViewTransitionsTest extends ShellTestCase {
                 mock(Transitions.TransitionFinishCallback.class));
 
         verify(mTaskViewTaskController).setTaskNotFound();
+    }
+
+    @Test
+    public void updateBoundsForUnfold_taskNotFound_doesNothing() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+
+        ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
+        taskInfo.token = mock(WindowContainerToken.class);
+        taskInfo.taskId = 666;
+        Rect bounds = new Rect(100, 50, 200, 250);
+        SurfaceControl.Transaction startTransaction = mock(SurfaceControl.Transaction.class);
+        SurfaceControl.Transaction finishTransaction = mock(SurfaceControl.Transaction.class);
+        assertThat(
+                mTaskViewTransitions.updateBoundsForUnfold(bounds, startTransaction,
+                        finishTransaction, taskInfo, mock(SurfaceControl.class)))
+                .isFalse();
+
+        verify(startTransaction, never()).reparent(any(), any());
+    }
+
+    @Test
+    public void updateBoundsForUnfold_noPendingTransition_doesNothing() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+
+        Rect bounds = new Rect(100, 50, 200, 250);
+        mTaskViewTransitions.setTaskBounds(mTaskViewTaskController, bounds);
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+
+        SurfaceControl.Transaction startTransaction = mock(SurfaceControl.Transaction.class);
+        SurfaceControl.Transaction finishTransaction = mock(SurfaceControl.Transaction.class);
+        assertThat(
+                mTaskViewTransitions.updateBoundsForUnfold(bounds, startTransaction,
+                        finishTransaction, mTaskInfo, mock(SurfaceControl.class)))
+                .isFalse();
+        verify(startTransaction, never()).reparent(any(), any());
+    }
+
+    @Test
+    public void updateBoundsForUnfold() {
+        assumeTrue(Transitions.ENABLE_SHELL_TRANSITIONS);
+
+        Rect bounds = new Rect(100, 50, 200, 250);
+        mTaskViewTransitions.updateVisibilityState(mTaskViewTaskController, /* visible= */ true);
+        mTaskViewTransitions.setTaskBounds(mTaskViewTaskController, bounds);
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+
+        SurfaceControl.Transaction startTransaction = createMockTransaction();
+        SurfaceControl.Transaction finishTransaction = createMockTransaction();
+        assertThat(
+                mTaskViewTransitions.updateBoundsForUnfold(bounds, startTransaction,
+                        finishTransaction, mTaskInfo, mock(SurfaceControl.class)))
+                .isTrue();
+        assertThat(mTaskViewRepository.byTaskView(mTaskViewTaskController).mBounds)
+                .isEqualTo(bounds);
+    }
+
+    private SurfaceControl.Transaction createMockTransaction() {
+        SurfaceControl.Transaction transaction = mock(SurfaceControl.Transaction.class);
+        when(transaction.reparent(any(), any())).thenReturn(transaction);
+        when(transaction.setPosition(any(), anyFloat(), anyFloat())).thenReturn(transaction);
+        when(transaction.setWindowCrop(any(), anyInt(), anyInt())).thenReturn(transaction);
+        return transaction;
     }
 }

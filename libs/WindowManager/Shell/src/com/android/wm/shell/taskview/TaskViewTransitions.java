@@ -728,6 +728,48 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         taskView.notifyAppeared(newTask);
     }
 
+    /**
+     * Updates bounds for the task view during an unfold transition.
+     *
+     * @return true if the task was found and a transition for this task is pending. false
+     * otherwise.
+     */
+    public boolean updateBoundsForUnfold(Rect bounds, SurfaceControl.Transaction startTransaction,
+            SurfaceControl.Transaction finishTransaction,
+            ActivityManager.RunningTaskInfo taskInfo, SurfaceControl leash) {
+        final TaskViewTaskController taskView = findTaskView(taskInfo);
+        if (taskView == null) {
+            return false;
+        }
+
+        final PendingTransition pendingTransition = findPending(taskView, TRANSIT_CHANGE);
+        if (pendingTransition == null) {
+            return false;
+        }
+
+        mPending.remove(pendingTransition);
+
+        // reparent the task under the task view surface and set the bounds on it
+        startTransaction.reparent(leash, taskView.getSurfaceControl())
+                .setPosition(leash, 0, 0)
+                .setWindowCrop(leash, bounds.width(), bounds.height())
+                .show(leash);
+        // the finish transaction would reparent the task back to the transition root, so reparent
+        // it again to the task view surface
+        finishTransaction.reparent(leash, taskView.getSurfaceControl())
+                .setPosition(leash, 0, 0)
+                .setWindowCrop(leash, bounds.width(), bounds.height());
+        if (useRepo()) {
+            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
+            if (state != null) {
+                state.mBounds.set(bounds);
+            }
+        } else {
+            updateBoundsState(taskView, bounds);
+        }
+        return true;
+    }
+
     private void updateBounds(TaskViewTaskController taskView, Rect boundsOnScreen,
             SurfaceControl.Transaction startTransaction,
             SurfaceControl.Transaction finishTransaction,
