@@ -1809,11 +1809,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     public void notifyQuickSettingsTilesChanged(
             @UserIdInt int userId, @NonNull List<ComponentName> tileComponentNames) {
         notifyQuickSettingsTilesChanged_enforcePermission();
-        if (DEBUG) {
-            Slog.d(LOG_TAG, TextUtils.formatSimple(
-                    "notifyQuickSettingsTilesChanged userId: %d, tileComponentNames: %s",
-                    userId, tileComponentNames));
-        }
+
+        Slog.d(LOG_TAG, String.format(
+                "notifyQuickSettingsTilesChanged userId: %s, tileComponentNames: %s",
+                userId, tileComponentNames));
         final Set<ComponentName> newTileComponentNames = new ArraySet<>(tileComponentNames);
         final Set<ComponentName> addedTiles;
         final Set<ComponentName> removedTiles;
@@ -2117,6 +2116,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         parsedAccessibilityShortcutInfos = parseAccessibilityShortcutInfos(userId);
         synchronized (mLock) {
             if (mCurrentUserId == userId && mInitialized) {
+                Slog.w(LOG_TAG, String.format("userId: %d is already initialized", userId));
                 return;
             }
 
@@ -3295,10 +3295,9 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
      * @param forceUpdate whether to force an update of the app Clients.
      */
     private void onUserStateChangedLocked(AccessibilityUserState userState, boolean forceUpdate) {
-        if (DEBUG) {
-            Slog.v(LOG_TAG, "onUserStateChangedLocked for user " + userState.mUserId + " with "
-                    + "forceUpdate: " + forceUpdate);
-        }
+        Slog.v(LOG_TAG, String.format("onUserStateChangedLocked for userId: %d, forceUpdate: %s",
+                userState.mUserId, forceUpdate));
+
         // TODO: Remove this hack
         mInitialized = true;
         updateLegacyCapabilitiesLocked(userState);
@@ -4347,6 +4346,10 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void enableShortcutForTargets(
             boolean enable, @UserShortcutType int shortcutType,
             @NonNull List<String> shortcutTargets, @UserIdInt int userId) {
+        Slog.d(LOG_TAG, String.format(
+                "enableShortcutForTargets: enable %s, shortcutType: %s, shortcutTargets: %s, "
+                        + "userId: %s",
+                enable, shortcutType, shortcutTargets, userId));
         if (shortcutType == UserShortcutType.GESTURE
                 && !android.provider.Flags.a11yStandaloneGestureEnabled()) {
             Slog.w(LOG_TAG,
@@ -4404,6 +4407,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
             }
 
             if (currentTargets.equals(validNewTargets)) {
+                Slog.d(LOG_TAG,
+                        String.format(
+                                "shortcutTargets are the same: skip modifying: target: %s, "
+                                        + "shortcutType: %s",
+                                validNewTargets, shortcutType));
                 return;
             }
             persistColonDelimitedSetToSettingLocked(
@@ -4477,6 +4485,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void updateA11yTileServicesInQuickSettingsPanel(
             Set<String> newQsTargets,
             Set<String> currentQsTargets, @UserIdInt int userId) {
+        Slog.d(LOG_TAG,
+                String.format(
+                        "updateA11yTileServicesInQuickSettingsPanel: newQsTargets: %s , "
+                                + "currentQsTargets: %s, userId: %s",
+                        newQsTargets, currentQsTargets, userId));
         // Call StatusBarManager to add/remove tiles
         final StatusBarManagerInternal statusBarManagerInternal =
                 LocalServices.getService(StatusBarManagerInternal.class);
