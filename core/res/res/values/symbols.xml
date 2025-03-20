@@ -5224,6 +5224,7 @@
   <java-symbol type="id" name="remote_views_next_child" />
   <java-symbol type="id" name="remote_views_stable_id" />
   <java-symbol type="id" name="remote_views_override_id" />
+  <java-symbol type="id" name="remoteViewsMetricsId" />
 
   <!-- View and control prompt -->
   <java-symbol type="drawable" name="ic_accessibility_24dp" />
