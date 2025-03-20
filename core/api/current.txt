@@ -286,7 +286,7 @@ package android {
     field public static final String REQUEST_COMPANION_PROFILE_COMPUTER = "android.permission.REQUEST_COMPANION_PROFILE_COMPUTER";
     field public static final String REQUEST_COMPANION_PROFILE_GLASSES = "android.permission.REQUEST_COMPANION_PROFILE_GLASSES";
     field public static final String REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING = "android.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING";
-    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") public static final String REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING = "android.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING";
+    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") public static final String REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE = "android.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE";
     field public static final String REQUEST_COMPANION_PROFILE_WATCH = "android.permission.REQUEST_COMPANION_PROFILE_WATCH";
     field public static final String REQUEST_COMPANION_RUN_IN_BACKGROUND = "android.permission.REQUEST_COMPANION_RUN_IN_BACKGROUND";
     field public static final String REQUEST_COMPANION_SELF_MANAGED = "android.permission.REQUEST_COMPANION_SELF_MANAGED";
@@ -10086,7 +10086,7 @@ package android.companion {
     field @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_COMPUTER) public static final String DEVICE_PROFILE_COMPUTER = "android.app.role.COMPANION_DEVICE_COMPUTER";
     field @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_GLASSES) public static final String DEVICE_PROFILE_GLASSES = "android.app.role.COMPANION_DEVICE_GLASSES";
     field @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING) public static final String DEVICE_PROFILE_NEARBY_DEVICE_STREAMING = "android.app.role.COMPANION_DEVICE_NEARBY_DEVICE_STREAMING";
-    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING) public static final String DEVICE_PROFILE_SENSOR_DEVICE_STREAMING = "android.app.role.COMPANION_DEVICE_SENSOR_DEVICE_STREAMING";
+    field @FlaggedApi("android.companion.virtualdevice.flags.enable_limited_vdm_role") @RequiresPermission(android.Manifest.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE) public static final String DEVICE_PROFILE_VIRTUAL_DEVICE = "android.app.role.COMPANION_DEVICE_VIRTUAL_DEVICE";
     field public static final String DEVICE_PROFILE_WATCH = "android.app.role.COMPANION_DEVICE_WATCH";
   }
 

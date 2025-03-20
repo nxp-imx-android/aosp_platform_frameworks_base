@@ -4554,12 +4554,12 @@
         android:protectionLevel="signature|privileged" />
 
     <!-- Allows application to request to stream content from an Android host to a nearby device
-         ({@link android.companion.AssociationRequest#DEVICE_PROFILE_SENSOR_DEVICE_STREAMING})
+         ({@link android.companion.AssociationRequest#DEVICE_PROFILE_VIRTUAL_DEVICE})
          by {@link android.companion.CompanionDeviceManager}.
          <p>Not for use by third-party applications.
          @FlaggedApi(android.companion.virtualdevice.flags.Flags.FLAG_ENABLE_LIMITED_VDM_ROLE)
     -->
-    <permission android:name="android.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING"
+    <permission android:name="android.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE"
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.companion.virtualdevice.flags.enable_limited_vdm_role" />
 

@@ -667,7 +667,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         final int summaryResourceId = PROFILE_SUMMARIES.get(deviceProfile);
         final String remoteDeviceName = mSelectedDevice.getDisplayName();
         final Spanned title = getHtmlFromResources(
-                this, PROFILE_TITLES.get(deviceProfile), mAppLabel, remoteDeviceName);
+                this, PROFILE_TITLES.get(deviceProfile), mAppLabel, remoteDeviceName,
+                getString(R.string.device_type));
         final Spanned summary;
 
         if (deviceProfile == null && mRequest.isSingleDevice()) {
@@ -675,7 +676,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
             mConstraintList.setVisibility(View.GONE);
         } else {
             summary = getHtmlFromResources(
-                    this, summaryResourceId, getString(R.string.device_type));
+                    this, summaryResourceId, getString(R.string.device_type), mAppLabel,
+                    remoteDeviceName);
             setupPermissionList(deviceProfile);
         }
 
