@@ -445,27 +445,30 @@ class PhoneStatusBarViewControllerTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    fun onTouch_actionDown_propagatesToDisplayPolicy() {
+    fun onInterceptTouchEvent_actionDown_propagatesToDisplayPolicy() {
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
-        controller.onTouch(event)
+
+        view.onInterceptTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy).onStatusBarTouched(eq(event), any())
     }
 
     @Test
     @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    fun onTouch_actionUp_notPropagatesToDisplayPolicy() {
+    fun onInterceptTouchEvent_actionUp_notPropagatesToDisplayPolicy() {
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_UP, 0f, 0f, 0)
-        controller.onTouch(event)
+
+        view.onInterceptTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarTouched(any(), any())
     }
 
     @Test
     @DisableFlags(ShadeWindowGoesAround.FLAG_NAME)
-    fun onTouch_shadeWindowGoesAroundDisabled_notPropagatesToDisplayPolicy() {
+    fun onInterceptTouchEvent_shadeWindowGoesAroundDisabled_notPropagatesToDisplayPolicy() {
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 0f, 0)
-        controller.onTouch(event)
+
+        view.onInterceptTouchEvent(event)
 
         verify(statusBarTouchShadeDisplayPolicy, never()).onStatusBarTouched(eq(event), any())
     }
