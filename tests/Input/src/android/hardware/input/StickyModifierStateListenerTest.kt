@@ -43,15 +43,13 @@ import org.mockito.junit.MockitoJUnitRunner
 /**
  * Tests for [InputManager.StickyModifierStateListener].
  *
- * Build/Install/Run:
- * atest InputTests:StickyModifierStateListenerTest
+ * Build/Install/Run: atest InputTests:StickyModifierStateListenerTest
  */
 @Presubmit
 @RunWith(MockitoJUnitRunner::class)
 class StickyModifierStateListenerTest {
 
-    @get:Rule
-    val inputManagerRule = MockInputManagerRule()
+    @get:Rule val inputManagerRule = MockInputManagerRule()
 
     private val testLooper = TestLooper()
     private val executor = HandlerExecutor(Handler(testLooper.looper))
@@ -63,31 +61,38 @@ class StickyModifierStateListenerTest {
     fun setUp() {
         context = Mockito.spy(ContextWrapper(ApplicationProvider.getApplicationContext()))
         inputManager = InputManager(context)
-        `when`(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE)))
-                .thenReturn(inputManager)
+        `when`(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE))).thenReturn(inputManager)
 
         // Handle sticky modifier state listener registration.
         doAnswer {
-            val listener = it.getArgument(0) as IStickyModifierStateListener
-            if (registeredListener != null &&
-                    registeredListener!!.asBinder() != listener.asBinder()) {
-                // There can only be one registered sticky modifier state listener per process.
-                fail("Trying to register a new listener when one already exists")
+                val listener = it.getArgument(0) as IStickyModifierStateListener
+                if (
+                    registeredListener != null &&
+                        registeredListener!!.asBinder() != listener.asBinder()
+                ) {
+                    // There can only be one registered sticky modifier state listener per process.
+                    fail("Trying to register a new listener when one already exists")
+                }
+                registeredListener = listener
+                null
             }
-            registeredListener = listener
-            null
-        }.`when`(inputManagerRule.mock).registerStickyModifierStateListener(any())
+            .`when`(inputManagerRule.mock)
+            .registerStickyModifierStateListener(any())
 
         // Handle sticky modifier state listener being unregistered.
         doAnswer {
-            val listener = it.getArgument(0) as IStickyModifierStateListener
-            if (registeredListener == null ||
-                    registeredListener!!.asBinder() != listener.asBinder()) {
-                fail("Trying to unregister a listener that is not registered")
+                val listener = it.getArgument(0) as IStickyModifierStateListener
+                if (
+                    registeredListener == null ||
+                        registeredListener!!.asBinder() != listener.asBinder()
+                ) {
+                    fail("Trying to unregister a listener that is not registered")
+                }
+                registeredListener = null
+                null
             }
-            registeredListener = null
-            null
-        }.`when`(inputManagerRule.mock).unregisterStickyModifierStateListener(any())
+            .`when`(inputManagerRule.mock)
+            .unregisterStickyModifierStateListener(any())
     }
 
     private fun notifyStickyModifierStateChanged(modifierState: Int, lockedModifierState: Int) {
@@ -99,9 +104,7 @@ class StickyModifierStateListenerTest {
         var callbackCount = 0
 
         // Add a sticky modifier state listener
-        inputManager.registerStickyModifierStateListener(executor) {
-            callbackCount++
-        }
+        inputManager.registerStickyModifierStateListener(executor) { callbackCount++ }
 
         // Notifying sticky modifier state change will notify the listener.
         notifyStickyModifierStateChanged(0, 0)
@@ -112,8 +115,7 @@ class StickyModifierStateListenerTest {
     @Test
     fun testListenerHasCorrectModifierStateNotified() {
         // Add a sticky modifier state listener
-        inputManager.registerStickyModifierStateListener(executor) {
-            state: StickyModifierState ->
+        inputManager.registerStickyModifierStateListener(executor) { state: StickyModifierState ->
             assertTrue(state.isAltModifierOn)
             assertTrue(state.isAltModifierLocked)
             assertTrue(state.isShiftModifierOn)
@@ -128,9 +130,11 @@ class StickyModifierStateListenerTest {
 
         // Notifying sticky modifier state change will notify the listener.
         notifyStickyModifierStateChanged(
-                KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON or
-                        KeyEvent.META_SHIFT_ON or KeyEvent.META_SHIFT_LEFT_ON,
-                KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON
+            KeyEvent.META_ALT_ON or
+                KeyEvent.META_ALT_LEFT_ON or
+                KeyEvent.META_SHIFT_ON or
+                KeyEvent.META_SHIFT_LEFT_ON,
+            KeyEvent.META_ALT_ON or KeyEvent.META_ALT_LEFT_ON,
         )
         testLooper.dispatchNext()
     }
