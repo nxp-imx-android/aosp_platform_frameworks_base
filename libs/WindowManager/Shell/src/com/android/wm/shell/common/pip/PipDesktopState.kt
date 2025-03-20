@@ -21,6 +21,7 @@ import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import com.android.wm.shell.Flags
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
+import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler
 import java.util.Optional
@@ -93,4 +94,7 @@ class PipDesktopState(
     /** Returns whether there is a drag-to-desktop transition in progress. */
     fun isDragToDesktopInProgress(): Boolean =
         isDesktopWindowingPipEnabled() && dragToDesktopTransitionHandlerOptional.get().inProgress
+
+    /** Returns the DisplayLayout associated with the display where PiP window is in. */
+    fun getCurrentDisplayLayout(): DisplayLayout = pipDisplayLayoutState.displayLayout
 }

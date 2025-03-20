@@ -49,6 +49,7 @@ import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDesktopState;
+import com.android.wm.shell.desktopmode.DesktopPipTransitionController;
 import com.android.wm.shell.pip.PipTransitionController;
 import com.android.wm.shell.pip2.PipSurfaceTransactionHelper;
 import com.android.wm.shell.pip2.animation.PipAlphaAnimator;
@@ -96,6 +97,7 @@ public class PipSchedulerTest {
     @Mock private SurfaceControl.Transaction mMockTransaction;
     @Mock private PipAlphaAnimator mMockAlphaAnimator;
     @Mock private SplitScreenController mMockSplitScreenController;
+    @Mock private DesktopPipTransitionController mMockDesktopPipTransitionController;
     @Mock private SurfaceControl mMockLeash;
     @Mock private DisplayLayout mMockDisplayLayout;
 
@@ -126,7 +128,8 @@ public class PipSchedulerTest {
         when(mDisplayController.getDisplayLayout(anyInt())).thenReturn(mMockDisplayLayout);
         mPipScheduler = new PipScheduler(mMockContext, mMockPipBoundsState, mMockMainExecutor,
                 mMockPipTransitionState, Optional.of(mMockSplitScreenController),
-                mMockPipDesktopState, mDisplayController);
+                Optional.of(mMockDesktopPipTransitionController), mMockPipDesktopState,
+                mDisplayController);
         mPipScheduler.setPipTransitionController(mMockPipTransitionController);
         mPipScheduler.setSurfaceControlTransactionFactory(mMockFactory);
         mPipScheduler.setPipAlphaAnimatorSupplier((context, leash, startTx, finishTx, direction) ->

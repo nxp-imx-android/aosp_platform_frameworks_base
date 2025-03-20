@@ -153,10 +153,12 @@ public abstract class Pip2Module {
             @ShellMainThread ShellExecutor mainExecutor,
             PipTransitionState pipTransitionState,
             Optional<SplitScreenController> splitScreenControllerOptional,
+            Optional<DesktopPipTransitionController> desktopPipTransitionController,
             PipDesktopState pipDesktopState,
             DisplayController displayController) {
         return new PipScheduler(context, pipBoundsState, mainExecutor, pipTransitionState,
-                splitScreenControllerOptional, pipDesktopState, displayController);
+                splitScreenControllerOptional, desktopPipTransitionController, pipDesktopState,
+                displayController);
     }
 
     @WMSingleton
@@ -259,14 +261,16 @@ public abstract class Pip2Module {
     @WMSingleton
     @Provides
     static Optional<DesktopPipTransitionController> provideDesktopPipTransitionController(
-            Context context, Optional<DesktopTasksController> desktopTasksControllerOptional,
+            Context context, ShellTaskOrganizer shellTaskOrganizer,
+            Optional<DesktopTasksController> desktopTasksControllerOptional,
             Optional<DesktopUserRepositories> desktopUserRepositoriesOptional,
             PipDesktopState pipDesktopState
     ) {
         if (DesktopModeStatus.canEnterDesktopMode(context)
                 && DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_PIP.isTrue()) {
             return Optional.of(
-                    new DesktopPipTransitionController(desktopTasksControllerOptional.get(),
+                    new DesktopPipTransitionController(shellTaskOrganizer,
+                            desktopTasksControllerOptional.get(),
                             desktopUserRepositoriesOptional.get(), pipDesktopState));
         }
         return Optional.empty();
