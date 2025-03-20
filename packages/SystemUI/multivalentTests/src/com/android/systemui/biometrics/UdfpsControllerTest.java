@@ -16,6 +16,8 @@
 
 package com.android.systemui.biometrics;
 
+import static com.android.systemui.SysuiTestCaseExtKt.testKosmos;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -69,7 +71,9 @@ import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInt
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.keyguard.ScreenLifecycle;
+import com.android.systemui.keyguard.UserActivityNotifierKosmosKt;
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor;
+import com.android.systemui.kosmos.Kosmos;
 import com.android.systemui.log.SessionTracker;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -115,7 +119,7 @@ import java.util.List;
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper(setAsMainLooper = true)
 public class UdfpsControllerTest extends SysuiTestCase {
-
+    private final Kosmos mKosmos = testKosmos(this);
     private static final long TEST_REQUEST_ID = 70;
 
     @Rule
@@ -325,7 +329,8 @@ public class UdfpsControllerTest extends SysuiTestCase {
                 mDefaultUdfpsTouchOverlayViewModel,
                 mUdfpsOverlayInteractor,
                 mPowerInteractor,
-                mock(CoroutineScope.class)
+                mock(CoroutineScope.class),
+                UserActivityNotifierKosmosKt.getUserActivityNotifier(mKosmos)
         );
         verify(mFingerprintManager).setUdfpsOverlayController(mOverlayCaptor.capture());
         mOverlayController = mOverlayCaptor.getValue();

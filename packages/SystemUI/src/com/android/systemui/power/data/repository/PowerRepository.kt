@@ -17,14 +17,16 @@
 
 package com.android.systemui.power.data.repository
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.PowerManager
+import com.android.keyguard.UserActivityNotifier
+import com.android.systemui.Flags
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.power.shared.model.DozeScreenStateModel
@@ -33,6 +35,7 @@ import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.power.shared.model.WakefulnessModel
 import com.android.systemui.power.shared.model.WakefulnessState
 import com.android.systemui.util.time.SystemClock
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -102,6 +105,7 @@ constructor(
     @Application private val applicationContext: Context,
     private val systemClock: SystemClock,
     dispatcher: BroadcastDispatcher,
+    private val userActivityNotifier: UserActivityNotifier,
 ) : PowerRepository {
 
     override val dozeScreenState = MutableStateFlow(DozeScreenStateModel.UNKNOWN)
@@ -163,12 +167,22 @@ constructor(
         )
     }
 
+    @SuppressLint("MissingPermission")
     override fun userTouch(noChangeLights: Boolean) {
-        manager.userActivity(
-            systemClock.uptimeMillis(),
-            PowerManager.USER_ACTIVITY_EVENT_TOUCH,
-            if (noChangeLights) PowerManager.USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS else 0,
-        )
+        val pmFlags = if (noChangeLights) PowerManager.USER_ACTIVITY_FLAG_NO_CHANGE_LIGHTS else 0
+        if (Flags.bouncerUiRevamp()) {
+            userActivityNotifier.notifyUserActivity(
+                timeOfActivity = systemClock.uptimeMillis(),
+                event = PowerManager.USER_ACTIVITY_EVENT_TOUCH,
+                flags = pmFlags,
+            )
+        } else {
+            manager.userActivity(
+                systemClock.uptimeMillis(),
+                PowerManager.USER_ACTIVITY_EVENT_TOUCH,
+                pmFlags,
+            )
+        }
     }
 
     companion object {
