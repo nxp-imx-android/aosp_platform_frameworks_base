@@ -2548,7 +2548,7 @@ static void nativeSetSystemUiLightsOut(JNIEnv* env, jobject nativeImplObj, jbool
 
 static jboolean nativeTransferTouchGesture(JNIEnv* env, jobject nativeImplObj,
                                            jobject fromChannelTokenObj, jobject toChannelTokenObj,
-                                           jboolean isDragDrop) {
+                                           jboolean isDragDrop, jboolean transferEntireGesture) {
     if (fromChannelTokenObj == nullptr || toChannelTokenObj == nullptr) {
         return JNI_FALSE;
     }
@@ -2558,7 +2558,8 @@ static jboolean nativeTransferTouchGesture(JNIEnv* env, jobject nativeImplObj,
 
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
     if (im->getInputManager()->getDispatcher().transferTouchGesture(fromChannelToken,
-                                                                    toChannelToken, isDragDrop)) {
+                                                                    toChannelToken, isDragDrop,
+                                                                    transferEntireGesture)) {
         return JNI_TRUE;
     } else {
         return JNI_FALSE;
@@ -3344,7 +3345,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"requestPointerCapture", "(Landroid/os/IBinder;Z)V", (void*)nativeRequestPointerCapture},
         {"setInputDispatchMode", "(ZZ)V", (void*)nativeSetInputDispatchMode},
         {"setSystemUiLightsOut", "(Z)V", (void*)nativeSetSystemUiLightsOut},
-        {"transferTouchGesture", "(Landroid/os/IBinder;Landroid/os/IBinder;Z)Z",
+        {"transferTouchGesture", "(Landroid/os/IBinder;Landroid/os/IBinder;ZZ)Z",
          (void*)nativeTransferTouchGesture},
         {"transferTouch", "(Landroid/os/IBinder;I)Z", (void*)nativeTransferTouchOnDisplay},
         {"getMousePointerSpeed", "()I", (void*)nativeGetMousePointerSpeed},
