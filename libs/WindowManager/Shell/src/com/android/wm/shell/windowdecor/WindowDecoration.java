@@ -31,11 +31,14 @@ import android.app.WindowConfiguration.WindowingMode;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.gui.BorderSettings;
+import android.gui.BoxShadowSettings;
 import android.os.Binder;
 import android.os.Trace;
 import android.view.Display;
@@ -55,6 +58,7 @@ import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger;
@@ -288,6 +292,49 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         outResult.mCaptionX = (outResult.mWidth - outResult.mCaptionWidth) / 2;
         outResult.mCaptionY = 0;
         outResult.mCaptionTopPadding = params.mCaptionTopPadding;
+
+        if (params.mBorderSettingsId != Resources.ID_NULL) {
+            TypedArray attr = mDecorWindowContext.obtainStyledAttributes(
+                    params.mBorderSettingsId, R.styleable.BorderSettings);
+
+            outResult.mBorderSettings = new BorderSettings();
+            outResult.mBorderSettings.strokeWidth =
+                    attr.getDimension(
+                    R.styleable.BorderSettings_borderStrokeWidth, 0f);
+            outResult.mBorderSettings.color =
+                    attr.getColor(
+                    R.styleable.BorderSettings_borderColor, 0);
+
+            attr.recycle();
+        }
+
+        if (params.mBoxShadowSettingsIds != null) {
+            outResult.mBoxShadowSettings = new BoxShadowSettings();
+            outResult.mBoxShadowSettings.boxShadows =
+                    new BoxShadowSettings.BoxShadowParams[params.mBoxShadowSettingsIds.length];
+            for (int i = 0; i < params.mBoxShadowSettingsIds.length; i++) {
+                TypedArray attr = mDecorWindowContext.obtainStyledAttributes(
+                        params.mBoxShadowSettingsIds[i], R.styleable.BoxShadowSettings);
+
+                BoxShadowSettings.BoxShadowParams box =
+                        new BoxShadowSettings.BoxShadowParams();
+                box.blurRadius = attr.getDimension(
+                    R.styleable.BoxShadowSettings_boxShadowBlurRadius, 0f);
+                box.spreadRadius = attr.getDimension(
+                    R.styleable.BoxShadowSettings_boxShadowSpreadRadius, 0f);
+                box.offsetX = attr.getDimension(
+                    R.styleable.BoxShadowSettings_boxShadowOffsetX, 0f);
+                box.offsetY = attr.getDimension(
+                    R.styleable.BoxShadowSettings_boxShadowOffsetY, 0f);
+                box.color = attr.getColor(
+                    R.styleable.BoxShadowSettings_boxShadowColor, 0);
+
+                outResult.mBoxShadowSettings.boxShadows[i] = box;
+
+                attr.recycle();
+            }
+        }
+
         if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
             outResult.mCornerRadius = params.mCornerRadiusId == Resources.ID_NULL
                     ? INVALID_CORNER_RADIUS : loadDimensionPixelSize(resources,
@@ -505,6 +552,18 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             startT.setWindowCrop(mTaskSurface, outResult.mWidth, outResult.mHeight);
             finishT.setWindowCrop(mTaskSurface, outResult.mWidth, outResult.mHeight)
                     .setPosition(mTaskSurface, taskPosition.x, taskPosition.y);
+        }
+
+        if (outResult.mBorderSettings != null
+                && outResult.mBorderSettings.strokeWidth > 0) {
+            startT.setBorderSettings(mTaskSurface, outResult.mBorderSettings);
+            finishT.setBorderSettings(mTaskSurface, outResult.mBorderSettings);
+        }
+
+        if (outResult.mBoxShadowSettings != null
+                && outResult.mBoxShadowSettings.boxShadows.length > 0) {
+            startT.setBoxShadowSettings(mTaskSurface, outResult.mBoxShadowSettings);
+            finishT.setBoxShadowSettings(mTaskSurface, outResult.mBoxShadowSettings);
         }
 
         if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
@@ -857,6 +916,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
 
         int mShadowRadiusId = Resources.ID_NULL;
         int mCornerRadiusId = Resources.ID_NULL;
+        int mBorderSettingsId = Resources.ID_NULL;
+        int[] mBoxShadowSettingsIds = null;
 
         int mCaptionTopPadding;
         boolean mIsCaptionVisible;
@@ -880,6 +941,9 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mIsInsetSource = true;
             mInsetSourceFlags = 0;
             mDisplayExclusionRegion.setEmpty();
+            mBorderSettingsId = Resources.ID_NULL;
+            mBoxShadowSettingsIds = null;
+
             if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
                 mShadowRadiusId = Resources.ID_NULL;
                 mCornerRadiusId = Resources.ID_NULL;
@@ -930,6 +994,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
         T mRootView;
         int mCornerRadius;
         int mShadowRadius;
+        BorderSettings mBorderSettings;
+        BoxShadowSettings mBoxShadowSettings;
 
         void reset() {
             mWidth = 0;
@@ -941,6 +1007,8 @@ public abstract class WindowDecoration<T extends View & TaskFocusStateConsumer>
             mCaptionTopPadding = 0;
             mCustomizableCaptionRegion.setEmpty();
             mRootView = null;
+            mBorderSettings = null;
+            mBoxShadowSettings = null;
             if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue()) {
                 mCornerRadius = INVALID_CORNER_RADIUS;
                 mShadowRadius = INVALID_SHADOW_RADIUS;

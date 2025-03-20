@@ -546,6 +546,22 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS)
+    public void updateRelayoutParams_boxShadowsAndOutlineSetForFreeform() {
+        final ActivityManager.RunningTaskInfo taskInfo = createTaskInfo(/* visible= */ true);
+        taskInfo.configuration.windowConfiguration.setWindowingMode(WINDOWING_MODE_FREEFORM);
+        RelayoutParams relayoutParams = new RelayoutParams();
+
+        updateRelayoutParams(relayoutParams, taskInfo);
+
+        assertThat(relayoutParams.mBoxShadowSettingsIds.length).isGreaterThan(0);
+        for (int i = 0; i < relayoutParams.mBoxShadowSettingsIds.length; i++) {
+            assertThat(relayoutParams.mBoxShadowSettingsIds[i]).isNotEqualTo(Resources.ID_NULL);
+        }
+        assertThat(relayoutParams.mBorderSettingsId).isNotEqualTo(Resources.ID_NULL);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_APP_HEADER_WITH_TASK_DENSITY)
     public void updateRelayoutParams_appHeader_usesTaskDensity() {
         final int systemDensity = mTestableContext.getOrCreateTestableResources().getResources()
