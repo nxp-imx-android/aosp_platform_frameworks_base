@@ -60,8 +60,51 @@ public class MyStruct {
         // doComplex$ravenwood() method implementation under Ravenwood
     }
 
-    public void doComplex$ravenwood() {
-        // This method implementation only runs under Ravenwood
+    private void doComplex$ravenwood() {
+        // This method implementation only runs under Ravenwood.
+        // The visibility of this replacement method does not need to match
+        // the original method, so it's recommmended to always use
+        // private methods so that these methods won't be accidentally used
+        // by unexpected users.
+    }
+}
+```
+
+## Redirect a complex method to a separate class when under Ravenwood
+
+```
+@RavenwoodKeepPartialClass
+@RavenwoodRedirectionClass("MyComplexClass_ravenwood")
+public class MyComplexClass {
+    @RavenwoodRedirect
+    public void doComplex(int i, int j, int k) {
+        // This method implementation runs as-is on devices, but calls to this
+        // method is redirected to MyComplexClass_ravenwood#doComplex()
+        // under Ravenwood.
+    }
+
+    @RavenwoodRedirect
+    public static void staticDoComplex(int i, int j, int k) {
+        // This method implementation runs as-is on devices, but calls to this
+        // method is redirected to MyComplexClass_ravenwood#staticDoComplex()
+        // under Ravenwood.
+    }
+
+/**
+ * This class is only available in the Ravenwood environment.
+ */
+class MyComplexClass_ravenwood {
+    public static void doComplex(MyComplexClass obj, int i, int j, int k) {
+        // Because the original method is a non-static method, the current
+        // object instance of the original method (the "this" reference)
+        // will be passed over as the first argument of the redirection method,
+        // with the remaining arguments to follow.
+    }
+
+    public static void staticDoComplex(int i, int j, int k) {
+        // Because the original method is a static method, there is no current
+        // object instance, so the parameter list of the redirection method
+        // is the same as the original method.
     }
 }
 ```
@@ -74,21 +117,6 @@ For example, consider a constructor or static initializer that relies on unsuppo
 
 ## Strategies for JNI
 
-At the moment, JNI isn't yet supported under Ravenwood, but you may still want to support APIs that are partially implemented with JNI.  The current approach is to use the “replace” strategy to offer a pure-Java alternative implementation for any JNI-provided logic.
+At the moment, JNI support is considered "experimental". To ensure that teams are well-supported, for any JNI usage, please reach out to ravenwood@ so we can offer design advice and help you onboard native methods. If a native method can be trivially re-implemented in pure-Java, using the replacement or redirection mechanisms described above is also a viable option.
 
-Since this approach requires potentially complex re-implementation, it should only be considered for core infrastructure that is critical to unblocking widespread testing use-cases.  Other less-common usages of JNI should instead wait for offical JNI support in the Ravenwood environment.
-
-When a pure-Java implementation grows too large or complex to host within the original class, the `@RavenwoodNativeSubstitutionClass` annotation can be used to host it in a separate source file:
-
-```
-@RavenwoodKeepWholeClass
-@RavenwoodNativeSubstitutionClass("com.android.platform.test.ravenwood.nativesubstitution.MyComplexClass_host")
-public class MyComplexClass {
-    private static native void nativeDoThing(long nativePtr);
-...
-
-public class MyComplexClass_host {
-    public static void nativeDoThing(long nativePtr) {
-        // ...
-    }
-```
+The main caveat regarding JNI support on Ravenwood is due to how native code is built for Ravenwood. Unlike Java/Kotlin code where Ravenwood directly uses the same intermediate artifacts when building the real target for Android, Ravenwood uses the "host" variant of native libraries. The "host" variant of native libraries usually either don't exist, are extremely limited, or behave drastically different compared to the Android variant.
