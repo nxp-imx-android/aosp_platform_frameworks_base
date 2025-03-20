@@ -47,6 +47,7 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.NotificationPanelView
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.VibratorHelper
+import com.google.android.msdl.domain.MSDLPlayer
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -69,6 +70,7 @@ constructor(
     private val deviceEntryBackgroundViewModel: Lazy<DeviceEntryBackgroundViewModel>,
     private val falsingManager: Lazy<FalsingManager>,
     private val vibratorHelper: Lazy<VibratorHelper>,
+    private val msdlPlayer: Lazy<MSDLPlayer>,
     @LongPressTouchLog private val logBuffer: LogBuffer,
     @KeyguardBlueprintLog blueprintLogBuffer: LogBuffer,
 ) : KeyguardSection() {
@@ -101,6 +103,7 @@ constructor(
                     deviceEntryBackgroundViewModel.get(),
                     falsingManager.get(),
                     vibratorHelper.get(),
+                    msdlPlayer.get(),
                 )
         }
     }
