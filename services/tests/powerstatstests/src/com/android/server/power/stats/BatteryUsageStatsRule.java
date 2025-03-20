@@ -340,7 +340,7 @@ public class BatteryUsageStatsRule implements TestRule {
     }
 
     private void before() {
-        BatteryUsageStats.DEBUG_INSTANCE_COUNT = true;
+        BatteryUsageStats.enableInstanceLeakDetection();
         HandlerThread bgThread = new HandlerThread("bg thread");
         bgThread.setUncaughtExceptionHandler((thread, throwable)-> {
             mThrowable = throwable;

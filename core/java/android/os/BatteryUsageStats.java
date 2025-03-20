@@ -129,12 +129,6 @@ public final class BatteryUsageStats implements Parcelable, Closeable {
     // Max window size. CursorWindow uses only as much memory as needed.
     private static final long BATTERY_CONSUMER_CURSOR_WINDOW_SIZE = 20_000_000; // bytes
 
-    /**
-     * Used by tests to ensure all BatteryUsageStats instances are closed.
-     */
-    @VisibleForTesting
-    public static boolean DEBUG_INSTANCE_COUNT;
-
     private static final int STATSD_PULL_ATOM_MAX_BYTES = 45000;
 
     private static final int[] UID_USAGE_TIME_PROCESS_STATES = {
@@ -1267,11 +1261,16 @@ public final class BatteryUsageStats implements Parcelable, Closeable {
         }
     }
 
+    /*
+     * Used by tests to ensure all BatteryUsageStats instances are closed.
+     */
+    private static volatile boolean sInstanceLeakDetectionEnabled;
+
     @GuardedBy("BatteryUsageStats.class")
     private static Map<CursorWindow, Exception> sInstances;
 
     private static void onCursorWindowAllocated(CursorWindow window) {
-        if (!DEBUG_INSTANCE_COUNT) {
+        if (!sInstanceLeakDetectionEnabled) {
             return;
         }
 
@@ -1284,7 +1283,7 @@ public final class BatteryUsageStats implements Parcelable, Closeable {
     }
 
     private static void onCursorWindowReleased(CursorWindow window) {
-        if (!DEBUG_INSTANCE_COUNT) {
+        if (!sInstanceLeakDetectionEnabled) {
             return;
         }
 
@@ -1294,12 +1293,26 @@ public final class BatteryUsageStats implements Parcelable, Closeable {
     }
 
     /**
+     * Enables detection of leaked BatteryUsageStats instances, meaning instances that are created
+     * but not closed during the test execution.
+     */
+    @VisibleForTesting
+    public static void enableInstanceLeakDetection() {
+        sInstanceLeakDetectionEnabled = true;
+        synchronized (BatteryUsageStats.class) {
+            if (sInstances != null) {
+                sInstances.clear();
+            }
+        }
+    }
+
+    /**
      * Used by tests to ensure all BatteryUsageStats instances are closed.
      */
     @VisibleForTesting
     public static void assertAllInstancesClosed() {
-        if (!DEBUG_INSTANCE_COUNT) {
-            throw new IllegalStateException("DEBUG_INSTANCE_COUNT is false");
+        if (!sInstanceLeakDetectionEnabled) {
+            throw new IllegalStateException("Instance leak detection is not enabled");
         }
 
         synchronized (BatteryUsageStats.class) {
