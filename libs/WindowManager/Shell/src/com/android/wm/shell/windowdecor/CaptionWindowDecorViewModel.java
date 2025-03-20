@@ -49,7 +49,6 @@ import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.window.DisplayAreaInfo;
-import android.window.TransitionInfo;
 import android.window.WindowContainerToken;
 import android.window.WindowContainerTransaction;
 
@@ -234,8 +233,7 @@ public class CaptionWindowDecorViewModel implements WindowDecorViewModel, FocusT
             RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
-            SurfaceControl.Transaction finishT,
-            @TransitionInfo.TransitionMode int changeMode) {
+            SurfaceControl.Transaction finishT) {
         final CaptionWindowDecoration decoration = mWindowDecorByTaskId.get(taskInfo.taskId);
 
         if (!shouldShowWindowDecor(taskInfo)) {

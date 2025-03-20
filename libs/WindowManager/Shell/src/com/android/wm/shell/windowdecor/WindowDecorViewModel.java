@@ -18,7 +18,6 @@ package com.android.wm.shell.windowdecor;
 
 import android.app.ActivityManager;
 import android.view.SurfaceControl;
-import android.window.TransitionInfo;
 
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter;
 import com.android.wm.shell.splitscreen.SplitScreenController;
@@ -84,14 +83,12 @@ public interface WindowDecorViewModel {
      * @param taskSurface the surface of the task
      * @param startT      the start transaction to be applied before the transition
      * @param finishT     the finish transaction to restore states after the transition
-     * @param changeMode  the type of change to the task
      */
     void onTaskChanging(
             ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl taskSurface,
             SurfaceControl.Transaction startT,
-            SurfaceControl.Transaction finishT,
-            @TransitionInfo.TransitionMode int changeMode);
+            SurfaceControl.Transaction finishT);
 
     /**
      * Notifies that the given task is about to close to give the window decoration a chance to

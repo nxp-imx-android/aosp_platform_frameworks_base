@@ -2793,11 +2793,14 @@ class DesktopTasksController(
         taskInfo: RunningTaskInfo,
         deskId: Int?,
     ): RunOnTransitStart? {
-        // This windowing mode is to get the transition animation started; once we complete
-        // split select, we will change windowing mode to undefined and inherit from split stage.
-        // Going to undefined here causes task to flicker to the top left.
-        // Cancelling the split select flow will revert it to fullscreen.
-        wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
+        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue) {
+            // This windowing mode is to get the transition animation started; once we complete
+            // split select, we will change windowing mode to undefined and inherit from split
+            // stage.
+            // Going to undefined here causes task to flicker to the top left.
+            // Cancelling the split select flow will revert it to fullscreen.
+            wct.setWindowingMode(taskInfo.token, WINDOWING_MODE_MULTI_WINDOW)
+        }
         // The task's density may have been overridden in freeform; revert it here as we don't
         // want it overridden in multi-window.
         wct.setDensityDpi(taskInfo.token, getDefaultDensityDpi())

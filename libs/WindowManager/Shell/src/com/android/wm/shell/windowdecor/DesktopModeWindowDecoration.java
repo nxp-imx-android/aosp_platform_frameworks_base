@@ -217,7 +217,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private boolean mIsDragging = false;
     private Runnable mLoadAppInfoRunnable;
     private Runnable mSetAppInfoRunnable;
-    private boolean mIsMovingToBack;
 
     public DesktopModeWindowDecoration(
             Context context,
@@ -479,7 +478,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         // causes flickering. See b/270202228.
         final boolean applyTransactionOnDraw = taskInfo.isFreeform();
         relayout(taskInfo, t, t, applyTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
-                hasGlobalFocus, displayExclusionRegion, mIsMovingToBack);
+                hasGlobalFocus, displayExclusionRegion);
         if (!applyTransactionOnDraw) {
             t.apply();
         }
@@ -506,8 +505,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     void relayout(ActivityManager.RunningTaskInfo taskInfo,
             SurfaceControl.Transaction startT, SurfaceControl.Transaction finishT,
             boolean applyStartTransactionOnDraw, boolean shouldSetTaskVisibilityPositionAndCrop,
-            boolean hasGlobalFocus, @NonNull Region displayExclusionRegion,
-            boolean isMovingToBack) {
+            boolean hasGlobalFocus, @NonNull Region displayExclusionRegion) {
         Trace.beginSection("DesktopModeWindowDecoration#relayout");
 
         if (DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_APP_TO_WEB.isTrue()) {
@@ -530,7 +528,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
 
         final boolean inFullImmersive = mDesktopUserRepositories.getProfile(taskInfo.userId)
                 .isTaskInFullImmersiveState(taskInfo.taskId);
-        mIsMovingToBack = isMovingToBack;
         updateRelayoutParams(mRelayoutParams, mContext, taskInfo, mSplitScreenController,
                 applyStartTransactionOnDraw, shouldSetTaskVisibilityPositionAndCrop,
                 mIsStatusBarVisible, mIsKeyguardVisibleAndOccluded, inFullImmersive,
@@ -539,8 +536,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 /* shouldIgnoreCornerRadius= */ mIsRecentsTransitionRunning
                         && DesktopModeFlags
                         .ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue(),
-                mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
-                mIsRecentsTransitionRunning, mIsMovingToBack);
+                mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo));
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;
@@ -631,6 +627,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             mMainExecutor.execute(mSetAppInfoRunnable);
         };
         mBgExecutor.execute(mLoadAppInfoRunnable);
+    }
+
+    private boolean showInputLayer() {
+        if (!DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
+            return isCaptionVisible();
+        }
+        // Don't show the input layer during the recents transition, otherwise it could become
+        // touchable while in overview, during quick-switch or even for a short moment after going
+        // Home.
+        return isCaptionVisible() && !mIsRecentsTransitionRunning;
     }
 
     private boolean isCaptionVisible() {
@@ -874,7 +880,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (!isAppHandle(mWindowDecorViewHolder)) return;
         asAppHandle(mWindowDecorViewHolder).bindData(new AppHandleViewHolder.HandleData(
                 mTaskInfo, determineHandlePosition(), mResult.mCaptionWidth,
-                mResult.mCaptionHeight, /* showInputLayer= */ isCaptionVisible(),
+                mResult.mCaptionHeight, /* showInputLayer= */ showInputLayer(),
                 /* isCaptionVisible= */ isCaptionVisible()
         ));
     }
@@ -959,9 +965,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean hasGlobalFocus,
             @NonNull Region displayExclusionRegion,
             boolean shouldIgnoreCornerRadius,
-            boolean shouldExcludeCaptionFromAppBounds,
-            boolean isRecentsTransitionRunning,
-            boolean isMovingToBack) {
+            boolean shouldExcludeCaptionFromAppBounds) {
         final int captionLayoutId = getDesktopModeWindowDecorLayoutId(taskInfo.getWindowingMode());
         final boolean isAppHeader =
                 captionLayoutId == R.layout.desktop_mode_app_header;
@@ -979,19 +983,10 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         relayoutParams.mAsyncViewHost = isAppHandle;
 
         boolean showCaption;
-        // If this relayout is occurring from an observed TRANSIT_TO_BACK transition, do not
-        // show caption (this includes split select transition).
-        if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()
-                && isMovingToBack && !isDragging) {
-            showCaption = false;
-        } else if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue() && isDragging) {
+        if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue() && isDragging) {
             // If the task is being dragged, the caption should not be hidden so that it continues
             // receiving input
             showCaption = true;
-        } else if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()
-                && isRecentsTransitionRunning) {
-            // Caption should not be visible in recents.
-            showCaption = false;
         } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue()) {
             if (inFullImmersiveMode) {
                 showCaption = (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
@@ -1895,18 +1890,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * <p> When a Recents transition is active we allow that transition to take ownership of the
      * corner radius of its task surfaces, so each window decoration should stop updating the corner
      * radius of its task surface during that time.
-     *
-     * We should not allow input to reach the input layer during a Recents transition, so
-     * update the handle view holder accordingly if transition status changes.
      */
     void setIsRecentsTransitionRunning(boolean isRecentsTransitionRunning) {
-        if (mIsRecentsTransitionRunning != isRecentsTransitionRunning) {
-            mIsRecentsTransitionRunning = isRecentsTransitionRunning;
-            if (DesktopModeFlags.ENABLE_INPUT_LAYER_TRANSITION_FIX.isTrue()) {
-                // We don't relayout decor on recents transition, so we need to call it directly.
-                relayout(mTaskInfo, mHasGlobalFocus, mRelayoutParams.mDisplayExclusionRegion);
-            }
-        }
+        mIsRecentsTransitionRunning = isRecentsTransitionRunning;
     }
 
     /**
