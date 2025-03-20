@@ -199,6 +199,16 @@ flag {
 }
 
 flag {
+    name: "fix_is_in_emergency_anr"
+    namespace: "location"
+    description: "Avoid calling IPC with a lock to avoid deadlock"
+    bug: "355384257"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "gnss_assistance_interface_jni"
     namespace: "location"
     description: "Flag for GNSS assistance interface JNI"
