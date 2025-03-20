@@ -239,8 +239,6 @@ public class Editor {
     final UndoInputFilter mUndoInputFilter = new UndoInputFilter(this);
     boolean mAllowUndo = true;
 
-    private final MetricsLogger mMetricsLogger = new MetricsLogger();
-
     // Cursor Controllers.
     InsertionPointCursorController mInsertionPointCursorController;
     SelectionModifierCursorController mSelectionModifierCursorController;
@@ -422,6 +420,7 @@ public class Editor {
     private Rect mTempRect;
 
     private final TextView mTextView;
+    private final int mDoubleTapTimeoutMillis;
 
     final ProcessTextIntentActionsHandler mProcessTextIntentActionsHandler;
 
@@ -483,6 +482,10 @@ public class Editor {
         mTextView = textView;
         // Synchronize the filter list, which places the undo input filter at the end.
         mTextView.setFilters(mTextView.getFilters());
+        mDoubleTapTimeoutMillis =
+                android.companion.virtualdevice.flags.Flags.viewconfigurationApis()
+                ? ViewConfiguration.get(mTextView.getContext()).getDoubleTapTimeoutMillis()
+                : ViewConfiguration.getDoubleTapTimeout();
         mProcessTextIntentActionsHandler = new ProcessTextIntentActionsHandler(this);
         mA11ySmartActions = new AccessibilitySmartActions(mTextView);
         mHapticTextHandleEnabled = mTextView.getContext().getResources().getBoolean(
@@ -522,7 +525,6 @@ public class Editor {
         mLineChangeSlopMin = (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, LINE_CHANGE_SLOP_MIN_DP,
                 mTextView.getContext().getResources().getDisplayMetrics());
-
     }
 
     @VisibleForTesting
@@ -1831,8 +1833,7 @@ public class Editor {
         if (mTextActionMode != null && mTextView.showUIForTouchScreen()) {
             // Delay "show" so it doesn't interfere with click confirmations
             // or double-clicks that could "dismiss" the floating toolbar.
-            int delay = ViewConfiguration.getDoubleTapTimeout();
-            mTextView.postDelayed(mShowFloatingToolbar, delay);
+            mTextView.postDelayed(mShowFloatingToolbar, mDoubleTapTimeoutMillis);
 
             // This classifies the text and most likely returns before the toolbar is actually
             // shown. If not, it will update the toolbar with the result when classification
@@ -2767,8 +2768,7 @@ public class Editor {
                     mShowSuggestionRunnable = this::replace;
 
                     // removeCallbacks is performed on every touch
-                    mTextView.postDelayed(mShowSuggestionRunnable,
-                            ViewConfiguration.getDoubleTapTimeout());
+                    mTextView.postDelayed(mShowSuggestionRunnable, mDoubleTapTimeoutMillis);
                 } else if (hasInsertionController()) {
                     if (shouldInsertCursor && mTextView.showUIForTouchScreen()) {
                         getInsertionController().show();
@@ -5997,7 +5997,7 @@ public class Editor {
                     mTouchDownX = ev.getX();
                     mTouchDownY = ev.getY();
                     mIsInActionMode = mTextActionMode != null;
-                    if (ev.getEventTime() - mLastUpTime < ViewConfiguration.getDoubleTapTimeout()) {
+                    if (ev.getEventTime() - mLastUpTime < mDoubleTapTimeoutMillis) {
                         stopTextActionMode();  // Avoid crash when double tap and drag backwards.
                     }
                     mTouchState.setIsOnHandle(true);
@@ -6799,7 +6799,7 @@ public class Editor {
                     }
                     mTextView.postDelayed(
                             mInsertionActionModeRunnable,
-                            ViewConfiguration.getDoubleTapTimeout() + 1);
+                            mDoubleTapTimeoutMillis + 1);
                 }
             }
 
