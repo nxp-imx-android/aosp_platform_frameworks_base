@@ -19,6 +19,7 @@ import android.app.StatusBarManager
 import android.graphics.Point
 import android.util.Log
 import android.util.MathUtils
+import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.bouncer.data.repository.KeyguardBouncerRepository
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
@@ -95,6 +96,7 @@ constructor(
     private val fromOccludedTransitionInteractor: Provider<FromOccludedTransitionInteractor>,
     private val fromAlternateBouncerTransitionInteractor:
         Provider<FromAlternateBouncerTransitionInteractor>,
+    private val lockPatternUtils: LockPatternUtils,
     @Application applicationScope: CoroutineScope,
 ) {
     // TODO(b/296118689): move to a repository
@@ -541,6 +543,13 @@ constructor(
 
     fun setNotificationStackAbsoluteBottom(bottom: Float) {
         wallpaperFocalAreaRepository.setNotificationStackAbsoluteBottom(bottom)
+    }
+
+    fun notifyWatchDisconnected() {
+        lockPatternUtils.requireStrongAuth(
+            LockPatternUtils.StrongAuthTracker.SOME_AUTH_REQUIRED_AFTER_WATCH_DISCONNECTED,
+            0,
+        )
     }
 
     suspend fun hydrateTableLogBuffer(tableLogBuffer: TableLogBuffer) {
