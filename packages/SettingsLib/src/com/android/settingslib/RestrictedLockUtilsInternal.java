@@ -244,14 +244,23 @@ public class RestrictedLockUtilsInternal extends RestrictedLockUtils {
      */
     public static EnforcedAdmin checkIfKeyguardFeaturesDisabled(Context context,
             int keyguardFeatures, final @UserIdInt int userId) {
-        final LockSettingCheck check = (dpm, admin, checkUser) -> {
-            int effectiveFeatures = dpm.getKeyguardDisabledFeatures(admin, checkUser);
-            if (checkUser != userId) {
-                effectiveFeatures &= PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
-            }
-            return (effectiveFeatures & keyguardFeatures) != KEYGUARD_DISABLE_FEATURES_NONE;
-        };
-        if (UserManager.get(context).getUserInfo(userId).isManagedProfile()) {
+        UserInfo userInfo = UserManager.get(context).getUserInfo(userId);
+        if (userInfo == null) {
+            Log.w(LOG_TAG, "User " + userId + " does not exist");
+            return null;
+        }
+
+        final LockSettingCheck check =
+                (dpm, admin, checkUser) -> {
+                    int effectiveFeatures = dpm.getKeyguardDisabledFeatures(admin, checkUser);
+                    if (checkUser != userId) {
+                        // This case is reached when {@code checkUser} is a managed profile and
+                        // {@code userId} is the parent user.
+                        effectiveFeatures &= PROFILE_KEYGUARD_FEATURES_AFFECT_OWNER;
+                    }
+                    return (effectiveFeatures & keyguardFeatures) != KEYGUARD_DISABLE_FEATURES_NONE;
+                };
+        if (userInfo.isManagedProfile()) {
             DevicePolicyManager dpm =
                     (DevicePolicyManager) context.getSystemService(Context.DEVICE_POLICY_SERVICE);
             return findEnforcedAdmin(dpm.getActiveAdminsAsUser(userId), dpm, userId, check);
