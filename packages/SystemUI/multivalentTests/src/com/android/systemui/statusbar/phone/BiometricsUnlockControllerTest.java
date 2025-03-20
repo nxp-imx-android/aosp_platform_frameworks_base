@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.phone;
 
+import static android.service.dreams.Flags.FLAG_DREAMS_V2;
+
 import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE;
 import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
 
@@ -38,6 +40,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper.RunWithLooper;
 import android.testing.TestableResources;
 import android.view.ViewRootImpl;
@@ -334,6 +337,38 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
                 eq("BiometricUnlockController#MODE_SHOW_BOUNCER"));
         assertThat(mBiometricUnlockController.getMode())
                 .isEqualTo(BiometricUnlockController.MODE_SHOW_BOUNCER);
+    }
+
+    @Test
+    public void onBiometricAuthenticated_whenFaceAndDreaming_dontDismissKeyguard() {
+        when(mUpdateMonitor.isDeviceInteractive()).thenReturn(true);
+        when(mUpdateMonitor.isDreaming()).thenReturn(true);
+        when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
+        // the value of isStrongBiometric doesn't matter here since we only care about the returned
+        // value of isUnlockingWithBiometricAllowed()
+        mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
+                BiometricSourceType.FACE, true /* isStrongBiometric */);
+
+        verify(mStatusBarKeyguardViewManager, never()).notifyKeyguardAuthenticated(anyBoolean());
+        assertThat(mBiometricUnlockController.getMode())
+                .isEqualTo(BiometricUnlockController.MODE_ONLY_WAKE);
+    }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_V2)
+    public void onBiometricAuthenticated_whenFaceOnBouncerAndDreaming_dismissKeyguard() {
+        when(mUpdateMonitor.isDeviceInteractive()).thenReturn(true);
+        when(mUpdateMonitor.isDreaming()).thenReturn(true);
+        when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
+        when(mStatusBarKeyguardViewManager.primaryBouncerIsOrWillBeShowing()).thenReturn(true);
+        // the value of isStrongBiometric doesn't matter here since we only care about the returned
+        // value of isUnlockingWithBiometricAllowed()
+        mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
+                BiometricSourceType.FACE, true /* isStrongBiometric */);
+
+        verify(mStatusBarKeyguardViewManager, never()).notifyKeyguardAuthenticated(anyBoolean());
+        assertThat(mBiometricUnlockController.getMode())
+                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_UNLOCK_FROM_DREAM);
     }
 
     @Test
