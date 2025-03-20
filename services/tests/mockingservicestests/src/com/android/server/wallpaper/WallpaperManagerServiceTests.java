@@ -94,6 +94,7 @@ import com.android.internal.R;
 import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.LocalServices;
+import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.DesktopModeHelper;
 import com.android.server.wm.WindowManagerInternal;
 
@@ -169,6 +170,8 @@ public class WallpaperManagerServiceTests {
 
     private static WindowManagerInternal sWindowManagerInternal;
 
+    private static ActivityTaskManagerInternal sActivityTaskManagerInternal;
+
     @BeforeClass
     public static void setUpClass() {
         sMockitoSession = mockitoSession()
@@ -181,6 +184,9 @@ public class WallpaperManagerServiceTests {
 
         sWindowManagerInternal = mock(WindowManagerInternal.class);
         LocalServices.addService(WindowManagerInternal.class, sWindowManagerInternal);
+        sActivityTaskManagerInternal = mock(ActivityTaskManagerInternal.class);
+        LocalServices.addService(ActivityTaskManagerInternal.class,
+                sActivityTaskManagerInternal);
 
         sContext.addMockSystemService(Context.APP_OPS_SERVICE, mock(AppOpsManager.class));
 
@@ -232,6 +238,7 @@ public class WallpaperManagerServiceTests {
             sMockitoSession = null;
         }
         LocalServices.removeServiceForTest(WindowManagerInternal.class);
+        LocalServices.removeServiceForTest(ActivityTaskManagerInternal.class);
         sImageWallpaperComponentName = null;
         sDefaultWallpaperComponent = null;
         sFallbackWallpaperComponentName = null;
