@@ -1838,8 +1838,8 @@
     <dimen name="ongoing_activity_chip_min_text_width">12dp</dimen>
     <dimen name="ongoing_activity_chip_max_text_width">74dp</dimen>
     <dimen name="ongoing_activity_chip_margin_start">5dp</dimen>
-    <!-- The activity chip side padding, used with the default phone icon. -->
-    <dimen name="ongoing_activity_chip_side_padding">12dp</dimen>
+    <!-- The activity chip side padding, used in the legacy non-Compose chips with an icon that does not have embedded padding. -->
+    <dimen name="ongoing_activity_chip_side_padding_legacy">12dp</dimen>
     <!-- The activity chip side padding, used with an icon that has embedded padding (e.g. if the icon comes from the notification's smallIcon field). If the icon has padding, the chip itself can have less padding. -->
     <dimen name="ongoing_activity_chip_side_padding_for_embedded_padding_icon">2dp</dimen>
     <dimen name="ongoing_activity_chip_side_padding_for_embedded_padding_icon_legacy">6dp</dimen>
