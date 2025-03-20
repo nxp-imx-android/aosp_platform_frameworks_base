@@ -30,6 +30,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.android.app.animation.Interpolators;
+import com.android.internal.dynamicanimation.animation.DynamicAnimation;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.PhysicsProperty;
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
@@ -199,15 +200,19 @@ public class ExpandableViewState extends ViewState {
                 if (animateHeight) {
                     expandableView.setActualHeightAnimating(true);
                 }
+                DynamicAnimation.OnAnimationEndListener endListener = null;
+                if (!ViewState.isAnimating(expandableView, HEIGHT_PROPERTY)) {
+                    // only Add the end listener if we haven't already
+                    endListener = (animation, canceled, value, velocity) -> {
+                        expandableView.setActualHeightAnimating(false);
+                        if (!canceled && child instanceof ExpandableNotificationRow row) {
+                            row.setGroupExpansionChanging(false /* isExpansionChanging */);
+                        }
+                    };
+                }
                 PhysicsPropertyAnimator.setProperty(child, HEIGHT_PROPERTY, this.height, properties,
                         animateHeight,
-                        (animation, canceled, value, velocity) -> {
-                            expandableView.setActualHeightAnimating(false);
-                            if (!canceled && child instanceof ExpandableNotificationRow) {
-                                ((ExpandableNotificationRow) child).setGroupExpansionChanging(
-                                        false /* isExpansionChanging */);
-                            }
-                        });
+                        endListener);
             } else {
                 startHeightAnimationInterpolator(expandableView, properties);
             }
