@@ -75,6 +75,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -1778,9 +1779,55 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
 
     @Nullable
     private BatteryLevelsInfo getBatteryOfLeAudioDeviceComponents() {
-        // TODO(b/397847825): Implement the logic to get battery of LE audio device components.
-        return null;
+        LeAudioProfile leAudio = mProfileManager.getLeAudioProfile();
+        if (leAudio == null) {
+            return null;
+        }
+        int leftBattery = BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+        int rightBattery = BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+        int overallBattery = BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+
+        Set<BluetoothDevice> allDevices =
+                Stream.concat(
+                                mMemberDevices.stream().map(CachedBluetoothDevice::getDevice),
+                                Stream.of(mDevice))
+                        .collect(Collectors.toSet());
+        for (BluetoothDevice device : allDevices) {
+            int battery = device.getBatteryLevel();
+            if (battery <= BluetoothDevice.BATTERY_LEVEL_UNKNOWN) {
+                continue;
+            }
+            int deviceId = leAudio.getAudioLocation(device);
+            boolean isLeft = (deviceId & LeAudioProfile.LEFT_DEVICE_ID) != 0;
+            boolean isRight = (deviceId & LeAudioProfile.RIGHT_DEVICE_ID) != 0;
+            boolean isLeftRight = isLeft && isRight;
+            // We should expect only one device assign to one side, but if it happens,
+            // we don't care which one.
+            if (isLeftRight) {
+                overallBattery = battery;
+            } else if (isLeft) {
+                leftBattery = battery;
+            } else if (isRight) {
+                rightBattery = battery;
+            }
+        }
+        overallBattery = getMinBatteryLevels(
+                Arrays.stream(new int[]{leftBattery, rightBattery, overallBattery}));
+
+        Log.d(TAG, "Acquired battery info from Bluetooth service for le audio device "
+                + mDevice.getAnonymizedAddress()
+                + " left battery: " + leftBattery
+                + " right battery: " + rightBattery
+                + " overall battery: " + overallBattery);
+        return overallBattery > BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+                ? new BatteryLevelsInfo(
+                        leftBattery,
+                        rightBattery,
+                        BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                        overallBattery)
+                : null;
     }
+
     private CharSequence getTvBatterySummary(int mainBattery, int leftBattery, int rightBattery,
             int lowBatteryColorRes) {
         // Since there doesn't seem to be a way to use format strings to add the

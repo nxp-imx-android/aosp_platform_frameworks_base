@@ -2357,6 +2357,32 @@ public class CachedBluetoothDeviceTest {
                 Integer.parseInt(TWS_BATTERY_LEFT));
     }
 
+    @Test
+    public void getBatteryLevelsInfo_leAudioDeviceWithBattery_returnBatteryLevelsInfo() {
+        when(mDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET)).thenReturn(
+                "false".getBytes());
+        when(mProfileManager.getLeAudioProfile()).thenReturn(mLeAudioProfile);
+        updateProfileStatus(mLeAudioProfile, BluetoothProfile.STATE_CONNECTED);
+        mCachedDevice.addMemberDevice(mSubCachedDevice);
+        when(mLeAudioProfile.getAudioLocation(mSubDevice)).thenReturn(
+                BluetoothLeAudio.AUDIO_LOCATION_BACK_LEFT);
+        when(mSubDevice.getBatteryLevel()).thenReturn(Integer.parseInt(TWS_BATTERY_LEFT));
+        when(mLeAudioProfile.getAudioLocation(mDevice)).thenReturn(
+                BluetoothLeAudio.AUDIO_LOCATION_SIDE_RIGHT);
+        when(mDevice.getBatteryLevel()).thenReturn(Integer.parseInt(TWS_BATTERY_RIGHT));
+
+        BatteryLevelsInfo batteryLevelsInfo = mCachedDevice.getBatteryLevelsInfo();
+
+        assertThat(batteryLevelsInfo.getLeftBatteryLevel()).isEqualTo(
+                Integer.parseInt(TWS_BATTERY_LEFT));
+        assertThat(batteryLevelsInfo.getRightBatteryLevel()).isEqualTo(
+                Integer.parseInt(TWS_BATTERY_RIGHT));
+        assertThat(batteryLevelsInfo.getCaseBatteryLevel()).isEqualTo(
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+        assertThat(batteryLevelsInfo.getOverallBatteryLevel()).isEqualTo(
+                Integer.parseInt(TWS_BATTERY_LEFT));
+    }
+
     private void updateProfileStatus(LocalBluetoothProfile profile, int status) {
         doReturn(status).when(profile).getConnectionStatus(mDevice);
         mCachedDevice.onProfileStateChanged(profile, status);
