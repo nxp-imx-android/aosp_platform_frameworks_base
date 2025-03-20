@@ -25,6 +25,7 @@ import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothCsipSetCoordinator;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHearingAid;
+import android.bluetooth.BluetoothLeBroadcastReceiveState;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothUuid;
 import android.content.Context;
@@ -58,6 +59,7 @@ import com.android.settingslib.flags.Flags;
 import com.android.settingslib.utils.ThreadUtils;
 import com.android.settingslib.widget.AdaptiveOutlineDrawable;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -397,6 +399,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 }
             }
             Log.d(TAG, "Disconnect " + this);
+            if (Flags.enableLeAudioSharing()) {
+                removeBroadcastSource(ImmutableSet.of(mDevice));
+            }
             mDevice.disconnect();
         }
         // Disconnect  PBAP server in case its connected
@@ -609,6 +614,16 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             final BluetoothDevice dev = mDevice;
             if (dev != null) {
                 mUnpairing = true;
+                if (Flags.enableLeAudioSharing()) {
+                    Set<BluetoothDevice> devicesToRemoveSource = new HashSet<>();
+                    devicesToRemoveSource.add(dev);
+                    if (getGroupId() != BluetoothCsipSetCoordinator.GROUP_ID_INVALID) {
+                        for (CachedBluetoothDevice member : getMemberDevice()) {
+                            devicesToRemoveSource.add(member.getDevice());
+                        }
+                    }
+                    removeBroadcastSource(devicesToRemoveSource);
+                }
                 final boolean successful = dev.removeBond();
                 if (successful) {
                     releaseLruCache();
@@ -618,6 +633,25 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
                 } else if (BluetoothUtils.V) {
                     Log.v(TAG, "Framework rejected command immediately:REMOVE_BOND " +
                         describe(null));
+                }
+            }
+        }
+    }
+
+    @WorkerThread
+    private void removeBroadcastSource(Set<BluetoothDevice> devices) {
+        if (mProfileManager == null || devices.isEmpty()) return;
+        LocalBluetoothLeBroadcast broadcast = mProfileManager.getLeAudioBroadcastProfile();
+        LocalBluetoothLeBroadcastAssistant assistant =
+                mProfileManager.getLeAudioBroadcastAssistantProfile();
+        if (broadcast != null && assistant != null && broadcast.isEnabled(null)) {
+            for (BluetoothDevice device : devices) {
+                for (BluetoothLeBroadcastReceiveState state : assistant.getAllSources(device)) {
+                    if (BluetoothUtils.D) {
+                        Log.d(TAG, "Remove broadcast source " + state.getBroadcastId()
+                                + " from device " + device.getAnonymizedAddress());
+                    }
+                    assistant.removeSource(device, state.getSourceId());
                 }
             }
         }
