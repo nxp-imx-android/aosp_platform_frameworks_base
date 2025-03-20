@@ -37,7 +37,6 @@ import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.layout.waterfall
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.overscroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
@@ -46,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -57,6 +57,8 @@ import com.android.mechanics.behavior.VerticalExpandContainerSpec
 import com.android.mechanics.behavior.verticalExpandContainerBackground
 import com.android.systemui.Flags
 import com.android.systemui.res.R
+import com.android.systemui.shade.ui.ShadeColors.notificationScrim
+import com.android.systemui.shade.ui.ShadeColors.shadePanel
 import com.android.systemui.shade.ui.composable.OverlayShade.rememberShadeExpansionMotion
 
 /** Renders a lightweight shade UI container, as an overlay. */
@@ -190,17 +192,15 @@ object OverlayShade {
     }
 
     object Colors {
-        val ScrimBackground = Color(0f, 0f, 0f, alpha = 0.3f)
+        val ScrimBackground: Color
+            @Composable
+            @ReadOnlyComposable
+            get() = Color(LocalResources.current.notificationScrim(Flags.notificationShadeBlur()))
+
         val PanelBackground: Color
             @Composable
             @ReadOnlyComposable
-            get() {
-                return if (Flags.notificationShadeBlur()) {
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainer
-                }
-            }
+            get() = Color(LocalResources.current.shadePanel(Flags.notificationShadeBlur()))
     }
 
     object Dimensions {
