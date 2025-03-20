@@ -17,7 +17,6 @@
 package android.view;
 
 import static android.view.InsetsController.ANIMATION_TYPE_NONE;
-import static android.view.InsetsController.ANIMATION_TYPE_RESIZE;
 import static android.view.InsetsController.AnimationType;
 import static android.view.InsetsController.DEBUG;
 import static android.view.InsetsSourceConsumerProto.ANIMATION_STATE;
@@ -201,9 +200,8 @@ public class InsetsSourceConsumer {
                 }
 
                 // If there is no animation controlling the leash, make sure the visibility and the
-                // position is up-to-date. Note: ANIMATION_TYPE_RESIZE doesn't control the leash.
-                final int animType = mController.getAnimationType(mType);
-                if (animType == ANIMATION_TYPE_NONE || animType == ANIMATION_TYPE_RESIZE) {
+                // position is up-to-date.
+                if (!mController.hasSurfaceAnimation(mType)) {
                     applyRequestedVisibilityAndPositionToControl();
                 }
 
