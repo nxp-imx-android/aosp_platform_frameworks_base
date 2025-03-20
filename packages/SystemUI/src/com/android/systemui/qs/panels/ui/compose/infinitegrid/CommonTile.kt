@@ -289,6 +289,8 @@ private fun TileLabel(
 ) {
     var textSize by remember { mutableIntStateOf(0) }
 
+    val iterations = if (isVisible()) TILE_MARQUEE_ITERATIONS else 0
+
     BasicText(
         text = text,
         color = color,
@@ -321,14 +323,10 @@ private fun TileLabel(
                         )
                     }
                 }
-                .thenIf(isVisible()) {
-                    // Only apply the marquee when the label is visible, which is needed for the
-                    // always composed QS
-                    Modifier.basicMarquee(
-                        iterations = TILE_MARQUEE_ITERATIONS,
-                        initialDelayMillis = TILE_INITIAL_DELAY_MILLIS,
-                    )
-                },
+                .basicMarquee(
+                    iterations = iterations,
+                    initialDelayMillis = TILE_INITIAL_DELAY_MILLIS,
+                ),
     )
 }
 
