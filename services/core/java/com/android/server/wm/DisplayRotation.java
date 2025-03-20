@@ -1683,9 +1683,9 @@ public class DisplayRotation {
                     new DeviceStateAutoRotateSettingManagerImpl(
                             context, BackgroundThread.getExecutor(), secureSettings, handler,
                             new PostureDeviceStateConverter(context, new DeviceStateManager()));
-            // TODO(b/406444989): Manager created in previous line will be passed into controller
-            deviceStateAutoRotateSettingController =
-                    new DeviceStateAutoRotateSettingController();
+            deviceStateAutoRotateSettingController = new DeviceStateAutoRotateSettingController(
+                    context, handler.getLooper(), handler, deviceStateController,
+                    deviceStateAutoRotateSettingManager);
         }
 
         return deviceStateAutoRotateSettingController;
