@@ -711,12 +711,14 @@ public class MediaQualityService extends SystemService {
 
             try {
                 if (mMediaQuality != null) {
+                    SoundParameters sp = new SoundParameters();
                     // put ID in params for profile update in HAL
                     params.putLong(BaseParameters.PARAMETER_ID, longId);
                     SoundParameter[] soundParameters =
                             MediaQualityUtils.convertPersistableBundleToSoundParameterList(params);
 
-                    SoundParameters sp = new SoundParameters();
+                    Parcel parcel = Parcel.obtain();
+                    setVendorSoundParameters(sp, parcel, params);
                     sp.soundParameters = soundParameters;
 
                     mMediaQuality.sendDefaultSoundParameters(sp);
@@ -1591,6 +1593,11 @@ public class MediaQualityService extends SystemService {
             soundParameters.soundParameters =
                     MediaQualityUtils.convertPersistableBundleToSoundParameterList(params);
 
+            Parcel parcel = Parcel.obtain();
+            if (params != null) {
+                setVendorSoundParameters(soundParameters, parcel, params);
+            }
+
             android.hardware.tv.mediaquality.SoundProfile toReturn =
                     new android.hardware.tv.mediaquality.SoundProfile();
             toReturn.soundProfileId = id;
@@ -1993,6 +2000,18 @@ public class MediaQualityService extends SystemService {
         defaultExtension.bytes = Arrays.copyOf(
                 vendorBundleToByteArray, vendorBundleToByteArray.length);
         pictureParameters.vendorPictureParameters.setParcelable(defaultExtension);
+    }
+
+    private void setVendorSoundParameters(
+            SoundParameters soundParameters,
+            Parcel parcel,
+            PersistableBundle vendorSoundParameters) {
+        vendorSoundParameters.writeToParcel(parcel, 0);
+        byte[] vendorBundleToByteArray = parcel.marshall();
+        DefaultExtension defaultExtension = new DefaultExtension();
+        defaultExtension.bytes = Arrays.copyOf(
+                vendorBundleToByteArray, vendorBundleToByteArray.length);
+        soundParameters.vendorSoundParameters.setParcelable(defaultExtension);
     }
 
     private boolean isPackageDefaultPictureProfile(PictureProfile pp) {

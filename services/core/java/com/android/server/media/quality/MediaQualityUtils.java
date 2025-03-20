@@ -1073,80 +1073,127 @@ public final class MediaQualityUtils {
         if (params.containsKey(SoundQuality.PARAMETER_BALANCE)) {
             soundParams.add(SoundParameter.balance(params.getInt(
                     SoundQuality.PARAMETER_BALANCE)));
+            params.remove(SoundQuality.PARAMETER_BALANCE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_BASS)) {
             soundParams.add(SoundParameter.bass(params.getInt(SoundQuality.PARAMETER_BASS)));
+            params.remove(SoundQuality.PARAMETER_BASS);
         }
         if (params.containsKey(SoundQuality.PARAMETER_TREBLE)) {
             soundParams.add(SoundParameter.treble(params.getInt(
                     SoundQuality.PARAMETER_TREBLE)));
+            params.remove(SoundQuality.PARAMETER_TREBLE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_SURROUND_SOUND)) {
             soundParams.add(SoundParameter.surroundSoundEnabled(params.getBoolean(
                     SoundQuality.PARAMETER_SURROUND_SOUND)));
+            params.remove(SoundQuality.PARAMETER_SURROUND_SOUND);
         }
         if (params.containsKey(SoundQuality.PARAMETER_SPEAKERS)) {
             soundParams.add(SoundParameter.speakersEnabled(params.getBoolean(
                     SoundQuality.PARAMETER_SPEAKERS)));
+            params.remove(SoundQuality.PARAMETER_SPEAKERS);
         }
         if (params.containsKey(SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS)) {
             soundParams.add(SoundParameter.speakersDelayMs(params.getInt(
                     SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS)));
+            params.remove(SoundQuality.PARAMETER_SPEAKERS_DELAY_MILLIS);
         }
         if (params.containsKey(SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL)) {
             soundParams.add(SoundParameter.autoVolumeControl(params.getBoolean(
                     SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL)));
+            params.remove(SoundQuality.PARAMETER_AUTO_VOLUME_CONTROL);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DTS_DRC)) {
             soundParams.add(SoundParameter.dtsDrc(params.getBoolean(
                     SoundQuality.PARAMETER_DTS_DRC)));
+            params.remove(SoundQuality.PARAMETER_DTS_DRC);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS)) {
             soundParams.add(SoundParameter.surroundSoundEnabled(params.getBoolean(
                     SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS)));
+            params.remove(SoundQuality.PARAMETER_DIGITAL_OUTPUT_DELAY_MILLIS);
         }
         if (params.containsKey(SoundQuality.PARAMETER_EARC)) {
             soundParams.add(SoundParameter.enhancedAudioReturnChannelEnabled(params.getBoolean(
                     SoundQuality.PARAMETER_EARC)));
+            params.remove(SoundQuality.PARAMETER_EARC);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DOWN_MIX_MODE)) {
             soundParams.add(SoundParameter.downmixMode((byte) params.getInt(
                     SoundQuality.PARAMETER_DOWN_MIX_MODE)));
+            params.remove(SoundQuality.PARAMETER_DOWN_MIX_MODE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_SOUND_STYLE)) {
             soundParams.add(SoundParameter.soundStyle((byte) params.getInt(
                     SoundQuality.PARAMETER_SOUND_STYLE)));
+            params.remove(SoundQuality.PARAMETER_SOUND_STYLE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE)) {
             soundParams.add(SoundParameter.digitalOutput((byte) params.getInt(
                     SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE)));
+            params.remove(SoundQuality.PARAMETER_DIGITAL_OUTPUT_MODE);
         }
         if (params.containsKey(SoundQuality.PARAMETER_DIALOGUE_ENHANCER)) {
             soundParams.add(SoundParameter.dolbyDialogueEnhancer((byte) params.getInt(
                     SoundQuality.PARAMETER_DIALOGUE_ENHANCER)));
+            params.remove(SoundQuality.PARAMETER_DIALOGUE_ENHANCER);
         }
 
         DolbyAudioProcessing dab = new DolbyAudioProcessing();
-        dab.soundMode =
-                (byte) params.getInt(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE);
-        dab.volumeLeveler =
-                params.getBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER);
-        dab.surroundVirtualizer = params.getBoolean(
-                SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER);
-        dab.dolbyAtmos =
-                params.getBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS);
+        if (params.containsKey(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE)) {
+            dab.soundMode =
+                    (byte) params.getInt(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE);
+            params.remove(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER)) {
+            dab.volumeLeveler =
+                    params.getBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER);
+            params.remove(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_VOLUME_LEVELER);
+        }
+        if (params.containsKey(
+                SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER)) {
+            dab.surroundVirtualizer = params.getBoolean(
+                    SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER);
+            params.remove(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SURROUND_VIRTUALIZER);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS)) {
+            dab.dolbyAtmos =
+                    params.getBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS);
+            params.remove(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_DOLBY_ATMOS);
+        }
         soundParams.add(SoundParameter.dolbyAudioProcessing(dab));
 
         DtsVirtualX dts = new DtsVirtualX();
-        dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX);
-        dts.limiter = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
-        dts.truSurroundX = params.getBoolean(
-                SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
-        dts.truVolumeHd = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
-        dts.dialogClarity = params.getBoolean(
-                SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
-        dts.definition = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
-        dts.height = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
+        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX)) {
+            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX);
+            params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX);
+        }
+
+        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER)) {
+            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
+            params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_LIMITER);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X)) {
+            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
+            params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_SURROUND_X);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD)) {
+            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
+            params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TRU_VOLUME_HD);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY)) {
+            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
+            params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DIALOG_CLARITY);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION)) {
+            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
+            params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_DEFINITION);
+        }
+        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT)) {
+            dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
+            params.remove(SoundQuality.PARAMETER_DTS_VIRTUAL_X_HEIGHT);
+        }
         soundParams.add(SoundParameter.dtsVirtualX(dts));
 
         return soundParams.toArray(new SoundParameter[0]);
