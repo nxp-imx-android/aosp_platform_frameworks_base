@@ -342,7 +342,6 @@ constructor(
             keyguardInteractor.setZoomOut(zoomOutFromShadeRadius)
         }
         listeners.forEach {
-            it.onWallpaperZoomOutChanged(zoomOutFromShadeRadius)
             it.onBlurRadiusChanged(appliedBlurRadius)
         }
         notificationShadeWindowController.setBackgroundBlurRadius(appliedBlurRadius)
@@ -761,9 +760,6 @@ constructor(
 
     /** Invoked when changes are needed in z-space */
     interface DepthListener {
-        /** Current wallpaper zoom out, where 0 is the closest, and 1 the farthest */
-        fun onWallpaperZoomOutChanged(zoomOut: Float)
-
         fun onBlurRadiusChanged(blurRadius: Int) {}
     }
 }
