@@ -26,6 +26,7 @@ import com.android.systemui.statusbar.notification.collection.BundleEntry
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.data.repository.TEST_BUNDLE_SPEC
 import com.android.systemui.statusbar.notification.row.entryAdapterFactory
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.testKosmos
@@ -78,15 +79,15 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
 
         underTest = NotificationGroupingUtil(row)
 
-        assertThat(NotificationGroupingUtil.ICON_EXTRACTOR.extractData(row)).isInstanceOf(
-            Notification::class.java)
+        assertThat(NotificationGroupingUtil.ICON_EXTRACTOR.extractData(row))
+            .isInstanceOf(Notification::class.java)
     }
 
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun iconExtractor_noException_bundle() {
         val row = mock(ExpandableNotificationRow::class.java)
-        val be = BundleEntry("promotions")
+        val be = BundleEntry(TEST_BUNDLE_SPEC)
         `when`(row.entryAdapter).thenReturn(factory.create(be))
 
         underTest = NotificationGroupingUtil(row)
@@ -114,8 +115,14 @@ class NotificationGroupingUtilTest(flags: FlagsParameterization) : SysuiTestCase
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     fun iconComparator_bundleNotification() {
-        assertThat(NotificationGroupingUtil.IconComparator().hasSameIcon(null,
-            NotificationGroupingUtil.ICON_EXTRACTOR.extractData(testHelper.createRow()))).isFalse()
+        assertThat(
+                NotificationGroupingUtil.IconComparator()
+                    .hasSameIcon(
+                        null,
+                        NotificationGroupingUtil.ICON_EXTRACTOR.extractData(testHelper.createRow()),
+                    )
+            )
+            .isFalse()
     }
 
     @Test

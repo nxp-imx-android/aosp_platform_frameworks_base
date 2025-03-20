@@ -288,11 +288,11 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
         }
 
         mIdToBundleEntry.clear();
-        for (String id: mNotifBundler.getBundleIds()) {
+        for (BundleSpec spec: mNotifBundler.getBundleSpecs()) {
             if (BundleCoordinator.debugBundleUi) {
-                Log.i(TAG, "create BundleEntry with id: " + id);
+                Log.i(TAG, "create BundleEntry with id: " + spec.getKey());
             }
-            mIdToBundleEntry.put(id, new BundleEntry(id));
+            mIdToBundleEntry.put(spec.getKey(), new BundleEntry(spec));
         }
     }
 

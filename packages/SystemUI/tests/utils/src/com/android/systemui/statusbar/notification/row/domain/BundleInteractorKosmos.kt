@@ -17,7 +17,7 @@
 package com.android.systemui.statusbar.notification.row.domain
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.notification.row.data.repository.bundleRepository
+import com.android.systemui.statusbar.notification.row.data.repository.testBundleRepository
 import com.android.systemui.statusbar.notification.row.domain.interactor.BundleInteractor
 
-val Kosmos.bundleInteractor by Kosmos.Fixture { BundleInteractor(bundleRepository) }
+val Kosmos.bundleInteractor by Kosmos.Fixture { BundleInteractor(testBundleRepository) }
