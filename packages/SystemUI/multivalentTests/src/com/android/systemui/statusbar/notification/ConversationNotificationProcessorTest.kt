@@ -137,9 +137,28 @@ class ConversationNotificationProcessorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(Flags.FLAG_NM_SUMMARIZATION)
+    fun processNotification_messagingStyleUpdateSummarizationToNull() {
+        val nb = getMessagingNotification()
+        val newRow: ExpandableNotificationRow = testHelper.createRow(nb.build())
+        newRow.entry.setRanking(
+            RankingBuilder(newRow.entry.ranking).setSummarization("hello").build()
+        )
+        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+            .isNotNull()
+
+        newRow.entry.setRanking(RankingBuilder(newRow.entry.ranking).setSummarization(null).build())
+
+        assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
+            .isNotNull()
+        assertThat(nb.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NM_SUMMARIZATION)
     fun processNotification_messagingStyleWithoutSummarization() {
         val nb = getMessagingNotification()
         val newRow: ExpandableNotificationRow = testHelper.createRow(nb.build())
+
         assertThat(conversationNotificationProcessor.processNotification(newRow.entry, nb, logger))
             .isNotNull()
         assertThat(nb.build().extras.getCharSequence(EXTRA_SUMMARIZED_CONTENT)).isNull()
