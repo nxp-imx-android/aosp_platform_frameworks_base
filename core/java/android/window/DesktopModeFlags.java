@@ -148,7 +148,7 @@ public enum DesktopModeFlags {
     INCLUDE_TOP_TRANSPARENT_FULLSCREEN_TASK_IN_DESKTOP_HEURISTIC(
             Flags::includeTopTransparentFullscreenTaskInDesktopHeuristic, true),
     INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES(
-            Flags::inheritTaskBoundsForTrampolineTaskLaunches, false),
+            Flags::inheritTaskBoundsForTrampolineTaskLaunches, true),
     SKIP_DECOR_VIEW_RELAYOUT_WHEN_CLOSING_BUGFIX(
             Flags::skipDecorViewRelayoutWhenClosingBugfix, false),
     // go/keep-sorted end
