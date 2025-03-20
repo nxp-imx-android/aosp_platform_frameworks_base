@@ -219,15 +219,24 @@ constructor(
      * it being a false touch.
      */
     fun canChangeScene(toScene: SceneKey): Boolean {
-        return isInteractionAllowedByFalsing(toScene).also {
-            // A scene change is guaranteed; log it.
-            logger.logSceneChanged(
-                from = currentScene.value,
-                to = toScene,
-                sceneState = null,
-                reason = "user interaction",
-                isInstant = false,
-            )
+        return isInteractionAllowedByFalsing(toScene).also { sceneChangeAllowed ->
+            if (sceneChangeAllowed) {
+                // A scene change is guaranteed; log it.
+                logger.logSceneChanged(
+                    from = currentScene.value,
+                    to = toScene,
+                    sceneState = null,
+                    reason = "user interaction",
+                    isInstant = false,
+                )
+            } else {
+                logger.logSceneChangeRejection(
+                    from = currentScene.value,
+                    to = toScene,
+                    originalChangeReason = null,
+                    rejectionReason = "Falsing: false touch detected",
+                )
+            }
         }
     }
 

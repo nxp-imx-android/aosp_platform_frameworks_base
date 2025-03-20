@@ -90,7 +90,7 @@ class SceneLogger @Inject constructor(@SceneFrameworkLog private val logBuffer: 
     fun logSceneChangeRejection(
         from: ContentKey?,
         to: ContentKey?,
-        originalChangeReason: String,
+        originalChangeReason: String?,
         rejectionReason: String,
     ) {
         logBuffer.log(
@@ -112,8 +112,10 @@ class SceneLogger @Inject constructor(@SceneFrameworkLog private val logBuffer: 
                             "scene "
                         }
                     )
-                    append("change $str1 because \"$str2\" ")
-                    append("(original change reason: \"$str3\")")
+                    append("change $str1 because \"$str2\"")
+                    if (str3 != null) {
+                        append(" (original change reason: \"$str3\")")
+                    }
                 }
             },
         )
@@ -136,8 +138,11 @@ class SceneLogger @Inject constructor(@SceneFrameworkLog private val logBuffer: 
                 logBuffer.log(
                     tag = TAG,
                     level = LogLevel.INFO,
-                    messageInitializer = { str1 = transitionState.currentScene.toString() },
-                    messagePrinter = { "Scene transition idle on: $str1" },
+                    messageInitializer = {
+                        str1 = transitionState.currentScene.toString()
+                        str2 = transitionState.currentOverlays.joinToString()
+                    },
+                    messagePrinter = { "Scene transition idle on: $str1, overlays: $str2" },
                 )
             }
         }
