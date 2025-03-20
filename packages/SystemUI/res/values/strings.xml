@@ -2351,8 +2351,8 @@
     <string name="group_system_access_all_apps_search">Open apps list</string>
     <!-- User visible title for the keyboard shortcut that accesses [system] settings. [CHAR LIMIT=70] -->
     <string name="group_system_access_system_settings">Open settings</string>
-    <!-- User visible title for the keyboard shortcut that accesses Assistant app. [CHAR LIMIT=70] -->
-    <string name="group_system_access_google_assistant">Open assistant</string>
+    <!-- User visible title for the keyboard shortcut that accesses the default digital assistant app. [CHAR LIMIT=70] -->
+    <string name="group_system_access_google_assistant">Open digital assistant</string>
     <!-- User visible title for the keyboard shortcut that locks screen. [CHAR LIMIT=70] -->
     <string name="group_system_lock_screen">Lock screen</string>
     <!-- User visible title for the keyboard shortcut that pulls up Notes app for quick memo. [CHAR LIMIT=70] -->
