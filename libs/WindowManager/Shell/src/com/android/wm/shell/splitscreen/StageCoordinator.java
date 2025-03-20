@@ -68,6 +68,7 @@ import static com.android.wm.shell.splitscreen.SplitScreen.stageTypeToString;
 import static com.android.wm.shell.splitscreen.SplitScreenController.ENTER_REASON_LAUNCHER;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_APP_DOES_NOT_SUPPORT_MULTIWINDOW;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_APP_FINISHED;
+import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_CHILD_TASK_ENTER_BUBBLE;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_CHILD_TASK_ENTER_PIP;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DESKTOP_MODE;
 import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_DEVICE_FOLDED;
@@ -599,35 +600,6 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         final ActivityManager.RunningTaskInfo triggerTask = request.getTriggerTask();
         return triggerTask != null && triggerTask.baseIntent != null
                 && (triggerTask.baseIntent.getFlags() & FLAG_ACTIVITY_LAUNCH_ADJACENT) != 0;
-    }
-
-    /** @return whether the transition-request implies entering pip from split. */
-    public boolean requestImpliesSplitToPip(TransitionRequestInfo request) {
-        if (!isSplitActive() || !mMixedHandler.requestHasPipEnter(request)) {
-            return false;
-        }
-
-        if (request.getTriggerTask() != null && getSplitPosition(
-                request.getTriggerTask().taskId) != SPLIT_POSITION_UNDEFINED) {
-            return true;
-        }
-
-        if (PipUtils.isPip2ExperimentEnabled()
-                && request.getPipChange() != null && getSplitPosition(
-                request.getPipChange().getTaskInfo().taskId) != SPLIT_POSITION_UNDEFINED) {
-            // In PiP2, PiP-able task can also come in through the pip change request field.
-            return true;
-        }
-
-        // If one of the splitting tasks support auto-pip, wm-core might reparent the task to TDA
-        // and file a TRANSIT_PIP transition when finishing transitions.
-        // @see com.android.server.wm.RootWindowContainer#moveActivityToPinnedRootTask
-        if (enableFlexibleSplit()) {
-            return mStageOrderOperator.getActiveStages().stream()
-                    .anyMatch(stage -> stage.getChildCount() == 0);
-        } else {
-            return mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0;
-        }
     }
 
     /** Checks if `transition` is a pending enter-split transition. */
@@ -1756,6 +1728,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      * Unlike exitSplitScreen, this takes a stagetype vs an actual stage-reference and populates
      * an existing WindowContainerTransaction (rather than applying immediately). This is intended
      * to be used when exiting split might be bundled with other window operations.
+     *
+     * @param stageToTop The stage to move to the top
      */
     void prepareExitSplitScreen(@StageType int stageToTop,
             @NonNull WindowContainerTransaction wct, @ExitReason int exitReason) {
@@ -3072,27 +3046,58 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         return out;
     }
 
+    /** @return whether the transition-request implies entering pip from split. */
+    public boolean requestImpliesSplitToPip(TransitionRequestInfo request) {
+        final TaskInfo triggerTask = request.getTriggerTask();
+        if (!isSplitActive()
+                || (triggerTask != null && triggerTask.displayId != mDisplayId)
+                || !mMixedHandler.requestHasPipEnter(request)) {
+            return false;
+        }
+
+        if (request.getTriggerTask() != null && getSplitPosition(
+                request.getTriggerTask().taskId) != SPLIT_POSITION_UNDEFINED) {
+            return true;
+        }
+
+        if (PipUtils.isPip2ExperimentEnabled()
+                && request.getPipChange() != null && getSplitPosition(
+                request.getPipChange().getTaskInfo().taskId) != SPLIT_POSITION_UNDEFINED) {
+            // In PiP2, PiP-able task can also come in through the pip change request field.
+            return true;
+        }
+
+        // If one of the splitting tasks support auto-pip, wm-core might reparent the task to TDA
+        // and file a TRANSIT_PIP transition when finishing transitions.
+        // @see com.android.server.wm.RootWindowContainer#moveActivityToPinnedRootTask
+        if (enableFlexibleSplit()) {
+            return mStageOrderOperator.getActiveStages().stream()
+                    .anyMatch(stage -> stage.getChildCount() == 0);
+        } else {
+            return mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0;
+        }
+    }
+
     /**
-     * This is used for mixed scenarios. For such scenarios, just make sure to include exiting
-     * split or entering split when appropriate.
+     * This is used for mixed-transition scenarios (specifically when transitioning one split task
+     * into PIP). For such scenarios, just make sure to include exiting split or entering split when
+     * appropriate.
+     *
+     * This is only called if requestImpliesSplitToPip() returns `true`.
      */
-    public void addEnterOrExitIfNeeded(@Nullable TransitionRequestInfo request,
+    public void addEnterOrExitForPipIfNeeded(@Nullable TransitionRequestInfo request,
             @NonNull WindowContainerTransaction outWCT) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "addEnterOrExitIfNeeded: transition=%d",
                 request.getDebugId());
-        final ActivityManager.RunningTaskInfo triggerTask = request.getTriggerTask();
-        if (triggerTask != null && triggerTask.displayId != mDisplayId) {
-            // Skip handling task on the other display.
-            return;
-        }
+
         final @WindowManager.TransitionType int type = request.getType();
         if (isSplitActive() && !isOpeningType(type)
                 && (mMainStage.getChildCount() == 0 || mSideStage.getChildCount() == 0)) {
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "  One of the splits became "
-                            + "empty during a mixed transition (one not handled by split),"
-                            + " so make sure split-screen state is cleaned-up. "
-                            + "mainStageCount=%d sideStageCount=%d", mMainStage.getChildCount(),
-                    mSideStage.getChildCount());
+                    + "empty during a mixed transition (to PIP), so make sure split-screen "
+                    + "state is cleaned-up. mainStageCount=%d sideStageCount=%d",
+                            mMainStage.getChildCount(), mSideStage.getChildCount());
+            final ActivityManager.RunningTaskInfo triggerTask = request.getTriggerTask();
             if (triggerTask != null) {
                 mRecentTasks.ifPresent(
                         recentTasks -> recentTasks.removeSplitPair(triggerTask.taskId));
@@ -3109,6 +3114,59 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             }
             prepareExitSplitScreen(topStage, outWCT, EXIT_REASON_UNKNOWN);
         }
+    }
+
+    /** @return whether the transition-request implies entering bubbles from split. */
+    public boolean requestImpliesSplitToBubble(TransitionRequestInfo request) {
+        final TaskInfo triggerTask = request.getTriggerTask();
+        if (!isSplitActive()
+                || triggerTask == null
+                || triggerTask.displayId != mDisplayId) {
+            return false;
+        }
+
+        int stageForTask = getStageOfTask(triggerTask.taskId);
+        if (stageForTask == STAGE_TYPE_UNDEFINED) {
+            return false;
+        }
+
+        boolean removingLast;
+        if (enableFlexibleSplit()) {
+            removingLast = mStageOrderOperator.getActiveStages().stream()
+                    .anyMatch(stage -> stage.getId() == stageForTask && stage.getChildCount() == 1);
+        } else {
+            removingLast = (stageForTask == STAGE_TYPE_MAIN && mMainStage.getChildCount() == 1)
+                    || (stageForTask == STAGE_TYPE_SIDE && mSideStage.getChildCount() == 1);
+        }
+        if (removingLast) {
+            ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "Trigger task will break split");
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * This is used for mixed-transition scenarios, specifically when transitioning one split task
+     * into a bubble. For such scenarios, just make sure to include exiting split or entering split
+     * when appropriate.
+     *
+     * This is only called if requestImpliesSplitToBubble() returns `true`.
+     */
+    public void addExitForBubblesIfNeeded(@Nullable TransitionRequestInfo request,
+            @NonNull WindowContainerTransaction outWCT) {
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "addEnterOrExitIfNeeded: transition=%d",
+                request.getDebugId());
+        final ActivityManager.RunningTaskInfo triggerTask = request.getTriggerTask();
+
+        mRecentTasks.ifPresent(
+                recentTasks -> recentTasks.removeSplitPair(triggerTask.taskId));
+        logExit(EXIT_REASON_CHILD_TASK_ENTER_BUBBLE);
+
+        int stage = getStageOfTask(triggerTask.taskId);
+        int topStage = (stage == STAGE_TYPE_MAIN)
+                ? STAGE_TYPE_SIDE
+                : STAGE_TYPE_MAIN;
+        prepareExitSplitScreen(topStage, outWCT, EXIT_REASON_UNKNOWN);
     }
 
     @Override

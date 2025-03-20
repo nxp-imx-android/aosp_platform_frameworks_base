@@ -1592,7 +1592,11 @@ public class BubbleController implements ConfigurationChangeListener,
             mBubbleData.setSelectedBubbleAndExpandStack(b, updateLocation);
         } else {
             b.enable(Notification.BubbleMetadata.FLAG_AUTO_EXPAND_BUBBLE);
-            inflateAndAdd(b, /* suppressFlyout= */ true, /* showInShade= */ false, updateLocation);
+
+            ensureBubbleViewsAndWindowCreated();
+            mBubbleTransitions.startLaunchIntoOrConvertToBubble(b, mExpandedViewManager,
+                    mBubbleTaskViewFactory, mBubblePositioner, mStackView, mLayerView,
+                    mBubbleIconFactory, mInflateSynchronously);
         }
     }
 
@@ -3363,13 +3367,7 @@ public class BubbleController implements ConfigurationChangeListener,
             if (tinfo == null) {
                 return;
             }
-            Bubble bub = null;
-            for (Bubble b : mBubbleData.getBubbles()) {
-                if (b.getTaskId() == tinfo.taskId) {
-                    bub = b;
-                    break;
-                }
-            }
+            Bubble bub = mBubbleData.getBubbleInStackWithTaskId(tinfo.taskId);
             if (bub == null) {
                 return;
             }

@@ -62,9 +62,9 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
     WM_SHELL_FOLDABLE(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             Consts.TAG_WM_SHELL),
     WM_SHELL_BUBBLES_NOISY(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            "Bubbles"),
+            Consts.TAG_WM_BUBBLES),
     WM_SHELL_BUBBLES(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
-            "Bubbles"),
+            Consts.TAG_WM_BUBBLES),
     WM_SHELL_COMPAT_UI(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
             Consts.TAG_WM_COMPAT_UI),
     WM_SHELL_APP_COMPAT(Consts.ENABLE_DEBUG, Consts.ENABLE_LOG_TO_PROTO_DEBUG, false,
@@ -138,6 +138,7 @@ public enum ShellProtoLogGroup implements IProtoLogGroup {
         private static final String TAG_WM_DESKTOP_MODE = "ShellDesktopMode";
         private static final String TAG_WM_COMPAT_UI = "CompatUi";
         private static final String TAG_WM_APP_COMPAT = "AppCompat";
+        private static final String TAG_WM_BUBBLES = "Bubbles";
 
         private static final boolean ENABLE_DEBUG = true;
         private static final boolean ENABLE_LOG_TO_PROTO_DEBUG = true;
