@@ -1750,10 +1750,16 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             Objects.requireNonNull(tdaInfo);
             final int displayWindowingMode =
                     tdaInfo.configuration.windowConfiguration.getWindowingMode();
-            // In freeform-first env, we need to explicitly set the windowing mode when leaving
-            // the split-screen to be fullscreen.
-            final int targetWindowingMode = displayWindowingMode == WINDOWING_MODE_FREEFORM
-                    ? WINDOWING_MODE_FULLSCREEN : WINDOWING_MODE_UNDEFINED;
+            final int targetWindowingMode;
+            if (DesktopModeFlags.ENABLE_REQUEST_FULLSCREEN_BUGFIX.isTrue()) {
+                // TODO(b/404659187): set windowing mode to undefined for non-freeform displays
+                targetWindowingMode = WINDOWING_MODE_FULLSCREEN;
+            } else {
+                // In freeform-first env, we need to explicitly set the windowing mode when leaving
+                // the split-screen to be fullscreen.
+                targetWindowingMode = displayWindowingMode == WINDOWING_MODE_FREEFORM
+                        ? WINDOWING_MODE_FULLSCREEN : WINDOWING_MODE_UNDEFINED;
+            }
             toTopStage.doForAllChildTaskInfos(taskInfo -> {
                 wct.setWindowingMode(taskInfo.token, targetWindowingMode);
             });
