@@ -236,10 +236,12 @@ constructor(
                 durationDescription: CharSequence,
             ) {
                 if (!SceneContainerFlag.isEnabled) return
-                seekBarObserver.updateContentDescription(
-                    elapsedTimeDescription,
-                    durationDescription,
-                )
+                mainExecutor.execute {
+                    seekBarObserver.updateContentDescription(
+                        elapsedTimeDescription,
+                        durationDescription,
+                    )
+                }
             }
         }
 
