@@ -78,6 +78,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -92,7 +93,11 @@ import com.android.compose.animation.scene.LowestZIndexContentPicker
 import com.android.compose.animation.scene.SceneTransitionLayoutState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.gesture.NestedScrollableBound
+import com.android.compose.gesture.effect.OffsetOverscrollEffect
+import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.modifiers.thenIf
+import com.android.internal.jank.InteractionJankMonitor
+import com.android.internal.jank.InteractionJankMonitor.CUJ_NOTIFICATION_SHADE_SCROLL_FLING
 import com.android.systemui.common.ui.compose.windowinsets.LocalScreenCornerRadius
 import com.android.systemui.res.R
 import com.android.systemui.scene.session.ui.composable.SaveableSession
@@ -288,17 +293,19 @@ fun ContentScope.NotificationScrollingStack(
     shadeSession: SaveableSession,
     stackScrollView: NotificationScrollView,
     viewModel: NotificationsPlaceholderViewModel,
+    jankMonitor: InteractionJankMonitor,
     maxScrimTop: () -> Float,
     shouldPunchHoleBehindScrim: Boolean,
     stackTopPadding: Dp,
     stackBottomPadding: Dp,
+    modifier: Modifier = Modifier,
     shouldFillMaxSize: Boolean = true,
     shouldIncludeHeadsUpSpace: Boolean = true,
     shouldShowScrim: Boolean = true,
     supportNestedScrolling: Boolean,
     onEmptySpaceClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier,
 ) {
+    val composeViewRoot = LocalView.current
     val coroutineScope = shadeSession.sessionCoroutineScope()
     val density = LocalDensity.current
     val screenCornerRadius = LocalScreenCornerRadius.current
@@ -477,6 +484,21 @@ fun ContentScope.NotificationScrollingStack(
             )
         }
 
+    val overScrollEffect: OffsetOverscrollEffect = rememberOffsetOverscrollEffect()
+    // whether the stack is moving due to a swipe or fling
+    val isScrollInProgress =
+        scrollState.isScrollInProgress || overScrollEffect.isInProgress || scrimOffset.isRunning
+
+    LaunchedEffect(isScrollInProgress) {
+        if (isScrollInProgress) {
+            jankMonitor.begin(composeViewRoot, CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
+            debugLog(viewModel) { "STACK scroll begins" }
+        } else {
+            debugLog(viewModel) { "STACK scroll ends" }
+            jankMonitor.end(CUJ_NOTIFICATION_SHADE_SCROLL_FLING)
+        }
+    }
+
     Box(
         modifier =
             modifier
@@ -577,7 +599,7 @@ fun ContentScope.NotificationScrollingStack(
                         .thenIf(supportNestedScrolling) {
                             Modifier.nestedScroll(scrimNestedScrollConnection)
                         }
-                        .verticalScroll(scrollState)
+                        .verticalScroll(scrollState, overscrollEffect = overScrollEffect)
                         .padding(top = stackTopPadding, bottom = stackBottomPadding)
                         .fillMaxWidth()
                         .onGloballyPositioned { coordinates ->

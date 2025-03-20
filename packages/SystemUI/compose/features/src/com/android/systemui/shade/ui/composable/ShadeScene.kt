@@ -73,6 +73,7 @@ import com.android.compose.animation.scene.animateSceneFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
@@ -145,6 +146,7 @@ constructor(
     private val mediaCarouselController: MediaCarouselController,
     @Named(QUICK_QS_PANEL) private val qqsMediaHost: MediaHost,
     @Named(QS_PANEL) private val qsMediaHost: MediaHost,
+    private val jankMonitor: InteractionJankMonitor,
 ) : ExclusiveActivatable(), Scene {
 
     override val key = Scenes.Shade
@@ -182,6 +184,7 @@ constructor(
             mediaCarouselController = mediaCarouselController,
             qqsMediaHost = qqsMediaHost,
             qsMediaHost = qsMediaHost,
+            jankMonitor = jankMonitor,
             modifier = modifier,
             shadeSession = shadeSession,
             usingCollapsedLandscapeMedia =
@@ -212,6 +215,7 @@ private fun ContentScope.ShadeScene(
     mediaCarouselController: MediaCarouselController,
     qqsMediaHost: MediaHost,
     qsMediaHost: MediaHost,
+    jankMonitor: InteractionJankMonitor,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     usingCollapsedLandscapeMedia: Boolean,
@@ -229,6 +233,7 @@ private fun ContentScope.ShadeScene(
                 modifier = modifier,
                 shadeSession = shadeSession,
                 usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
+                jankMonitor = jankMonitor,
             )
         is ShadeMode.Split ->
             SplitShade(
@@ -240,6 +245,7 @@ private fun ContentScope.ShadeScene(
                 mediaHost = qsMediaHost,
                 modifier = modifier,
                 shadeSession = shadeSession,
+                jankMonitor = jankMonitor,
             )
         is ShadeMode.Dual -> error("Dual shade is implemented separately as an overlay.")
     }
@@ -253,6 +259,7 @@ private fun ContentScope.SingleShade(
     notificationsPlaceholderViewModel: NotificationsPlaceholderViewModel,
     mediaCarouselController: MediaCarouselController,
     mediaHost: MediaHost,
+    jankMonitor: InteractionJankMonitor,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
     usingCollapsedLandscapeMedia: Boolean,
@@ -379,6 +386,7 @@ private fun ContentScope.SingleShade(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
+                    jankMonitor = jankMonitor,
                     maxScrimTop = { maxNotifScrimTop.toFloat() },
                     shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
                     stackTopPadding = notificationStackPadding,
@@ -419,6 +427,7 @@ private fun ContentScope.SplitShade(
     mediaHost: MediaHost,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
+    jankMonitor: InteractionJankMonitor,
 ) {
     val isCustomizing by viewModel.qsSceneAdapter.isCustomizing.collectAsStateWithLifecycle()
     val isQsEnabled by viewModel.isQsEnabled.collectAsStateWithLifecycle()
@@ -596,6 +605,7 @@ private fun ContentScope.SplitShade(
                     shadeSession = shadeSession,
                     stackScrollView = notificationStackScrollView,
                     viewModel = notificationsPlaceholderViewModel,
+                    jankMonitor = jankMonitor,
                     maxScrimTop = { 0f },
                     stackTopPadding = notificationStackPadding,
                     stackBottomPadding = notificationStackPadding,
