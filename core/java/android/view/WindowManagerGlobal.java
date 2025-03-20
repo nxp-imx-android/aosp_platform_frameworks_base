@@ -44,7 +44,6 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
 import android.view.inputmethod.InputMethodManager;
-import android.view.translation.ListenerGroup;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
 import android.window.TrustedPresentationThresholds;
@@ -154,7 +153,8 @@ public final class WindowManagerGlobal {
      * @hide
      */
     @GuardedBy("mLock")
-    private final ListenerGroup<List<View>> mWindowViewsListenerGroup = new ListenerGroup<>();
+    private final ListenerGroup<List<View>> mWindowViewsListenerGroup =
+            new ListenerGroup<>(new ArrayList<>());
     @UnsupportedAppUsage
     private final ArrayList<ViewRootImpl> mRoots = new ArrayList<ViewRootImpl>();
     @UnsupportedAppUsage
@@ -339,7 +339,6 @@ public final class WindowManagerGlobal {
                 return;
             }
             mWindowViewsListenerGroup.addListener(executor, consumer);
-            executor.execute(() -> consumer.accept(getWindowViews()));
         }
     }
 
