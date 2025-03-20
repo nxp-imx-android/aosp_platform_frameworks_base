@@ -22,7 +22,6 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.withoutVisualEffect
 import androidx.compose.runtime.Composable
@@ -82,7 +81,7 @@ fun SwipeToReveal(
     // overscroll visual effect.
     //
     // This is the NestedDraggalbe controller.
-    val revealedContentDragController = rememberRevealedContentDragController {
+    val revealedContentDragController = rememberDismissibleContentDragController {
         revealedContentBoxWidth.value.toFloat()
     }
 
@@ -186,7 +185,7 @@ fun SwipeToReveal(
 }
 
 @Composable
-private fun rememberRevealedContentDragController(
+private fun rememberDismissibleContentDragController(
     maxBound: () -> Float
 ): RevealedContentDragController {
     val scope = rememberCoroutineScope()

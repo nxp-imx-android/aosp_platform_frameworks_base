@@ -267,7 +267,11 @@ private fun CardCarouselContent(
         }
 
         if (behavior.isCarouselDismissible) {
-            SwipeToDismiss(content = { PagerContent() }, onDismissed = onDismissed)
+            SwipeToDismiss(
+                content = { PagerContent() },
+                isSwipingEnabled = isSwipingEnabled,
+                onDismissed = onDismissed,
+            )
         } else {
             val overscrollEffect = rememberOffsetOverscrollEffect()
             SwipeToReveal(

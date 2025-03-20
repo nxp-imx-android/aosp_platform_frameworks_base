@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import kotlinx.coroutines.CoroutineScope
 
+/** Returns a [remember]ed [OffsetOverscrollEffect]. */
 @Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun rememberOffsetOverscrollEffect(
@@ -63,7 +64,10 @@ data class OffsetOverscrollEffectFactory(
     private val animationSpec: AnimationSpec<Float>,
 ) : OverscrollFactory {
     override fun createOverscrollEffect(): OverscrollEffect {
-        return OffsetOverscrollEffect(animationScope, animationSpec)
+        return OffsetOverscrollEffect(
+            animationScope = animationScope,
+            animationSpec = animationSpec,
+        )
     }
 }
 
@@ -80,11 +84,11 @@ class OffsetOverscrollEffect(animationScope: CoroutineScope, animationSpec: Anim
                 return layout(placeable.width, placeable.height) {
                     val offsetPx = computeOffset(density = this@measure, overscrollDistance)
                     if (offsetPx != 0) {
-                        placeable.placeRelativeWithLayer(
+                        placeable.placeWithLayer(
                             with(requireConverter()) { offsetPx.toIntOffset() }
                         )
                     } else {
-                        placeable.placeRelative(0, 0)
+                        placeable.place(0, 0)
                     }
                 }
             }
