@@ -39,6 +39,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.FrameLayout.LayoutParams;
+import android.widget.ImageView;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.annotations.VisibleForTesting;
@@ -485,19 +486,23 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
 
     @Override
     public void onParentHeightUpdate() {
-        if (mParent == null
-                || (mLeftMenuItems.isEmpty() && mRightMenuItems.isEmpty())
-                || mMenuContainer == null) {
-            return;
+        // If we are using only icon-based buttons, adjust layout for height changes.
+        // For permission helper full-layout buttons, do not adjust.
+        if (!Flags.permissionHelperInlineUiRichOngoing()) {
+            if (mParent == null
+                    || (mLeftMenuItems.isEmpty() && mRightMenuItems.isEmpty())
+                    || mMenuContainer == null) {
+                return;
+            }
+            int parentHeight = mParent.getActualHeight();
+            float translationY;
+            if (parentHeight < mVertSpaceForIcons) {
+                translationY = (parentHeight / 2) - (mHorizSpaceForIcon / 2);
+            } else {
+                translationY = (mVertSpaceForIcons - mHorizSpaceForIcon) / 2;
+            }
+            mMenuContainer.setTranslationY(translationY);
         }
-        int parentHeight = mParent.getActualHeight();
-        float translationY;
-        if (parentHeight < mVertSpaceForIcons) {
-            translationY = (parentHeight / 2) - (mHorizSpaceForIcon / 2);
-        } else {
-            translationY = (mVertSpaceForIcons - mHorizSpaceForIcon) / 2;
-        }
-        mMenuContainer.setTranslationY(translationY);
     }
 
     @Override
@@ -697,8 +702,11 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
         PromotedPermissionGutsContent demoteContent =
                 (PromotedPermissionGutsContent) LayoutInflater.from(context).inflate(
                 R.layout.promoted_permission_guts, null, false);
+        View demoteButton = LayoutInflater.from(context)
+                .inflate(R.layout.promoted_menu_item, null, false);
         MenuItem info = new NotificationMenuItem(context, null, demoteContent,
-                R.drawable.unpin_icon);
+                demoteButton);
+
         return info;
     }
 
@@ -758,10 +766,12 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
             menuView.setAlpha(mAlpha);
             parent.addView(menuView);
             menuView.setOnClickListener(this);
-            FrameLayout.LayoutParams lp = (LayoutParams) menuView.getLayoutParams();
-            lp.width = mHorizSpaceForIcon;
-            lp.height = mHorizSpaceForIcon;
-            menuView.setLayoutParams(lp);
+            if (item instanceof ImageView) {
+                FrameLayout.LayoutParams lp = (LayoutParams) menuView.getLayoutParams();
+                lp.width = mHorizSpaceForIcon;
+                lp.height = mHorizSpaceForIcon;
+                menuView.setLayoutParams(lp);
+            }
         }
         mMenuItemsByView.put(menuView, item);
     }
@@ -856,6 +866,17 @@ public class NotificationMenuRow implements NotificationMenuRowPlugin, View.OnCl
                 iv.setAlpha(1f);
                 mMenuView = iv;
             }
+            mContentDescription = contentDescription;
+            mGutsContent = content;
+        }
+
+
+        /**
+         * Add a new 'guts' panel with custom view.
+         */
+        public NotificationMenuItem(Context context, String contentDescription, GutsContent content,
+                View itemView) {
+            mMenuView = itemView;
             mContentDescription = contentDescription;
             mGutsContent = content;
         }
