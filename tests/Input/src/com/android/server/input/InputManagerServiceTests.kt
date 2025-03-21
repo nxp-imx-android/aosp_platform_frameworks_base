@@ -714,18 +714,16 @@ class InputManagerServiceTests {
                 )
             }
 
-        val info =
-            KeyInterceptionInfo(
-                /* type = */ 0,
-                if (hasPrivateFlag) {
-                    WindowManager.LayoutParams.PRIVATE_FLAG_ALLOW_ACTION_KEY_EVENTS
-                } else {
-                    0
-                },
-                "title",
-                /* uid = */ 0,
-                /* inputFeatureFlags = */ 0,
-            )
+        val info = KeyInterceptionInfo(
+            /* type = */0,
+            if (hasPrivateFlag) {
+                WindowManager.LayoutParams.PRIVATE_FLAG_ALLOW_ACTION_KEY_EVENTS
+            } else {
+                0
+            },
+            "title",
+            /* uid = */0
+        )
         whenever(windowManagerInternal.getKeyInterceptionInfoFromToken(any())).thenReturn(info)
     }
 }
