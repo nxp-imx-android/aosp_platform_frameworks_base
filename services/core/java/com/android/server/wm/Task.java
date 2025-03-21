@@ -625,6 +625,9 @@ class Task extends TaskFragment {
 
     boolean mAlignActivityLocaleWithTask = false;
 
+    /** @see #isForceExcludedFromRecents() */
+    private boolean mForceExcludedFromRecents;
+
     private Task(ActivityTaskManagerService atmService, int _taskId, Intent _intent,
             Intent _affinityIntent, String _affinity, String _rootAffinity,
             ComponentName _realActivity, ComponentName _origActivity, boolean _rootWasReset,
@@ -3842,7 +3845,8 @@ class Task extends TaskFragment {
         pw.print(prefix); pw.print("lastActiveTime="); pw.print(lastActiveTime);
         pw.println(" (inactive for " + (getInactiveDuration() / 1000) + "s)");
         pw.print(prefix); pw.print("isTrimmable=" + mIsTrimmableFromRecents);
-        pw.print(" isForceHidden="); pw.println(isForceHidden());
+        pw.print(" isForceHidden="); pw.print(isForceHidden());
+        pw.print(" isForceExcludedFromRecents="); pw.println(isForceExcludedFromRecents());
         if (mLaunchAdjacentDisabled) {
             pw.println(prefix + "mLaunchAdjacentDisabled=true");
         }
@@ -4555,9 +4559,43 @@ class Task extends TaskFragment {
 
     /**
      * @return whether this task is always on top without taking visibility into account.
+     * @deprecated b/388630258 replace hidden bubble tasks with reordering.
+     * {@link RecentTasks#isVisibleRecentTask} now checks {@link #isForceExcludedFromRecents}.
      */
-    public boolean isAlwaysOnTopWhenVisible() {
+    @Deprecated
+    boolean isAlwaysOnTopWhenVisible() {
         return super.isAlwaysOnTop();
+    }
+
+    /**
+     * Returns whether this task is forcibly excluded from the Recents list.
+     *
+     * <p>This flag is used by {@link RecentTasks#isVisibleRecentTask} to determine
+     * if the task should be presented to the user through SystemUI. If this method
+     * returns {@code true}, the task will not be shown in Recents, regardless of other
+     * visibility criteria.
+     *
+     * @return {@code true} if the task is excluded, {@code false} otherwise.
+     */
+    boolean isForceExcludedFromRecents() {
+        return mForceExcludedFromRecents;
+    }
+
+    /**
+     * Sets whether this task should be forcibly excluded from the Recents list.
+     *
+     * <p>This method is intended to be used in conjunction with
+     * {@link android.window.WindowContainerTransaction#setTaskForceExcludedFromRecents} to modify the
+     * task's exclusion state.
+     *
+     * @param excluded {@code true} to exclude the task, {@code false} otherwise.
+     */
+    void setForceExcludedFromRecents(boolean excluded) {
+        if (!Flags.excludeTaskFromRecents()) {
+            Slog.w(TAG, "Flag " + Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS + " is not enabled");
+            return;
+        }
+        mForceExcludedFromRecents = excluded;
     }
 
     boolean isForceHiddenForPinnedTask() {
