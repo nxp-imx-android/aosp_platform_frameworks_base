@@ -587,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"當你分享應用程式畫面時，「<xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g>」可存取該應用程式顯示或播放的所有內容。因此，請謹慎處理密碼、付款資料、訊息、相片和影音內容等資訊。"</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"分享畫面"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」已停用此選項"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"應用程式不支援這項功能"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"選擇要分享的應用程式"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"要投放畫面嗎？"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"投放一個應用程式"</string>
@@ -823,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"意見回饋"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"關閉"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"不要顯示在固定的通知中"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"顯示最新即時資訊"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"固定的通知會提供應用程式即時資訊，並一律顯示在狀態列和螢幕鎖定畫面上"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"無法修改這些通知。"</string>
@@ -1584,7 +1585,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"不明"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"要重設所有設定方塊嗎？"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"所有快速設定方塊都會恢復裝置的原始設定"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>、<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

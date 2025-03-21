@@ -587,8 +587,7 @@
     <string name="media_projection_entry_app_permission_dialog_warning_single_app" msgid="7094417930857938876">"အက်ပ်ကို မျှဝေနေချိန်တွင် ယင်းအက်ပ်တွင် ပြထားသော (သို့) ဖွင့်ထားသော အရာအားလုံးကို <xliff:g id="APP_SEEKING_PERMISSION">%s</xliff:g> က မြင်နိုင်သည်။ စကားဝှက်၊ ငွေပေးချေမှု အချက်အလက်၊ မက်ဆေ့ဂျ်၊ ဓာတ်ပုံ၊ အသံနှင့် ဗီဒီယိုကဲ့သို့ အရာများကို ဂရုစိုက်ပါ။"</string>
     <string name="media_projection_entry_app_permission_dialog_continue_entire_screen" msgid="1850848182344377579">"စခရင် မျှဝေရန်"</string>
     <string name="media_projection_entry_app_permission_dialog_single_app_disabled" msgid="8999903044874669995">"<xliff:g id="APP_NAME">%1$s</xliff:g> သည် ဤရွေးစရာကို ပိတ်ထားသည်"</string>
-    <!-- no translation found for media_projection_entry_app_permission_dialog_single_app_not_supported (4860247304058870233) -->
-    <skip />
+    <string name="media_projection_entry_app_permission_dialog_single_app_not_supported" msgid="4860247304058870233">"အက်ပ်က မပံ့ပိုးပါ"</string>
     <string name="media_projection_entry_share_app_selector_title" msgid="1419515119767501822">"မျှဝေရန် အက်ပ်ရွေးခြင်း"</string>
     <string name="media_projection_entry_cast_permission_dialog_title" msgid="752756942658159416">"သင့်ဖန်သားပြင်ကို ကာစ်လုပ်မလား။"</string>
     <string name="media_projection_entry_cast_permission_dialog_option_text_single_app" msgid="6073353940838561981">"အက်ပ်တစ်ခုကို ကာစ်လုပ်ရန်"</string>
@@ -823,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"အကြံပြုချက်"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"ပယ်ရန်"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"ပင်ထိုးထားသည့်အတိုင်း မပြရ"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"တိုက်ရိုက် အပ်ဒိတ်များ ပြနေသည်"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"ပင်ထိုးထားသော အကြောင်းကြားချက်များသည် အက်ပ်များမှ တိုက်ရိုက်အချက်အလက်များကိုပြပြီး ၎င်းတို့ကို အခြေအနေပြဘားနှင့် လော့ခ်မျက်နှာပြင်တို့တွင် အမြဲမြင်ရသည်"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"ဤအကြောင်းကြားချက်များကို ပြုပြင်၍ မရပါ။"</string>
@@ -1584,7 +1585,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"အမျိုးအမည်မသိ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"အကွက်ငယ်အားလုံးကို ပြင်ဆင်သတ်မှတ်မလား။"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"အမြန်ဆက်တင်များ အကွက်ငယ်အားလုံးကို စက်ပစ္စည်း၏ မူရင်းဆက်တင်များသို့ ပြင်ဆင်သတ်မှတ်ပါမည်"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>၊ <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

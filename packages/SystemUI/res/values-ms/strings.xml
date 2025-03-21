@@ -822,6 +822,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"Maklum balas"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"Ketepikan"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"Jangan papar sebagai disemat"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"Menunjukkan Kemaskinian Langsung"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"Pemberitahuan yang disematkan memaparkan maklumat langsung daripada apl dan sentiasa dipaparkan pada bar status dan skrin kunci"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"Pemberitahuan ini tidak boleh diubah suai."</string>
@@ -982,13 +984,11 @@
     <string name="right_icon" msgid="1103955040645237425">"Ikon kanan"</string>
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Tahan dan seret untuk menambahkan jubin"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Tahan dan seret untuk mengatur semula jubin"</string>
-    <!-- no translation found for tap_to_position_tile (6282815817773342757) -->
-    <skip />
+    <string name="tap_to_position_tile" msgid="6282815817773342757">"Ketik untuk meletakkan kedudukan jubin"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Seret ke sini untuk mengalih keluar"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Anda memerlukan sekurang-kurangnya <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> jubin"</string>
     <string name="qs_edit" msgid="5583565172803472437">"Edit"</string>
-    <!-- no translation found for qs_edit_tiles (2105215324060865035) -->
-    <skip />
+    <string name="qs_edit_tiles" msgid="2105215324060865035">"Edit jubin"</string>
     <string name="tuner_time" msgid="2450785840990529997">"Masa"</string>
   <string-array name="clock_options">
     <item msgid="3986445361435142273">"Tunjukkan jam, minit dan saat"</item>
@@ -1004,10 +1004,8 @@
     <string name="other" msgid="429768510980739978">"Lain-lain"</string>
     <string name="accessibility_qs_edit_toggle_tile_size_action" msgid="1485194410119733586">"togol saiz jubin"</string>
     <string name="accessibility_qs_edit_remove_tile_action" msgid="775511891457193480">"alih keluar jubin"</string>
-    <!-- no translation found for accessibility_qs_edit_toggle_placement_mode (3870429389210569610) -->
-    <skip />
-    <!-- no translation found for accessibility_qs_edit_toggle_selection (2201248304072372239) -->
-    <skip />
+    <string name="accessibility_qs_edit_toggle_placement_mode" msgid="3870429389210569610">"mod peletakan togol"</string>
+    <string name="accessibility_qs_edit_toggle_selection" msgid="2201248304072372239">"togol pilihan"</string>
     <string name="accessibility_qs_edit_tile_add_action" msgid="8311378984458545661">"tambahkan jubin pada kedudukan terakhir"</string>
     <string name="accessibility_qs_edit_tile_start_move" msgid="2009373939914517817">"Alihkan jubin"</string>
     <string name="accessibility_qs_edit_tile_start_add" msgid="8141710006899065161">"Tambahkan jubin pada kedudukan yang dikehendaki"</string>
@@ -1583,7 +1581,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tidak diketahui"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Tetapkan semula semua jubin?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Semua jubin Tetapan Pantas akan ditetapkan semula kepada tetapan asal peranti"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>

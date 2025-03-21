@@ -823,6 +823,8 @@
     <string name="notification_guts_bundle_feedback" msgid="7581587973879656500">"પ્રતિસાદ"</string>
     <string name="notification_inline_dismiss" msgid="88423586921134258">"છોડી દો"</string>
     <string name="notification_inline_disable_promotion" msgid="3551682588314376921">"પિન કરેલા તરીકે બતાવશો નહીં"</string>
+    <!-- no translation found for notification_inline_disable_promotion_button (5115790786254916422) -->
+    <skip />
     <string name="live_notifications_title" msgid="1586553354601345379">"લાઇવ અપડેટ બતાવી રહ્યાં છીએ"</string>
     <string name="live_notifications_desc" msgid="7470787001768372152">"પિન કરેલા નોટિફિકેશન ઍપમાંથી લાઇવ નોટિફિકેશન બતાવે છે અને હંમેશાં સ્ટેટસ બાર અને લૉક સ્ક્રીન પર દેખાય છે"</string>
     <string name="notification_unblockable_desc" msgid="2073030886006190804">"આ નોટિફિકેશનમાં કોઈ ફેરફાર થઈ શકશે નહીં."</string>
@@ -1584,7 +1586,7 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"અજાણ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"તમામ ટાઇલ રીસેટ કરીએ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"તમામ ઝડપી સેટિંગ ટાઇલને ડિવાઇસના ઑરિજિનલ સેટિંગ પર રીસેટ કરવામાં આવશે"</string>
-    <!-- no translation found for demote_explain_text (1600426458580544250) -->
+    <!-- no translation found for demote_explain_text (3942301497888762295) -->
     <skip />
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
 </resources>
