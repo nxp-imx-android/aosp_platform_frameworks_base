@@ -18,15 +18,15 @@ package com.android.systemui.lowlightclock
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import com.android.dream.lowlight.LowLightDreamManager
+import com.android.systemui.biometrics.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.SystemUser
 import com.android.systemui.dreams.dagger.DreamModule
 import com.android.systemui.lowlightclock.dagger.LowLightModule
-import com.android.systemui.power.domain.interactor.PowerInteractor
-import com.android.systemui.power.shared.model.ScreenPowerState
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.util.condition.ConditionalCoreStartable
+import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import dagger.Lazy
 import javax.inject.Inject
@@ -38,7 +38,6 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 /**
@@ -52,17 +51,14 @@ constructor(
     @param:SystemUser private val conditionsMonitor: Monitor,
     @param:Named(LowLightModule.LOW_LIGHT_PRECONDITIONS)
     private val lowLightConditions: Lazy<Set<Condition>>,
-    powerInteractor: PowerInteractor,
+    displayStateInteractor: DisplayStateInteractor,
     private val logger: LowLightLogger,
     @param:Named(DreamModule.LOW_LIGHT_DREAM_SERVICE)
     private val lowLightDreamService: ComponentName?,
     private val packageManager: PackageManager,
     @Background private val scope: CoroutineScope,
 ) : ConditionalCoreStartable(conditionsMonitor) {
-    private val isScreenOn =
-        powerInteractor.screenPowerState
-            .map { it == ScreenPowerState.SCREEN_ON }
-            .distinctUntilChanged()
+    private val isScreenOn = not(displayStateInteractor.isDefaultDisplayOff).distinctUntilChanged()
 
     private val isLowLight = conflatedCallbackFlow {
         val token =

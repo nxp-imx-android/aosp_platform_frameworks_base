@@ -22,12 +22,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.dream.lowlight.LowLightDreamManager
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.biometrics.domain.interactor.displayStateInteractor
+import com.android.systemui.display.data.repository.displayRepository
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.power.data.repository.fakePowerRepository
-import com.android.systemui.power.domain.interactor.powerInteractor
-import com.android.systemui.power.shared.model.ScreenPowerState
 import com.android.systemui.shared.condition.Condition
 import com.android.systemui.shared.condition.Monitor
 import com.android.systemui.testKosmos
@@ -86,13 +86,7 @@ class LowLightMonitorTest : SysuiTestCase() {
     }
 
     private fun setDisplayOn(screenOn: Boolean) {
-        kosmos.fakePowerRepository.setScreenPowerState(
-            if (screenOn) {
-                ScreenPowerState.SCREEN_ON
-            } else {
-                ScreenPowerState.SCREEN_OFF
-            }
-        )
+        kosmos.displayRepository.setDefaultDisplayOff(!screenOn)
     }
 
     @Before
@@ -105,7 +99,7 @@ class LowLightMonitorTest : SysuiTestCase() {
                 lowLightDreamManagerLazy,
                 monitor,
                 lazyConditions,
-                kosmos.powerInteractor,
+                kosmos.displayStateInteractor,
                 logger,
                 dreamComponent,
                 packageManager,
@@ -205,6 +199,7 @@ class LowLightMonitorTest : SysuiTestCase() {
             setDisplayOn(true)
             clearInvocations(monitor)
             setDisplayOn(false)
+            runCurrent()
             // Verify doesn't remove subscription since there is none.
             Mockito.verify(monitor).removeSubscription(ArgumentMatchers.any())
         }
@@ -221,7 +216,7 @@ class LowLightMonitorTest : SysuiTestCase() {
                     lowLightDreamManagerLazy,
                     monitor,
                     lazyConditions,
-                    powerInteractor,
+                    displayStateInteractor,
                     logger,
                     dreamComponent,
                     packageManager,
@@ -251,7 +246,7 @@ class LowLightMonitorTest : SysuiTestCase() {
                     lowLightDreamManagerLazy,
                     monitor,
                     lazyConditions,
-                    powerInteractor,
+                    displayStateInteractor,
                     logger,
                     null,
                     packageManager,
