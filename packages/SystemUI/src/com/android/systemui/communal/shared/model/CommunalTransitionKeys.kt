@@ -33,4 +33,6 @@ object CommunalTransitionKeys {
     val FromEditMode = TransitionKey("FromEditMode")
     /** Swipes the glanceable hub in/out of view */
     val Swipe = TransitionKey("Swipe")
+    /** Swipes out of glanceable hub in landscape orientation */
+    val SwipeInLandscape = TransitionKey("SwipeInLandscape")
 }

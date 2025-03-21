@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.data.repository
 
+import android.content.res.Configuration
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.OverlayKey
@@ -49,6 +50,9 @@ interface CommunalSceneRepository {
     /** Exposes the transition state of the communal [SceneTransitionLayout]. */
     val transitionState: StateFlow<ObservableTransitionState>
 
+    /** Current orientation of the communal container. */
+    val communalContainerOrientation: StateFlow<Int>
+
     /** Updates the requested scene. */
     fun changeScene(toScene: SceneKey, transitionKey: TransitionKey? = null)
 
@@ -64,6 +68,9 @@ interface CommunalSceneRepository {
      * Note that you must call is with `null` when the UI is done or risk a memory leak.
      */
     fun setTransitionState(transitionState: Flow<ObservableTransitionState>?)
+
+    /** Set the current orientation of the communal container. */
+    fun setCommunalContainerOrientation(orientation: Int)
 }
 
 @SysUISingleton
@@ -89,6 +96,11 @@ constructor(
                 initialValue = defaultTransitionState,
             )
 
+    private val _communalContainerOrientation =
+        MutableStateFlow(Configuration.ORIENTATION_UNDEFINED)
+    override val communalContainerOrientation: StateFlow<Int> =
+        _communalContainerOrientation.asStateFlow()
+
     override fun changeScene(toScene: SceneKey, transitionKey: TransitionKey?) {
         applicationScope.launch {
             // SceneTransitionLayout state updates must be triggered on the thread the STL was
@@ -103,6 +115,10 @@ constructor(
             // created on.
             sceneDataSource.snapToScene(toScene)
         }
+    }
+
+    override fun setCommunalContainerOrientation(orientation: Int) {
+        _communalContainerOrientation.value = orientation
     }
 
     override suspend fun showHubFromPowerButton() {
