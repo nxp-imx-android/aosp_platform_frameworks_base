@@ -121,7 +121,6 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Pair;
 import android.util.Slog;
-import android.view.RemoteAnimationAdapter;
 import android.view.SurfaceControl;
 import android.view.WindowManager;
 import android.window.IDisplayAreaOrganizerController;
@@ -892,6 +891,11 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
             tr.setDragResizing(c.getDragResizing());
         }
 
+        if ((c.getChangeMask()
+                & WindowContainerTransaction.Change.CHANGE_FORCE_EXCLUDED_FROM_RECENTS) != 0) {
+            tr.setForceExcludedFromRecents(c.getForceExcludedFromRecents());
+        }
+
         final int childWindowingMode = c.getActivityWindowingMode();
         if (!ActivityTaskManagerService.isPip2ExperimentEnabled()
                 && tr.getWindowingMode() == WINDOWING_MODE_PINNED) {
@@ -1528,6 +1532,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 }
                 container.setSafeRegionBounds(hop.getSafeRegionBounds());
                 effects |= TRANSACT_EFFECTS_CLIENT_CONFIG;
+                break;
             }
         }
         return effects;

@@ -1614,6 +1614,37 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testSetTaskForceExcludedFromRecents() {
+        final Task rootTask = createRootTask();
+        final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.mRemoteToken.toWindowContainerToken();
+
+        wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+
+        assertTrue(task.isForceExcludedFromRecents());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
+    public void testSetTaskForceExcludedFromRecents_resetsTaskForceExcludedFromRecents() {
+        final Task rootTask = createRootTask();
+        final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        final WindowContainerToken token = task.mRemoteToken.toWindowContainerToken();
+        wct.setTaskForceExcludedFromRecents(token, true /* forceExcluded */);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+
+        // Reset excludedFromRecents on the task.
+        wct.setTaskForceExcludedFromRecents(token, false /* forceExcluded */);
+        mWm.mAtmService.mWindowOrganizerController.applyTransaction(wct);
+
+        assertFalse(task.isForceExcludedFromRecents());
+    }
+
+    @Test
     public void testReparentToOrganizedTask() {
         final ITaskOrganizer organizer = registerMockOrganizer();
         Task rootTask = mWm.mAtmService.mTaskOrganizerController.createRootTask(
