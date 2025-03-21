@@ -20,6 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Trace;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 
@@ -85,16 +86,26 @@ public class BroadcastHistory {
 
     void onBroadcastFrozenLocked(@NonNull BroadcastRecord r) {
         mFrozenBroadcasts.add(r);
+        updateTraceCounters();
     }
 
     void onBroadcastEnqueuedLocked(@NonNull BroadcastRecord r) {
         mFrozenBroadcasts.remove(r);
         mPendingBroadcasts.add(r);
+        updateTraceCounters();
     }
 
     void onBroadcastFinishedLocked(@NonNull BroadcastRecord r) {
         mPendingBroadcasts.remove(r);
         addBroadcastToHistoryLocked(r);
+        updateTraceCounters();
+    }
+
+    private void updateTraceCounters() {
+        Trace.traceCounter(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Broadcasts pending",
+                mPendingBroadcasts.size());
+        Trace.traceCounter(Trace.TRACE_TAG_ACTIVITY_MANAGER, "Broadcasts frozen",
+                mFrozenBroadcasts.size());
     }
 
     public void addBroadcastToHistoryLocked(@NonNull BroadcastRecord original) {
