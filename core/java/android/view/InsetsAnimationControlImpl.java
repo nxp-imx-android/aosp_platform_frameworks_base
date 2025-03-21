@@ -257,6 +257,11 @@ public class InsetsAnimationControlImpl implements InternalInsetsAnimationContro
     }
 
     @Override
+    public boolean willUpdateSurface() {
+        return !mFinished && !mCancelled;
+    }
+
+    @Override
     public @AnimationType int getAnimationType() {
         return mAnimationType;
     }

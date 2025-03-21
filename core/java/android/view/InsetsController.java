@@ -1747,9 +1747,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         mTypesBeingCancelled |= types;
         try {
             for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
-                InsetsAnimationControlRunner control = mRunningAnimations.get(i).runner;
-                if ((control.getTypes() & types) != 0) {
-                    cancelAnimation(control, true /* invokeCallback */);
+                final InsetsAnimationControlRunner runner = mRunningAnimations.get(i).runner;
+                if ((runner.getTypes() & types) != 0) {
+                    cancelAnimation(runner, true /* invokeCallback */);
                 }
             }
             if ((types & ime()) != 0) {
@@ -1807,10 +1807,10 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     void notifyControlRevoked(InsetsSourceConsumer consumer) {
         final @InsetsType int type = consumer.getType();
         for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
-            InsetsAnimationControlRunner control = mRunningAnimations.get(i).runner;
-            control.notifyControlRevoked(type);
-            if (control.getControllingTypes() == 0) {
-                cancelAnimation(control, true /* invokeCallback */);
+            final InsetsAnimationControlRunner runner = mRunningAnimations.get(i).runner;
+            runner.notifyControlRevoked(type);
+            if (runner.getControllingTypes() == 0) {
+                cancelAnimation(runner, true /* invokeCallback */);
             }
         }
         if (type == ime()) {
@@ -1823,38 +1823,38 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         }
     }
 
-    private void cancelAnimation(InsetsAnimationControlRunner control, boolean invokeCallback) {
+    private void cancelAnimation(InsetsAnimationControlRunner runner, boolean invokeCallback) {
         if (invokeCallback) {
-            ImeTracker.forLogging().onCancelled(control.getStatsToken(),
+            ImeTracker.forLogging().onCancelled(runner.getStatsToken(),
                     ImeTracker.PHASE_CLIENT_ANIMATION_CANCEL);
-            control.cancel();
+            runner.cancel();
         } else {
             // Succeeds if invokeCallback is false (i.e. when called from notifyFinished).
-            ImeTracker.forLogging().onProgress(control.getStatsToken(),
+            ImeTracker.forLogging().onProgress(runner.getStatsToken(),
                     ImeTracker.PHASE_CLIENT_ANIMATION_CANCEL);
         }
         if (DEBUG) {
             Log.d(TAG, TextUtils.formatSimple(
                     "cancelAnimation of types: %d, animType: %d, host: %s",
-                    control.getTypes(), control.getAnimationType(), mHost.getRootViewTitle()));
+                    runner.getTypes(), runner.getAnimationType(), mHost.getRootViewTitle()));
         }
         @InsetsType int removedTypes = 0;
         for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
             RunningAnimation runningAnimation = mRunningAnimations.get(i);
-            if (runningAnimation.runner == control) {
+            if (runningAnimation.runner == runner) {
                 mRunningAnimations.remove(i);
-                removedTypes = control.getTypes();
+                removedTypes = runner.getTypes();
                 if (invokeCallback) {
                     dispatchAnimationEnd(runningAnimation.runner.getAnimation());
                 } else {
                     if (Flags.refactorInsetsController()) {
                         if ((removedTypes & ime()) != 0
-                                && control.getAnimationType() == ANIMATION_TYPE_HIDE) {
+                                && runner.getAnimationType() == ANIMATION_TYPE_HIDE) {
                             if (mHost != null) {
                                 // if the (hide) animation is cancelled, the
                                 // requestedVisibleTypes should be reported at this point.
                                 reportRequestedVisibleTypes(!Flags.reportAnimatingInsetsTypes()
-                                        ? control.getStatsToken() : null);
+                                        ? runner.getStatsToken() : null);
                                 mHost.getInputMethodManager().removeImeSurface(
                                         mHost.getWindowToken());
                             }
@@ -1869,9 +1869,9 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
             if (mHost != null) {
                 final boolean dispatchStatsToken =
                         Flags.reportAnimatingInsetsTypes() && (removedTypes & ime()) != 0
-                                && control.getAnimationType() == ANIMATION_TYPE_HIDE;
+                                && runner.getAnimationType() == ANIMATION_TYPE_HIDE;
                 mHost.updateAnimatingTypes(mAnimatingTypes,
-                        dispatchStatsToken ? control.getStatsToken() : null);
+                        dispatchStatsToken ? runner.getStatsToken() : null);
             }
         }
 
@@ -1959,12 +1959,28 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
     @VisibleForTesting(visibility = PACKAGE)
     public @AnimationType int getAnimationType(@InsetsType int type) {
         for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
-            InsetsAnimationControlRunner control = mRunningAnimations.get(i).runner;
-            if (control.controlsType(type)) {
+            final InsetsAnimationControlRunner runner = mRunningAnimations.get(i).runner;
+            if (runner.controlsType(type)) {
                 return mRunningAnimations.get(i).type;
             }
         }
         return ANIMATION_TYPE_NONE;
+    }
+
+    /**
+     * Returns {@code true} if there is an animation which controls the given {@link InsetsType} and
+     * the runner is still playing the surface animation.
+     *
+     * @see InsetsAnimationControlRunner#willUpdateSurface()
+     */
+    boolean hasSurfaceAnimation(@InsetsType int type) {
+        for (int i = mRunningAnimations.size() - 1; i >= 0; i--) {
+            final InsetsAnimationControlRunner runner = mRunningAnimations.get(i).runner;
+            if (runner.controlsType(type) && runner.willUpdateSurface()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @VisibleForTesting(visibility = PACKAGE)
