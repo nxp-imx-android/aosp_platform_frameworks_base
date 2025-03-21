@@ -3269,13 +3269,21 @@ public class MediaSessionService extends SystemService implements Monitor {
             if (!postedNotification.isMediaNotification()) {
                 return;
             }
+            if ((postedNotification.flags & Notification.FLAG_FOREGROUND_SERVICE) == 0) {
+                // Ignore notifications posted without a foreground service.
+                return;
+            }
             synchronized (mLock) {
                 Map<String, StatusBarNotification> notifications = mMediaNotifications.get(uid);
                 if (notifications == null) {
                     notifications = new HashMap<>();
                     mMediaNotifications.put(uid, notifications);
                 }
-                notifications.put(sbn.getKey(), sbn);
+                StatusBarNotification previousSbn = notifications.put(sbn.getKey(), sbn);
+                if (previousSbn != null) {
+                    // Only act on the first notification update.
+                    return;
+                }
                 MediaSessionRecordImpl userEngagedRecord =
                         getUserEngagedMediaSessionRecordForNotification(uid, postedNotification);
                 if (userEngagedRecord != null) {
