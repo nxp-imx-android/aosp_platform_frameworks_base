@@ -1482,6 +1482,14 @@ internal class PromptViewModelTest(private val testCase: TestCase) : SysuiTestCa
         } else {
             assertThat(hint.isNullOrBlank()).isTrue()
         }
+
+        kosmos.promptViewModel.onClearUdfpsGuidanceHint(true)
+
+        if (testCase.modalities.hasUdfps) {
+            assertThat(hint).isNull()
+        } else {
+            assertThat(hint.isNullOrBlank()).isTrue()
+        }
     }
 
     @Test
