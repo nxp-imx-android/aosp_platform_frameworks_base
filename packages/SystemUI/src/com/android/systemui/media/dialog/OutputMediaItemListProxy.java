@@ -44,7 +44,6 @@ public class OutputMediaItemListProxy {
     private final List<MediaItem> mSelectedMediaItems;
     private final List<MediaItem> mSuggestedMediaItems;
     private final List<MediaItem> mSpeakersAndDisplaysMediaItems;
-    @Nullable private MediaItem mConnectNewDeviceMediaItem;
 
     public OutputMediaItemListProxy(Context context) {
         mContext = context;
@@ -88,9 +87,6 @@ public class OutputMediaItemListProxy {
                                     R.string.media_output_group_title_speakers_and_displays)));
             finalMediaItems.addAll(mSpeakersAndDisplaysMediaItems);
         }
-        if (mConnectNewDeviceMediaItem != null) {
-            finalMediaItems.add(mConnectNewDeviceMediaItem);
-        }
         return finalMediaItems;
     }
 
@@ -99,8 +95,7 @@ public class OutputMediaItemListProxy {
             List<MediaDevice> devices,
             List<MediaDevice> selectedDevices,
             @Nullable MediaDevice connectedMediaDevice,
-            boolean needToHandleMutingExpectedDevice,
-            @Nullable MediaItem connectNewDeviceMediaItem) {
+            boolean needToHandleMutingExpectedDevice) {
         Set<String> selectedOrConnectedMediaDeviceIds =
                 selectedDevices.stream().map(MediaDevice::getId).collect(Collectors.toSet());
         if (connectedMediaDevice != null) {
@@ -177,7 +172,6 @@ public class OutputMediaItemListProxy {
         mSuggestedMediaItems.addAll(updatedSuggestedMediaItems);
         mSpeakersAndDisplaysMediaItems.clear();
         mSpeakersAndDisplaysMediaItems.addAll(updatedSpeakersAndDisplaysMediaItems);
-        mConnectNewDeviceMediaItem = connectNewDeviceMediaItem;
 
         // The cached mOutputMediaItemList is cleared upon any update to individual media item
         // lists. This ensures getOutputMediaItemList() computes and caches a fresh list on the next
@@ -197,10 +191,6 @@ public class OutputMediaItemListProxy {
             mSelectedMediaItems.removeIf((MediaItem::isMutingExpectedDevice));
             mSuggestedMediaItems.removeIf((MediaItem::isMutingExpectedDevice));
             mSpeakersAndDisplaysMediaItems.removeIf((MediaItem::isMutingExpectedDevice));
-            if (mConnectNewDeviceMediaItem != null
-                    && mConnectNewDeviceMediaItem.isMutingExpectedDevice()) {
-                mConnectNewDeviceMediaItem = null;
-            }
         }
         mOutputMediaItemList.removeIf((MediaItem::isMutingExpectedDevice));
     }
@@ -211,7 +201,6 @@ public class OutputMediaItemListProxy {
             mSelectedMediaItems.clear();
             mSuggestedMediaItems.clear();
             mSpeakersAndDisplaysMediaItems.clear();
-            mConnectNewDeviceMediaItem = null;
         }
         mOutputMediaItemList.clear();
     }
@@ -221,8 +210,7 @@ public class OutputMediaItemListProxy {
         if (Flags.fixOutputMediaItemListIndexOutOfBoundsException()) {
             return mSelectedMediaItems.isEmpty()
                     && mSuggestedMediaItems.isEmpty()
-                    && mSpeakersAndDisplaysMediaItems.isEmpty()
-                    && (mConnectNewDeviceMediaItem == null);
+                    && mSpeakersAndDisplaysMediaItems.isEmpty();
         } else {
             return mOutputMediaItemList.isEmpty();
         }

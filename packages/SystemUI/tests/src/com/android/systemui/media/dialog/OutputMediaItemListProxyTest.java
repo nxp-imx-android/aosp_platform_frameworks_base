@@ -58,7 +58,6 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
 
     private MediaItem mMediaItem1;
     private MediaItem mMediaItem2;
-    private MediaItem mConnectNewDeviceMediaItem;
     private OutputMediaItemListProxy mOutputMediaItemListProxy;
 
     @Parameters(name = "{0}")
@@ -83,7 +82,6 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         when(mMediaDevice4.getId()).thenReturn(DEVICE_ID_4);
         mMediaItem1 = MediaItem.createDeviceMediaItem(mMediaDevice1);
         mMediaItem2 = MediaItem.createDeviceMediaItem(mMediaDevice2);
-        mConnectNewDeviceMediaItem = MediaItem.createPairNewDeviceMediaItem();
 
         mOutputMediaItemListProxy = new OutputMediaItemListProxy(mContext);
     }
@@ -98,8 +96,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice2, mMediaDevice3),
                 /* selectedDevices */ List.of(mMediaDevice3),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
 
         // Check the output media items to be
         //     * a media item with the selected mMediaDevice3
@@ -115,8 +112,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice4, mMediaDevice1, mMediaDevice3, mMediaDevice2),
                 /* selectedDevices */ List.of(mMediaDevice3),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
 
         // Check the output media items to be
         //     * a media item with the selected route mMediaDevice3
@@ -136,8 +132,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice1, mMediaDevice3, mMediaDevice2),
                 /* selectedDevices */ List.of(mMediaDevice1, mMediaDevice3),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
 
         // Check the output media items to be
         //     * a media item with the selected route mMediaDevice3
@@ -161,8 +156,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice2, mMediaDevice4, mMediaDevice3, mMediaDevice1),
                 /* selectedDevices */ List.of(mMediaDevice1, mMediaDevice2, mMediaDevice3),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
 
         if (Flags.enableOutputSwitcherDeviceGrouping()) {
             // When the device grouping is enabled, the order of selected devices are preserved:
@@ -197,8 +191,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice4, mMediaDevice1, mMediaDevice3, mMediaDevice2),
                 /* selectedDevices */ List.of(mMediaDevice2, mMediaDevice3),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
 
         if (Flags.enableOutputSwitcherDeviceGrouping()) {
             // When the device grouping is enabled, the order of selected devices are preserved:
@@ -233,8 +226,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice1, mMediaDevice3, mMediaDevice4),
                 /* selectedDevices */ List.of(mMediaDevice3),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
 
         if (Flags.enableOutputSwitcherDeviceGrouping()) {
             // When the device grouping is enabled, the order of selected devices are preserved:
@@ -261,47 +253,6 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         }
     }
 
-    @EnableFlags(Flags.FLAG_FIX_OUTPUT_MEDIA_ITEM_LIST_INDEX_OUT_OF_BOUNDS_EXCEPTION)
-    @Test
-    public void updateMediaDevices_withConnectNewDeviceMediaItem_shouldUpdateMediaItemList() {
-        assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
-
-        // Create the initial output media item list with a connect new device media item.
-        mOutputMediaItemListProxy.updateMediaDevices(
-                /* devices= */ List.of(mMediaDevice2, mMediaDevice3),
-                /* selectedDevices */ List.of(mMediaDevice3),
-                /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                mConnectNewDeviceMediaItem);
-
-        // Check the output media items to be
-        //     * a media item with the selected mMediaDevice3
-        //     * a group divider for suggested devices
-        //     * a media item with the mMediaDevice2
-        //     * a connect new device media item
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList())
-                .contains(mConnectNewDeviceMediaItem);
-        assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
-                .containsExactly(mMediaDevice3, null, mMediaDevice2, null);
-
-        // Update the output media item list without a connect new device media item.
-        mOutputMediaItemListProxy.updateMediaDevices(
-                /* devices= */ List.of(mMediaDevice2, mMediaDevice3),
-                /* selectedDevices */ List.of(mMediaDevice3),
-                /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
-
-        // Check the output media items to be
-        //     * a media item with the selected mMediaDevice3
-        //     * a group divider for suggested devices
-        //     * a media item with the mMediaDevice2
-        assertThat(mOutputMediaItemListProxy.getOutputMediaItemList())
-                .doesNotContain(mConnectNewDeviceMediaItem);
-        assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
-                .containsExactly(mMediaDevice3, null, mMediaDevice2);
-    }
-
     @DisableFlags(Flags.FLAG_FIX_OUTPUT_MEDIA_ITEM_LIST_INDEX_OUT_OF_BOUNDS_EXCEPTION)
     @Test
     public void clearAndAddAll_shouldUpdateMediaItemList() {
@@ -325,8 +276,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice1),
                 /* selectedDevices */ List.of(),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
         assertThat(mOutputMediaItemListProxy.isEmpty()).isFalse();
 
         mOutputMediaItemListProxy.clear();
@@ -354,8 +304,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* devices= */ List.of(mMediaDevice1),
                 /* selectedDevices */ List.of(),
                 /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false,
-                /* connectNewDeviceMediaItem= */ null);
+                /* needToHandleMutingExpectedDevice= */ false);
         assertThat(mOutputMediaItemListProxy.isEmpty()).isFalse();
 
         mOutputMediaItemListProxy.removeMutingExpectedDevices();
