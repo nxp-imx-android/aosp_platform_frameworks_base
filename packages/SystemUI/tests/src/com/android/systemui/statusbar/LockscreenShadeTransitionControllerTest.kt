@@ -1,7 +1,6 @@
 package com.android.systemui.statusbar
 
 import android.app.StatusBarManager.DISABLE2_NOTIFICATION_SHADE
-import android.testing.TestableLooper
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -23,7 +22,7 @@ import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.shared.model.DisableFlagsModel
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
-import com.android.systemui.statusbar.notification.row.NotificationTestHelper
+import com.android.systemui.statusbar.notification.row.createRow
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController
 import com.android.systemui.statusbar.phone.CentralSurfaces
@@ -100,8 +99,7 @@ class LockscreenShadeTransitionControllerTest : SysuiTestCase() {
 
     @Before
     fun setup() {
-        val helper = NotificationTestHelper(mContext, mDependency, TestableLooper.get(this))
-        row = helper.createRow()
+        row = kosmos.createRow()
         context
             .getOrCreateTestableResources()
             .addOverride(R.bool.config_use_split_notification_shade, false)

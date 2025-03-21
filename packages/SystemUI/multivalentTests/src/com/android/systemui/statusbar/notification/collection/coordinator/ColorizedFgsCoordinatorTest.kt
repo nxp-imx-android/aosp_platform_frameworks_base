@@ -189,7 +189,9 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
             // GIVEN a screen record event + screen record notif that has a status bar chip
             screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
             fakeMediaProjectionRepository.mediaProjectionState.value =
-                MediaProjectionState.Projecting.EntireScreen(hostPackage = "test_pkg")
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "com.android.systemui.tests"
+                )
             val screenRecordEntry =
                 buildNotificationEntry(tag = "screenRecord", promoted = false) {
                     setImportance(NotificationManager.IMPORTANCE_DEFAULT)
@@ -202,7 +204,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
                 collectLastValue(promotedNotificationsInteractor.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|test_pkg|0|screenRecord|0")
+                .containsExactly("0|com.android.systemui.tests|0|screenRecord|0")
                 .inOrder()
 
             // THEN the entry is in the fgs section
@@ -216,7 +218,9 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
             // GIVEN a screen record event + screen record notif that has a status bar chip
             screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
             fakeMediaProjectionRepository.mediaProjectionState.value =
-                MediaProjectionState.Projecting.EntireScreen(hostPackage = "test_pkg")
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "com.android.systemui.tests"
+                )
             val screenRecordEntry =
                 buildNotificationEntry(tag = "screenRecord", promoted = false) {
                     setImportance(NotificationManager.IMPORTANCE_MIN)
@@ -229,7 +233,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
                 collectLastValue(promotedNotificationsInteractor.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|test_pkg|0|screenRecord|0")
+                .containsExactly("0|com.android.systemui.tests|0|screenRecord|0")
                 .inOrder()
 
             // THEN the entry is NOT in the fgs section
@@ -243,7 +247,9 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
             // GIVEN a screen record event + screen record notif that has a status bar chip
             screenRecordRepository.screenRecordState.value = ScreenRecordModel.Recording
             fakeMediaProjectionRepository.mediaProjectionState.value =
-                MediaProjectionState.Projecting.EntireScreen(hostPackage = "test_pkg")
+                MediaProjectionState.Projecting.EntireScreen(
+                    hostPackage = "com.android.systemui.tests"
+                )
             val screenRecordEntry =
                 buildNotificationEntry(tag = "screenRecord", promoted = false) {
                     setImportance(NotificationManager.IMPORTANCE_DEFAULT)
@@ -256,7 +262,7 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
                 collectLastValue(promotedNotificationsInteractor.orderedChipNotificationKeys)
 
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|test_pkg|0|screenRecord|0")
+                .containsExactly("0|com.android.systemui.tests|0|screenRecord|0")
                 .inOrder()
 
             // THEN the entry is NOT in the fgs section
@@ -315,7 +321,10 @@ class ColorizedFgsCoordinatorTest : SysuiTestCase() {
 
             // THEN the order of the notification keys should be the call then the RON
             assertThat(orderedChipNotificationKeys)
-                .containsExactly("0|test_pkg|0|call|0", "0|test_pkg|0|ron|0")
+                .containsExactly(
+                    "0|com.android.systemui.tests|0|call|0",
+                    "0|com.android.systemui.tests|0|ron|0",
+                )
 
             // VERIFY that the comparator puts the call before the ron
             assertThat(sectioner.comparator!!.compare(callEntry, ronEntry)).isLessThan(0)
