@@ -152,6 +152,13 @@ flag {
 }
 
 flag {
+    name: "enable_magnification_magnify_nav_bar_and_ime"
+    namespace: "accessibility"
+    description: "Whether to enable magnify navigation bar and ime on full screen"
+    bug: "342509709"
+}
+
+flag {
     name: "enable_magnification_keyboard_control"
     namespace: "accessibility"
     description: "Whether to enable keyboard control for magnification"
