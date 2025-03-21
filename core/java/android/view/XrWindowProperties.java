@@ -27,7 +27,7 @@ public final class XrWindowProperties {
     private XrWindowProperties() {}
 
     /**
-     * Both Application and activity level
+     * Application and Activity level
      * {@link android.content.pm.PackageManager.Property PackageManager.Property} for an app to
      * inform the system of the activity launch mode in XR. When it is declared at the application
      * level, all activities are set to the defined value, unless it is overridden at the activity
@@ -105,7 +105,7 @@ public final class XrWindowProperties {
             "XR_ACTIVITY_START_MODE_HOME_SPACE";
 
     /**
-     * Both Application and activity level
+     * Application and Activity level
      * {@link android.content.pm.PackageManager.Property PackageManager.Property} for an app to
      * inform the system of the type of safety boundary recommended for the activity. When it is
      * declared at the application level, all activities are set to the defined value, unless it is
@@ -156,4 +156,30 @@ public final class XrWindowProperties {
      */
     @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
     public static final String XR_BOUNDARY_TYPE_LARGE = "XR_BOUNDARY_TYPE_LARGE";
+
+    /**
+     * Application and Activity level
+     * {@link android.content.pm.PackageManager.Property PackageManager.Property} to inform the
+     * system if it should play a system provided default animation when the app requests to enter
+     * or exit <a
+     * href="https://developer.android.com/develop/xr/jetpack-xr-sdk/transition-home-space-to-full-space">managed
+     * full space mode</a> in XR. When set to {@code true}, the system provided default animation is
+     * not played and the app is responsible for playing a custom enter or exit animation. When it
+     * is declared at the application level, all activities are set to the defined value, unless it
+     * is overridden at the activity level.
+     *
+     * <p>The default value is {@code false}.
+     *
+     * <p><b>Syntax:</b>
+     * <pre>
+     * &lt;application&gt;
+     *   &lt;property
+     *     android:name="android.window.PROPERTY_XR_USES_CUSTOM_FULL_SPACE_MANAGED_ANIMATION"
+     *     android:value="false|true"/&gt;
+     * &lt;/application&gt;
+     * </pre>
+     */
+    @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES)
+    public static final String PROPERTY_XR_USES_CUSTOM_FULL_SPACE_MANAGED_ANIMATION =
+            "android.window.PROPERTY_XR_USES_CUSTOM_FULL_SPACE_MANAGED_ANIMATION";
 }
