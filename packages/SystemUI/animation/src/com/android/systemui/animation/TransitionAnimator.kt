@@ -39,6 +39,7 @@ import com.android.app.animation.Interpolators.LINEAR
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
+import com.android.systemui.Flags
 import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.shared.Flags.returnAnimationFrameworkLibrary
 import com.android.systemui.shared.Flags.returnAnimationFrameworkLongLived
@@ -1014,11 +1015,7 @@ class TransitionAnimator(
                 openingWindowSyncViewOverlay?.remove(windowBackgroundLayer)
             }
         }
-        // TODO(b/330672236): Post this to the main thread for launches as well, so that they do not
-        //   flicker with Flexiglass enabled.
-        if (controller.isLaunching) {
-            onEnd()
-        } else {
+        if (Flags.sceneContainer() || !controller.isLaunching) {
             // onAnimationEnd is called at the end of the animation, on a Choreographer animation
             // tick. During dialog launches, the following calls will move the animated content from
             // the dialog overlay back to its original position, and this change must be reflected
@@ -1032,6 +1029,8 @@ class TransitionAnimator(
             // Choreographer frame, ensuring that any state change applied by
             // onTransitionAnimationEnd() will be reflected in the same frame.
             mainExecutor.execute { onEnd() }
+        } else {
+            onEnd()
         }
     }
 
