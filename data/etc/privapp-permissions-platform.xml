@@ -621,6 +621,8 @@ applications that come with the platform
         <permission name="android.permission.READ_COLOR_ZONES"/>
         <!-- Permission required for CTS test - CtsTextClassifierTestCases -->
         <permission name="android.permission.ACCESS_TEXT_CLASSIFIER_BY_TYPE"/>
+        <!-- Permission required for CTS test - CtsSecurityTestCases -->
+        <permission name="android.permission.MANAGE_DEVICE_POLICY_MTE"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
