@@ -19,7 +19,7 @@ package com.android.systemui.statusbar.notification.promoted
 import android.app.Notification
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
+import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.row.RowImageInflater
 import com.android.systemui.statusbar.notification.row.shared.skeletonImageTransform
@@ -40,7 +40,7 @@ fun Kosmos.setPromotedContent(entry: NotificationEntry) {
         promotedNotificationContentExtractor.extractContent(
             entry,
             Notification.Builder.recoverBuilder(applicationContext, entry.sbn.notification),
-            REDACTION_TYPE_NONE,
+            REDACTION_TYPE_PUBLIC,
             RowImageInflater.newInstance(previousIndex = null, reinflating = false)
                 .useForContentModel(),
         )

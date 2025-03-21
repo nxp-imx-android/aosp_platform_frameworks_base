@@ -17,12 +17,16 @@
 package com.android.systemui.statusbar.notification.promoted.domain.interactor
 
 import com.android.systemui.dump.dumpManager
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.policy.domain.interactor.sensitiveNotificationProtectionInteractor
 
 val Kosmos.aodPromotedNotificationInteractor by
     Kosmos.Fixture {
         AODPromotedNotificationInteractor(
             promotedNotificationsInteractor = promotedNotificationsInteractor,
+            keyguardInteractor = keyguardInteractor,
+            sensitiveNotificationProtectionInteractor = sensitiveNotificationProtectionInteractor,
             dumpManager = dumpManager,
         )
     }
