@@ -475,6 +475,7 @@ public final class DisplayManagerGlobal {
         synchronized (mLock) {
             if (!mShouldImplicitlyRegisterRrChanges) {
                 mShouldImplicitlyRegisterRrChanges = true;
+                Slog.i(TAG, "Implicitly registering for refresh rate");
                 updateCallbackIfNeededLocked();
             }
         }
@@ -1759,6 +1760,9 @@ public final class DisplayManagerGlobal {
         synchronized (mLock) {
             mDispatchNativeCallbacks = true;
             if (Flags.delayImplicitRrRegistrationUntilRrAccessed()) {
+                if (!mShouldImplicitlyRegisterRrChanges) {
+                    Slog.i(TAG, "Choreographer implicitly registered for the refresh rate.");
+                }
                 mShouldImplicitlyRegisterRrChanges = true;
             }
             registerCallbackIfNeededLocked();
