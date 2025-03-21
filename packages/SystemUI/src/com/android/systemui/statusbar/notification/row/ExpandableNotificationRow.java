@@ -128,7 +128,6 @@ import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.logging.NotificationCounters;
 import com.android.systemui.statusbar.notification.people.PeopleNotificationIdentifier;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.shared.AsyncGroupHeaderViewInflation;
 import com.android.systemui.statusbar.notification.row.shared.LockscreenOtpRedaction;
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.BundleHeaderViewModelImpl;
@@ -882,7 +881,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
 
     private void updateLimitsForView(NotificationContentView layout) {
         final int maxExpandedHeight;
-        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
+        if (isPromotedOngoing()) {
             maxExpandedHeight = mMaxExpandedHeightForPromotedOngoing;
         } else {
             maxExpandedHeight = mMaxExpandedHeight;
@@ -1381,7 +1380,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mIsSummaryWithChildren) {
             return mChildrenContainer.getIntrinsicHeight();
         }
-        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
+        if (isPromotedOngoing()) {
             return getMaxExpandHeight();
         }
         if (mExpandedWhenPinned) {
@@ -3030,7 +3029,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mIsSummaryWithChildren && !shouldShowPublic()) {
             return !mChildrenExpanded;
         }
-        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
+        if (isPromotedOngoing()) {
             return false;
         }
         return mEnableNonGroupedNotificationExpand && mExpandable;
@@ -3141,7 +3140,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public void setUserLocked(boolean userLocked) {
-        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) return;
+        if (isPromotedOngoing()) return;
 
         mUserLocked = userLocked;
         mPrivateLayout.setUserExpanding(userLocked);
@@ -3411,7 +3410,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public boolean isExpanded(boolean allowOnKeyguard) {
-        if (PromotedNotificationUiForceExpanded.isEnabled() && isPromotedOngoing()) {
+        if (isPromotedOngoing()) {
             return isPromotedNotificationExpanded(allowOnKeyguard);
         }
 

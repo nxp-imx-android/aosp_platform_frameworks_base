@@ -50,7 +50,6 @@ import com.android.systemui.statusbar.TransformableView;
 import com.android.systemui.statusbar.ViewTransformationHelper;
 import com.android.systemui.statusbar.notification.ImageTransformState;
 import com.android.systemui.statusbar.notification.TransformState;
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -196,8 +195,7 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
     }
 
     private void adjustTitleAndRightIconForPromotedOngoing() {
-        if (PromotedNotificationUiForceExpanded.isEnabled() &&
-                mRow.isPromotedOngoing() && mRightIcon != null) {
+        if (mRow.isPromotedOngoing() && mRightIcon != null) {
             final int horizontalMargin;
             if (notificationsRedesignTemplates()) {
                 horizontalMargin = mView.getResources().getDimensionPixelSize(
