@@ -165,6 +165,7 @@ public class MediaQualityService extends SystemService {
                 soundProfilePrefs, Context.MODE_PRIVATE);
     }
 
+    @GuardedBy("mPictureProfileLock")
     @Override
     public void onStart() {
         IBinder binder = ServiceManager.getService(IMediaQuality.DESCRIPTOR + "/default");
@@ -185,8 +186,22 @@ public class MediaQualityService extends SystemService {
                 mMediaQuality.setPictureProfileAdjustmentListener(mPictureProfileAdjListener);
                 mMediaQuality.setSoundProfileAdjustmentListener(mSoundProfileAdjListener);
 
-                // TODO: populate mPackageDefaultPictureProfileHandleMap
-
+                synchronized (mPictureProfileLock) {
+                    String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                            + BaseParameters.PARAMETER_NAME + " = ?";
+                    String[] selectionArguments = {
+                            Integer.toString(PictureProfile.TYPE_SYSTEM),
+                            PictureProfile.NAME_DEFAULT
+                    };
+                    List<PictureProfile> packageDefaultPictureProfiles =
+                            mMqDatabaseUtils.getPictureProfilesBasedOnConditions(MediaQualityUtils
+                                .getMediaProfileColumns(false), selection, selectionArguments);
+                    mPackageDefaultPictureProfileHandleMap.clear();
+                    for (PictureProfile profile : packageDefaultPictureProfiles) {
+                        mPackageDefaultPictureProfileHandleMap.put(
+                                profile.getPackageName(), profile.getHandle().getId());
+                    }
+                }
             } catch (RemoteException e) {
                 Slog.e(TAG, "Failed to set ambient backlight detector callback", e);
             }
@@ -229,6 +244,10 @@ public class MediaQualityService extends SystemService {
                             pp.setProfileId(value);
                             mMqManagerNotifier.notifyOnPictureProfileAdded(value, pp,
                                     Binder.getCallingUid(), Binder.getCallingPid());
+                            if (isPackageDefaultPictureProfile(pp)) {
+                                mPackageDefaultPictureProfileHandleMap.put(
+                                    pp.getPackageName(), pp.getHandle().getId());
+                            }
                         }
                     }
             );
@@ -253,6 +272,10 @@ public class MediaQualityService extends SystemService {
                             pp.getParameters());
                     updateDatabaseOnPictureProfileAndNotifyManagerAndHal(values,
                             pp.getParameters());
+                    if (isPackageDefaultPictureProfile(pp)) {
+                        mPackageDefaultPictureProfileHandleMap.put(
+                            pp.getPackageName(), pp.getHandle().getId());
+                    }
                 }
             });
         }
@@ -296,6 +319,11 @@ public class MediaQualityService extends SystemService {
                             mPictureProfileTempIdMap.remove(dbId);
                             mHalNotifier.notifyHalOnPictureProfileChange(dbId, null);
                         }
+                    }
+
+                    if (isPackageDefaultPictureProfile(toDelete)) {
+                        mPackageDefaultPictureProfileHandleMap.remove(
+                                toDelete.getPackageName());
                     }
                 }
             });
@@ -1945,5 +1973,10 @@ public class MediaQualityService extends SystemService {
         defaultExtension.bytes = Arrays.copyOf(
                 vendorBundleToByteArray, vendorBundleToByteArray.length);
         pictureParameters.vendorPictureParameters.setParcelable(defaultExtension);
+    }
+
+    private boolean isPackageDefaultPictureProfile(PictureProfile pp) {
+        return pp != null && pp.getProfileType() == PictureProfile.TYPE_SYSTEM &&
+               pp.getName().equals(PictureProfile.NAME_DEFAULT);
     }
 }
