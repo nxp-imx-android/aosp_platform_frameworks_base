@@ -108,6 +108,9 @@ interface CommunalModule {
         const val LAUNCHER_PACKAGE = "launcher_package"
         const val SWIPE_TO_HUB = "swipe_to_hub"
         const val SHOW_UMO = "show_umo"
+        const val TOUCH_NOTIFICATION_RATE_LIMIT = "TOUCH_NOTIFICATION_RATE_LIMIT"
+
+        const val TOUCH_NOTIFIFCATION_RATE_LIMIT_MS = 100
 
         @Provides
         @Communal
@@ -158,6 +161,12 @@ interface CommunalModule {
         @Named(SHOW_UMO)
         fun provideShowUmo(@Main resources: Resources): Boolean {
             return resources.getBoolean(R.bool.config_showUmoOnHub)
+        }
+
+        @Provides
+        @Named(TOUCH_NOTIFICATION_RATE_LIMIT)
+        fun providesRateLimit(): Int {
+            return TOUCH_NOTIFIFCATION_RATE_LIMIT_MS
         }
     }
 }
