@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.LockscreenShadeTransitionController
 import com.android.systemui.statusbar.StatusBarState.KEYGUARD
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.ExpandableView
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
@@ -476,9 +475,7 @@ constructor(
             if (onLockscreen) {
                 if (
                     view is ExpandableNotificationRow &&
-                        (canPeek ||
-                            (PromotedNotificationUiForceExpanded.isEnabled &&
-                                view.isPromotedOngoing))
+                        (canPeek || view.isPromotedOngoing)
                 ) {
                     height
                 } else {

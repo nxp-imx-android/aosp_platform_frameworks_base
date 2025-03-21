@@ -39,7 +39,7 @@ import com.android.systemui.statusbar.notification.icon.ui.viewbinder.AlwaysOnDi
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.NotificationIconContainerViewBinder
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.StatusBarIconViewBindingFailureTracker
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerAlwaysOnDisplayViewModel
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.phone.NotificationIconContainer
 import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.util.ui.value
@@ -102,7 +102,7 @@ constructor(
         val isShadeLayoutWide = shadeModeInteractor.isShadeLayoutWide.value
 
         constraintSet.apply {
-            if (PromotedNotificationUiAod.isEnabled) {
+            if (PromotedNotificationUi.isEnabled) {
                 connect(nicId, TOP, AodPromotedNotificationSection.viewId, BOTTOM, bottomMargin)
             } else {
                 connect(nicId, TOP, R.id.smart_space_barrier_bottom, BOTTOM, bottomMargin)
@@ -111,7 +111,7 @@ constructor(
             setGoneMargin(nicId, BOTTOM, bottomMargin)
             setVisibility(nicId, if (isVisible.value) VISIBLE else GONE)
 
-            if (PromotedNotificationUiAod.isEnabled && isShadeLayoutWide) {
+            if (PromotedNotificationUi.isEnabled && isShadeLayoutWide) {
                 // Don't create a start constraint, so the icons can hopefully right-align.
             } else {
                 connect(nicId, START, PARENT_ID, START, horizontalMargin)

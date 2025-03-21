@@ -81,7 +81,7 @@ fun AODPromotedNotification(
     viewModelFactory: AODPromotedNotificationViewModel.Factory,
     modifier: Modifier = Modifier,
 ) {
-    if (!PromotedNotificationUiAod.isEnabled) {
+    if (!PromotedNotificationUi.isEnabled) {
         return
     }
 

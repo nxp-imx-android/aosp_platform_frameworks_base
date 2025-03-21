@@ -53,7 +53,7 @@ import com.android.systemui.statusbar.notification.icon.ui.viewbinder.Notificati
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.StatusBarIconViewBindingFailureTracker
 import com.android.systemui.statusbar.notification.icon.ui.viewmodel.NotificationIconContainerAlwaysOnDisplayViewModel
 import com.android.systemui.statusbar.notification.promoted.AODPromotedNotification
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
@@ -111,7 +111,7 @@ constructor(
 
     @Composable
     fun AodPromotedNotificationArea(modifier: Modifier = Modifier) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 
