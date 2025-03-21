@@ -34,6 +34,7 @@ import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.statusbar.CommandQueue
@@ -212,6 +213,21 @@ class ShadeControllerSceneImplTest : SysuiTestCase() {
 
             // THEN overlay was hidden
             assertThat(currentOverlays).isEmpty()
+        }
+
+    @Test
+    fun instantCollapseShade_singleShade_doesntSwitchToShadeScene() =
+        testScope.runTest {
+            kosmos.disableDualShade()
+            runCurrent()
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val homeScene = currentScene
+            sceneInteractor.changeScene(Scenes.QuickSettings, "")
+            assertThat(currentScene).isEqualTo(Scenes.QuickSettings)
+
+            underTest.instantCollapseShade()
+
+            assertThat(currentScene).isEqualTo(homeScene)
         }
 
     private fun setScene(key: SceneKey) {
