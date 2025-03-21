@@ -33,6 +33,8 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.runTest
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_PUBLIC
 import com.android.systemui.statusbar.chips.notification.shared.StatusBarNotifChips
@@ -58,146 +60,142 @@ import org.junit.runner.RunWith
 class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     private val kosmos = testKosmos().apply { systemClock = fakeSystemClock }
 
-    private val underTest = kosmos.promotedNotificationContentExtractor
-    private val systemClock = kosmos.fakeSystemClock
-    private val rowImageInflater =
-        RowImageInflater.newInstance(previousIndex = null, reinflating = false)
-    private val imageModelProvider by lazy { rowImageInflater.useForContentModel() }
+    private val Kosmos.underTest by Kosmos.Fixture { promotedNotificationContentExtractor }
+    private val Kosmos.rowImageInflater by
+        Kosmos.Fixture { RowImageInflater.newInstance(previousIndex = null, reinflating = false) }
+    private val Kosmos.imageModelProvider by
+        Kosmos.Fixture { rowImageInflater.useForContentModel() }
 
     @Test
     @DisableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun shouldNotExtract_bothFlagsDisabled() {
-        val notif = createEntry()
-        val content = extractContent(notif)
-        assertThat(content).isNull()
-    }
+    fun shouldNotExtract_bothFlagsDisabled() =
+        kosmos.runTest {
+            val notif = createEntry()
+            val content = extractContent(notif)
+            assertThat(content).isNull()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME)
     @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun shouldExtract_promotedNotificationUiFlagEnabled() {
-        val entry = createEntry()
-        val content = extractContent(entry)
-        assertThat(content).isNotNull()
-    }
+    fun shouldExtract_promotedNotificationUiFlagEnabled() =
+        kosmos.runTest {
+            val entry = createEntry()
+            val content = extractContent(entry)
+            assertThat(content).isNotNull()
+        }
 
     @Test
     @EnableFlags(StatusBarNotifChips.FLAG_NAME)
     @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun shouldExtract_statusBarNotifChipsFlagEnabled() {
-        val entry = createEntry()
-        val content = extractContent(entry)
-        assertThat(content).isNotNull()
-    }
+    fun shouldExtract_statusBarNotifChipsFlagEnabled() =
+        kosmos.runTest {
+            val entry = createEntry()
+            val content = extractContent(entry)
+            assertThat(content).isNotNull()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun shouldExtract_bothFlagsEnabled() {
-        val entry = createEntry()
-        val content = extractContent(entry)
-        assertThat(content).isNotNull()
-    }
+    fun shouldExtract_bothFlagsEnabled() =
+        kosmos.runTest {
+            val entry = createEntry()
+            val content = extractContent(entry)
+            assertThat(content).isNotNull()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun shouldNotExtract_becauseNotPromoted() {
-        val entry = createEntry(promoted = false)
-        val content = extractContent(entry)
-        assertThat(content).isNull()
-    }
+    fun shouldNotExtract_becauseNotPromoted() =
+        kosmos.runTest {
+            val entry = createEntry(promoted = false)
+            val content = extractContent(entry)
+            assertThat(content).isNull()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractsContent_commonFields() {
-        val entry = createEntry {
-            setSubText(TEST_SUB_TEXT)
-            setContentTitle(TEST_CONTENT_TITLE)
-            setContentText(TEST_CONTENT_TEXT)
-        }
+    fun extractsContent_commonFields() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setSubText(TEST_SUB_TEXT)
+                setContentTitle(TEST_CONTENT_TITLE)
+                setContentText(TEST_CONTENT_TEXT)
+            }
 
-        val content = requireContent(entry)
+            val content = requireContent(entry)
 
-        content.privateVersion.apply {
-            assertThat(subText).isEqualTo(TEST_SUB_TEXT)
-            assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
-            assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
-        }
+            content.privateVersion.apply {
+                assertThat(subText).isEqualTo(TEST_SUB_TEXT)
+                assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
+                assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
+            }
 
-        content.publicVersion.apply {
-            assertThat(subText).isNull()
-            assertThat(title).isNull()
-            assertThat(text).isNull()
+            content.publicVersion.apply {
+                assertThat(subText).isNull()
+                assertThat(title).isNull()
+                assertThat(text).isNull()
+            }
         }
-    }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractsContent_commonFields_noRedaction() {
-        val entry = createEntry {
-            setSubText(TEST_SUB_TEXT)
-            setContentTitle(TEST_CONTENT_TITLE)
-            setContentText(TEST_CONTENT_TEXT)
-        }
+    fun extractsContent_commonFields_noRedaction() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setSubText(TEST_SUB_TEXT)
+                setContentTitle(TEST_CONTENT_TITLE)
+                setContentText(TEST_CONTENT_TEXT)
+            }
 
-        val content = requireContent(entry, redactionType = REDACTION_TYPE_NONE)
+            val content = requireContent(entry, redactionType = REDACTION_TYPE_NONE)
 
-        content.privateVersion.apply {
-            assertThat(subText).isEqualTo(TEST_SUB_TEXT)
-            assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
-            assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
-        }
+            content.privateVersion.apply {
+                assertThat(subText).isEqualTo(TEST_SUB_TEXT)
+                assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
+                assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
+            }
 
-        content.publicVersion.apply {
-            assertThat(subText).isEqualTo(TEST_SUB_TEXT)
-            assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
-            assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
+            content.publicVersion.apply {
+                assertThat(subText).isEqualTo(TEST_SUB_TEXT)
+                assertThat(title).isEqualTo(TEST_CONTENT_TITLE)
+                assertThat(text).isEqualTo(TEST_CONTENT_TEXT)
+            }
         }
-    }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_wasPromotedAutomatically_false() {
-        val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false) }
+    fun extractContent_wasPromotedAutomatically_false() =
+        kosmos.runTest {
+            val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, false) }
 
-        val content = requireContent(entry).privateVersion
+            val content = requireContent(entry).privateVersion
 
-        assertThat(content.wasPromotedAutomatically).isFalse()
-    }
+            assertThat(content.wasPromotedAutomatically).isFalse()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_wasPromotedAutomatically_true() {
-        val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, true) }
+    fun extractContent_wasPromotedAutomatically_true() =
+        kosmos.runTest {
+            val entry = createEntry { extras.putBoolean(EXTRA_WAS_AUTOMATICALLY_PROMOTED, true) }
 
-        val content = requireContent(entry).privateVersion
+            val content = requireContent(entry).privateVersion
 
-        assertThat(content.wasPromotedAutomatically).isTrue()
-    }
+            assertThat(content.wasPromotedAutomatically).isTrue()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
     @DisableFlags(android.app.Flags.FLAG_API_RICH_ONGOING)
-    fun extractContent_apiFlagOff_shortCriticalTextNotExtracted() {
-        val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
+    fun extractContent_apiFlagOff_shortCriticalTextNotExtracted() =
+        kosmos.runTest {
+            val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
 
-        val content = requireContent(entry).privateVersion
+            val content = requireContent(entry).privateVersion
 
-        assertThat(content.text).isNull()
-    }
-
-    @Test
-    @EnableFlags(
-        PromotedNotificationUi.FLAG_NAME,
-        StatusBarNotifChips.FLAG_NAME,
-        android.app.Flags.FLAG_API_RICH_ONGOING,
-    )
-    fun extractContent_apiFlagOn_shortCriticalTextExtracted() {
-        val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
-
-        val content = requireContent(entry).privateVersion
-
-        assertThat(content.shortCriticalText).isEqualTo(TEST_SHORT_CRITICAL_TEXT)
-    }
+            assertThat(content.text).isNull()
+        }
 
     @Test
     @EnableFlags(
@@ -205,165 +203,203 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         StatusBarNotifChips.FLAG_NAME,
         android.app.Flags.FLAG_API_RICH_ONGOING,
     )
-    fun extractContent_noShortCriticalTextSet_textIsNull() {
-        val entry = createEntry { setShortCriticalText(null) }
+    fun extractContent_apiFlagOn_shortCriticalTextExtracted() =
+        kosmos.runTest {
+            val entry = createEntry { setShortCriticalText(TEST_SHORT_CRITICAL_TEXT) }
 
-        val content = requireContent(entry).privateVersion
+            val content = requireContent(entry).privateVersion
 
-        assertThat(content.shortCriticalText).isNull()
-    }
+            assertThat(content.shortCriticalText).isEqualTo(TEST_SHORT_CRITICAL_TEXT)
+        }
+
+    @Test
+    @EnableFlags(
+        PromotedNotificationUi.FLAG_NAME,
+        StatusBarNotifChips.FLAG_NAME,
+        android.app.Flags.FLAG_API_RICH_ONGOING,
+    )
+    fun extractContent_noShortCriticalTextSet_textIsNull() =
+        kosmos.runTest {
+            val entry = createEntry { setShortCriticalText(null) }
+
+            val content = requireContent(entry).privateVersion
+
+            assertThat(content.shortCriticalText).isNull()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_none() {
-        assertExtractedTime(hasTime = false, hasChronometer = false, expected = ExpectedTime.Null)
-    }
+    fun extractTime_none() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = false,
+                expected = ExpectedTime.Null,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_basicTimeZero() {
-        assertExtractedTime(
-            hasTime = true,
-            hasChronometer = false,
-            provided = ProvidedTime.Value(0L),
-            expected = ExpectedTime.Time,
-        )
-    }
+    fun extractTime_basicTimeZero() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = true,
+                hasChronometer = false,
+                provided = ProvidedTime.Value(0L),
+                expected = ExpectedTime.Time,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_basicTimeNow() {
-        assertExtractedTime(
-            hasTime = true,
-            hasChronometer = false,
-            provided = ProvidedTime.Offset(Duration.ZERO),
-            expected = ExpectedTime.Time,
-        )
-    }
+    fun extractTime_basicTimeNow() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = true,
+                hasChronometer = false,
+                provided = ProvidedTime.Offset(Duration.ZERO),
+                expected = ExpectedTime.Time,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_basicTimePast() {
-        assertExtractedTime(
-            hasTime = true,
-            hasChronometer = false,
-            provided = ProvidedTime.Offset((-5).minutes),
-            expected = ExpectedTime.Time,
-        )
-    }
+    fun extractTime_basicTimePast() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = true,
+                hasChronometer = false,
+                provided = ProvidedTime.Offset((-5).minutes),
+                expected = ExpectedTime.Time,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_basicTimeFuture() {
-        assertExtractedTime(
-            hasTime = true,
-            hasChronometer = false,
-            provided = ProvidedTime.Offset(5.minutes),
-            expected = ExpectedTime.Time,
-        )
-    }
+    fun extractTime_basicTimeFuture() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = true,
+                hasChronometer = false,
+                provided = ProvidedTime.Offset(5.minutes),
+                expected = ExpectedTime.Time,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countUpZero() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = false,
-            provided = ProvidedTime.Value(0L),
-            expected = ExpectedTime.CountUp,
-        )
-    }
+    fun extractTime_countUpZero() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = false,
+                provided = ProvidedTime.Value(0L),
+                expected = ExpectedTime.CountUp,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countUpNow() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = false,
-            provided = ProvidedTime.Offset(Duration.ZERO),
-            expected = ExpectedTime.CountUp,
-        )
-    }
+    fun extractTime_countUpNow() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = false,
+                provided = ProvidedTime.Offset(Duration.ZERO),
+                expected = ExpectedTime.CountUp,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countUpPast() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = false,
-            provided = ProvidedTime.Offset((-5).minutes),
-            expected = ExpectedTime.CountUp,
-        )
-    }
+    fun extractTime_countUpPast() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = false,
+                provided = ProvidedTime.Offset((-5).minutes),
+                expected = ExpectedTime.CountUp,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countUpFuture() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = false,
-            provided = ProvidedTime.Offset(5.minutes),
-            expected = ExpectedTime.CountUp,
-        )
-    }
+    fun extractTime_countUpFuture() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = false,
+                provided = ProvidedTime.Offset(5.minutes),
+                expected = ExpectedTime.CountUp,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countDownZero() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = true,
-            provided = ProvidedTime.Value(0L),
-            expected = ExpectedTime.CountDown,
-        )
-    }
+    fun extractTime_countDownZero() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = true,
+                provided = ProvidedTime.Value(0L),
+                expected = ExpectedTime.CountDown,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countDownNow() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = true,
-            provided = ProvidedTime.Offset(Duration.ZERO),
-            expected = ExpectedTime.CountDown,
-        )
-    }
+    fun extractTime_countDownNow() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = true,
+                provided = ProvidedTime.Offset(Duration.ZERO),
+                expected = ExpectedTime.CountDown,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countDownPast() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = true,
-            provided = ProvidedTime.Offset((-5).minutes),
-            expected = ExpectedTime.CountDown,
-        )
-    }
+    fun extractTime_countDownPast() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = true,
+                provided = ProvidedTime.Offset((-5).minutes),
+                expected = ExpectedTime.CountDown,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_countDownFuture() {
-        assertExtractedTime(
-            hasTime = false,
-            hasChronometer = true,
-            isCountDown = true,
-            provided = ProvidedTime.Offset(5.minutes),
-            expected = ExpectedTime.CountDown,
-        )
-    }
+    fun extractTime_countDownFuture() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = false,
+                hasChronometer = true,
+                isCountDown = true,
+                provided = ProvidedTime.Offset(5.minutes),
+                expected = ExpectedTime.CountDown,
+            )
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractTime_prefersChronometerToWhen() {
-        assertExtractedTime(hasTime = true, hasChronometer = true, expected = ExpectedTime.CountUp)
-    }
+    fun extractTime_prefersChronometerToWhen() =
+        kosmos.runTest {
+            assertExtractedTime(
+                hasTime = true,
+                hasChronometer = true,
+                expected = ExpectedTime.CountUp,
+            )
+        }
 
     private sealed class ProvidedTime {
         data class Value(val value: Long) : ProvidedTime()
@@ -378,7 +414,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         CountDown,
     }
 
-    private fun assertExtractedTime(
+    private fun Kosmos.assertExtractedTime(
         hasTime: Boolean = false,
         hasChronometer: Boolean = false,
         isCountDown: Boolean = false,
@@ -387,8 +423,8 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
     ) {
         // Set the two timebases to different (arbitrary) numbers, so we can verify whether the
         // extractor is doing the timebase adjustment correctly.
-        systemClock.setCurrentTimeMillis(1_739_570_992_579L)
-        systemClock.setElapsedRealtime(1_380_967_080L)
+        fakeSystemClock.setCurrentTimeMillis(1_739_570_992_579L)
+        fakeSystemClock.setElapsedRealtime(1_380_967_080L)
 
         val providedCurrentTime =
             when (provided) {
@@ -437,122 +473,130 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromBaseStyle() {
-        val entry = createEntry { setStyle(null) }
+    fun extractContent_fromBaseStyle() =
+        kosmos.runTest {
+            val entry = createEntry { setStyle(null) }
 
-        val content = requireContent(entry)
+            val content = requireContent(entry)
 
-        assertThat(content.privateVersion.style).isEqualTo(Style.Base)
-        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-    }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromBigPictureStyle() {
-        val entry = createEntry { setStyle(BigPictureStyle()) }
-
-        val content = requireContent(entry)
-
-        assertThat(content.privateVersion.style).isEqualTo(Style.BigPicture)
-        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-    }
-
-    @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromBigTextStyle() {
-        val entry = createEntry {
-            setContentTitle(TEST_CONTENT_TITLE)
-            setContentText(TEST_CONTENT_TEXT)
-            setStyle(
-                BigTextStyle()
-                    .bigText(TEST_BIG_TEXT)
-                    .setBigContentTitle(TEST_BIG_CONTENT_TITLE)
-                    .setSummaryText(TEST_SUMMARY_TEXT)
-            )
+            assertThat(content.privateVersion.style).isEqualTo(Style.Base)
+            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
         }
 
-        val content = requireContent(entry)
-
-        assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
-        assertThat(content.privateVersion.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
-        assertThat(content.privateVersion.text).isEqualTo(TEST_BIG_TEXT)
-
-        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-        assertThat(content.publicVersion.title).isNull()
-        assertThat(content.publicVersion.text).isNull()
-    }
-
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromBigTextStyle_fallbackToContentTitle() {
-        val entry = createEntry {
-            setContentTitle(TEST_CONTENT_TITLE)
-            setContentText(TEST_CONTENT_TEXT)
-            setStyle(
-                BigTextStyle()
-                    .bigText(TEST_BIG_TEXT)
-                    // bigContentTitle unset
-                    .setSummaryText(TEST_SUMMARY_TEXT)
-            )
+    fun extractContent_fromBigPictureStyle() =
+        kosmos.runTest {
+            val entry = createEntry { setStyle(BigPictureStyle()) }
+
+            val content = requireContent(entry)
+
+            assertThat(content.privateVersion.style).isEqualTo(Style.BigPicture)
+            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
         }
 
-        val content = requireContent(entry)
-
-        assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
-        assertThat(content.privateVersion.title).isEqualTo(TEST_CONTENT_TITLE)
-        assertThat(content.privateVersion.text).isEqualTo(TEST_BIG_TEXT)
-
-        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-        assertThat(content.publicVersion.title).isNull()
-        assertThat(content.publicVersion.text).isNull()
-    }
-
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromBigTextStyle_fallbackToContentText() {
-        val entry = createEntry {
-            setContentTitle(TEST_CONTENT_TITLE)
-            setContentText(TEST_CONTENT_TEXT)
-            setStyle(
-                BigTextStyle()
-                    // bigText unset
-                    .setBigContentTitle(TEST_BIG_CONTENT_TITLE)
-                    .setSummaryText(TEST_SUMMARY_TEXT)
-            )
+    fun extractContent_fromBigTextStyle() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setContentTitle(TEST_CONTENT_TITLE)
+                setContentText(TEST_CONTENT_TEXT)
+                setStyle(
+                    BigTextStyle()
+                        .bigText(TEST_BIG_TEXT)
+                        .setBigContentTitle(TEST_BIG_CONTENT_TITLE)
+                        .setSummaryText(TEST_SUMMARY_TEXT)
+                )
+            }
+
+            val content = requireContent(entry)
+
+            assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
+            assertThat(content.privateVersion.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
+            assertThat(content.privateVersion.text).isEqualTo(TEST_BIG_TEXT)
+
+            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+            assertThat(content.publicVersion.title).isNull()
+            assertThat(content.publicVersion.text).isNull()
         }
 
-        val content = requireContent(entry)
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractContent_fromBigTextStyle_fallbackToContentTitle() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setContentTitle(TEST_CONTENT_TITLE)
+                setContentText(TEST_CONTENT_TEXT)
+                setStyle(
+                    BigTextStyle()
+                        .bigText(TEST_BIG_TEXT)
+                        // bigContentTitle unset
+                        .setSummaryText(TEST_SUMMARY_TEXT)
+                )
+            }
 
-        assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
-        assertThat(content.privateVersion.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
-        assertThat(content.privateVersion.text).isEqualTo(TEST_CONTENT_TEXT)
+            val content = requireContent(entry)
 
-        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-        assertThat(content.publicVersion.title).isNull()
-        assertThat(content.publicVersion.text).isNull()
-    }
+            assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
+            assertThat(content.privateVersion.title).isEqualTo(TEST_CONTENT_TITLE)
+            assertThat(content.privateVersion.text).isEqualTo(TEST_BIG_TEXT)
+
+            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+            assertThat(content.publicVersion.title).isNull()
+            assertThat(content.publicVersion.text).isNull()
+        }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromCallStyle() {
-        val hangUpIntent =
-            PendingIntent.getBroadcast(
-                context,
-                0,
-                Intent("hangup_action"),
-                PendingIntent.FLAG_IMMUTABLE,
-            )
-        val entry = createEntry { setStyle(CallStyle.forOngoingCall(TEST_PERSON, hangUpIntent)) }
+    fun extractContent_fromBigTextStyle_fallbackToContentText() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setContentTitle(TEST_CONTENT_TITLE)
+                setContentText(TEST_CONTENT_TEXT)
+                setStyle(
+                    BigTextStyle()
+                        // bigText unset
+                        .setBigContentTitle(TEST_BIG_CONTENT_TITLE)
+                        .setSummaryText(TEST_SUMMARY_TEXT)
+                )
+            }
 
-        val content = requireContent(entry)
+            val content = requireContent(entry)
 
-        assertThat(content.privateVersion.style).isEqualTo(Style.Call)
-        assertThat(content.privateVersion.title).isEqualTo(TEST_PERSON_NAME)
+            assertThat(content.privateVersion.style).isEqualTo(Style.BigText)
+            assertThat(content.privateVersion.title).isEqualTo(TEST_BIG_CONTENT_TITLE)
+            assertThat(content.privateVersion.text).isEqualTo(TEST_CONTENT_TEXT)
 
-        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-        assertThat(content.publicVersion.title).isNull()
-        assertThat(content.publicVersion.text).isNull()
-    }
+            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+            assertThat(content.publicVersion.title).isNull()
+            assertThat(content.publicVersion.text).isNull()
+        }
+
+    @Test
+    @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
+    fun extractContent_fromCallStyle() =
+        kosmos.runTest {
+            val hangUpIntent =
+                PendingIntent.getBroadcast(
+                    context,
+                    0,
+                    Intent("hangup_action"),
+                    PendingIntent.FLAG_IMMUTABLE,
+                )
+            val entry = createEntry {
+                setStyle(CallStyle.forOngoingCall(TEST_PERSON, hangUpIntent))
+            }
+
+            val content = requireContent(entry)
+
+            assertThat(content.privateVersion.style).isEqualTo(Style.Call)
+            assertThat(content.privateVersion.title).isEqualTo(TEST_PERSON_NAME)
+
+            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+            assertThat(content.publicVersion.title).isNull()
+            assertThat(content.publicVersion.text).isNull()
+        }
 
     @Test
     @EnableFlags(
@@ -560,75 +604,79 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         StatusBarNotifChips.FLAG_NAME,
         android.app.Flags.FLAG_API_RICH_ONGOING,
     )
-    fun extractContent_fromProgressStyle() {
-        val entry = createEntry {
-            setStyle(ProgressStyle().addProgressSegment(Segment(100)).setProgress(75))
+    fun extractContent_fromProgressStyle() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setStyle(ProgressStyle().addProgressSegment(Segment(100)).setProgress(75))
+            }
+
+            val content = requireContent(entry)
+
+            assertThat(content.privateVersion.style).isEqualTo(Style.Progress)
+            val newProgress = assertNotNull(content.privateVersion.newProgress)
+            assertThat(newProgress.progress).isEqualTo(75)
+            assertThat(newProgress.progressMax).isEqualTo(100)
+
+            assertThat(content.publicVersion.style).isEqualTo(Style.Base)
+            assertThat(content.publicVersion.title).isNull()
+            assertThat(content.publicVersion.text).isNull()
+            assertThat(content.publicVersion.newProgress).isNull()
         }
-
-        val content = requireContent(entry)
-
-        assertThat(content.privateVersion.style).isEqualTo(Style.Progress)
-        val newProgress = assertNotNull(content.privateVersion.newProgress)
-        assertThat(newProgress.progress).isEqualTo(75)
-        assertThat(newProgress.progressMax).isEqualTo(100)
-
-        assertThat(content.publicVersion.style).isEqualTo(Style.Base)
-        assertThat(content.publicVersion.title).isNull()
-        assertThat(content.publicVersion.text).isNull()
-        assertThat(content.publicVersion.newProgress).isNull()
-    }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromIneligibleStyle() {
-        val entry = createEntry {
-            setStyle(MessagingStyle(TEST_PERSON).addMessage("message text", 0L, TEST_PERSON))
+    fun extractContent_fromIneligibleStyle() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setStyle(MessagingStyle(TEST_PERSON).addMessage("message text", 0L, TEST_PERSON))
+            }
+
+            val content = requireContent(entry)
+
+            assertThat(content.privateVersion.style).isEqualTo(Style.Ineligible)
+
+            assertThat(content.publicVersion.style).isEqualTo(Style.Ineligible)
         }
-
-        val content = requireContent(entry)
-
-        assertThat(content.privateVersion.style).isEqualTo(Style.Ineligible)
-
-        assertThat(content.publicVersion.style).isEqualTo(Style.Ineligible)
-    }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromOldProgressDeterminate() {
-        val entry = createEntry {
-            setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ false)
+    fun extractContent_fromOldProgressDeterminate() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ false)
+            }
+
+            val content = requireContent(entry)
+
+            val oldProgress = assertNotNull(content.privateVersion.oldProgress)
+
+            assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
+            assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
+            assertThat(oldProgress.isIndeterminate).isFalse()
         }
-
-        val content = requireContent(entry)
-
-        val oldProgress = assertNotNull(content.privateVersion.oldProgress)
-
-        assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
-        assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
-        assertThat(oldProgress.isIndeterminate).isFalse()
-    }
 
     @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
-    fun extractContent_fromOldProgressIndeterminate() {
-        val entry = createEntry {
-            setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ true)
+    fun extractContent_fromOldProgressIndeterminate() =
+        kosmos.runTest {
+            val entry = createEntry {
+                setProgress(TEST_PROGRESS_MAX, TEST_PROGRESS, /* indeterminate= */ true)
+            }
+
+            val content = requireContent(entry)
+            val oldProgress = assertNotNull(content.privateVersion.oldProgress)
+
+            assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
+            assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
+            assertThat(oldProgress.isIndeterminate).isTrue()
         }
 
-        val content = requireContent(entry)
-        val oldProgress = assertNotNull(content.privateVersion.oldProgress)
-
-        assertThat(oldProgress.progress).isEqualTo(TEST_PROGRESS)
-        assertThat(oldProgress.max).isEqualTo(TEST_PROGRESS_MAX)
-        assertThat(oldProgress.isIndeterminate).isTrue()
-    }
-
-    private fun requireContent(
+    private fun Kosmos.requireContent(
         entry: NotificationEntry,
         redactionType: Int = REDACTION_TYPE_PUBLIC,
     ): PromotedNotificationContentModels = assertNotNull(extractContent(entry, redactionType))
 
-    private fun extractContent(
+    private fun Kosmos.extractContent(
         entry: NotificationEntry,
         redactionType: Int = REDACTION_TYPE_PUBLIC,
     ): PromotedNotificationContentModels? {
@@ -636,7 +684,7 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         return underTest.extractContent(entry, recoveredBuilder, redactionType, imageModelProvider)
     }
 
-    private fun createEntry(
+    private fun Kosmos.createEntry(
         promoted: Boolean = true,
         builderBlock: Notification.Builder.() -> Unit = {},
     ): NotificationEntry {
