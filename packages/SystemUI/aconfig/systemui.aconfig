@@ -600,6 +600,16 @@ flag {
 }
 
 flag {
+   name: "avalanche_replace_hun_when_critical"
+   namespace: "systemui"
+   description: "Fix for replacing a sticky HUN when a critical HUN posted"
+   bug: "403301297"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "indication_text_a11y_fix"
     namespace: "systemui"
     description: "add double shadow to the indication text at the bottom of the lock screen"
