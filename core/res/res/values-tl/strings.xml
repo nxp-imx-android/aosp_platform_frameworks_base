@@ -2507,7 +2507,7 @@
     <string name="satellite_manual_selection_state_popup_ok" msgid="2459664752624985095">"I-on"</string>
     <string name="satellite_manual_selection_state_popup_cancel" msgid="973605633339469252">"Bumalik"</string>
     <string name="unarchival_session_app_label" msgid="6811856981546348205">"Nakabinbin..."</string>
-    <string name="satellite_sos_available_notification_title" msgid="5396708154268096124">"Available na ang SOS gamit ang Satellite"</string>
+    <string name="satellite_sos_available_notification_title" msgid="5396708154268096124">"Available na ang SOS gamit ang satellite"</string>
     <string name="satellite_sos_available_notification_summary" msgid="1727088812951848330">"Puwede kang magpadala ng mensahe sa mga serbisyong pang-emergency kung walang mobile o Wi-Fi network. Dapat Google Messages ang default mong app sa pagmemensahe."</string>
     <string name="satellite_sos_not_supported_notification_title" msgid="2659100983227637285">"Hindi sinusuportahan ang SOS gamit ang satellite"</string>
     <string name="satellite_sos_not_supported_notification_summary" msgid="1071762454665310549">"Hindi sinusuportahan ang SOS gamit ang satellite sa device na ito"</string>
