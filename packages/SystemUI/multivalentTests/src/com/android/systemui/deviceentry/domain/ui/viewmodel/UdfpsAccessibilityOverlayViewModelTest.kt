@@ -16,13 +16,17 @@
 
 package com.android.systemui.deviceentry.domain.ui.viewmodel
 
+import android.graphics.Point
 import android.platform.test.flag.junit.FlagsParameterization
+import android.view.MotionEvent
+import android.view.View
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.data.repository.fakeAccessibilityRepository
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
+import com.android.systemui.biometrics.udfpsUtils
 import com.android.systemui.coroutines.collectLastValue
-import com.android.systemui.deviceentry.data.repository.fakeDeviceEntryRepository
+import com.android.systemui.deviceentry.data.ui.viewmodel.alternateBouncerUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.deviceentry.data.ui.viewmodel.deviceEntryUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.deviceentry.ui.viewmodel.DeviceEntryUdfpsAccessibilityOverlayViewModel
 import com.android.systemui.flags.Flags.FULL_SCREEN_USER_SWITCHER
@@ -34,6 +38,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepos
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.model.TransitionState
 import com.android.systemui.keyguard.shared.model.TransitionStep
+import com.android.systemui.keyguard.ui.viewmodel.accessibilityActionsViewModelKosmos
 import com.android.systemui.keyguard.ui.viewmodel.fakeDeviceEntryIconViewModelTransition
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
@@ -41,14 +46,22 @@ import com.android.systemui.shade.shadeTestUtil
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Before
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
@@ -63,7 +76,6 @@ class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : Sys
     private val keyguardTransitionRepository = kosmos.fakeKeyguardTransitionRepository
     private val fingerprintPropertyRepository = kosmos.fingerprintPropertyRepository
     private val deviceEntryFingerprintAuthRepository = kosmos.deviceEntryFingerprintAuthRepository
-    private val deviceEntryRepository = kosmos.fakeDeviceEntryRepository
 
     private val shadeTestUtil by lazy { kosmos.shadeTestUtil }
 
@@ -83,6 +95,22 @@ class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : Sys
 
     @Before
     fun setup() {
+        whenever(kosmos.udfpsUtils.isWithinSensorArea(any(), any(), any())).thenReturn(false)
+        whenever(
+                kosmos.udfpsUtils.getTouchInNativeCoordinates(anyInt(), any(), any(), anyBoolean())
+            )
+            .thenReturn(Point(0, 0))
+        whenever(
+                kosmos.udfpsUtils.onTouchOutsideOfSensorArea(
+                    anyBoolean(),
+                    eq(null),
+                    anyInt(),
+                    anyInt(),
+                    any(),
+                    anyBoolean(),
+                )
+            )
+            .thenReturn("Move left")
         underTest = kosmos.deviceEntryUdfpsAccessibilityOverlayViewModel
         overrideResource(R.integer.udfps_padding_debounce_duration, 0)
     }
@@ -98,6 +126,55 @@ class UdfpsAccessibilityOverlayViewModelTest(flags: FlagsParameterization) : Sys
             val visible by collectLastValue(underTest.visible)
             setupVisibleStateOnLockscreen()
             assertThat(visible).isTrue()
+        }
+
+    @Test
+    fun contentDescription_setOnUdfpsTouchOutsideSensorArea() =
+        testScope.runTest {
+            val contentDescription by collectLastValue(underTest.contentDescription)
+            setupVisibleStateOnLockscreen()
+            underTest.onHoverEvent(mock<View>(), mock<MotionEvent>())
+            runCurrent()
+            assertThat(contentDescription).isEqualTo("Move left")
+        }
+
+    @Test
+    fun clearAccessibilityOverlayMessageReason_updatesWhenFocusChangesFromUdfpsOverlayToLockscreen() =
+        testScope.runTest {
+            val clearAccessibilityOverlayMessageReason by
+                collectLastValue(underTest.clearAccessibilityOverlayMessageReason)
+            val contentDescription by collectLastValue(underTest.contentDescription)
+            setupVisibleStateOnLockscreen()
+            kosmos.accessibilityActionsViewModelKosmos.clearUdfpsAccessibilityOverlayMessage("test")
+            runCurrent()
+            assertThat(clearAccessibilityOverlayMessageReason).isEqualTo("test")
+
+            // UdfpsAccessibilityOverlayViewBinder collects clearAccessibilityOverlayMessageReason
+            // and calls
+            // viewModel.setContentDescription(null) - mock this here
+            underTest.setContentDescription(null)
+            runCurrent()
+            assertThat(contentDescription).isNull()
+        }
+
+    @Test
+    fun clearAccessibilityOverlayMessageReason_updatesAfterUdfpsOverlayFocusOnAlternateBouncer() =
+        testScope.runTest {
+            val clearAccessibilityOverlayMessageReason by
+                collectLastValue(underTest.clearAccessibilityOverlayMessageReason)
+            val contentDescription by collectLastValue(underTest.contentDescription)
+            setupVisibleStateOnLockscreen()
+            kosmos.alternateBouncerUdfpsAccessibilityOverlayViewModel
+                .clearUdfpsAccessibilityOverlayMessage("test")
+            runCurrent()
+            assertThat(clearAccessibilityOverlayMessageReason).isEqualTo("test")
+
+            // UdfpsAccessibilityOverlayViewBinder collects clearAccessibilityOverlayMessageReason
+            // and calls
+            // viewModel.setContentDescription(null) - mock this here
+            underTest.setContentDescription(null)
+            runCurrent()
+            assertThat(contentDescription).isNull()
         }
 
     @Test
