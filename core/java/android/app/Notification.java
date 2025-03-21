@@ -3253,9 +3253,24 @@ public class Notification implements Parcelable
      * @hide
      */
     public boolean hasTitle() {
-        return extras != null
-                && (!TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE))
-                || !TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE_BIG)));
+        if (extras == null) {
+            return false;
+        }
+        // CallStyle notifications only use the other person's name as the title.
+        if (isStyle(CallStyle.class)) {
+            Person person = extras.getParcelable(EXTRA_CALL_PERSON, Person.class);
+            return person != null && !TextUtils.isEmpty(person.getName());
+        }
+        // non-CallStyle notifications can use EXTRA_TITLE
+        if (!TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE))) {
+            return true;
+        }
+        // BigTextStyle notifications first use EXTRA_TITLE_BIG
+        if (isStyle(BigTextStyle.class)) {
+            return !TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE_BIG));
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -3280,12 +3295,23 @@ public class Notification implements Parcelable
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
-        return isColorizedRequested()
-                && isOngoingEvent()
-                && hasTitle()
-                && !isGroupSummary()
-                && !containsCustomViews()
-                && hasPromotableStyle();
+        if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
+            return false;
+        }
+        // Only "Ongoing CallStyle" notifications are promotable without EXTRA_COLORIZED
+        if (isOngoingCallStyle()) {
+            return true;
+        }
+        return isColorizedRequested() && hasPromotableStyle();
+    }
+
+    /** Returns whether the notification is CallStyle.forOngoingCall(). */
+    private boolean isOngoingCallStyle() {
+        if (!isStyle(CallStyle.class)) {
+            return false;
+        }
+        int callType = extras.getInt(EXTRA_CALL_TYPE, CallStyle.CALL_TYPE_UNKNOWN);
+        return callType == CallStyle.CALL_TYPE_ONGOING;
     }
 
     /**
