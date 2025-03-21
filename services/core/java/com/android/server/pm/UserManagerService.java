@@ -1712,15 +1712,19 @@ public class UserManagerService extends IUserManager.Stub {
     @Override
     public int getCredentialOwnerProfile(@UserIdInt int userId) {
         checkManageUsersPermission("get the credential owner");
-        if (!mLockPatternUtils.isSeparateProfileChallengeEnabled(userId)) {
-            synchronized (mUsersLock) {
-                UserInfo profileParent = getProfileParentLU(userId);
-                if (profileParent != null) {
-                    return profileParent.id;
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            if (!mLockPatternUtils.isSeparateProfileChallengeEnabled(userId)) {
+                synchronized (mUsersLock) {
+                    UserInfo profileParent = getProfileParentLU(userId);
+                    if (profileParent != null) {
+                        return profileParent.id;
+                    }
                 }
             }
+        } finally {
+            Binder.restoreCallingIdentity(identity);
         }
-
         return userId;
     }
 
