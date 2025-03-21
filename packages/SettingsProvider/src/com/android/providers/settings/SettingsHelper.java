@@ -672,6 +672,7 @@ public class SettingsHelper {
     public static LocaleList resolveLocales(LocaleList restore, LocaleList current,
             String[] supportedLocales) {
         final HashMap<Locale, Locale> allLocales = new HashMap<>(supportedLocales.length);
+        final HashSet<String> existingLanguageAndScript = new HashSet<>();
         for (String supportedLocaleStr : supportedLocales) {
             final Locale locale = Locale.forLanguageTag(supportedLocaleStr);
             allLocales.put(toFullLocale(locale), locale);
@@ -679,30 +680,26 @@ public class SettingsHelper {
 
         // After restoring to reset locales, need to get extensions from restored locale. Get the
         // first restored locale to check its extension.
-        final Locale restoredLocale = restore.isEmpty()
+        final Locale firstRestoredLocale = restore.isEmpty()
                 ? Locale.ROOT
                 : restore.get(0);
         final ArrayList<Locale> filtered = new ArrayList<>(current.size());
         for (int i = 0; i < current.size(); i++) {
-            Locale locale = copyExtensionToTargetLocale(restoredLocale, current.get(i));
-            allLocales.remove(toFullLocale(locale));
-            filtered.add(locale);
+            Locale locale = copyExtensionToTargetLocale(firstRestoredLocale, current.get(i));
+
+            if (locale != null && existingLanguageAndScript.add(getLanguageAndScript(locale))) {
+                allLocales.remove(toFullLocale(locale));
+                filtered.add(locale);
+            }
         }
 
-        final HashSet<String> existingLanguageAndScript = new HashSet<>();
         for (int i = 0; i < restore.size(); i++) {
-            final Locale restoredLocaleWithExtension = copyExtensionToTargetLocale(restoredLocale,
-                    getFilteredLocale(restore.get(i), allLocales));
+            final Locale restoredLocaleWithExtension = copyExtensionToTargetLocale(
+                    firstRestoredLocale, getFilteredLocale(restore.get(i), allLocales));
 
-            if (restoredLocaleWithExtension != null) {
-                String language = restoredLocaleWithExtension.getLanguage();
-                String script = restoredLocaleWithExtension.getScript();
-
-                String restoredLanguageAndScript =
-                        script == null ? language : language + "-" + script;
-                if (existingLanguageAndScript.add(restoredLanguageAndScript)) {
-                    filtered.add(restoredLocaleWithExtension);
-                }
+            if (restoredLocaleWithExtension != null && existingLanguageAndScript.add(
+                    getLanguageAndScript(restoredLocaleWithExtension))) {
+                filtered.add(restoredLocaleWithExtension);
             }
         }
 
@@ -711,6 +708,16 @@ public class SettingsHelper {
         }
 
         return new LocaleList(filtered.toArray(new Locale[filtered.size()]));
+    }
+
+    private static String getLanguageAndScript(Locale locale) {
+        if (locale == null) {
+            return "";
+        }
+
+        String language = locale.getLanguage();
+        String script = locale.getScript();
+        return script == null ? language : String.join("-", language, script);
     }
 
     private static Locale copyExtensionToTargetLocale(Locale restoredLocale,
