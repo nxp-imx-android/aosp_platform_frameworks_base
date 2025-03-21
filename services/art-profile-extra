@@ -4,3 +4,6 @@ HSPLcom/android/server/am/OomAdjuster;->setUidTempAllowlistStateLSP(IZ)V
 HSPLcom/android/server/am/BatteryStatsService;->setBatteryState(IIIIIIIIJ)V
 HSPLcom/android/server/pm/PackageManagerService$IPackageManagerImpl;->setComponentEnabledSetting(Landroid/content/ComponentName;IIILjava/lang/String;)V
 HSPLcom/android/server/am/ActiveServices;->bindServiceLocked(Landroid/app/IApplicationThread;Landroid/os/IBinder;Landroid/content/Intent;Ljava/lang/String;Landroid/app/IServiceConnection;JLjava/lang/String;ZILjava/lang/String;Landroid/app/IApplicationThread;Ljava/lang/String;I)I
+HSPLcom/android/server/accessibility/AccessibilityManagerService;->onServiceInfoChangedLocked(Lcom/android/server/accessibility/AccessibilityUserState;)V
+HSPLcom/android/server/clipboard/ClipboardService$ClipboardImpl;->checkAndSetPrimaryClip(Landroid/content/ClipData;Ljava/lang/String;Ljava/lang/String;IILjava/lang/String;)V
+HSPLcom/android/server/clipboard/ClipboardService$ClipboardImpl;->getPrimaryClip(Ljava/lang/String;Ljava/lang/String;II)Landroid/content/ClipData;
