@@ -2029,6 +2029,9 @@
     <!-- Class name of WallpaperManagerService. -->
     <string name="config_wallpaperManagerServiceName" translatable="false">com.android.server.wallpaper.WallpaperManagerService</string>
 
+    <!-- True if live wallpapers can be supported in the deskop experience -->
+    <bool name="config_isLiveWallpaperSupportedInDesktopExperience">false</bool>
+
     <!-- Specifies priority of automatic time sources. Suggestions from higher entries in the list
          take precedence over lower ones.
          See com.android.server.timedetector.TimeDetectorStrategy for available sources. -->

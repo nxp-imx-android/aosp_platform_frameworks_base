@@ -64,6 +64,7 @@ import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.pm.ServiceInfo;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManager.DisplayListener;
@@ -1188,6 +1189,10 @@ public class WallpaperManagerServiceTests {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
     public void setWallpaperComponent_systemAndLockWallpapers_multiDisplays_shouldHaveExpectedConnections() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(true).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
         final int incompatibleDisplayId = 2;
         final int compatibleDisplayId = 3;
         setUpDisplays(Map.of(
@@ -1225,6 +1230,71 @@ public class WallpaperManagerServiceTests {
                 .isFalse();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(incompatibleDisplayId))
                 .isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperSupported_desktopExperienceEnabled_shouldReturnTrue() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(true).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isTrue();
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperUnsupported_desktopExperienceEnabled_shouldReturnFalse() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(false).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isFalse();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void isWallpaperCompatibleForDisplay_liveWallpaperUnsupported_desktopExperienceDisabled_shouldReturnTrue() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(false).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+
+        final int displayId = 2;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                displayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(TEST_WALLPAPER_COMPONENT, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+
+        // config_isLiveWallpaperSupportedInDesktopExperience is not used if the desktop experience
+        // flag for wallpaper is disabled.
+        assertThat(mService.isWallpaperCompatibleForDisplay(displayId,
+                mService.mLastWallpaper.connection)).isTrue();
     }
 
     // Verify that after continue switch user from userId 0 to lastUserId, the wallpaper data for
