@@ -4874,6 +4874,13 @@ public class NotificationManagerService extends SystemService {
             checkNotNull(parentChannel);
             checkNotNull(conversationId);
             String parentId = parentChannel.getId();
+            if (notificationClassification()) {
+                if (SYSTEM_RESERVED_IDS.contains(parentId)) {
+                    Log.v(TAG, "Cannot create conversation for classified notification with pkg:"
+                            + pkg + " parentId:" + parentId + " conversationId:" + conversationId);
+                    return;
+                }
+            }
             NotificationChannel conversationChannel = parentChannel;
             conversationChannel.setId(String.format(
                     CONVERSATION_CHANNEL_ID_FORMAT, parentId, conversationId));
@@ -7072,9 +7079,16 @@ public class NotificationManagerService extends SystemService {
             Objects.requireNonNull(user);
             Objects.requireNonNull(parentId);
             Objects.requireNonNull(conversationId);
-
             verifyPrivilegedListener(token, user, true);
 
+            if (notificationClassification()) {
+                if (SYSTEM_RESERVED_IDS.contains(parentId)) {
+                    Log.v(TAG, "Cannot create conversation for classified notif from privileged " +
+                            "listener with pkg:" + pkg + " user:" + user + " parentId:" + parentId
+                            + " conversationId:" + conversationId);
+                    return null;
+                }
+            }
             int uid = getUidForPackageAndUser(pkg, user);
             NotificationChannel conversationChannel =
                     mPreferencesHelper.getNotificationChannel(pkg, uid, parentId, false).copy();
