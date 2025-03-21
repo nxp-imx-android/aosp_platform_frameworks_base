@@ -15,6 +15,7 @@ import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
+import android.view.Display
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.TransitionInfo
@@ -32,11 +33,13 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
 import com.android.wm.shell.bubbles.BubbleController
 import com.android.wm.shell.bubbles.BubbleTransitions
+import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_CANCEL_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DesktopModeTransitionTypes.TRANSIT_DESKTOP_MODE_START_DRAG_TO_DESKTOP
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.CancelState
 import com.android.wm.shell.desktopmode.DragToDesktopTransitionHandler.Companion.DRAG_TO_DESKTOP_FINISH_ANIM_DURATION_MS
+import com.android.wm.shell.shared.desktopmode.DesktopModeStatus
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT
 import com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_TOP_OR_LEFT
 import com.android.wm.shell.splitscreen.SplitScreenController
@@ -48,7 +51,8 @@ import java.util.function.Supplier
 import junit.framework.Assert.assertEquals
 import junit.framework.Assert.assertFalse
 import junit.framework.Assert.assertTrue
-import org.junit.After
+import org.junit.Assume.assumeFalse
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -59,9 +63,9 @@ import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
-import org.mockito.MockitoSession
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -84,10 +88,13 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
     @Mock private lateinit var mockInteractionJankMonitor: InteractionJankMonitor
     @Mock private lateinit var draggedTaskLeash: SurfaceControl
     @Mock private lateinit var homeTaskLeash: SurfaceControl
+    @Mock private lateinit var wallpaperLeash: SurfaceControl
     @Mock private lateinit var desktopUserRepositories: DesktopUserRepositories
     @Mock private lateinit var bubbleController: BubbleController
     @Mock private lateinit var visualIndicator: DesktopModeVisualIndicator
     @Mock private lateinit var dragCancelCallback: Runnable
+    @Mock private lateinit var displayController: DisplayController
+    @Mock private lateinit var internalDisplay: Display
     @Mock
     private lateinit var dragToDesktopStateListener:
         DragToDesktopTransitionHandler.DragToDesktopStateListener
@@ -101,7 +108,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
     private lateinit var defaultHandler: DragToDesktopTransitionHandler
     private lateinit var springHandler: SpringDragToDesktopTransitionHandler
-    private lateinit var mockitoSession: MockitoSession
 
     @Before
     fun setUp() {
@@ -113,6 +119,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     desktopUserRepositories,
                     mockInteractionJankMonitor,
                     Optional.of(bubbleController),
+                    displayController,
                     transactionSupplier,
                 )
                 .apply {
@@ -128,6 +135,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     desktopUserRepositories,
                     mockInteractionJankMonitor,
                     Optional.of(bubbleController),
+                    displayController,
                     transactionSupplier,
                 )
                 .apply {
@@ -135,11 +143,6 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                     dragToDesktopStateListener =
                         this@DragToDesktopTransitionHandlerTest.dragToDesktopStateListener
                 }
-        mockitoSession =
-            ExtendedMockito.mockitoSession()
-                .strictness(Strictness.LENIENT)
-                .mockStatic(SystemProperties::class.java)
-                .startMocking()
         whenever(
                 transitions.startTransition(
                     eq(TRANSIT_DESKTOP_MODE_END_DRAG_TO_DESKTOP),
@@ -148,11 +151,15 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 )
             )
             .thenReturn(mock<IBinder>())
-    }
 
-    @After
-    fun tearDown() {
-        mockitoSession.finishMocking()
+        whenever(internalDisplay.type).thenReturn(Display.TYPE_INTERNAL)
+        whenever(internalDisplay.displayId).thenReturn(Display.DEFAULT_DISPLAY)
+        whenever(displayController.getDisplay(anyInt())).thenReturn(internalDisplay)
+
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
+            true,
+        )
     }
 
     @Test
@@ -623,6 +630,12 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
 
     @Test
     fun propertyValue_returnsSystemPropertyValue() {
+        val mockitoSession =
+            ExtendedMockito.mockitoSession()
+                .strictness(Strictness.LENIENT)
+                .mockStatic(SystemProperties::class.java)
+                .startMocking()
+
         val name = "property_name"
         val value = 10f
 
@@ -634,10 +647,18 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             /* expected= */ value,
             /* actual= */ SpringDragToDesktopTransitionHandler.propertyValue(name),
         )
+
+        mockitoSession.finishMocking()
     }
 
     @Test
     fun propertyValue_withScale_returnsScaledSystemPropertyValue() {
+        val mockitoSession =
+            ExtendedMockito.mockitoSession()
+                .strictness(Strictness.LENIENT)
+                .mockStatic(SystemProperties::class.java)
+                .startMocking()
+
         val name = "property_name"
         val value = 10f
         val scale = 100f
@@ -650,10 +671,18 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
             /* expected= */ value / scale,
             /* actual= */ SpringDragToDesktopTransitionHandler.propertyValue(name, scale = scale),
         )
+
+        mockitoSession.finishMocking()
     }
 
     @Test
     fun propertyValue_notSet_returnsDefaultValue() {
+        val mockitoSession =
+            ExtendedMockito.mockitoSession()
+                .strictness(Strictness.LENIENT)
+                .mockStatic(SystemProperties::class.java)
+                .startMocking()
+
         val name = "property_name"
         val defaultValue = 50f
 
@@ -668,10 +697,18 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 default = defaultValue,
             ),
         )
+
+        mockitoSession.finishMocking()
     }
 
     @Test
     fun propertyValue_withScaleNotSet_returnsDefaultValue() {
+        val mockitoSession =
+            ExtendedMockito.mockitoSession()
+                .strictness(Strictness.LENIENT)
+                .mockStatic(SystemProperties::class.java)
+                .startMocking()
+
         val name = "property_name"
         val defaultValue = 0.5f
         val scale = 100f
@@ -690,6 +727,8 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 scale = scale,
             ),
         )
+
+        mockitoSession.finishMocking()
     }
 
     @Test
@@ -981,6 +1020,74 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
         verify(visualIndicator, never()).fadeInIndicator()
     }
 
+    @Test
+    fun startDrag_hasDesktop_layerOrder_taskOnWallpaperOnHome() {
+        assumeTrue(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, internalDisplay))
+        val task = createTask()
+        val rootLeash = mock<SurfaceControl>()
+        val startTransaction = mock<SurfaceControl.Transaction>()
+        startDrag(
+            defaultHandler,
+            task,
+            startTransaction = startTransaction,
+            transitionRootLeash = rootLeash,
+        )
+
+        val draggedTaskLayer =
+            argumentCaptor<Int> {
+                    verify(startTransaction).setLayer(eq(draggedTaskLeash), capture())
+                }
+                .firstValue
+        val wallpaperLayer =
+            argumentCaptor<Int> { verify(startTransaction).setLayer(eq(wallpaperLeash), capture()) }
+                .firstValue
+        val homeLayer =
+            argumentCaptor<Int> { verify(startTransaction).setLayer(eq(homeTaskLeash), capture()) }
+                .firstValue
+
+        // dragged task -> wallpaper -> home
+        assertThat(draggedTaskLayer).isGreaterThan(wallpaperLayer)
+        assertThat(wallpaperLayer).isGreaterThan(homeLayer)
+    }
+
+    @Test
+    @EnableFlags(
+        com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TO_FULLSCREEN,
+        com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE,
+    )
+    fun startDrag_noDesktop_layerOrder_taskOnHomeOnWallpaper() {
+        mContext.orCreateTestableResources.addOverride(
+            com.android.internal.R.bool.config_canInternalDisplayHostDesktops,
+            false,
+        )
+        assumeFalse(DesktopModeStatus.isDesktopModeSupportedOnDisplay(context, internalDisplay))
+        val task = createTask()
+        val rootLeash = mock<SurfaceControl>()
+        val startTransaction = mock<SurfaceControl.Transaction>()
+        startDrag(
+            defaultHandler,
+            task,
+            startTransaction = startTransaction,
+            transitionRootLeash = rootLeash,
+        )
+
+        val draggedTaskLayer =
+            argumentCaptor<Int> {
+                    verify(startTransaction).setLayer(eq(draggedTaskLeash), capture())
+                }
+                .firstValue
+        val homeLayer =
+            argumentCaptor<Int> { verify(startTransaction).setLayer(eq(homeTaskLeash), capture()) }
+                .firstValue
+        val wallpaperLayer =
+            argumentCaptor<Int> { verify(startTransaction).setLayer(eq(wallpaperLeash), capture()) }
+                .firstValue
+
+        // dragged task -> home -> wallpaper
+        assertThat(draggedTaskLayer).isGreaterThan(homeLayer)
+        assertThat(homeLayer).isGreaterThan(wallpaperLayer)
+    }
+
     private fun startDrag(
         handler: DragToDesktopTransitionHandler,
         task: RunningTaskInfo = createTask(),
@@ -1106,7 +1213,7 @@ class DragToDesktopTransitionHandlerTest : ShellTestCase() {
                 }
             )
             addChange( // Wallpaper.
-                TransitionInfo.Change(mock(), mock()).apply {
+                TransitionInfo.Change(mock(), wallpaperLeash).apply {
                     parent = null
                     taskInfo = null
                     flags = flags or FLAG_IS_WALLPAPER
