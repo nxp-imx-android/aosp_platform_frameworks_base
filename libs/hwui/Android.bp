@@ -168,6 +168,14 @@ cc_defaults {
                 "libutils",
             ],
         },
+        host_linux: {
+            shared_libs: [
+                "libaconfig_storage_read_api_cc",
+            ],
+            whole_static_libs: [
+                "hwui_flags_cc_lib",
+            ],
+        },
     },
 }
 
