@@ -49,6 +49,7 @@ import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.ui.composable.Overlay
 import com.android.systemui.shade.ui.composable.OverlayShade
 import com.android.systemui.shade.ui.composable.OverlayShadeHeader
+import com.android.systemui.shade.ui.composable.isFullWidthShade
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.util.Utils
 import dagger.Lazy
@@ -117,7 +118,7 @@ constructor(
         ) {
             Box {
                 Column {
-                    if (viewModel.showClock) {
+                    if (isFullWidthShade()) {
                         val burnIn = rememberBurnIn(keyguardClockViewModel)
 
                         with(clockSection) {
