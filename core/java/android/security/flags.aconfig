@@ -61,13 +61,6 @@ flag {
 }
 
 flag {
-    name: "significant_places"
-    namespace: "biometrics"
-    description: "Enabled significant place monitoring"
-    bug: "337870680"
-}
-
-flag {
   name: "should_trust_manager_listen_for_primary_auth"
   namespace: "biometrics"
   description: "Causes TrustManagerService to listen for credential attempts and ignore reports from upstream"
