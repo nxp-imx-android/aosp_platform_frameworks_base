@@ -31,6 +31,7 @@ import android.annotation.NonNull;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.os.RemoteException;
 import android.util.ArraySet;
+import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.window.TransitionInfo;
@@ -38,6 +39,7 @@ import android.window.TransitionInfo;
 import com.android.wm.shell.shared.FocusTransitionListener;
 import com.android.wm.shell.shared.IFocusTransitionListener;
 
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -236,5 +238,22 @@ public class FocusTransitionObserver {
             return task.isFocused;
         }
         return task.displayId == mFocusedDisplayId && isFocusedOnDisplay(task);
+    }
+
+    /** Dumps focused display and tasks. */
+    public void dump(PrintWriter originalWriter, String prefix) {
+        final IndentingPrintWriter writer =
+                new IndentingPrintWriter(originalWriter, "    ", prefix);
+        writer.println("FocusTransitionObserver:");
+        writer.increaseIndent();
+        writer.printf("currentFocusedDisplayId=%d\n", mFocusedDisplayId);
+        writer.println("currentFocusedTaskOnDisplay:");
+        writer.increaseIndent();
+        for (int i = 0; i < mFocusedTaskOnDisplay.size(); i++) {
+            writer.printf("Display #%d: taskId=%d topActivity=%s\n",
+                    mFocusedTaskOnDisplay.keyAt(i),
+                    mFocusedTaskOnDisplay.valueAt(i).taskId,
+                    mFocusedTaskOnDisplay.valueAt(i).topActivity);
+        }
     }
 }
