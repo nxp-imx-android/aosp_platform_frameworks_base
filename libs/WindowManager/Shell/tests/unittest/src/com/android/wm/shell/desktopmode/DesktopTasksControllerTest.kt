@@ -371,6 +371,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(displayLayout.densityDpi()).thenReturn(160)
         whenever(runBlocking { persistentRepository.readDesktop(any(), any()) })
             .thenReturn(Desktop.getDefaultInstance())
+        whenever(display.type).thenReturn(Display.TYPE_INTERNAL)
         doReturn(mockToast).`when` { Toast.makeText(any(), anyInt(), anyInt()) }
 
         val tda = DisplayAreaInfo(MockToken().token(), DEFAULT_DISPLAY, 0)
@@ -3318,6 +3319,60 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         controller.moveToNextDisplay(task.taskId)
 
         verify(taskbarDesktopTaskListener).onTaskbarCornerRoundingUpdate(anyBoolean())
+    }
+
+    private fun moveToNextDesktopDisplay_moveIifDesktopModeSupportedOnDestination(
+        isDesktopModeSupportedOnDestination: Boolean
+    ) {
+        // Set up two display ids
+        whenever(rootTaskDisplayAreaOrganizer.displayIds)
+            .thenReturn(intArrayOf(DEFAULT_DISPLAY, SECOND_DISPLAY))
+
+        // Add desk if destination support desktop
+        if (isDesktopModeSupportedOnDestination) {
+            taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
+        }
+
+        // Create a mock for the target display area: second display
+        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
+        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
+            .thenReturn(secondDisplayArea)
+
+        // Set up external display content
+        val secondaryDisplay = mock(Display::class.java)
+        whenever(displayController.getDisplay(SECOND_DISPLAY)).thenReturn(secondaryDisplay)
+
+        doReturn(isDesktopModeSupportedOnDestination).`when` {
+            DesktopModeStatus.isDesktopModeSupportedOnDisplay(any<Context>(), eq(secondaryDisplay))
+        }
+
+        // Set up a task on the default display
+        val task = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+
+        controller.moveToNextDesktopDisplay(task.taskId)
+
+        val verificationMode =
+            if (isDesktopModeSupportedOnDestination) {
+                times(1)
+            } else {
+                never()
+            }
+        verify(transitions, verificationMode)
+            .startTransition(
+                eq(TRANSIT_CHANGE),
+                any<WindowContainerTransaction>(),
+                isA(DesktopModeMoveToDisplayTransitionHandler::class.java),
+            )
+    }
+
+    @Test
+    fun moveToNextDesktopDisplay_moveIfDesktopModeSupportedOnDestination() {
+        moveToNextDesktopDisplay_moveIifDesktopModeSupportedOnDestination(true)
+    }
+
+    @Test
+    fun moveToNextDesktopDisplay_dontMoveIfDesktopModeNotSupportedOnDestination() {
+        moveToNextDesktopDisplay_moveIifDesktopModeSupportedOnDestination(false)
     }
 
     @Test
