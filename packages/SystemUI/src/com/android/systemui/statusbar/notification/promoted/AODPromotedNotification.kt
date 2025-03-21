@@ -205,18 +205,22 @@ private val PromotedNotificationContentModel.layoutResource: Int?
         return if (notificationsRedesignTemplates()) {
             when (style) {
                 Style.Base -> R.layout.notification_2025_template_expanded_base
+                Style.CollapsedBase -> R.layout.notification_2025_template_collapsed_base
                 Style.BigPicture -> R.layout.notification_2025_template_expanded_big_picture
                 Style.BigText -> R.layout.notification_2025_template_expanded_big_text
                 Style.Call -> R.layout.notification_2025_template_expanded_call
+                Style.CollapsedCall -> R.layout.notification_2025_template_collapsed_call
                 Style.Progress -> R.layout.notification_2025_template_expanded_progress
                 Style.Ineligible -> null
             }
         } else {
             when (style) {
                 Style.Base -> R.layout.notification_template_material_big_base
+                Style.CollapsedBase -> R.layout.notification_template_material_base
                 Style.BigPicture -> R.layout.notification_template_material_big_picture
                 Style.BigText -> R.layout.notification_template_material_big_text
                 Style.Call -> R.layout.notification_template_material_big_call
+                Style.CollapsedCall -> R.layout.notification_template_material_call
                 Style.Progress -> R.layout.notification_template_material_progress
                 Style.Ineligible -> null
             }
@@ -333,10 +337,12 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     fun update(content: PromotedNotificationContentModel, audiblyAlertedIconVisible: Boolean) {
         when (content.style) {
-            Style.Base -> updateBase(content)
+            Style.Base -> updateBase(content, collapsed = false)
+            Style.CollapsedBase -> updateBase(content, collapsed = true)
             Style.BigPicture -> updateBigPictureStyle(content)
             Style.BigText -> updateBigTextStyle(content)
-            Style.Call -> updateCallStyle(content)
+            Style.Call -> updateCallStyle(content, collapsed = false)
+            Style.CollapsedCall -> updateCallStyle(content, collapsed = true)
             Style.Progress -> updateProgressStyle(content)
             Style.Ineligible -> {}
         }
@@ -346,11 +352,15 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private fun updateBase(
         content: PromotedNotificationContentModel,
+        collapsed: Boolean,
         textView: ImageFloatingTextView? = text,
     ) {
-        updateHeader(content)
+        val headerTitleView = if (collapsed) title else null
+        updateHeader(content, titleView = headerTitleView, collapsed = collapsed)
 
-        updateTitle(title, content)
+        if (headerTitleView == null) {
+            updateTitle(title, content)
+        }
         updateText(textView, content)
         updateSmallIcon(icon, content)
         updateImageView(rightIcon, content.skeletonLargeIcon)
@@ -358,21 +368,21 @@ private class AODPromotedNotificationViewUpdater(root: View) {
     }
 
     private fun updateBigPictureStyle(content: PromotedNotificationContentModel) {
-        updateBase(content)
+        updateBase(content, collapsed = false)
     }
 
     private fun updateBigTextStyle(content: PromotedNotificationContentModel) {
-        updateBase(content, textView = bigText)
+        updateBase(content, collapsed = false, textView = bigText)
     }
 
-    private fun updateCallStyle(content: PromotedNotificationContentModel) {
-        updateConversationHeader(content)
+    private fun updateCallStyle(content: PromotedNotificationContentModel, collapsed: Boolean) {
+        updateConversationHeader(content, collapsed = collapsed)
 
         updateText(text, content)
     }
 
     private fun updateProgressStyle(content: PromotedNotificationContentModel) {
-        updateBase(content)
+        updateBase(content, collapsed = false)
 
         updateNewProgressBar(content)
     }
@@ -409,24 +419,35 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         }
     }
 
-    private fun updateHeader(content: PromotedNotificationContentModel) {
-        updateAppName(content)
+    private fun updateHeader(
+        content: PromotedNotificationContentModel,
+        collapsed: Boolean,
+        titleView: TextView?,
+    ) {
+        val hasTitle = titleView != null && content.title != null
+        val hasSubText = content.subText != null
+        // the collapsed form doesn't show the app name unless there is no other text in the header
+        val appNameRequired = !hasTitle && !hasSubText
+        val hideAppName = (!appNameRequired && collapsed)
+
+        updateAppName(content, forceHide = hideAppName)
         updateTextView(headerTextSecondary, content.subText)
-        // Not calling updateTitle(headerText, content) because the title is always a separate
-        // element in the expanded layout used for AOD RONs.
+        updateTitle(titleView, content)
         updateTimeAndChronometer(content)
 
-        updateHeaderDividers(content)
+        updateHeaderDividers(content, hideTitle = !hasTitle, hideAppName = hideAppName)
 
         updateTopLine(content)
     }
 
-    private fun updateHeaderDividers(content: PromotedNotificationContentModel) {
-        val hasAppName = content.appName != null
+    private fun updateHeaderDividers(
+        content: PromotedNotificationContentModel,
+        hideAppName: Boolean,
+        hideTitle: Boolean,
+    ) {
+        val hasAppName = content.appName != null && !hideAppName
         val hasSubText = content.subText != null
-        // Not setting hasHeader = content.title because the title is always a separate element in
-        // the expanded layout used for AOD RONs.
-        val hasHeader = false
+        val hasHeader = content.title != null && !hideTitle
         val hasTimeOrChronometer = content.time != null
 
         val hasTextBeforeSubText = hasAppName
@@ -442,13 +463,17 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         timeDivider?.isVisible = showDividerBeforeTime
     }
 
-    private fun updateConversationHeader(content: PromotedNotificationContentModel) {
-        updateAppName(content)
+    private fun updateConversationHeader(
+        content: PromotedNotificationContentModel,
+        collapsed: Boolean,
+    ) {
+        updateAppName(content, forceHide = collapsed)
         updateTimeAndChronometer(content)
+
         updateImageView(verificationIcon, content.verificationIcon)
         updateTextView(verificationText, content.verificationText)
 
-        updateConversationHeaderDividers(content)
+        updateConversationHeaderDividers(content, hideTitle = true, hideAppName = collapsed)
 
         updateTopLine(content)
 
@@ -456,11 +481,13 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         updateTitle(conversationText, content)
     }
 
-    private fun updateConversationHeaderDividers(content: PromotedNotificationContentModel) {
-        // Not setting hasTitle = content.title because the title is always a separate element in
-        // the expanded layout used for AOD RONs.
-        val hasTitle = false
-        val hasAppName = content.appName != null
+    private fun updateConversationHeaderDividers(
+        content: PromotedNotificationContentModel,
+        hideTitle: Boolean,
+        hideAppName: Boolean,
+    ) {
+        val hasTitle = content.title != null && !hideTitle
+        val hasAppName = content.appName != null && !hideAppName
         val hasTimeOrChronometer = content.time != null
         val hasVerification =
             !content.verificationIcon.isNullOrEmpty() || content.verificationText != null
@@ -478,8 +505,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         verificationDivider?.isVisible = showDividerBeforeVerification
     }
 
-    private fun updateAppName(content: PromotedNotificationContentModel) {
-        updateTextView(appNameText, content.appName)
+    private fun updateAppName(content: PromotedNotificationContentModel, forceHide: Boolean) {
+        updateTextView(appNameText, content.appName?.takeUnless { forceHide })
     }
 
     private fun updateTitle(titleView: TextView?, content: PromotedNotificationContentModel) {
