@@ -22,6 +22,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.android.settingslib.widget.SettingsSpinnerPreference.Style;
 import com.android.settingslib.widget.spinner.R;
 
@@ -38,6 +42,7 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
     private static final int DEFAULT_EXPRESSIVE_DROPDOWN_RESOURCE =
             R.layout.settings_expressvie_spinner_dropdown_view;
     private final LayoutInflater mDefaultInflater;
+    private int mSelectedPosition = -1;
 
     /**
      * Constructs a new SettingsSpinnerAdapter with the given context.
@@ -51,6 +56,29 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
 
         setDropDownViewResource(getDropdownResource(context));
         mDefaultInflater = LayoutInflater.from(context);
+    }
+
+    @Override
+    public View getDropDownView(
+            int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        View view;
+        if (convertView == null) {
+            view =
+                    mDefaultInflater.inflate(
+                            getDropdownResource(getContext()), parent, false /* attachToRoot */);
+        } else {
+            view = convertView;
+        }
+        TextView textView = view.findViewById(android.R.id.text1);
+        ImageView iconView = view.findViewById(android.R.id.icon);
+        iconView.setVisibility((position == mSelectedPosition) ? View.VISIBLE : View.GONE);
+        String item = (String) getItem(position);
+        textView.setText(item);
+        return view;
+    }
+
+    public void setSelectedPosition(int pos) {
+        mSelectedPosition = pos;
     }
 
     public SettingsSpinnerAdapter(Context context, SettingsSpinnerPreference.Style style) {

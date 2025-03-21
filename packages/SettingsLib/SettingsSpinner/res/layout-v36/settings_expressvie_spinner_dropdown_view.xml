@@ -11,11 +11,26 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<TextView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@android:id/text1"
-    style="@style/SettingsSpinnerDropdown.Expressive"
-    android:gravity="center_vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:filterTouchesWhenObscured="true"/>
+    style="@style/SettingsSpinnerDropdown.Expressive">
+  <ImageView
+      android:id="@android:id/icon"
+      android:layout_width="@dimen/settingslib_expressive_space_small3"
+      android:layout_height="@dimen/settingslib_expressive_space_small3"
+      android:importantForAccessibility="no"
+      android:src="@drawable/settingslib_expressive_icon_check"
+      android:tint="@color/settingslib_spinner_dropdown_color"
+      android:layout_gravity="center_vertical"
+      android:layout_marginEnd="@dimen/settingslib_expressive_space_extrasmall4"
+      android:scaleType="centerInside"/>
+
+  <TextView
+      android:id="@android:id/text1"
+      style="@style/SettingsSpinnerDropdownText"
+      android:gravity="center_vertical"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:filterTouchesWhenObscured="true"/>
+</LinearLayout>

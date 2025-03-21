@@ -15,9 +15,14 @@
   limitations under the License.
   -->
 
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-  <!-- Highlight the selected item -->
-  <item android:state_activated="true" android:color="@color/settingslib_materialColorPrimaryContainer"/>
-  <!-- default color for other states -->
-  <item android:color="@color/settingslib_materialColorSurfaceContainerLow"/>
-</selector>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?android:colorControlHighlight">
+  <item>
+    <shape android:shape="rectangle">
+      <solid
+          android:color="@color/settingslib_materialColorPrimaryContainer" />
+      <corners
+          android:radius="@dimen/settingslib_expressive_radius_large2" />
+    </shape>
+  </item>
+</ripple>

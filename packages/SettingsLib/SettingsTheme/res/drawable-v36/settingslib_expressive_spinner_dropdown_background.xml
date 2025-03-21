@@ -22,7 +22,10 @@
   <item android:id="@android:id/background">
     <layer-list
         android:paddingMode="stack"
-        android:padding="@dimen/settingslib_expressive_space_extrasmall4">
+        android:paddingStart="@dimen/settingslib_expressive_space_extrasmall4"
+        android:paddingEnd="@dimen/settingslib_expressive_space_extrasmall4"
+        android:paddingTop="@dimen/settingslib_expressive_space_extrasmall4"
+        android:paddingBottom="@dimen/settingslib_expressive_space_extrasmall4">
 
       <item>
         <shape>

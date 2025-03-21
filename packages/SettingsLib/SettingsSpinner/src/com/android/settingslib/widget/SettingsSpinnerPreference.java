@@ -143,6 +143,7 @@ public class SettingsSpinnerPreference extends Preference
         if (spinner == null) {
             return;
         }
+        mAdapter.setSelectedPosition(mPosition);
         spinner.setAdapter(mAdapter);
         spinner.setSelection(mPosition);
         spinner.setOnItemSelectedListener(mOnSelectedListener);
@@ -168,20 +169,22 @@ public class SettingsSpinnerPreference extends Preference
 
     private final AdapterView.OnItemSelectedListener mOnSelectedListener =
             new AdapterView.OnItemSelectedListener() {
-        @Override
-        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-            if (mPosition == position) return;
-            mPosition = position;
-            if (mListener != null) {
-                mListener.onItemSelected(parent, view, position, id);
-            }
-        }
+                @Override
+                public void onItemSelected(
+                        AdapterView<?> parent, View view, int position, long id) {
+                    if (mPosition == position) return;
+                    mPosition = position;
+                    mAdapter.setSelectedPosition(mPosition);
+                    if (mListener != null) {
+                        mListener.onItemSelected(parent, view, position, id);
+                    }
+                }
 
-        @Override
-        public void onNothingSelected(AdapterView<?> parent) {
-            if (mListener != null) {
-                mListener.onNothingSelected(parent);
-            }
-        }
-    };
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+                    if (mListener != null) {
+                        mListener.onNothingSelected(parent);
+                    }
+                }
+            };
 }
