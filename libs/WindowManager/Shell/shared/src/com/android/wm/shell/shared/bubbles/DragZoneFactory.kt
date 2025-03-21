@@ -133,7 +133,7 @@ class DragZoneFactory(
         fullScreenDropTargetPadding = 20.dpToPx()
         desktopWindowDropTargetPaddingSmall = 100.dpToPx()
         desktopWindowDropTargetPaddingLarge = 130.dpToPx()
-        expandedViewDropTargetWidth = 364.dpToPx()
+        expandedViewDropTargetWidth = 330.dpToPx()
         expandedViewDropTargetHeight = 578.dpToPx()
         expandedViewDropTargetPaddingBottom = 108.dpToPx()
         expandedViewDropTargetPaddingHorizontal = 24.dpToPx()
