@@ -73,15 +73,18 @@ public final class PictureProfile implements Parcelable {
      */
     public static final int TYPE_APPLICATION = 2;
 
+    /**
+     * Default profile name
+     * @hide
+     */
+    public static final String NAME_DEFAULT = "default";
+
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
     @StringDef(prefix = "NAME_", value = {
             NAME_DEFAULT
     })
     public @interface ProfileName {}
-
-    /** @hide */
-    public static final String NAME_DEFAULT = "default";
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)

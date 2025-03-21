@@ -378,6 +378,18 @@ public final class MediaQualityManager {
     }
 
     /**
+     * Gets picture profile handle for TV input.
+     * @hide
+     */
+    public long getPictureProfileForTvInput(String inputId) {
+        try {
+            return mService.getPictureProfileForTvInput(inputId, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
      * Gets sound profile handle by profile ID.
      * @hide
      */

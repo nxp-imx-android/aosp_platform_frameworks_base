@@ -46,9 +46,12 @@ interface IMediaQualityManager {
     List<String> getPictureProfileAllowList(int userId);
     void setPictureProfileAllowList(in List<String> packages, int userId);
     List<PictureProfileHandle> getPictureProfileHandle(in String[] id, int userId);
+
     long getPictureProfileHandleValue(in String id, int userId);
     long getDefaultPictureProfileHandleValue(int userId);
     void notifyPictureProfileHandleSelection(in long handle, int userId);
+
+    long getPictureProfileForTvInput(in String inputId, int userId);
 
     void createSoundProfile(in SoundProfile pp, int userId);
     void updateSoundProfile(in String id, in SoundProfile pp, int userId);

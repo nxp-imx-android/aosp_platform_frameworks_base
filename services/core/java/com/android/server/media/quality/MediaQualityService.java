@@ -419,6 +419,7 @@ public class MediaQualityService extends SystemService {
                 if (mMediaQuality != null) {
                     PictureParameters pp = new PictureParameters();
                     // put ID in params for profile update in HAL
+                    // TODO: update HAL API for this case
                     params.putLong(BaseParameters.PARAMETER_ID, longId);
                     PictureParameter[] pictureParameters = MediaQualityUtils
                             .convertPersistableBundleToPictureParameterList(params);
@@ -502,6 +503,41 @@ public class MediaQualityService extends SystemService {
             PictureProfile profile = mMqDatabaseUtils.getPictureProfile(handle);
             if (profile != null) {
                 mHalNotifier.notifyHalOnPictureProfileChange(handle, profile.getParameters());
+            }
+        }
+
+        public long getPictureProfileForTvInput(String inputId, int userId) {
+            // TODO: cache profiles
+            if (!hasGlobalPictureQualityServicePermission()) {
+                mMqManagerNotifier.notifyOnPictureProfileError(null,
+                        PictureProfile.ERROR_NO_PERMISSION,
+                        Binder.getCallingUid(), Binder.getCallingPid());
+            }
+            String[] columns = {BaseParameters.PARAMETER_ID};
+            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                    + BaseParameters.PARAMETER_NAME + " = ? AND "
+                    + BaseParameters.PARAMETER_INPUT_ID + " = ?";
+            String[] selectionArguments = {
+                    Integer.toString(PictureProfile.TYPE_SYSTEM),
+                    PictureProfile.NAME_DEFAULT,
+                    inputId
+            };
+            synchronized (mPictureProfileLock) {
+                try (Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
+                        mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
+                        columns, selection, selectionArguments)) {
+                    int count = cursor.getCount();
+                    if (count == 0) {
+                        return -1;
+                    }
+                    long handle = -1;
+                    cursor.moveToFirst();
+                    int colIndex = cursor.getColumnIndex(BaseParameters.PARAMETER_ID);
+                    if (colIndex != -1) {
+                        handle = cursor.getLong(colIndex);
+                    }
+                    return handle;
+                }
             }
         }
 
@@ -713,6 +749,7 @@ public class MediaQualityService extends SystemService {
                 if (mMediaQuality != null) {
                     SoundParameters sp = new SoundParameters();
                     // put ID in params for profile update in HAL
+                    // TODO: update HAL API for this case
                     params.putLong(BaseParameters.PARAMETER_ID, longId);
                     SoundParameter[] soundParameters =
                             MediaQualityUtils.convertPersistableBundleToSoundParameterList(params);
