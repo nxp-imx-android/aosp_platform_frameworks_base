@@ -79,8 +79,6 @@ public class MediaProjectionStoppingTest {
 
     private Context mContext;
     private int mTimeoutMs;
-    private TelecomManager mTelecomManager;
-    private TelephonyManager mTelephonyManager;
     private TestCallStateListener mTestCallStateListener;
 
     @Before
