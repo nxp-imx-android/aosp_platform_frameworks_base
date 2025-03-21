@@ -1016,3 +1016,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_desktop_close_task_animation_in_dtc_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to handle close task animation within DesktopTasksController."
+    bug: "403345083"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
