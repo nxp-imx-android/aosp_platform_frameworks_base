@@ -1788,11 +1788,11 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                     ImeTracker.PHASE_CLIENT_ANIMATION_FINISHED_SHOW);
             ImeTracker.forLogging().onShown(statsToken);
         } else {
-            ImeTracker.forLogging().onProgress(statsToken,
-                    ImeTracker.PHASE_CLIENT_ANIMATION_FINISHED_HIDE);
             // The requestedVisibleTypes are only send at the end of the hide animation.
             // Therefore, the requested is not finished at this point.
             if (!Flags.refactorInsetsController()) {
+                ImeTracker.forLogging().onProgress(statsToken,
+                        ImeTracker.PHASE_CLIENT_ANIMATION_FINISHED_HIDE);
                 ImeTracker.forLogging().onHidden(statsToken);
             }
         }
