@@ -5199,6 +5199,22 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_CLOSE_TASK_ANIMATION_IN_DTC_BUGFIX)
+    fun handleRequest_closeTransition_addPendingMixedTransition() {
+        val task1 = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        val task2 = setUpFreeformTask(displayId = DEFAULT_DISPLAY)
+        val transition = Binder()
+
+        taskRepository.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true)
+        controller.handleRequest(transition, createTransition(task2, type = TRANSIT_CLOSE))
+
+        verify(desktopMixedTransitionHandler)
+            .addPendingMixedTransition(
+                DesktopMixedTransitionHandler.PendingMixedTransition.Close(transition)
+            )
+    }
+
+    @Test
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY,
         Flags.FLAG_ENABLE_DESKTOP_WALLPAPER_ACTIVITY_FOR_SYSTEM_USER,
