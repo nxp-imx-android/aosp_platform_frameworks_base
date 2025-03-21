@@ -1033,3 +1033,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_freeform_box_shadows"
+    namespace: "lse_desktop_experience"
+    description: "Enables box shadows for freeform windows."
+    bug: "367464660"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
