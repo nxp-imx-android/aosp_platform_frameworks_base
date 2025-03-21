@@ -22,7 +22,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import com.android.settingslib.widget.SettingsSpinnerPreference.Style;
 import com.android.settingslib.widget.spinner.R;
+
 /**
  * An ArrayAdapter which was used by Spinner with settings style.
  * @param <T> the data type to be loaded.
@@ -30,7 +32,11 @@ import com.android.settingslib.widget.spinner.R;
 public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
 
     private static final int DEFAULT_RESOURCE = R.layout.settings_spinner_view;
-    private static final int DFAULT_DROPDOWN_RESOURCE = R.layout.settings_spinner_dropdown_view;
+    private static final int DEFAULT_DROPDOWN_RESOURCE = R.layout.settings_spinner_dropdown_view;
+    private static final int DEFAULT_EXPRESSIVE_RESOURCE =
+            R.layout.settings_expressvie_spinner_view;
+    private static final int DEFAULT_EXPRESSIVE_DROPDOWN_RESOURCE =
+            R.layout.settings_expressvie_spinner_dropdown_view;
     private final LayoutInflater mDefaultInflater;
 
     /**
@@ -41,17 +47,45 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
      *                access the current theme, resources, etc.
      */
     public SettingsSpinnerAdapter(Context context) {
-        super(context, getDefaultResource());
+        super(context, getDefaultResource(context, Style.NORMAL));
 
-        setDropDownViewResource(getDropdownResource());
+        setDropDownViewResource(getDropdownResource(context));
         mDefaultInflater = LayoutInflater.from(context);
+    }
+
+    public SettingsSpinnerAdapter(Context context, SettingsSpinnerPreference.Style style) {
+        super(context, getDefaultResource(context, style));
+
+        setDropDownViewResource(getDropdownResource(context));
+        mDefaultInflater = LayoutInflater.from(context);
+    }
+
+    private static int getDefaultResourceWithStyle(Style style) {
+        switch (style) {
+            case NORMAL -> {
+                return DEFAULT_EXPRESSIVE_RESOURCE;
+            }
+            case LARGE -> {
+                return R.layout.settings_expressive_spinner_view_large;
+            }
+            case FULL_WIDTH -> {
+                return R.layout.settings_expressive_spinner_view_full;
+            }
+            case OUTLINED -> {
+                return DEFAULT_RESOURCE;
+            }
+            default -> {
+                return DEFAULT_RESOURCE;
+            }
+        }
     }
 
     /**
      * In overridded {@link #getView(int, View, ViewGroup)}, use this method to get default view.
      */
     public View getDefaultView(int position, View convertView, ViewGroup parent) {
-        return mDefaultInflater.inflate(getDefaultResource(), parent, false /* attachToRoot */);
+        return mDefaultInflater.inflate(
+                getDefaultResource(getContext(), Style.NORMAL), parent, false /* attachToRoot */);
     }
 
     /**
@@ -59,15 +93,21 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
      * drop down view.
      */
     public View getDefaultDropDownView(int position, View convertView, ViewGroup parent) {
-        return mDefaultInflater.inflate(getDropdownResource(), parent, false /* attachToRoot */);
+        return mDefaultInflater.inflate(
+                getDropdownResource(getContext()), parent, false /* attachToRoot */);
     }
 
-    private static int getDefaultResource() {
+    private static int getDefaultResource(Context context, Style style) {
+        int resId = SettingsThemeHelper.isExpressiveTheme(context)
+            ? getDefaultResourceWithStyle(style) : DEFAULT_DROPDOWN_RESOURCE;
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                ? DEFAULT_RESOURCE : android.R.layout.simple_spinner_dropdown_item;
+            ? resId : android.R.layout.simple_spinner_dropdown_item;
     }
-    private static int getDropdownResource() {
+
+    private static int getDropdownResource(Context context) {
+        int resId = SettingsThemeHelper.isExpressiveTheme(context)
+            ? DEFAULT_EXPRESSIVE_DROPDOWN_RESOURCE : DEFAULT_DROPDOWN_RESOURCE;
         return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                ? DFAULT_DROPDOWN_RESOURCE : android.R.layout.simple_spinner_dropdown_item;
+            ? resId : android.R.layout.simple_spinner_dropdown_item;
     }
 }

@@ -32,9 +32,9 @@
         <item name="preferenceTheme">@style/PreferenceTheme.SettingsLib.Expressive</item>
 
         <!-- Set up Spinner style -->
-        <!--item name="android:spinnerStyle"></item>
-        <item name="android:spinnerItemStyle"></item>
-        <item name="android:spinnerDropDownItemStyle"></item-->
+        <item name="android:spinnerStyle">@style/SettingslibSpinnerStyle.Expressive</item>
+        <!--<item name="android:spinnerItemStyle"></item>
+        <item name="android:spinnerDropDownItemStyle"></item>-->
 
         <!-- Set up edge-to-edge configuration for top app bar -->
         <item name="android:clipToPadding">false</item>
