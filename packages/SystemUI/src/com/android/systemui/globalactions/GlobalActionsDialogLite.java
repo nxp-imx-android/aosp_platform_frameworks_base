@@ -58,7 +58,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PowerManager;
 import android.os.RemoteException;
+import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
@@ -194,6 +196,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     static final String GLOBAL_ACTION_KEY_EMERGENCY = "emergency";
     static final String GLOBAL_ACTION_KEY_SCREENSHOT = "screenshot";
     static final String GLOBAL_ACTION_KEY_SYSTEM_UPDATE = "system_update";
+    static final String GLOBAL_ACTION_KEY_STANDBY = "standby";
 
     // See NotificationManagerService#scheduleDurationReachedLocked
     private static final long TOAST_FADE_TIME = 333;
@@ -270,6 +273,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     private final UserLogoutInteractor mLogoutInteractor;
     private final GlobalActionsInteractor mInteractor;
     private final Lazy<DisplayWindowPropertiesRepository> mDisplayWindowPropertiesRepositoryLazy;
+    private final PowerManager mPowerManager;
     private final Handler mHandler;
 
     private final UserTracker.Callback mOnUserSwitched = new UserTracker.Callback() {
@@ -341,7 +345,10 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         GA_CLOSE_POWER_VOLUP(811),
 
         @UiEvent(doc = "System Update button was pressed.")
-        GA_SYSTEM_UPDATE_PRESS(1716);
+        GA_SYSTEM_UPDATE_PRESS(1716),
+
+        @UiEvent(doc = "The global actions standby button was pressed.")
+        GA_STANDBY_PRESS(2210);
 
         private final int mId;
 
@@ -396,7 +403,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             SelectedUserInteractor selectedUserInteractor,
             UserLogoutInteractor logoutInteractor,
             GlobalActionsInteractor interactor,
-            Lazy<DisplayWindowPropertiesRepository> displayWindowPropertiesRepository) {
+            Lazy<DisplayWindowPropertiesRepository> displayWindowPropertiesRepository,
+            PowerManager powerManager) {
         mContext = context;
         mWindowManagerFuncs = windowManagerFuncs;
         mAudioManager = audioManager;
@@ -434,6 +442,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
         mLogoutInteractor = logoutInteractor;
         mInteractor = interactor;
         mDisplayWindowPropertiesRepositoryLazy = displayWindowPropertiesRepository;
+        mPowerManager = powerManager;
 
         mHandler = new Handler(mMainHandler.getLooper()) {
             public void handleMessage(Message msg) {
@@ -697,6 +706,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
                 }
             } else if (GLOBAL_ACTION_KEY_SYSTEM_UPDATE.equals(actionKey)) {
                 addIfShouldShowAction(tempActions, new SystemUpdateAction());
+            } else if (GLOBAL_ACTION_KEY_STANDBY.equals(actionKey)) {
+                addIfShouldShowAction(tempActions, new StandbyAction());
             } else {
                 Log.e(TAG, "Invalid global action key " + actionKey);
             }
@@ -1242,6 +1253,36 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
             // postStartActivityDismissingKeyguard is used for showing keyguard
             // input/pin/password screen if lockscreen is secured, before sending the intent.
             mActivityStarter.postStartActivityDismissingKeyguard(intent, 0);
+        }
+    }
+
+    @VisibleForTesting
+    class StandbyAction extends SinglePressAction {
+        StandbyAction() {
+            super(R.drawable.ic_standby, R.string.global_action_standby);
+        }
+
+        @Override
+        public void onPress() {
+            // Add a little delay before executing, to give the dialog a chance to go away before
+            // going to sleep. Otherwise, we see screen flicker randomly.
+            mHandler.postDelayed(() -> {
+                mUiEventLogger.log(GlobalActionsEvent.GA_STANDBY_PRESS);
+                mBackgroundExecutor.execute(() -> {
+                    mPowerManager.goToSleep(SystemClock.uptimeMillis(),
+                            PowerManager.GO_TO_SLEEP_REASON_POWER_BUTTON, 0);
+                });
+            }, mDialogPressDelay);
+        }
+
+        @Override
+        public boolean showDuringKeyguard() {
+            return true;
+        }
+
+        @Override
+        public boolean showBeforeProvisioning() {
+            return true;
         }
     }
 
