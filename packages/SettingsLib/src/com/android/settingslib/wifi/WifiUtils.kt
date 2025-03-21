@@ -501,6 +501,7 @@ open class WifiUtils {
             dialogWindowType: Int,
             onStartActivity: (intent: Intent) -> Unit,
             onAllowed: () -> Unit,
+            onStartAapmActivity: (intent: Intent) -> Unit = onStartActivity,
         ): Job =
             coroutineScope.launch {
                 val wifiManager = context.getSystemService(WifiManager::class.java) ?: return@launch
@@ -510,7 +511,7 @@ open class WifiUtils {
                         AdvancedProtectionManager.FEATURE_ID_DISALLOW_WEP,
                         AdvancedProtectionManager.SUPPORT_DIALOG_TYPE_BLOCKED_INTERACTION)
                     intent.putExtra(DIALOG_WINDOW_TYPE, dialogWindowType)
-                    withContext(Dispatchers.Main) { onStartActivity(intent) }
+                    withContext(Dispatchers.Main) { onStartAapmActivity(intent) }
                 } else if (wifiManager.isWepSupported == true && wifiManager.queryWepAllowed()) {
                     withContext(Dispatchers.Main) { onAllowed() }
                 } else {

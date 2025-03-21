@@ -784,6 +784,17 @@ public class InternetDetailsContentController implements AccessPointController.A
         mActivityStarter.startActivity(intent, false /* dismissShade */);
     }
 
+    // Closes the dialog first, as the WEP dialog is in a different process and can have weird
+    // interactions otherwise.
+    void startActivityForDialogDismissDialogFirst(Intent intent, View view) {
+        ActivityTransitionAnimator.Controller controller =
+                mDialogTransitionAnimator.createActivityTransitionController(view);
+        if (mCallback != null) {
+            mCallback.dismissDialog();
+        }
+        mActivityStarter.startActivity(intent, false /* dismissShade */, controller);
+    }
+
     void launchNetworkSetting(View view) {
         startActivity(getSettingsIntent(), view);
     }
