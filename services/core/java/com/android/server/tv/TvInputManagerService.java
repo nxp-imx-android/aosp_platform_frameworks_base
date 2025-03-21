@@ -919,7 +919,7 @@ public final class TvInputManagerService extends SystemService {
             sendSessionTokenToClientLocked(sessionState.client,
                     sessionState.inputId, null, null, sessionState.seq);
         }
-        if (!serviceState.isHardware) {
+        if (!serviceState.isHardware || serviceState.reconnecting) {
             updateServiceConnectionLocked(serviceState.component, userId);
         } else {
             updateHardwareServiceConnectionDelayed(userId);
