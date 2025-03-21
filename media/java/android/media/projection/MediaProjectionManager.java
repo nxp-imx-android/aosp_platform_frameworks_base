@@ -29,6 +29,7 @@ import android.compat.annotation.Overridable;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.display.VirtualDisplay;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -78,9 +79,12 @@ public final class MediaProjectionManager {
     private static final String TAG = "MediaProjectionManager";
 
     /**
-     * This change id ensures that users are presented with a choice of capturing a single app
-     * or the entire screen when initiating a MediaProjection session, overriding the usage of
-     * MediaProjectionConfig#createConfigForDefaultDisplay.
+     * If enabled, this change id ensures that users are presented with a choice of capturing a
+     * single app and the entire screen when initiating a MediaProjection session, overriding the
+     * usage of MediaProjectionConfig#createConfigForDefaultDisplay.
+     * <p>
+     *
+     * <a href=" https://developer.android.com/guide/practices/device-compatibility-mode#override_disable_media_projection_single_app_option">More info</a>
      *
      * @hide
      */
