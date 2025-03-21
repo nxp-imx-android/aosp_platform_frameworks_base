@@ -14424,6 +14424,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * @param updatedUids If not null, then the uids found in the snapshot will be added to this.
      */
     @VisibleForTesting
+    @SuppressWarnings("GuardedBy")  // errorprone false positive on readDelta
     public void readKernelUidCpuTimesLocked(@Nullable ArrayList<StopwatchTimer> partialTimers,
             @Nullable SparseLongArray updatedUids, boolean onBattery) {
         mTempTotalCpuUserTimeUs = mTempTotalCpuSystemTimeUs = 0;
@@ -14431,7 +14432,13 @@ public class BatteryStatsImpl extends BatteryStats {
         final long startTimeMs = mClock.uptimeMillis();
         final long elapsedRealtimeMs = mClock.elapsedRealtime();
 
-        mCpuUidUserSysTimeReader.readDelta(false, (uid, timesUs) -> {
+        // When mIgnoreNextExternalStats is set, we are supposed to establish a CPU stats baseline
+        // by force reading the delta. In this case we ignore the delta itself, because it
+        // represents data collected before the current battery session started
+        mCpuUidUserSysTimeReader.readDelta(mIgnoreNextExternalStats /* force */, (uid, timesUs) -> {
+            if (mIgnoreNextExternalStats) {
+                return;
+            }
             long userTimeUs = timesUs[0], systemTimeUs = timesUs[1];
 
             uid = mapUid(uid);
@@ -14489,7 +14496,7 @@ public class BatteryStatsImpl extends BatteryStats {
             Slog.d(TAG, "Reading cpu stats took " + elapsedTimeMs + "ms");
         }
 
-        if (numWakelocks > 0) {
+        if (numWakelocks > 0 && !mIgnoreNextExternalStats) {
             // Distribute a portion of the total cpu time to wakelock holders.
             mTempTotalCpuUserTimeUs = (mTempTotalCpuUserTimeUs * (100 - WAKE_LOCK_WEIGHT)) / 100;
             mTempTotalCpuSystemTimeUs =
@@ -14537,6 +14544,7 @@ public class BatteryStatsImpl extends BatteryStats {
      * @param powerAccumulator object to accumulate the estimated cluster charge consumption.
      */
     @VisibleForTesting
+    @SuppressWarnings("GuardedBy")    // errorprone false positive on readDelta
     public void readKernelUidCpuFreqTimesLocked(@Nullable ArrayList<StopwatchTimer> partialTimers,
             boolean onBattery, boolean onBatteryScreenOff,
             @Nullable CpuDeltaPowerAccumulator powerAccumulator) {
@@ -14549,8 +14557,12 @@ public class BatteryStatsImpl extends BatteryStats {
         final long startTimeMs = mClock.uptimeMillis();
         final long elapsedRealtimeMs = mClock.elapsedRealtime();
         // If power is being accumulated for attribution, data needs to be read immediately.
-        final boolean forceRead = powerAccumulator != null;
+        final boolean forceRead = powerAccumulator != null || mIgnoreNextExternalStats;
         mCpuUidFreqTimeReader.readDelta(forceRead, (uid, cpuFreqTimeMs) -> {
+            if (mIgnoreNextExternalStats) {
+                return;
+            }
+
             uid = mapUid(uid);
             if (Process.isIsolated(uid)) {
                 if (DEBUG) Slog.d(TAG, "Got freq readings for an isolated uid: " + uid);
