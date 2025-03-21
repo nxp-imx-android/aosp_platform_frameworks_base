@@ -533,7 +533,7 @@ object TestShortcuts {
 
     val expectedShortcutCategoriesWithSimpleShortcutCombination =
         listOf(
-            simpleShortcutCategory(System, "System apps", "Open assistant"),
+            simpleShortcutCategory(System, "System apps", "Open digital assistant"),
             simpleShortcutCategory(System, "System controls", "Go to home screen"),
             simpleShortcutCategory(System, "System apps", "Open settings"),
             simpleShortcutCategory(System, "System controls", "Lock screen"),
