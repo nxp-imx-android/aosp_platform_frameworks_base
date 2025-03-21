@@ -610,6 +610,15 @@ filegroup {
 }
 
 filegroup {
+    name: "SystemUI-screenshot-tests-utils",
+    srcs: [
+        "tests/utils/screenshot/src/**/*.java",
+        "tests/utils/screenshot/src/**/*.kt",
+    ],
+    path: "tests/utils/screenshot",
+}
+
+filegroup {
     name: "SystemUI-robotest-utils",
     srcs: [
         "tests/robolectric/src/com/android/systemui/testutils/**/*.kt",
