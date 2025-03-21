@@ -40,6 +40,7 @@ import android.hardware.tv.mediaquality.PictureParameter;
 import android.hardware.tv.mediaquality.PictureParameters;
 import android.hardware.tv.mediaquality.SoundParameter;
 import android.hardware.tv.mediaquality.SoundParameters;
+import android.hardware.tv.mediaquality.StreamStatus;
 import android.hardware.tv.mediaquality.VendorParamCapability;
 import android.media.quality.AmbientBacklightEvent;
 import android.media.quality.AmbientBacklightMetadata;
@@ -128,6 +129,9 @@ public class MediaQualityService extends SystemService {
     private final Object mUserStateLock = new Object();
     // A global lock for ambient backlight objects.
     private final Object mAmbientBacklightLock = new Object();
+
+    private final Map<Long, PictureProfile> mHandleToPictureProfile = new HashMap<>();
+    private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
 
     public MediaQualityService(Context context) {
         super(context);
@@ -368,13 +372,18 @@ public class MediaQualityService extends SystemService {
                         Binder.getCallingUid(), Binder.getCallingPid());
             }
 
-            PictureProfile pictureProfile = mMqDatabaseUtils.getPictureProfile(
-                    mPictureProfileTempIdMap.getKey(profileId));
+            Long longId = mPictureProfileTempIdMap.getKey(profileId);
+            if (longId == null) {
+                return false;
+            }
+            PictureProfile pictureProfile = mMqDatabaseUtils.getPictureProfile(longId);
             PersistableBundle params = pictureProfile.getParameters();
 
             try {
                 if (mMediaQuality != null) {
                     PictureParameters pp = new PictureParameters();
+                    // put ID in params for profile update in HAL
+                    params.putLong(BaseParameters.PARAMETER_ID, longId);
                     PictureParameter[] pictureParameters = MediaQualityUtils
                             .convertPersistableBundleToPictureParameterList(params);
 
@@ -428,6 +437,7 @@ public class MediaQualityService extends SystemService {
             }
             return toReturn;
         }
+
 
         @GuardedBy("mSoundProfileLock")
         @Override
@@ -619,12 +629,18 @@ public class MediaQualityService extends SystemService {
                         Binder.getCallingUid(), Binder.getCallingPid());
             }
 
-            SoundProfile soundProfile =
-                    mMqDatabaseUtils.getSoundProfile(mSoundProfileTempIdMap.getKey(profileId));
+            Long longId = mSoundProfileTempIdMap.getKey(profileId);
+            if (longId == null) {
+                return false;
+            }
+
+            SoundProfile soundProfile = mMqDatabaseUtils.getSoundProfile(longId);
             PersistableBundle params = soundProfile.getParameters();
 
             try {
                 if (mMediaQuality != null) {
+                    // put ID in params for profile update in HAL
+                    params.putLong(BaseParameters.PARAMETER_ID, longId);
                     SoundParameter[] soundParameters =
                             MediaQualityUtils.convertPersistableBundleToSoundParameterList(params);
 
@@ -1127,15 +1143,17 @@ public class MediaQualityService extends SystemService {
     private final class MqDatabaseUtils {
 
         private PictureProfile getPictureProfile(Long dbId) {
+            return getPictureProfile(dbId, false);
+        }
+
+        private PictureProfile getPictureProfile(Long dbId, boolean includeParams) {
             String selection = BaseParameters.PARAMETER_ID + " = ?";
             String[] selectionArguments = {Long.toString(dbId)};
 
-            try (
-                    Cursor cursor = getCursorAfterQuerying(
-                            mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
-                            MediaQualityUtils.getMediaProfileColumns(false), selection,
-                            selectionArguments)
-            ) {
+            try (Cursor cursor = getCursorAfterQuerying(
+                    mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME,
+                    MediaQualityUtils.getMediaProfileColumns(includeParams), selection,
+                    selectionArguments)) {
                 int count = cursor.getCount();
                 if (count == 0) {
                     return null;
@@ -1154,11 +1172,9 @@ public class MediaQualityService extends SystemService {
 
         private List<PictureProfile> getPictureProfilesBasedOnConditions(String[] columns,
                 String selection, String[] selectionArguments) {
-            try (
-                    Cursor cursor = getCursorAfterQuerying(
-                            mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME, columns, selection,
-                            selectionArguments)
-            ) {
+            try (Cursor cursor = getCursorAfterQuerying(
+                    mMediaQualityDbHelper.PICTURE_QUALITY_TABLE_NAME, columns, selection,
+                    selectionArguments)) {
                 List<PictureProfile> pictureProfiles = new ArrayList<>();
                 while (cursor.moveToNext()) {
                     pictureProfiles.add(MediaQualityUtils.convertCursorToPictureProfileWithTempId(
@@ -1172,12 +1188,10 @@ public class MediaQualityService extends SystemService {
             String selection = BaseParameters.PARAMETER_ID + " = ?";
             String[] selectionArguments = {Long.toString(dbId)};
 
-            try (
-                    Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
-                            mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
-                            MediaQualityUtils.getMediaProfileColumns(false), selection,
-                            selectionArguments)
-            ) {
+            try (Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
+                    mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME,
+                    MediaQualityUtils.getMediaProfileColumns(false), selection,
+                    selectionArguments)) {
                 int count = cursor.getCount();
                 if (count == 0) {
                     return null;
@@ -1196,11 +1210,9 @@ public class MediaQualityService extends SystemService {
 
         private List<SoundProfile> getSoundProfilesBasedOnConditions(String[] columns,
                 String selection, String[] selectionArguments) {
-            try (
-                    Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
-                            mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME, columns, selection,
-                            selectionArguments)
-            ) {
+            try (Cursor cursor = mMqDatabaseUtils.getCursorAfterQuerying(
+                    mMediaQualityDbHelper.SOUND_QUALITY_TABLE_NAME, columns, selection,
+                    selectionArguments)) {
                 List<SoundProfile> soundProfiles = new ArrayList<>();
                 while (cursor.moveToNext()) {
                     soundProfiles.add(MediaQualityUtils.convertCursorToSoundProfileWithTempId(
@@ -1416,8 +1428,19 @@ public class MediaQualityService extends SystemService {
         private void notifyHalOnPictureProfileChange(Long dbId, PersistableBundle params) {
             // TODO: only notify HAL when the profile is active / being used
             if (mPpChangedListener != null) {
+                Long currentHandle = mCurrentPictureHandleToOriginal.getKey(dbId);
+                if (currentHandle != null) {
+                    // this handle maps to another current profile, skip
+                    return;
+                }
                 try {
-                    mPpChangedListener.onPictureProfileChanged(convertToHalPictureProfile(dbId,
+                    Long idForHal = dbId;
+                    Long originalHandle = mCurrentPictureHandleToOriginal.getValue(dbId);
+                    if (originalHandle != null) {
+                        // the original id is used in HAL because of status change
+                        idForHal = originalHandle;
+                    }
+                    mPpChangedListener.onPictureProfileChanged(convertToHalPictureProfile(idForHal,
                             params));
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to notify HAL on picture profile change.", e);
@@ -1546,9 +1569,116 @@ public class MediaQualityService extends SystemService {
         }
 
         @Override
-        public void onStreamStatusChanged(long pictureProfileId, byte status)
+        public void onStreamStatusChanged(long profileHandle, byte status)
                 throws RemoteException {
-            // TODO
+            mHandler.post(() -> {
+                synchronized (mPictureProfileLock) {
+                    // get from map if exists
+                    PictureProfile previous = mHandleToPictureProfile.get(profileHandle);
+                    if (previous == null) {
+                        // get from DB if not exists
+                        previous = mMqDatabaseUtils.getPictureProfile(profileHandle);
+                        if (previous == null) {
+                            return;
+                        }
+                    }
+                    String[] arr = splitNameAndStatus(previous.getName());
+                    String profileName = arr[0];
+                    String profileStatus = arr[1];
+                    if (status == StreamStatus.HDR10) {
+                        if (isHdr(profileStatus)) {
+                            // already HDR
+                            return;
+                        }
+                        if (isSdr(profileStatus)) {
+                            // SDR to HDR
+                            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                                    + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
+                                    + BaseParameters.PARAMETER_NAME + " = ?";
+                            String[] selectionArguments = {
+                                    Integer.toString(previous.getProfileType()),
+                                    previous.getPackageName(),
+                                    profileName + "/" + PictureProfile.STATUS_HDR
+                            };
+                            List<PictureProfile> list =
+                                    mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
+                                            MediaQualityUtils.getMediaProfileColumns(true),
+                                            selection,
+                                            selectionArguments);
+                            if (list.isEmpty()) {
+                                // HDR profile not found
+                                return;
+                            }
+                            PictureProfile current = list.get(0);
+                            mHandleToPictureProfile.put(profileHandle, current);
+                            mCurrentPictureHandleToOriginal.put(
+                                    current.getHandle().getId(), profileHandle);
+
+                            mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
+                                    current.getParameters());
+
+                        }
+                    } else if (status == StreamStatus.SDR) {
+                        if (isSdr(profileStatus)) {
+                            // already SDR
+                            return;
+                        }
+                        if (isHdr(profileStatus)) {
+                            // HDR to SDR
+                            String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                                    + BaseParameters.PARAMETER_PACKAGE + " = ? AND ("
+                                    + BaseParameters.PARAMETER_NAME + " = ? OR "
+                                    + BaseParameters.PARAMETER_NAME + " = ?)";
+                            String[] selectionArguments = {
+                                    Integer.toString(previous.getProfileType()),
+                                    previous.getPackageName(),
+                                    profileName,
+                                    profileName + "/" + PictureProfile.STATUS_SDR
+                            };
+                            List<PictureProfile> list =
+                                    mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
+                                            MediaQualityUtils.getMediaProfileColumns(true),
+                                            selection,
+                                            selectionArguments);
+                            if (list.isEmpty()) {
+                                // SDR profile not found
+                                return;
+                            }
+                            PictureProfile current = list.get(0);
+                            mHandleToPictureProfile.put(profileHandle, current);
+                            mCurrentPictureHandleToOriginal.put(
+                                    current.getHandle().getId(), profileHandle);
+
+                            mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
+                                    current.getParameters());
+                        }
+                    }
+                }
+            });
+
+        }
+
+        @NonNull
+        private String[] splitNameAndStatus(@NonNull String nameAndStatus) {
+            int index = nameAndStatus.lastIndexOf('/');
+            if (index == -1 || index == nameAndStatus.length() - 1) {
+                // no status in the original name
+                return new String[] {nameAndStatus, ""};
+            }
+            return new String[] {
+                    nameAndStatus.substring(0, index),
+                    nameAndStatus.substring(index + 1)
+            };
+
+        }
+
+        private boolean isSdr(@NonNull String profileStatus) {
+            return profileStatus.equals(PictureProfile.STATUS_SDR)
+                    || profileStatus.isEmpty();
+        }
+
+        private boolean isHdr(@NonNull String profileStatus) {
+            return profileStatus.equals(PictureProfile.STATUS_HDR);
         }
 
         @Override

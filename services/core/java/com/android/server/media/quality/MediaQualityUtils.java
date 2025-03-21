@@ -1273,14 +1273,18 @@ public final class MediaQualityUtils {
      */
     public static PictureProfile convertCursorToPictureProfileWithTempId(Cursor cursor,
             BiMap<Long, String> map) {
+        String tmpId = getTempId(map, cursor);
+        Long dbId = map.getKey(tmpId);
+        PictureProfileHandle handle = dbId == null
+                ? PictureProfileHandle.NONE : new PictureProfileHandle(dbId);
         return new PictureProfile(
-                getTempId(map, cursor),
+                tmpId,
                 getType(cursor),
                 getName(cursor),
                 getInputId(cursor),
                 getPackageName(cursor),
                 jsonToPersistableBundle(getSettingsString(cursor)),
-                PictureProfileHandle.NONE
+                handle
         );
     }
 
