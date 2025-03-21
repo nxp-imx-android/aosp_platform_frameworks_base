@@ -48,6 +48,7 @@ import com.android.wm.shell.appzoomout.AppZoomOut
 import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import java.util.function.Consumer
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -120,6 +121,8 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         `when`(blurUtils.supportsBlursOnWindows()).thenReturn(true)
         `when`(blurUtils.maxBlurRadius).thenReturn(maxBlur.toFloat())
         `when`(blurUtils.maxBlurRadius).thenReturn(maxBlur.toFloat())
+        `when`(windowRootViewBlurInteractor.isBlurCurrentlySupported)
+            .thenReturn(MutableStateFlow(true))
 
         notificationShadeDepthController =
             NotificationShadeDepthController(
