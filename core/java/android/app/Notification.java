@@ -6122,6 +6122,21 @@ public class Notification implements Parcelable
             return mColors;
         }
 
+        private void updateHeaderBackgroundColor(RemoteViews contentView,
+                StandardTemplateParams p) {
+            if (!Flags.uiRichOngoing()) {
+                return;
+            }
+            if (isBackgroundColorized(p)) {
+                contentView.setInt(R.id.notification_header, "setBackgroundColor",
+                        getBackgroundColor(p));
+            } else {
+                // Clear it!
+                contentView.setInt(R.id.notification_header, "setBackgroundResource",
+                        0);
+            }
+        }
+
         private void updateBackgroundColor(RemoteViews contentView,
                 StandardTemplateParams p) {
             if (isBackgroundColorized(p)) {
@@ -6926,7 +6941,7 @@ public class Notification implements Parcelable
          * @hide
          */
         public RemoteViews makeNotificationGroupHeader() {
-            return makeNotificationHeader(mParams.reset()
+            return makeNotificationHeader(mParams.reset().disallowColorization()
                     .viewType(StandardTemplateParams.VIEW_TYPE_GROUP_HEADER)
                     .fillTextsFrom(this));
         }
@@ -6938,12 +6953,11 @@ public class Notification implements Parcelable
          * @param p the template params to inflate this with
          */
         private RemoteViews makeNotificationHeader(StandardTemplateParams p) {
-            // Headers on their own are never colorized
-            p.disallowColorization();
             RemoteViews header = new BuilderRemoteViews(mContext.getApplicationInfo(),
                     getHeaderLayoutResource());
             resetNotificationHeader(header);
             bindNotificationHeader(header, p);
+            updateHeaderBackgroundColor(header, p);
             if (Flags.notificationsRedesignTemplates()
                     && (p.mViewType == StandardTemplateParams.VIEW_TYPE_MINIMIZED
                     || p.mViewType == StandardTemplateParams.VIEW_TYPE_PUBLIC)) {
@@ -7067,6 +7081,10 @@ public class Notification implements Parcelable
                     savedBundle.getBoolean(EXTRA_SHOW_CHRONOMETER));
             publicExtras.putBoolean(EXTRA_CHRONOMETER_COUNT_DOWN,
                     savedBundle.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN));
+            if (mN.isPromotedOngoing()) {
+                publicExtras.putBoolean(EXTRA_COLORIZED,
+                        savedBundle.getBoolean(EXTRA_COLORIZED));
+            }
             String appName = savedBundle.getString(EXTRA_SUBSTITUTE_APP_NAME);
             if (appName != null) {
                 publicExtras.putString(EXTRA_SUBSTITUTE_APP_NAME, appName);
@@ -7078,6 +7096,9 @@ public class Notification implements Parcelable
                     .fillTextsFrom(this);
             if (isLowPriority) {
                 params.highlightExpander(false);
+            }
+            if (!mN.isPromotedOngoing()) {
+                params.disallowColorization();
             }
             view = makeNotificationHeader(params);
             view.setBoolean(R.id.notification_header, "setExpandOnlyOnButton", true);
@@ -7098,7 +7119,7 @@ public class Notification implements Parcelable
          * @hide
          */
         public RemoteViews makeLowPriorityContentView(boolean useRegularSubtext) {
-            StandardTemplateParams p = mParams.reset()
+            StandardTemplateParams p = mParams.reset().disallowColorization()
                     .viewType(StandardTemplateParams.VIEW_TYPE_MINIMIZED)
                     .highlightExpander(false)
                     .fillTextsFrom(this);
