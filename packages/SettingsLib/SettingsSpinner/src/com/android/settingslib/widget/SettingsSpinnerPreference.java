@@ -87,6 +87,8 @@ public class SettingsSpinnerPreference extends Preference
         LARGE,
         FULL_WIDTH,
         OUTLINED,
+        LARGE_OUTLINED,
+        FULL_OUTLINED,
     }
 
     private void initAttributes(
@@ -98,6 +100,9 @@ public class SettingsSpinnerPreference extends Preference
             int style = a.getInteger(R.styleable.SettingsSpinnerPreference_style, 0);
             switch (style) {
                 case 2 -> layoutRes = R.layout.settings_expressive_spinner_preference_full;
+                case 3 -> layoutRes = R.layout.settings_expressive_spinner_preference_outlined;
+                case 4 -> layoutRes = R.layout.settings_expressive_spinner_preference_outlined;
+                case 5 -> layoutRes = R.layout.settings_expressive_spinner_preference_full_outlined;
                 default -> layoutRes = R.layout.settings_spinner_preference;
             }
         }
@@ -143,7 +148,9 @@ public class SettingsSpinnerPreference extends Preference
         if (spinner == null) {
             return;
         }
-        mAdapter.setSelectedPosition(mPosition);
+        if (mAdapter != null) {
+            mAdapter.setSelectedPosition(mPosition);
+        }
         spinner.setAdapter(mAdapter);
         spinner.setSelection(mPosition);
         spinner.setOnItemSelectedListener(mOnSelectedListener);

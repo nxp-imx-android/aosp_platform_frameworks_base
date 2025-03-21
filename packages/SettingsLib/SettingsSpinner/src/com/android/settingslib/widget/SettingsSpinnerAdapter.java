@@ -100,7 +100,13 @@ public class SettingsSpinnerAdapter<T> extends ArrayAdapter<T> {
                 return R.layout.settings_expressive_spinner_view_full;
             }
             case OUTLINED -> {
-                return DEFAULT_RESOURCE;
+                return R.layout.settings_expressvie_spinner_view_outlined;
+            }
+            case LARGE_OUTLINED -> {
+                return R.layout.settings_expressive_spinner_view_large_outlined;
+            }
+            case FULL_OUTLINED -> {
+                return R.layout.settings_expressive_spinner_view_full_outlined;
             }
             default -> {
                 return DEFAULT_RESOURCE;

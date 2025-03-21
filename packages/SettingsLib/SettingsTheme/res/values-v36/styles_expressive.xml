@@ -38,6 +38,10 @@
         <item name="android:dropDownVerticalOffset">@dimen/settingslib_expressive_space_large3</item>
     </style>
 
+    <style name="SettingslibSpinnerStyle.Expressive.Outlined">
+        <item name="android:background">@drawable/settingslib_expressive_spinner_background_outlined</item>
+    </style>
+
     <style name="EntityHeader">
         <item name="android:paddingTop">@dimen/settingslib_expressive_space_small4</item>
         <item name="android:paddingBottom">@dimen/settingslib_expressive_space_small1</item>
