@@ -3174,6 +3174,15 @@ public class Activity extends ContextThemeWrapper
             throw new IllegalArgumentException("Expected non-null picture-in-picture params");
         }
         if (!mCanEnterPictureInPicture) {
+            if (isTvImplicitEnterPipProhibited()) {
+                // Don't throw exception on TV so that apps don't crash when not adapted to new
+                // restrictions.
+                Log.e(TAG,
+                        "Activity must be resumed to enter picture-in-picture and not about to be"
+                                + " paused. Implicit app entry is only permitted on TV if android"
+                                + ".permission.TV_IMPLICIT_ENTER_PIP is held by the app.");
+                return false;
+            }
             throw new IllegalStateException("Activity must be resumed to enter"
                     + " picture-in-picture");
         }
@@ -3212,7 +3221,7 @@ public class Activity extends ContextThemeWrapper
         return ActivityTaskManager.getMaxNumPictureInPictureActions(this);
     }
 
-    private boolean isImplicitEnterPipProhibited() {
+    private boolean isTvImplicitEnterPipProhibited() {
         PackageManager pm = getPackageManager();
         if (android.app.Flags.enableTvImplicitEnterPipRestriction()) {
             return pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
@@ -9346,7 +9355,7 @@ public class Activity extends ContextThemeWrapper
                     + mComponent.getClassName());
         }
 
-        if (isImplicitEnterPipProhibited()) {
+        if (isTvImplicitEnterPipProhibited()) {
             mCanEnterPictureInPicture = false;
         }
 
@@ -9376,7 +9385,7 @@ public class Activity extends ContextThemeWrapper
     final void performUserLeaving() {
         onUserInteraction();
 
-        if (isImplicitEnterPipProhibited()) {
+        if (isTvImplicitEnterPipProhibited()) {
             mCanEnterPictureInPicture = false;
         }
         onUserLeaveHint();
