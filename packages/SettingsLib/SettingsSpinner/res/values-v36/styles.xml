@@ -33,6 +33,14 @@
         <item name="android:paddingVertical">@dimen/settingslib_expressive_space_small1</item>
     </style>
 
+    <style name="SettingsSpinnerTitleBar.Expressive.Outlined">
+        <item name="android:textColor">@color/settingslib_materialColorPrimary</item>
+    </style>
+
+    <style name="SettingsSpinnerTitleBar.Expressive.Large.Outlined">
+        <item name="android:textColor">@color/settingslib_materialColorPrimary</item>
+    </style>
+
     <style name="SettingsSpinnerDropdown.Expressive">
         <item name="android:background">@drawable/settings_expressive_spinner_dropdown_background</item>
         <item name="android:minHeight">@dimen/spinner_dropdown_height</item>
