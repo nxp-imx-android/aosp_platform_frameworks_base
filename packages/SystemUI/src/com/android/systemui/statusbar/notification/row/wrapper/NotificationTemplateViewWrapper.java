@@ -43,7 +43,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.internal.widget.NotificationActionListLayout;
 import com.android.systemui.Dependency;
-import com.android.systemui.Flags;
 import com.android.systemui.UiOffloadThread;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.CrossFadeHelper;
@@ -51,6 +50,7 @@ import com.android.systemui.statusbar.TransformableView;
 import com.android.systemui.statusbar.ViewTransformationHelper;
 import com.android.systemui.statusbar.notification.ImageTransformState;
 import com.android.systemui.statusbar.notification.TransformState;
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiForceExpanded;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.HybridNotificationView;
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
@@ -196,7 +196,8 @@ public class NotificationTemplateViewWrapper extends NotificationHeaderViewWrapp
     }
 
     private void adjustTitleAndRightIconForPromotedOngoing() {
-        if (Flags.uiRichOngoingForceExpanded() && mRow.isPromotedOngoing() && mRightIcon != null) {
+        if (PromotedNotificationUiForceExpanded.isEnabled() &&
+                mRow.isPromotedOngoing() && mRightIcon != null) {
             final int horizontalMargin;
             if (notificationsRedesignTemplates()) {
                 horizontalMargin = mView.getResources().getDimensionPixelSize(

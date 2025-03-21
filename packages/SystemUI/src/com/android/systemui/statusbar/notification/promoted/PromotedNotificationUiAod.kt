@@ -16,14 +16,17 @@
 
 package com.android.systemui.statusbar.notification.promoted
 
-import com.android.systemui.Flags
+import android.app.Flags
 import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
+
+// NOTE: We're merging this flag with the `ui_rich_ongoing` flag.
+//  We'll replace all usages of this class with PromotedNotificationUi as a follow-up.
 
 /** Helper for reading or using the promoted ongoing notifications AOD flag state. */
 object PromotedNotificationUiAod {
     /** The aconfig flag name */
-    const val FLAG_NAME = Flags.FLAG_AOD_UI_RICH_ONGOING
+    const val FLAG_NAME = Flags.FLAG_UI_RICH_ONGOING
 
     /** A token used for dependency declaration */
     val token: FlagToken
@@ -32,7 +35,7 @@ object PromotedNotificationUiAod {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.aodUiRichOngoing()
+        get() = Flags.uiRichOngoing()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the

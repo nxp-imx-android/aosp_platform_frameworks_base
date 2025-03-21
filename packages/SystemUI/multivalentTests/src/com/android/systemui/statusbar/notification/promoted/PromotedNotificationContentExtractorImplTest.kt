@@ -76,26 +76,6 @@ class PromotedNotificationContentExtractorImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    fun shouldExtract_promotedNotificationUiFlagEnabled() =
-        kosmos.runTest {
-            val entry = createEntry()
-            val content = extractContent(entry)
-            assertThat(content).isNotNull()
-        }
-
-    @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    fun shouldExtract_statusBarNotifChipsFlagEnabled() =
-        kosmos.runTest {
-            val entry = createEntry()
-            val content = extractContent(entry)
-            assertThat(content).isNotNull()
-        }
-
-    @Test
     @EnableFlags(PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME)
     fun shouldExtract_bothFlagsEnabled() =
         kosmos.runTest {

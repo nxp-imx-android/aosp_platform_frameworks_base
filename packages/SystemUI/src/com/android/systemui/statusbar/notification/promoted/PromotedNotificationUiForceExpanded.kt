@@ -16,15 +16,18 @@
 
 package com.android.systemui.statusbar.notification.promoted
 
-import com.android.systemui.Flags
+import android.app.Flags
 import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
+
+// NOTE: We're merging this flag with the `ui_rich_ongoing` flag.
+//  We'll replace all usages of this class with PromotedNotificationUi as a follow-up.
 
 /** Helper for reading or using the expanded ui rich ongoing flag state. */
 @Suppress("NOTHING_TO_INLINE")
 object PromotedNotificationUiForceExpanded {
     /** The aconfig flag name */
-    const val FLAG_NAME = Flags.FLAG_UI_RICH_ONGOING_FORCE_EXPANDED
+    const val FLAG_NAME = Flags.FLAG_UI_RICH_ONGOING
 
     /** A token used for dependency declaration */
     val token: FlagToken
@@ -33,7 +36,7 @@ object PromotedNotificationUiForceExpanded {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.uiRichOngoingForceExpanded()
+        get() = Flags.uiRichOngoing()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
