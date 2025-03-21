@@ -163,3 +163,14 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "exclude_task_from_recents"
+    description: "Enables WCT to set whether the task should be excluded from the Recents list"
+    bug: "404726350"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
