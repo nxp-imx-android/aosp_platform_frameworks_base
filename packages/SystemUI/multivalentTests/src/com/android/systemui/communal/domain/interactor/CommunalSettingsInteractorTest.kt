@@ -21,9 +21,11 @@ import android.app.admin.devicePolicyManager
 import android.content.Intent
 import android.content.pm.UserInfo
 import android.os.UserManager
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
 import com.android.systemui.communal.shared.model.WhenToStartHub
@@ -86,8 +88,10 @@ class CommunalSettingsInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(FLAG_GLANCEABLE_HUB_V2)
     fun whenToStartHub_matchesRepository() =
         kosmos.runTest {
+            setCommunalV2ConfigEnabled(true)
             fakeSettings.putIntForUser(
                 Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB,
                 Settings.Secure.GLANCEABLE_HUB_START_CHARGING,

@@ -16,9 +16,11 @@
 
 package com.android.systemui.communal.domain.interactor
 
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.data.repository.batteryRepository
 import com.android.systemui.common.data.repository.fake
@@ -47,6 +49,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@EnableFlags(FLAG_GLANCEABLE_HUB_V2)
 class CommunalAutoOpenInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
 
@@ -54,6 +57,7 @@ class CommunalAutoOpenInteractorTest : SysuiTestCase() {
 
     @Before
     fun setUp() {
+        kosmos.setCommunalV2ConfigEnabled(true)
         runBlocking { kosmos.fakeUserRepository.asMainUser() }
         with(kosmos.fakeSettings) {
             putIntForUser(
