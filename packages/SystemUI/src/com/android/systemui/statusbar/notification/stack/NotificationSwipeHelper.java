@@ -255,13 +255,12 @@ class NotificationSwipeHelper extends SwipeHelper implements NotificationSwipeAc
         int menuSnapTarget = menuRow.getMenuSnapTarget();
         boolean isNonFalseMenuRevealingGesture =
                 isMenuRevealingGestureAwayFromMenu && !isFalseGesture();
-        boolean isMagneticViewDetached = mCallback.isMagneticViewDetached(animView);
         if ((isNonDismissGestureTowardsMenu || isNonFalseMenuRevealingGesture)
                 && menuSnapTarget != 0) {
             // Menu has not been snapped to previously and this is menu revealing gesture
             snapOpen(animView, menuSnapTarget, velocity);
             menuRow.onSnapOpen();
-        } else if (isDismissGesture && (!gestureTowardsMenu || isMagneticViewDetached)) {
+        } else if (isDismissGesture && (!gestureTowardsMenu || isSwipeDismissible())) {
             dismiss(animView, velocity);
             menuRow.onDismiss();
         } else {
@@ -273,7 +272,6 @@ class NotificationSwipeHelper extends SwipeHelper implements NotificationSwipeAc
     private void handleSwipeFromOpenState(MotionEvent ev, View animView, float velocity,
             NotificationMenuRowPlugin menuRow) {
         boolean isDismissGesture = isDismissGesture(ev);
-        boolean isMagneticViewDetached = mCallback.isMagneticViewDetached(animView);
 
         final boolean withinSnapMenuThreshold =
                 menuRow.isWithinSnapMenuThreshold();
@@ -282,7 +280,7 @@ class NotificationSwipeHelper extends SwipeHelper implements NotificationSwipeAc
             // Haven't moved enough to unsnap from the menu
             menuRow.onSnapOpen();
             snapOpen(animView, menuRow.getMenuSnapTarget(), velocity);
-        } else if (isDismissGesture && (!menuRow.shouldSnapBack() || isMagneticViewDetached)) {
+        } else if (isDismissGesture && (!menuRow.shouldSnapBack() || isSwipeDismissible())) {
             // Only dismiss if we're not moving towards the menu
             dismiss(animView, velocity);
             menuRow.onDismiss();
