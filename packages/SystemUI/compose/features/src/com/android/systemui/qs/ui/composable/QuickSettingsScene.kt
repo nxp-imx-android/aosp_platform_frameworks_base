@@ -75,6 +75,7 @@ import com.android.compose.animation.scene.animateSceneFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.compose.modifiers.sysuiResTag
@@ -126,6 +127,7 @@ constructor(
     private val contentViewModelFactory: QuickSettingsSceneContentViewModel.Factory,
     private val mediaCarouselController: MediaCarouselController,
     @Named(MediaModule.QS_PANEL) private val mediaHost: MediaHost,
+    private val jankMonitor: InteractionJankMonitor,
 ) : ExclusiveActivatable(), Scene {
     override val key = Scenes.QuickSettings
 
@@ -165,6 +167,7 @@ constructor(
             mediaHost = mediaHost,
             modifier = modifier,
             shadeSession = shadeSession,
+            jankMonitor = jankMonitor,
         )
     }
 
@@ -186,6 +189,7 @@ private fun ContentScope.QuickSettingsScene(
     mediaHost: MediaHost,
     modifier: Modifier = Modifier,
     shadeSession: SaveableSession,
+    jankMonitor: InteractionJankMonitor,
 ) {
     val cutoutLocation = LocalDisplayCutout.current.location
     val brightnessMirrorShowing by brightnessMirrorViewModel.isShowing.collectAsStateWithLifecycle()
@@ -432,6 +436,7 @@ private fun ContentScope.QuickSettingsScene(
             shadeSession = shadeSession,
             stackScrollView = notificationStackScrollView,
             viewModel = notificationsPlaceholderViewModel,
+            jankMonitor = jankMonitor,
             maxScrimTop = { minNotificationStackTop.toFloat() },
             shouldPunchHoleBehindScrim = shouldPunchHoleBehindScrim,
             stackTopPadding = notificationStackPadding,

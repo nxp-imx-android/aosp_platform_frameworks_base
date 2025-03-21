@@ -55,7 +55,12 @@ open class BaseContentOverscrollEffect(
         get() = animatable.value
 
     override val isInProgress: Boolean
-        get() = overscrollDistance != 0f
+        /**
+         * We need both checks, because [overscrollDistance] can be
+         * - zero while it is already being animated, if the animation starts from 0
+         * - greater than zero without an animation, if the content is still being dragged
+         */
+        get() = overscrollDistance != 0f || animatable.isRunning
 
     override fun applyToScroll(
         delta: Offset,

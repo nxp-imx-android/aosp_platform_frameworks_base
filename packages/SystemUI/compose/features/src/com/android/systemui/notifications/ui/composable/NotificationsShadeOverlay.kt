@@ -29,6 +29,7 @@ import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.ui.composable.blueprint.rememberBurnIn
 import com.android.systemui.keyguard.ui.composable.section.DefaultClockSection
@@ -69,6 +70,7 @@ constructor(
     private val keyguardClockViewModel: KeyguardClockViewModel,
     private val mediaCarouselController: MediaCarouselController,
     @Named(QUICK_QS_PANEL) private val mediaHost: Lazy<MediaHost>,
+    private val jankMonitor: InteractionJankMonitor,
 ) : Overlay {
     override val key = Overlays.NotificationsShade
 
@@ -146,6 +148,7 @@ constructor(
                         shadeSession = shadeSession,
                         stackScrollView = stackScrollView.get(),
                         viewModel = placeholderViewModel,
+                        jankMonitor = jankMonitor,
                         maxScrimTop = { 0f },
                         shouldPunchHoleBehindScrim = false,
                         stackTopPadding = notificationStackPadding,

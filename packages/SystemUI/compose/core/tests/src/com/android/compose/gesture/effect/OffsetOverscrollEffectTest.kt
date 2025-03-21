@@ -16,12 +16,17 @@
 
 package com.android.compose.gesture.effect
 
+import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.overscroll
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
@@ -32,11 +37,14 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeWithVelocity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.google.common.truth.Truth.assertThat
 import kotlin.properties.Delegates
+import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,7 +55,13 @@ class OffsetOverscrollEffectTest {
 
     private val BOX_TAG = "box"
 
-    private data class LayoutInfo(val layoutSize: Dp, val touchSlop: Float, val density: Density) {
+    private data class LayoutInfo(
+        val layoutSize: Dp,
+        val touchSlop: Float,
+        val density: Density,
+        val scrollableState: ScrollableState,
+        val overscrollEffect: OverscrollEffect,
+    ) {
         fun expectedOffset(currentOffset: Dp): Dp {
             return with(density) {
                 OffsetOverscrollEffect.computeOffset(this, currentOffset.toPx()).toDp()
@@ -55,22 +69,29 @@ class OffsetOverscrollEffectTest {
         }
     }
 
-    private fun setupOverscrollableBox(scrollableOrientation: Orientation): LayoutInfo {
+    private fun setupOverscrollableBox(
+        scrollableOrientation: Orientation,
+        canScroll: () -> Boolean,
+    ): LayoutInfo {
         val layoutSize: Dp = 200.dp
         var touchSlop: Float by Delegates.notNull()
         // The draggable touch slop, i.e. the min px distance a touch pointer must move before it is
         // detected as a drag event.
         lateinit var density: Density
+        lateinit var scrollableState: ScrollableState
+        lateinit var overscrollEffect: OverscrollEffect
+
         rule.setContent {
             density = LocalDensity.current
             touchSlop = LocalViewConfiguration.current.touchSlop
-            val overscrollEffect = rememberOffsetOverscrollEffect()
+            scrollableState = rememberScrollableState { if (canScroll()) it else 0f }
+            overscrollEffect = rememberOffsetOverscrollEffect()
 
             Box(
                 Modifier.overscroll(overscrollEffect)
                     // A scrollable that does not consume the scroll gesture.
                     .scrollable(
-                        state = rememberScrollableState { 0f },
+                        state = scrollableState,
                         orientation = scrollableOrientation,
                         overscrollEffect = overscrollEffect,
                     )
@@ -78,12 +99,16 @@ class OffsetOverscrollEffectTest {
                     .testTag(BOX_TAG)
             )
         }
-        return LayoutInfo(layoutSize, touchSlop, density)
+        return LayoutInfo(layoutSize, touchSlop, density, scrollableState, overscrollEffect)
     }
 
     @Test
     fun applyVerticalOffset_duringVerticalOverscroll() {
-        val info = setupOverscrollableBox(scrollableOrientation = Orientation.Vertical)
+        val info =
+            setupOverscrollableBox(
+                scrollableOrientation = Orientation.Vertical,
+                canScroll = { false },
+            )
 
         rule.onNodeWithTag(BOX_TAG).assertTopPositionInRootIsEqualTo(0.dp)
 
@@ -99,7 +124,11 @@ class OffsetOverscrollEffectTest {
 
     @Test
     fun applyNoOffset_duringHorizontalOverscroll() {
-        val info = setupOverscrollableBox(scrollableOrientation = Orientation.Vertical)
+        val info =
+            setupOverscrollableBox(
+                scrollableOrientation = Orientation.Vertical,
+                canScroll = { false },
+            )
 
         rule.onNodeWithTag(BOX_TAG).assertTopPositionInRootIsEqualTo(0.dp)
 
@@ -113,7 +142,11 @@ class OffsetOverscrollEffectTest {
 
     @Test
     fun backToZero_afterOverscroll() {
-        val info = setupOverscrollableBox(scrollableOrientation = Orientation.Vertical)
+        val info =
+            setupOverscrollableBox(
+                scrollableOrientation = Orientation.Vertical,
+                canScroll = { false },
+            )
 
         rule.onRoot().performTouchInput {
             down(center)
@@ -131,7 +164,11 @@ class OffsetOverscrollEffectTest {
 
     @Test
     fun offsetOverscroll_followTheTouchPointer() {
-        val info = setupOverscrollableBox(scrollableOrientation = Orientation.Vertical)
+        val info =
+            setupOverscrollableBox(
+                scrollableOrientation = Orientation.Vertical,
+                canScroll = { false },
+            )
 
         // First gesture, drag down.
         rule.onRoot().performTouchInput {
@@ -164,5 +201,131 @@ class OffsetOverscrollEffectTest {
         rule
             .onNodeWithTag(BOX_TAG)
             .assertTopPositionInRootIsEqualTo(info.expectedOffset(-info.layoutSize))
+    }
+
+    @Test
+    fun isScrollInProgress_overscroll() = runTest {
+        val info =
+            setupOverscrollableBox(
+                scrollableOrientation = Orientation.Vertical,
+                canScroll = { false },
+            )
+
+        // Start a swipe gesture, and swipe down to start an overscroll.
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy(Offset(0f, info.touchSlop + info.layoutSize.toPx() / 2))
+        }
+
+        assertThat(info.scrollableState.isScrollInProgress).isTrue()
+        assertThat(info.overscrollEffect.isInProgress).isTrue()
+
+        // Finish the swipe gesture.
+        rule.onRoot().performTouchInput { up() }
+
+        assertThat(info.scrollableState.isScrollInProgress).isFalse()
+        assertThat(info.overscrollEffect.isInProgress).isTrue()
+
+        // Wait until the overscroll returns to idle.
+        rule.awaitIdle()
+
+        assertThat(info.scrollableState.isScrollInProgress).isFalse()
+        assertThat(info.overscrollEffect.isInProgress).isFalse()
+    }
+
+    @Test
+    fun isScrollInProgress_scroll() = runTest {
+        val info =
+            setupOverscrollableBox(
+                scrollableOrientation = Orientation.Vertical,
+                canScroll = { true },
+            )
+
+        rule.onNodeWithTag(BOX_TAG).assertTopPositionInRootIsEqualTo(0.dp)
+
+        // Start a swipe gesture, and swipe down to scroll.
+        rule.onRoot().performTouchInput {
+            down(center)
+            moveBy(Offset(0f, info.touchSlop + info.layoutSize.toPx() / 2))
+        }
+
+        assertThat(info.scrollableState.isScrollInProgress).isTrue()
+        assertThat(info.overscrollEffect.isInProgress).isFalse()
+
+        // Finish the swipe gesture.
+        rule.onRoot().performTouchInput { up() }
+
+        assertThat(info.scrollableState.isScrollInProgress).isFalse()
+        assertThat(info.overscrollEffect.isInProgress).isTrue()
+
+        // Wait until the overscroll returns to idle.
+        rule.awaitIdle()
+
+        assertThat(info.scrollableState.isScrollInProgress).isFalse()
+        assertThat(info.overscrollEffect.isInProgress).isFalse()
+    }
+
+    @Test
+    fun isScrollInProgress_flingToScroll() = runTest {
+        val info =
+            setupOverscrollableBox(
+                scrollableOrientation = Orientation.Vertical,
+                canScroll = { true },
+            )
+
+        rule.onNodeWithTag(BOX_TAG).assertTopPositionInRootIsEqualTo(0.dp)
+
+        // Swipe down and leave some velocity to start a fling.
+        rule.onRoot().performTouchInput {
+            swipeWithVelocity(
+                Offset.Zero,
+                Offset(0f, info.touchSlop + info.layoutSize.toPx() / 2),
+                endVelocity = 100f,
+            )
+        }
+
+        assertThat(info.scrollableState.isScrollInProgress).isTrue()
+        assertThat(info.overscrollEffect.isInProgress).isFalse()
+
+        // Wait until the fling is finished.
+        rule.awaitIdle()
+
+        assertThat(info.scrollableState.isScrollInProgress).isFalse()
+        assertThat(info.overscrollEffect.isInProgress).isFalse()
+    }
+
+    @Test
+    fun isScrollInProgress_flingToOverscroll() = runTest {
+        // Start with a scrollable state.
+        var canScroll by mutableStateOf(true)
+        val info =
+            setupOverscrollableBox(scrollableOrientation = Orientation.Vertical) { canScroll }
+
+        rule.onNodeWithTag(BOX_TAG).assertTopPositionInRootIsEqualTo(0.dp)
+
+        // Swipe down and leave some velocity to start a fling.
+        rule.onRoot().performTouchInput {
+            swipeWithVelocity(
+                Offset.Zero,
+                Offset(0f, info.touchSlop + info.layoutSize.toPx() / 2),
+                endVelocity = 100f,
+            )
+        }
+
+        assertThat(info.scrollableState.isScrollInProgress).isTrue()
+        assertThat(info.overscrollEffect.isInProgress).isFalse()
+
+        // The fling reaches the end of the scrollable region, and an overscroll starts.
+        canScroll = false
+        rule.mainClock.advanceTimeUntil { !info.scrollableState.isScrollInProgress }
+
+        assertThat(info.scrollableState.isScrollInProgress).isFalse()
+        assertThat(info.overscrollEffect.isInProgress).isTrue()
+
+        // Wait until the overscroll returns to idle.
+        rule.awaitIdle()
+
+        assertThat(info.scrollableState.isScrollInProgress).isFalse()
+        assertThat(info.overscrollEffect.isInProgress).isFalse()
     }
 }
