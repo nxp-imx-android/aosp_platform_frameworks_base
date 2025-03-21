@@ -1129,7 +1129,7 @@ final class LogicalDisplay {
     /**
      * Gets the name of display group to which the display is assigned.
      */
-    public String getDisplayGroupNameLocked() {
+    public String getLayoutGroupNameLocked() {
         return mDisplayGroupName;
     }
 
