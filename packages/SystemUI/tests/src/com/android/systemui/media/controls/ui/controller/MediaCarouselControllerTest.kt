@@ -792,6 +792,34 @@ class MediaCarouselControllerTest(flags: FlagsParameterization) : SysuiTestCase(
         }
     }
 
+    @Test
+    fun goingToDozing_notAllowedOnLockscreen_updateVisibility() {
+        kosmos.testScope.runTest {
+            var updatedVisibility = false
+            mediaCarouselController.updateHostVisibility = { updatedVisibility = true }
+            mediaCarouselController.mediaCarousel = mediaCarousel
+
+            val settingsJob =
+                mediaCarouselController.listenForLockscreenSettingChanges(
+                    kosmos.applicationCoroutineScope
+                )
+            secureSettings.putBool(Settings.Secure.MEDIA_CONTROLS_LOCK_SCREEN, false)
+
+            val keyguardJob = mediaCarouselController.listenForAnyStateToDozingTransition(this)
+            transitionRepository.sendTransitionSteps(
+                from = KeyguardState.GONE,
+                to = KeyguardState.DOZING,
+                this,
+            )
+
+            assertEquals(true, updatedVisibility)
+            assertEquals(true, mediaCarouselController.isLockedAndHidden())
+
+            settingsJob.cancel()
+            keyguardJob.cancel()
+        }
+    }
+
     @EnableSceneContainer
     @Test
     fun deviceEntered_mediaAllowed_notLockedAndHidden() {
