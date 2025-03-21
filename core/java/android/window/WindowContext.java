@@ -42,6 +42,8 @@ import com.android.window.flags.Flags;
 
 import java.lang.ref.Reference;
 
+import sun.misc.Cleaner;
+
 /**
  * {@link WindowContext} is a context for non-activity windows such as
  * {@link android.view.WindowManager.LayoutParams#TYPE_APPLICATION_OVERLAY} windows or system
@@ -92,9 +94,9 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         mType = type;
         mOptions = options;
         mWindowManager = createWindowContextWindowManager(this);
-        WindowTokenClient token = (WindowTokenClient) getWindowContextToken();
-        mController = new WindowContextController(requireNonNull(token));
-
+        WindowTokenClient token = (WindowTokenClient) requireNonNull(getWindowContextToken());
+        mController = new WindowContextController(token);
+        registerCleaner(this);
         Reference.reachabilityFence(this);
     }
 
@@ -134,8 +136,13 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
 
     @Override
     protected void finalize() throws Throwable {
-        release();
-        super.finalize();
+        try {
+            if (!Flags.cleanUpWindowContextWithCleaner()) {
+                release();
+            }
+        } finally {
+            super.finalize();
+        }
     }
 
     /** Used for test to invoke because we can't invoke finalize directly. */
@@ -261,7 +268,7 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         /**
          * The {@link WindowWrapper} constructor.
          *
-         * @param context the associated {@link WindowContext}`
+         * @param context   the associated {@link WindowContext}`
          * @param decorView the view to be wrapped as {@link Window}'s decor view.
          */
         WindowWrapper(@NonNull @UiContext Context context, @NonNull View decorView) {
@@ -285,6 +292,49 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
         @Override
         public View peekDecorView() {
             return mDecorView;
+        }
+    }
+
+    /**
+     * Registers a {@link WindowContext} or a {@link SystemUiContext} with a cleaner.
+     *
+     * @throws IllegalArgumentException if the context is not a {@link WindowContext} or
+     * {@link SystemUiContext}.
+     */
+    public static void registerCleaner(@NonNull Context context) {
+        if (!Flags.cleanUpWindowContextWithCleaner()) {
+            return;
+        }
+
+        if (!(context instanceof WindowContext) && !(context instanceof SystemUiContext)) {
+            throw new IllegalArgumentException("The context must be either WindowContext or"
+                    + " SystemUiContext.");
+        }
+        final ContextWrapper wrapper = (ContextWrapper) context;
+        Cleaner.create(context, new WindowContextCleaner(wrapper));
+    }
+
+    /**
+     * A {@link WindowContext} cleaner that applies when the {@link WindowContext} is going to be
+     * garbage-collected.
+     */
+    private static class WindowContextCleaner implements Runnable {
+
+        @NonNull
+        private final Context mBaseContext;
+
+        WindowContextCleaner(@NonNull ContextWrapper wrapper) {
+            // Cache the base Context to prevent hold the reference of WindowContext. The cleaner
+            // will work only if all strong references of WindowContext are gone.
+            mBaseContext = requireNonNull(wrapper.getBaseContext());
+        }
+
+        @Override
+        public void run() {
+            final WindowTokenClient token =
+                    (WindowTokenClient) requireNonNull(mBaseContext.getWindowContextToken());
+            WindowTokenClientController.getInstance().detachIfNeeded(token);
+            mBaseContext.destroy();
         }
     }
 }

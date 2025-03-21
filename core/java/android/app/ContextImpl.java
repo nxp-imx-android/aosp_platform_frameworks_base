@@ -21,6 +21,7 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.StrictMode.vmIncorrectContextUseEnabled;
 import static android.permission.flags.Flags.shouldRegisterAttributionSource;
 import static android.view.WindowManager.LayoutParams.WindowType;
+import static android.window.WindowContext.registerCleaner;
 
 import android.annotation.CallbackExecutor;
 import android.annotation.IntDef;
@@ -3429,11 +3430,16 @@ class ContextImpl extends Context {
         // WindowContainer. We should detach from WindowContainer when the Context is finalized
         // if this Context is not a WindowContext. WindowContext finalization is handled in
         // WindowContext class.
-        if (mToken instanceof WindowTokenClient && mOwnsToken) {
-            WindowTokenClientController.getInstance().detachIfNeeded(
-                    (WindowTokenClient) mToken);
+        try {
+            if (!(com.android.window.flags.Flags.cleanUpWindowContextWithCleaner()
+                    || com.android.window.flags.Flags.trackSystemUiContextBeforeWms())
+                    && mToken instanceof WindowTokenClient && mOwnsToken) {
+                WindowTokenClientController.getInstance()
+                        .detachIfNeeded((WindowTokenClient) mToken);
+            }
+        } finally {
+            super.finalize();
         }
-        super.finalize();
     }
 
     @UnsupportedAppUsage
@@ -3476,7 +3482,10 @@ class ContextImpl extends Context {
         WindowTokenClientController.getInstance().attachToDisplayContent(token, displayId);
         context.mContextType = CONTEXT_TYPE_SYSTEM_OR_SYSTEM_UI;
         context.mOwnsToken = true;
-
+        if (!com.android.window.flags.Flags.trackSystemUiContextBeforeWms()) {
+            // #registerCleaner only support SystemUiContext or WindowContext.
+            registerCleaner(systemUiContext);
+        }
         return systemUiContext;
     }
 
