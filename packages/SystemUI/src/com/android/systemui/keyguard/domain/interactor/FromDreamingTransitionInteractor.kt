@@ -316,5 +316,6 @@ constructor(
         val TO_LOCKSCREEN_DURATION = 1167.milliseconds
         val TO_AOD_DURATION = 300.milliseconds
         val TO_GONE_DURATION = DEFAULT_DURATION
+        val TO_PRIMARY_BOUNCER_DURATION = DEFAULT_DURATION
     }
 }
