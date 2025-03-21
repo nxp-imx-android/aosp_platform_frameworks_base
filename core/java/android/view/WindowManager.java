@@ -80,6 +80,8 @@ import static android.view.WindowLayoutParamsProto.WINDOW_ANIMATIONS;
 import static android.view.WindowLayoutParamsProto.X;
 import static android.view.WindowLayoutParamsProto.Y;
 
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
+
 import android.Manifest.permission;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -1869,6 +1871,19 @@ public interface WindowManager extends ViewManager {
      */
     @TestApi
     default boolean shouldShowSystemDecors(int displayId) {
+        return false;
+    }
+
+    /**
+     * Indicates that the display is eligible for the desktop mode from WindowManager's perspective.
+     *
+     * @param displayId The id of the display.
+     * @return {@code true} if the display is eligible for the desktop mode from WindowManager's
+     * perspective.
+     * @hide
+     */
+    @FlaggedApi(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    default boolean isEligibleForDesktopMode(int displayId) {
         return false;
     }
 

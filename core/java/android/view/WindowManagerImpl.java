@@ -308,6 +308,16 @@ public class WindowManagerImpl implements WindowManager {
     }
 
     @Override
+    public boolean isEligibleForDesktopMode(int displayId) {
+        try {
+            return WindowManagerGlobal.getWindowManagerService()
+                    .isEligibleForDesktopMode(displayId);
+        } catch (RemoteException e) {
+        }
+        return false;
+    }
+
+    @Override
     public void setDisplayImePolicy(int displayId, @DisplayImePolicy int imePolicy) {
         try {
             WindowManagerGlobal.getWindowManagerService().setDisplayImePolicy(displayId, imePolicy);

@@ -290,7 +290,7 @@ public class DesktopModeStatus {
                 || display.getType() == Display.TYPE_OVERLAY)
                 && enableDisplayContentModeManagement()) {
             final WindowManager wm = context.getSystemService(WindowManager.class);
-            return wm != null && wm.shouldShowSystemDecors(display.getDisplayId());
+            return wm != null && wm.isEligibleForDesktopMode(display.getDisplayId());
         }
 
         return false;
