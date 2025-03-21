@@ -16,6 +16,8 @@
 
 package com.android.systemui.statusbar.notification.stack;
 
+import static com.android.systemui.statusbar.notification.row.NotificationRowContentBinder.FLAG_CONTENT_VIEW_ALL;
+
 import static org.junit.Assert.assertNull;
 
 import android.app.Notification;
@@ -64,6 +66,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
                 mContext,
                 mDependency,
                 TestableLooper.get(this));
+        mNotificationTestHelper.setDefaultInflationFlags(FLAG_CONTENT_VIEW_ALL);
         mGroup = mNotificationTestHelper.createGroup();
         mChildrenContainer = mGroup.getChildrenContainer();
     }
@@ -172,9 +175,12 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @EnableFlags(AsyncGroupHeaderViewInflation.FLAG_NAME)
     public void testSetLowPriorityWithAsyncInflation_noHeaderReInflation() {
+        mChildrenContainer.setLowPriorityGroupHeader(null, null);
         mChildrenContainer.setIsMinimized(true);
+
+        // THEN
         assertNull("We don't inflate header from the main thread with Async "
-                + "Inflation enabled", mChildrenContainer.getCurrentHeaderView());
+                + "Inflation enabled", mChildrenContainer.getMinimizedNotificationHeader());
     }
 
     @Test
@@ -182,7 +188,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     public void setLowPriorityBeforeLowPriorityHeaderSet() {
 
         //Given: the children container does not have a low-priority header, and is not low-priority
-        assertNull(mChildrenContainer.getMinimizedGroupHeaderWrapper());
+        mChildrenContainer.setLowPriorityGroupHeader(null, null);
         mGroup.setIsMinimized(false);
 
         //When: set the children container to be low-priority and set the low-priority header
@@ -214,8 +220,8 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     public void changeLowPriorityAfterHeaderSet() {
 
         //Given: the children container does not have headers, and is not low-priority
-        assertNull(mChildrenContainer.getMinimizedGroupHeaderWrapper());
-        assertNull(mChildrenContainer.getNotificationHeaderWrapper());
+        mChildrenContainer.setLowPriorityGroupHeader(null, null);
+        mChildrenContainer.setGroupHeader(null, null);
         mGroup.setIsMinimized(false);
 
         //When: set the set the normal header
