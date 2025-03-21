@@ -295,10 +295,10 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
         val isReadHeartRateRequested =
             HealthPermissions.READ_HEART_RATE in androidPackage.requestedPermissions
         var isBodySensorsGranted =
-            isPermissionGranted(packageState, userId, Manifest.permission.BODY_SENSORS)
+            isRuntimePermissionGranted(packageState, userId, Manifest.permission.BODY_SENSORS)
         if (isBodySensorsRequested && isReadHeartRateRequested) {
             val isReadHeartRateGranted =
-                isPermissionGranted(packageState, userId, HealthPermissions.READ_HEART_RATE)
+                isRuntimePermissionGranted(packageState, userId, HealthPermissions.READ_HEART_RATE)
             if (isBodySensorsGranted != isReadHeartRateGranted) {
                 if (isBodySensorsGranted) {
                     if (
@@ -319,7 +319,11 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
 
         // Then check to ensure we haven't put the background/foreground permissions out of sync.
         var isBodySensorsBackgroundGranted =
-            isPermissionGranted(packageState, userId, Manifest.permission.BODY_SENSORS_BACKGROUND)
+            isRuntimePermissionGranted(
+                packageState,
+                userId,
+                Manifest.permission.BODY_SENSORS_BACKGROUND,
+            )
         // Background permission should not be granted without the foreground permission.
         if (!isBodySensorsGranted && isBodySensorsBackgroundGranted) {
             if (
@@ -340,7 +344,7 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
             HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND in androidPackage.requestedPermissions
         if (isBodySensorsBackgroundRequested && isReadHealthDataInBackgroundRequested) {
             val isReadHealthDataInBackgroundGranted =
-                isPermissionGranted(
+                isRuntimePermissionGranted(
                     packageState,
                     userId,
                     HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND,
@@ -364,7 +368,7 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
         }
     }
 
-    private fun GetStateScope.isPermissionGranted(
+    private fun GetStateScope.isRuntimePermissionGranted(
         packageState: PackageState,
         userId: Int,
         permissionName: String,
@@ -425,18 +429,14 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
             "Revoking runtime permission for package: ${packageState.packageName}, " +
                 "permission: $permissionName, userId: $userId",
         )
-        val permission = newState.systemState.permissions[permissionName]!!
-        if (packageState.getUserStateOrDefault(userId).isInstantApp && !permission.isInstant) {
-            return false
-        }
 
         val appId = packageState.appId
         var flags = with(policy) { getPermissionFlags(appId, userId, permissionName) }
         if (flags.hasAnyBit(MASK_SYSTEM_OR_POLICY_FIXED)) {
             Slog.v(
                 LOG_TAG,
-                "Not allowed to revoke $permissionName to package ${packageState.packageName} " +
-                    "for user $userId",
+                "Cannot revoke fixed runtime permission from package: " +
+                    "${packageState.packageName}, permission: $permissionName, userId: $userId",
             )
             return false
         }
