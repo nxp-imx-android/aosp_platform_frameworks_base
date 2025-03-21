@@ -53,11 +53,13 @@ import android.content.pm.SuspendDialogInfo;
 import android.content.pm.UserInfo;
 import android.content.pm.UserPackage;
 import android.os.BaseBundle;
+import android.os.Build;
 import android.os.Message;
 import android.os.PersistableBundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -67,9 +69,9 @@ import android.util.ArraySet;
 import android.util.AtomicFile;
 import android.util.LongSparseArray;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
-import androidx.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.pm.parsing.pkg.PackageImpl;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
@@ -164,7 +166,7 @@ public class PackageManagerSettingsTests {
             try {
                 // unregister the user manager from the local service
                 LocalServices.removeServiceForTest(UserManagerInternal.class);
-                new UserManagerService(InstrumentationRegistry.getContext());
+                new UserManagerService(InstrumentationRegistry.getInstrumentation().getContext());
             } catch (Exception e) {
                 e.printStackTrace();
                 fail("Could not create user manager service; " + e);
@@ -174,7 +176,7 @@ public class PackageManagerSettingsTests {
 
     @After
     public void tearDown() throws Exception {
-        deleteFolder(InstrumentationRegistry.getContext().getFilesDir());
+        deleteFolder(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir());
     }
 
     @Test
@@ -337,7 +339,7 @@ public class PackageManagerSettingsTests {
         // write out
         settings.writeLPr(computer, /*sync=*/true);
 
-        File filesDir = InstrumentationRegistry.getContext().getFilesDir();
+        File filesDir = InstrumentationRegistry.getInstrumentation().getContext().getFilesDir();
         File packageXml = new File(filesDir, "system/packages.xml");
         File packagesReserveCopyXml = new File(filesDir, "system/packages.xml.reservecopy");
         // Primary.
@@ -675,6 +677,49 @@ public class PackageManagerSettingsTests {
         final PackageUserState readPus3 = settings.mPackages.get(PACKAGE_NAME_3)
                 .readUserState(0);
         assertThat(readPus3.getDistractionFlags(), is(distractionFlags3));
+    }
+
+    @Test
+    public void testReadWriteSettingsVersionCodeWithSdkVersionFull() {
+        final Settings settingsUnderTest = makeSettings();
+        final String uuid = UUID.randomUUID().toString();
+        final int sdkVersionFull = 100000;
+        final int sdkVersion = 40;
+
+        Settings.VersionInfo versionInfo = settingsUnderTest.findOrCreateVersion(uuid);
+        versionInfo.sdkVersionFull = sdkVersionFull;
+        versionInfo.sdkVersion = sdkVersion;
+
+        settingsUnderTest.writeLPr(computer, /*sync=*/ true);
+        settingsUnderTest.onVolumeForgotten(uuid);
+
+        assertThat(settingsUnderTest.readLPw(computer, createFakeUsers()), is(true));
+        Settings.VersionInfo readVersionInfo = settingsUnderTest.findOrCreateVersion(uuid);
+        assertThat(readVersionInfo.sdkVersionFull, is(sdkVersionFull));
+        assertThat(readVersionInfo.sdkVersion, is(sdkVersion));
+    }
+
+    @RequiresFlagsDisabled(android.sdk.Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
+    @Test
+    public void testSettingsGetInternalVersionNoSdkVersionFull() {
+        final Settings settingsUnderTest = makeSettings();
+        settingsUnderTest.writeLPr(computer, /*sync=*/ true);
+        assertThat(settingsUnderTest.readLPw(computer, createFakeUsers()), is(true));
+        assertThat(settingsUnderTest.getInternalVersion().sdkVersionFull, is(0));
+        assertThat(settingsUnderTest.getInternalVersion().sdkVersion,
+                is(Build.VERSION.SDK_INT));
+    }
+
+    @RequiresFlagsEnabled(android.sdk.Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
+    @Test
+    public void testSettingsGetInternalVersionWithSdkVersionFull() {
+        final Settings settingsUnderTest = makeSettings();
+        settingsUnderTest.writeLPr(computer, /*sync=*/ true);
+        assertThat(settingsUnderTest.readLPw(computer, createFakeUsers()), is(true));
+        assertThat(settingsUnderTest.getInternalVersion().sdkVersionFull,
+                is(Build.VERSION.SDK_INT_FULL));
+        assertThat(settingsUnderTest.getInternalVersion().sdkVersion,
+                is(Build.VERSION.SDK_INT));
     }
 
     @Test
@@ -1382,11 +1427,14 @@ public class PackageManagerSettingsTests {
     private static final String PACKAGE_NAME = "com.android.bar";
     private static final String REAL_PACKAGE_NAME = "com.android.foo";
     private static final File INITIAL_CODE_PATH =
-            new File(InstrumentationRegistry.getContext().getFilesDir(), "com.android.bar-1");
+            new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                    "com.android.bar-1");
     private static final File UPDATED_CODE_PATH =
-            new File(InstrumentationRegistry.getContext().getFilesDir(), "com.android.bar-2");
+            new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                    "com.android.bar-2");
     private static final File UPDATED_CODE_PATH2 =
-            new File(InstrumentationRegistry.getContext().getFilesDir(), "com.android.bar-3");
+            new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                    "com.android.bar-3");
     private static final long INITIAL_VERSION_CODE = 10023L;
     private static final long UPDATED_VERSION_CODE = 10025L;
 
@@ -2292,7 +2340,8 @@ public class PackageManagerSettingsTests {
     }
 
     private void writeCorruptedPackagesXml() {
-        writeFile(new File(InstrumentationRegistry.getContext().getFilesDir(), "system/packages.xml"),
+        writeFile(new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                        "system/packages.xml"),
                 ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>"
                         + "<packages>"
                         + "<last-platform-version internal=\"15\" external=\"0\" />"
@@ -2302,7 +2351,8 @@ public class PackageManagerSettingsTests {
     }
 
     static void writePackagesXml(String fileName) {
-        writeFile(new File(InstrumentationRegistry.getContext().getFilesDir(), fileName),
+        writeFile(new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                        fileName),
                 ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>"
                 + "<packages>"
                 + "<last-platform-version internal=\"15\" external=\"0\" fingerprint=\"foo\" />"
@@ -2371,7 +2421,8 @@ public class PackageManagerSettingsTests {
     }
 
     private void writePackageRestrictions_noSuspendingPackageXml(final int userId) {
-        writeFile(new File(InstrumentationRegistry.getContext().getFilesDir(), "system/users/"
+        writeFile(new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                        "system/users/"
                         + userId + "/package-restrictions.xml"),
                 ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
                         + "<package-restrictions>\n"
@@ -2386,7 +2437,8 @@ public class PackageManagerSettingsTests {
     }
 
     private void writePackageRestrictions_noSuspendParamsMapXml(final int userId) {
-        writeFile(new File(InstrumentationRegistry.getContext().getFilesDir(), "system/users/"
+        writeFile(new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                        "system/users/"
                         + userId + "/package-restrictions.xml"),
                 ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
                         + "<package-restrictions>\n"
@@ -2410,7 +2462,8 @@ public class PackageManagerSettingsTests {
     }
 
     private void writeCorruptedPackageRestrictions(final int userId) {
-        writeFile(new File(InstrumentationRegistry.getContext().getFilesDir(), "system/users/"
+        writeFile(new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                        "system/users/"
                         + userId + "/package-restrictions.xml"),
                 ("<?xml version='1.0' encoding='utf-8' standalone='yes' ?>\n"
                         + "<package-restrictions>\n"
@@ -2418,7 +2471,8 @@ public class PackageManagerSettingsTests {
     }
 
     private static void writeStoppedPackagesXml() {
-        writeFile(new File(InstrumentationRegistry.getContext().getFilesDir(), "system/packages-stopped.xml"),
+        writeFile(new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                        "system/packages-stopped.xml"),
                 ( "<?xml version='1.0' encoding='utf-8' standalone='yes' ?>"
                 + "<stopped-packages>"
                 + "<pkg name=\"com.android.app1\" nl=\"1\" />"
@@ -2428,7 +2482,8 @@ public class PackageManagerSettingsTests {
     }
 
     private static void writePackagesList() {
-        writeFile(new File(InstrumentationRegistry.getContext().getFilesDir(), "system/packages.list"),
+        writeFile(new File(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
+                        "system/packages.list"),
                 ( "com.android.app1 11000 0 /data/data/com.android.app1 seinfo1"
                 + "com.android.app2 11001 0 /data/data/com.android.app2 seinfo2"
                 + "com.android.app3 11030 0 /data/data/com.android.app3 seinfo3")
@@ -2436,7 +2491,8 @@ public class PackageManagerSettingsTests {
     }
 
     private static void deleteSystemFolder() {
-        File systemFolder = new File(InstrumentationRegistry.getContext().getFilesDir(), "system");
+        File systemFolder = new File(
+                InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(), "system");
         deleteFolder(systemFolder);
     }
 
@@ -2465,7 +2521,7 @@ public class PackageManagerSettingsTests {
     }
 
     private Settings makeSettings() {
-        return new Settings(InstrumentationRegistry.getContext().getFilesDir(),
+        return new Settings(InstrumentationRegistry.getInstrumentation().getContext().getFilesDir(),
                 mRuntimePermissionsPersistence, mPermissionDataProvider,
                 mDomainVerificationManager, mHandler,
                 new PackageManagerTracedLock());

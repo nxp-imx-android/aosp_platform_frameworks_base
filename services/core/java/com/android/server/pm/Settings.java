@@ -374,6 +374,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     private static final String ATTR_FINGERPRINT = "fingerprint";
     private static final String ATTR_VOLUME_UUID = "volumeUuid";
     private static final String ATTR_SDK_VERSION = "sdkVersion";
+    private static final String ATTR_SDK_VERSION_FULL = "sdkVersionFull";
     private static final String ATTR_DATABASE_VERSION = "databaseVersion";
     private static final String ATTR_VALUE = "value";
     private static final String ATTR_FIRST_INSTALL_TIME = "first-install-time";
@@ -457,6 +458,14 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         /**
          * These are the last platform API version we were using for the apps
          * installed on internal and external storage. It is used to grant newer
+         * permissions one time during a system upgrade. The full SDK version includes a
+         * major version and a minor version.
+         */
+        int sdkVersionFull;
+
+        /**
+         * These are the last platform API version we were using for the apps
+         * installed on internal and external storage. It is used to grant newer
          * permissions one time during a system upgrade.
          */
         int sdkVersion;
@@ -484,6 +493,10 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
          * typically after resolving any required upgrade steps.
          */
         public void forceCurrent() {
+            if (android.sdk.Flags.majorMinorVersioningScheme()) {
+                sdkVersionFull = Build.VERSION.SDK_INT_FULL;
+            }
+
             sdkVersion = Build.VERSION.SDK_INT;
             databaseVersion = CURRENT_DATABASE_VERSION;
             buildFingerprint = Build.FINGERPRINT;
@@ -2832,6 +2845,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                     serializer.startTag(null, TAG_VERSION);
                     XmlUtils.writeStringAttribute(serializer, ATTR_VOLUME_UUID, volumeUuid);
                     serializer.attributeInt(null, ATTR_SDK_VERSION, ver.sdkVersion);
+                    serializer.attributeInt(null, ATTR_SDK_VERSION_FULL, ver.sdkVersionFull);
                     serializer.attributeInt(null, ATTR_DATABASE_VERSION, ver.databaseVersion);
                     XmlUtils.writeStringAttribute(serializer, ATTR_BUILD_FINGERPRINT,
                             ver.buildFingerprint);
@@ -3497,6 +3511,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                                 ATTR_VOLUME_UUID);
                         final VersionInfo ver = findOrCreateVersion(volumeUuid);
                         ver.sdkVersion = parser.getAttributeInt(null, ATTR_SDK_VERSION);
+                        ver.sdkVersionFull = parser.getAttributeInt(null, ATTR_SDK_VERSION_FULL);
                         ver.databaseVersion = parser.getAttributeInt(null, ATTR_DATABASE_VERSION);
                         ver.buildFingerprint = XmlUtils.readStringAttribute(parser,
                                 ATTR_BUILD_FINGERPRINT);
@@ -5046,6 +5061,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             }
             pw.increaseIndent();
             pw.printPair("sdkVersion", ver.sdkVersion);
+            pw.printPair("sdkVersionFull", ver.sdkVersionFull);
             pw.printPair("databaseVersion", ver.databaseVersion);
             pw.println();
             pw.printPair("buildFingerprint", ver.buildFingerprint);

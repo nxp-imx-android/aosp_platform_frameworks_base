@@ -140,7 +140,8 @@ open class PackageHelperTestBase {
                 false /* isEngBuild */,
                 false /* isUserDebugBuild */,
                 Build.VERSION_CODES.CUR_DEVELOPMENT,
-                Build.VERSION.INCREMENTAL)
+                Build.VERSION.INCREMENTAL,
+                0 /* sdkVersionFull */)
         rule.system().validateFinalState()
         return pms
     }

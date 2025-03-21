@@ -1442,4 +1442,10 @@ public abstract class PackageManagerInternal {
      * Returns true if the device is upgrading from an SDK version lower than the one specified.
      */
     public abstract boolean isUpgradingFromLowerThan(int sdkVersion);
+
+    /**
+     * Returns true if the device is upgrading from an SDK version lower than the one specified by
+     * checking a full SDK version (includes major version and minor version)
+     */
+    public abstract boolean isUpgradingFromLowerThanBySdkVersionFull(int sdkVersionFull);
 }
