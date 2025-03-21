@@ -273,6 +273,7 @@ package android {
     field public static final String READ_SYNC_SETTINGS = "android.permission.READ_SYNC_SETTINGS";
     field public static final String READ_SYNC_STATS = "android.permission.READ_SYNC_STATS";
     field @FlaggedApi("com.android.settingslib.flags.settings_catalyst") public static final String READ_SYSTEM_PREFERENCES = "android.permission.READ_SYSTEM_PREFERENCES";
+    field @FlaggedApi("com.android.update_engine.minor_changes_2025q4") public static final String READ_UPDATE_ENGINE_LOGS = "android.permission.READ_UPDATE_ENGINE_LOGS";
     field public static final String READ_VOICEMAIL = "com.android.voicemail.permission.READ_VOICEMAIL";
     field public static final String REBOOT = "android.permission.REBOOT";
     field public static final String RECEIVE_BOOT_COMPLETED = "android.permission.RECEIVE_BOOT_COMPLETED";
