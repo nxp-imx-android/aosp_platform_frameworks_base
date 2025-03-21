@@ -27,8 +27,11 @@ import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.LogLevel
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.ShadeDisplayChangeLatencyTracker
+import com.android.systemui.shade.ShadeDisplayLog
 import com.android.systemui.shade.ShadeTraceLogger.logMoveShadeWindowTo
 import com.android.systemui.shade.ShadeTraceLogger.t
 import com.android.systemui.shade.ShadeTraceLogger.traceReparenting
@@ -69,6 +72,7 @@ constructor(
     private val notificationRebindingTracker: NotificationRebindingTracker,
     private val notificationStackRebindingHider: NotificationStackRebindingHider,
     @ShadeDisplayAware private val configForwarder: ConfigurationForwarder,
+    @ShadeDisplayLog private val logBuffer: LogBuffer,
 ) : CoreStartable {
 
     private val hasActiveNotifications: Boolean
@@ -101,7 +105,12 @@ constructor(
 
     /** Tries to move the shade. If anything wrong happens, fails gracefully without crashing. */
     private suspend fun moveShadeWindowTo(destinationId: Int) {
-        Log.d(TAG, "Trying to move shade window to display with id $destinationId")
+        logBuffer.log(
+            TAG,
+            LogLevel.DEBUG,
+            { int1 = destinationId },
+            { "Trying to move shade window to display with id $int1" },
+        )
         logMoveShadeWindowTo(destinationId)
         var currentId = -1
         try {
@@ -113,7 +122,12 @@ constructor(
             val currentDisplay = shadeContext.display ?: error("Current shade display is null")
             currentId = currentDisplay.displayId
             if (currentId == destinationId) {
-                Log.w(TAG, "Trying to move the shade to a display ($currentId) it was already in ")
+                logBuffer.log(
+                    TAG,
+                    LogLevel.WARNING,
+                    { int1 = currentId },
+                    { "Trying to move the shade to a display ($int1) it was already in." },
+                )
                 return
             }
 
@@ -128,9 +142,14 @@ constructor(
                 }
             }
         } catch (e: IllegalStateException) {
-            Log.e(
+            logBuffer.log(
                 TAG,
-                "Unable to move the shade window from display $currentId to $destinationId",
+                LogLevel.ERROR,
+                {
+                    int1 = currentId
+                    int2 = destinationId
+                },
+                { "Unable to move the shade window from display $int1 to $int2" },
                 e,
             )
         }
@@ -200,7 +219,7 @@ constructor(
     }
 
     private fun errorLog(s: String) {
-        Log.e(TAG, s)
+        logBuffer.log(TAG, LogLevel.ERROR, s)
     }
 
     private fun checkContextDisplayMatchesExpected(destinationId: Int) {
