@@ -112,7 +112,6 @@ class AppIdPermissionPolicy : SchemePolicy() {
             addPermissions(packageState, changedPermissionNames)
             trimPermissions(packageState.packageName, changedPermissionNames)
             trimPermissionStates(packageState.appId)
-            revokePermissionsOnPackageUpdate(packageState.appId)
         }
         changedPermissionNames.forEachIndexed { _, permissionName ->
             evaluatePermissionStateForAllPackages(permissionName, null)
@@ -130,6 +129,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
             newState.externalState.userIds.forEachIndexed { _, userId ->
                 inheritImplicitPermissionStates(packageState.appId, userId)
             }
+            revokePermissionsOnPackageUpdate(packageState.appId)
         }
     }
 
@@ -140,7 +140,6 @@ class AppIdPermissionPolicy : SchemePolicy() {
         addPermissions(packageState, changedPermissionNames)
         trimPermissions(packageState.packageName, changedPermissionNames)
         trimPermissionStates(packageState.appId)
-        revokePermissionsOnPackageUpdate(packageState.appId)
         changedPermissionNames.forEachIndexed { _, permissionName ->
             evaluatePermissionStateForAllPackages(permissionName, null)
         }
@@ -148,6 +147,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
         newState.externalState.userIds.forEachIndexed { _, userId ->
             inheritImplicitPermissionStates(packageState.appId, userId)
         }
+        revokePermissionsOnPackageUpdate(packageState.appId)
     }
 
     override fun MutateStateScope.onPackageRemoved(packageName: String, appId: Int) {
@@ -700,6 +700,10 @@ class AppIdPermissionPolicy : SchemePolicy() {
     }
 
     private fun MutateStateScope.revokePermissionsOnPackageUpdate(appId: Int) {
+        revokeStorageAndMediaPermissionsOnPackageUpdate(appId)
+    }
+
+    private fun MutateStateScope.revokeStorageAndMediaPermissionsOnPackageUpdate(appId: Int) {
         val hasOldPackage =
             appId in oldState.externalState.appIdPackageNames &&
                 anyPackageInAppId(appId, oldState) { true }
