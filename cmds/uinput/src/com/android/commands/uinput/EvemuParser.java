@@ -61,17 +61,18 @@ public class EvemuParser implements EventParser {
             mReader = in;
         }
 
-        private @Nullable String findNextLine() throws IOException {
+        private void findNextLine() throws IOException {
             String line = "";
             while (line != null && line.length() == 0) {
                 String unstrippedLine = mReader.readLine();
                 if (unstrippedLine == null) {
                     mAtEndOfFile = true;
-                    return null;
+                    mNextLine = null;
+                    return;
                 }
                 line = stripComments(unstrippedLine);
             }
-            return line;
+            mNextLine = line;
         }
 
         private static String stripComments(String line) {
@@ -92,7 +93,7 @@ public class EvemuParser implements EventParser {
          */
         public @Nullable String peekLine() throws IOException {
             if (mNextLine == null && !mAtEndOfFile) {
-                mNextLine = findNextLine();
+                findNextLine();
             }
             return mNextLine;
         }
@@ -103,7 +104,10 @@ public class EvemuParser implements EventParser {
             mNextLine = null;
         }
 
-        public boolean isAtEndOfFile() {
+        public boolean isAtEndOfFile() throws IOException {
+            if (mNextLine == null && !mAtEndOfFile) {
+                findNextLine();
+            }
             return mAtEndOfFile;
         }
 
