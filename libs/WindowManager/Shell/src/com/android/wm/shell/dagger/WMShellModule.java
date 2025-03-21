@@ -1552,13 +1552,25 @@ public abstract class WMShellModule {
     @WMSingleton
     @Provides
     static Optional<DesktopImeHandler> provideDesktopImeHandler(
+            Optional<DesktopTasksController> desktopTasksController,
+            Optional<DesktopUserRepositories> desktopUserRepositories,
+            FocusTransitionObserver focusTransitionObserver,
             DisplayImeController displayImeController,
+            DisplayController displayController,
+            ShellTaskOrganizer shellTaskOrganizer,
+            Transitions transitions,
+            @ShellMainThread ShellExecutor mainExecutor,
+            @ShellAnimationThread ShellExecutor animExecutor,
             Context context,
             ShellInit shellInit) {
         if (!DesktopModeStatus.canEnterDesktopMode(context)) {
             return Optional.empty();
         }
-        return Optional.of(new DesktopImeHandler(displayImeController, shellInit));
+        return Optional.of(
+                new DesktopImeHandler(desktopTasksController.get(), desktopUserRepositories.get(),
+                        focusTransitionObserver, shellTaskOrganizer,
+                        displayImeController, displayController, transitions, mainExecutor,
+                        animExecutor, context, shellInit));
     }
 
     //
@@ -1641,6 +1653,7 @@ public abstract class WMShellModule {
             Optional<DesktopDisplayEventHandler> desktopDisplayEventHandler,
             Optional<DesktopModeKeyGestureHandler> desktopModeKeyGestureHandler,
             Optional<SystemModalsTransitionHandler> systemModalsTransitionHandler,
+            Optional<DesktopImeHandler> desktopImeHandler,
             ShellCrashHandler shellCrashHandler) {
         return new Object();
     }
