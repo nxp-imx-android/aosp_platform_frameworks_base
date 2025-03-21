@@ -20,6 +20,7 @@ import android.app.trust.TrustManager
 import android.content.Context
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
+import android.service.dreams.Flags.dreamsV2
 import com.android.keyguard.KeyguardUpdateMonitor
 import com.android.systemui.biometrics.data.repository.FacePropertyRepository
 import com.android.systemui.biometrics.shared.model.LockoutMode
@@ -40,6 +41,7 @@ import com.android.systemui.keyguard.shared.model.DevicePosture
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.AOD
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
+import com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
 import com.android.systemui.keyguard.shared.model.KeyguardState.OFF
 import com.android.systemui.keyguard.shared.model.TransitionState
@@ -136,11 +138,18 @@ constructor(
             }
             .launchIn(applicationScope)
 
-        merge(
-                keyguardTransitionInteractor.transition(Edge.create(AOD, LOCKSCREEN)),
-                keyguardTransitionInteractor.transition(Edge.create(OFF, LOCKSCREEN)),
-                keyguardTransitionInteractor.transition(Edge.create(DOZING, LOCKSCREEN)),
-            )
+        val transitionFlows = buildList {
+            add(keyguardTransitionInteractor.transition(Edge.create(AOD, LOCKSCREEN)))
+            add(keyguardTransitionInteractor.transition(Edge.create(OFF, LOCKSCREEN)))
+            add(keyguardTransitionInteractor.transition(Edge.create(DOZING, LOCKSCREEN)))
+
+            if (dreamsV2()) {
+                add(keyguardTransitionInteractor.transition(Edge.create(DREAMING, LOCKSCREEN)))
+            }
+        }
+
+        transitionFlows
+            .merge()
             .filter { it.transitionState == TransitionState.STARTED }
             .sample(powerInteractor.detailedWakefulness)
             .filter { wakefulnessModel ->
