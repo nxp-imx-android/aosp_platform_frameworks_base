@@ -17,6 +17,7 @@
 package android.media.quality;
 
 import android.media.quality.AmbientBacklightSettings;
+import android.media.quality.IActiveProcessingPictureListener;
 import android.media.quality.IAmbientBacklightCallback;
 import android.media.quality.IPictureProfileCallback;
 import android.media.quality.ISoundProfileCallback;
@@ -70,6 +71,7 @@ interface IMediaQualityManager {
     void registerPictureProfileCallback(in IPictureProfileCallback cb);
     void registerSoundProfileCallback(in ISoundProfileCallback cb);
     void registerAmbientBacklightCallback(in IAmbientBacklightCallback cb);
+    void registerActiveProcessingPictureListener(in IActiveProcessingPictureListener l);
 
     List<ParameterCapability> getParameterCapabilities(in List<String> names, int userId);
 
