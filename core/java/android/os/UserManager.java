@@ -6618,6 +6618,7 @@ public class UserManager {
         if (android.multiuser.Flags.cacheProfileParentReadOnly()) {
             UserManagerCache.invalidateProfileParent();
         }
+        invalidateCacheOnUserDataChanged();
         invalidateEnabledProfileIds();
         invalidateUserRestriction();
     }
