@@ -93,8 +93,8 @@ constructor(
         // transition.
         scope.launch("$TAG#listenForAodToAwake") {
             powerInteractor.detailedWakefulness
-                .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwake() }
                 .debounce(50L)
+                .filterRelevantKeyguardStateAnd { wakefulness -> wakefulness.isAwake() }
                 .sample(
                     transitionInteractor.startedKeyguardTransitionStep,
                     wakeToGoneInteractor.canWakeDirectlyToGone,
@@ -140,7 +140,8 @@ constructor(
                         val shouldTransitionToCommunal =
                             communalSettingsInteractor.isV2FlagEnabled() &&
                                 autoOpenCommunal &&
-                                !detailedWakefulness.isAwakeFromMotionOrLift()
+                                !detailedWakefulness.isAwakeFromMotionOrLift() &&
+                                !isKeyguardOccludedLegacy
 
                         if (shouldTransitionToGone) {
                             // TODO(b/360368320): Adapt for scene framework

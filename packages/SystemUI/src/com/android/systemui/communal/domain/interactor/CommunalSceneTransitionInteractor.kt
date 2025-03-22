@@ -25,6 +25,7 @@ import com.android.systemui.communal.data.repository.CommunalSceneTransitionRepo
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.keyguard.domain.interactor.InternalKeyguardTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
@@ -37,6 +38,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.util.kotlin.pairwise
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted
@@ -64,6 +66,7 @@ constructor(
     val internalTransitionInteractor: InternalKeyguardTransitionInteractor,
     private val settingsInteractor: CommunalSettingsInteractor,
     @Application private val applicationScope: CoroutineScope,
+    @Main private val mainImmediateDispatcher: CoroutineDispatcher,
     private val sceneInteractor: CommunalSceneInteractor,
     private val repository: CommunalSceneTransitionRepository,
     private val powerInteractor: PowerInteractor,
@@ -143,7 +146,7 @@ constructor(
 
     /** Monitors [SceneTransitionLayout] state and updates KTF state accordingly. */
     private fun listenForSceneTransitionProgress() {
-        applicationScope.launch {
+        applicationScope.launch("$TAG#listenForSceneTransitionProgress", mainImmediateDispatcher) {
             sceneInteractor.transitionState
                 .pairwise(ObservableTransitionState.Idle(CommunalScenes.Blank))
                 .collect { (prevTransition, transition) ->
@@ -256,7 +259,10 @@ constructor(
 
     private fun collectProgress(transition: ObservableTransitionState.Transition) {
         progressJob?.cancel()
-        progressJob = applicationScope.launch { transition.progress.collect { updateProgress(it) } }
+        progressJob =
+            applicationScope.launch("$TAG#collectProgress", mainImmediateDispatcher) {
+                transition.progress.collect { updateProgress(it) }
+            }
     }
 
     private suspend fun startTransitionFromGlanceableHub() {
@@ -299,5 +305,9 @@ constructor(
             progress.coerceIn(0f, 1f),
             TransitionState.RUNNING,
         )
+    }
+
+    private companion object {
+        const val TAG = "CommunalSceneTransitionInteractor"
     }
 }
