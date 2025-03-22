@@ -140,6 +140,20 @@ public final class PictureProfile implements Parcelable {
      */
     public static final String STATUS_HDR = "HDR";
 
+    /** @hide */
+    public static final String NAME_STANDARD = "standard";
+    /** @hide */
+    public static final String NAME_VIVID = "vivid";
+    /** @hide */
+    public static final String NAME_SPORTS = "sports";
+    /** @hide */
+    public static final String NAME_GAME = "game";
+    /** @hide */
+    public static final String NAME_MOVIE = "movie";
+    /** @hide */
+    public static final String NAME_ENERGY_SAVING = "energy_saving";
+    /** @hide */
+    public static final String NAME_USER = "user";
 
     private PictureProfile(@NonNull Parcel in) {
         mId = in.readString();
