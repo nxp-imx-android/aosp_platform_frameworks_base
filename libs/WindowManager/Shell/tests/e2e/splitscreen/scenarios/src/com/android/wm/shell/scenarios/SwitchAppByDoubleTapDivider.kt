@@ -61,7 +61,7 @@ constructor(val rotation: Rotation = Rotation.ROTATION_0) {
 
     @Test
     open fun switchAppByDoubleTapDivider() {
-        SplitScreenUtils.doubleTapDividerToSwitch(device)
+        SplitScreenUtils.doubleTapDividerToSwitch(device, instrumentation.uiAutomation)
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
         waitForLayersToSwitch(wmHelper)

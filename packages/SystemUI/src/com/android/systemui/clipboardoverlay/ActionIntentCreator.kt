@@ -21,20 +21,30 @@ import android.content.ClipDescription
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.PackageManager.NameNotFoundException
 import android.net.Uri
 import android.text.TextUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.res.R
 import java.util.function.Consumer
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class ActionIntentCreator
 @Inject
-constructor(@Application private val applicationScope: CoroutineScope) : IntentCreator {
+constructor(
+    private val context: Context,
+    private val packageManager: PackageManager,
+    @Application private val applicationScope: CoroutineScope,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
+) : IntentCreator {
     override fun getTextEditorIntent(context: Context?) =
         Intent(context, EditTextActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -72,11 +82,9 @@ constructor(@Application private val applicationScope: CoroutineScope) : IntentC
     }
 
     suspend fun getImageEditIntent(uri: Uri?, context: Context): Intent {
-        val editorPackage = context.getString(R.string.config_screenshotEditor)
         return Intent(Intent.ACTION_EDIT).apply {
-            if (!TextUtils.isEmpty(editorPackage)) {
-                setComponent(ComponentName.unflattenFromString(editorPackage))
-            }
+            // Use the preferred editor if it's available, otherwise fall back to the default editor
+            component = preferredEditor() ?: defaultEditor()
             setDataAndType(uri, "image/*")
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
@@ -104,6 +112,39 @@ constructor(@Application private val applicationScope: CoroutineScope) : IntentC
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         }
     }
+
+    private suspend fun preferredEditor(): ComponentName? =
+        runCatching {
+                val preferredEditor = context.getString(R.string.config_preferredScreenshotEditor)
+                val component = ComponentName.unflattenFromString(preferredEditor) ?: return null
+
+                return if (isComponentAvailable(component)) component else null
+            }
+            .getOrNull()
+
+    private suspend fun isComponentAvailable(component: ComponentName): Boolean =
+        withContext(backgroundDispatcher) {
+            try {
+                val info =
+                    packageManager.getPackageInfo(
+                        component.packageName,
+                        PackageManager.GET_ACTIVITIES,
+                    )
+                info.activities?.firstOrNull {
+                    it.componentName.className == component.className
+                } != null
+            } catch (e: NameNotFoundException) {
+                false
+            }
+        }
+
+    private fun defaultEditor(): ComponentName? =
+        runCatching {
+                context.getString(R.string.config_screenshotEditor).let {
+                    ComponentName.unflattenFromString(it)
+                }
+            }
+            .getOrNull()
 
     companion object {
         private const val EXTRA_EDIT_SOURCE: String = "edit_source"

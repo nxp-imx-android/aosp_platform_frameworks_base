@@ -1029,51 +1029,16 @@ public class LayoutTest {
 
     @Test
     @RequiresFlagsEnabled(FLAG_HIGH_CONTRAST_TEXT_SMALL_TEXT_RECT)
-    public void highContrastTextEnabled_testWhitespaceText_DrawsBackgroundsWithAdjacentLetters() {
-        mTextPaint.setColor(Color.BLACK);
-        SpannableString spannedText = new SpannableString("Test\tTap and Space");
+    public void highContrastTextEnabled_testWhiteSpaceWithinText_drawsSameBackgroundswithText() {
+        SpannableString spannedText = new SpannableString("Hello\tWorld !");
+        testSpannableStringAppliesAllColorsCorrectly(spannedText);
+    }
 
-        // Set the entire text to white initially
-        spannedText.setSpan(
-                new ForegroundColorSpan(Color.WHITE),
-                /* start= */ 0,
-                /* end= */ spannedText.length(),
-                Spanned.SPAN_INCLUSIVE_EXCLUSIVE
-        );
-
-        // Find the whitespace character and set its color to black
-        for (int i = 0; i < spannedText.length(); i++) {
-            if (Character.isWhitespace(spannedText.charAt(i))) {
-                spannedText.setSpan(
-                        new ForegroundColorSpan(Color.BLACK),
-                        i,
-                        i + 1,
-                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE
-                );
-            }
-        }
-
-        Layout layout = new StaticLayout(spannedText, mTextPaint, mWidth,
-                mAlign, mSpacingMult, mSpacingAdd, /* includePad= */ false);
-
-        MockCanvas c = new MockCanvas(/* width= */ 256, /* height= */ 256);
-        c.setHighContrastTextEnabled(true);
-        layout.draw(
-                c,
-                /* highlightPaths= */ null,
-                /* highlightPaints= */ null,
-                /* selectionPath= */ null,
-                /* selectionPaint= */ null,
-                /* cursorOffsetVertical= */ 0
-        );
-
-        List<MockCanvas.DrawCommand> drawCommands = c.getDrawCommands();
-        for (int i = 0; i < drawCommands.size(); i++) {
-            MockCanvas.DrawCommand drawCommand = drawCommands.get(i);
-            if (drawCommand.rect != null) {
-                expect.that(removeAlpha(drawCommand.paint.getColor())).isEqualTo(Color.BLACK);
-            }
-        }
+    @Test
+    @RequiresFlagsEnabled(FLAG_HIGH_CONTRAST_TEXT_SMALL_TEXT_RECT)
+    public void highContrastTextEnabled_testWhiteSpaceAtStart_drawsCorrectBackgroundsOnText() {
+        SpannableString spannedText = new SpannableString(" HelloWorld!");
+        testSpannableStringAppliesAllColorsCorrectly(spannedText);
     }
 
     @Test
@@ -1330,6 +1295,55 @@ public class LayoutTest {
         assertPrimaryIsTrailingPrevious(
                 "",
                 new boolean[]{false});
+    }
+
+    private void testSpannableStringAppliesAllColorsCorrectly(SpannableString spannedText) {
+        for (int textColor : new int[] {Color.WHITE, Color.BLACK}) {
+            final int contrastingColor = textColor == Color.WHITE ? Color.BLACK : Color.WHITE;
+            // Set the paint color to the contrasting color to verify the high contrast text
+            // background rect color is correct.
+            mTextPaint.setColor(contrastingColor);
+
+            // Set the entire text to test color initially
+            spannedText.setSpan(
+                    new ForegroundColorSpan(textColor),
+                    /* start= */ 0,
+                    /* end= */ spannedText.length(),
+                    Spanned.SPAN_INCLUSIVE_EXCLUSIVE
+            );
+
+            Layout layout = new StaticLayout(spannedText, mTextPaint, mWidth,
+                    mAlign, mSpacingMult, mSpacingAdd, /* includePad= */ false);
+
+            MockCanvas c = new MockCanvas(/* width= */ 256, /* height= */ 256);
+            c.setHighContrastTextEnabled(true);
+            layout.draw(
+                    c,
+                    /* highlightPaths= */ null,
+                    /* highlightPaints= */ null,
+                    /* selectionPath= */ null,
+                    /* selectionPaint= */ null,
+                    /* cursorOffsetVertical= */ 0
+            );
+
+            int numBackgroundsFound = 0;
+            List<MockCanvas.DrawCommand> drawCommands = c.getDrawCommands();
+            for (int i = 0; i < drawCommands.size(); i++) {
+                MockCanvas.DrawCommand drawCommand = drawCommands.get(i);
+
+                if (drawCommand.rect != null) {
+                    numBackgroundsFound++;
+                    // Verifies the background color of the high-contrast rectangle drawn behind
+                    // the text. In high-contrast mode, the background color should contrast with
+                    // the text color. 'contrastingColor' represents the expected background color,
+                    // which is the inverse of the text color (e.g., if text is white, background
+                    // is black, and vice versa).
+                    expect.that(removeAlpha(drawCommand.paint.getColor()))
+                            .isEqualTo(contrastingColor);
+                }
+            }
+            expect.that(numBackgroundsFound).isLessThan(spannedText.length());
+        }
     }
 }
 

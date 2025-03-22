@@ -35,7 +35,7 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.domain.interactor.AODPromotedNotificationInteractor
 import com.android.systemui.util.kotlin.combine
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
@@ -90,14 +90,14 @@ constructor(
     var clock: ClockController? by keyguardClockRepository.clockEventController::clock
 
     private val isAodPromotedNotificationPresent: Flow<Boolean> =
-        if (PromotedNotificationUiAod.isEnabled) {
+        if (PromotedNotificationUi.isEnabled) {
             aodPromotedNotificationInteractor.isPresent
         } else {
             flowOf(false)
         }
 
     private val areAnyNotificationsPresent: Flow<Boolean> =
-        if (PromotedNotificationUiAod.isEnabled) {
+        if (PromotedNotificationUi.isEnabled) {
             combine(
                 activeNotificationsInteractor.areAnyNotificationsPresent,
                 isAodPromotedNotificationPresent,

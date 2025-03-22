@@ -1,5 +1,6 @@
 package com.android.systemui.communal.ui.compose
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -26,6 +28,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.disabled
@@ -55,6 +58,7 @@ import com.android.systemui.communal.ui.compose.Dimensions.Companion.SlideOffset
 import com.android.systemui.communal.ui.compose.extensions.allowGestures
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.util.CommunalColors
+import com.android.systemui.keyguard.domain.interactor.FromGlanceableHubTransitionInteractor.Companion.TO_LOCKSCREEN_DURATION
 import com.android.systemui.keyguard.domain.interactor.FromPrimaryBouncerTransitionInteractor.Companion.TO_GONE_DURATION
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
 import com.android.systemui.scene.ui.composable.SceneTransitionLayoutDataSource
@@ -97,6 +101,17 @@ val sceneTransitionsV2 = transitions {
     to(CommunalScenes.Blank) {
         spec = tween(durationMillis = TO_GONE_DURATION.toInt(DurationUnit.MILLISECONDS))
         fade(AllElements)
+    }
+    to(CommunalScenes.Blank, key = CommunalTransitionKeys.SwipeInLandscape) {
+        spec = tween(durationMillis = TO_LOCKSCREEN_DURATION.toInt(DurationUnit.MILLISECONDS))
+        translate(Communal.Elements.Grid, Edge.End)
+        timestampRange(endMillis = 167) {
+            fade(Communal.Elements.Grid)
+            fade(Communal.Elements.IndicationArea)
+            fade(Communal.Elements.LockIcon)
+            fade(Communal.Elements.StatusBar)
+        }
+        timestampRange(startMillis = 167, endMillis = 500) { fade(Communal.Elements.Scrim) }
     }
     to(CommunalScenes.Blank, key = CommunalTransitionKeys.Swipe) {
         spec = tween(durationMillis = TransitionDuration.TO_GLANCEABLE_HUB_DURATION_MS)
@@ -214,6 +229,9 @@ fun CommunalContainer(
 
     val blurRadius = with(LocalDensity.current) { viewModel.blurRadiusPx.toDp() }
 
+    val swipeFromHubInLandscape by
+        viewModel.swipeFromHubInLandscape.collectAsStateWithLifecycle(false)
+
     SceneTransitionLayout(
         state = state,
         modifier = modifier.fillMaxSize().thenIf(isUiBlurred) { Modifier.blur(blurRadius) },
@@ -241,7 +259,14 @@ fun CommunalContainer(
             userActions =
                 mapOf(
                     Swipe.End to
-                        UserActionResult(CommunalScenes.Blank, CommunalTransitionKeys.Swipe)
+                        UserActionResult(
+                            CommunalScenes.Blank,
+                            if (swipeFromHubInLandscape) {
+                                CommunalTransitionKeys.SwipeInLandscape
+                            } else {
+                                CommunalTransitionKeys.Swipe
+                            },
+                        )
                 ),
         ) {
             CommunalScene(
@@ -258,6 +283,20 @@ fun CommunalContainer(
     Box(modifier = Modifier.fillMaxSize().allowGestures(touchesAllowed))
 }
 
+/** Listens to orientation changes on communal scene and reset when scene is disposed. */
+@Composable
+fun ObserveOrientationChange(viewModel: CommunalViewModel) {
+    val configuration = LocalConfiguration.current
+
+    LaunchedEffect(configuration.orientation) {
+        viewModel.onOrientationChange(configuration.orientation)
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { viewModel.onOrientationChange(Configuration.ORIENTATION_UNDEFINED) }
+    }
+}
+
 /** Scene containing the glanceable hub UI. */
 @Composable
 fun ContentScope.CommunalScene(
@@ -269,6 +308,8 @@ fun ContentScope.CommunalScene(
 ) {
     val isFocusable by viewModel.isFocusable.collectAsStateWithLifecycle(initialValue = false)
 
+    // Observe screen rotation while Communal Scene is active.
+    ObserveOrientationChange(viewModel)
     Box(
         modifier =
             Modifier.element(Communal.Elements.Scrim)

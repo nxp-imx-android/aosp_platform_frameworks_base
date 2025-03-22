@@ -334,6 +334,14 @@ constructor(
 
     private fun onBlurApplied(appliedBlurRadius: Int, zoomOutFromShadeRadius: Float) {
         lastAppliedBlur = appliedBlurRadius
+        onZoomOutChanged(zoomOutFromShadeRadius)
+        listeners.forEach { it.onBlurRadiusChanged(appliedBlurRadius) }
+        notificationShadeWindowController.setBackgroundBlurRadius(appliedBlurRadius)
+    }
+
+    private fun onZoomOutChanged(zoomOutFromShadeRadius: Float) {
+        TrackTracer.instantForGroup("shade", "zoom_out", zoomOutFromShadeRadius)
+        Log.v(TAG, "onZoomOutChanged $zoomOutFromShadeRadius")
         wallpaperController.setNotificationShadeZoom(zoomOutFromShadeRadius)
         if (spatialModelAppPushback()) {
             appZoomOutOptional.ifPresent { appZoomOut ->
@@ -341,11 +349,14 @@ constructor(
             }
             keyguardInteractor.setZoomOut(zoomOutFromShadeRadius)
         }
-        listeners.forEach {
-            it.onBlurRadiusChanged(appliedBlurRadius)
-        }
-        notificationShadeWindowController.setBackgroundBlurRadius(appliedBlurRadius)
     }
+
+    private val applyZoomOutForFrame =
+        Choreographer.FrameCallback {
+            updateScheduled = false
+            val (_, zoomOutFromShadeRadius) = computeBlurAndZoomOut()
+            onZoomOutChanged(zoomOutFromShadeRadius)
+        }
 
     /** Animate blurs when unlocking. */
     private val keyguardStateCallback =
@@ -627,8 +638,17 @@ constructor(
         val (blur, zoomOutFromShadeRadius) = computeBlurAndZoomOut()
         zoomOutCalculatedFromShadeRadius = zoomOutFromShadeRadius
         if (Flags.bouncerUiRevamp() || Flags.glanceableHubBlurredBackground()) {
-            updateScheduled =
-                windowRootViewBlurInteractor.requestBlurForShade(blur, shouldBlurBeOpaque)
+            if (windowRootViewBlurInteractor.isBlurCurrentlySupported.value) {
+                updateScheduled =
+                    windowRootViewBlurInteractor.requestBlurForShade(blur, shouldBlurBeOpaque)
+                return
+            }
+            // When blur is not supported, zoom out still needs to happen when scheduleUpdate
+            // is invoked and a separate frame callback has to be wired-up to support that.
+            if (!updateScheduled) {
+                updateScheduled = true
+                choreographer.postFrameCallback(applyZoomOutForFrame)
+            }
             return
         }
         if (updateScheduled) {

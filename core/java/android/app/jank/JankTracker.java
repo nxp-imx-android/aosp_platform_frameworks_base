@@ -143,6 +143,13 @@ public class JankTracker {
      * stats
      */
     public void mergeAppJankStats(AppJankStats appJankStats) {
+        if (appJankStats.getUid() != mAppUid) {
+            if (DEBUG) {
+                Log.d(DEBUG_KEY, "Reported JankStats AppUID does not match AppUID of "
+                        + "enclosing activity.");
+            }
+            return;
+        }
         getHandler().post(new Runnable() {
             @Override
             public void run() {

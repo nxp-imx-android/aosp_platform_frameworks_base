@@ -19,12 +19,17 @@ package com.android.systemui.clipboardoverlay
 import android.content.ClipData
 import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.text.SpannableString
 import androidx.test.filters.SmallTest
 import androidx.test.runner.AndroidJUnit4
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
+import com.android.systemui.util.mockito.eq
+import com.android.systemui.util.mockito.mock
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -33,6 +38,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -40,8 +47,10 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     private val scheduler = TestCoroutineScheduler()
     private val mainDispatcher = UnconfinedTestDispatcher(scheduler)
     private val testScope = TestScope(mainDispatcher)
+    val packageManager = mock<PackageManager>()
 
-    val creator = ActionIntentCreator(testScope.backgroundScope)
+    val creator =
+        ActionIntentCreator(context, packageManager, testScope.backgroundScope, mainDispatcher)
 
     @Test
     fun test_getTextEditorIntent() {
@@ -73,7 +82,7 @@ class ActionIntentCreatorTest : SysuiTestCase() {
     }
 
     @Test
-    fun test_getImageEditIntent() = runTest {
+    fun test_getImageEditIntent_noDefault() = runTest {
         context.getOrCreateTestableResources().addOverride(R.string.config_screenshotEditor, "")
         val fakeUri = Uri.parse("content://foo")
         var intent = creator.getImageEditIntent(fakeUri, context)
@@ -83,15 +92,79 @@ class ActionIntentCreatorTest : SysuiTestCase() {
         assertEquals(null, intent.component)
         assertEquals("clipboard", intent.getStringExtra("edit_source"))
         assertFlags(intent, EXTERNAL_INTENT_FLAGS)
+    }
 
-        // try again with an editor component
+    @Test
+    fun test_getImageEditIntent_defaultProvided() = runTest {
+        val fakeUri = Uri.parse("content://foo")
+
         val fakeComponent =
             ComponentName("com.android.remotecopy", "com.android.remotecopy.RemoteCopyActivity")
         context
             .getOrCreateTestableResources()
             .addOverride(R.string.config_screenshotEditor, fakeComponent.flattenToString())
-        intent = creator.getImageEditIntent(fakeUri, context)
+        val intent = creator.getImageEditIntent(fakeUri, context)
         assertEquals(fakeComponent, intent.component)
+    }
+
+    @Test
+    fun test_getImageEditIntent_preferredProvidedButDisabled() = runTest {
+        val fakeUri = Uri.parse("content://foo")
+
+        val defaultComponent = ComponentName("com.android.foo", "com.android.foo.Something")
+        val preferredComponent = ComponentName("com.android.bar", "com.android.bar.Something")
+
+        val packageInfo =
+            PackageInfo().apply {
+                activities = arrayOf() // no activities
+            }
+        whenever(packageManager.getPackageInfo(eq(preferredComponent.packageName), anyInt()))
+            .thenReturn(packageInfo)
+
+        context
+            .getOrCreateTestableResources()
+            .addOverride(R.string.config_screenshotEditor, defaultComponent.flattenToString())
+        context
+            .getOrCreateTestableResources()
+            .addOverride(
+                R.string.config_preferredScreenshotEditor,
+                preferredComponent.flattenToString(),
+            )
+        val intent = creator.getImageEditIntent(fakeUri, context)
+        assertEquals(defaultComponent, intent.component)
+    }
+
+    @Test
+    fun test_getImageEditIntent_preferredProvided() = runTest {
+        val fakeUri = Uri.parse("content://foo")
+
+        val defaultComponent = ComponentName("com.android.foo", "com.android.foo.Something")
+        val preferredComponent = ComponentName("com.android.bar", "com.android.bar.Something")
+
+        val packageInfo =
+            PackageInfo().apply {
+                activities =
+                    arrayOf(
+                        ActivityInfo().apply {
+                            packageName = preferredComponent.packageName
+                            name = preferredComponent.className
+                        }
+                    )
+            }
+        whenever(packageManager.getPackageInfo(eq(preferredComponent.packageName), anyInt()))
+            .thenReturn(packageInfo)
+
+        context
+            .getOrCreateTestableResources()
+            .addOverride(R.string.config_screenshotEditor, defaultComponent.flattenToString())
+        context
+            .getOrCreateTestableResources()
+            .addOverride(
+                R.string.config_preferredScreenshotEditor,
+                preferredComponent.flattenToString(),
+            )
+        val intent = creator.getImageEditIntent(fakeUri, context)
+        assertEquals(preferredComponent, intent.component)
     }
 
     @Test

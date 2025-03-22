@@ -18,9 +18,11 @@ package com.android.systemui.statusbar.pipeline.mobile.ui.binder
 
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.systemui.Flags
 import com.android.systemui.kairos.ExperimentalKairosApi
@@ -48,7 +50,7 @@ object StackedMobileIconBinder {
         return SingleBindableStatusBarComposeIconView.withDefaultBinding(
             view = view,
             shouldBeVisible = { mobileIconsViewModel.isStackable.value },
-        ) { _, tint ->
+        ) { _, tintFlow ->
             view.repeatWhenAttached {
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     view.composeView.apply {
@@ -66,8 +68,9 @@ object StackedMobileIconBinder {
                                         viewModelFactory.create()
                                     }
                                 }
+                            val tint by tintFlow.collectAsStateWithLifecycle()
                             if (viewModel.isIconVisible) {
-                                CompositionLocalProvider(LocalContentColor provides Color(tint())) {
+                                CompositionLocalProvider(LocalContentColor provides Color(tint)) {
                                     StackedMobileIcon(viewModel)
                                 }
                             }

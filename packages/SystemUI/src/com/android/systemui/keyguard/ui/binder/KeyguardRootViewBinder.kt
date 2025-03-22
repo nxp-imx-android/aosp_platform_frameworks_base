@@ -193,7 +193,6 @@ object KeyguardRootViewBinder {
                             childViews[largeClockId]?.translationY = y
                             if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                                 childViews[largeClockDateId]?.translationY = y
-                                childViews[largeClockWeatherId]?.translationY = y
                             }
                             childViews[aodPromotedNotificationId]?.translationY = y
                             childViews[aodNotificationIconContainerId]?.translationY = y
@@ -584,7 +583,6 @@ object KeyguardRootViewBinder {
     private val aodNotificationIconContainerId = R.id.aod_notification_icon_container
     private val largeClockId = customR.id.lockscreen_clock_view_large
     private val largeClockDateId = sharedR.id.date_smartspace_view_large
-    private val largeClockWeatherId = sharedR.id.weather_smartspace_view_large
     private val smallClockId = customR.id.lockscreen_clock_view
     private val indicationArea = R.id.keyguard_indication_area
     private val startButton = R.id.start_button

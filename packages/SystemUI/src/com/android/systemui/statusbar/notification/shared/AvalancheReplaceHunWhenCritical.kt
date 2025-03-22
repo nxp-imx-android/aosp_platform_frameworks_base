@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.notification.promoted
+package com.android.systemui.statusbar.notification.shared
 
 import com.android.systemui.Flags
 import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
 
-/** Helper for reading or using the expanded ui rich ongoing flag state. */
+/** Helper for reading or using the avalanche replace Hun when critical flag state. */
 @Suppress("NOTHING_TO_INLINE")
-object PromotedNotificationUiForceExpanded {
+object AvalancheReplaceHunWhenCritical {
     /** The aconfig flag name */
-    const val FLAG_NAME = Flags.FLAG_UI_RICH_ONGOING_FORCE_EXPANDED
+    const val FLAG_NAME = Flags.FLAG_AVALANCHE_REPLACE_HUN_WHEN_CRITICAL
 
     /** A token used for dependency declaration */
     val token: FlagToken
@@ -33,7 +33,7 @@ object PromotedNotificationUiForceExpanded {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.uiRichOngoingForceExpanded()
+        get() = Flags.avalancheReplaceHunWhenCritical()
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
@@ -43,16 +43,6 @@ object PromotedNotificationUiForceExpanded {
     @JvmStatic
     inline fun isUnexpectedlyInLegacyMode() =
         RefactorFlagUtils.isUnexpectedlyInLegacyMode(isEnabled, FLAG_NAME)
-
-    /**
-     * Called to ensure code is only run when the flag is enabled. This will throw an exception if
-     * the flag is not enabled to ensure that the refactor author catches issues in testing.
-     * Caution!! Using this check incorrectly will cause crashes in nextfood builds!
-     */
-    @JvmStatic
-    @Deprecated("Avoid crashing.", ReplaceWith("if (this.isUnexpectedlyInLegacyMode()) return"))
-    inline fun unsafeAssertInNewMode() =
-        RefactorFlagUtils.unsafeAssertInNewMode(isEnabled, FLAG_NAME)
 
     /**
      * Called to ensure code is only run when the flag is disabled. This will throw an exception if

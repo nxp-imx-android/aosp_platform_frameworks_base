@@ -52,7 +52,7 @@ abstract class SwitchAppByDoubleTapDividerBenchmark(override val flicker: Legacy
                 )
             }
             transitions {
-                SplitScreenUtils.doubleTapDividerToSwitch(device)
+                SplitScreenUtils.doubleTapDividerToSwitch(device, instrumentation.uiAutomation)
                 wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
                 waitForLayersToSwitch(wmHelper)

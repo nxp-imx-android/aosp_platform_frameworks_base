@@ -31,7 +31,7 @@ import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.promoted.AODPromotedNotification
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationLogger
-import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUiAod
+import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.promoted.ui.viewmodel.AODPromotedNotificationViewModel
 import javax.inject.Inject
 
@@ -50,7 +50,7 @@ constructor(
     }
 
     override fun addViews(constraintLayout: ConstraintLayout) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 
@@ -67,7 +67,7 @@ constructor(
     }
 
     override fun bindData(constraintLayout: ConstraintLayout) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 
@@ -79,7 +79,7 @@ constructor(
     }
 
     override fun applyConstraints(constraintSet: ConstraintSet) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 
@@ -119,7 +119,7 @@ constructor(
     }
 
     override fun removeViews(constraintLayout: ConstraintLayout) {
-        if (!PromotedNotificationUiAod.isEnabled) {
+        if (!PromotedNotificationUi.isEnabled) {
             return
         }
 

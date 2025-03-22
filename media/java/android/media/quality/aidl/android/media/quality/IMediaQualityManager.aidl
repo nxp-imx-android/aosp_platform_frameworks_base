@@ -47,7 +47,7 @@ interface IMediaQualityManager {
     void setPictureProfileAllowList(in List<String> packages, int userId);
     List<PictureProfileHandle> getPictureProfileHandle(in String[] id, int userId);
 
-    SoundProfile createSoundProfile(in SoundProfile pp, int userId);
+    void createSoundProfile(in SoundProfile pp, int userId);
     void updateSoundProfile(in String id, in SoundProfile pp, int userId);
     void removeSoundProfile(in String id, int userId);
     boolean setDefaultSoundProfile(in String id, int userId);

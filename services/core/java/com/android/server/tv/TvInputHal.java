@@ -67,6 +67,8 @@ final class TvInputHal implements Handler.Callback {
     private static native void nativeClose(long ptr);
     private static native int nativeSetTvMessageEnabled(long ptr, int deviceId, int streamId,
             int type, boolean enabled);
+    private static native int nativeSetPictureProfile(
+            long ptr, int deviceId, int streamId, long profileHandle);
 
     private final Object mLock = new Object();
     private long mPtr = 0;

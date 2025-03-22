@@ -2926,6 +2926,12 @@ static void nativeReloadDeviceAliases(JNIEnv* env, jobject nativeImplObj) {
             InputReaderConfiguration::Change::DEVICE_ALIAS);
 }
 
+static jstring nativeGetSysfsRootPath(JNIEnv* env, jobject nativeImplObj, jint deviceId) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    const auto path = im->getInputManager()->getReader().getSysfsRootPath(deviceId);
+    return path.empty() ? nullptr : env->NewStringUTF(path.c_str());
+}
+
 static void nativeSysfsNodeChanged(JNIEnv* env, jobject nativeImplObj, jstring path) {
     ScopedUtfChars sysfsNodePathChars(env, path);
     const std::string sysfsNodePath = sysfsNodePathChars.c_str();
@@ -3388,6 +3394,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"getBatteryDevicePath", "(I)Ljava/lang/String;", (void*)nativeGetBatteryDevicePath},
         {"reloadKeyboardLayouts", "()V", (void*)nativeReloadKeyboardLayouts},
         {"reloadDeviceAliases", "()V", (void*)nativeReloadDeviceAliases},
+        {"getSysfsRootPath", "(I)Ljava/lang/String;", (void*)nativeGetSysfsRootPath},
         {"sysfsNodeChanged", "(Ljava/lang/String;)V", (void*)nativeSysfsNodeChanged},
         {"dump", "()Ljava/lang/String;", (void*)nativeDump},
         {"monitor", "()V", (void*)nativeMonitor},

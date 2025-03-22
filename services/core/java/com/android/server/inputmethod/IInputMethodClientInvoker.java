@@ -256,9 +256,11 @@ final class IInputMethodClientInvoker {
     @AnyThread
     private void setImeVisibilityInternal(boolean visible, @Nullable ImeTracker.Token statsToken) {
         try {
+            ImeTracker.forLogging().onProgress(statsToken, ImeTracker.PHASE_SERVER_CLIENT_INVOKER);
             mTarget.setImeVisibility(visible, statsToken);
         } catch (RemoteException e) {
             logRemoteException(e);
+            ImeTracker.forLogging().onFailed(statsToken, ImeTracker.PHASE_SERVER_CLIENT_INVOKER);
         }
     }
 

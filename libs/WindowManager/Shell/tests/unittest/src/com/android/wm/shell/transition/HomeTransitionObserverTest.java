@@ -88,6 +88,7 @@ public class HomeTransitionObserverTest extends ShellTestCase {
     private final ShellExecutor mAnimExecutor = new TestShellExecutor();
     private final TestShellExecutor mMainExecutor = new TestShellExecutor();
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private final Handler mAnimHandler = mock(Handler.class);
     private final DisplayController mDisplayController = mock(DisplayController.class);
     private final DisplayInsetsController mDisplayInsetsController =
             mock(DisplayInsetsController.class);
@@ -105,7 +106,7 @@ public class HomeTransitionObserverTest extends ShellTestCase {
                 mDisplayInsetsController, mock(ShellInit.class));
         mTransition = new Transitions(mContext, mock(ShellInit.class), mock(ShellController.class),
                 mOrganizer, mTransactionPool, mDisplayController, mDisplayInsetsController,
-                mMainExecutor, mMainHandler, mAnimExecutor, mHomeTransitionObserver,
+                mMainExecutor, mMainHandler, mAnimExecutor, mAnimHandler, mHomeTransitionObserver,
                 mock(FocusTransitionObserver.class));
         mHomeTransitionObserver.setHomeTransitionListener(mTransition, mListener);
     }

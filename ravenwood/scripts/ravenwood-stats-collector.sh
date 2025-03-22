@@ -114,7 +114,7 @@ collect_apis() {
 
 
 collect_stats $stats " (import it as 'ravenwood_stats')"
-collect_apis $apis " (import it as 'ravenwood_supported_apis')"
+collect_apis $apis " (import it as 'ravenwood_supported_apis2')"
 
 cp *keep_all.txt $keep_all_dir
 echo "Keep all files created at:"

@@ -167,6 +167,7 @@ public class StageCoordinatorTests extends ShellTestCase {
     private final TestShellExecutor mMainExecutor = new TestShellExecutor();
     private final ShellExecutor mAnimExecutor = new TestShellExecutor();
     private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private final Handler mAnimHandler = mock(Handler.class);
     private final DisplayAreaInfo mDisplayAreaInfo = new DisplayAreaInfo(new MockToken().token(),
             DEFAULT_DISPLAY, 0);
     private final ActivityManager.RunningTaskInfo mMainChildTaskInfo =
@@ -629,7 +630,7 @@ public class StageCoordinatorTests extends ShellTestCase {
         ShellInit shellInit = new ShellInit(mMainExecutor);
         final Transitions t = new Transitions(mContext, shellInit, mock(ShellController.class),
                 mTaskOrganizer, mTransactionPool, mock(DisplayController.class),
-                mDisplayInsetsController, mMainExecutor, mMainHandler, mAnimExecutor,
+                mDisplayInsetsController, mMainExecutor, mMainHandler, mAnimExecutor, mAnimHandler,
                 mock(HomeTransitionObserver.class), mock(FocusTransitionObserver.class));
         shellInit.init();
         return t;

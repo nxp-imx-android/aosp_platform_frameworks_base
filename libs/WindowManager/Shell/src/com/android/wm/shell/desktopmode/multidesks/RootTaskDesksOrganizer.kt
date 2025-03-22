@@ -54,6 +54,7 @@ class RootTaskDesksOrganizer(
         mutableListOf<CreateDeskMinimizationRootRequest>()
     @VisibleForTesting
     val deskMinimizationRootsByDeskId: MutableMap<Int, DeskMinimizationRoot> = mutableMapOf()
+    private var onTaskInfoChangedListener: ((RunningTaskInfo) -> Unit)? = null
 
     init {
         if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
@@ -213,6 +214,10 @@ class RootTaskDesksOrganizer(
             change.taskInfo?.isVisibleRequested == true &&
             change.mode == TRANSIT_TO_FRONT
 
+    override fun setOnDesktopTaskInfoChangedListener(listener: (RunningTaskInfo) -> Unit) {
+        onTaskInfoChangedListener = listener
+    }
+
     override fun onTaskAppeared(taskInfo: RunningTaskInfo, leash: SurfaceControl) {
         handleTaskAppeared(taskInfo, leash)
         updateLaunchAdjacentController()
@@ -220,6 +225,12 @@ class RootTaskDesksOrganizer(
 
     override fun onTaskInfoChanged(taskInfo: RunningTaskInfo) {
         handleTaskInfoChanged(taskInfo)
+        if (
+            taskInfo.taskId !in deskRootsByDeskId &&
+                deskMinimizationRootsByDeskId.values.none { it.rootId == taskInfo.taskId }
+        ) {
+            onTaskInfoChangedListener?.invoke(taskInfo)
+        }
         updateLaunchAdjacentController()
     }
 

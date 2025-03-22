@@ -408,7 +408,7 @@ public final class ApkAssets {
         Objects.requireNonNull(fileName, "fileName");
         synchronized (this) {
             long nativeXmlPtr = nativeOpenXml(mNativePtr, fileName);
-            try (XmlBlock block = new XmlBlock(null, nativeXmlPtr)) {
+            try (XmlBlock block = new XmlBlock(null, nativeXmlPtr, true)) {
                 XmlResourceParser parser = block.newParser();
                 // If nativeOpenXml doesn't throw, it will always return a valid native pointer,
                 // which makes newParser always return non-null. But let's be careful.

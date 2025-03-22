@@ -121,18 +121,22 @@ constructor(
             setAlpha(getNonTargetClockFace(clock).views, 0F)
 
             if (!keyguardClockViewModel.isLargeClockVisible.value) {
-                if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
+                if (
+                    KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(
+                        context.resources.configuration
+                    )
+                ) {
                     connect(
                         sharedR.id.bc_smartspace_view,
                         TOP,
-                        customR.id.lockscreen_clock_view,
+                        sharedR.id.date_smartspace_view,
                         BOTTOM,
                     )
                 } else {
                     connect(
                         sharedR.id.bc_smartspace_view,
                         TOP,
-                        sharedR.id.date_smartspace_view,
+                        customR.id.lockscreen_clock_view,
                         BOTTOM,
                     )
                 }
@@ -187,6 +191,8 @@ constructor(
         val guideline =
             if (keyguardClockViewModel.clockShouldBeCentered.value) PARENT_ID
             else R.id.split_shade_guideline
+        val dateWeatherBelowSmallClock =
+            KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(context.resources.configuration)
         constraints.apply {
             connect(customR.id.lockscreen_clock_view_large, START, PARENT_ID, START)
             connect(customR.id.lockscreen_clock_view_large, END, guideline, END)
@@ -254,17 +260,17 @@ constructor(
                         0
                     }
 
-            if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
-                clockInteractor.setNotificationStackDefaultTop(
-                    (smallClockBottom + marginBetweenSmartspaceAndNotification).toFloat()
-                )
-            } else {
+            if (dateWeatherBelowSmallClock) {
                 val dateWeatherSmartspaceHeight =
                     getDimen(context, DATE_WEATHER_VIEW_HEIGHT).toFloat()
                 clockInteractor.setNotificationStackDefaultTop(
                     smallClockBottom +
                         dateWeatherSmartspaceHeight +
                         marginBetweenSmartspaceAndNotification
+                )
+            } else {
+                clockInteractor.setNotificationStackDefaultTop(
+                    (smallClockBottom + marginBetweenSmartspaceAndNotification).toFloat()
                 )
             }
         }

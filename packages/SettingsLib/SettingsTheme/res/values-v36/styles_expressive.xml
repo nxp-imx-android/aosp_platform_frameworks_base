@@ -31,6 +31,17 @@
         <item name="trackTint">@color/settingslib_expressive_color_main_switch_track</item>
     </style>
 
+    <style name="SettingslibSpinnerStyle.Expressive"
+        parent="android:style/Widget.Material.Spinner">
+        <item name="android:background">@drawable/settingslib_expressive_spinner_background</item>
+        <item name="android:popupBackground">@drawable/settingslib_expressive_spinner_dropdown_background</item>
+        <item name="android:dropDownVerticalOffset">@dimen/settingslib_expressive_space_large3</item>
+    </style>
+
+    <style name="SettingslibSpinnerStyle.Expressive.Outlined">
+        <item name="android:background">@drawable/settingslib_expressive_spinner_background_outlined</item>
+    </style>
+
     <style name="EntityHeader">
         <item name="android:paddingTop">@dimen/settingslib_expressive_space_small4</item>
         <item name="android:paddingBottom">@dimen/settingslib_expressive_space_small1</item>

@@ -766,6 +766,7 @@ public abstract class WMShellBaseModule {
             @ShellMainThread ShellExecutor mainExecutor,
             @ShellMainThread Handler mainHandler,
             @ShellAnimationThread ShellExecutor animExecutor,
+            @ShellAnimationThread Handler animHandler,
             RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
             HomeTransitionObserver homeTransitionObserver,
             FocusTransitionObserver focusTransitionObserver) {
@@ -775,7 +776,7 @@ public abstract class WMShellBaseModule {
         }
         return new Transitions(context, shellInit, shellCommandHandler, shellController, organizer,
                 pool, displayController, displayInsetsController, mainExecutor, mainHandler,
-                animExecutor, rootTaskDisplayAreaOrganizer, homeTransitionObserver,
+                animExecutor, animHandler, rootTaskDisplayAreaOrganizer, homeTransitionObserver,
                 focusTransitionObserver);
     }
 

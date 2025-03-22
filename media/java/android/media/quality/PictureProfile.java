@@ -114,6 +114,18 @@ public final class PictureProfile implements Parcelable {
      */
     public static final int ERROR_NOT_ALLOWLISTED = 4;
 
+    /**
+     * SDR status.
+     * @hide
+     */
+    public static final String STATUS_SDR = "SDR";
+
+    /**
+     * HDR status.
+     * @hide
+     */
+    public static final String STATUS_HDR = "HDR";
+
 
     private PictureProfile(@NonNull Parcel in) {
         mId = in.readString();

@@ -386,6 +386,11 @@ constructor(
         }
     }
 
+    val swipeFromHubInLandscape: Flow<Boolean> = communalSceneInteractor.willRotateToPortrait
+
+    fun onOrientationChange(orientation: Int) =
+        communalSceneInteractor.setCommunalContainerOrientation(orientation)
+
     companion object {
         const val POPUP_AUTO_HIDE_TIMEOUT_MS = 12000L
     }

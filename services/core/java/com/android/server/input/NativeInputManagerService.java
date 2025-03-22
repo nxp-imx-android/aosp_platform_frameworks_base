@@ -272,6 +272,9 @@ interface NativeInputManagerService {
     /** Set whether showing a pointer icon for styluses is enabled. */
     void setStylusPointerIconEnabled(boolean enabled);
 
+    /** Get the sysfs root path of an input device if known, otherwise return null. */
+    @Nullable String getSysfsRootPath(int deviceId);
+
     /**
      * Report sysfs node changes. This may result in recreation of the corresponding InputDevice.
      * The recreated device may contain new associated peripheral devices like Light, Battery, etc.
@@ -617,6 +620,9 @@ interface NativeInputManagerService {
 
         @Override
         public native void setStylusPointerIconEnabled(boolean enabled);
+
+        @Override
+        public native String getSysfsRootPath(int deviceId);
 
         @Override
         public native void sysfsNodeChanged(String sysfsNodePath);

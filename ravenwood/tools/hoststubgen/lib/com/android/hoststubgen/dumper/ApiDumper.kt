@@ -20,6 +20,8 @@ import com.android.hoststubgen.asm.CTOR_NAME
 import com.android.hoststubgen.asm.ClassNodes
 import com.android.hoststubgen.asm.getClassNameFromFullClassName
 import com.android.hoststubgen.asm.getPackageNameFromFullClassName
+import com.android.hoststubgen.asm.isAbstract
+import com.android.hoststubgen.asm.isPublic
 import com.android.hoststubgen.asm.toHumanReadableClassName
 import com.android.hoststubgen.csvEscape
 import com.android.hoststubgen.filters.FilterPolicy
@@ -27,8 +29,8 @@ import com.android.hoststubgen.filters.FilterPolicyWithReason
 import com.android.hoststubgen.filters.OutputFilter
 import com.android.hoststubgen.filters.StatsLabel
 import com.android.hoststubgen.log
-import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.MethodNode
 import java.io.PrintWriter
 
 /**
@@ -45,19 +47,14 @@ class ApiDumper(
         val descriptor: String,
     )
 
-    private val javaStandardApiPolicy = FilterPolicy.Keep.withReason(
-        "Java standard API",
-        StatsLabel.Supported,
-    )
-
     private val shownMethods = mutableSetOf<MethodKey>()
 
     /**
      * Do the dump.
      */
     fun dump() {
-        pw.printf("PackageName,ClassName,FromSubclass,DeclareClass,MethodName,MethodDesc" +
-                ",Supported,Policy,Reason,SupportedLabel\n")
+        pw.printf("PackageName,ClassName,Inherited,DeclareClass,MethodName,MethodDesc" +
+                ",Supported,Policy,Reason,Boring\n")
 
         classes.forEach { classNode ->
             shownMethods.clear()
@@ -72,32 +69,21 @@ class ApiDumper(
         methodClassName: String,
         methodName: String,
         methodDesc: String,
-        classPolicy: FilterPolicyWithReason,
+        computedMethodLabel: StatsLabel,
         methodPolicy: FilterPolicyWithReason,
     ) {
-        if (methodPolicy.statsLabel == StatsLabel.Ignored) {
-            return
-        }
-        // Label hack -- if the method is supported, but the class is boring, then the
-        // method is boring too.
-        var methodLabel = methodPolicy.statsLabel
-        if (methodLabel == StatsLabel.SupportedButBoring
-            && classPolicy.statsLabel == StatsLabel.SupportedButBoring) {
-            methodLabel = classPolicy.statsLabel
-        }
-
         pw.printf(
-            "%s,%s,%d,%s,%s,%s,%d,%s,%s,%s\n",
+            "%s,%s,%d,%s,%s,%s,%d,%s,%s,%d\n",
             csvEscape(classPackage),
             csvEscape(className),
             if (isSuperClass) { 1 } else { 0 },
             csvEscape(methodClassName),
             csvEscape(methodName),
-            csvEscape(methodDesc),
-            methodLabel.statValue,
+            csvEscape(methodName + methodDesc),
+            if (computedMethodLabel.isSupported) { 1 } else { 0 },
             methodPolicy.policy,
             csvEscape(methodPolicy.reason),
-            methodLabel,
+            if (computedMethodLabel == StatsLabel.SupportedButBoring) { 1 } else { 0 },
         )
     }
 
@@ -111,6 +97,42 @@ class ApiDumper(
         return false
     }
 
+    private fun getClassLabel(cn: ClassNode, classPolicy: FilterPolicyWithReason): StatsLabel {
+        if (!classPolicy.statsLabel.isSupported) {
+            return classPolicy.statsLabel
+        }
+        if (cn.name.endsWith("Proto")
+            || cn.name.endsWith("ProtoEnums")
+            || cn.name.endsWith("LogTags")
+            || cn.name.endsWith("StatsLog")) {
+            return StatsLabel.SupportedButBoring
+        }
+
+        return classPolicy.statsLabel
+    }
+
+    private fun resolveMethodLabel(
+        mn: MethodNode,
+        methodPolicy: FilterPolicyWithReason,
+        classLabel: StatsLabel,
+    ): StatsLabel {
+        // Class label will override the method label
+        if (!classLabel.isSupported) {
+            return classLabel
+        }
+        // If method isn't supported, just use it as-is.
+        if (!methodPolicy.statsLabel.isSupported) {
+            return methodPolicy.statsLabel
+        }
+
+        // Use heuristics to override the label.
+        if (!mn.isPublic() || mn.isAbstract()) {
+            return StatsLabel.SupportedButBoring
+        }
+
+        return methodPolicy.statsLabel
+    }
+
     private fun dump(
         dumpClass: ClassNode,
         methodClass: ClassNode,
@@ -120,9 +142,11 @@ class ApiDumper(
             return
         }
         log.d("Class ${dumpClass.name} -- policy $classPolicy")
+        val classLabel = getClassLabel(dumpClass, classPolicy)
 
-        val pkg = getPackageNameFromFullClassName(dumpClass.name).toHumanReadableClassName()
-        val cls = getClassNameFromFullClassName(dumpClass.name).toHumanReadableClassName()
+        val humanReadableClassName = dumpClass.name.toHumanReadableClassName()
+        val pkg = getPackageNameFromFullClassName(humanReadableClassName)
+        val cls = getClassNameFromFullClassName(humanReadableClassName)
 
         val isSuperClass = dumpClass != methodClass
 
@@ -150,8 +174,12 @@ class ApiDumper(
 
             val renameTo = filter.getRenameTo(methodClass.name, method.name, method.desc)
 
-            dumpMethod(pkg, cls, isSuperClass, methodClass.name.toHumanReadableClassName(),
-                renameTo ?: method.name, method.desc, classPolicy, methodPolicy)
+            val methodLabel = resolveMethodLabel(method, methodPolicy, classLabel)
+
+            if (methodLabel != StatsLabel.Ignored) {
+                dumpMethod(pkg, cls, isSuperClass, methodClass.name.toHumanReadableClassName(),
+                    renameTo ?: method.name, method.desc, methodLabel, methodPolicy)
+            }
        }
 
         // Dump super class methods.
@@ -178,51 +206,6 @@ class ApiDumper(
             dump(dumpClass, methodClass)
             return
         }
-
-        // Dump overriding methods from Java standard classes, except for the Object methods,
-        // which are obvious.
-        if (methodClassName.startsWith("java/") || methodClassName.startsWith("javax/")) {
-            if (methodClassName != "java/lang/Object") {
-               dumpStandardClass(dumpClass, methodClassName)
-            }
-            return
-        }
         log.w("Super class or interface $methodClassName (used by ${dumpClass.name}) not found.")
-    }
-
-    /**
-     * Dump methods from Java standard classes.
-     */
-    private fun dumpStandardClass(
-        dumpClass: ClassNode,
-        methodClassName: String,
-    ) {
-        val pkg = getPackageNameFromFullClassName(dumpClass.name).toHumanReadableClassName()
-        val cls = getClassNameFromFullClassName(dumpClass.name).toHumanReadableClassName()
-
-        val methodClassName = methodClassName.toHumanReadableClassName()
-
-        try {
-            val clazz = Class.forName(methodClassName)
-
-            // Method.getMethods() returns only public methods, but with inherited ones.
-            // Method.getDeclaredMethods() returns private methods too, but no inherited methods.
-            //
-            // Since we're only interested in public ones, just use getMethods().
-            clazz.methods.forEach { method ->
-                val methodName = method.name
-                val methodDesc = Type.getMethodDescriptor(method)
-
-                // If we already printed the method from a subclass, don't print it.
-                if (shownAlready(methodName, methodDesc)) {
-                    return@forEach
-                }
-
-                dumpMethod(pkg, cls, true, methodClassName,
-                    methodName, methodDesc, javaStandardApiPolicy, javaStandardApiPolicy)
-            }
-        } catch (e: ClassNotFoundException) {
-            log.w("JVM type $methodClassName (used by ${dumpClass.name}) not found.")
-        }
     }
 }

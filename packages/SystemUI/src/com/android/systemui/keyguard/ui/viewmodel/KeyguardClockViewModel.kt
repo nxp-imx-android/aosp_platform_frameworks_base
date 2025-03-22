@@ -180,6 +180,9 @@ constructor(
     val largeClockTextSize: Flow<Int> =
         configurationInteractor.dimensionPixelSize(customR.dimen.large_clock_text_size)
 
+    fun dateWeatherBelowSmallClock() =
+        KeyguardSmartspaceViewModel.dateWeatherBelowSmallClock(context.resources.configuration)
+
     enum class ClockLayout {
         LARGE_CLOCK,
         SMALL_CLOCK,

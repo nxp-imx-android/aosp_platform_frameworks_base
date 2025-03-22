@@ -16,6 +16,7 @@
 
 package com.android.systemui.communal.domain.interactor
 
+import android.content.res.Configuration
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
@@ -32,6 +33,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.pairwiseBy
 import javax.inject.Inject
@@ -58,6 +60,7 @@ constructor(
     private val repository: CommunalSceneRepository,
     private val logger: CommunalSceneLogger,
     private val sceneInteractor: SceneInteractor,
+    private val keyguardStateController: KeyguardStateController,
 ) {
     private val _isLaunchingWidget = MutableStateFlow(false)
 
@@ -66,6 +69,30 @@ constructor(
 
     fun setIsLaunchingWidget(launching: Boolean) {
         _isLaunchingWidget.value = launching
+    }
+
+    /**
+     * Whether screen will be rotated to portrait if transitioned out of hub to keyguard screens.
+     */
+    var willRotateToPortrait: Flow<Boolean> =
+        repository.communalContainerOrientation
+            .map {
+                it == Configuration.ORIENTATION_LANDSCAPE &&
+                    !keyguardStateController.isKeyguardScreenRotationAllowed()
+            }
+            .distinctUntilChanged()
+
+    /** Whether communal container is rotated to portrait. Emits an initial value of false. */
+    val rotatedToPortrait: StateFlow<Boolean> =
+        repository.communalContainerOrientation
+            .pairwiseBy(initialValue = false) { old, new ->
+                old == Configuration.ORIENTATION_LANDSCAPE &&
+                    new == Configuration.ORIENTATION_PORTRAIT
+            }
+            .stateIn(applicationScope, SharingStarted.Eagerly, false)
+
+    fun setCommunalContainerOrientation(orientation: Int) {
+        repository.setCommunalContainerOrientation(orientation)
     }
 
     fun interface OnSceneAboutToChangeListener {

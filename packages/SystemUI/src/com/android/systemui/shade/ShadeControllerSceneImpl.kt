@@ -101,6 +101,7 @@ constructor(
         shadeInteractor.collapseQuickSettingsShade(
             loggingReason = "ShadeControllerSceneImpl.instantCollapseShade",
             transitionKey = Instant,
+            bypassNotificationsShade = true,
         )
     }
 

@@ -3253,9 +3253,24 @@ public class Notification implements Parcelable
      * @hide
      */
     public boolean hasTitle() {
-        return extras != null
-                && (!TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE))
-                || !TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE_BIG)));
+        if (extras == null) {
+            return false;
+        }
+        // CallStyle notifications only use the other person's name as the title.
+        if (isStyle(CallStyle.class)) {
+            Person person = extras.getParcelable(EXTRA_CALL_PERSON, Person.class);
+            return person != null && !TextUtils.isEmpty(person.getName());
+        }
+        // non-CallStyle notifications can use EXTRA_TITLE
+        if (!TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE))) {
+            return true;
+        }
+        // BigTextStyle notifications first use EXTRA_TITLE_BIG
+        if (isStyle(BigTextStyle.class)) {
+            return !TextUtils.isEmpty(extras.getCharSequence(EXTRA_TITLE_BIG));
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -3280,12 +3295,23 @@ public class Notification implements Parcelable
      */
     @FlaggedApi(Flags.FLAG_API_RICH_ONGOING)
     public boolean hasPromotableCharacteristics() {
-        return isColorizedRequested()
-                && isOngoingEvent()
-                && hasTitle()
-                && !isGroupSummary()
-                && !containsCustomViews()
-                && hasPromotableStyle();
+        if (!isOngoingEvent() || isGroupSummary() || containsCustomViews() || !hasTitle()) {
+            return false;
+        }
+        // Only "Ongoing CallStyle" notifications are promotable without EXTRA_COLORIZED
+        if (isOngoingCallStyle()) {
+            return true;
+        }
+        return isColorizedRequested() && hasPromotableStyle();
+    }
+
+    /** Returns whether the notification is CallStyle.forOngoingCall(). */
+    private boolean isOngoingCallStyle() {
+        if (!isStyle(CallStyle.class)) {
+            return false;
+        }
+        int callType = extras.getInt(EXTRA_CALL_TYPE, CallStyle.CALL_TYPE_UNKNOWN);
+        return callType == CallStyle.CALL_TYPE_ONGOING;
     }
 
     /**
@@ -6096,6 +6122,21 @@ public class Notification implements Parcelable
             return mColors;
         }
 
+        private void updateHeaderBackgroundColor(RemoteViews contentView,
+                StandardTemplateParams p) {
+            if (!Flags.uiRichOngoing()) {
+                return;
+            }
+            if (isBackgroundColorized(p)) {
+                contentView.setInt(R.id.notification_header, "setBackgroundColor",
+                        getBackgroundColor(p));
+            } else {
+                // Clear it!
+                contentView.setInt(R.id.notification_header, "setBackgroundResource",
+                        0);
+            }
+        }
+
         private void updateBackgroundColor(RemoteViews contentView,
                 StandardTemplateParams p) {
             if (isBackgroundColorized(p)) {
@@ -6900,7 +6941,7 @@ public class Notification implements Parcelable
          * @hide
          */
         public RemoteViews makeNotificationGroupHeader() {
-            return makeNotificationHeader(mParams.reset()
+            return makeNotificationHeader(mParams.reset().disallowColorization()
                     .viewType(StandardTemplateParams.VIEW_TYPE_GROUP_HEADER)
                     .fillTextsFrom(this));
         }
@@ -6912,12 +6953,11 @@ public class Notification implements Parcelable
          * @param p the template params to inflate this with
          */
         private RemoteViews makeNotificationHeader(StandardTemplateParams p) {
-            // Headers on their own are never colorized
-            p.disallowColorization();
             RemoteViews header = new BuilderRemoteViews(mContext.getApplicationInfo(),
                     getHeaderLayoutResource());
             resetNotificationHeader(header);
             bindNotificationHeader(header, p);
+            updateHeaderBackgroundColor(header, p);
             if (Flags.notificationsRedesignTemplates()
                     && (p.mViewType == StandardTemplateParams.VIEW_TYPE_MINIMIZED
                     || p.mViewType == StandardTemplateParams.VIEW_TYPE_PUBLIC)) {
@@ -7041,6 +7081,10 @@ public class Notification implements Parcelable
                     savedBundle.getBoolean(EXTRA_SHOW_CHRONOMETER));
             publicExtras.putBoolean(EXTRA_CHRONOMETER_COUNT_DOWN,
                     savedBundle.getBoolean(EXTRA_CHRONOMETER_COUNT_DOWN));
+            if (mN.isPromotedOngoing()) {
+                publicExtras.putBoolean(EXTRA_COLORIZED,
+                        savedBundle.getBoolean(EXTRA_COLORIZED));
+            }
             String appName = savedBundle.getString(EXTRA_SUBSTITUTE_APP_NAME);
             if (appName != null) {
                 publicExtras.putString(EXTRA_SUBSTITUTE_APP_NAME, appName);
@@ -7052,6 +7096,9 @@ public class Notification implements Parcelable
                     .fillTextsFrom(this);
             if (isLowPriority) {
                 params.highlightExpander(false);
+            }
+            if (!mN.isPromotedOngoing()) {
+                params.disallowColorization();
             }
             view = makeNotificationHeader(params);
             view.setBoolean(R.id.notification_header, "setExpandOnlyOnButton", true);
@@ -7072,7 +7119,7 @@ public class Notification implements Parcelable
          * @hide
          */
         public RemoteViews makeLowPriorityContentView(boolean useRegularSubtext) {
-            StandardTemplateParams p = mParams.reset()
+            StandardTemplateParams p = mParams.reset().disallowColorization()
                     .viewType(StandardTemplateParams.VIEW_TYPE_MINIMIZED)
                     .highlightExpander(false)
                     .fillTextsFrom(this);

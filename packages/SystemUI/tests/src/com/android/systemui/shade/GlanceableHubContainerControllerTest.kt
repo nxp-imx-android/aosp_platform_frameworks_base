@@ -49,6 +49,7 @@ import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.ui.compose.CommunalContent
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.util.CommunalColors
+import com.android.systemui.communal.util.userTouchActivityNotifier
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepository
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
@@ -64,6 +65,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.media.controls.controller.keyguardMediaController
+import com.android.systemui.power.data.repository.fakePowerRepository
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.sceneDataSourceDelegator
 import com.android.systemui.shade.domain.interactor.shadeInteractor
@@ -137,6 +139,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                 notificationStackScrollLayoutController,
                 keyguardMediaController,
                 lockscreenSmartspaceController,
+                userTouchActivityNotifier,
                 logcatLogBuffer("GlanceableHubContainerControllerTest"),
                 kosmos.userActivityNotifier,
             )
@@ -178,6 +181,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     notificationStackScrollLayoutController,
                     keyguardMediaController,
                     lockscreenSmartspaceController,
+                    userTouchActivityNotifier,
                     logcatLogBuffer("GlanceableHubContainerControllerTest"),
                     kosmos.userActivityNotifier,
                 )
@@ -208,6 +212,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     notificationStackScrollLayoutController,
                     keyguardMediaController,
                     lockscreenSmartspaceController,
+                    userTouchActivityNotifier,
                     logcatLogBuffer("GlanceableHubContainerControllerTest"),
                     kosmos.userActivityNotifier,
                 )
@@ -234,6 +239,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
                     notificationStackScrollLayoutController,
                     keyguardMediaController,
                     lockscreenSmartspaceController,
+                    userTouchActivityNotifier,
                     logcatLogBuffer("GlanceableHubContainerControllerTest"),
                     kosmos.userActivityNotifier,
                 )
@@ -536,6 +542,18 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             verify(containerView).onTouchEvent(DOWN_EVENT)
             assertThat(underTest.onTouchEvent(UP_EVENT)).isTrue()
             verify(containerView).onTouchEvent(UP_EVENT)
+        }
+
+    @Test
+    fun onTouchEvent_touchHandled_notifyUserActivity() =
+        kosmos.runTest {
+            // Communal is open.
+            goToScene(CommunalScenes.Communal)
+
+            // Touch event is sent to the container view.
+            assertThat(underTest.onTouchEvent(DOWN_EVENT)).isTrue()
+            verify(containerView).onTouchEvent(DOWN_EVENT)
+            assertThat(fakePowerRepository.userTouchRegistered).isTrue()
         }
 
     @Test

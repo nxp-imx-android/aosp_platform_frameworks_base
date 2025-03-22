@@ -309,24 +309,6 @@ public class NotificationEntryTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    public void isPromotedOngoing_uiFlagOnAndNotifHasFlag_true() {
-        mEntry.getSbn().getNotification().flags |= FLAG_PROMOTED_ONGOING;
-
-        assertTrue(mEntry.isPromotedOngoing());
-    }
-
-    @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    public void isPromotedOngoing_statusBarNotifChipsFlagOnAndNotifHasFlag_true() {
-        mEntry.getSbn().getNotification().flags |= FLAG_PROMOTED_ONGOING;
-
-        assertTrue(mEntry.isPromotedOngoing());
-    }
-
-    @Test
     public void testIsNotificationVisibilityPrivate_true() {
         assertTrue(mEntry.isNotificationVisibilityPrivate());
     }

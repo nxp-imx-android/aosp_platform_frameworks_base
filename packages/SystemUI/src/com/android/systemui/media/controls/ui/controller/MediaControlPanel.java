@@ -399,7 +399,9 @@ public class MediaControlPanel {
     }
 
     private void setSeekbarContentDescription(CharSequence elapsedTime, CharSequence duration) {
-        mSeekBarObserver.updateContentDescription(elapsedTime, duration);
+        mMainExecutor.execute(() -> {
+            mSeekBarObserver.updateContentDescription(elapsedTime, duration);
+        });
     }
 
     /**

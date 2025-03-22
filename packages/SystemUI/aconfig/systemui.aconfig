@@ -512,13 +512,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_notification_chips"
-    namespace: "systemui"
-    description: "Show promoted ongoing notifications as chips in the status bar"
-    bug: "364653005"
-}
-
-flag {
     name: "status_bar_popup_chips"
     namespace: "systemui"
     description: "Show rich ongoing processes as chips in the status bar"
@@ -601,6 +594,16 @@ flag {
    namespace: "systemui"
    description: "Fix for the face scanning animation NPE"
    bug: "392032258"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
+   name: "avalanche_replace_hun_when_critical"
+   namespace: "systemui"
+   description: "Fix for replacing a sticky HUN when a critical HUN posted"
+   bug: "403301297"
    metadata {
        purpose: PURPOSE_BUGFIX
    }
@@ -2038,13 +2041,6 @@ flag {
 }
 
 flag {
-    name: "ui_rich_ongoing_force_expanded"
-    namespace: "systemui"
-    description: "Force promoted notifications to always be expanded"
-    bug: "380901479"
-}
-
-flag {
   name: "permission_helper_ui_rich_ongoing"
   namespace: "systemui"
   description: "[RONs] Guards inline permission helper for demoting RONs [Guts/card version]"
@@ -2056,13 +2052,6 @@ flag {
   namespace: "systemui"
   description: "[RONs] Guards inline permission helper for demoting RONs [Inline version]"
   bug: "379186372"
-}
-
-flag {
-    name: "aod_ui_rich_ongoing"
-    namespace: "systemui"
-    description: "Show a rich ongoing notification on the always-on display (depends on ui_rich_ongoing)"
-    bug: "369151941"
 }
 
 flag {

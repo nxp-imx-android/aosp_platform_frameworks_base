@@ -132,7 +132,11 @@ fun ChipContent(viewModel: OngoingActivityChipModel.Active, modifier: Modifier =
         }
 
         is OngoingActivityChipModel.Active.ShortTimeDelta -> {
-            val timeRemainingState = rememberTimeRemainingState(futureTimeMillis = viewModel.time)
+            val timeRemainingState =
+                rememberTimeRemainingState(
+                    futureTimeMillis = viewModel.time,
+                    timeSource = viewModel.timeSource,
+                )
 
             timeRemainingState.timeRemainingData?.let {
                 val text = formatTimeRemainingData(it)

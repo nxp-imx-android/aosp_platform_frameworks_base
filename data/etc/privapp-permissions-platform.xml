@@ -424,7 +424,7 @@ applications that come with the platform
         <permission name="android.permission.REQUEST_COMPANION_PROFILE_APP_STREAMING" />
         <permission name="android.permission.REQUEST_COMPANION_PROFILE_WATCH" />
         <permission name="android.permission.REQUEST_COMPANION_PROFILE_NEARBY_DEVICE_STREAMING" />
-        <permission name="android.permission.REQUEST_COMPANION_PROFILE_SENSOR_DEVICE_STREAMING" />
+        <permission name="android.permission.REQUEST_COMPANION_PROFILE_VIRTUAL_DEVICE" />
         <permission name="android.permission.REQUEST_COMPANION_PROFILE_COMPUTER" />
         <permission name="android.permission.REQUEST_COMPANION_SELF_MANAGED" />
         <permission name="android.permission.REQUEST_OBSERVE_DEVICE_UUID_PRESENCE" />
@@ -621,6 +621,8 @@ applications that come with the platform
         <permission name="android.permission.READ_COLOR_ZONES"/>
         <!-- Permission required for CTS test - CtsTextClassifierTestCases -->
         <permission name="android.permission.ACCESS_TEXT_CLASSIFIER_BY_TYPE"/>
+        <!-- Permission required for CTS test - CtsSecurityTestCases -->
+        <permission name="android.permission.MANAGE_DEVICE_POLICY_MTE"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

@@ -81,10 +81,16 @@ import com.android.server.accessibility.Flags;
 public class AutoclickController extends BaseEventStreamTransformation {
 
     private static final String LOG_TAG = AutoclickController.class.getSimpleName();
+    // TODO(b/393559560): Finalize scroll amount.
+    private static final float SCROLL_AMOUNT = 1.0f;
 
     private final AccessibilityTraceManager mTrace;
     private final Context mContext;
     private final int mUserId;
+    @VisibleForTesting
+    float mLastCursorX;
+    @VisibleForTesting
+    float mLastCursorY;
 
     // Lazily created on the first mouse motion event.
     @VisibleForTesting ClickScheduler mClickScheduler;
@@ -315,8 +321,58 @@ public class AutoclickController extends BaseEventStreamTransformation {
     /**
      * Handles scroll operations in the specified direction.
      */
-    public void handleScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
-        // TODO(b/388845721): Perform actual scroll.
+    private void handleScroll(@AutoclickScrollPanel.ScrollDirection int direction) {
+        final long now = SystemClock.uptimeMillis();
+
+        // Create pointer properties.
+        PointerProperties[] pointerProps = new PointerProperties[1];
+        pointerProps[0] = new PointerProperties();
+        pointerProps[0].id = 0;
+        pointerProps[0].toolType = MotionEvent.TOOL_TYPE_MOUSE;
+
+        // Create pointer coordinates at the last cursor position.
+        PointerCoords[] pointerCoords = new PointerCoords[1];
+        pointerCoords[0] = new PointerCoords();
+        pointerCoords[0].x = mLastCursorX;
+        pointerCoords[0].y = mLastCursorY;
+
+        // Set scroll values based on direction.
+        switch (direction) {
+            case AutoclickScrollPanel.DIRECTION_UP:
+                pointerCoords[0].setAxisValue(MotionEvent.AXIS_VSCROLL, SCROLL_AMOUNT);
+                break;
+            case AutoclickScrollPanel.DIRECTION_DOWN:
+                pointerCoords[0].setAxisValue(MotionEvent.AXIS_VSCROLL, -SCROLL_AMOUNT);
+                break;
+            case AutoclickScrollPanel.DIRECTION_LEFT:
+                pointerCoords[0].setAxisValue(MotionEvent.AXIS_HSCROLL, SCROLL_AMOUNT);
+                break;
+            case AutoclickScrollPanel.DIRECTION_RIGHT:
+                pointerCoords[0].setAxisValue(MotionEvent.AXIS_HSCROLL, -SCROLL_AMOUNT);
+                break;
+            case AutoclickScrollPanel.DIRECTION_EXIT:
+            case AutoclickScrollPanel.DIRECTION_NONE:
+            default:
+                return;
+        }
+
+        // Get device ID from last motion event if possible.
+        int deviceId = mClickScheduler != null && mClickScheduler.mLastMotionEvent != null
+                ? mClickScheduler.mLastMotionEvent.getDeviceId() : 0;
+
+        // Create a scroll event.
+        MotionEvent scrollEvent = MotionEvent.obtain(
+                /* downTime= */ now, /* eventTime= */ now,
+                MotionEvent.ACTION_SCROLL, /* pointerCount= */ 1, pointerProps,
+                pointerCoords, /* metaState= */ 0, /* actionButton= */ 0, /* xPrecision= */
+                1.0f, /* yPrecision= */ 1.0f, deviceId, /* edgeFlags= */ 0,
+                InputDevice.SOURCE_MOUSE, /* flags= */ 0);
+
+        // Send the scroll event.
+        super.onMotionEvent(scrollEvent, scrollEvent, mClickScheduler.mEventPolicyFlags);
+
+        // Clean up.
+        scrollEvent.recycle();
     }
 
     /**
@@ -823,13 +879,19 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 // If exit button is hovered, exit scroll mode after countdown and return early.
                 if (mHoveredDirection == AutoclickScrollPanel.DIRECTION_EXIT) {
                     exitScrollMode();
+                    return;
                 }
-                return;
             }
 
             // Handle scroll type specially, show scroll panel instead of sending click events.
             if (mActiveClickType == AutoclickTypePanel.AUTOCLICK_TYPE_SCROLL) {
                 if (mAutoclickScrollPanel != null) {
+                    // Save the last cursor position at the moment when sendClick() is called.
+                    if (mClickScheduler != null && mClickScheduler.mLastMotionEvent != null) {
+                        final int pointerIndex = mClickScheduler.mLastMotionEvent.getActionIndex();
+                        mLastCursorX = mClickScheduler.mLastMotionEvent.getX(pointerIndex);
+                        mLastCursorY = mClickScheduler.mLastMotionEvent.getY(pointerIndex);
+                    }
                     mAutoclickScrollPanel.show();
                 }
                 return;

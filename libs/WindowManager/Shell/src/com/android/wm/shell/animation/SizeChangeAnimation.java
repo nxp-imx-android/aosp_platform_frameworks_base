@@ -34,6 +34,8 @@ import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 import android.view.animation.TranslateAnimation;
 
+import com.android.wm.shell.shared.animation.Interpolators;
+
 import java.util.function.Consumer;
 
 /**
@@ -196,6 +198,8 @@ public class SizeChangeAnimation {
         float startScaleY = scaleFactor * ((float) startBounds.height()) / endBounds.height()
                 + (1.f - scaleFactor);
         final AnimationSet animSet = new AnimationSet(true);
+        // Use a linear interpolator so the driving ValueAnimator sets the interpolation
+        animSet.setInterpolator(Interpolators.LINEAR);
 
         final Animation scaleAnim = new ScaleAnimation(startScaleX, 1, startScaleY, 1);
         scaleAnim.setDuration(scalePeriod);
@@ -244,6 +248,8 @@ public class SizeChangeAnimation {
                 + (1.f - scaleFactor));
 
         AnimationSet snapAnimSet = new AnimationSet(true);
+        // Use a linear interpolator so the driving ValueAnimator sets the interpolation
+        snapAnimSet.setInterpolator(Interpolators.LINEAR);
         // Animation for the "old-state" snapshot that is atop the task.
         final Animation snapAlphaAnim = new AlphaAnimation(1.f, 0.f);
         snapAlphaAnim.setDuration(scalePeriod);

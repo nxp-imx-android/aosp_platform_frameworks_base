@@ -388,11 +388,18 @@ public class SettingsHelperTest {
                         LocaleList.forLanguageTags("zh-Hant-TW"),  // current
                         new String[] { "fa-Arab-AF-u-nu-latn", "zh-Hant-TW" }));  // supported
 
-        assertEquals(LocaleList.forLanguageTags("en-US,zh-Hans-TW"),
+        assertEquals(LocaleList.forLanguageTags("en-US,zh-Hans-TW,fr-FR"),
                 SettingsHelper.resolveLocales(
-                        LocaleList.forLanguageTags("en-UK,en-GB,zh-Hans-HK"),  // restore
-                        LocaleList.forLanguageTags("en-US,zh-Hans-TW"),  // current
-                        new String[] { "en-US,zh-Hans-TW,en-UK,en-GB,zh-Hans-HK" }));  // supported
+                        // restore
+                        LocaleList.forLanguageTags("en-UK,en-GB,zh-Hans-HK,fr-FR"),
+
+                        // current
+                        LocaleList.forLanguageTags("en-US,zh-Hans-TW"),
+
+                        // supported
+                        new String[] {
+                                "en-US" , "zh-Hans-TW" , "en-UK", "en-GB", "zh-Hans-HK", "fr-FR"
+                        }));
     }
 
     @Test

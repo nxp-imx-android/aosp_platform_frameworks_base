@@ -16,7 +16,6 @@
 
 package com.android.server.input
 
-
 import android.Manifest
 import android.content.Context
 import android.content.ContextWrapper
@@ -39,14 +38,14 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
-import android.view.View.OnKeyListener
+import android.test.mock.MockContentResolver
 import android.view.InputDevice
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import android.view.View.OnKeyListener
 import android.view.WindowManager
-import android.test.mock.MockContentResolver
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import com.android.dx.mockito.inline.extended.ExtendedMockito
@@ -75,28 +74,33 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.verifyNoInteractions
+import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.stubbing.OngoingStubbing
 
 /**
  * Tests for {@link InputManagerService}.
  *
- * Build/Install/Run:
- * atest InputTests:InputManagerServiceTests
+ * Build/Install/Run: atest InputTests:InputManagerServiceTests
  */
 @Presubmit
 class InputManagerServiceTests {
 
     companion object {
-        val ACTION_KEY_EVENTS = listOf(
-            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_META_LEFT),
-            KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_META_RIGHT),
-            KeyEvent( /* downTime= */0, /* eventTime= */0, /* action= */0, /* code= */0,
-                /* repeat= */0, KeyEvent.META_META_ON
+        val ACTION_KEY_EVENTS =
+            listOf(
+                KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_META_LEFT),
+                KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_META_RIGHT),
+                KeyEvent(
+                    /* downTime= */ 0,
+                    /* eventTime= */ 0,
+                    /* action= */ 0,
+                    /* code= */ 0,
+                    /* repeat= */ 0,
+                    KeyEvent.META_META_ON,
+                ),
             )
-        )
     }
 
     @get:Rule
@@ -108,32 +112,24 @@ class InputManagerServiceTests {
             .mockStatic(InputSettings::class.java)
             .build()!!
 
-    @get:Rule
-    val setFlagsRule = SetFlagsRule()
+    @get:Rule val setFlagsRule = SetFlagsRule()
 
-    @get:Rule
-    val fakeSettingsProviderRule = FakeSettingsProvider.rule()!!
+    @get:Rule val fakeSettingsProviderRule = FakeSettingsProvider.rule()!!
 
-    @Mock
-    private lateinit var native: NativeInputManagerService
+    @Mock private lateinit var native: NativeInputManagerService
 
-    @Mock
-    private lateinit var wmCallbacks: InputManagerService.WindowManagerCallbacks
+    @Mock private lateinit var wmCallbacks: InputManagerService.WindowManagerCallbacks
 
-    @Mock
-    private lateinit var windowManagerInternal: WindowManagerInternal
+    @Mock private lateinit var windowManagerInternal: WindowManagerInternal
 
-    @Mock
-    private lateinit var packageManagerInternal: PackageManagerInternal
+    @Mock private lateinit var packageManagerInternal: PackageManagerInternal
 
-    @Mock
-    private lateinit var uEventManager: UEventManager
+    @Mock private lateinit var uEventManager: UEventManager
 
     @Mock
     private lateinit var kbdController: InputManagerService.KeyboardBacklightControllerInterface
 
-    @Mock
-    private lateinit var kcm: KeyCharacterMap
+    @Mock private lateinit var kcm: KeyCharacterMap
 
     private lateinit var service: InputManagerService
     private lateinit var localService: InputManagerInternal
@@ -147,44 +143,50 @@ class InputManagerServiceTests {
     fun setup() {
         context = spy(ContextWrapper(InstrumentationRegistry.getInstrumentation().getContext()))
         fakePermissionEnforcer = FakePermissionEnforcer()
-        doReturn(Context.PERMISSION_ENFORCER_SERVICE).`when`(context).getSystemServiceName(
-            eq(PermissionEnforcer::class.java)
-        )
-        doReturn(fakePermissionEnforcer).`when`(context).getSystemService(
-            eq(Context.PERMISSION_ENFORCER_SERVICE)
-        )
+        doReturn(Context.PERMISSION_ENFORCER_SERVICE)
+            .`when`(context)
+            .getSystemServiceName(eq(PermissionEnforcer::class.java))
+        doReturn(fakePermissionEnforcer)
+            .`when`(context)
+            .getSystemService(eq(Context.PERMISSION_ENFORCER_SERVICE))
 
         contentResolver = MockContentResolver(context)
         contentResolver.addProvider(Settings.AUTHORITY, FakeSettingsProvider())
         whenever(context.contentResolver).thenReturn(contentResolver)
         testLooper = TestLooper()
         service =
-            InputManagerService(object : InputManagerService.Injector(
-                    context, testLooper.looper, testLooper.looper, uEventManager) {
-                override fun getNativeService(
-                    service: InputManagerService?
-                ): NativeInputManagerService {
-                    return native
-                }
+            InputManagerService(
+                object :
+                    InputManagerService.Injector(
+                        context,
+                        testLooper.looper,
+                        testLooper.looper,
+                        uEventManager,
+                    ) {
+                    override fun getNativeService(
+                        service: InputManagerService?
+                    ): NativeInputManagerService {
+                        return native
+                    }
 
-                override fun registerLocalService(service: InputManagerInternal?) {
-                    localService = service!!
-                }
+                    override fun registerLocalService(service: InputManagerInternal?) {
+                        localService = service!!
+                    }
 
-                override fun getKeyboardBacklightController(
-                    nativeService: NativeInputManagerService?
-                ): InputManagerService.KeyboardBacklightControllerInterface {
-                    return kbdController
-                }
-            }, fakePermissionEnforcer)
+                    override fun getKeyboardBacklightController(
+                        nativeService: NativeInputManagerService?
+                    ): InputManagerService.KeyboardBacklightControllerInterface {
+                        return kbdController
+                    }
+                },
+                fakePermissionEnforcer,
+            )
         inputManagerGlobalSession = InputManagerGlobal.createTestSession(service)
         val inputManager = InputManager(context)
         whenever(context.getSystemService(InputManager::class.java)).thenReturn(inputManager)
         whenever(context.getSystemService(Context.INPUT_SERVICE)).thenReturn(inputManager)
         whenever(context.checkCallingOrSelfPermission(Manifest.permission.MANAGE_KEY_GESTURES))
-            .thenReturn(
-                PackageManager.PERMISSION_GRANTED
-            )
+            .thenReturn(PackageManager.PERMISSION_GRANTED)
 
         ExtendedMockito.doReturn(windowManagerInternal).`when` {
             LocalServices.getService(eq(WindowManagerInternal::class.java))
@@ -192,9 +194,7 @@ class InputManagerServiceTests {
         ExtendedMockito.doReturn(packageManagerInternal).`when` {
             LocalServices.getService(eq(PackageManagerInternal::class.java))
         }
-        ExtendedMockito.doReturn(kcm).`when` {
-            KeyCharacterMap.load(anyInt())
-        }
+        ExtendedMockito.doReturn(kcm).`when` { KeyCharacterMap.load(anyInt()) }
 
         assertTrue("Local service must be registered", this::localService.isInitialized)
         service.setWindowManagerCallbacks(wmCallbacks)
@@ -219,9 +219,7 @@ class InputManagerServiceTests {
     fun testInputSettingsUpdatedOnSystemRunning() {
         verifyNoInteractions(native)
 
-        runWithShellPermissionIdentity {
-            service.systemRunning()
-        }
+        runWithShellPermissionIdentity { service.systemRunning() }
 
         verify(native).setPointerSpeed(anyInt())
         verify(native).setTouchpadPointerSpeed(anyInt())
@@ -238,8 +236,7 @@ class InputManagerServiceTests {
         verify(native).setStylusPointerIconEnabled(anyBoolean())
         // Called thrice at boot, since there are individual callbacks to update the
         // key repeat timeout, the key repeat delay and whether key repeat enabled.
-        verify(native, times(3)).setKeyRepeatConfiguration(anyInt(), anyInt(),
-            anyBoolean())
+        verify(native, times(3)).setKeyRepeatConfiguration(anyInt(), anyInt(), anyBoolean())
     }
 
     @Test
@@ -259,7 +256,9 @@ class InputManagerServiceTests {
 
         localService.setTypeAssociation(inputPort, type)
 
-        assertThat(service.getDeviceTypeAssociations()).asList().containsExactly(inputPort, type)
+        assertThat(service.getDeviceTypeAssociations())
+            .asList()
+            .containsExactly(inputPort, type)
             .inOrder()
     }
 
@@ -290,8 +289,8 @@ class InputManagerServiceTests {
     fun testActionKeyEventsForwardedToFocusedWindow_whenCorrectlyRequested() {
         service.systemRunning()
         overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */true,
-            /* hasPrivateFlag = */true
+            /* hasPermission = */ true,
+            /* hasPrivateFlag = */ true,
         )
         whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
 
@@ -304,8 +303,8 @@ class InputManagerServiceTests {
     fun testActionKeyEventsNotForwardedToFocusedWindow_whenNoPermissions() {
         service.systemRunning()
         overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */false,
-            /* hasPrivateFlag = */true
+            /* hasPermission = */ false,
+            /* hasPrivateFlag = */ true,
         )
         whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
 
@@ -318,8 +317,8 @@ class InputManagerServiceTests {
     fun testActionKeyEventsNotForwardedToFocusedWindow_whenNoPrivateFlag() {
         service.systemRunning()
         overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */true,
-            /* hasPrivateFlag = */false
+            /* hasPermission = */ true,
+            /* hasPrivateFlag = */ false,
         )
         whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
 
@@ -362,13 +361,20 @@ class InputManagerServiceTests {
     fun testKeyEventsForwardedToFocusedWindow_whenWmAllows() {
         service.systemRunning()
         overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */false,
-            /* hasPrivateFlag = */false
+            /* hasPermission = */ false,
+            /* hasPrivateFlag = */ false,
         )
         whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(0)
 
-        val event = KeyEvent( /* downTime= */0, /* eventTime= */0, KeyEvent.ACTION_DOWN,
-            KeyEvent.KEYCODE_SPACE, /* repeat= */0, KeyEvent.META_CTRL_ON)
+        val event =
+            KeyEvent(
+                /* downTime= */ 0,
+                /* eventTime= */ 0,
+                KeyEvent.ACTION_DOWN,
+                KeyEvent.KEYCODE_SPACE,
+                /* repeat= */ 0,
+                KeyEvent.META_CTRL_ON,
+            )
         assertEquals(0, service.interceptKeyBeforeDispatching(null, event, 0))
     }
 
@@ -399,13 +405,20 @@ class InputManagerServiceTests {
     fun testKeyEventsNotForwardedToFocusedWindow_whenWmConsumes() {
         service.systemRunning()
         overrideSendActionKeyEventsToFocusedWindow(
-            /* hasPermission = */false,
-            /* hasPrivateFlag = */false
+            /* hasPermission = */ false,
+            /* hasPrivateFlag = */ false,
         )
         whenever(wmCallbacks.interceptKeyBeforeDispatching(any(), any(), anyInt())).thenReturn(-1)
 
-        val event = KeyEvent( /* downTime= */0, /* eventTime= */0, KeyEvent.ACTION_DOWN,
-            KeyEvent.KEYCODE_SPACE, /* repeat= */0, KeyEvent.META_CTRL_ON)
+        val event =
+            KeyEvent(
+                /* downTime= */ 0,
+                /* eventTime= */ 0,
+                KeyEvent.ACTION_DOWN,
+                KeyEvent.KEYCODE_SPACE,
+                /* repeat= */ 0,
+                KeyEvent.META_CTRL_ON,
+            )
         assertEquals(-1, service.interceptKeyBeforeDispatching(null, event, 0))
     }
 
@@ -420,19 +433,20 @@ class InputManagerServiceTests {
     }
 
     private fun createVirtualDisplays(count: Int): AutoClosingVirtualDisplays {
-        val displayManager: DisplayManager = context.getSystemService(
-                DisplayManager::class.java
-        ) as DisplayManager
+        val displayManager: DisplayManager =
+            context.getSystemService(DisplayManager::class.java) as DisplayManager
         val virtualDisplays = mutableListOf<VirtualDisplay>()
         for (i in 0 until count) {
-            virtualDisplays.add(displayManager.createVirtualDisplay(
+            virtualDisplays.add(
+                displayManager.createVirtualDisplay(
                     /* displayName= */ "testVirtualDisplay$i",
                     /* width= */ 100,
                     /* height= */ 100,
                     /* densityDpi= */ 100,
                     /* surface= */ null,
-                    /* flags= */ 0
-            ))
+                    /* flags= */ 0,
+                )
+            )
         }
         return AutoClosingVirtualDisplays(virtualDisplays)
     }
@@ -441,26 +455,26 @@ class InputManagerServiceTests {
     private fun createKeycodeAEvent(inputDevice: InputDevice, action: Int): KeyEvent {
         val eventTime = SystemClock.uptimeMillis()
         return KeyEvent(
-                /* downTime= */ eventTime,
-                /* eventTime= */ eventTime,
-                /* action= */ action,
-                /* code= */ KeyEvent.KEYCODE_A,
-                /* repeat= */ 0,
-                /* metaState= */ 0,
-                /* deviceId= */ inputDevice.id,
-                /* scanCode= */ 0,
-                /* flags= */ KeyEvent.FLAG_FROM_SYSTEM,
-                /* source= */ InputDevice.SOURCE_KEYBOARD
+            /* downTime= */ eventTime,
+            /* eventTime= */ eventTime,
+            /* action= */ action,
+            /* code= */ KeyEvent.KEYCODE_A,
+            /* repeat= */ 0,
+            /* metaState= */ 0,
+            /* deviceId= */ inputDevice.id,
+            /* scanCode= */ 0,
+            /* flags= */ KeyEvent.FLAG_FROM_SYSTEM,
+            /* source= */ InputDevice.SOURCE_KEYBOARD,
         )
     }
 
     private fun createInputDevice(): InputDevice {
         return InputDevice.Builder()
-                .setId(123)
-                .setName("abc")
-                .setDescriptor("def")
-                .setSources(InputDevice.SOURCE_KEYBOARD)
-                .build()
+            .setId(123)
+            .setName("abc")
+            .setDescriptor("def")
+            .setSources(InputDevice.SOURCE_KEYBOARD)
+            .build()
     }
 
     @Test
@@ -485,8 +499,8 @@ class InputManagerServiceTests {
 
             // Associate input device with display
             service.addUniqueIdAssociationByDescriptor(
-                    inputDevice.descriptor,
-                    virtualDisplays[0].display.displayId.toString()
+                inputDevice.descriptor,
+                virtualDisplays[0].display.displayId.toString(),
             )
 
             // Simulate 2 different KeyEvents
@@ -513,8 +527,8 @@ class InputManagerServiceTests {
 
             // Associate with Display 2
             service.addUniqueIdAssociationByDescriptor(
-                    inputDevice.descriptor,
-                    virtualDisplays[1].display.displayId.toString()
+                inputDevice.descriptor,
+                virtualDisplays[1].display.displayId.toString(),
             )
 
             // Simulate a KeyEvent
@@ -548,8 +562,8 @@ class InputManagerServiceTests {
 
             // Associate input device with display
             service.addUniqueIdAssociationByPort(
-                    inputDevice.name,
-                    virtualDisplays[0].display.displayId.toString()
+                inputDevice.name,
+                virtualDisplays[0].display.displayId.toString(),
             )
 
             // Simulate 2 different KeyEvents
@@ -576,8 +590,8 @@ class InputManagerServiceTests {
 
             // Associate with Display 2
             service.addUniqueIdAssociationByPort(
-                    inputDevice.name,
-                    virtualDisplays[1].display.displayId.toString()
+                inputDevice.name,
+                virtualDisplays[1].display.displayId.toString(),
             )
 
             // Simulate a KeyEvent
@@ -619,7 +633,7 @@ class InputManagerServiceTests {
         ExtendedMockito.verify {
             InputSettings.setAccessibilityBounceKeysThreshold(
                 any(),
-                eq(InputSettings.DEFAULT_BOUNCE_KEYS_THRESHOLD_MILLIS)
+                eq(InputSettings.DEFAULT_BOUNCE_KEYS_THRESHOLD_MILLIS),
             )
         }
     }
@@ -635,9 +649,7 @@ class InputManagerServiceTests {
                 .setAction(KeyGestureEvent.ACTION_GESTURE_COMPLETE)
                 .build()
         service.handleKeyGestureEvent(toggleMouseKeysEvent)
-        ExtendedMockito.verify {
-            InputSettings.setAccessibilityMouseKeysEnabled(any(), eq(true))
-        }
+        ExtendedMockito.verify { InputSettings.setAccessibilityMouseKeysEnabled(any(), eq(true)) }
     }
 
     @Test
@@ -648,9 +660,7 @@ class InputManagerServiceTests {
                 .setAction(KeyGestureEvent.ACTION_GESTURE_COMPLETE)
                 .build()
         service.handleKeyGestureEvent(toggleStickyKeysEvent)
-        ExtendedMockito.verify {
-            InputSettings.setAccessibilityStickyKeysEnabled(any(), eq(true))
-        }
+        ExtendedMockito.verify { InputSettings.setAccessibilityStickyKeysEnabled(any(), eq(true)) }
     }
 
     @Test
@@ -664,7 +674,7 @@ class InputManagerServiceTests {
         ExtendedMockito.verify {
             InputSettings.setAccessibilitySlowKeysThreshold(
                 any(),
-                eq(InputSettings.DEFAULT_SLOW_KEYS_THRESHOLD_MILLIS)
+                eq(InputSettings.DEFAULT_SLOW_KEYS_THRESHOLD_MILLIS),
             )
         }
     }
@@ -683,25 +693,26 @@ class InputManagerServiceTests {
 
     fun overrideSendActionKeyEventsToFocusedWindow(
         hasPermission: Boolean,
-        hasPrivateFlag: Boolean
+        hasPrivateFlag: Boolean,
     ) {
         ExtendedMockito.doReturn(
-            if (hasPermission) {
-                PermissionChecker.PERMISSION_GRANTED
-            } else {
-                PermissionChecker.PERMISSION_HARD_DENIED
-            }
-        ).`when` {
-            PermissionChecker.checkPermissionForDataDelivery(
-                any(),
-                eq(Manifest.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW),
-                anyInt(),
-                anyInt(),
-                any(),
-                any(),
-                any()
+                if (hasPermission) {
+                    PermissionChecker.PERMISSION_GRANTED
+                } else {
+                    PermissionChecker.PERMISSION_HARD_DENIED
+                }
             )
-        }
+            .`when` {
+                PermissionChecker.checkPermissionForDataDelivery(
+                    any(),
+                    eq(Manifest.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW),
+                    anyInt(),
+                    anyInt(),
+                    any(),
+                    any(),
+                    any(),
+                )
+            }
 
         val info = KeyInterceptionInfo(
             /* type = */0,
@@ -711,8 +722,7 @@ class InputManagerServiceTests {
                 0
             },
             "title",
-            /* uid = */0,
-            /* inputFeatureFlags = */ 0
+            /* uid = */0
         )
         whenever(windowManagerInternal.getKeyInterceptionInfoFromToken(any())).thenReturn(info)
     }

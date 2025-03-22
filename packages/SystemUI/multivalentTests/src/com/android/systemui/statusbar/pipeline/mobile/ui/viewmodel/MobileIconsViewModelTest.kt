@@ -60,7 +60,6 @@ class MobileIconsViewModelTest : SysuiTestCase() {
     private val interactor = FakeMobileIconsInteractor(FakeMobileMappingsProxy(), mock())
 
     private lateinit var airplaneModeInteractor: AirplaneModeInteractor
-    @Mock private lateinit var constants: ConnectivityConstants
     @Mock private lateinit var logger: MobileViewLogger
     @Mock private lateinit var verboseLogger: VerboseMobileViewLogger
 
@@ -84,7 +83,10 @@ class MobileIconsViewModelTest : SysuiTestCase() {
                 verboseLogger,
                 interactor,
                 airplaneModeInteractor,
-                constants,
+                object : ConnectivityConstants {
+                    override val hasDataCapabilities = true
+                    override val shouldShowActivityConfig = false
+                },
                 testScope.backgroundScope,
             )
 
@@ -349,7 +351,42 @@ class MobileIconsViewModelTest : SysuiTestCase() {
             // WHEN sub2 becomes last and sub2 has a network type icon
             interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
 
-            // THEN the flow updates
+            assertThat(latest).isTrue()
+            job.cancel()
+        }
+
+    @Test
+    fun isStackable_apmEnabled_false() =
+        testScope.runTest {
+            var latest: Boolean? = null
+            val job = underTest.isStackable.onEach { latest = it }.launchIn(this)
+
+            // Set the interactor to true to test APM
+            interactor.isStackable.value = true
+
+            // Enable APM
+            airplaneModeInteractor.setIsAirplaneMode(true)
+
+            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
+
+            assertThat(latest).isFalse()
+            job.cancel()
+        }
+
+    @Test
+    fun isStackable_apmDisabled_true() =
+        testScope.runTest {
+            var latest: Boolean? = null
+            val job = underTest.isStackable.onEach { latest = it }.launchIn(this)
+
+            // Set the interactor to true to test APM
+            interactor.isStackable.value = true
+
+            // Disable APM
+            airplaneModeInteractor.setIsAirplaneMode(false)
+
+            interactor.filteredSubscriptions.value = listOf(SUB_1, SUB_2)
+
             assertThat(latest).isTrue()
 
             job.cancel()

@@ -57,7 +57,7 @@ import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper;
 import com.android.wm.shell.shared.bubbles.BubbleDropTargetBoundsProvider;
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -307,7 +307,8 @@ public class DesktopModeVisualIndicator {
         if (splitRightRegion.contains(x, y)) {
             result = IndicatorType.TO_SPLIT_RIGHT_INDICATOR;
         }
-        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()
+                && mDragStartState == DragStartState.FROM_FULLSCREEN) {
             if (calculateBubbleLeftRegion(layout).contains(x, y)) {
                 result = IndicatorType.TO_BUBBLE_LEFT_INDICATOR;
             } else if (calculateBubbleRightRegion(layout).contains(x, y)) {
@@ -415,30 +416,59 @@ public class DesktopModeVisualIndicator {
 
     private List<Pair<Rect, IndicatorType>> initSmallTabletRegions(DisplayLayout layout,
             boolean isLeftRightSplit) {
-        boolean dragFromFullscreen = mDragStartState == DragStartState.FROM_FULLSCREEN;
-        boolean dragFromSplit = mDragStartState == DragStartState.FROM_SPLIT;
-        if (isLeftRightSplit && (dragFromFullscreen || dragFromSplit)) {
+        return switch (mDragStartState) {
+            case DragStartState.FROM_FULLSCREEN -> initSmallTabletRegionsFromFullscreen(layout,
+                    isLeftRightSplit);
+            case DragStartState.FROM_SPLIT -> initSmallTabletRegionsFromSplit(layout,
+                    isLeftRightSplit);
+            default -> Collections.emptyList();
+        };
+    }
+
+    private List<Pair<Rect, IndicatorType>> initSmallTabletRegionsFromFullscreen(
+            DisplayLayout layout, boolean isLeftRightSplit) {
+
+        List<Pair<Rect, IndicatorType>> result = new ArrayList<>();
+        if (BubbleAnythingFlagHelper.enableBubbleToFullscreen()) {
+            result.add(new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR));
+            result.add(new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR));
+        }
+
+        if (isLeftRightSplit) {
             int splitRegionWidth = mContext.getResources().getDimensionPixelSize(
                     com.android.wm.shell.shared.R.dimen.drag_zone_h_split_from_app_width_fold);
-            return Arrays.asList(
-                    new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR),
-                    new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR),
-                    new Pair<>(calculateSplitLeftRegion(layout, splitRegionWidth,
-                            /* captionHeight= */ 0), TO_SPLIT_LEFT_INDICATOR),
-                    new Pair<>(calculateSplitRightRegion(layout, splitRegionWidth,
-                            /* captionHeight= */ 0), TO_SPLIT_RIGHT_INDICATOR),
-                    new Pair<>(new Rect(), TO_FULLSCREEN_INDICATOR) // default to fullscreen
-            );
+            result.add(new Pair<>(calculateSplitLeftRegion(layout, splitRegionWidth,
+                    /* captionHeight= */ 0), TO_SPLIT_LEFT_INDICATOR));
+            result.add(new Pair<>(calculateSplitRightRegion(layout, splitRegionWidth,
+                    /* captionHeight= */ 0), TO_SPLIT_RIGHT_INDICATOR));
         }
-        if (dragFromFullscreen) {
-            // If left/right split is not available, we can only drag fullscreen tasks
-            // TODO(b/401352409): add support for top/bottom split zones
-            return Arrays.asList(
-                    new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR),
-                    new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR),
-                    new Pair<>(new Rect(), TO_FULLSCREEN_INDICATOR) // default to fullscreen
-            );
+        // TODO(b/401352409): add support for top/bottom split zones
+        // default to fullscreen
+        result.add(new Pair<>(new Rect(), TO_FULLSCREEN_INDICATOR));
+        return result;
+    }
+
+    private List<Pair<Rect, IndicatorType>> initSmallTabletRegionsFromSplit(DisplayLayout layout,
+            boolean isLeftRightSplit) {
+        if (!isLeftRightSplit) {
+            // Dragging a top/bottom split is not supported on small tablets
+            return Collections.emptyList();
         }
-        return Collections.emptyList();
+
+        List<Pair<Rect, IndicatorType>> result = new ArrayList<>();
+        if (BubbleAnythingFlagHelper.enableBubbleAnything()) {
+            result.add(new Pair<>(calculateBubbleLeftRegion(layout), TO_BUBBLE_LEFT_INDICATOR));
+            result.add(new Pair<>(calculateBubbleRightRegion(layout), TO_BUBBLE_RIGHT_INDICATOR));
+        }
+
+        int splitRegionWidth = mContext.getResources().getDimensionPixelSize(
+                com.android.wm.shell.shared.R.dimen.drag_zone_h_split_from_app_width_fold);
+        result.add(new Pair<>(calculateSplitLeftRegion(layout, splitRegionWidth,
+                /* captionHeight= */ 0), TO_SPLIT_LEFT_INDICATOR));
+        result.add(new Pair<>(calculateSplitRightRegion(layout, splitRegionWidth,
+                /* captionHeight= */ 0), TO_SPLIT_RIGHT_INDICATOR));
+        // default to fullscreen
+        result.add(new Pair<>(new Rect(), TO_FULLSCREEN_INDICATOR));
+        return result;
     }
 }

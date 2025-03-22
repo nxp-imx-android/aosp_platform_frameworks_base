@@ -22,9 +22,7 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarou
 import com.android.systemui.notifications.ui.viewmodel.NotificationsShadeOverlayContentViewModel
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.shade.domain.interactor.shadeInteractor
-import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
-import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 
 val Kosmos.notificationsShadeOverlayContentViewModel:
@@ -34,9 +32,7 @@ val Kosmos.notificationsShadeOverlayContentViewModel:
         notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
         sceneInteractor = sceneInteractor,
         shadeInteractor = shadeInteractor,
-        shadeModeInteractor = shadeModeInteractor,
         disableFlagsInteractor = disableFlagsInteractor,
         mediaCarouselInteractor = mediaCarouselInteractor,
-        activeNotificationsInteractor = activeNotificationsInteractor,
     )
 }

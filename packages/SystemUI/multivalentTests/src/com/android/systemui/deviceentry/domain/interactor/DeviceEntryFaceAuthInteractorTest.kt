@@ -20,6 +20,8 @@ import android.content.pm.UserInfo
 import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
 import android.os.PowerManager
+import android.platform.test.annotations.EnableFlags
+import android.service.dreams.Flags.FLAG_DREAMS_V2
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
@@ -144,6 +146,33 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
             keyguardTransitionRepository.sendTransitionStep(
                 TransitionStep(
                     KeyguardState.OFF,
+                    KeyguardState.LOCKSCREEN,
+                    transitionState = TransitionState.STARTED,
+                )
+            )
+
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value)
+                .isEqualTo(
+                    Pair(FaceAuthUiEvent.FACE_AUTH_UPDATED_KEYGUARD_VISIBILITY_CHANGED, true)
+                )
+        }
+
+    @Test
+    @EnableFlags(FLAG_DREAMS_V2)
+    fun faceAuthIsRequestedWhenTransitioningFromDreamToLockscreen() =
+        testScope.runTest {
+            underTest.start()
+            runCurrent()
+
+            powerInteractor.setAwakeForTest(reason = PowerManager.WAKE_REASON_LID)
+            faceWakeUpTriggersConfig.setTriggerFaceAuthOnWakeUpFrom(
+                setOf(WakeSleepReason.LID.powerManagerWakeReason)
+            )
+
+            keyguardTransitionRepository.sendTransitionStep(
+                TransitionStep(
+                    KeyguardState.DREAMING,
                     KeyguardState.LOCKSCREEN,
                     transitionState = TransitionState.STARTED,
                 )

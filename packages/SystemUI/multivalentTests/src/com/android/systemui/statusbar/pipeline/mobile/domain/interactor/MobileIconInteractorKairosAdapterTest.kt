@@ -97,7 +97,7 @@ class MobileIconInteractorKairosAdapterTest : MobileIconInteractorTestBase() {
                     }
                     .asIncremental()
                     .applyLatestSpecForKey(),
-            isStackable = interactor.isStackable.toState(),
+            isStackable = interactor.isStackable.toState(false),
             activeDataConnectionHasDataEnabled =
                 interactor.activeDataConnectionHasDataEnabled.toState(),
             activeDataIconInteractor =

@@ -32,7 +32,6 @@ class DefaultClockSteppingTransition(private val clock: ClockController) : Trans
         addTarget(clock.largeClock.view)
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
             addTarget(sharedR.id.date_smartspace_view_large)
-            addTarget(sharedR.id.weather_smartspace_view_large)
         }
     }
 

@@ -191,7 +191,7 @@ cc_defaults {
         "android.hardware.thermal@1.0",
         "android.hardware.thermal-V3-ndk",
         "android.hardware.tv.input@1.0",
-        "android.hardware.tv.input-V2-ndk",
+        "android.hardware.tv.input-V3-ndk",
         "android.hardware.vibrator-V3-ndk",
         "android.hardware.vr@1.0",
         "android.hidl.token@1.0-utils",

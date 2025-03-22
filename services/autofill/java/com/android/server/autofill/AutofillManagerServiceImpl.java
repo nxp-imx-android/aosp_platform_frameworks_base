@@ -26,6 +26,7 @@ import static android.view.autofill.AutofillManager.FLAG_ADD_CLIENT_ENABLED_FOR_
 import static android.view.autofill.AutofillManager.NO_SESSION;
 import static android.view.autofill.AutofillManager.RECEIVER_FLAG_SESSION_FOR_AUGMENTED_AUTOFILL_ONLY;
 
+import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 import static com.android.server.autofill.Helper.sDebug;
 import static com.android.server.autofill.Helper.sVerbose;
 
@@ -761,20 +762,16 @@ final class AutofillManagerServiceImpl
         return false;
     }
 
-    @GuardedBy("mLock")
-    void removeSessionLocked(int sessionId) {
-        mSessions.remove(sessionId);
-        if (Flags.autofillSessionDestroyed()) {
-            if (sVerbose) {
-                Slog.v(
-                        TAG,
-                        "removeSessionLocked(): removed " + sessionId);
-            }
+    void callOnSessionDestroyed(int sessionId) {
+        if (sVerbose) {
+            Slog.v(TAG, "removeSessionLocked(): removed " + sessionId);
+        }
 
+        synchronized (mLock) {
             FillEventHistory history = null;
 
             if (AutofillFeatureFlags.isMultipleFillEventHistoryEnabled()
-                        && mFillHistories != null) {
+                    && mFillHistories != null) {
                 history = mFillHistories.get(sessionId);
                 mFillHistories.delete(sessionId);
             }
@@ -803,6 +800,16 @@ final class AutofillManagerServiceImpl
                             /* credentialAutofillService= */ null);
 
             remoteService.onSessionDestroyed(history);
+        }
+    }
+
+    @GuardedBy("mLock")
+    void removeSessionLocked(int sessionId) {
+        mSessions.remove(sessionId);
+        if (Flags.autofillSessionDestroyed()) {
+            mHandler.sendMessage(
+                    obtainMessage(
+                            AutofillManagerServiceImpl::callOnSessionDestroyed, this, sessionId));
         }
     }
 

@@ -251,6 +251,8 @@ constructor(
          * Set at 400ms for parity with [FromLockscreenTransitionInteractor]
          */
         val DEFAULT_DURATION = 400.milliseconds
+        // To lockscreen duration must be at least 500ms to allow for potential screen rotation
+        // during the transition while the animation begins after 500ms.
         val TO_LOCKSCREEN_DURATION = 1.seconds
         val TO_BOUNCER_DURATION = 400.milliseconds
         val TO_OCCLUDED_DURATION = 450.milliseconds

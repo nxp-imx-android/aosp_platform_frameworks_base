@@ -157,6 +157,7 @@ open class SeekBarObserver(private val holder: MediaViewHolder) :
         return DateUtils.formatElapsedTime(milliseconds / DateUtils.SECOND_IN_MILLIS)
     }
 
+    @UiThread
     fun updateContentDescription(
         elapsedTimeDescription: CharSequence,
         durationDescription: CharSequence,

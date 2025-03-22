@@ -19,8 +19,10 @@ package com.android.systemui.keyguard.ui.binder
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.accessibility.AccessibilityEvent.TYPE_VIEW_HOVER_EXIT
 import android.window.OnBackInvokedCallback
 import android.window.OnBackInvokedDispatcher
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -47,6 +49,7 @@ import com.android.systemui.scrim.ScrimView
 import dagger.Lazy
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * When necessary, adds the alternate bouncer window above most other windows (including the
@@ -235,6 +238,25 @@ constructor(
                             udfpsA11yOverlay =
                                 UdfpsAccessibilityOverlay(view.context).apply {
                                     id = udfpsA11yOverlayViewId
+                                    importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_AUTO
+                                }
+                            udfpsA11yOverlay.accessibilityDelegate =
+                                object : View.AccessibilityDelegate() {
+                                    override fun sendAccessibilityEvent(
+                                        host: View,
+                                        eventType: Int,
+                                    ) {
+                                        if (eventType == TYPE_VIEW_HOVER_EXIT) {
+                                            applicationScope.launch {
+                                                udfpsA11yOverlayViewModel
+                                                    .get()
+                                                    .clearUdfpsAccessibilityOverlayMessage(
+                                                        "$eventType on view $host"
+                                                    )
+                                            }
+                                        }
+                                        super.sendAccessibilityEvent(host, eventType)
+                                    }
                                 }
                             view.addView(udfpsA11yOverlay)
                             UdfpsAccessibilityOverlayBinder.bind(

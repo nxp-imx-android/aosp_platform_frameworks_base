@@ -32,7 +32,15 @@ enum class StatsLabel(val statValue: Int, val label: String) {
     SupportedButBoring(1, "Boring"),
 
     /** Entry should be shown as "supported" */
-    Supported(2, "Supported"),
+    Supported(2, "Supported");
+
+    val isSupported: Boolean
+        get() {
+        return when (this) {
+            SupportedButBoring, Supported -> true
+            else -> false
+        }
+    }
 }
 
 /**

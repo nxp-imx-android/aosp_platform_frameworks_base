@@ -548,6 +548,25 @@ public class RemoteViews implements Parcelable, Filter {
     }
 
     /**
+     * Set a view tag associating a View with an ID to be used for widget interaction usage events
+     * ({@link android.app.usage.UsageEvents.Event}). When this RemoteViews is applied to a bound
+     * widget, any clicks or scrolls on the tagged view will be reported to
+     * {@link android.app.usage.UsageStatsManager} using this tag.
+     *
+     * @param viewId ID of the View whose tag will be set
+     * @param tag The integer tag to use for the event
+     *
+     * @see android.appwidget.AppWidgetManager#EVENT_TYPE_WIDGET_INTERACTION
+     * @see android.appwidget.AppWidgetManager#EXTRA_EVENT_CLICKED_VIEWS
+     * @see android.appwidget.AppWidgetManager#EXTRA_EVENT_SCROLLED_VIEWS
+     * @see android.app.usage.UsageStatsManager#queryEventsForSelf
+     */
+    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
+    public void setUsageEventTag(@IdRes int viewId, int tag) {
+        addAction(new SetIntTagAction(viewId, com.android.internal.R.id.remoteViewsMetricsId, tag));
+    }
+
+    /**
      * Set that it is disallowed to reapply another remoteview with the same layout as this view.
      * This should be done if an action is destroying the view tree of the base layout.
      *
@@ -666,6 +685,14 @@ public class RemoteViews implements Parcelable, Filter {
                 View view,
                 PendingIntent pendingIntent,
                 RemoteResponse response);
+
+        /**
+         * Invoked when an AbsListView is scrolled.
+         * @param view view that was scrolled
+         *
+         * @hide
+         */
+        default void onScroll(@NonNull AbsListView view) {}
     }
 
     /**
@@ -1313,6 +1340,21 @@ public class RemoteViews implements Parcelable, Filter {
                 // a type error.
                 throw new ActionException(throwable);
             }
+            if (adapterView instanceof AbsListView listView) {
+                listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+                    @Override
+                    public void onScrollStateChanged(AbsListView view, int scrollState) {
+                        if (scrollState != SCROLL_STATE_IDLE) {
+                            params.handler.onScroll(view);
+                        }
+                    }
+
+                    @Override
+                    public void onScroll(AbsListView view, int firstVisibleItem,
+                            int visibleItemCount, int totalItemCount) {
+                    }
+                });
+            }
         }
 
         @Override
@@ -1804,6 +1846,19 @@ public class RemoteViews implements Parcelable, Filter {
                 AbsListView v = (AbsListView) target;
                 v.setRemoteViewsAdapter(mIntent, mIsAsync);
                 v.setRemoteViewsInteractionHandler(params.handler);
+                v.setOnScrollListener(new AbsListView.OnScrollListener() {
+                    @Override
+                    public void onScrollStateChanged(AbsListView view, int scrollState) {
+                        if (scrollState != SCROLL_STATE_IDLE) {
+                            params.handler.onScroll(view);
+                        }
+                    }
+
+                    @Override
+                    public void onScroll(AbsListView view, int firstVisibleItem,
+                            int visibleItemCount, int totalItemCount) {
+                    }
+                });
             } else if (target instanceof AdapterViewAnimator) {
                 AdapterViewAnimator v = (AdapterViewAnimator) target;
                 v.setRemoteViewsAdapter(mIntent, mIsAsync);
@@ -1894,7 +1949,8 @@ public class RemoteViews implements Parcelable, Filter {
                 target.setTagInternal(com.android.internal.R.id.fillInIntent, null);
                 return;
             }
-            target.setOnClickListener(v -> mResponse.handleViewInteraction(v, params.handler));
+            target.setOnClickListener(v ->
+                    mResponse.handleViewInteraction(v, params.handler));
         }
 
         @Override

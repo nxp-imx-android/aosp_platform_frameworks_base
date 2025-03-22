@@ -1074,14 +1074,14 @@ public abstract class Layout {
                     public void onCharacterBounds(int index, int lineNum, float left, float top,
                             float right, float bottom) {
 
-                        var newBackground = determineContrastingBackgroundColor(index);
-                        var hasBgColorChanged = newBackground != bgPaint.getColor();
-
                         // Skip processing if the character is a space or a tap to avoid
                         // rendering an abrupt, empty rectangle.
                         if (TextLine.isLineEndSpace(mText.charAt(index))) {
                             return;
                         }
+
+                        var newBackground = determineContrastingBackgroundColor(index);
+                        var hasBgColorChanged = newBackground != bgPaint.getColor();
 
                         // To avoid highlighting emoji sequences, we use Extended_Pictgraphs as a
                         // heuristic. Highlighting is skipped based on code points, not glyph type

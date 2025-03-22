@@ -36,6 +36,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -99,7 +101,17 @@ constructor(
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
-    val isStackable: StateFlow<Boolean> = interactor.isStackable
+    /** Whether all of [mobileSubViewModels] are visible or not. */
+    private val iconsAreAllVisible =
+        mobileSubViewModels.flatMapLatest { viewModels ->
+            combine(viewModels.map { it.isVisible }) { isVisibleArray -> isVisibleArray.all { it } }
+        }
+
+    val isStackable: StateFlow<Boolean> =
+        combine(iconsAreAllVisible, interactor.isStackable) { isVisible, isStackable ->
+                isVisible && isStackable
+            }
+            .stateIn(scope, SharingStarted.WhileSubscribed(), false)
 
     init {
         scope.launch { subscriptionIdsFlow.collect { invalidateCaches(it) } }

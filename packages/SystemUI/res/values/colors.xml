@@ -148,6 +148,7 @@
     <!-- Animated Action colors -->
     <color name="animated_action_button_text_color">@androidprv:color/materialColorOnSurface</color>
     <color name="animated_action_button_stroke_color">@androidprv:color/materialColorOnSurface</color>
+    <color name="animated_action_button_attribution_color">@androidprv:color/materialColorOnSurfaceVariant</color>
 
     <!-- Biometric dialog colors -->
     <color name="biometric_dialog_gray">#ff757575</color>

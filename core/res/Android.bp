@@ -181,6 +181,7 @@ android_app {
         "ranging_aconfig_flags",
         "aconfig_settingslib_flags",
         "telephony_flags",
+        "update_engine_aconfig_declarations",
     ],
 }
 

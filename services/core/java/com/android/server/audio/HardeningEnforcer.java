@@ -199,7 +199,9 @@ public class HardeningEnforcer {
         if (packageName.isEmpty()) {
             packageName = getPackNameForUid(callingUid);
         }
-
+        // indicates would be blocked if audio capabilities were required
+        boolean blockedIfFull = !noteOp(AppOpsManager.OP_CONTROL_AUDIO,
+                                        callingUid, packageName, attributionTag);
         boolean blocked = true;
         // indicates the focus request was not blocked because of the SDK version
         boolean unblockedBySdk = false;
@@ -213,22 +215,35 @@ public class HardeningEnforcer {
                 Slog.i(TAG, "blockFocusMethod pack:" + packageName + " NOT blocking due to sdk="
                         + targetSdk);
             }
-            blocked = false;
             unblockedBySdk = true;
         }
 
-        metricsLogFocusReq(blocked, focusReqType, callingUid, unblockedBySdk);
+        boolean enforced = mShouldEnableAllHardening.get() || !unblockedBySdk;
+        boolean enforcedFull = mShouldEnableAllHardening.get();
 
-        if (!blocked) {
-            return false;
+        metricsLogFocusReq(blocked && enforced, focusReqType, callingUid, unblockedBySdk);
+
+        if (blocked) {
+            String msg = "AudioHardening focus request for req "
+                    + focusReqType
+                    + (!enforced ? " would be " : " ")
+                    + "ignored for "
+                    + packageName + " (" + callingUid + "), "
+                    + clientId
+                    + ", level: partial";
+            mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
+        } else if (blockedIfFull) {
+            String msg = "AudioHardening focus request for req "
+                    + focusReqType
+                    + (!enforcedFull ? " would be " : " ")
+                    + "ignored for "
+                    + packageName + " (" + callingUid + "), "
+                    + clientId
+                    + ", level: full";
+            mEventLogger.enqueueAndSlog(msg, EventLogger.Event.ALOGW, TAG);
         }
 
-        String errorMssg = "Focus request DENIED for uid:" + callingUid
-                + " clientId:" + clientId + " req:" + focusReqType
-                + " procState:" + mActivityManager.getUidProcessState(callingUid);
-        mEventLogger.enqueueAndSlog(errorMssg, EventLogger.Event.ALOGI, TAG);
-
-        return true;
+        return blocked && enforced || (blockedIfFull && enforcedFull);
     }
 
     /**

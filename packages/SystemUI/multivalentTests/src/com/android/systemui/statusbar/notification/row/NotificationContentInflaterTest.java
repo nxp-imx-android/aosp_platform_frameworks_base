@@ -399,35 +399,6 @@ public class NotificationContentInflaterTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(PromotedNotificationUi.FLAG_NAME)
-    @DisableFlags(StatusBarNotifChips.FLAG_NAME)
-    public void testExtractsPromotedContent_whePromotedNotificationUiFlagEnabled()
-            throws Exception {
-        final PromotedNotificationContentModels content =
-                new PromotedNotificationContentBuilder("key").build();
-        mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
-
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
-
-        mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModels());
-    }
-
-    @Test
-    @EnableFlags(StatusBarNotifChips.FLAG_NAME)
-    @DisableFlags(PromotedNotificationUi.FLAG_NAME)
-    public void testExtractsPromotedContent_whenStatusBarNotifChipsFlagEnabled() throws Exception {
-        final PromotedNotificationContentModels content =
-                new PromotedNotificationContentBuilder("key").build();
-        mPromotedNotificationContentExtractor.resetForEntry(mRow.getEntry(), content);
-
-        inflateAndWait(mNotificationInflater, FLAG_CONTENT_VIEW_ALL, mRow);
-
-        mPromotedNotificationContentExtractor.verifyOneExtractCall();
-        assertEquals(content, mRow.getEntry().getPromotedNotificationContentModels());
-    }
-
-    @Test
     @EnableFlags({PromotedNotificationUi.FLAG_NAME, StatusBarNotifChips.FLAG_NAME})
     public void testExtractsPromotedContent_whenBothFlagsEnabled() throws Exception {
         final PromotedNotificationContentModels content =

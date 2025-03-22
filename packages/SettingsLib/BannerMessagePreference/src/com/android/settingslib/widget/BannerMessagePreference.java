@@ -58,35 +58,42 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
         HIGH(0,
                 R.color.banner_background_attention_high,
                 R.color.banner_accent_attention_high,
-                R.color.settingslib_banner_button_background_high),
+                R.color.settingslib_banner_button_background_high,
+                R.color.settingslib_banner_filled_button_content_high),
         MEDIUM(1,
                 R.color.banner_background_attention_medium,
                 R.color.banner_accent_attention_medium,
-                R.color.settingslib_banner_button_background_medium),
+                R.color.settingslib_banner_button_background_medium,
+                R.color.settingslib_banner_filled_button_content_medium),
         LOW(2,
                 R.color.banner_background_attention_low,
                 R.color.banner_accent_attention_low,
-                R.color.settingslib_banner_button_background_low),
+                R.color.settingslib_banner_button_background_low,
+                R.color.settingslib_banner_filled_button_content_low),
         NORMAL(3,
                 R.color.banner_background_attention_normal,
                 R.color.banner_accent_attention_normal,
-                R.color.settingslib_banner_button_background_normal);
+                R.color.settingslib_banner_button_background_normal,
+                R.color.settingslib_banner_filled_button_content_normal);
 
         // Corresponds to the enum value of R.attr.attentionLevel
         private final int mAttrValue;
         @ColorRes private final int mBackgroundColorResId;
         @ColorRes private final int mAccentColorResId;
         @ColorRes private final int mButtonBackgroundColorResId;
+        @ColorRes private final int mButtonContentColorResId;
 
         AttentionLevel(
                 int attrValue,
                 @ColorRes int backgroundColorResId,
                 @ColorRes int accentColorResId,
-                @ColorRes int buttonBackgroundColorResId) {
+                @ColorRes int buttonBackgroundColorResId,
+                @ColorRes int buttonContentColorResId) {
             mAttrValue = attrValue;
             mBackgroundColorResId = backgroundColorResId;
             mAccentColorResId = accentColorResId;
             mButtonBackgroundColorResId = buttonBackgroundColorResId;
+            mButtonContentColorResId = buttonContentColorResId;
         }
 
         static AttentionLevel fromAttr(int attrValue) {
@@ -108,6 +115,10 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
 
         public @ColorRes int getButtonBackgroundColorResId() {
             return mButtonBackgroundColorResId;
+        }
+
+        public @ColorRes int getButtonContentColorResId() {
+            return mButtonContentColorResId;
         }
     }
 
@@ -181,6 +192,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
     public void onBindViewHolder(@NonNull PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
         final Context context = getContext();
+        final Resources resources = context.getResources();
 
         final TextView titleView = (TextView) holder.findViewById(R.id.banner_title);
         CharSequence title = getTitle();
@@ -200,7 +212,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
 
         final Resources.Theme theme = context.getTheme();
         @ColorInt final int accentColor =
-                context.getResources().getColor(mAttentionLevel.getAccentColorResId(), theme);
+                resources.getColor(mAttentionLevel.getAccentColorResId(), theme);
 
         final ImageView iconView = (ImageView) holder.findViewById(R.id.banner_icon);
         if (iconView != null) {
@@ -211,9 +223,7 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
             } else {
                 iconView.setVisibility(View.VISIBLE);
                 iconView.setImageDrawable(
-                        icon == null
-                                ? getContext().getDrawable(R.drawable.ic_warning)
-                                : icon);
+                        icon == null ? context.getDrawable(R.drawable.ic_warning) : icon);
                 if (mAttentionLevel != AttentionLevel.NORMAL
                         && !SettingsThemeHelper.isExpressiveTheme(context)) {
                     iconView.setColorFilter(
@@ -224,14 +234,24 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
 
         if (IS_AT_LEAST_S) {
             @ColorInt final int backgroundColor =
-                    context.getResources().getColor(
-                            mAttentionLevel.getBackgroundColorResId(), theme);
+                    resources.getColor(mAttentionLevel.getBackgroundColorResId(), theme);
 
-            @ColorInt final int btnBackgroundColor =
-                    context.getResources().getColor(mAttentionLevel.getButtonBackgroundColorResId(),
-                            theme);
-            ColorStateList strokeColor = context.getResources().getColorStateList(
-                    mAttentionLevel.getButtonBackgroundColorResId(), theme);
+            ColorStateList btnBackgroundColor =
+                    resources.getColorStateList(
+                            mAttentionLevel.getButtonBackgroundColorResId(), theme);
+            ColorStateList btnStrokeColor =
+                    mAttentionLevel == AttentionLevel.NORMAL
+                            ? resources.getColorStateList(
+                                    R.color.settingslib_banner_outline_button_stroke_normal, theme)
+                            : btnBackgroundColor;
+            ColorStateList filledBtnTextColor =
+                    resources.getColorStateList(
+                            mAttentionLevel.getButtonContentColorResId(), theme);
+            ColorStateList outlineBtnTextColor =
+                    mAttentionLevel == AttentionLevel.NORMAL
+                            ? btnBackgroundColor
+                            : resources.getColorStateList(
+                                    R.color.settingslib_banner_outline_button_content, theme);
 
             holder.setDividerAllowedAbove(false);
             holder.setDividerAllowedBelow(false);
@@ -242,10 +262,10 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
 
             mPositiveButtonInfo.mColor = accentColor;
             mNegativeButtonInfo.mColor = accentColor;
-            if (mAttentionLevel != AttentionLevel.NORMAL) {
-                mPositiveButtonInfo.mBackgroundColor = btnBackgroundColor;
-                mNegativeButtonInfo.mStrokeColor = strokeColor;
-            }
+            mPositiveButtonInfo.mBackgroundColor = btnBackgroundColor;
+            mPositiveButtonInfo.mTextColor = filledBtnTextColor;
+            mNegativeButtonInfo.mStrokeColor = btnStrokeColor;
+            mNegativeButtonInfo.mTextColor = outlineBtnTextColor;
 
             mDismissButtonInfo.mButton = (ImageButton) holder.findViewById(R.id.banner_dismiss_btn);
             mDismissButtonInfo.setUpButton();
@@ -261,8 +281,6 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
                 headerView.setText(mHeader);
                 headerView.setVisibility(TextUtils.isEmpty(mHeader) ? View.GONE : View.VISIBLE);
             }
-
-
         } else {
             holder.setDividerAllowedAbove(true);
             holder.setDividerAllowedBelow(true);
@@ -567,8 +585,9 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
         private boolean mIsVisible = true;
         private boolean mIsEnabled = true;
         @ColorInt private int mColor;
-        @ColorInt private int mBackgroundColor;
+        @Nullable private ColorStateList mBackgroundColor;
         @Nullable private ColorStateList mStrokeColor;
+        @Nullable private ColorStateList mTextColor;
 
         void setUpButton() {
             if (mButton == null) {
@@ -586,11 +605,14 @@ public class BannerMessagePreference extends Preference implements GroupSectionD
 
             if (IS_AT_LEAST_S) {
                 if (btn != null && SettingsThemeHelper.isExpressiveTheme(btn.getContext())) {
-                    if (mBackgroundColor != 0) {
-                        btn.setBackgroundColor(mBackgroundColor);
+                    if (mBackgroundColor != null) {
+                        btn.setBackgroundTintList(mBackgroundColor);
                     }
                     if (mStrokeColor != null) {
                         btn.setStrokeColor(mStrokeColor);
+                    }
+                    if (mTextColor != null) {
+                        btn.setTextColor(mTextColor);
                     }
                 } else {
                     mButton.setTextColor(mColor);
