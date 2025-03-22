@@ -24,13 +24,9 @@ import org.objectweb.asm.Opcodes
 import java.io.PrintWriter
 
 /**
- * TODO This is for the legacy API coverage stats CSV that shows how many APIs are "supported"
- * in each class with some heuristics. We created [ApiDumper] later, which dumpps all methods
- * with the "supported" status. We should update the coverage dashboard to use the [ApiDumper]
- * output and remove this class, once we port all the heuristics to [ApiDumper] as well.
- * (For example, this class ignores non-public and/or abstract methods, but [ApiDumper] shows
- * all of them in the same way. We should probably mark them as "Boring" or maybe "Ignore"
- * for [ApiDumper])
+ * This class is no longer used. It was used for the old ravenwood dashboard. (b/402797626)
+ *
+ * TODO: Delete the class.
  */
 open class HostStubGenStats(val classes: ClassNodes) {
     data class Stats(

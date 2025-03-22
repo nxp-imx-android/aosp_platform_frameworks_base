@@ -377,6 +377,10 @@ fun MethodNode.isPublic(): Boolean {
     return (this.access and Opcodes.ACC_PUBLIC) != 0
 }
 
+fun MethodNode.isAbstract(): Boolean {
+    return (this.access and Opcodes.ACC_ABSTRACT) != 0
+}
+
 fun MethodNode.isNative(): Boolean {
     return (this.access and Opcodes.ACC_NATIVE) != 0
 }
