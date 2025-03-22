@@ -51,13 +51,12 @@ import com.android.systemui.common.ui.view.onLayoutChanged
 import com.android.systemui.common.ui.view.onTouchListener
 import com.android.systemui.customization.R as customR
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryHapticsInteractor
-import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.ui.view.layout.sections.AodPromotedNotificationSection
 import com.android.systemui.keyguard.ui.viewmodel.BurnInParameters
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardBlueprintViewModel
-import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardRootViewModel
+import com.android.systemui.keyguard.ui.viewmodel.KeyguardSmartspaceViewModel
 import com.android.systemui.keyguard.ui.viewmodel.OccludingAppDeviceEntryMessageViewModel
 import com.android.systemui.keyguard.ui.viewmodel.TransitionData
 import com.android.systemui.keyguard.ui.viewmodel.ViewStateAccessor
@@ -72,7 +71,6 @@ import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.R as sharedR
 import com.android.systemui.statusbar.CrossFadeHelper
 import com.android.systemui.statusbar.VibratorHelper
-import com.android.systemui.statusbar.phone.ScreenOffAnimationController
 import com.android.systemui.statusbar.phone.StatusBarKeyguardViewManager
 import com.android.systemui.temporarydisplay.ViewPriority
 import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
@@ -103,10 +101,8 @@ object KeyguardRootViewBinder {
         configuration: ConfigurationState,
         occludingAppDeviceEntryMessageViewModel: OccludingAppDeviceEntryMessageViewModel?,
         chipbarCoordinator: ChipbarCoordinator?,
-        screenOffAnimationController: ScreenOffAnimationController,
         shadeInteractor: ShadeInteractor,
-        clockInteractor: KeyguardClockInteractor,
-        clockViewModel: KeyguardClockViewModel,
+        smartspaceViewModel: KeyguardSmartspaceViewModel,
         deviceEntryHapticsInteractor: DeviceEntryHapticsInteractor?,
         vibratorHelper: VibratorHelper?,
         falsingManager: FalsingManager?,
@@ -326,7 +322,7 @@ object KeyguardRootViewBinder {
                                 if (isFullyAnyExpanded) {
                                     INVISIBLE
                                 } else {
-                                    View.VISIBLE
+                                    VISIBLE
                                 }
                         }
                     }
@@ -394,7 +390,7 @@ object KeyguardRootViewBinder {
                 OnLayoutChange(
                     viewModel,
                     blueprintViewModel,
-                    clockViewModel,
+                    smartspaceViewModel,
                     childViews,
                     burnInParams,
                     Logger(blueprintLog, TAG),
@@ -452,7 +448,7 @@ object KeyguardRootViewBinder {
     private class OnLayoutChange(
         private val viewModel: KeyguardRootViewModel,
         private val blueprintViewModel: KeyguardBlueprintViewModel,
-        private val clockViewModel: KeyguardClockViewModel,
+        private val smartspaceViewModel: KeyguardSmartspaceViewModel,
         private val childViews: Map<Int, View>,
         private val burnInParams: MutableStateFlow<BurnInParameters>,
         private val logger: Logger,
@@ -470,12 +466,16 @@ object KeyguardRootViewBinder {
             oldRight: Int,
             oldBottom: Int,
         ) {
+            val prevSmartspaceVisibility = smartspaceViewModel.bcSmartspaceVisibility.value
+            val smartspaceVisibility = childViews[bcSmartspaceId]?.visibility ?: GONE
+            val smartspaceVisibilityChanged = prevSmartspaceVisibility != smartspaceVisibility
+
             // After layout, ensure the notifications are positioned correctly
             childViews[nsslPlaceholderId]?.let { notificationListPlaceholder ->
                 // Do not update a second time while a blueprint transition is running
                 val transition = blueprintViewModel.currentTransition.value
                 val shouldAnimate = transition != null && transition.config.type.animateNotifChanges
-                if (prevTransition == transition && shouldAnimate) {
+                if (prevTransition == transition && shouldAnimate && !smartspaceVisibilityChanged) {
                     logger.w("Skipping onNotificationContainerBoundsChanged during transition")
                     return
                 }
@@ -484,7 +484,7 @@ object KeyguardRootViewBinder {
                 viewModel.onNotificationContainerBoundsChanged(
                     notificationListPlaceholder.top.toFloat(),
                     notificationListPlaceholder.bottom.toFloat(),
-                    animate = shouldAnimate,
+                    animate = (shouldAnimate || smartspaceVisibilityChanged),
                 )
             }
 
@@ -583,6 +583,8 @@ object KeyguardRootViewBinder {
     private val aodNotificationIconContainerId = R.id.aod_notification_icon_container
     private val largeClockId = customR.id.lockscreen_clock_view_large
     private val largeClockDateId = sharedR.id.date_smartspace_view_large
+    private val largeClockWeatherId = sharedR.id.weather_smartspace_view_large
+    private val bcSmartspaceId = sharedR.id.bc_smartspace_view
     private val smallClockId = customR.id.lockscreen_clock_view
     private val indicationArea = R.id.keyguard_indication_area
     private val startButton = R.id.start_button
