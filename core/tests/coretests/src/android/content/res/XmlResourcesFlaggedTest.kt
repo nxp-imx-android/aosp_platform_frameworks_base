@@ -47,6 +47,8 @@ import java.io.IOException
 @Presubmit
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.DisabledOnRavenwood(bug = 396458006,
+    reason = "Resource flags don't fully work on Ravenwood yet")
 class XmlResourcesFlaggedTest {
     @get:Rule
     val mCheckFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()

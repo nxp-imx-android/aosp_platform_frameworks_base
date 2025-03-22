@@ -214,11 +214,31 @@ public final class MediaQualityManager {
             }
         };
 
+        IActiveProcessingPictureListener apListener = new IActiveProcessingPictureListener.Stub() {
+            @Override
+            public void onActiveProcessingPicturesChanged(List<ActiveProcessingPicture> aps) {
+                List<ActiveProcessingPicture> nonGlobal = new ArrayList<>();
+                for (ActiveProcessingPicture ap : aps) {
+                    if (!ap.isForGlobal()) {
+                        nonGlobal.add(ap);
+                    }
+                }
+                for (ActiveProcessingPictureListenerRecord record : mApListenerRecords) {
+                    if (record.mIsGlobal) {
+                        record.postActiveProcessingPicturesChanged(aps);
+                    } else {
+                        record.postActiveProcessingPicturesChanged(nonGlobal);
+                    }
+                }
+            }
+        };
+
         try {
             if (mService != null) {
                 mService.registerPictureProfileCallback(ppCallback);
                 mService.registerSoundProfileCallback(spCallback);
                 mService.registerAmbientBacklightCallback(abCallback);
+                mService.registerActiveProcessingPictureListener(apListener);
             }
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -372,6 +392,18 @@ public final class MediaQualityManager {
     public List<PictureProfileHandle> getPictureProfileHandle(String[] id) {
         try {
             return mService.getPictureProfileHandle(id, mUserHandle.getIdentifier());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets picture profile handle for TV input.
+     * @hide
+     */
+    public long getPictureProfileForTvInput(String inputId) {
+        try {
+            return mService.getPictureProfileForTvInput(inputId, mUserHandle.getIdentifier());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -1212,6 +1244,15 @@ public final class MediaQualityManager {
 
         public Consumer<List<ActiveProcessingPicture>> getListener() {
             return mListener;
+        }
+
+        public void postActiveProcessingPicturesChanged(List<ActiveProcessingPicture> aps) {
+            mExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.accept(aps);
+                }
+            });
         }
     }
 

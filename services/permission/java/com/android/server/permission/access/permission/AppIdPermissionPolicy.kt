@@ -21,6 +21,7 @@ import android.content.pm.PackageManager
 import android.content.pm.PermissionGroupInfo
 import android.content.pm.PermissionInfo
 import android.content.pm.SigningDetails
+import android.health.connect.HealthPermissions
 import android.os.Build
 import android.permission.flags.Flags
 import android.util.Slog
@@ -701,6 +702,7 @@ class AppIdPermissionPolicy : SchemePolicy() {
 
     private fun MutateStateScope.revokePermissionsOnPackageUpdate(appId: Int) {
         revokeStorageAndMediaPermissionsOnPackageUpdate(appId)
+        revokeHeartRatePermissionsOnPackageUpdate(appId)
     }
 
     private fun MutateStateScope.revokeStorageAndMediaPermissionsOnPackageUpdate(appId: Int) {
@@ -751,21 +753,152 @@ class AppIdPermissionPolicy : SchemePolicy() {
                     // SYSTEM_FIXED. Otherwise the user cannot grant back the permission.
                     if (
                         permissionName in STORAGE_AND_MEDIA_PERMISSIONS &&
-                            oldFlags.hasBits(PermissionFlags.RUNTIME_GRANTED) &&
-                            !oldFlags.hasAnyBit(SYSTEM_OR_POLICY_FIXED_MASK)
+                            oldFlags.hasBits(PermissionFlags.RUNTIME_GRANTED)
                     ) {
-                        Slog.v(
-                            LOG_TAG,
-                            "Revoking storage permission: $permissionName for appId: " +
-                                " $appId and user: $userId",
-                        )
-                        val newFlags =
-                            oldFlags andInv (PermissionFlags.RUNTIME_GRANTED or USER_SETTABLE_MASK)
-                        setPermissionFlags(appId, userId, permissionName, newFlags)
+                        revokeRuntimePermission(appId, userId, permissionName)
                     }
                 }
             }
         }
+    }
+
+    /**
+     * If the app is updated, the legacy BODY_SENSOR and READ_HEART_RATE permissions may go out of
+     * sync (for example, when the app eventually requests the implicit new permission). If this
+     * occurs, revoke both permissions to force a re-prompt.
+     */
+    private fun MutateStateScope.revokeHeartRatePermissionsOnPackageUpdate(appId: Int) {
+        val targetSdkVersion = getAppIdTargetSdkVersion(appId, null)
+        // Apps targeting BAKLAVA and above shouldn't be using BODY_SENSORS.
+        if (targetSdkVersion >= Build.VERSION_CODES.BAKLAVA) {
+            return
+        }
+
+        val isBodySensorsRequested =
+            anyPackageInAppId(appId, newState) {
+                Manifest.permission.BODY_SENSORS in it.androidPackage!!.requestedPermissions
+            }
+        val isReadHeartRateRequested =
+            anyPackageInAppId(appId, newState) {
+                HealthPermissions.READ_HEART_RATE in it.androidPackage!!.requestedPermissions
+            }
+        val isBodySensorsBackgroundRequested =
+            anyPackageInAppId(appId, newState) {
+                Manifest.permission.BODY_SENSORS_BACKGROUND in
+                    it.androidPackage!!.requestedPermissions
+            }
+        val isReadHealthDataInBackgroundRequested =
+            anyPackageInAppId(appId, newState) {
+                HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND in
+                    it.androidPackage!!.requestedPermissions
+            }
+
+        // Walk the list of user IDs and revoke states as needed.
+        newState.userStates.forEachIndexed { _, userId, _ ->
+            // First sync BODY_SENSORS and READ_HEART_RATE, if required.
+            var isBodySensorsGranted =
+                isRuntimePermissionGranted(appId, userId, Manifest.permission.BODY_SENSORS)
+            if (isBodySensorsRequested && isReadHeartRateRequested) {
+                val isReadHeartRateGranted =
+                    isRuntimePermissionGranted(appId, userId, HealthPermissions.READ_HEART_RATE)
+                if (isBodySensorsGranted != isReadHeartRateGranted) {
+                    if (isBodySensorsGranted) {
+                        if (
+                            revokeRuntimePermission(appId, userId, Manifest.permission.BODY_SENSORS)
+                        ) {
+                            isBodySensorsGranted = false
+                        }
+                    }
+                    if (isReadHeartRateGranted) {
+                        revokeRuntimePermission(appId, userId, HealthPermissions.READ_HEART_RATE)
+                    }
+                }
+            }
+
+            // Then check to ensure we haven't put the background/foreground permissions out of
+            // sync.
+            var isBodySensorsBackgroundGranted =
+                isRuntimePermissionGranted(
+                    appId,
+                    userId,
+                    Manifest.permission.BODY_SENSORS_BACKGROUND,
+                )
+            if (isBodySensorsBackgroundGranted && !isBodySensorsGranted) {
+                if (
+                    revokeRuntimePermission(
+                        appId,
+                        userId,
+                        Manifest.permission.BODY_SENSORS_BACKGROUND,
+                    )
+                ) {
+                    isBodySensorsBackgroundGranted = false
+                }
+            }
+
+            // Finally sync BODY_SENSORS_BACKGROUND and READ_HEALTH_DATA_IN_BACKGROUND, if required.
+            if (isBodySensorsBackgroundRequested && isReadHealthDataInBackgroundRequested) {
+                val isReadHealthDataInBackgroundGranted =
+                    isRuntimePermissionGranted(
+                        appId,
+                        userId,
+                        HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND,
+                    )
+                if (isBodySensorsBackgroundGranted != isReadHealthDataInBackgroundGranted) {
+                    if (isBodySensorsBackgroundGranted) {
+                        revokeRuntimePermission(
+                            appId,
+                            userId,
+                            Manifest.permission.BODY_SENSORS_BACKGROUND,
+                        )
+                    }
+                    if (isReadHealthDataInBackgroundGranted) {
+                        revokeRuntimePermission(
+                            appId,
+                            userId,
+                            HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND,
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun GetStateScope.isRuntimePermissionGranted(
+        appId: Int,
+        userId: Int,
+        permissionName: String,
+    ): Boolean {
+        val flags = getPermissionFlags(appId, userId, permissionName)
+        return PermissionFlags.isAppOpGranted(flags)
+    }
+
+    fun MutateStateScope.revokeRuntimePermission(
+        appId: Int,
+        userId: Int,
+        permissionName: String,
+    ): Boolean {
+        Slog.v(
+            LOG_TAG,
+            "Revoking runtime permission for appId: $appId, " +
+                "permission: $permissionName, userId: $userId",
+        )
+        var flags = getPermissionFlags(appId, userId, permissionName)
+        if (flags.hasAnyBit(SYSTEM_OR_POLICY_FIXED_MASK)) {
+            Slog.v(
+                LOG_TAG,
+                "Not allowed to revoke $permissionName for appId: $appId, userId: $userId",
+            )
+            return false
+        }
+
+        flags =
+            flags andInv
+                (PermissionFlags.RUNTIME_GRANTED or
+                    USER_SETTABLE_MASK or
+                    PermissionFlags.PREGRANT or
+                    PermissionFlags.ROLE)
+        setPermissionFlags(appId, userId, permissionName, flags)
+        return true
     }
 
     private fun MutateStateScope.evaluatePermissionStateForAllPackages(

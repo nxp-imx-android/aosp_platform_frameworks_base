@@ -67,6 +67,7 @@ final class TvInputHal implements Handler.Callback {
     private static native void nativeClose(long ptr);
     private static native int nativeSetTvMessageEnabled(long ptr, int deviceId, int streamId,
             int type, boolean enabled);
+
     private static native int nativeSetPictureProfile(
             long ptr, int deviceId, int streamId, long profileHandle);
 
@@ -117,6 +118,24 @@ final class TvInputHal implements Handler.Callback {
             }
             if (nativeSetTvMessageEnabled(mPtr, deviceId, streamConfig.getStreamId(), type,
                     enabled) == 0) {
+                return SUCCESS;
+            } else {
+                return ERROR_UNKNOWN;
+            }
+        }
+    }
+
+    public int setPictureProfile(int deviceId, TvStreamConfig streamConfig, long profileHandle) {
+        synchronized (mLock) {
+            if (mPtr == 0) {
+                return ERROR_NO_INIT;
+            }
+            int generation = mStreamConfigGenerations.get(deviceId, 0);
+            if (generation != streamConfig.getGeneration()) {
+                return ERROR_STALE_CONFIG;
+            }
+            if (nativeSetPictureProfile(mPtr, deviceId, streamConfig.getStreamId(), profileHandle)
+                    == 0) {
                 return SUCCESS;
             } else {
                 return ERROR_UNKNOWN;

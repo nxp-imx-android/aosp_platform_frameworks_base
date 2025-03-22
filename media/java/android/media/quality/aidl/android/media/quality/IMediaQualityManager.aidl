@@ -17,6 +17,7 @@
 package android.media.quality;
 
 import android.media.quality.AmbientBacklightSettings;
+import android.media.quality.IActiveProcessingPictureListener;
 import android.media.quality.IAmbientBacklightCallback;
 import android.media.quality.IPictureProfileCallback;
 import android.media.quality.ISoundProfileCallback;
@@ -47,6 +48,12 @@ interface IMediaQualityManager {
     void setPictureProfileAllowList(in List<String> packages, int userId);
     List<PictureProfileHandle> getPictureProfileHandle(in String[] id, int userId);
 
+    long getPictureProfileHandleValue(in String id, int userId);
+    long getDefaultPictureProfileHandleValue(int userId);
+    void notifyPictureProfileHandleSelection(in long handle, int userId);
+
+    long getPictureProfileForTvInput(in String inputId, int userId);
+
     void createSoundProfile(in SoundProfile pp, int userId);
     void updateSoundProfile(in String id, in SoundProfile pp, int userId);
     void removeSoundProfile(in String id, int userId);
@@ -64,6 +71,7 @@ interface IMediaQualityManager {
     void registerPictureProfileCallback(in IPictureProfileCallback cb);
     void registerSoundProfileCallback(in ISoundProfileCallback cb);
     void registerAmbientBacklightCallback(in IAmbientBacklightCallback cb);
+    void registerActiveProcessingPictureListener(in IActiveProcessingPictureListener l);
 
     List<ParameterCapability> getParameterCapabilities(in List<String> names, int userId);
 

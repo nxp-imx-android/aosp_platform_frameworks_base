@@ -90,5 +90,5 @@ flag {
     namespace: "systemui"
     description: "Enables various improvements to the dream experience "
         "such as new triggers and various bug fixes"
-    bug: "375689917"
+    bug: "403579494"
 }

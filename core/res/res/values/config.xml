@@ -7466,4 +7466,8 @@
     <!-- By default ActivityOptions#makeScaleUpAnimation is only used between activities. This
          config enables OEMs to support its usage across tasks.-->
     <bool name="config_enableCrossTaskScaleUpAnimation">false</bool>
+
+    <!-- Biometrics fingerprint frr notification target activity component name, it shall be customized by OEMs -->
+    <string translatable="false" name="config_fingerprintFrrTargetComponent"></string>
+
 </resources>

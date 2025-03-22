@@ -74,6 +74,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.navigationbar.gestural.domain.GestureInteractor
 import com.android.systemui.navigationbar.gestural.domain.TaskInfo
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher
+import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
@@ -265,6 +266,8 @@ class DreamOverlayServiceTest(flags: FlagsParameterization?) : SysuiTestCase() {
                 mDreamOverlayCallbackController,
                 kosmos.keyguardInteractor,
                 gestureInteractor,
+                kosmos.wakeGestureMonitor,
+                kosmos.powerInteractor,
                 WINDOW_NAME,
             )
     }

@@ -1393,13 +1393,6 @@ flag {
 }
 
 flag {
-  name: "media_controls_posts_optimization"
-  namespace: "systemui"
-  description: "Ignore duplicate media notifications posted"
-  bug: "358645640"
-}
-
-flag {
   name: "media_controls_umo_inflation_in_background"
   namespace: "systemui"
   description: "Inflate UMO in background thread"

@@ -23,34 +23,20 @@
     android:background="?android:attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:minHeight="?android:attr/listPreferredItemHeightSmall"
+    android:paddingStart="?android:attr/listPreferredItemPaddingStart"
     android:paddingEnd="?android:attr/listPreferredItemPaddingEnd">
 
     <LinearLayout
         android:id="@android:id/widget_frame"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:paddingEnd="@dimen/settingslib_expressive_space_extrasmall6"
+        android:layout_height="wrap_content"
         android:gravity="center"
-        android:minWidth="32dp"
+        android:minWidth="@dimen/settingslib_expressive_space_medium3"
+        android:minHeight="@dimen/settingslib_expressive_space_medium3"
+        android:layout_marginEnd="@dimen/settingslib_expressive_space_extrasmall6"
         android:orientation="vertical"/>
 
-    <LinearLayout
-        android:id="@+id/icon_frame"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:minWidth="32dp"
-        android:orientation="horizontal"
-        android:layout_marginEnd="@dimen/settingslib_expressive_space_small1"
-        android:paddingTop="@dimen/settingslib_expressive_space_extrasmall2"
-        android:paddingBottom="@dimen/settingslib_expressive_space_extrasmall2">
-        <androidx.preference.internal.PreferenceImageView
-            android:id="@android:id/icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            settings:maxWidth="@dimen/secondary_app_icon_size"
-            settings:maxHeight="@dimen/secondary_app_icon_size"/>
-    </LinearLayout>
+    <include layout="@layout/settingslib_expressive_preference_icon_frame"/>
 
     <LinearLayout
         android:layout_width="0dp"
