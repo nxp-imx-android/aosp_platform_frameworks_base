@@ -191,7 +191,6 @@ class SideFpsOverlayViewBinderTest : SysuiTestCase() {
             val clickListenerCaptor = ArgumentCaptor.forClass(View.OnClickListener::class.java)
             verify(sideFpsView).setOnClickListener(clickListenerCaptor.capture())
             clickListenerCaptor.value.onClick(sideFpsView)
-            verify(lottieAnimationView).toggleAnimation()
         }
     }
 

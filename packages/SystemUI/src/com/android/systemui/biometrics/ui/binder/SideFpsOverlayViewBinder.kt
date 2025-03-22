@@ -25,6 +25,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.airbnb.lottie.LottieAnimationView
@@ -67,6 +70,59 @@ constructor(
     private val sfpsSensorInteractor: Lazy<SideFpsSensorInteractor>,
     private val windowManager: Lazy<WindowManager>,
 ) : CoreStartable {
+    private val pauseDelegate: AccessibilityDelegateCompat =
+        object : AccessibilityDelegateCompat() {
+            override fun onInitializeAccessibilityNodeInfo(
+                host: View,
+                info: AccessibilityNodeInfoCompat,
+            ) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.addAction(
+                    AccessibilityNodeInfoCompat.AccessibilityActionCompat(
+                        AccessibilityNodeInfoCompat.ACTION_CLICK,
+                        host.context.getString(R.string.pause_animation),
+                    )
+                )
+            }
+
+            override fun dispatchPopulateAccessibilityEvent(
+                host: View,
+                event: AccessibilityEvent,
+            ): Boolean {
+                return if (event.getEventType() === AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+                    true
+                } else {
+                    super.dispatchPopulateAccessibilityEvent(host, event)
+                }
+            }
+        }
+
+    private val resumeDelegate: AccessibilityDelegateCompat =
+        object : AccessibilityDelegateCompat() {
+            override fun onInitializeAccessibilityNodeInfo(
+                host: View,
+                info: AccessibilityNodeInfoCompat,
+            ) {
+                super.onInitializeAccessibilityNodeInfo(host, info)
+                info.addAction(
+                    AccessibilityNodeInfoCompat.AccessibilityActionCompat(
+                        AccessibilityNodeInfoCompat.ACTION_CLICK,
+                        host.context.getString(R.string.resume_animation),
+                    )
+                )
+            }
+
+            override fun dispatchPopulateAccessibilityEvent(
+                host: View,
+                event: AccessibilityEvent,
+            ): Boolean {
+                return if (event.getEventType() === AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
+                    true
+                } else {
+                    super.dispatchPopulateAccessibilityEvent(host, event)
+                }
+            }
+        }
 
     override fun start() {
         applicationScope.launch {
@@ -135,6 +191,7 @@ constructor(
         overlayView!!.setOnClickListener { v ->
             v.requireViewById<LottieAnimationView>(R.id.sidefps_animation).toggleAnimation()
         }
+        ViewCompat.setAccessibilityDelegate(overlayView!!, pauseDelegate)
         Log.d(TAG, "show(): adding overlayView $overlayView")
         windowManager.get().addView(overlayView, overlayViewModel.defaultOverlayViewParams)
     }
@@ -177,29 +234,6 @@ constructor(
 
                 overlayShowAnimator.start()
 
-                /**
-                 * Intercepts TYPE_WINDOW_STATE_CHANGED accessibility event, preventing Talkback
-                 * from speaking @string/accessibility_fingerprint_label twice when sensor location
-                 * indicator is in focus
-                 */
-                it.setAccessibilityDelegate(
-                    object : View.AccessibilityDelegate() {
-                        override fun dispatchPopulateAccessibilityEvent(
-                            host: View,
-                            event: AccessibilityEvent,
-                        ): Boolean {
-                            return if (
-                                event.getEventType() ===
-                                    AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
-                            ) {
-                                true
-                            } else {
-                                super.dispatchPopulateAccessibilityEvent(host, event)
-                            }
-                        }
-                    }
-                )
-
                 repeatOnLifecycle(Lifecycle.State.STARTED) {
                     launch {
                         viewModel.lottieCallbacks.collect { callbacks ->
@@ -224,6 +258,16 @@ constructor(
             }
         }
     }
+
+    private fun LottieAnimationView.toggleAnimation() {
+        if (isAnimating) {
+            pauseAnimation()
+            ViewCompat.setAccessibilityDelegate(this, resumeDelegate)
+        } else {
+            resumeAnimation()
+            ViewCompat.setAccessibilityDelegate(this, pauseDelegate)
+        }
+    }
 }
 
 private fun LottieAnimationView.addOverlayDynamicColor(colorCallbacks: List<LottieCallback>) {
@@ -233,14 +277,6 @@ private fun LottieAnimationView.addOverlayDynamicColor(colorCallbacks: List<Lott
                 PorterDuffColorFilter(callback.color, PorterDuff.Mode.SRC_ATOP)
             }
         }
-        resumeAnimation()
-    }
-}
-
-fun LottieAnimationView.toggleAnimation() {
-    if (isAnimating) {
-        pauseAnimation()
-    } else {
         resumeAnimation()
     }
 }

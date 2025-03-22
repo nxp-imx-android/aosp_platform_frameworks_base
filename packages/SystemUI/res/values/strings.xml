@@ -3452,6 +3452,10 @@
     <string name="keyguard_try_fingerprint">Use fingerprint to open</string>
     <!-- Accessibility announcement to inform user to unlock using the fingerprint sensor [CHAR LIMIT=NONE] -->
     <string name="accessibility_fingerprint_bouncer">Authentication required. Touch the fingerprint sensor to authenticate.</string>
+    <!-- Accessibility action label for resuming animation -->
+    <string name="resume_animation">Resume animation</string>
+    <!-- Accessibility action label for pausing animation -->
+    <string name="pause_animation">Pause animation</string>
 
     <!-- Content description for a chip in the status bar showing that the user is currently on a call. [CHAR LIMIT=NONE] -->
     <string name="ongoing_call_content_description">Ongoing call</string>
