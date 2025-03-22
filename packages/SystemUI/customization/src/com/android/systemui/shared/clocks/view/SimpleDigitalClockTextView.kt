@@ -209,8 +209,7 @@ open class SimpleDigitalClockTextView(
         lockScreenPaint.typeface = typefaceCache.getTypefaceForVariant(lsFontVariation)
         typeface = lockScreenPaint.typeface
 
-        textBounds = lockScreenPaint.getTextBounds(text)
-        targetTextBounds = textBounds
+        updateTextBounds()
 
         textAnimator.setTextStyle(
             TextAnimator.Style(fVar = lsFontVariation),
@@ -253,9 +252,9 @@ open class SimpleDigitalClockTextView(
                         object : TextAnimatorListener {
                             override fun onInvalidate() = invalidate()
 
-                            override fun onRebased() = updateTextBounds()
+                            override fun onRebased() = updateAnimationTextBounds()
 
-                            override fun onPaintModified() = updateTextBounds()
+                            override fun onPaintModified() = updateAnimationTextBounds()
                         },
                     )
                 setInterpolatorPaint()
@@ -414,10 +413,7 @@ open class SimpleDigitalClockTextView(
     }
 
     fun refreshText() {
-        textBounds = lockScreenPaint.getTextBounds(text)
-        targetTextBounds =
-            if (!this::textAnimator.isInitialized) textBounds
-            else textAnimator.textInterpolator.targetPaint.getTextBounds(text)
+        updateTextBounds()
 
         if (layout == null) {
             requestLayout()
@@ -579,8 +575,7 @@ open class SimpleDigitalClockTextView(
         if (fontSizePx > 0) {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSizePx)
             lockScreenPaint.textSize = textSize
-            textBounds = lockScreenPaint.getTextBounds(text)
-            targetTextBounds = textBounds
+            updateTextBounds()
         }
         if (!constrainedByHeight) {
             val lastUnconstrainedHeight = textBounds.height + lockScreenPaint.strokeWidth * 2
@@ -624,15 +619,26 @@ open class SimpleDigitalClockTextView(
         }
     }
 
+    /** Updates both the lockscreen text bounds and animation text bounds */
+    private fun updateTextBounds() {
+        textBounds = lockScreenPaint.getTextBounds(text)
+        updateAnimationTextBounds()
+    }
+
     /**
      * Called after textAnimator.setTextStyle textAnimator.setTextStyle will update targetPaint, and
      * rebase if previous animator is canceled so basePaint will store the state we transition from
      * and targetPaint will store the state we transition to
      */
-    private fun updateTextBounds() {
+    private fun updateAnimationTextBounds() {
         drawnProgress = null
-        prevTextBounds = textAnimator.textInterpolator.basePaint.getTextBounds(text)
-        targetTextBounds = textAnimator.textInterpolator.targetPaint.getTextBounds(text)
+        if (this::textAnimator.isInitialized) {
+            prevTextBounds = textAnimator.textInterpolator.basePaint.getTextBounds(text)
+            targetTextBounds = textAnimator.textInterpolator.targetPaint.getTextBounds(text)
+        } else {
+            prevTextBounds = textBounds
+            targetTextBounds = textBounds
+        }
     }
 
     /**
