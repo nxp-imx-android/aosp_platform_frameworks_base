@@ -238,10 +238,7 @@ public class SelectorWithWidgetPreference extends CheckBoxPreference {
         } else {
             setWidgetLayoutResource(R.layout.settingslib_preference_widget_radiobutton);
         }
-        int resID = SettingsThemeHelper.isExpressiveTheme(context)
-                ? R.layout.settingslib_expressive_preference_selector_with_widget
-                : R.layout.preference_selector_with_widget;
-        setLayoutResource(resID);
+        setLayoutResource(R.layout.preference_selector_with_widget);
         setIconSpaceReserved(false);
 
         final TypedArray a =
