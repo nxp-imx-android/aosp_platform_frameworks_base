@@ -42,9 +42,11 @@ import android.hardware.tv.mediaquality.SoundParameter;
 import android.hardware.tv.mediaquality.SoundParameters;
 import android.hardware.tv.mediaquality.StreamStatus;
 import android.hardware.tv.mediaquality.VendorParamCapability;
+import android.media.quality.ActiveProcessingPicture;
 import android.media.quality.AmbientBacklightEvent;
 import android.media.quality.AmbientBacklightMetadata;
 import android.media.quality.AmbientBacklightSettings;
+import android.media.quality.IActiveProcessingPictureListener;
 import android.media.quality.IAmbientBacklightCallback;
 import android.media.quality.IMediaQualityManager;
 import android.media.quality.IPictureProfileCallback;
@@ -72,6 +74,8 @@ import android.util.Log;
 import android.util.Pair;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.view.SurfaceControlActivePicture;
+import android.view.SurfaceControlActivePictureListener;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.SystemService;
@@ -121,6 +125,7 @@ public class MediaQualityService extends SystemService {
     private MqManagerNotifier mMqManagerNotifier;
     private MqDatabaseUtils mMqDatabaseUtils;
     private Handler mHandler;
+    private SurfaceControlActivePictureListener mSurfaceControlActivePictureListener;
 
     // A global lock for picture profile objects.
     private final Object mPictureProfileLock = new Object();
@@ -175,6 +180,14 @@ public class MediaQualityService extends SystemService {
         }
         Slogf.d(TAG, "Binder is not null");
 
+        mSurfaceControlActivePictureListener = new SurfaceControlActivePictureListener() {
+            @Override
+            public void onActivePicturesChanged(SurfaceControlActivePicture[] activePictures) {
+                handleOnActivePicturesChanged(activePictures);
+            }
+        };
+        mSurfaceControlActivePictureListener.startListening(); // TODO: stop listening
+
         mMediaQuality = IMediaQuality.Stub.asInterface(binder);
         if (mMediaQuality != null) {
             try {
@@ -208,6 +221,54 @@ public class MediaQualityService extends SystemService {
         }
 
         publishBinderService(Context.MEDIA_QUALITY_SERVICE, new BinderService());
+    }
+
+    private void handleOnActivePicturesChanged(SurfaceControlActivePicture[] scActivePictures) {
+        if (DEBUG) {
+            Slog.d(TAG, "handleOnActivePicturesChanged");
+        }
+        synchronized (mPictureProfileLock) {
+        // TODO handle other users
+            UserState userState = getOrCreateUserState(UserHandle.USER_SYSTEM);
+            int n = userState.mActiveProcessingPictureCallbackList.beginBroadcast();
+            for (int i = 0; i < n; ++i) {
+                try {
+                    IActiveProcessingPictureListener l = userState
+                            .mActiveProcessingPictureCallbackList
+                            .getBroadcastItem(i);
+                    ActiveProcessingPictureListenerInfo info =
+                            userState.mActiveProcessingPictureListenerMap.get(l);
+                    if (info == null) {
+                        continue;
+                    }
+                    int uid = info.mUid;
+                    boolean hasGlobalPermission = mContext.checkPermission(
+                            android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE,
+                            info.mPid, uid)
+                            == PackageManager.PERMISSION_GRANTED;
+                    List<ActiveProcessingPicture> aps = new ArrayList<>();
+                    for (SurfaceControlActivePicture scap : scActivePictures) {
+                        if (!hasGlobalPermission && scap.getOwnerUid() != uid) {
+                            // should not receive the event
+                            continue;
+                        }
+                        String profileId = mPictureProfileTempIdMap.getValue(
+                                scap.getPictureProfileHandle().getId());
+                        if (profileId == null) {
+                            continue;
+                        }
+                        aps.add(new ActiveProcessingPicture(
+                                scap.getLayerId(), profileId, scap.getOwnerUid() != uid));
+
+                    }
+
+                    l.onActiveProcessingPicturesChanged(aps);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "failed to report added AD service to callback", e);
+                }
+            }
+            userState.mActiveProcessingPictureCallbackList.finishBroadcast();
+        }
     }
 
     private final class BinderService extends IMediaQualityManager.Stub {
@@ -801,21 +862,21 @@ public class MediaQualityService extends SystemService {
         }
 
         private boolean hasGlobalPictureQualityServicePermission() {
-            return mPackageManager.checkPermission(android.Manifest.permission
-                            .MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE,
-                    mContext.getPackageName()) == mPackageManager.PERMISSION_GRANTED;
+            return mContext.checkCallingPermission(
+                    android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE)
+                    == PackageManager.PERMISSION_GRANTED;
         }
 
         private boolean hasGlobalSoundQualityServicePermission() {
-            return mPackageManager.checkPermission(android.Manifest.permission
-                            .MANAGE_GLOBAL_SOUND_QUALITY_SERVICE,
-                    mContext.getPackageName()) == mPackageManager.PERMISSION_GRANTED;
+            return mContext.checkCallingPermission(
+                    android.Manifest.permission.MANAGE_GLOBAL_SOUND_QUALITY_SERVICE)
+                    == PackageManager.PERMISSION_GRANTED;
         }
 
         private boolean hasReadColorZonesPermission() {
-            return mPackageManager.checkPermission(android.Manifest.permission
-                            .READ_COLOR_ZONES,
-                    mContext.getPackageName()) == mPackageManager.PERMISSION_GRANTED;
+            return mContext.checkCallingPermission(
+                    android.Manifest.permission.READ_COLOR_ZONES)
+                    == PackageManager.PERMISSION_GRANTED;
         }
 
         @Override
@@ -836,6 +897,18 @@ public class MediaQualityService extends SystemService {
             UserState userState = getOrCreateUserState(Binder.getCallingUid());
             userState.mSoundProfileCallbackPidUidMap.put(callback,
                     Pair.create(callingPid, callingUid));
+        }
+
+        @Override
+        public void registerActiveProcessingPictureListener(
+                final IActiveProcessingPictureListener l) {
+            int callingPid = Binder.getCallingPid();
+            int callingUid = Binder.getCallingUid();
+
+            UserState userState = getOrCreateUserState(Binder.getCallingUid());
+            String packageName = getPackageOfCallingUid();
+            userState.mActiveProcessingPictureListenerMap.put(l,
+                    new ActiveProcessingPictureListenerInfo(callingUid, callingPid, packageName));
         }
 
         @Override
@@ -1245,6 +1318,20 @@ public class MediaQualityService extends SystemService {
         }
     }
 
+    private class ActiveProcessingPictureCallbackList extends
+            RemoteCallbackList<IActiveProcessingPictureListener> {
+        @Override
+        public void onCallbackDied(IActiveProcessingPictureListener l) {
+            synchronized (mPictureProfileLock) {
+                for (int i = 0; i < mUserStates.size(); i++) {
+                    int userId = mUserStates.keyAt(i);
+                    UserState userState = getOrCreateUserState(userId);
+                    userState.mActiveProcessingPictureListenerMap.remove(l);
+                }
+            }
+        }
+    }
+
     private final class UserState {
         // A list of callbacks.
         private final MediaQualityManagerPictureProfileCallbackList mPictureProfileCallbacks =
@@ -1253,18 +1340,35 @@ public class MediaQualityService extends SystemService {
         private final MediaQualityManagerSoundProfileCallbackList mSoundProfileCallbacks =
                 new MediaQualityManagerSoundProfileCallbackList();
 
+        private final ActiveProcessingPictureCallbackList mActiveProcessingPictureCallbackList =
+                new ActiveProcessingPictureCallbackList();
+
         private final Map<IPictureProfileCallback, Pair<Integer, Integer>>
                 mPictureProfileCallbackPidUidMap = new HashMap<>();
 
         private final Map<ISoundProfileCallback, Pair<Integer, Integer>>
                 mSoundProfileCallbackPidUidMap = new HashMap<>();
 
+        private final Map<IActiveProcessingPictureListener, ActiveProcessingPictureListenerInfo>
+                mActiveProcessingPictureListenerMap = new HashMap<>();
+
         private UserState(Context context, int userId) {
 
         }
     }
 
-    @GuardedBy("mUserStateLock")
+    private final class ActiveProcessingPictureListenerInfo {
+        private int mUid;
+        private int mPid;
+        private String mPackageName;
+
+        ActiveProcessingPictureListenerInfo(int uid, int pid, String packageName) {
+            mUid = uid;
+            mPid = pid;
+            mPackageName = packageName;
+        }
+    }
+
     private UserState getOrCreateUserState(int userId) {
         UserState userState = getUserState(userId);
         if (userState == null) {
