@@ -18,6 +18,7 @@ package android.media.quality;
 
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
+import android.annotation.StringDef;
 import android.annotation.SystemApi;
 import android.media.tv.TvInputInfo;
 import android.media.tv.flags.Flags;
@@ -71,6 +72,16 @@ public final class PictureProfile implements Parcelable {
      * {@link #getPackageName()}.
      */
     public static final int TYPE_APPLICATION = 2;
+
+    /** @hide */
+    @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "NAME_", value = {
+            NAME_DEFAULT
+    })
+    public @interface ProfileName {}
+
+    /** @hide */
+    public static final String NAME_DEFAULT = "default";
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
