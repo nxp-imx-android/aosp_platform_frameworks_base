@@ -21,6 +21,7 @@ import android.content.pm.PackageManager
 import android.content.pm.PermissionGroupInfo
 import android.content.pm.PermissionInfo
 import android.content.pm.SigningDetails
+import android.health.connect.HealthPermissions
 import android.os.Build
 import android.os.Bundle
 import android.util.ArrayMap
@@ -390,6 +391,14 @@ abstract class BasePermissionPolicyTest {
             Manifest.permission.ACCESS_BACKGROUND_LOCATION
         @JvmStatic
         protected val PERMISSION_ACCESS_MEDIA_LOCATION = Manifest.permission.ACCESS_MEDIA_LOCATION
+        @JvmStatic protected val PERMISSION_BODY_SENSORS = Manifest.permission.BODY_SENSORS
+        @JvmStatic
+        protected val PERMISSION_BODY_SENSORS_BACKGROUND =
+            Manifest.permission.BODY_SENSORS_BACKGROUND
+        @JvmStatic protected val PERMISSION_READ_HEART_RATE = HealthPermissions.READ_HEART_RATE
+        @JvmStatic
+        protected val PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND =
+            HealthPermissions.READ_HEALTH_DATA_IN_BACKGROUND
 
         @JvmStatic protected val USER_ID_0 = 0
         @JvmStatic protected val USER_ID_NEW = 1

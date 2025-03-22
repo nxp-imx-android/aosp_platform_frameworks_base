@@ -441,7 +441,7 @@ class AppIdPermissionUpgrade(private val policy: AppIdPermissionPolicy) {
             return false
         }
 
-        val newFlags =
+        flags =
             flags andInv
                 (PermissionFlags.RUNTIME_GRANTED or
                     MASK_USER_SETTABLE or
