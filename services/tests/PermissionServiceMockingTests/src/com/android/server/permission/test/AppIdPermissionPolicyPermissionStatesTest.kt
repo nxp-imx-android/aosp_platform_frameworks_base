@@ -29,6 +29,7 @@ import com.android.server.pm.pkg.PackageState
 import com.android.server.testutils.mock
 import com.android.server.testutils.whenever
 import com.google.common.truth.Truth.assertWithMessage
+import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -534,6 +535,442 @@ class AppIdPermissionPolicyPermissionStatesTest : BasePermissionPolicyTest() {
                     " $actualFlags should match the expected flags $expectedNewFlags"
             )
             .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /** Setup: BODY_SENSORS: granted, READ_HEART_RATE: not granted Result: BODY_SENSORS: revoked */
+    @Test
+    fun testEvaluatePermissionState_bodySensorReadHrOutOfSync_revokesGrantedBodySensor() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = PermissionFlags.RUNTIME_GRANTED
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS,
+            requestedPermissions = setOf(PERMISSION_BODY_SENSORS, PERMISSION_READ_HEART_RATE),
+        ) {}
+
+        val actualFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS)
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that requests a runtime body sensors" +
+                    " permission that was granted while read hr was not, the actual permission" +
+                    " flags $actualFlags should match the expected flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Setup: BODY_SENSORS: not granted, READ_HEART_RATE: granted Result: READ_HEART_RATE: revoked
+     */
+    @Test
+    fun testEvaluatePermissionState_bodySensorReadHrOutOfSync_revokesGrantedReadHr() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = 0
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS,
+            requestedPermissions = setOf(PERMISSION_BODY_SENSORS, PERMISSION_READ_HEART_RATE),
+        ) {
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_READ_HEART_RATE,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+        }
+
+        val actualFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_READ_HEART_RATE)
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that requests a runtime body sensors" +
+                    " permission that was not granted while read hr was, the actual permission" +
+                    "flags $actualFlags should match the expected flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Setup: BODY_SENSORS: granted, READ_HEART_RATE: not granted Result: nothing revoked since the
+     * targetSdk is Baklava
+     */
+    @Test
+    fun testEvaluatePermissionState_bodySensorReadHrOutOfSync_baklavaTargetSdk_nothingRevoked() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = PermissionFlags.RUNTIME_GRANTED
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS,
+            installedPackageTargetSdkVersion = Build.VERSION_CODES.BAKLAVA,
+            requestedPermissions = setOf(PERMISSION_BODY_SENSORS, PERMISSION_READ_HEART_RATE),
+        ) {}
+
+        val actualFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS)
+        val expectedNewFlags = oldFlags
+        assertWithMessage(
+                "After $action is called for a package that requests a runtime body sensors" +
+                    " permission that was granted while read hr was not targeting Baklava," +
+                    " the actual permission flags $actualFlags should match the expected" +
+                    " flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Setup: BODY_SENSORS_BACKGROUND: granted, BODY_SENSORS: not granted Result:
+     * BODY_SENSORS_BACKGROUND: revoked
+     */
+    @Test
+    fun testEvaluatePermissionState_bodySensorBackgroundGrantMismatch_revokesBackground() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = 0
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS,
+            requestedPermissions =
+                setOf(PERMISSION_BODY_SENSORS, PERMISSION_BODY_SENSORS_BACKGROUND),
+        ) {
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_BODY_SENSORS_BACKGROUND,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+        }
+
+        val actualFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS_BACKGROUND)
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that requests a runtime body sensors" +
+                    " permission that was not granted while body sensors background was," +
+                    " the actual permission flags $actualFlags should match the expected" +
+                    " flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Setup: BODY_SENSORS_BACKGROUND: granted, BODY_SENSORS: not requested Result:
+     * BODY_SENSORS_BACKGROUND: revoked
+     */
+    @Test
+    fun testEvaluatePermissionState_bodySensorBackgroundMissingForeground_baklavaTargetSdk_revokesBackground() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = PermissionFlags.RUNTIME_GRANTED
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS_BACKGROUND,
+            requestedPermissions = setOf(PERMISSION_BODY_SENSORS_BACKGROUND),
+        ) {}
+
+        val actualFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS_BACKGROUND)
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that has runtime body sensors background" +
+                    " permission granted but is not requesting the body sensors foreground" +
+                    " permission, the actual permission flags $actualFlags should match the" +
+                    " expected flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Setup: BODY_SENSORS_BACKGROUND: granted, BODY_SENSORS: granted, READ_HEART_RATE: not granted
+     * Result: BODY_SENSORS_BACKGROUND: revoked
+     */
+    @Test
+    fun testEvaluatePermissionState_bodySensorHeartRateOutOfSync_revokesGrantedBodySensorBackground() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = PermissionFlags.RUNTIME_GRANTED
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS,
+            installedPackageTargetSdkVersion = Build.VERSION_CODES.BAKLAVA,
+            requestedPermissions =
+                setOf(PERMISSION_BODY_SENSORS, PERMISSION_READ_HEART_RATE, PERMISSION_BODY_SENSORS),
+        ) {
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_BODY_SENSORS_BACKGROUND,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+        }
+
+        val actualFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS_BACKGROUND)
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that requests a runtime body sensors" +
+                    " permission that was granted while read hr was not targeting Baklava," +
+                    " the actual permission flags $actualFlags should match the expected" +
+                    " flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Setup: BODY_SENSORS_BACKGROUND: granted, READ_HEALTH_DATA_IN_BACKGROUND: not granted Result:
+     * BODY_SENSORS_BACKGROUND: revoked
+     */
+    @Test
+    fun testEvaluatePermissionState_bodySensorReadHealthBackgroundOutOfSync_revokesGrantedBodySensorBackground() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = 0
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS_BACKGROUND,
+            requestedPermissions =
+                setOf(PERMISSION_BODY_SENSORS_BACKGROUND, PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND),
+        ) {
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+        }
+
+        val actualFlags =
+            getPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+            )
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that requests a runtime body sensors" +
+                    " background permission that was not granted while read health data in" +
+                    " background was, the actual permission flags $actualFlags should match" +
+                    " the expected flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Setup: BODY_SENSORS_BACKGROUND: not granted, READ_HEALTH_DATA_IN_BACKGROUND: granted Result:
+     * READ_HEALTH_DATA_IN_BACKGROUND: revoked
+     */
+    @Test
+    fun testEvaluatePermissionState_bodySensorReadHealthBackgroundOutOfSync_revokesGrantedReadHealthBackground() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = PermissionFlags.RUNTIME_GRANTED
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_BODY_SENSORS_BACKGROUND,
+            requestedPermissions =
+                setOf(PERMISSION_BODY_SENSORS_BACKGROUND, PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND),
+        ) {}
+
+        val actualFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS_BACKGROUND)
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that requests a runtime body sensors" +
+                    " background permission that was granted while read health data in" +
+                    " background was not, the actual permission flags $actualFlags should match" +
+                    " the expected flags $expectedNewFlags"
+            )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * The sequence of events here is:
+     *
+     * Starting:
+     * - READ_HR=not granted
+     * - BODY_SENSORS=granted
+     * - BODY_SENSORS_BACKGROUND=granted,
+     * - READ_HEALTH_DATA_IN_BACKGROUND=granted
+     *
+     * Actions:
+     * - BODY_SENSORS->revoked (due to READ_HR mismatch)
+     * - BODY_SENSORS_BACKGROUND->revoked (due to new BODY_SENSORS mismatch)
+     * - READ_HEALTH_DATA_IN_BACKGROUND->revoked (due to new BODY_SENSORS_BACKGROUND mismatch)
+     *
+     * End result: All permissions revoked.
+     */
+    @Test
+    fun testEvaluatePermissionState_healthPermissionsSync_revocationChain() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags = 0
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_READ_HEART_RATE,
+            requestedPermissions =
+                setOf(
+                    PERMISSION_READ_HEART_RATE,
+                    PERMISSION_BODY_SENSORS,
+                    PERMISSION_BODY_SENSORS_BACKGROUND,
+                    PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+                ),
+        ) {
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_BODY_SENSORS,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_BODY_SENSORS_BACKGROUND,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+        }
+
+        val bodySensorsFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS)
+        val bodySensorsBackgroundFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS_BACKGROUND)
+        val readHealthDataInBackgroundFlags =
+            getPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+            )
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that has mismatching health permissions," +
+                    " the actual permission flags for body sensors $bodySensorsFlags should" +
+                    " match the expected flags $expectedNewFlags"
+            )
+            .that(bodySensorsFlags)
+            .isEqualTo(expectedNewFlags)
+        assertWithMessage(
+                "After $action is called for a package that has mismatching health permissions," +
+                    " the actual permission flags for body sensors background" +
+                    " $bodySensorsBackgroundFlags should match the expected flags" +
+                    " $expectedNewFlags"
+            )
+            .that(bodySensorsBackgroundFlags)
+            .isEqualTo(expectedNewFlags)
+        assertWithMessage(
+                "After $action is called for a package that has mismatching health permissions," +
+                    " the actual permission flags for read health data in background" +
+                    " $readHealthDataInBackgroundFlags" +
+                    " should match the expected flags $expectedNewFlags"
+            )
+            .that(readHealthDataInBackgroundFlags)
+            .isEqualTo(expectedNewFlags)
+    }
+
+    /**
+     * Similar to test case above but this time the READ_HR permission is going implicitly to
+     * explicitly granted (which causes it's grant to be revoked).
+     *
+     * Starting:
+     * - READ_HR=imlpicitly granted
+     * - BODY_SENSORS=granted
+     * - BODY_SENSORS_BACKGROUND=granted,
+     * - READ_HEALTH_DATA_IN_BACKGROUND=granted
+     *
+     * Actions:
+     * - READ_HR->revoked (due to implicit permission being explicitly requested)
+     * - BODY_SENSORS->revoked (due to READ_HR mismatch)
+     * - BODY_SENSORS_BACKGROUND->revoked (due to new BODY_SENSORS mismatch)
+     * - READ_HEALTH_DATA_IN_BACKGROUND->revoked (due to new BODY_SENSORS_BACKGROUND mismatch)
+     *
+     * End result: All permissions revoked.
+     */
+    @Test
+    fun testEvaluatePermissionState_implicitHealthPermissionRequested_causesRevocationChain() {
+        assumeTrue(action != Action.ON_USER_ADDED)
+        val oldFlags =
+            PermissionFlags.IMPLICIT or
+                PermissionFlags.RUNTIME_GRANTED or
+                PermissionFlags.USER_SET or
+                PermissionFlags.USER_FIXED
+        testEvaluatePermissionState(
+            oldFlags,
+            PermissionInfo.PROTECTION_DANGEROUS,
+            permissionName = PERMISSION_READ_HEART_RATE,
+            requestedPermissions =
+                setOf(
+                    PERMISSION_READ_HEART_RATE,
+                    PERMISSION_BODY_SENSORS,
+                    PERMISSION_BODY_SENSORS_BACKGROUND,
+                    PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+                ),
+        ) {
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_BODY_SENSORS,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_BODY_SENSORS_BACKGROUND,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+            setPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+                PermissionFlags.RUNTIME_GRANTED,
+            )
+        }
+
+        val bodySensorsFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS)
+        val bodySensorsBackgroundFlags =
+            getPermissionFlags(APP_ID_1, getUserIdEvaluated(), PERMISSION_BODY_SENSORS_BACKGROUND)
+        val readHealthDataInBackgroundFlags =
+            getPermissionFlags(
+                APP_ID_1,
+                getUserIdEvaluated(),
+                PERMISSION_READ_HEALTH_DATA_IN_BACKGROUND,
+            )
+        val expectedNewFlags = 0
+        assertWithMessage(
+                "After $action is called for a package that has mismatching health permissions," +
+                    "the actual permission flags for body sensors $bodySensorsFlags should match the" +
+                    "expected flags $expectedNewFlags"
+            )
+            .that(bodySensorsFlags)
+            .isEqualTo(expectedNewFlags)
+        assertWithMessage(
+                "After $action is called for a package that has mismatching health permissions," +
+                    "the actual permission flags for body sensors background $bodySensorsBackgroundFlags should" +
+                    "match the expected flags $expectedNewFlags"
+            )
+            .that(bodySensorsBackgroundFlags)
+            .isEqualTo(expectedNewFlags)
+        assertWithMessage(
+                "After $action is called for a package that has mismatching health permissions," +
+                    "the actual permission flags for read health data in background $readHealthDataInBackgroundFlags" +
+                    "should match the expected flags $expectedNewFlags"
+            )
+            .that(readHealthDataInBackgroundFlags)
             .isEqualTo(expectedNewFlags)
     }
 
